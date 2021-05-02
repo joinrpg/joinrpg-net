@@ -1,0 +1,32 @@
+﻿<tr>
+  <td>
+    <a asp-controller="GameSubscribe" asp-action="EditRedirect" asp-route-projectId="@Model.ProjectId" asp-route-subscriptionId="@Model.UserSubscriptionId">
+      <span class="glyphicon glyphicon-pushpin"></span>
+    </a>
+    <a href="@Model.Link">
+      @Model.Name
+    </a>
+
+  </td>
+  <td>
+    @if (Model.Options.AllSet)
+    {
+      <label class="label label-success">
+        Любые изменения
+      </label>
+    }
+    else
+    {
+      <ConditionalLabel For="@(() => Model.Options.ClaimStatusChange)" Variation="@VariationStyleEnum.Success"/>
+      <ConditionalLabel For="@(() => Model.Options.Comments)" Variation="@VariationStyleEnum.Success"/>
+      <ConditionalLabel For="@(() => Model.Options.FieldChange)" Variation="@VariationStyleEnum.Success"/>
+      <ConditionalLabel For="@(() => Model.Options.MoneyOperation)" Variation="@VariationStyleEnum.Success"/>
+      <ConditionalLabel For="@(() => Model.Options.AccommodationChange)" Variation="@VariationStyleEnum.Success"/>
+    }
+  </td>
+</tr>
+@code {
+
+    [Parameter]
+    public SubscribeListItemViewModel Model { get; set; } = null!;
+}

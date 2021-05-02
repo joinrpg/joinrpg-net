@@ -169,7 +169,8 @@ namespace JoinRpg.Portal
                 _ = app.UseHttpsRedirection();
             }
 
-            _ = app.UseStaticFiles();
+            _ = app.UseStaticFiles()
+                   .UseBlazorFrameworkFiles();
 
             _ = app.UseRouting();
 
