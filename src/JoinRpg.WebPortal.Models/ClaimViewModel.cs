@@ -454,7 +454,7 @@ namespace JoinRpg.Web.Models
         {
             Status = model.Status;
 
-            // Reading project fee info applicable for today            
+            // Reading project fee info applicable for today
             BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
             // Reading base fee of a claim
             BaseFee = claim.BaseFee();
@@ -462,8 +462,8 @@ namespace JoinRpg.Web.Models
             HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
 
             AccommodationFee = claim.ClaimAccommodationFee();
-            RoomType = claim.AccommodationRequest?.AccommodationType?.Name ?? "";
-            RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+            RoomType = claim.AccommodationRequest?.AccommodationType.Name ?? "";
+            RoomName = claim.AccommodationRequest?.Accommodation?.Name ?? "";
 
             FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
@@ -524,7 +524,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Claim
         /// </summary>
-        public ProjectFeeSetting BaseFeeInfo { get; }
+        public ProjectFeeSetting? BaseFeeInfo { get; }
 
         /// <summary>
         /// true if there is any base fee for this claim
