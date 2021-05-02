@@ -43,7 +43,7 @@
                             <label for="@Html.IdFor(m => m.Money)" class="col-md-4 control-label">Сумма к оплате:</label>
                             <div class="col-md-8">
                                 <div>
-                                    @Html.EditorFor(m => m.Money, new {htmlAttributes = new {@class = "form-control", style = "display: inline-block; max-width: 150px", min="1", max="100000"}})
+                                    @Html.EditorFor(m => m.Money, new {htmlAttributes = new {@class = "form-control", onchange = "changeHandler()", style = "display: inline-block; max-width: 150px", min="1", max="100000"}})
                                     ₽
                                 </div>
                                 @Html.ValidationMessageFor(m => m.Money, "", new {@class = "text-danger"})
@@ -59,7 +59,7 @@
 
                         <div class="form-group">
                             <div class="col-md-12">
-                                @Html.CheckBoxFor(m => m.AcceptContract, new { onchange = "dlgPayContractChange()" })
+                                @Html.CheckBoxFor(m => m.AcceptContract, new { onchange = "changeHandler()" })
                                 <label for="@Html.IdFor(m => m.AcceptContract)">Я прочитал(а), понял(а) и принимаю условия @Html.ActionLink("оферты", "user-agreement", "OnlinePayments")</label>
                             </div>
                         </div>
@@ -78,19 +78,19 @@
 </div>
 
 <script type="text/javascript" defer>
-    function dlgPayContractChange()
-    {
-        const edMoney = document.getElementById('@Html.IdFor(m => m.Money)');
-        const checkBox = document.getElementById('@Html.IdFor(m => m.AcceptContract)');
-        const submitBtn1 = document.getElementById('dlgPayOnline1Submit');
-        const submitBtn2 = document.getElementById('dlgPayOnline2Submit');
-        const money = parseInt(edMoney.value);
-        if (money >= 1 && money <= 100000 && checkBox.checked) {
-            submitBtn1.removeAttribute('disabled');
-            submitBtn2.removeAttribute('disabled');
-        } else {
-            submitBtn1.setAttribute('disabled', '');
-            submitBtn2.setAttribute('disabled', '');
-        }
-    }
+function changeHandler()
+{
+  const edMoney = document.getElementById('@Html.IdFor(m => m.Money)');
+  const checkBox = document.getElementById('@Html.IdFor(m => m.AcceptContract)');
+  const submitBtn1 = document.getElementById('dlgPayOnline1Submit');
+  const submitBtn2 = document.getElementById('dlgPayOnline2Submit');
+  const money = parseInt(edMoney.value);
+  if (money >= 1 && money <= 100000 && checkBox.checked) {
+      submitBtn1.removeAttribute('disabled');
+      submitBtn2.removeAttribute('disabled');
+  } else {
+      submitBtn1.setAttribute('disabled', '');
+      submitBtn2.setAttribute('disabled', '');
+  }
+}
 </script>
