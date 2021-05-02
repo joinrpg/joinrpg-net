@@ -40,6 +40,7 @@ namespace JoinRpg.Services.Impl
                 Debug = true,
 #endif
                 MerchantId = _bankSecrets.MerchantId,
+                MerchantIdFastPayments = _bankSecrets.MerchantIdFastPayments,
                 ApiKey = _bankSecrets.ApiKey,
                 ApiDebugKey = _bankSecrets.ApiDebugKey,
                 DefaultSuccessUrl = _uriService.Get(new PaymentSuccessUrl(projectId, claimId)),
@@ -97,7 +98,12 @@ namespace JoinRpg.Services.Impl
                 CustomerEmail = user.Email,
                 CustomerPhone = user.Extra?.PhoneNumber,
                 CustomerComment = request.CommentText,
-                PaymentMethod = PscbPaymentMethod.BankCards,
+                PaymentMethod = request.Method switch
+                {
+                    PaymentMethod.BankCard => PscbPaymentMethod.BankCards,
+                    PaymentMethod.FastPaymentsSystem => PscbPaymentMethod.FastPaymentsSystem,
+                    _ => throw new NotSupportedException($"Payment method {request.Method} is not supported"),
+                },
                 SuccessUrl = _uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
                 FailUrl = _uriService.Get(new PaymentFailUrl(request.ProjectId, request.ClaimId)),
                 Data = new PaymentMessageData

@@ -4,6 +4,21 @@ using PscbApi.Models;
 
 namespace JoinRpg.Services.Interfaces
 {
+    /// <summary>
+    /// Payment methods to be used for making payments
+    /// </summary>
+    public enum PaymentMethod
+    {
+        /// <summary>
+        /// Traditional payments using bank cards, Samsung pay, Apple pay...
+        /// </summary>
+        BankCard,
+
+        /// <summary>
+        /// Payments using Fast Payments System via QR Code (Russia only)
+        /// </summary>
+        FastPaymentsSystem,
+    }
 
     /// <summary>
     /// Base class for payment requests
@@ -19,6 +34,11 @@ namespace JoinRpg.Services.Interfaces
         /// How much to pay
         /// </summary>
         public int Money { get; set; }
+
+        /// <summary>
+        /// Payment method to use
+        /// </summary>
+        public PaymentMethod Method { get; set; }
 
         /// <summary>
         /// Comment added by payer
