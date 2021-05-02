@@ -5,7 +5,7 @@ namespace JoinRpg.Portal.Helpers
     public static class Contacts
     {
 
-        public const string Docs = "http://docs.joinrpg.ru/ru/latest/";
+        public const string Docs = "https://docs.joinrpg.ru/ru/latest/";
 
         public const string SupportEmail = "support@joinrpg.ru";
 
