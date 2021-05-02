@@ -61,8 +61,10 @@
 </form>
 
 @section Scripts{
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  <script>
+  @if (Model.IsRecaptchaConfigured)
+  {
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
     function disableSubmitButton() {
       $("#btnRegister").attr("disabled", "disabled");
     }
@@ -89,4 +91,5 @@
       }
     });
   </script>
+  }
 }
