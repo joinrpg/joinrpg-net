@@ -1,0 +1,38 @@
+﻿
+@using System.Linq.Expressions;
+<div class="master-subscribe-list">
+  <table class="table">
+
+    <tr><th>Предмет подписки</th><th>Виды операций</th></tr>
+
+    @foreach (var item in Model.Items)
+    {
+      <MasterSubscribeListRow Model="@item" />
+    }
+    @foreach (var paymentType in Model.PaymentTypeNames)
+    {
+      <tr>
+        <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
+        <td>
+          <label class="label label-success">
+            Отмеченные взносы
+          </label>
+        </td>
+      </tr>
+    }
+    <tr>
+      <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
+      <td>
+        <label class="label label-success">
+          Любые изменения
+        </label>
+      </td>
+    </tr>
+
+  </table>
+
+</div>
+@code {
+      [Parameter]
+public SubscribeListViewModel Model { get; set; }
+}
