@@ -220,7 +220,7 @@ namespace JoinRpg.Services.Impl
 
             if (roomType.ProjectId != projectId)
             {
-                throw new ArgumentException($"Room type {roomTypeId} is from another project than specified", nameof(roomTypeId));
+                throw new ArgumentException($@"Room type {roomTypeId} is from another project than specified", nameof(roomTypeId));
             }
 
             // Internal function
@@ -280,14 +280,14 @@ namespace JoinRpg.Services.Impl
             {
                 if (result.ProjectId != projectId.Value)
                 {
-                    throw new ArgumentException($"Room {roomId} is from different project than specified", nameof(projectId));
+                    throw new ArgumentException($@"Room {roomId} is from different project than specified", nameof(projectId));
                 }
             }
             if (roomTypeId.HasValue)
             {
                 if (result.AccommodationTypeId != roomTypeId.Value)
                 {
-                    throw new ArgumentException($"Room {roomId} is from different room type than specified", nameof(projectId));
+                    throw new ArgumentException($@"Room {roomId} is from different room type than specified", nameof(projectId));
                 }
             }
 

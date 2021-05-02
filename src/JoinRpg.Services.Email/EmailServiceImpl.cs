@@ -378,7 +378,7 @@ namespace JoinRpg.Services.Email
 
             var extraText = commentExtraActionView?.GetDisplayName();
 
-            actionName ??= commentExtraActionView?.GetShortNameOrDefault() ?? "изменена";
+            actionName ??= commentExtraActionView?.GetShortName() ?? "изменена";
 
             if (extraText != null)
             {
