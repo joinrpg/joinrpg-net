@@ -17,7 +17,7 @@ stages:
       devKeyVaultPrefix: 'dev-'
       devEnvironment: 'Join-k8s-dev.dev'
       prodNamespace: 'default'
-      prodIngressHostName: 'prod.joinrpg.ru'
+      prodIngressHostName: 'joinrpg.ru'
       prodKeyVaultPrefix: 'prod-'
       prodEnvironment: 'Join-k8s-prod'
 
