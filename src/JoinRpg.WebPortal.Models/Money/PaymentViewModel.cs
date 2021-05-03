@@ -9,10 +9,10 @@ namespace JoinRpg.Web.Models
 {
     public enum PaymentMethodViewModel
     {
-        [Display(Name = "Оплатить картой", Description = "Оплата банковской картой или при помощи систем Apply Pay или Samsung Pay")]
+        [Display(Name = "Оплатить картой", Description = "Оплата банковской картой или при помощи систем Apply Pay, Google Pay, Samsung Pay")]
         BankCard = PaymentMethod.BankCard,
 
-        [Display(Name = "Оплатить по QR-коду", Description = "Оплата через систему быстрых платежей при помощи QR-кода. У вас должно быть установлено приложение вашего банка и он должен поддерживать оплату по QR-коду.")]
+        [Display(Name = "Оплатить по QR-коду", Description = "Оплата через Систему Быстрых Платежей при помощи QR-кода. У вас должно быть установлено мобильное приложение вашего банка и оно должно поддерживать оплату по QR-коду.")]
         FastPaymentsSystem = PaymentMethod.FastPaymentsSystem,
     }
 

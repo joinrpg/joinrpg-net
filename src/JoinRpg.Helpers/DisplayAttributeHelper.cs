@@ -6,22 +6,46 @@ using JetBrains.Annotations;
 
 namespace JoinRpg.Helpers
 {
+    /// <summary>
+    /// Helpers for attributes with text resources
+    /// </summary>
     public static class DisplayAttributeHelper
     {
+        /// <summary>
+        /// Returns name of a member entry specified by <see cref="DisplayNameAttribute"/> or <see cref="DisplayAttribute"/>
+        /// </summary>
         [NotNull]
-        public static string GetDisplayName(
-            this Enum enumValue)
+        public static string GetDisplayName([NotNull] this MemberInfo propertyInfo)
         {
-            if (enumValue == null)
+            if (propertyInfo == null)
             {
-                return "";
+                throw new ArgumentNullException(nameof(propertyInfo));
             }
 
-            return enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
+            return propertyInfo.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName
+                ?? propertyInfo.GetCustomAttribute<DisplayAttribute>()?.GetName()
+                ?? propertyInfo.Name;
         }
 
-        public static string? GetShortNameOrDefault([NotNull]
-            this Enum enumValue)
+        /// <summary>
+        /// Returns name specified by <see cref="DisplayNameAttribute"/> or <see cref="DisplayAttribute"/>
+        /// </summary>
+        public static string GetDisplayName([NotNull] this Enum enumValue)
+        {
+            if (enumValue is null)
+            {
+                throw new ArgumentNullException(nameof(enumValue));
+            }
+
+            return enumValue.GetAttribute<DisplayNameAttribute>()?.DisplayName
+                ?? enumValue.GetAttribute<DisplayAttribute>()?.GetName()
+                ?? enumValue.ToString();
+        }
+
+        /// <summary>
+        /// Returns short name specified by <see cref="DisplayAttribute"/>
+        /// </summary>
+        public static string? GetShortName(this Enum enumValue)
         {
             if (enumValue == null)
             {
@@ -31,32 +55,18 @@ namespace JoinRpg.Helpers
             return enumValue.GetAttribute<DisplayAttribute>()?.GetShortName();
         }
 
-        [NotNull]
-        public static string GetDisplayName([NotNull]
-            this PropertyInfo propertyInfo)
-        {
-            if (propertyInfo == null)
-            {
-                throw new ArgumentNullException(nameof(propertyInfo));
-            }
-
-            return propertyInfo.GetCustomAttribute<DisplayAttribute>()?.Name ?? propertyInfo.Name;
-        }
-
         /// <summary>
-        /// Returns description for enum value
+        /// Returns description specified by <see cref="DescriptionAttribute"/> or <see cref="DisplayAttribute"/>
         /// </summary>
         public static string? GetDescription(this Enum enumValue)
         {
-            if (enumValue == null)
+            if (enumValue is null)
             {
                 throw new ArgumentNullException(nameof(enumValue));
             }
 
-            return enumValue.GetAttribute<DisplayAttribute>()
-                    ?.Description
-                ?? enumValue.GetAttribute<DescriptionAttribute>()
-                    ?.Description;
+            return enumValue.GetAttribute<DescriptionAttribute>()?.Description
+                ?? enumValue.GetAttribute<DisplayAttribute>()?.GetDescription();
         }
     }
 }

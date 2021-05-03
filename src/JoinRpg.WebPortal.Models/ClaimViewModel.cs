@@ -438,7 +438,7 @@ namespace JoinRpg.Web.Models
                     Description = OperationState.GetDisplayName();
                     break;
                 case FinanceOperationTypeViewModel.Online when source.Approved:
-                    Description = OperationState.GetShortNameOrDefault() ?? "";
+                    Description = OperationState.GetShortName() ?? "";
                     break;
                 case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Invalid:
                     Description = OperationState.GetDisplayName();

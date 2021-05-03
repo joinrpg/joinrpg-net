@@ -130,8 +130,18 @@
                         Ответить
                     </a>
                     <div id="answerComment@(comment.CommentId)" class="collapse">
-                      <partial name="../Comments/_AddCommentFormPartial"
-                               model="@new AddCommentViewModel { ProjectId = comment.ProjectId, CommentDiscussionId = comment.CommentDiscussionId, ParentCommentId = comment.CommentId, EnableFinanceAction = comment.ShowFinanceModeration, EnableHideFromUser = comment.HasMasterAccess, HideFromUser = !comment.IsVisibleToPlayer }" />
+                      @{
+                        var addCommentModel = new AddCommentViewModel
+                        {
+                          ProjectId = comment.ProjectId,
+                          CommentDiscussionId = comment.CommentDiscussionId,
+                          ParentCommentId = comment.CommentId,
+                          EnableFinanceAction = comment.ShowFinanceModeration,
+                          EnableHideFromUser = comment.HasMasterAccess,
+                          HideFromUser = !comment.IsVisibleToPlayer
+                        };
+                      }
+                      <partial name="../Comments/_AddCommentFormPartial" model="@addCommentModel"/>
                     </div>
                 </div>
             </td>
@@ -144,9 +154,9 @@
 
         @foreach (var childComment in comment.ChildComments)
             {
-                var style = Model.DeepLevel < 4 ? "margin-left:2em" : "";
+                string style = Model.DeepLevel < 4 ? "margin-left:2em" : "";
         <div style="@style">
-            <vc:comment comment="@childComment"></vc:comment>
+          <vc:comment comment="@childComment" />
         </div>
             }
     </div>
