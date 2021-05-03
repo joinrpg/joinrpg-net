@@ -156,7 +156,7 @@ stages:
       keyVaultPrefix: "${{ variables.devKeyVaultPrefix }}"
       releaseName: 'joinrpg-portal'
       namespace: "${{ variables.devNamespace }}"
-      environment: "${{ variables.devEnvironment }}"
+      environment: "$(devEnvironment)"
 
 - stage: Deploy_Prod
   displayName: Deploy Production
@@ -171,4 +171,4 @@ stages:
       keyVaultPrefix: "${{ variables.prodKeyVaultPrefix }}"
       releaseName: 'joinrpg-portal'
       namespace: "${{ variables.prodNamespace }}"
-      environment: "${{ variables.prodEnvironment }}"
+      environment: "$(prodEnvironment)"
