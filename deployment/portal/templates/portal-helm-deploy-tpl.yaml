@@ -9,12 +9,12 @@ parameters:
 - name: ingressHostName
   displayName: 'Ingress rule hostname'
   type: string
-  default: ''
+  default: 'test.host.local'
 
 - name: keyVaultPrefix
   displayName: 'KeyVault secrets prefix'
   type: string
-  default: ''
+  default: 'test-'
 
 - name: releaseName
   displayName: 'Helm release name'
@@ -52,6 +52,15 @@ jobs:
       deploy:
         steps:
         ##===========================
+        ## Print parameters
+        ##===========================
+        - pwsh: |
+            Write-Host "Deployment parameters"
+            $tplParams = @{ ingressHostName = "${{ parameters.ingressHostName }}"; keyVaultPrefix = "${{ parameters.keyVaultPrefix }}"; releaseName = "${{ parameters.releaseName }}"; namespace = "${{ parameters.namespace }}"; environment = "${{ parameters.environment }}" }
+            $tplParams | ft 
+          displayName: Print deploy parameters
+          name: printParameters
+        ##===========================
         ## Install tools
         ##===========================
         - task: HelmInstaller@1
@@ -68,7 +77,7 @@ jobs:
             azureSubscription: $(azureSubscription)
             azurePowerShellVersion: LatestVersion
             ScriptType: FilePath
-            ScriptPath: $(Pipeline.Workspace)/DeployScripts/portal/Prepare-ChartValues.ps1
+            ScriptPath: $(Pipeline.Workspace)/DeployScripts/portal/scripts/Prepare-ChartValues.ps1
             scriptArguments:
               -VaultName '$(keyVaultName)'
               -Prefix '${{ parameters.keyVaultPrefix }}'

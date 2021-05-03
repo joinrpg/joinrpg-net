@@ -22,8 +22,9 @@ spec:
         {{- include "portal.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        - name: "{{ .Chart.Name }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          
           env:
           - name: ASPNETCORE_ENVIRONMENT
             value: {{ .Values.Environment }} 
@@ -34,6 +35,30 @@ spec:
                 name: {{ $fullName }}
                 key: {{ $key }}
           {{- end }}
+
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /health/live
+              port: 80
+            failureThreshold: 5
+            periodSeconds: 10
+            initialDelaySeconds: 30
+            
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /health/ready
+              port: 80
+            failureThreshold: 5
+            periodSeconds: 10
+            initialDelaySeconds: 30
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       

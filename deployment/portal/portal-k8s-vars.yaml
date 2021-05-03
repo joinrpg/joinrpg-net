@@ -1,0 +1,20 @@
+﻿variables:
+  HELM_EXPERIMENTAL_OCI: 1
+  
+  rgName: 'joinrpg-k8s'
+  aksName: 'join-main'
+  dockerfilePath: 'src/JoinRpg.Portal/Dockerfile'
+  migrateDockerfilePath: 'src/Joinrpg.Dal.Migrate/Dockerfile'
+  
+  azureSubscription: 'JoinRPG-subscription-connection'
+  registryServiceConnection: 'JoinRPG-ACR-connection'
+  imageRepository: 'joinrpg.portal'
+  migrateImageRepository: 'joinrpg.migrate'
+  
+  containerRegistry: 'joinrpg.azurecr.io'
+  imageFullName: '$(containerRegistry)/$(imageRepository)'
+  migrateFullName: '$(containerRegistry)/$(migrateImageRepository)'
+  
+  keyVaultName: "joinrpg-k8s-kv"
+  
+  buildVmImageName: 'ubuntu-latest'

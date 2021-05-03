@@ -7,13 +7,15 @@ metadata:
     {{- include "portal.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "false"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
     cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
 spec:
   tls:
   - hosts:
-    - {{ .Values.ingress.host }}
+    - "{{ .Values.ingress.host }}"
+    - "www.{{ .Values.ingress.host }}"
     secretName: {{ $fullName }}-tls
 
   rules:
@@ -24,4 +26,4 @@ spec:
         backend:
             serviceName: {{ $fullName }}
             servicePort: 80
-        
+    

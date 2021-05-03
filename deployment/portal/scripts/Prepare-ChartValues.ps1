@@ -43,13 +43,15 @@ $secrets | ?{ $_.Name.StartsWith($Prefix) } |
         Write-Host "##vso[task.setvariable variable=DefaultConnection;issecret=true]$value"        
     }
     
-    #Save to the KeyVault
+    #Save to the secrets array
     $name = $name.Substring($Prefix.Length).Replace("--","__");
 
     $data.Add($name, $value);
 
     Write-Host "  Found Secret: $name"
 }
+
+#Write found secrets to the values file
 
 "secrets:" | Out-File -FilePath $Path -Encoding utf8 -Force -Append
 
