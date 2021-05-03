@@ -10,12 +10,15 @@
         <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                    <img src="https://www.gravatar.com/avatar/@ViewBag.GravatarHash?d=identicon&s=24" />&nbsp;@ViewBag.UserDisplayName
+                  <vc:avatar user-avatar-id-or-null="@ViewBag.UserAvatar"
+                             email="@User.Identity.Name"
+                             recommended-size="24">
+                  </vc:avatar>&nbsp;@ViewBag.UserDisplayName
                 </a>
 
                 <ul class="dropdown-menu">
                     <li class="dropdown-item">@Html.ActionLink("Профиль", "Me", "User", new { area = "" }, null)</li>
-                    <li class="dropdown-item">@Html.ActionLink("Аккаунт", "Index", "Manage", new { area = "" }, null)</li>
+                    <li class="dropdown-item">@Html.ActionLink("Настройки", "SetupProfile", "Manage", new { area = "" }, null)</li>
                     <li class="dropdown-item"><a href="https://docs.joinrpg.ru"><span class="glyphicon glyphicon-question-sign"></span> Помощь</a></li>
                     @if (User.IsInRole("admin"))
                     {

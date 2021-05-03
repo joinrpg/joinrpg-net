@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5</TargetFramework>
+    <AssemblyTitle>JoinRpg.Markdown</AssemblyTitle>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <AssemblyName>JoinRpg.Markdown</AssemblyName>
+    <RootNamespace>JoinRpg.Markdown</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj" />
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
+    <PackageReference Include="Markdig" Version="0.24.0" />
+    <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.6.0.1" />
+  </ItemGroup>
+</Project>

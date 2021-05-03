@@ -42,7 +42,7 @@ namespace JoinRpg.Portal
         public static string GetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression) => self.GetMetadataFor(expression).Description;
 
-        private static string TryGetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
+        private static string? TryGetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
             var description = self.GetDescription(expression);
@@ -60,7 +60,7 @@ namespace JoinRpg.Portal
                 var e = (Enum)self.GetUntypedModelFor(expression);
                 var dispAttr = e.GetAttribute<DisplayAttribute>();
 
-                return dispAttr == null ? null : dispAttr.Description;
+                return dispAttr?.Description;
             }
 
             return null;
@@ -103,12 +103,12 @@ namespace JoinRpg.Portal
         /// <summary>
         /// Renders specified number as a price to html tag
         /// </summary>
-        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string id = null) => self.RenderPriceElement(price.ToString(), id);
+        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string? id = null) => self.RenderPriceElement(price.ToString(), id);
 
         /// <summary>
         /// Renders specified value as a price to html tag
         /// </summary>
-        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, string price, string id = null)
+        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, string price, string? id = null)
         {
             //TODO[Localize]
             if (!string.IsNullOrWhiteSpace(id))
@@ -126,7 +126,7 @@ namespace JoinRpg.Portal
         /// <summary>
         /// Renders price to a string
         /// </summary>
-        public static string RenderPrice(this IHtmlHelper self, int price, string template = null)
+        public static string RenderPrice(this IHtmlHelper self, int price, string? template = null)
         {
             //TODO[Localize]
             return string.Format(template ?? defaultPriceTemplate, price);
@@ -144,7 +144,7 @@ namespace JoinRpg.Portal
         public static TModel GetModel<TModel>(this IHtmlHelper<TModel> self) => self.GetValue(m => m);
 
         private static IModelExpressionProvider GetModelExpressionProvider<TModel>(this IHtmlHelper<TModel> self)
-            => (IModelExpressionProvider)self.ViewContext.HttpContext.RequestServices.GetService(typeof(IModelExpressionProvider));
+            => (IModelExpressionProvider)self.ViewContext.HttpContext.RequestServices.GetService(typeof(IModelExpressionProvider))!;
 
         private static ModelExpression GetModelExplorer<TModel, TValue>(
             this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression) =>
@@ -165,6 +165,6 @@ namespace JoinRpg.Portal
             return count + " " + @selected;
         }
 
-        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new HtmlString(request.Scheme + "://" + request.Host);
+        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new(request.Scheme + "://" + request.Host);
     }
 }

@@ -23,8 +23,8 @@ namespace JoinRpg.Services.Impl
         public async Task SubscribeClaimToUser(int projectId, int claimId)
         {
             var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-            (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
-            user.Subscriptions.Add(
+            _ = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+            _ = user.Subscriptions.Add(
                 new UserSubscription() { ClaimId = claimId, ProjectId = projectId }.AssignFrom(
                     SubscribeOptionsExtensions.AllSet()));
             await UnitOfWork.SaveChangesAsync();
@@ -33,12 +33,12 @@ namespace JoinRpg.Services.Impl
         public async Task UnsubscribeClaimToUser(int projectId, int claimId)
         {
             var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-            (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+            _ = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
             var subscription = user.Subscriptions.FirstOrDefault(s =>
                 s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
             if (subscription != null)
             {
-                UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
+                _ = UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
                 await UnitOfWork.SaveChangesAsync();
             }
         }
@@ -54,7 +54,7 @@ namespace JoinRpg.Services.Impl
                 throw new ClaimWrongStatusException(claim);
             }
 
-            FinanceOperationEmail financeEmail = null;
+            FinanceOperationEmail? financeEmail = null;
             if (money > 0)
             {
                 var paymentType = claim.Project.GetCashPaymentType(CurrentUserId);
@@ -82,7 +82,7 @@ namespace JoinRpg.Services.Impl
             MarkChanged(claim.Character);
             claim.Character.InGame = true;
 
-            AddCommentImpl(claim, null, ".", true, CommentExtraAction.CheckedIn);
+            _ = AddCommentImpl(claim, null, ".", true, CommentExtraAction.CheckedIn);
 
             await UnitOfWork.SaveChangesAsync();
 
@@ -147,14 +147,14 @@ namespace JoinRpg.Services.Impl
 
             oldClaim.ClaimStatus = Claim.Status.Approved;
             source.ApprovedClaim = claim;
-            AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
+            _ = AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
 
 
-            UnitOfWork.GetDbSet<Claim>().Add(claim);
+            _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
             // ReSharper disable once UnusedVariable TODO decide if we should send email if FieldDefaultValueGenerator changes something
             var updatedFields =
-              FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(),
+              FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(),
                 FieldDefaultValueGenerator);
 
             await UnitOfWork.SaveChangesAsync();
@@ -172,13 +172,18 @@ namespace JoinRpg.Services.Impl
             int? characterGroupId,
             int? characterId,
             string claimText,
-            IReadOnlyDictionary<int, string> fields)
+            IReadOnlyDictionary<int, string?> fields)
         {
             var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
             source.EnsureCanAddClaim(CurrentUserId);
 
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
+            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
+                //if we failed to calculate responsible master, assign owner as responsible master
+                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
+                //if we found no owner, assign random master 
+                ?? source.Project.ProjectAcls.First().User;
+
             var claim = new Claim()
             {
                 CharacterGroupId = characterGroupId,
@@ -188,7 +193,7 @@ namespace JoinRpg.Services.Impl
                 PlayerAcceptedDate = Now,
                 CreateDate = Now,
                 ClaimStatus = Claim.Status.AddedByUser,
-                ResponsibleMasterUserId = responsibleMaster?.UserId,
+                ResponsibleMasterUserId = responsibleMaster.UserId,
                 ResponsibleMasterUser = responsibleMaster,
                 LastUpdateDateTime = Now,
                 CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = projectId },
@@ -210,7 +215,7 @@ namespace JoinRpg.Services.Impl
                 });
             }
 
-            UnitOfWork.GetDbSet<Claim>().Add(claim);
+            _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
             var updatedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, FieldDefaultValueGenerator);
 
@@ -249,6 +254,10 @@ namespace JoinRpg.Services.Impl
 
             if (financeAction != FinanceOperationAction.None)
             {
+                if (parentComment is null)
+                {
+                    throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
+                }
                 extraAction = PerformFinanceOperation(financeAction, parentComment, claim);
                 predicate = s => s.Comments || s.MoneyOperation;
             }
@@ -312,7 +321,7 @@ namespace JoinRpg.Services.Impl
             claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
             claim.ResponsibleMasterUserId ??= CurrentUserId;
-            AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
+            _ = AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
             if (!claim.Project.Details.EnableManyCharacters)
             {
@@ -345,7 +354,7 @@ namespace JoinRpg.Services.Impl
             // 2. M.b. we need to move some field values from Claim to Characters
             // 3. (2) Could activate changing of special groups
             // ReSharper disable once MustUseReturnValue we don't need send email here
-            FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(),
+            _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(),
                 FieldDefaultValueGenerator);
 
             await UnitOfWork.SaveChangesAsync();
@@ -401,15 +410,20 @@ namespace JoinRpg.Services.Impl
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
             claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
-            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
 
             claim.MasterDeclinedDate = Now;
             claim.ClaimStatus = Claim.Status.DeclinedByMaster;
             claim.ClaimDenialStatus = claimDenialStatus;
 
             var roomEmail = await CommonClaimDecline(claim);
-            if (deleteCharacter && statusWasApproved)
+
+            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
+            if (deleteCharacter)
             {
+                if (claim.Character is null || !statusWasApproved)
+                {
+                    throw new InvalidOperationException("Attempt to delete character, but it not exists");
+                }
                 DeleteCharacter(claim.Character, CurrentUserId);
             }
 
@@ -435,7 +449,7 @@ namespace JoinRpg.Services.Impl
         private void DeleteCharacter(Character character, int currentUserId)
         {
 
-            character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            _ = character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
             MarkTreeModified(character.Project);
 
             character.DirectlyRelatedPlotElements.CleanLinksList();
@@ -444,8 +458,7 @@ namespace JoinRpg.Services.Impl
             MarkChanged(character);
         }
 
-        [ItemCanBeNull]
-        private async Task<LeaveRoomEmail> CommonClaimDecline(Claim claim)
+        private async Task<LeaveRoomEmail?> CommonClaimDecline(Claim claim)
         {
             MarkCharacterChangedIfApproved(claim);
 
@@ -458,10 +471,9 @@ namespace JoinRpg.Services.Impl
             return await ConsiderLeavingRoom(claim);
         }
 
-        [ItemCanBeNull]
-        private async Task<LeaveRoomEmail> ConsiderLeavingRoom(Claim claim)
+        private async Task<LeaveRoomEmail?> ConsiderLeavingRoom(Claim claim)
         {
-            LeaveRoomEmail email = null;
+            LeaveRoomEmail? email = null;
 
             if (claim.AccommodationRequest != null)
             {
@@ -478,10 +490,10 @@ namespace JoinRpg.Services.Impl
                     };
                 }
 
-                claim.AccommodationRequest.Subjects.Remove(claim);
+                _ = claim.AccommodationRequest.Subjects.Remove(claim);
                 if (!claim.AccommodationRequest.Subjects.Any())
                 {
-                    UnitOfWork.GetDbSet<AccommodationRequest>().Remove(claim.AccommodationRequest);
+                    _ = UnitOfWork.GetDbSet<AccommodationRequest>().Remove(claim.AccommodationRequest);
                 }
             }
 
@@ -521,7 +533,7 @@ namespace JoinRpg.Services.Impl
             var email = EmailHelpers.CreateFieldsEmail(claim,
                 s => s.AccommodationChange,
                 await GetCurrentUser(),
-                new FieldWithPreviousAndNewValue[] { },
+                Array.Empty<FieldWithPreviousAndNewValue>(),
                 new Dictionary<string, PreviousAndNewValue>()
                 {
                   {
@@ -541,7 +553,7 @@ namespace JoinRpg.Services.Impl
                 IsAccepted = AccommodationRequest.InviteState.Accepted,
             };
 
-            UnitOfWork
+            _ = UnitOfWork
                 .GetDbSet<AccommodationRequest>()
                 .Add(accommodationRequest);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
@@ -564,7 +576,7 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
+            _ = claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
             claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
             claim.PlayerDeclinedDate = Now;
@@ -687,7 +699,7 @@ namespace JoinRpg.Services.Impl
             //Sometimes watermarks can duplicate. If so, let's remove them.
             foreach (var wm in watermarks.Skip(1))
             {
-                UnitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
+                _ = UnitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
             }
 
             var watermark = watermarks.FirstOrDefault();
@@ -700,7 +712,7 @@ namespace JoinRpg.Services.Impl
                     ProjectId = projectId,
                     UserId = CurrentUserId,
                 };
-                UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
+                _ = UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
             }
 
             if (watermark.CommentId > maxCommentId)
@@ -712,11 +724,11 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<T> AddCommentWithEmail<T>(string commentText, Claim claim,
-          bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
-          CommentExtraAction? extraAction = null, IEnumerable<User> extraSubscriptions = null) where T : ClaimEmailModel, new()
+          bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment? parentComment,
+          CommentExtraAction? extraAction = null, IEnumerable<User>? extraSubscriptions = null) where T : ClaimEmailModel, new()
         {
             var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
-            AddCommentImpl(claim, parentComment, commentText, visibleToPlayerUpdated, extraAction);
+            _ = AddCommentImpl(claim, parentComment, commentText, visibleToPlayerUpdated, extraAction);
 
             var extraRecipients =
               new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
@@ -731,8 +743,8 @@ namespace JoinRpg.Services.Impl
         public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
         {
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-            claim.RequestMasterAccess(currentUserId);
-            claim.RequestMasterAccess(responsibleMasterId);
+            _ = claim.RequestMasterAccess(currentUserId);
+            _ = claim.RequestMasterAccess(responsibleMasterId);
 
             if (responsibleMasterId == claim.ResponsibleMasterUserId)
             {
@@ -765,7 +777,7 @@ namespace JoinRpg.Services.Impl
 
         public async Task SaveFieldsFromClaim(int projectId,
             int characterId,
-            IReadOnlyDictionary<int, string> newFieldValue)
+            IReadOnlyDictionary<int, string?> newFieldValue)
         {
             //TODO: Prevent lazy load here - use repository 
             var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);

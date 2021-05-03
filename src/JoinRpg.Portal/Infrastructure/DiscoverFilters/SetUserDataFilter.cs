@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -18,7 +17,7 @@ namespace JoinRpg.Portal.Infrastructure
             if (context.Result is ViewResult viewResult && CurrentUserAccessor.UserIdOrDefault != null)
             {
                 viewResult.ViewData["UserDisplayName"] = CurrentUserAccessor.DisplayName;
-                viewResult.ViewData["GravatarHash"] = CurrentUserAccessor.Email.GravatarHash().Trim();
+                viewResult.ViewData["UserAvatar"] = CurrentUserAccessor.Avatar;
             }
 
             return base.OnResultExecutionAsync(context, next);

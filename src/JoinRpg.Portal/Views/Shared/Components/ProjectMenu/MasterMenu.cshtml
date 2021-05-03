@@ -59,27 +59,30 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Персонажи <span class="caret"></span></a>
 
                     <ul class="dropdown-menu">
-                        <li>
-                            @Html.ActionLink("Все персонажи", "Active", "CharacterList", new { Model.ProjectId }, null)
-                        </li>
-                        <li>
-                            @Html.ActionLink("Свободные персонажи", "Vacant", "CharacterList", new { Model.ProjectId }, null)
-                        </li>
-                        <li>
-                            @Html.ActionLink("Занятые персонажи", "WithPlayers", "CharacterList", new { Model.ProjectId }, null)
-                        </li>
-                        <li>
-                            @Html.ActionLink("Проблемные персонажи", "Problems", "CharacterList", new { Model.ProjectId }, null)
-                        </li>
-                        <li>
-                            @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
-                        </li>
+                      <li>
+                        @Html.ActionLink("Все персонажи", "Active", "CharacterList", new { Model.ProjectId }, null)
+                      </li>
+                      <li>
+                        @Html.ActionLink("Свободные персонажи", "Vacant", "CharacterList", new { Model.ProjectId }, null)
+                      </li>
+                      <li>
+                        @Html.ActionLink("Занятые персонажи", "WithPlayers", "CharacterList", new { Model.ProjectId }, null)
+                      </li>
+                      <li>
+                        @Html.ActionLink("Проблемные персонажи", "Problems", "CharacterList", new { Model.ProjectId }, null)
+                      </li>
+                      <li>
+                        @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
+                      </li>
+                      <li>
+                        <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId">Добавить персонажа</a>
+                      </li>
 
-                        <li role="separator" class="dropdown-header">По группам:</li>
-                        @foreach (var cg in Model.BigGroups)
-                            {
+                      <li role="separator" class="dropdown-header">По группам:</li>
+                      @foreach (var cg in Model.BigGroups)
+                      {
                         <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
-                            }
+                      }
 
                     </ul>
                 </li>

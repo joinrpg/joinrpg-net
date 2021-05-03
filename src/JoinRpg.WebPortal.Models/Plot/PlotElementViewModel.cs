@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Models.Plot
 
         public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
-        public PlotElementViewModel([CanBeNull] Character character,
+        public PlotElementViewModel([CanBeNull] Character? character,
             int? currentUserId,
             [NotNull] ILinkRenderer linkRendrer,
             [NotNull] PlotElementTexts plotElementVersion,
@@ -76,7 +76,7 @@ namespace JoinRpg.Web.Models.Plot
             int? currentUserId,
             Character character,
             IUriService uriService) =>
-            new PlotDisplayViewModel(plots,
+            new(plots,
                 currentUserId,
                 character,
                 true,
@@ -111,7 +111,7 @@ namespace JoinRpg.Web.Models.Plot
                 }
                 var linkRenderer = new JoinrpgMarkdownLinkRenderer(plots.First().Project);
 
-                Func<PlotElement, PlotElementTexts> selector;
+                Func<PlotElement, PlotElementTexts?> selector;
                 if (!publishedOnly)
                 {
                     selector = element => element.LastVersion();
@@ -147,6 +147,6 @@ namespace JoinRpg.Web.Models.Plot
         public IEnumerable<PlotElementViewModel> Elements { get; }
         public bool HasUnready { get; }
 
-        public static PlotDisplayViewModel Empty() => new PlotDisplayViewModel();
+        public static PlotDisplayViewModel Empty() => new();
     }
 }

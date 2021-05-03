@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
+using JoinRpg.Markdown;
 using Shouldly;
 using Xunit;
 
@@ -30,7 +30,7 @@ namespace JoinRpg.Markdown.Test
         private void Match(string expected, string original)
             => new MarkdownString(original).ShouldBeHtml(expected, _mock);
 
-        private readonly LinkRendererMock _mock = new LinkRendererMock();
+        private readonly LinkRendererMock _mock = new();
 
         [Fact]
         public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%test12");

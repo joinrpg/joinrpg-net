@@ -1,0 +1,25 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: cert-manager
+spec:
+  acme:
+    email: support@joinrpg.ru
+    server: https://acme-v02.api.letsencrypt.org/directory
+    preferredChain: "ISRG Root X1"
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+    - dns01:
+        azureDNS:
+          clientID: "1396c173-156b-4963-bdfa-f52e0cdd1cb6"
+          clientSecretSecretRef:
+            name: cert-manager-azuredns
+            key: client-secret
+          subscriptionID: "f0fe6f62-070f-4b7b-bcd1-c4265207fead"
+          tenantID: "c09e7d77-4b9e-4f23-b2ce-ff2cf7290151"
+          resourceGroupName: "joinrpg-k8s"
+          hostedZoneName: "joinrpg.ru"
+          environment: AzurePublicCloud
+

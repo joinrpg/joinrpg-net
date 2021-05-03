@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Users;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Data.Interfaces
 {
@@ -12,5 +14,6 @@ namespace JoinRpg.Data.Interfaces
         Task<User> GetWithSubscribe(int currentUserId);
         [ItemCanBeNull]
         Task<User> GetByEmail(string email);
+        Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId);
     }
 }

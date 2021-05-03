@@ -8,27 +8,26 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
     {
         private DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
 
-        public AuthPolicyProvider(IOptions<AuthorizationOptions> options)
-        {
+        public AuthPolicyProvider(IOptions<AuthorizationOptions> options) =>
             // ASP.NET Core only uses one authorization policy provider, so if the custom implementation
             // doesn't handle all policies it should fall back to an alternate provider.
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
-        }
 
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() => FallbackPolicyProvider.GetDefaultPolicyAsync();
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+            => FallbackPolicyProvider.GetFallbackPolicyAsync();
 
-        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        public async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
             if (policyName.StartsWith(nameof(RequireMaster)))
             {
-                AuthorizationPolicy policy = MasterRequirement.TryParsePolicy(policyName);
+                var policy = MasterRequirement.TryParsePolicy(policyName);
                 if (policy != null)
                 {
-                    return Task.FromResult(policy);
+                    return policy;
                 }
             }
 
-            return FallbackPolicyProvider.GetPolicyAsync(policyName);
+            return await FallbackPolicyProvider.GetPolicyAsync(policyName);
         }
 
 

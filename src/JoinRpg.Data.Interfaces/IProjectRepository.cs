@@ -20,6 +20,7 @@ namespace JoinRpg.Data.Interfaces
         IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
 
         Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId);
+        Task<IEnumerable<Project>> GetAllMyProjectsAsync(int user);
 
         Task<IEnumerable<Project>> GetActiveProjectsWithSchedule();
         Task<Project> GetProjectAsync(int project);
@@ -29,7 +30,9 @@ namespace JoinRpg.Data.Interfaces
         [NotNull, ItemCanBeNull]
         Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId);
 
-        Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
+        Task<CharacterGroup> GetRootGroupAsync(int projectId);
+
+        Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
         Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
         Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
         Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);

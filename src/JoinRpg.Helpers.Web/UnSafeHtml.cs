@@ -20,8 +20,8 @@ namespace JoinRpg.Helpers.Web
         /// Conversion from string
         /// </summary>
         [CanBeNull]
-        public static implicit operator UnSafeHtml([CanBeNull]
-            string s)
+        public static implicit operator UnSafeHtml?([CanBeNull]
+            string? s)
         {
             return s == null ? null : new UnSafeHtml(s);
         }

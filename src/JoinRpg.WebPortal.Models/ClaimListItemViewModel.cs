@@ -58,13 +58,15 @@ namespace JoinRpg.Web.Models
         }
     }
 
-    public class ClaimListForGroupViewModel : ClaimListViewModel
+    public class ClaimListForGroupViewModel : ClaimListViewModel, IOperationsAwareView
     {
         public CharacterGroupDetailsViewModel GroupModel { get; }
         public ClaimListForGroupViewModel
             (int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page)
             : base(currentUserId, claims, group.ProjectId)
             => GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, page);
+
+        int? IOperationsAwareView.CharacterGroupId => GroupModel.CharacterGroupId;
     }
 
     public class ClaimListItemViewModel : ILinkable
@@ -88,7 +90,7 @@ namespace JoinRpg.Web.Models
         public DateTime? CreateDate { get; set; }
 
         [Display(Name = "Ответственный")]
-        public User Responsible { get; set; }
+        public User? Responsible { get; set; }
 
         [CanBeNull]
         public User LastModifiedBy { get; set; }
@@ -115,11 +117,11 @@ namespace JoinRpg.Web.Models
         public int TotalFee { get; }
 
         [Display(Name = "Тип поселения")]
-        public string AccomodationType { get; }
+        public string? AccomodationType { get; }
 
 
         [Display(Name = "Комната")]
-        public string RoomName { get; }
+        public string? RoomName { get; }
 
         [Display(Name = "Льготник")]
         public bool PreferentialFeeUser { get; }

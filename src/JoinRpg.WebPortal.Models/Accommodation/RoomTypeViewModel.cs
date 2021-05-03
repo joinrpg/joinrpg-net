@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
@@ -91,7 +91,7 @@ namespace JoinRpg.Web.Models.Accommodation
             IsInfinite = entity.IsInfinite;
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-            DescriptionEditable = entity.Description.Contents;
+            DescriptionEditable = entity.Description.Contents ?? "";
             DescriptionView = entity.Description.ToHtmlString();
 
             // Creating a list of requests associated with this room type
@@ -157,7 +157,7 @@ namespace JoinRpg.Web.Models.Accommodation
         }
 
         public ProjectAccommodationType ToEntity()
-            => new ProjectAccommodationType
+            => new()
             {
                 ProjectId = ProjectId,
                 Id = Id,

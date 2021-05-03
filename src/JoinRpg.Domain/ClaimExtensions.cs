@@ -36,15 +36,13 @@ namespace JoinRpg.Domain
                 throw new ArgumentNullException(nameof(claim));
             }
 
-            if (claim.Character == null && claim.Group == null)
-            {
-                throw new InvalidOperationException("Claim not bound neither to character nor character group. That shouldn't happen");
-            }
-            return (IClaimSource)claim.Character ?? claim.Group;
+            return (IClaimSource?)claim.Character
+                ?? claim.Group
+                ?? throw new InvalidOperationException("Claim not bound neither to character nor character group. That shouldn't happen"); ;
         }
 
         [NotNull, ItemNotNull, MustUseReturnValue]
-        public static IEnumerable<CharacterGroup> GetGroupsPartOf([CanBeNull] this IClaimSource claimSource)
+        public static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource? claimSource)
         {
             return claimSource
               .GetParentGroupsToTop() //Get parents
@@ -54,7 +52,7 @@ namespace JoinRpg.Domain
 
         public static bool IsPartOfGroup(this Claim cl, int characterGroupId) => cl.GetTarget().IsPartOfGroup(characterGroupId);
 
-        public static bool IsPartOfAnyOfGroups([CanBeNull] this IClaimSource claimSource, IEnumerable<CharacterGroup> groups)
+        public static bool IsPartOfAnyOfGroups(this IClaimSource? claimSource, IEnumerable<CharacterGroup> groups)
         {
             //TODO we can do faster than this
             return claimSource.GetGroupsPartOf().Intersect(groups).Any();
@@ -131,7 +129,7 @@ namespace JoinRpg.Domain
         }
 
         [CanBeNull, MustUseReturnValue]
-        public static Claim TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
+        public static Claim? TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
         {
             if (claims == null)
             {
@@ -154,7 +152,7 @@ namespace JoinRpg.Domain
         }
 
         [CanBeNull, MustUseReturnValue]
-        public static Claim TrySelectSingleClaim(
+        public static Claim? TrySelectSingleClaim(
             [NotNull, ItemNotNull]
           this IEnumerable<Claim> claims)
             => claims.ToList().TrySelectSingleClaim();

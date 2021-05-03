@@ -8,6 +8,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Users;
 
 namespace JoinRpg.Dal.Impl
 {
@@ -48,15 +49,10 @@ namespace JoinRpg.Dal.Impl
         {
             ConfigureProjectDetails(modelBuilder);
 
-            modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
-            modelBuilder.Entity<ProjectAcl>()
-                .Property(acl => acl.Token)
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
+            _ = modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
+            _ = modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
 
-            modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
-
-
-            modelBuilder.Entity<CharacterGroup>()
+            _ = modelBuilder.Entity<CharacterGroup>()
                 .HasOptional(c => c.ResponsibleMasterUser)
                 .WithMany()
                 .HasForeignKey(c => c.ResponsibleMasterUserId);
@@ -77,7 +73,7 @@ namespace JoinRpg.Dal.Impl
             modelBuilder.Entity<Character>().HasOptional(c => c.ApprovedClaim).WithMany()
                 .HasForeignKey(c => c.ApprovedClaimId).WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments)
+            _ = modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments)
                 .WithRequired(c => c.Discussion);
 
             modelBuilder.Entity<Claim>()
@@ -91,71 +87,98 @@ namespace JoinRpg.Dal.Impl
                 .HasForeignKey(ft => ft.CommentDiscussionId)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Claim>()
+            _ = modelBuilder.Entity<Claim>()
                 .HasOptional(c => c.ResponsibleMasterUser)
                 .WithMany()
                 .HasForeignKey(c => c.ResponsibleMasterUserId);
 
-            modelBuilder.Entity<Claim>()
+            _ = modelBuilder.Entity<Claim>()
                 .HasMany(c => c.FinanceOperations)
                 .WithRequired(fo => fo.Claim)
                 .HasForeignKey(fo => fo.ClaimId);
 
-            modelBuilder.Entity<AccommodationRequest>().HasMany(c => c.Subjects)
+            _ = modelBuilder.Entity<AccommodationRequest>().HasMany(c => c.Subjects)
                 .WithOptional(c => c.AccommodationRequest);
 
 
             modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany()
                 .WillCascadeOnDelete(false);
-            modelBuilder.Entity<Comment>().HasRequired(comment => comment.CommentText)
+            _ = modelBuilder.Entity<Comment>().HasRequired(comment => comment.CommentText)
                 .WithRequiredPrincipal();
-            modelBuilder.Entity<CommentText>().HasKey(pd => pd.CommentId);
+            _ = modelBuilder.Entity<CommentText>().HasKey(pd => pd.CommentId);
             modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany()
                 .WillCascadeOnDelete(false);
             modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany()
                 .WillCascadeOnDelete(false);
-            modelBuilder.Entity<Comment>().HasRequired(c => c.Finance)
+            _ = modelBuilder.Entity<Comment>().HasRequired(c => c.Finance)
                 .WithRequiredPrincipal(fo => fo.Comment);
 
-            modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
+            _ = modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
 
-            modelBuilder.Entity<FinanceOperation>()
+            _ = modelBuilder.Entity<FinanceOperation>()
                 .HasOptional(fo => fo.LinkedClaim)
                 .WithMany()
                 .HasForeignKey(fo => fo.LinkedClaimId);
 
-            modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups)
+            _ = modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups)
                 .WithMany(cg => cg.DirectlyRelatedPlotFolders);
             modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project)
                 .WithMany(p => p.PlotFolders).WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetCharacters)
+            _ = modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetCharacters)
                 .WithMany(c => c.DirectlyRelatedPlotElements);
-            modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetGroups)
+            _ = modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetGroups)
                 .WithMany(c => c.DirectlyRelatedPlotElements);
             modelBuilder.Entity<PlotElement>().HasRequired(pf => pf.Project).WithMany()
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<PlotElement>().HasMany(plotElement => plotElement.Texts)
+            _ = modelBuilder.Entity<PlotElement>().HasMany(plotElement => plotElement.Texts)
                 .WithRequired(text => text.PlotElement);
-            modelBuilder.Entity<PlotElementTexts>()
+            _ = modelBuilder.Entity<PlotElementTexts>()
                 .HasKey(text => new { text.PlotElementId, text.Version });
 
-            modelBuilder.Entity<PlotElementTexts>()
+            _ = modelBuilder.Entity<PlotElementTexts>()
                 .HasOptional(text => text.AuthorUser)
                 .WithMany()
                 .HasForeignKey(text => text.AuthorUserId);
+            ConfigureUser(modelBuilder);
 
-            modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
-            modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
+            _ = modelBuilder.Entity<ProjectFieldDropdownValue>()
+                .HasOptional(v => v.CharacterGroup)
+                .WithOptionalDependent();
 
-            modelBuilder.Entity<User>().HasRequired(u => u.Allrpg).WithRequiredPrincipal();
-            modelBuilder.Entity<AllrpgUserDetails>().HasKey(a => a.UserId);
+            _ = modelBuilder.Entity<ProjectField>()
+                .HasOptional(v => v.CharacterGroup)
+                .WithOptionalDependent();
 
-            modelBuilder.Entity<User>().HasRequired(u => u.Extra).WithRequiredPrincipal();
-            modelBuilder.Entity<UserExtra>().HasKey(a => a.UserId);
+            modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
+                .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName).IsUnique();
+            _ = modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
+
+            _ = modelBuilder.Entity<ProjectAccommodationType>();
+            _ = modelBuilder.Entity<ProjectAccommodation>();
+            _ = modelBuilder.Entity<AccommodationRequest>();
+            _ = modelBuilder.Entity<AccommodationInvite>();
+
+            ConfigureMoneyTransfer(modelBuilder);
+
+            base.OnModelCreating(modelBuilder);
+        }
+
+        private static void ConfigureUser(DbModelBuilder modelBuilder)
+        {
+            _ = modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
+            _ = modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
+
+            _ = modelBuilder.Entity<User>().HasRequired(u => u.Allrpg).WithRequiredPrincipal();
+            _ = modelBuilder.Entity<AllrpgUserDetails>().HasKey(a => a.UserId);
+
+            _ = modelBuilder.Entity<User>().HasRequired(u => u.Extra).WithRequiredPrincipal();
+            _ = modelBuilder.Entity<UserExtra>().HasKey(a => a.UserId);
+
+            _ = modelBuilder.Entity<User>()
                 .HasMany(u => u.ExternalLogins)
                 .WithRequired(uel => uel.User)
                 .HasForeignKey(uel => uel.UserId);
@@ -170,35 +193,22 @@ namespace JoinRpg.Dal.Impl
                 .HasForeignKey(us => us.ClaimId)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<ProjectFieldDropdownValue>()
-                .HasOptional(v => v.CharacterGroup)
-                .WithOptionalDependent();
-
-            modelBuilder.Entity<ProjectField>()
-                .HasOptional(v => v.CharacterGroup)
-                .WithOptionalDependent();
-
-            modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Avatars)
+                .WithRequired(a => a.User)
+                .HasForeignKey(a => a.UserId)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName).IsUnique();
-            modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
-
-            modelBuilder.Entity<ProjectAccommodationType>();
-            modelBuilder.Entity<ProjectAccommodation>();
-            modelBuilder.Entity<AccommodationRequest>();
-            modelBuilder.Entity<AccommodationInvite>();
-
-            ConfigureMoneyTransfer(modelBuilder);
-
-
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>()
+                .HasOptional(c => c.SelectedAvatar)
+                .WithMany()
+                .WillCascadeOnDelete(false);
         }
 
         private static void ConfigureProjectDetails(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
-            modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
+            _ = modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
+            _ = modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
         }
 
         private static void ConfigureMoneyTransfer(DbModelBuilder modelBuilder)
@@ -209,8 +219,8 @@ namespace JoinRpg.Dal.Impl
             entity.HasRequired(e => e.CreatedBy).WithMany().WillCascadeOnDelete(false);
             entity.HasRequired(e => e.ChangedBy).WithMany().WillCascadeOnDelete(false);
 
-            entity.HasRequired(comment => comment.TransferText).WithRequiredPrincipal();
-            modelBuilder.Entity<TransferText>().HasKey(pd => pd.MoneyTransferId);
+            _ = entity.HasRequired(comment => comment.TransferText).WithRequiredPrincipal();
+            _ = modelBuilder.Entity<TransferText>().HasKey(pd => pd.MoneyTransferId);
         }
     }
 }

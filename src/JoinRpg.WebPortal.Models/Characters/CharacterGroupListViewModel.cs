@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Characters
@@ -38,11 +38,11 @@ namespace JoinRpg.Web.Models.Characters
 
             public IList<CharacterGroupListItemViewModel> Generate()
             {
-                GenerateFrom(Root, 0, new List<CharacterGroup>());
+                _ = GenerateFrom(Root, 0, new List<CharacterGroup>());
                 return Results;
             }
 
-            private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
+            private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
             {
                 if (!characterGroup.IsVisible(CurrentUserId))
                 {
@@ -128,8 +128,8 @@ namespace JoinRpg.Web.Models.Characters
                     HasMasterAccess = HasMasterAccess,
                     HasEditRolesAccess = HasEditRolesAccess,
                     ProjectId = arg.ProjectId,
-                    FirstInGroup = siblings.First() == arg,
-                    LastInGroup = siblings.Last() == arg,
+                    FirstInGroup = siblings[0] == arg,
+                    LastInGroup = siblings[^1] == arg,
                     ParentCharacterGroupId = group.CharacterGroupId,
                     RootGroupId = Root.CharacterGroupId,
                     IsHot = arg.IsHot && arg.IsAvailable,

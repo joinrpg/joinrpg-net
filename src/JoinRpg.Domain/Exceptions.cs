@@ -53,10 +53,10 @@ namespace JoinRpg.Domain
         }
     }
 
-    public class JoinFieldScheduleUseException : JoinRpgProjectEntityException
+    public class JoinFieldScheduleShouldBeUniqueException : JoinRpgProjectEntityException
     {
-        public JoinFieldScheduleUseException(ProjectField field)
-        : base(field, "Can't delete field, because schedule bound to it")
+        public JoinFieldScheduleShouldBeUniqueException(Project project)
+        : base(project, "Schedule fields should be unique")
         {
 
         }

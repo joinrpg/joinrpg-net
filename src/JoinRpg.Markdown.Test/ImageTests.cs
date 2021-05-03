@@ -1,4 +1,4 @@
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using Microsoft.VisualBasic;
 using Shouldly;
 using Vereyon.Web;
@@ -11,18 +11,18 @@ namespace JoinRpg.Markdown.Test
     {
         [Fact]
         public void TestImage()
-            => @"![Image](http://joinrpg.ru/a.png)".ShouldBeHtml("<p><img src=\"http://joinrpg.ru/a.png\" alt=\"Image\"></p>");
+            => @"![Image](https://joinrpg.ru/a.png)".ShouldBeHtml("<p><img src=\"https://joinrpg.ru/a.png\" alt=\"Image\"></p>");
 
 
         [Fact]
         public void ImgTagShouldSanitizeCorrectly()
         {
-            var str = "<img src=\"http://joinrpg.ru/a.png\" />";
+            var str = "<img src=\"https://joinrpg.ru/a.png\" />";
             var sanitizer = new HtmlSanitizer();
 
             sanitizer.WhiteListMode = true;
-            sanitizer.Tag("img").AllowAttributes("src");
-            sanitizer.Sanitize(str).ShouldBe("<img src=\"http://joinrpg.ru/a.png\">");
+            _ = sanitizer.Tag("img").AllowAttributes("src");
+            sanitizer.Sanitize(str).ShouldBe("<img src=\"https://joinrpg.ru/a.png\">");
         }
 
     }

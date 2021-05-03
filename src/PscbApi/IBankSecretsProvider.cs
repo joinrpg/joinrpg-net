@@ -11,6 +11,11 @@ namespace PscbApi
         string MerchantId { get; }
 
         /// <summary>
+        /// Merchant Id for the Fast Payments System
+        /// </summary>
+        string MerchantIdFastPayments { get; }
+
+        /// <summary>
         /// Api key
         /// </summary>
         string ApiKey { get; }
@@ -19,6 +24,5 @@ namespace PscbApi
         /// Api key for sandbox access
         /// </summary>
         string ApiDebugKey { get; }
-
     }
 }

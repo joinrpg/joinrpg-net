@@ -43,7 +43,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
         {
             await UserService.SetAdminFlag(userId, administratorFlag: true);
             var user = await UserManager.FindByIdAsync(userId.ToString());
-            await UserManager.UpdateSecurityStampAsync(user);
+            _ = await UserManager.UpdateSecurityStampAsync(user);
             return RedirectToUserDetails(userId);
         }
 
@@ -52,7 +52,21 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
         {
             await UserService.SetAdminFlag(userId, administratorFlag: false);
             var user = await UserManager.FindByIdAsync(userId.ToString());
-            await UserManager.UpdateSecurityStampAsync(user);
+            _ = await UserManager.UpdateSecurityStampAsync(user);
+            return RedirectToUserDetails(userId);
+        }
+
+        [ValidateAntiForgeryToken, HttpPost]
+        public async Task<ActionResult> GrantVerification(int userId)
+        {
+            await UserService.SetVerificationFlag(userId, verificationFlag: true);
+            return RedirectToUserDetails(userId);
+        }
+
+        [ValidateAntiForgeryToken, HttpPost]
+        public async Task<ActionResult> RevokeVerification(int userId)
+        {
+            await UserService.SetVerificationFlag(userId, verificationFlag: false);
             return RedirectToUserDetails(userId);
         }
     }

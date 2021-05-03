@@ -8,11 +8,11 @@ namespace JoinRpg.Portal.Controllers.Common
     public abstract class ControllerBase : Controller
     {
 
-        protected ActionResult ViewIfFound([AspMvcView] string viewName, object model)
+        protected ActionResult ViewIfFound([AspMvcView] string? viewName, object? model)
             => model == null ? (ActionResult)NotFound() : View(viewName, model);
 
         [AspMvcView]
-        protected ActionResult ViewIfFound(object model)
+        protected ActionResult ViewIfFound(object? model)
             => ViewIfFound(null, model);
 
         [AspMvcView]

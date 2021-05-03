@@ -496,7 +496,7 @@ namespace JoinRpg.Portal.Controllers
 
             var serverModel = new SubscribeSettingsViewModel(user, group);
 
-            serverModel.Options.AssignFrom(viewModel.Options);
+            _ = serverModel.Options.AssignFrom(viewModel.Options);
 
             try
             {

@@ -68,7 +68,7 @@ namespace JoinRpg.Portal.Controllers
         /// <summary>
         /// Shows "Edit room type" form
         /// </summary>
-        [HttpGet]
+        [HttpGet("~/{projectId}/rooms/{roomTypeId}/edit")]
         public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
         {
             var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
@@ -84,7 +84,7 @@ namespace JoinRpg.Portal.Controllers
         /// Shows "Edit room type" form
         /// </summary>
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpGet]
+        [HttpGet("~/{projectId}/rooms/{roomTypeId}/details")]
         public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
         {
             var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId);
@@ -115,7 +115,7 @@ namespace JoinRpg.Portal.Controllers
 
                 return View("EditRoomType", model);
             }
-            await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
+            _ = await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
             return RedirectToAction("Index", new { projectId = model.ProjectId });
         }
 
@@ -131,7 +131,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpHead]
+        [HttpPost("~/{projectId}/rooms/occupyroom")]
         public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, string reqId)
         {
             try
@@ -203,7 +203,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpHead]
+        [HttpPost("~/{projectId}/rooms/unoccupyroom")]
         public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, int room, int reqId)
         {
             try
@@ -268,14 +268,14 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpGet]
+        [HttpPost("~/{projectId}/rooms/addroom")]
         public async Task<ActionResult> AddRoom(int projectId, int roomTypeId, string name)
         {
             try
             {
                 //TODO: Implement room names checking
                 //TODO: Implement new rooms HTML returning
-                await _accommodationService.AddRooms(projectId, roomTypeId, name);
+                _ = await _accommodationService.AddRooms(projectId, roomTypeId, name);
                 return StatusCode(201);
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
@@ -292,7 +292,7 @@ namespace JoinRpg.Portal.Controllers
         /// Applies new name to a room or adds a new room(s)
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpGet]
+        [HttpPost("~/{projectId}/rooms/editroom")]
         public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)
         {
             try

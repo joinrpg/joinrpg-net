@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "docker" 
-    directory: "/src/JoinRpg.Portal" # Location of package manifests
+    directory: "/src/JoinRpg.Portal" 
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "docker" 
+    directory: "/src/Joinrpg.Dal.Migrate" 
     schedule:
       interval: "daily"

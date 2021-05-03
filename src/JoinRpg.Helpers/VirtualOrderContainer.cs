@@ -14,7 +14,7 @@ namespace JoinRpg.Helpers
     {
         //Factory function enable type inference
         public static VirtualOrderContainer<TChild> Create<TChild>(IEnumerable<TChild> childs,
-            string ordering) where TChild : class, IOrderableEntity => new VirtualOrderContainer<TChild>(ordering, childs);
+            string ordering) where TChild : class, IOrderableEntity => new(ordering, childs);
     }
 
     public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
@@ -60,12 +60,12 @@ namespace JoinRpg.Helpers
                 .Select(orderItem => int.Parse(orderItem.Trim()));
         }
 
-        private static TItem FindItem(ICollection<TItem> list, int virtualOrderItem)
+        private static TItem? FindItem(ICollection<TItem> list, int virtualOrderItem)
         {
             var item = list.FirstOrDefault(i => i.Id == virtualOrderItem);
             if (item != null)
             {
-                list.Remove(item);
+                _ = list.Remove(item);
             }
 
             return item;
@@ -139,7 +139,7 @@ namespace JoinRpg.Helpers
             return this;
         }
 
-        public VirtualOrderContainer<TItem> MoveAfter(TItem field, TItem afterItem)
+        public VirtualOrderContainer<TItem> MoveAfter(TItem field, TItem? afterItem)
         {
             var index = GetIndex(field);
             if (afterItem == null)

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models
 {
@@ -14,6 +14,11 @@ namespace JoinRpg.Web.Models
     {
         public int ProjectId { get; set; }
         public string ProjectName { get; set; }
+    }
+
+    public sealed class MainMenuProjectLinkViewModel : ProjectLinkViewModel
+    {
+        public bool IsActive { get; set; }
     }
 
     public static class ProjectLinkViewModelBuilder
@@ -24,6 +29,14 @@ namespace JoinRpg.Web.Models
             {
                 ProjectId = p.ProjectId,
                 ProjectName = p.ProjectName,
+            });
+
+        public static IEnumerable<MainMenuProjectLinkViewModel> ToMainMenuLinkViewModels(this IEnumerable<Project> projects) =>
+            projects.Select(p => new MainMenuProjectLinkViewModel
+            {
+                ProjectId = p.ProjectId,
+                ProjectName = p.ProjectName,
+                IsActive = p.Active
             });
     }
 

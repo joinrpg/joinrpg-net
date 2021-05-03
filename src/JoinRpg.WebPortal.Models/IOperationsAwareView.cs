@@ -7,6 +7,10 @@ namespace JoinRpg.Web.Models
     {
         int? ProjectId { get; }
 
+        int? CharacterGroupId => null;
+
+        bool ShowCharacterCreateButton => ProjectId is not null;
+
         [NotNull]
         IReadOnlyCollection<int> ClaimIds { get; }
 

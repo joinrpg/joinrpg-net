@@ -11,7 +11,7 @@ namespace JoinRpg.Domain
     {
         public static IEnumerable<Project> GetProjects(this User user, Func<ProjectAcl, bool> predicate) => user.ProjectAcls.Where(predicate).Select(acl => acl.Project);
 
-        public static AccessReason GetProfileAccess([NotNull] this User user, [CanBeNull] User currentUser)
+        public static AccessReason GetProfileAccess([NotNull] this User user, [CanBeNull] User? currentUser)
         {
             if (user == null)
             {
@@ -40,6 +40,8 @@ namespace JoinRpg.Domain
             }
             return AccessReason.NoAccess;
         }
+
+        public static ContactsAccessType GetSocialNetworkAccess(this User user) => user.Extra?.SocialNetworksAccess ?? ContactsAccessType.OnlyForMasters;
 
         public enum AccessReason
         {

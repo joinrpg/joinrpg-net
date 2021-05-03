@@ -132,7 +132,7 @@ function CallToServer(roomId, reqIds, occupy)
         + '&room=' + roomId
         + '&reqId=' + reqIds;
 
-    $.ajax(url, { method: "HEAD" })
+  $.ajax(url, { method: "POST", beforeSend: addAntiforgeryTokenBeforeSend })
         .done(function (data, status, xr)
         {
             if (xr.status !== 200)
@@ -265,7 +265,7 @@ function DoEditRoom(id, name)
         url += "editroom?roomTypeId=" + roomTypeId + "&room=" + id + "&name=" + name;
     }
 
-    $.ajax(url, { method: "GET" })
+  $.ajax(url, { method: "POST", beforeSend: addAntiforgeryTokenBeforeSend })
         .done(function (data, status, xr)
         {
             if (id != null)
@@ -297,8 +297,8 @@ function DoEditRoom(id, name)
 
 function DoDeleteRoom(id)
 {
-    var url = "/" + projectId + "/rooms/deleteroom?roomTypeId=" + roomTypeId + "&roomId=" + id;
-    var xr = $.ajax(url, { method: "DELETE" })
+  var url = "/" + projectId + "/rooms/deleteroom?roomTypeId=" + roomTypeId + "&roomId=" + id;
+  var xr = $.ajax(url, { method: "DELETE", beforeSend: addAntiforgeryTokenBeforeSend })
         .done(function (data, status, xr)
         {
             if (xr.status == 200)

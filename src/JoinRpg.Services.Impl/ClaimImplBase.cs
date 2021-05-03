@@ -28,7 +28,7 @@ namespace JoinRpg.Services.Impl
         }
 
         protected Comment AddCommentImpl(Claim claim,
-            Comment parentComment,
+            Comment? parentComment,
             string commentText,
             bool isVisibleToPlayer,
             CommentExtraAction? extraAction = null)
@@ -51,13 +51,13 @@ namespace JoinRpg.Services.Impl
         protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int feeChange,
         int money, PaymentType paymentType, Claim claim)
         {
-            paymentType.EnsureActive();
+            _ = paymentType.EnsureActive();
 
             CheckOperationDate(operationDate);
 
             if (feeChange != 0 || money < 0)
             {
-                claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+                _ = claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
             }
             var state = FinanceOperationState.Approved;
 
@@ -70,7 +70,7 @@ namespace JoinRpg.Services.Impl
                 }
                 else
                 {
-                    claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    _ = claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
                 }
             }
 
@@ -128,7 +128,7 @@ namespace JoinRpg.Services.Impl
             }
         }
 
-        protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType = null, ExtraAccessReason reason = ExtraAccessReason.None)
+        protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
         {
             var claim = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
 
@@ -144,7 +144,7 @@ namespace JoinRpg.Services.Impl
             Func<UserSubscription, bool> subscribePredicate,
             CommentExtraAction? commentExtraAction,
             bool mastersOnly = false,
-            IEnumerable<User> extraRecipients = null)
+            IEnumerable<User?>? extraRecipients = null)
             where TEmail : ClaimEmailModel, new()
         {
             var initiator = await GetCurrentUser();

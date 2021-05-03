@@ -36,7 +36,7 @@ namespace JoinRpg.Web.Models.Characters
         public int TotalCheckedInClaims { get; set; }
         public int TotalInGameCharacters { get; set; }
 
-        public bool Equals(CharacterGroupReportItemViewModel other) => other != null && other.CharacterGroupId == CharacterGroupId;
+        public bool Equals(CharacterGroupReportItemViewModel? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
         public override bool Equals(object obj) => Equals(obj as CharacterGroupReportItemViewModel);
 

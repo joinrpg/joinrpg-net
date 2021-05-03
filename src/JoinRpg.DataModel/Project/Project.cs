@@ -47,8 +47,6 @@ namespace JoinRpg.DataModel
 
         public DateTime CharacterTreeModifiedAt { get; set; }
 
-        public virtual ICollection<ProjectPlugin> ProjectPlugins { get; set; }
-
         #region helper properties
 
         public IEnumerable<PaymentType> ActivePaymentTypes => PaymentTypes.Where(pt => pt.IsActive);

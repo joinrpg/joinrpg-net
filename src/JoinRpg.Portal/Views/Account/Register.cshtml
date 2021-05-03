@@ -43,7 +43,12 @@
   {
     <div class="form-group">
       <div class="col-md-offset-2 col-md-10">
-        <div class="g-recaptcha" data-sitekey="@Model.RecaptchaPublicKey"></div>
+        <!-- data-callback calls when ReCaptcha passed successful
+             data-expired-callback invokes when ReCaptcha becomes too old -->
+        <div class="g-recaptcha"
+             data-sitekey="@Model.RecaptchaPublicKey"
+             data-callback="reCaptchaCallback"
+             data-expired-callback="reCaptchaExpired"></div>
       </div>
     </div>
   }
@@ -56,5 +61,35 @@
 </form>
 
 @section Scripts{
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  @if (Model.IsRecaptchaConfigured)
+  {
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+    function disableSubmitButton() {
+      $("#btnRegister").attr("disabled", "disabled");
+    }
+
+    // Invokes when ReCaptcha has been verified
+    // and enables form submit button
+    function reCaptchaCallback(response) {
+      $("#btnRegister").removeAttr("disabled");
+    }
+
+    // Invokes when ReCaptcha has been expired (too old)
+    // to prevent sending form with invalid reCaptcha
+    function reCaptchaExpired() {
+      disableSubmitButton();
+    }
+
+    // Disables form submit button, if ReCaptcha is rendered,
+    // to prevent displaying server-side validation error message,
+    // which asks to contact with support (instead of requiring completing ReCaptcha).
+    // Form submit button enables by reCaptchaCallback function, called by ReCaptcha lib
+    $(document).ready(function () {
+      if ($("#g-recaptcha-response")) {
+        disableSubmitButton();
+      }
+    });
+  </script>
+  }
 }

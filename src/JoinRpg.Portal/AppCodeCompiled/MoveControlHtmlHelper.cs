@@ -15,6 +15,7 @@ namespace JoinRpg.Portal
         public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
           Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName,
           [AspMvcController] string controllerName, int? parentObjectId = null)
+            where TValue : IMovableListItem
         {
             var item = (IMovableListItem)self.GetValue(expression);
 
@@ -33,6 +34,7 @@ namespace JoinRpg.Portal
 
         public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
           [InstantHandle] Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName)
+            where TValue : IMovableListItem
         {
             var rd = self.ViewContext.RouteData;
             var currentController = rd.GetRequiredString("controller");

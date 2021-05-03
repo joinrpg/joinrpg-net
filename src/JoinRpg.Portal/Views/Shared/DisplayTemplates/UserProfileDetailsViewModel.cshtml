@@ -2,46 +2,49 @@
 @model UserProfileDetailsViewModel
 <table>
     <tr>
-        <td style="vertical-align: top">
-            @await Html.PartialAsync("DisplayTemplates/UserAvatar", Model.User)
-        </td>
+      <td style="vertical-align: top;padding-right:5px">
+        <vc:avatar user-avatar-id-or-null="@Model.Avatar"
+                   email="@Model.Email"
+                   recommended-size="64" />
+      </td>
         <td>
-            @if (Model.HasAccess)
+            @Html.DisplayFor(model => model.User)
+            @if (!string.IsNullOrWhiteSpace(Model.FullName))
             {
-                @Html.DisplayFor(model => model.User)
-                if (!string.IsNullOrWhiteSpace(Model.FullName))
-                {
-                    <br /> @Model.FullName
-                }
-                if (!string.IsNullOrWhiteSpace(Model.Email))
-                {
-                    <br /> @Html.DisplayFor(model => model.Email) 
-                }
-                if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
-                {
-                    <br /> @Html.DisplayFor(model => model.PhoneNumber) 
-                }
-                if (!string.IsNullOrWhiteSpace(Model.Telegram))
-                {
-                    <br />@Html.DisplayFor(model => model.Telegram) 
-                }
-                if (!string.IsNullOrWhiteSpace(Model.Skype))
-                {
-                    <br /> @Html.DisplayFor(model => model.Skype) 
-                }
-                if (!string.IsNullOrWhiteSpace(Model.Livejournal))
-                {
-                    <br /> @Html.DisplayFor(model => model.Livejournal) 
-                }
-                if (!string.IsNullOrWhiteSpace(Model.Vk))
-                {
-                    <br /> @Html.DisplayFor(model => model.Vk) 
-                }
-                if (Model.AllrpgId != null && Model.AllrpgId != 0)
-                {
-                    <br />
-                    <a href="https://www.allrpg.info/people/@Model.AllrpgId/">Профиль на allrpg</a>
-                }
+                <br /> @Model.FullName
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Email))
+            {
+                <br /> @Html.DisplayFor(model => model.Email) 
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
+            {
+                <br /> @Html.DisplayFor(model => model.PhoneNumber) 
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Telegram))
+            {
+                <br />@Html.DisplayFor(model => model.Telegram) 
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Skype))
+            {
+                <br /> @Html.DisplayFor(model => model.Skype) 
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Livejournal))
+            {
+                <br /> @Html.DisplayFor(model => model.Livejournal) 
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Vk))
+            {
+                <br /> @Html.DisplayFor(model => model.Vk) 
+            }
+            @if (Model.AllrpgId != null && Model.AllrpgId != 0)
+            {
+                <br />
+                <a href="https://www.allrpg.info/people/@Model.AllrpgId/">Профиль на allrpg</a>
+            }
+            @if (Model.SocialNetworkAccess == ContactsAccessTypeView.OnlyForMasters && !Model.HasAccess)
+            {
+              <p>Игрок предпочитает сохранять анонимность.</p>
             }
         </td>
     </tr>    

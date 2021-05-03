@@ -48,7 +48,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .SingleOrDefaultAsync(thread => thread.ProjectId == projectId);
         }
 
-        public async Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int> groupIds)
+        public async Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int>? groupIds)
         {
             Expression<Func<ForumThread, bool>> groupPredicate;
             if (groupIds == null)

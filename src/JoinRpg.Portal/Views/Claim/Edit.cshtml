@@ -22,7 +22,7 @@
   @Html.ValidationSummary(true, "", new { @class = "text-danger" })
   <div class="panel panel-default">
     <div class="panel-heading">
-      @*   @await Html.PartialAsync("CharacterNavigation", Model.Navigation) *@
+       @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
     </div>
     <div class="panel-body">
       @if (Model.HasMasterAccess && Model.Problems.Any())
@@ -96,7 +96,11 @@
               <div class="form-inline input-group-sm" style="margin-top: 0.5em">
                 @Html.DropDownListFor(
                  model => model.ResponsibleMasterId,
-                 Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                 Model.Masters.Select(master => new SelectListItem() {
+                   Text = master.Name,
+                   Value = master.Id,
+                   Disabled = master.Id == "-1"
+                 }),
                  htmlAttributes: new { @class = "form-control" })
 
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
@@ -176,13 +180,6 @@
           <span class="glyphicon glyphicon-print"></span>
           Для печати
         </a>
-        foreach (var plugin in Model.PrintPlugins)
-        {
-          <a class="btn btn-default" href="@Url.Action("PrintCards", "Print" , new {Model.ProjectId, Plugin=plugin.Name, CharacterIds=new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
-            <span class="glyphicon glyphicon-print"></span>
-            @plugin.Name
-          </a>
-        }
         if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
         {
           <a href="@Url.Action("CheckIn", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">

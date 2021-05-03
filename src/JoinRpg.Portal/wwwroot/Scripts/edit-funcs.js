@@ -90,3 +90,7 @@ $('.require-element-id')
             modal.find('#elementId').val(id);
         });
 
+function addAntiforgeryTokenBeforeSend(xhr) {
+  xhr.setRequestHeader("X-CSRF-TOKEN-HEADERNAME",
+    $('input:hidden[name="__RequestVerificationToken"]').val());
+}

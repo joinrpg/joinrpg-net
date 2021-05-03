@@ -4,14 +4,14 @@ namespace JoinRpg.Web.Models.Exporters
 {
     public static class ExportTypeNameParserHelper
     {
-        public static ExportType? ToExportType(string export)
+        public static ExportType? ToExportType(string? export)
         {
-            switch (export)
+            return export switch
             {
-                case "csv": return ExportType.Csv;
-                case "xlsx": return ExportType.ExcelXml;
-                default: return null;
-            }
+                "csv" => ExportType.Csv,
+                "xlsx" => ExportType.ExcelXml,
+                _ => null,
+            };
         }
     }
 }

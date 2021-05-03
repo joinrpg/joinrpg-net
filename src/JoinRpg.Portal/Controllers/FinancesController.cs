@@ -19,6 +19,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -33,7 +34,7 @@ namespace JoinRpg.Portal.Controllers
 
         private IVirtualUsersService VirtualUsers { get; }
         public ICurrentUserAccessor CurrentUserAccessor { get; }
-
+        private readonly ILogger<FinancesController> logger;
         private IUnitOfWork UnitOfWork { get; }
 
         public FinancesController(
@@ -46,7 +47,8 @@ namespace JoinRpg.Portal.Controllers
             IFinanceReportRepository financeReportRepository,
             IUserRepository userRepository,
             IVirtualUsersService vpu,
-            ICurrentUserAccessor currentUserAccessor
+            ICurrentUserAccessor currentUserAccessor,
+            ILogger<FinancesController> logger
             )
             : base(projectRepository, projectService, userRepository)
         {
@@ -57,6 +59,7 @@ namespace JoinRpg.Portal.Controllers
             VirtualUsers = vpu;
             UnitOfWork = uow;
             CurrentUserAccessor = currentUserAccessor;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -90,13 +93,14 @@ namespace JoinRpg.Portal.Controllers
             }
             else
             {
-                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
-                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
-                return File(
-                    await generator.Generate(),
-                    generator.ContentType,
-                    Path.ChangeExtension("finance-export", generator.FileExtension)
-                );
+                var frontend = new FinanceOperationExporter(project, UriService);
+
+                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
+
+                var fileName = project.ProjectName + ": Финансы";
+
+                return File(await generator.Generate(), generator.ContentType,
+                    Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
             }
         }
 
@@ -149,8 +153,9 @@ namespace JoinRpg.Portal.Controllers
 
                 return RedirectToAction("Setup", new { projectid = data.ProjectId });
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Проблема при включении платежа");
                 //TODO: Message that payment type was not created
                 return RedirectToAction("Setup", new { projectid = data.ProjectId });
             }
@@ -172,8 +177,9 @@ namespace JoinRpg.Portal.Controllers
                 });
                 return RedirectToAction("Setup", new { viewModel.ProjectId });
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Проблема при создании платежа");
                 //TODO: Message that comment is not added
                 return RedirectToAction("Setup", new { viewModel.ProjectId });
             }
@@ -373,13 +379,13 @@ namespace JoinRpg.Portal.Controllers
                 .ToArrayAsync();
 
             var s = new StringBuilder();
-            s.AppendLine($"{"Id".PadLeft(10, ' ')} {"Paid".PadLeft(10, ' ')} {"Fee".PadLeft(10, ' ')}");
+            _ = s.AppendLine($"{"Id",10} {"Paid",10} {"Fee",10}");
 
             foreach (Claim claim in claims)
             {
-                s.AppendLine($"{claim.ClaimId.ToString().PadLeft(10, ' ')}" +
-                    $" {claim.ClaimBalance().ToString().PadLeft(10, ' ')}" +
-                    $" {claim.ClaimTotalFee().ToString().PadLeft(10, ' ')}");
+                _ = s.AppendLine($"{claim.ClaimId,10}" +
+                    $" {claim.ClaimBalance(),10}" +
+                    $" {claim.ClaimTotalFee(),10}");
             }
 
             return Content(s.ToString(), "text/plain", Encoding.ASCII);

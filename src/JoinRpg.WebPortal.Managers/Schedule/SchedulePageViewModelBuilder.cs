@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Joinrpg.Markdown;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
 
 namespace JoinRpg.WebPortal.Managers.Schedule
@@ -16,7 +16,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         public static IReadOnlyList<TableHeaderViewModel> ToViewModel(this IEnumerable<ScheduleItemAttribute> items)
             => items.Select(item => item.ToViewModel()).ToList();
 
-        public static ProgramItemViewModel ToViewModel(this ProgramItem item)
+        public static ProgramItemViewModel ToViewModel(this ProgramItem? item)
         {
             if (item == null)
             {

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net5</TargetFramework>
         <AssemblyTitle>JoinRpg.Helpers.Web</AssemblyTitle>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.App" Version="3.1.7" />
+        <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 </Project>

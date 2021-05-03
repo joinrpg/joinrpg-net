@@ -23,5 +23,6 @@ namespace JoinRpg.Web.Models
             Debug = true;
 #endif
         }
+
     }
 }

@@ -7,6 +7,8 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Users;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
@@ -24,6 +26,8 @@ namespace JoinRpg.Dal.Impl.Repositories
               .Include(u => u.Auth)
               .Include(u => u.Allrpg)
               .Include(u => u.Extra)
+              .Include(u => u.Avatars)
+              .Include(u => u.SelectedAvatar)
               .SingleOrDefaultAsync(u => u.UserId == userId);
         }
 
@@ -86,5 +90,10 @@ namespace JoinRpg.Dal.Impl.Repositories
               .Include(u => u.Extra)
               .SingleOrDefaultAsync(u => u.Email == email);
         }
+
+        Task<UserAvatar> IUserRepository.LoadAvatar(AvatarIdentification userAvatarId)
+            => _ctx.Set<User>()
+                .SelectMany(user => user.Avatars)
+                .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
     }
 }

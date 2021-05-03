@@ -13,7 +13,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
 
         public bool AllowAdmin { get; set; }
 
-        public static AuthorizationPolicy TryParsePolicy(string policyName)
+        public static AuthorizationPolicy? TryParsePolicy(string policyName)
         {
             var array = policyName.Split("__");
             var (policyType, permissionString) = (array.FirstOrDefault(), array.Skip(1).FirstOrDefault());
@@ -44,7 +44,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
             requirement.Permission = permission;
 
             var policy = new AuthorizationPolicyBuilder();
-            policy.AddRequirements(requirement);
+            _ = policy.AddRequirements(requirement);
 
             return policy.Build();
         }

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;
 
@@ -14,7 +15,7 @@ namespace JoinRpg.Web.Models.CheckIn
 
     public class CheckInClaimModel : IProjectIdAware
     {
-        public CheckInClaimModel([NotNull] Claim claim, [NotNull] User currentUser, [CanBeNull] IReadOnlyCollection<PlotElement> plotElements)
+        public CheckInClaimModel(Claim claim, User currentUser, IReadOnlyCollection<PlotElement>? plotElements)
         {
             if (claim == null)
             {
@@ -39,9 +40,9 @@ namespace JoinRpg.Web.Models.CheckIn
             Handouts =
               plotElements?.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
                 .Select(e => e.PublishedVersion())
-                .Where(e => e != null)
+                .WhereNotNull()
                 .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
-                .ToArray() ?? new HandoutListItemViewModel[] { };
+                .ToArray() ?? Array.Empty<HandoutListItemViewModel>();
             NotFilledFields = Validator.NotFilledFields
               .Select(frp => new NotFilledFieldViewModel(
                 frp.Field.CanPlayerEdit
@@ -62,7 +63,7 @@ namespace JoinRpg.Web.Models.CheckIn
         public int ClaimId { get; }
         public int ProjectId { get; }
         [Display(Name = "Ответственный мастер")]
-        public User Master { get; }
+        public User? Master { get; }
         public IReadOnlyCollection<NotFilledFieldViewModel> NotFilledFields { get; }
         public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
         public string CurrentUserFullName { get; }

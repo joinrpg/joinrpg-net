@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -8,9 +7,7 @@ namespace JoinRpg.Helpers
 {
     public static class StaticCollectionHelpers
     {
-        private static readonly Random Rng = new Random();
-
-        public static Dictionary<string, string> ToDictionary(this NameValueCollection collection) => collection.AllKeys.ToDictionary(key => key, key => collection[key]);
+        private static readonly Random Rng = new();
 
         [NotNull, ItemNotNull]
         public static ISet<T> FlatTree<T>(this T obj,
@@ -26,7 +23,7 @@ namespace JoinRpg.Helpers
 
             if (includeSelf)
             {
-                groups.Add(obj);
+                _ = groups.Add(obj);
             }
 
             FlatTreeImpl(groups, obj, parentSelectorFunc);
@@ -41,7 +38,7 @@ namespace JoinRpg.Helpers
                 .Except(flattedcharacterGroupIds))
             {
                 FlatTreeImpl(flattedcharacterGroupIds, characterGroup, parentSelectorFunc);
-                flattedcharacterGroupIds.Add(characterGroup);
+                _ = flattedcharacterGroupIds.Add(characterGroup);
             }
         }
 
@@ -50,9 +47,11 @@ namespace JoinRpg.Helpers
             bool add)
             => source.Union(add ? enumerable : Enumerable.Empty<T>());
 
+        [Obsolete("Use Append()")]
         public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t) => source.Union(new[] { t });
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T : class
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
+            where T : class
         {
             foreach (var i in source)
             {
@@ -63,18 +62,19 @@ namespace JoinRpg.Helpers
             }
         }
 
-        public static IEnumerable<int> WhereNotNull(this IEnumerable<int?> source)
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
+            where T : struct
         {
             foreach (var i in source)
             {
-                if (i is int v)
+                if (i is T v)
                 {
                     yield return v;
                 }
             }
         }
 
-        public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T> collection) => collection ?? Enumerable.Empty<T>();
+        public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T>? collection) => collection ?? Enumerable.Empty<T>();
 
         public static IEnumerable<T> Shuffle<T>([NotNull]
             this IEnumerable<T> source) => Shuffle(source, Rng);
@@ -119,14 +119,6 @@ namespace JoinRpg.Helpers
                 toAdd
                     .Except(alreadyTaken)
                     .Take(Math.Max(0, totalLimit - alreadyTaken.Count)));
-        }
-
-        public static IEnumerable<int> GetRandomSource(this Random random)
-        {
-            while (true)
-            {
-                yield return random.Next();
-            }
         }
     }
 }

@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Models.Plot
         public string TodoField { get; set; }
 
         [Display(Name = "Для кого", Description = "Тех, кому предназначена эта вводная, можно добавить сейчас или позже.")]
-        public IEnumerable<string> Targets { get; set; } = new string[] { };
+        public IEnumerable<string> Targets { get; set; } = System.Array.Empty<string>();
         public string PlotFolderName { get; set; }
 
         [Display(Name = "Тип"), ReadOnly(true)]
@@ -36,7 +36,7 @@ namespace JoinRpg.Web.Models.Plot
         public string TodoField { get; set; }
 
         [Display(Name = "Для кого", Description = "Тех, кому предназначен этот элемент раздатки, можно добавить сейчас или позже.")]
-        public IEnumerable<string> Targets { get; set; } = new string[] { };
+        public IEnumerable<string> Targets { get; set; } = System.Array.Empty<string>();
         public string PlotFolderName { get; set; }
 
         [Display(Name = "Тип"), ReadOnly(true)]

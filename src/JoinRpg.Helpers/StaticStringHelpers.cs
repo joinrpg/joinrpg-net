@@ -11,20 +11,20 @@ namespace JoinRpg.Helpers
     {
         [NotNull]
         public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull]
-            this IEnumerable<string> strings,
+            this IEnumerable<string?> strings,
             [NotNull]
             string separator) => string.Join(separator, strings.WhereNotNullOrWhiteSpace());
 
         [NotNull, ItemNotNull]
         public static IEnumerable<string> WhereNotNullOrWhiteSpace([ItemCanBeNull] [NotNull]
-            this IEnumerable<string> strings)
+            this IEnumerable<string?> strings)
         {
             if (strings == null)
             {
                 throw new ArgumentNullException(nameof(strings));
             }
 
-            return strings.Where(s => !string.IsNullOrWhiteSpace(s));
+            return strings.Where(s => !string.IsNullOrWhiteSpace(s)).WhereNotNull();
         }
 
         [NotNull]
@@ -73,7 +73,7 @@ namespace JoinRpg.Helpers
             string prefix)
         {
             return number.StartsWith(prefix)
-                ? (int?)int.Parse(number.Substring(prefix.Length))
+                ? int.Parse(number.Substring(prefix.Length))
                 : null;
         }
 
@@ -190,44 +190,15 @@ namespace JoinRpg.Helpers
             return hashAlgorithm.ComputeHash(bytes).ToHexString();
         }
 
-        public static string AfterSeparator(this string str, char separator) => str.SkipWhile(c => c != separator).Skip(1).AsString();
-
-        public static string BeforeSeparator(this string str, char separator) => str.TakeWhile(c => c != separator).AsString();
-
         [NotNull]
-        public static int[] ToIntList([CanBeNull]
-            this string claimIds)
+        public static int[] ToIntList(this string? claimIds)
         {
-            if (string.IsNullOrWhiteSpace(claimIds))
+            if (claimIds is null)
             {
                 return Array.Empty<int>();
             }
 
             return claimIds.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse).ToArray();
-        }
-
-        [NotNull]
-        public static IEnumerable<byte> AsUtf8BytesWithLimit([NotNull]
-            this string formattableString,
-            int bytesLimit)
-        {
-            if (formattableString == null)
-            {
-                throw new ArgumentNullException(nameof(formattableString));
-            }
-
-            var ch = formattableString.ToCharArray();
-            var epilogue = Encoding.UTF8.GetBytes("…");
-            for (var i = ch.Length; i > 0; i--)
-            {
-                var chunkBytes = Encoding.UTF8.GetByteCount(ch, 0, i);
-                if (chunkBytes + epilogue.Length <= bytesLimit)
-                {
-                    return Encoding.UTF8.GetBytes(ch, 0, i).Concat(epilogue);
-                }
-            }
-
-            return Enumerable.Empty<byte>();
         }
 
         [NotNull]

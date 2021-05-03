@@ -33,8 +33,8 @@ namespace JoinRpg.Services.Impl
         {
             var project = await ProjectRepository.GetProjectAsync(addCharacterRequest.ProjectId);
 
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-            project.EnsureProjectActive();
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            _ = project.EnsureProjectActive();
 
             var character = new Character
             {
@@ -58,7 +58,7 @@ namespace JoinRpg.Services.Impl
 
             // ReSharper disable once MustUseReturnValue
             //TODO we do not send message for creating character
-            FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+            _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
                 character,
                 addCharacterRequest.FieldValues,
                 FieldDefaultValueGenerator);
@@ -74,13 +74,13 @@ namespace JoinRpg.Services.Impl
             IReadOnlyCollection<int> parentCharacterGroupIds,
             bool isAcceptingClaims,
             bool hidePlayerForCharacter,
-            IReadOnlyDictionary<int, string> characterFields,
+            IReadOnlyDictionary<int, string?> characterFields,
             bool isHot)
         {
             var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
-            character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            _ = character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
 
-            character.EnsureProjectActive();
+            _ = character.EnsureProjectActive();
 
             var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
 
@@ -110,7 +110,7 @@ namespace JoinRpg.Services.Impl
             MarkChanged(character);
             MarkTreeModified(character.Project); //TODO: Can be smarter
 
-            FieldsChangedEmail email = null;
+            FieldsChangedEmail? email = null;
             changedAttributes = changedAttributes
                 .Where(attr => attr.Value.DisplayString != attr.Value.PreviousDisplayString)
                 .ToDictionary(x => x.Key, x => x.Value);
@@ -138,8 +138,8 @@ namespace JoinRpg.Services.Impl
         {
             var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
 
-            character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-            character.EnsureProjectActive();
+            _ = character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            _ = character.EnsureProjectActive();
 
             if (character.HasActiveClaims())
             {
@@ -166,8 +166,8 @@ namespace JoinRpg.Services.Impl
         {
             var parentCharacterGroup =
                 await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
-            parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-            parentCharacterGroup.EnsureProjectActive();
+            _ = parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            _ = parentCharacterGroup.EnsureProjectActive();
 
             var item = parentCharacterGroup.Characters.Single(i => i.CharacterId == characterId);
 
@@ -176,12 +176,12 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task SetFields(int projectId, int characterId, Dictionary<int, string> requestFieldValues)
+        public async Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues)
         {
             var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
-            character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
 
-            character.EnsureProjectActive();
+            _ = character.EnsureProjectActive();
 
             var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
                 character,
@@ -190,7 +190,7 @@ namespace JoinRpg.Services.Impl
 
             MarkChanged(character);
 
-            FieldsChangedEmail email = null;
+            FieldsChangedEmail? email = null;
 
             if (changedFields.Any())
             {

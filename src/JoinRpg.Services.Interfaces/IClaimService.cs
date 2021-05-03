@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Interfaces
             int? characterGroupId,
             int? characterId,
             string claimText,
-            IReadOnlyDictionary<int, string> fields);
+            IReadOnlyDictionary<int, string?> fields);
 
         Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
@@ -29,7 +29,7 @@ namespace JoinRpg.Services.Interfaces
 
         Task SaveFieldsFromClaim(int projectId,
             int claimId,
-            IReadOnlyDictionary<int, string> newFieldValue);
+            IReadOnlyDictionary<int, string?> newFieldValue);
 
         Task SubscribeClaimToUser(int projectId, int claimId);
         Task UnsubscribeClaimToUser(int projectId, int claimId);

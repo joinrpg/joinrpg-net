@@ -18,7 +18,7 @@ namespace JoinRpg.Services.Interfaces.Email
             [NotNull]
             string email,
             [CanBeNull]
-            IReadOnlyDictionary<string, string> recipientSpecificValues = null)
+            IReadOnlyDictionary<string, string>? recipientSpecificValues = null)
         {
             DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
             Email = email ?? throw new ArgumentNullException(nameof(email));

@@ -11,6 +11,9 @@ namespace JoinRpg.Domain
         public static bool HasValueList(this ProjectField field)
                 => field.FieldType.HasValuesList();
 
+        public static bool SupportsMassAdding(this ProjectField field)
+        => field.FieldType.SupportsMassAdding();
+
         public static bool SupportsMarkdown([NotNull] this ProjectField field) => field.FieldType == ProjectFieldType.Text;
 
         public static bool HasSpecialGroup(this ProjectField field) => field.HasValueList() && field.FieldBoundTo == FieldBoundTo.Character;
@@ -19,7 +22,7 @@ namespace JoinRpg.Domain
 
         public static string GetSpecialGroupName(this ProjectField field) => $"{field.FieldName}";
 
-        public static bool IsAvailableForTarget([NotNull] this ProjectField field, [CanBeNull] IClaimSource target)
+        public static bool IsAvailableForTarget([NotNull] this ProjectField field, IClaimSource? target)
         {
             if (field == null)
             {
@@ -45,7 +48,7 @@ namespace JoinRpg.Domain
         public static bool CanHaveValue(this ProjectField projectField) => projectField.FieldType != ProjectFieldType.Header;
 
         [CanBeNull, MustUseReturnValue]
-        public static ProjectFieldDropdownValue GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)
+        public static ProjectFieldDropdownValue? GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)
         {
             return group.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
                     .SingleOrDefault(pfv => pfv.CharacterGroup == group);

@@ -92,11 +92,11 @@ namespace JoinRpg.Domain
 
         public DateTime? ProblemTime { get; }
         [CanBeNull]
-        public string ExtraInfo { get; }
+        public string? ExtraInfo { get; }
 
         public ProblemSeverity Severity { get; }
 
-        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null, string extraInfo = null)
+        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null, string? extraInfo = null)
         {
             ProblemType = problemType;
             Severity = severity;
@@ -111,15 +111,7 @@ namespace JoinRpg.Domain
         public ProjectField Field { get; }
 
         public FieldRelatedProblem(ClaimProblemType problemType, ProblemSeverity severity, [NotNull] ProjectField field)
-          : base(problemType, severity, null, field.FieldName)
-        {
-            if (field == null)
-            {
-                throw new ArgumentNullException(nameof(field));
-            }
-
-            Field = field;
-        }
+          : base(problemType, severity, null, field.FieldName) => Field = field ?? throw new ArgumentNullException(nameof(field));
     }
 
     public enum ClaimProblemType

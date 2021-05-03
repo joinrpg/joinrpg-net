@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
@@ -56,7 +56,6 @@ namespace JoinRpg.Web.Models
         Description,
         ScheduleTime,
         SchedulePlace,
-        HasPlugin,
     }
 
     //Actually most of this logic should be moved to Domain
@@ -203,7 +202,6 @@ namespace JoinRpg.Web.Models
             AddLabelIf(FieldSpecialLabelView.Description, ch.IsDescription);
             AddLabelIf(FieldSpecialLabelView.ScheduleTime, ch.IsTimeSlot);
             AddLabelIf(FieldSpecialLabelView.SchedulePlace, ch.IsRoomSlot);
-            AddLabelIf(FieldSpecialLabelView.HasPlugin, ch.Field.Mappings.Any());
         }
 
         public MandatoryStatusViewType MandatoryStatus { get; }
@@ -232,12 +230,12 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Sum of fields fees
         /// </summary>
-        public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new Dictionary<FieldBoundToViewModel, int>();
+        public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new();
 
         /// <summary>
         /// Total number of fields with fee
         /// </summary>
-        public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new Dictionary<FieldBoundToViewModel, int>();
+        public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new();
 
         /// <summary>
         /// Returns true if there is at least one field with fee
@@ -291,7 +289,7 @@ namespace JoinRpg.Web.Models
             var fieldsList = target.Project.GetFieldsNotFilled();
             if (target is Character character)
             {
-                fieldsList.FillIfEnabled(claim: null, character: character);
+                _ = fieldsList.FillIfEnabled(claim: null, character: character);
             }
             Fields =
               fieldsList

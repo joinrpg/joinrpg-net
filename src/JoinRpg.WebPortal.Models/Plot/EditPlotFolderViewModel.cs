@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 
@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Models.Plot
         [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
         public string PlotFolderTitleAndTags { get; set; }
 
-        public EditPlotFolderViewModel([NotNull] PlotFolder folder, int? currentUserId, IUriService uriService)
+        public EditPlotFolderViewModel(PlotFolder folder, int? currentUserId, IUriService uriService)
         {
             if (folder == null)
             {
@@ -51,6 +51,7 @@ namespace JoinRpg.Web.Models.Plot
             }
         }
 
+        [MemberNotNull(nameof(TagNames))]
         public void Fill(PlotFolder folder, int? currentUserId, IUriService uriService)
         {
             PlotFolderMasterTitle = folder.MasterTitle;
@@ -61,7 +62,6 @@ namespace JoinRpg.Web.Models.Plot
             HasMasterAccess = folder.HasMasterAccess(currentUserId);
         }
 
-        [UsedImplicitly] //For binding
         public EditPlotFolderViewModel() { } //For binding
 
         [ReadOnly(true)]
@@ -75,7 +75,7 @@ namespace JoinRpg.Web.Models.Plot
         {
             PlotElementId = e.PlotElementId;
             Targets = e.GetElementBindingsForEdit();
-            Content = e.LastVersion().Content.Contents;
+            Content = e.LastVersion().Content.Contents ?? "";
             TodoField = e.LastVersion().TodoField;
             ProjectId = e.PlotFolder.ProjectId;
             PlotFolderId = e.PlotFolderId;

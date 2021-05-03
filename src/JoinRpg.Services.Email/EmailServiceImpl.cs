@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
@@ -163,7 +163,7 @@ namespace JoinRpg.Services.Email
 
 ";
                 //All emails related to claim should have the same title, even if the change was made to a character
-                Claim claim = model.Claim;
+                var claim = model.Claim;
 
                 var subject = claim != null
                     ? model.GetClaimEmailTitle(claim)
@@ -263,10 +263,14 @@ namespace JoinRpg.Services.Email
 
 ";
 
-            var sendTasks = email.Recipients.Select(emailRecipient => MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-                    new MarkdownString(string.Format(messageTemplate, email.GetClaimByPerson(emailRecipient) == null ? "" : _uriService.Get(email.GetClaimByPerson(emailRecipient)))),
-                    email.Initiator.ToRecepientData(),
-                    emailRecipient.ToRecepientData()))
+            var sendTasks = email.Recipients.Select(emailRecipient =>
+            {
+                Claim? claim = email.GetClaimByPerson(emailRecipient);
+                return MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
+                                    new MarkdownString(string.Format(messageTemplate, claim == null ? "" : _uriService.Get(claim))),
+                                    email.Initiator.ToRecepientData(),
+                                    emailRecipient.ToRecepientData());
+            })
                 .ToList();
 
             await Task.WhenAll(sendTasks).ConfigureAwait(false);
@@ -354,7 +358,7 @@ namespace JoinRpg.Services.Email
                 .Select(x => x.ToHtmlString()));
         }
 
-        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, string actionName = null, string text = "")
+        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, string? actionName = null, string text = "")
         {
             var projectEmailEnabled = model.GetEmailEnabled();
             if (!projectEmailEnabled)
@@ -403,7 +407,7 @@ namespace JoinRpg.Services.Email
 
         private class ClaimsComparer : IEqualityComparer<Claim>
         {
-            public bool Equals(Claim x, Claim y) => x?.PlayerUserId == y?.PlayerUserId;
+            public bool Equals(Claim? x, Claim? y) => x?.PlayerUserId == y?.PlayerUserId;
 
             public int GetHashCode(Claim obj) => obj.PlayerUserId.GetHashCode();
         }

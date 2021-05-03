@@ -10,3 +10,9 @@
     </script>
 </environment>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script>
+  jQuery.validator.addMethod("enforcetrue", function (value, element, param) {
+    return element.checked;
+  });
+  jQuery.validator.unobtrusive.adapters.addBool("enforcetrue");
+</script>

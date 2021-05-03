@@ -9,7 +9,6 @@
 
 <div class="btn-group">
     <a class="btn btn-default" href="@Url.Action("Index", "GameField", new {Model.ProjectId})"> Настройки полей</a>
-    <a class="btn btn-default" href="@Url.Action("Index", "PluginSetup", new {Model.ProjectId})"> Настройки плагинов</a>
     <a class="btn btn-default" href="@Url.Action("Setup", "CheckIn", new {Model.ProjectId})"> Настройки регистрации</a>
 </div>
 <hr/>
@@ -74,7 +73,7 @@
         </div>
 
         <div class="alert alert-info">
-            Настройки формирования имени персонажа ищите на странице с @Html.ActionLink("настройкой полей", "Settings", "GameField").
+            Настройки формирования имени персонажа ищите на странице с  <a asp-controller="GameField" asp-action="Settings" asp-route-ProjectId="@Model.ProjectId">настройкой полей</a>.
         </div>
 
       <div class="form-group">

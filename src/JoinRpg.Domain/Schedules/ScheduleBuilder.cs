@@ -18,13 +18,8 @@ namespace JoinRpg.Domain.Schedules
         public ScheduleBuilder(Project project, ICollection<Character> characters)
         {
             this.characters = characters.Where(ch => ch.IsActive).ToList();
-            RoomField = project.GetRoomFieldOrDefault();
-            TimeSlotField = project.GetTimeSlotFieldOrDefault();
-
-            if (RoomField is null || TimeSlotField is null)
-            {
-                throw new Exception("Schedule not enabled");
-            }
+            RoomField = project.GetRoomFieldOrDefault() ?? throw new Exception("Schedule not enabled");
+            TimeSlotField = project.GetTimeSlotFieldOrDefault() ?? throw new Exception("Schedule not enabled");
         }
 
         private HashSet<ProgramItem> NotScheduled { get; } = new HashSet<ProgramItem>();
@@ -38,13 +33,13 @@ namespace JoinRpg.Domain.Schedules
             }
             public ScheduleRoom Room { get; }
             public TimeSlot TimeSlot { get; }
-            public ProgramItem ProgramItem { get; set; } = null;
+            public ProgramItem? ProgramItem { get; set; } = null;
         }
 
-        private List<List<ProgramItemSlot>> Slots { get; set; }
-        private List<ScheduleRoom> Rooms { get; set; }
+        private List<List<ProgramItemSlot>> Slots { get; set; } = null!; // Initialized in start of Build()
+        private List<ScheduleRoom> Rooms { get; set; } = null!; // Initialized in start of Build()
 
-        private List<TimeSlot> TimeSlots { get; set; }
+        private List<TimeSlot> TimeSlots { get; set; } = null!; // Initialized in start of Build()
 
         private HashSet<ProgramItem> Conflicted { get; } = new HashSet<ProgramItem>();
 
@@ -66,22 +61,20 @@ namespace JoinRpg.Domain.Schedules
                     allItems.Add(new ProgramItemPlaced(programItem, slots));
                 }
             }
-            return new ScheduleResult()
-            {
-                Conflicted = Conflicted.ToList(),
-                NotScheduled = NotScheduled.ToList(),
-                Rooms = Rooms,
-                TimeSlots = TimeSlots,
-                Slots = Slots.Select(row => row.Select(r => r.ProgramItem).ToList()).ToList(),
-                AllItems = allItems,
-            };
+            return new ScheduleResult(
+                NotScheduled.ToList(),
+                Rooms,
+                TimeSlots,
+                Conflicted.ToList(),
+                Slots.Select(row => row.Select(r => r.ProgramItem).ToList()).ToList(),
+                allItems);
         }
 
         private void PutItem(ProgramItem programItem, List<ProgramItemSlot> slots)
         {
             if (!slots.Any())
             {
-                NotScheduled.Add(programItem);
+                _ = NotScheduled.Add(programItem);
                 return;
             }
 
@@ -91,10 +84,10 @@ namespace JoinRpg.Domain.Schedules
 
             if (conflicts.Any())
             {
-                Conflicted.Add(programItem);
+                _ = Conflicted.Add(programItem);
                 foreach (var conflict in conflicts)
                 {
-                    Conflicted.Add(conflict);
+                    _ = Conflicted.Add(conflict);
                 }
             }
             else
@@ -120,7 +113,7 @@ namespace JoinRpg.Domain.Schedules
                 var indexes = (from item in items where variantIds.Contains(item.Id) select item.SeqId).ToList();
                 if (indexes.Count < variantIds.Count) // Some variants not found, probably deleted
                 {
-                    NotScheduled.Add(programItem);
+                    _ = NotScheduled.Add(programItem);
                 }
 
                 return indexes;
@@ -160,13 +153,9 @@ namespace JoinRpg.Domain.Schedules
 
         private ProgramItem ConvertToProgramItem(Character character)
         {
-            return new ProgramItem()
+            return new ProgramItem(character);
             {
-                Id = character.CharacterId,
-                Name = character.CharacterName,
-                Description = character.Description,
-                Authors = new[] { character.ApprovedClaim?.Player }.Where(x => !(x is null)).ToArray(),
-                ProjectId = character.ProjectId,
+
             };
         }
     }

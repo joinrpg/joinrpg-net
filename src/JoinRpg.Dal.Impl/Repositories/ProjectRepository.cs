@@ -69,6 +69,9 @@ namespace JoinRpg.Dal.Impl.Repositories
         public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
           ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
 
+        public async Task<IEnumerable<Project>> GetAllMyProjectsAsync(int userInfoId)
+            => await AllProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
+
         public async Task<IEnumerable<Project>> GetActiveProjectsWithSchedule()
             => await ActiveProjects.Where(project => project.Details.ScheduleEnabled)
                 .ToListAsync();
@@ -95,7 +98,15 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
         }
 
-        public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
+        public Task<CharacterGroup> GetRootGroupAsync(int projectId)
+        {
+            return
+             Ctx.Set<CharacterGroup>()
+               .Include(cg => cg.Project)
+               .SingleOrDefaultAsync(cg => cg.IsRoot && cg.ProjectId == projectId);
+        }
+
+        public async Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
         {
             await LoadProjectCharactersAndGroups(projectId);
             await LoadMasters(projectId);

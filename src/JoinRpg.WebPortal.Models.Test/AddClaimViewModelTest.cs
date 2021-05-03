@@ -74,7 +74,7 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void CantSendClaimToSameGroup()
         {
-            Mock.CreateClaim(Mock.Group, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Group, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -84,7 +84,7 @@ namespace JoinRpg.Web.Test
         public void AllowSendClaimToSameGroupIfProjectSettingsAllows()
         {
             Mock.Project.Details.EnableManyCharacters = true;
-            Mock.CreateClaim(Mock.Group, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Group, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeTrue();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -93,7 +93,7 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void CantSendClaimToSameCharacter()
         {
-            Mock.CreateClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Character, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -103,7 +103,7 @@ namespace JoinRpg.Web.Test
         public void CantSendClaimToSameCharacterEvenProjectSettingsAllowsMultiple()
         {
             Mock.Project.Details.EnableManyCharacters = true;
-            Mock.CreateClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Character, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -112,7 +112,7 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void CantSendClaimIfHasApproved()
         {
-            Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -122,7 +122,7 @@ namespace JoinRpg.Web.Test
         public void AllowSendClaimEvenIfHasApprovedAccordingToSettings()
         {
             Mock.Project.Details.EnableManyCharacters = true;
-            Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeTrue();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -132,7 +132,7 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void AllowSendClaimEvenIfHasAnotherNotApproved()
         {
-            Mock.CreateClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Character, Mock.Player);
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeTrue();
             vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -148,7 +148,7 @@ namespace JoinRpg.Web.Test
 
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             var fieldView = vm.Fields.Field(field);
-            fieldView.ShouldNotBeNull();
+            _ = fieldView.ShouldNotBeNull();
             fieldView.ShouldBeVisible();
             fieldView.ShouldBeReadonly();
             fieldView.Value.ShouldBe("xxx");
@@ -163,7 +163,7 @@ namespace JoinRpg.Web.Test
 
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             var fieldView = vm.Fields.Field(field);
-            fieldView.ShouldNotBeNull();
+            _ = fieldView.ShouldNotBeNull();
             fieldView.ShouldBeHidden();
             fieldView.ShouldBeReadonly();
         }

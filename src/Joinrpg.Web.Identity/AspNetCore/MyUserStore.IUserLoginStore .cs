@@ -14,12 +14,12 @@ namespace Joinrpg.Web.Identity
     {
         async Task IUserLoginStore<JoinIdentityUser>.AddLoginAsync(JoinIdentityUser user, UserLoginInfo login, CancellationToken cancellationToken)
         {
-            var dbUser = await LoadUser(user);
+            var dbUser = await LoadUser(user, cancellationToken);
             dbUser.ExternalLogins.Add(login.ToUserExternalLogin());
-            await _ctx.SaveChangesAsync();
+            _ = await _ctx.SaveChangesAsync(cancellationToken);
         }
 
-        async Task<JoinIdentityUser> IUserLoginStore<JoinIdentityUser>.FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+        async Task<JoinIdentityUser?> IUserLoginStore<JoinIdentityUser>.FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
             var uel = await _ctx.Set<UserExternalLogin>().SingleOrDefaultAsync(u => u.Key == providerKey && u.Provider == loginProvider);
 
@@ -28,19 +28,19 @@ namespace Joinrpg.Web.Identity
 
         async Task<IList<UserLoginInfo>> IUserLoginStore<JoinIdentityUser>.GetLoginsAsync(JoinIdentityUser user, CancellationToken cancellationToken)
         {
-            var dbUser = await LoadUser(user);
+            var dbUser = await LoadUser(user, cancellationToken);
             return dbUser.ExternalLogins.Select(uel => uel.ToUserLoginInfoCore()).ToList();
         }
 
         async Task IUserLoginStore<JoinIdentityUser>.RemoveLoginAsync(JoinIdentityUser user, string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            var dbUser = await LoadUser(user);
+            var dbUser = await LoadUser(user, cancellationToken);
             var el =
                 dbUser.ExternalLogins.First(
                     externalLogin => externalLogin.Key == providerKey &&
                                      externalLogin.Provider == loginProvider);
-            _ctx.Set<UserExternalLogin>().Remove(el);
-            await _ctx.SaveChangesAsync();
+            _ = _ctx.Set<UserExternalLogin>().Remove(el);
+            _ = await _ctx.SaveChangesAsync(cancellationToken);
         }
     }
 }

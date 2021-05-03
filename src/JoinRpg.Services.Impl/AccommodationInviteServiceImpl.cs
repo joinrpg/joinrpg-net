@@ -22,7 +22,7 @@ namespace JoinRpg.Services.Impl
 
         private IEmailService EmailService { get; }
 
-        private async Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
+        private async Task<AccommodationInvite?> CreateAccommodationInvite(int projectId,
             int senderClaimId,
             int receiverClaimId,
             int accommodationRequestId)
@@ -78,7 +78,7 @@ namespace JoinRpg.Services.Impl
                 IsAccepted = AccommodationRequest.InviteState.Unanswered,
             };
 
-            UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
+            _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
             //todo email it
 
@@ -108,7 +108,7 @@ namespace JoinRpg.Services.Impl
             };
         }
 
-        private async Task<IEnumerable<AccommodationInvite>>
+        private async Task<IEnumerable<AccommodationInvite>?>
             CreateAccommodationInviteToAccommodationRequest(int projectId,
                 int senderClaimId,
                 int receiverAccommodationRequestId,
@@ -172,7 +172,7 @@ namespace JoinRpg.Services.Impl
                     IsAccepted = AccommodationRequest.InviteState.Unanswered,
                 };
 
-                UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
+                _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
                 result.Add(inviteRequest);
             }
 
@@ -185,7 +185,7 @@ namespace JoinRpg.Services.Impl
             return result;
         }
 
-        public async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(
+        public async Task<IEnumerable<AccommodationInvite?>?> CreateAccommodationInviteToGroupOrClaim(
             int projectId,
             int senderClaimId,
             string receiverClaimOrAccommodationRequestId,
@@ -196,7 +196,7 @@ namespace JoinRpg.Services.Impl
             {
                 return await CreateAccommodationInviteToAccommodationRequest(projectId,
                     senderClaimId,
-                    int.Parse(receiverClaimOrAccommodationRequestId.Substring(2)),
+                    int.Parse(receiverClaimOrAccommodationRequestId[2..]),
                     accommodationRequestId).ConfigureAwait(false);
             }
 
@@ -210,7 +210,7 @@ namespace JoinRpg.Services.Impl
         }
 
         /// <inheritdoc />
-        public async Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
+        public async Task<AccommodationInvite?> AcceptAccommodationInvite(int projectId,
             int inviteId)
         {
             //todo: make null result descriptive
@@ -238,19 +238,19 @@ namespace JoinRpg.Services.Impl
                 return null;
             }
 
-            receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To);
+            _ = (receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To));
             senderAccommodationRequest.Subjects.Add(inviteRequest.To);
             inviteRequest.To.AccommodationRequest = senderAccommodationRequest;
 
             if (receiverAccommodationRequest != null)
             {
-                foreach (var claim in receiverAccommodationRequest?.Subjects.ToList())
+                foreach (var claim in receiverAccommodationRequest.Subjects.ToList())
                 {
                     await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
                     senderAccommodationRequest.Subjects.Add(claim);
                 }
 
-                UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
+                _ = UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
             }
 
             inviteRequest.IsAccepted = AccommodationRequest.InviteState.Accepted;
@@ -273,7 +273,7 @@ namespace JoinRpg.Services.Impl
             return inviteRequest;
         }
 
-        public async Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId,
+        public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
             AccommodationRequest.InviteState newState)
         {
             var acceptedStates = new[]
@@ -344,7 +344,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
             claims = claims.Distinct().ToList();
-            claims.Remove(claimId);
+            _ = claims.Remove(claimId);
 
             var receivers = await UnitOfWork
                 .GetDbSet<Claim>()

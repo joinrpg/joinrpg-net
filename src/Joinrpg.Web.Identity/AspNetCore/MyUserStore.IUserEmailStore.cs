@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity
 {
-    partial class MyUserStore : IUserEmailStore<JoinIdentityUser>
+    public partial class MyUserStore : IUserEmailStore<JoinIdentityUser>
     {
-        async Task<JoinIdentityUser> IUserEmailStore<JoinIdentityUser>.FindByEmailAsync(string normalizedEmail, CancellationToken ct)
+        async Task<JoinIdentityUser?> IUserEmailStore<JoinIdentityUser>.FindByEmailAsync(string normalizedEmail, CancellationToken ct)
         {
             var dbUser = await LoadUser(normalizedEmail, ct);
             return dbUser?.ToIdentityUser();

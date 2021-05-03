@@ -40,6 +40,7 @@ namespace JoinRpg.Services.Impl
                 Debug = true,
 #endif
                 MerchantId = _bankSecrets.MerchantId,
+                MerchantIdFastPayments = _bankSecrets.MerchantIdFastPayments,
                 ApiKey = _bankSecrets.ApiKey,
                 ApiDebugKey = _bankSecrets.ApiDebugKey,
                 DefaultSuccessUrl = _uriService.Get(new PaymentSuccessUrl(projectId, claimId)),
@@ -48,7 +49,7 @@ namespace JoinRpg.Services.Impl
         }
 
         private BankApi GetApi(int projectId, int claimId)
-            => new BankApi(GetApiConfiguration(projectId, claimId));
+            => new(GetApiConfiguration(projectId, claimId));
 
         private async Task<Claim> GetClaimAsync(int projectId, int claimId)
         {
@@ -74,7 +75,7 @@ namespace JoinRpg.Services.Impl
                 throw new NoAccessToProjectException(claim.Project, CurrentUserId);
             }
 
-            PaymentType onlinePaymentType =
+            var onlinePaymentType =
                 claim.Project.ActivePaymentTypes.SingleOrDefault(
                     pt => pt.TypeKind == PaymentTypeKind.Online);
             if (onlinePaymentType == null)
@@ -97,7 +98,12 @@ namespace JoinRpg.Services.Impl
                 CustomerEmail = user.Email,
                 CustomerPhone = user.Extra?.PhoneNumber,
                 CustomerComment = request.CommentText,
-                PaymentMethod = PscbPaymentMethod.BankCards,
+                PaymentMethod = request.Method switch
+                {
+                    PaymentMethod.BankCard => PscbPaymentMethod.BankCards,
+                    PaymentMethod.FastPaymentsSystem => PscbPaymentMethod.FastPaymentsSystem,
+                    _ => throw new NotSupportedException($"Payment method {request.Method} is not supported"),
+                },
                 SuccessUrl = _uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
                 FailUrl = _uriService.Get(new PaymentFailUrl(request.ProjectId, request.ClaimId)),
                 Data = new PaymentMessageData
@@ -164,7 +170,7 @@ namespace JoinRpg.Services.Impl
                 Changed = Now,
                 State = FinanceOperationState.Proposed,
             };
-            UnitOfWork.GetDbSet<Comment>().Add(comment);
+            _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
             await UnitOfWork.SaveChangesAsync();
 
             return comment;
@@ -209,19 +215,27 @@ namespace JoinRpg.Services.Impl
                 case PaymentStatus.Hold:
                 case PaymentStatus.Undefined:
                     break;
+
                 // All ok
                 case PaymentStatus.Paid:
                     fo.State = FinanceOperationState.Approved;
                     fo.Changed = Now;
                     break;
-                // Something wrong
+
+                // User didn't do anything on payment page
                 case PaymentStatus.Expired:
+                    fo.State = FinanceOperationState.Invalid;
+                    fo.Changed = Now;
+                    break;
+
+                // Something went wrong
                 case PaymentStatus.Cancelled:
                 case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
                 case PaymentStatus.Rejected:
                     fo.State = FinanceOperationState.Declined;
                     fo.Changed = Now;
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -258,6 +272,11 @@ namespace JoinRpg.Services.Impl
                             claim.UpdateClaimFeeIfRequired(Now);
                         }
                     }
+                }
+                else if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+                {
+                    fo.State = FinanceOperationState.Invalid;
+                    fo.Changed = Now;
                 }
                 else if (IsCurrentUserAdmin)
                 {

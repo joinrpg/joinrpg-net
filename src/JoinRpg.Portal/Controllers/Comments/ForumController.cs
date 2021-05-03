@@ -134,7 +134,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 if (viewModel.HideFromUser)
                 {
-                    discussion.RequestMasterAccess(CurrentUserId);
+                    _ = discussion.RequestMasterAccess(CurrentUserId);
                 }
 
                 var claim = discussion.GetClaim();
@@ -177,7 +177,7 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
             var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
-            IEnumerable<int> groupIds;
+            IEnumerable<int>? groupIds;
             if (isMaster)
             {
                 groupIds = null;

@@ -22,10 +22,10 @@ namespace JoinRpg.Web.Models.Accommodation
 
         int? ILinkable.ProjectId => ProjectId;
         [Display(Name = "Тип поселения")]
-        public string AccomodationType { get; set; }
+        public string? AccomodationType { get; set; }
         [Display(Name = "Комната")]
-        public string RoomName { get; set; }
+        public string? RoomName { get; set; }
         [Display(Name = "Телефон")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
     }
 }

@@ -42,7 +42,7 @@ namespace JoinRpg.DataModel
         /// <summary>
         /// External value for external IT systems
         /// </summary>
-        public string ProgrammaticValue { get; set; }
+        public string? ProgrammaticValue { get; set; }
 
         [CanBeNull]
         public virtual CharacterGroup CharacterGroup { get; set; }

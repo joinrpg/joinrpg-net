@@ -178,13 +178,13 @@ namespace JoinRpg.Web.Models.Characters
             return vm;
         }
 
-        private void LoadClaims(Character field)
+        private void LoadClaims(Character? field)
         {
             RejectedClaims = LoadClaimsWithCondition(field, claim => !claim.ClaimStatus.IsActive());
             DiscussedClaims = LoadClaimsWithCondition(field, claim => claim.IsInDiscussion);
         }
 
-        private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field,
+        private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character? field,
             Func<Claim, bool> predicate)
         {
             return HasMasterAccess && field != null

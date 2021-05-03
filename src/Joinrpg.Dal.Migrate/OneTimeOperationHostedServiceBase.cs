@@ -9,7 +9,7 @@ namespace Joinrpg.Dal.Migrate
     {
         private CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
 
-        private Task task;
+        private Task? task;
         private readonly IHostApplicationLifetime applicationLifetime;
         protected readonly ILogger logger;
 
@@ -32,7 +32,7 @@ namespace Joinrpg.Dal.Migrate
                 {
                     applicationLifetime.StopApplication();
                 }
-            });
+            }, CancellationToken.None);
             return Task.CompletedTask;
         }
 
@@ -42,7 +42,7 @@ namespace Joinrpg.Dal.Migrate
         {
             CancellationTokenSource.Cancel();
             // Defer completion promise, until our application has reported it is done.
-            return task;
+            return task!; //Should be non-null after Start
         }
     }
 }

@@ -16,8 +16,11 @@
 <div class="" style="clear: both" id="comment@(comment.CommentId)">
     <table>
         <tr>
-            <td class="hidden-xs" style="vertical-align: text-top">
-              <partial name="DisplayTemplates/UserAvatar" model="comment.Author" />
+            <td class="hidden-xs" style="vertical-align: text-top;padding-right:5px">
+              <vc:avatar
+                         user-avatar-id-or-null="@comment.AuthorAvatar"
+                         email="@comment.AuthorEmail"
+                         recommended-size="64" />
             </td>
             <td>
                 <div class="@hideClassName" style="margin-bottom: 1em;">

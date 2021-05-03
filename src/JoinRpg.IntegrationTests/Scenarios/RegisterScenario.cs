@@ -32,11 +32,11 @@ namespace JoinRpg.IntegrationTests.Scenarios
                 new FormUrlEncodedContent(
                     new[]
                     {
-                        new KeyValuePair<string, string>("Email", "player@example.com"),
-                        new KeyValuePair<string, string>("Password", "12345678"),
-                        new KeyValuePair<string, string>("ConfirmPassword", "12345678"),
-                        new KeyValuePair<string, string>("RulesApproved", "true"),
-                        new KeyValuePair<string, string>("g-recaptcha-response", "ignored"),
+                        new KeyValuePair<string?, string?>("Email", "player@example.com"),
+                        new KeyValuePair<string?, string?>("Password", "12345678"),
+                        new KeyValuePair<string?, string?>("ConfirmPassword", "12345678"),
+                        new KeyValuePair<string?, string?>("RulesApproved", "true"),
+                        new KeyValuePair<string?, string?>("g-recaptcha-response", "ignored"),
                     }));
 
             response.StatusCode.ShouldBe(HttpStatusCode.OK);

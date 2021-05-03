@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Helpers
 {
@@ -42,8 +42,8 @@ namespace JoinRpg.Web.Helpers
             var builder = new StringBuilder(groupLink);
             foreach (var character in characters)
             {
-                builder.Append("<br>");
-                builder.Append(CharacterImpl(character));
+                _ = builder.Append("<br>");
+                _ = builder.Append(CharacterImpl(character));
             }
             return $"<p>{builder}</p>";
         }

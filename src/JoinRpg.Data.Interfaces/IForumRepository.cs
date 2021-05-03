@@ -13,7 +13,7 @@ namespace JoinRpg.Data.Interfaces
 
         Task<CommentDiscussion> GetDiscussionByComment(int projectId, int commentId);
 
-        Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, [CanBeNull] IEnumerable<int> groupIds);
+        Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int>? groupIds);
     }
 
     public interface IForumThreadListItem : ICommentDiscussionHeader, IForumThread

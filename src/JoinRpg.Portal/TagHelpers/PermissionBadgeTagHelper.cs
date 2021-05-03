@@ -17,12 +17,12 @@ namespace JoinRpg.Portal.TagHelpers
 
         public PermissionBadgeTagHelper(IHtmlHelper htmlHelper, HtmlEncoder htmlEncoder)
         {
-            _htmlHelper = htmlHelper as HtmlHelper;
+            _htmlHelper = (HtmlHelper)htmlHelper;
             _htmlEncoder = htmlEncoder;
         }
 
         [HtmlAttributeName("asp-for")]
-        public ModelExpression For { get; set; }
+        public ModelExpression For { get; set; } = null!;
 
         [ViewContext]
         public ViewContext ViewContext
@@ -45,7 +45,7 @@ namespace JoinRpg.Portal.TagHelpers
             var writer = new StringWriter();
             partialView.WriteTo(writer, _htmlEncoder);
 
-            output.Content.SetHtmlContent(writer.ToString());
+            _ = output.Content.SetHtmlContent(writer.ToString());
         }
     }
 }

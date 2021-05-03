@@ -10,6 +10,8 @@ namespace JoinRpg.Web.Models.Money
         Proposed,
         [Display(Name = "Отклонено", ShortName = "Отклонено")]
         Declined,
+        [Display(Name = "Отменено", ShortName = "Отменено")]
+        Invalid,
     }
 
     public enum MoneyTransferStateViewModel

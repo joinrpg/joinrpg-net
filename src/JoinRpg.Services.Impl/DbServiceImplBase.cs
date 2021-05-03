@@ -136,7 +136,7 @@ namespace JoinRpg.Services.Impl
 
             if (field.CanBePermanentlyDeleted)
             {
-                UnitOfWork.GetDbSet<T>().Remove(field);
+                _ = UnitOfWork.GetDbSet<T>().Remove(field);
                 return true;
             }
             else
@@ -193,7 +193,7 @@ namespace JoinRpg.Services.Impl
         {
             MarkCreatedNow(entity);
 
-            UnitOfWork.GetDbSet<T>().Add(entity);
+            _ = UnitOfWork.GetDbSet<T>().Add(entity);
         }
 
         protected void MarkChanged([NotNull] ICreatedUpdatedTrackedForEntity entity)

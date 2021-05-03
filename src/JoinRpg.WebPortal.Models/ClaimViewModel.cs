@@ -4,19 +4,16 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
-using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
-using JoinRpg.Web.Models.Print;
 
 
 namespace JoinRpg.Web.Models
@@ -43,7 +40,7 @@ namespace JoinRpg.Web.Models
         public int? CharacterId { get; }
 
         [DisplayName("Заявка в группу")]
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
 
         public int? CharacterGroupId { get; }
         public int OtherClaimsForThisCharacterCount { get; }
@@ -61,7 +58,7 @@ namespace JoinRpg.Web.Models
         public User ResponsibleMaster { get; set; }
 
         [ReadOnly(true)]
-        public IEnumerable<MasterListItemViewModel> Masters { get; }
+        public List<MasterListItemViewModel> Masters { get; }
 
         [ReadOnly(true)]
         public bool HasOtherApprovedClaim { get; }
@@ -101,8 +98,6 @@ namespace JoinRpg.Web.Models
         [ReadOnly(true)]
         public bool? CharacterActive { get; }
 
-        public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
-
         public IEnumerable<UserSubscription> Subscriptions { get; set; }
 
         public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
@@ -118,14 +113,13 @@ namespace JoinRpg.Web.Models
 
         public ClaimViewModel(User currentUser,
           Claim claim,
-          IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
           IReadOnlyCollection<PlotElement> plotElements,
           IUriService uriService,
-          IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
-          IEnumerable<AccommodationRequest> accommodationRequests = null,
-          IEnumerable<AccommodationPotentialNeighbors> potentialNeighbors = null,
-          IEnumerable<AccommodationInvite> incomingInvite = null,
-          IEnumerable<AccommodationInvite> outgoingInvite = null)
+          IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
+          IEnumerable<AccommodationRequest>? accommodationRequests = null,
+          IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
+          IEnumerable<AccommodationInvite>? incomingInvite = null,
+          IEnumerable<AccommodationInvite>? outgoingInvite = null)
         {
             ClaimId = claim.ClaimId;
             CommentDiscussionId = claim.CommentDiscussionId;
@@ -165,9 +159,13 @@ namespace JoinRpg.Web.Models
                     claim.IsApproved || claim.Project.Details.EnableManyCharacters
                         ? 0
                         : claim.OtherPendingClaimsForThisPlayer().Count();
-            Masters =
-                claim.Project.GetMasterListViewModel()
-                    .Union(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
+            Masters = claim.Project.GetMasterListViewModel().ToList();
+
+            if (claim.ResponsibleMasterUserId is null)
+            {
+                Masters.Add(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
+            }
+
             ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
             ResponsibleMaster = claim.ResponsibleMasterUser;
             Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
@@ -178,7 +176,6 @@ namespace JoinRpg.Web.Models
             Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
             PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
                 (AccessReason)claim.Player.GetProfileAccess(currentUser));
-            PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
             ProjectActive = claim.Project.Active;
             CheckInStarted = claim.Project.Details.CheckInProgress;
             CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
@@ -413,7 +410,7 @@ namespace JoinRpg.Web.Models
             ProjectId = source.ProjectId;
             Money = source.MoneyAmount;
             LinkedClaimId = source.LinkedClaimId;
-            LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : null;
+            LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : "";
             LinkedClaimUser = source.LinkedClaim?.Player;
             OperationType = (FinanceOperationTypeViewModel)source.OperationType;
             OperationState = (FinanceOperationStateViewModel)source.State;
@@ -421,7 +418,7 @@ namespace JoinRpg.Web.Models
             Date = source.OperationDate.ToShortDateString();
             ShowLinkedClaimLinkIfTransfer = isMaster;
 
-            Title = OperationType.GetDescription();
+            Title = OperationType.GetDescription() ?? "";
             if (string.IsNullOrWhiteSpace(Title))
             {
                 Title = OperationType.GetDisplayName();
@@ -441,7 +438,10 @@ namespace JoinRpg.Web.Models
                     Description = OperationState.GetDisplayName();
                     break;
                 case FinanceOperationTypeViewModel.Online when source.Approved:
-                    Description = OperationState.GetShortNameOrDefault();
+                    Description = OperationState.GetShortNameOrDefault() ?? "";
+                    break;
+                case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Invalid:
+                    Description = OperationState.GetDisplayName();
                     break;
                 case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Proposed:
                     CheckPaymentState = true;
@@ -457,7 +457,7 @@ namespace JoinRpg.Web.Models
         {
             Status = model.Status;
 
-            // Reading project fee info applicable for today            
+            // Reading project fee info applicable for today
             BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
             // Reading base fee of a claim
             BaseFee = claim.BaseFee();
@@ -465,8 +465,8 @@ namespace JoinRpg.Web.Models
             HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
 
             AccommodationFee = claim.ClaimAccommodationFee();
-            RoomType = claim.AccommodationRequest?.AccommodationType?.Name ?? "";
-            RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+            RoomType = claim.AccommodationRequest?.AccommodationType.Name ?? "";
+            RoomName = claim.AccommodationRequest?.Accommodation?.Name ?? "";
 
             FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
@@ -502,10 +502,12 @@ namespace JoinRpg.Web.Models
                 .Union(CurrentFee)
                 .OrderBy(x => x)
                 .ToList();
-            FinanceOperations = claim.FinanceOperations.Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
-            VisibleFinanceOperations = FinanceOperations.Where(
-                fo => fo.OperationType != FinanceOperationTypeViewModel.FeeChange
-                    && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
+            FinanceOperations = claim.FinanceOperations
+                .Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
+            VisibleFinanceOperations = FinanceOperations
+                .Where(fo =>
+                    fo.OperationType != FinanceOperationTypeViewModel.FeeChange
+                        && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
 
             ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
             HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
@@ -527,7 +529,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Claim
         /// </summary>
-        public ProjectFeeSetting BaseFeeInfo { get; }
+        public ProjectFeeSetting? BaseFeeInfo { get; }
 
         /// <summary>
         /// true if there is any base fee for this claim
@@ -595,7 +597,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Sums of all finance operations by type
         /// </summary>
-        public readonly Dictionary<FinanceOperationState, int> Balance = new Dictionary<FinanceOperationState, int>();
+        public readonly Dictionary<FinanceOperationState, int> Balance = new();
 
         /// <summary>
         /// Sum of approved finance operations

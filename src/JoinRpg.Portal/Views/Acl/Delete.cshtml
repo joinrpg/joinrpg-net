@@ -3,11 +3,15 @@
 
 @{
     ViewBag.Title = "Снять доступ мастеру";
+    string header = Model.SelfRemove
+      ? "Вы точно желаете покинуть пост мастера проекта?"
+      : "Вы действительно хотите снять доступ мастеру?";
+    string submitButtonText = Model.SelfRemove
+      ? "Покинуть пост мастера"
+      : "Снять доступ";
 }
 
-<h2>@ViewBag.Title</h2>
-
-<h3>Вы действительно хотите снять доступ мастеру?</h3>
+<h3>@header</h3>
 <div class="form-horizontal">
     <div>
         @Html.DisplayFor(model => model.UserDetails)
@@ -50,7 +54,7 @@
             }
 
             <div>
-                <input type="submit" value="Снять доступ" class="btn btn-danger"/> |
+                <input type="submit" value="@submitButtonText" class="btn btn-danger"/> |
                 @Html.ActionLink("Назад к списку мастеров", "Index", new {Model.ProjectId})
             </div>
         }

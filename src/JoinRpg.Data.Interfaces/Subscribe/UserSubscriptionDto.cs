@@ -15,7 +15,7 @@ namespace JoinRpg.Data.Interfaces.Subscribe
         public int? CharacterId { get; set; }
         public string CharacterNames { get; set; }
         public int? ClaimId { get; set; }
-        public string ClaimName { get; set; }
+        public string? ClaimName { get; set; }
 
         public SubscriptionDto Options { get; set; }
     }

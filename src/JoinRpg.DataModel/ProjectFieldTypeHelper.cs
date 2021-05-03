@@ -22,6 +22,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Login:
                 case ProjectFieldType.ScheduleRoomField:
                 case ProjectFieldType.ScheduleTimeSlotField:
+                case ProjectFieldType.PinCode:
                     return false;
                 default:
                     throw new ArgumentException(self.ToString(), nameof(self));
@@ -46,6 +47,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Login:
                 case ProjectFieldType.ScheduleRoomField:
                 case ProjectFieldType.ScheduleTimeSlotField:
+                case ProjectFieldType.PinCode:
                     return false;
                 default:
                     throw new ArgumentException(self.ToString(), nameof(self));
@@ -70,10 +72,33 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Header:
                 case ProjectFieldType.Number:
                 case ProjectFieldType.Login:
+                case ProjectFieldType.PinCode:
                     return false;
                 default:
                     throw new ArgumentException(self.ToString(), nameof(self));
             }
+        }
+
+        /// <summary>
+        /// Returns true if field values could be mass added and doesn't require special setup
+        /// </summary>
+        public static bool SupportsMassAdding(this ProjectFieldType self)
+        {
+            return self switch
+            {
+                ProjectFieldType.Dropdown => true,
+                ProjectFieldType.MultiSelect => true,
+                ProjectFieldType.ScheduleRoomField => true,
+                ProjectFieldType.ScheduleTimeSlotField => false,
+                ProjectFieldType.String => false,
+                ProjectFieldType.Text => false,
+                ProjectFieldType.Checkbox => false,
+                ProjectFieldType.Header => false,
+                ProjectFieldType.Number => false,
+                ProjectFieldType.Login => false,
+                ProjectFieldType.PinCode => false,
+                _ => throw new ArgumentException(self.ToString(), nameof(self)),
+            };
         }
     }
 }

@@ -2,35 +2,35 @@
 @model JoinRpg.Web.Models.EditUserProfileViewModel
 
 @{
-    ViewBag.Title = "Редактирование профиля";
+  ViewBag.Title = "Редактирование профиля";
 }
 
-<h2>Профиль</h2>
+<h2>Настройки профиля</h2>
 
 
 @using (Html.BeginForm())
 {
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(m => m.UserId)
-    @Html.HiddenFor(m => m.LastClaimId)
-    @Html.HiddenFor(m => m.LastClaimProjectId)
+  @Html.AntiForgeryToken()
+  @Html.HiddenFor(m => m.UserId)
+  @Html.HiddenFor(m => m.LastClaimId)
+  @Html.HiddenFor(m => m.LastClaimProjectId)
 
 
-<div class="form-horizontal">
+  <div class="form-horizontal">
     @if (Model.LastClaimId != null)
     {
-        <div class="alert alert-info">
-            <h3>Поздравляем! Ваша заявка отправлена мастерам!</h3>
-            Удостоверьтесь что ваши контакты актуальны, чтобы мастерам было легче с вами связаться или найти вас.
-            Ваш телефон, email и skype будут видны только мастерам игр, на которые вы заявились.
-        </div>
+      <div class="alert alert-info">
+        <h3>Поздравляем! Ваша заявка отправлена мастерам!</h3>
+        Удостоверьтесь что ваши контакты актуальны, чтобы мастерам было легче с вами связаться или найти вас.
+        Ваш телефон, email и skype будут видны только мастерам игр, на которые вы заявились.
+      </div>
     }
     else
     {
-        <p>
-            Удостоверьтесь что ваши контакты актуальны, чтобы мастерам было легче с вами связаться или найти вас.
-            Ваш телефон, email и skype будут видны только мастерам игр, на которые вы заявились.
-        </p>
+      <p>
+        Удостоверьтесь что ваши контакты актуальны, чтобы мастерам было легче с вами связаться или найти вас.
+        Ваш телефон, email и skype будут видны только мастерам игр, на которые вы заявились.
+      </p>
     }
     <p>Загрузить аватарку пока можно при помощи сервиса <a href="https://ru.gravatar.com/">GrAvatar</a> (@Html.HelpLink("register/index.html#id4", "инструкция")).</p>
     <hr />
@@ -38,157 +38,211 @@
 
     @if (Model.IsVerifiedFlag)
     {
-        <div class="alert alert-success">
-            Ваш профиль подтвержден администраторами. Если вы хотите изменить свое ФИО или телефон, обращайтесь в техподдержку.
-        </div>
+      <div class="alert alert-success">
+        Ваш профиль подтвержден администраторами. Если вы хотите изменить свое ФИО или телефон, обращайтесь в техподдержку.
+      </div>
     }
 
     <div class="form-group">
-        @Html.LabelFor(model => model.BornName, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @if (Model.IsVerifiedFlag)
-            {
-                @Html.EditorFor(model => model.BornName, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
-            }
-            else
-            {
-                @Html.EditorFor(model => model.BornName, new { htmlAttributes = new { @class = "form-control" } })
-            }
-            @Html.ValidationMessageFor(model => model.BornName, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.BornName, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @if (Model.IsVerifiedFlag)
+        {
+          @Html.EditorFor(model => model.BornName, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
+        }
+        else
+        {
+          @Html.EditorFor(model => model.BornName, new { htmlAttributes = new { @class = "form-control" } })
+        }
+        @Html.ValidationMessageFor(model => model.BornName, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.FatherName, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @if (Model.IsVerifiedFlag)
-            {
-                @Html.EditorFor(model => model.FatherName, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
-            }
-            else
-            {
-                @Html.EditorFor(model => model.FatherName, new { htmlAttributes = new { @class = "form-control" } })
-            }
-            @Html.ValidationMessageFor(model => model.FatherName, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.FatherName, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @if (Model.IsVerifiedFlag)
+        {
+          @Html.EditorFor(model => model.FatherName, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
+        }
+        else
+        {
+          @Html.EditorFor(model => model.FatherName, new { htmlAttributes = new { @class = "form-control" } })
+        }
+        @Html.ValidationMessageFor(model => model.FatherName, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.SurName, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @if (Model.IsVerifiedFlag)
-            {
-                @Html.EditorFor(model => model.SurName, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
-            }
-            else
-            {
-                @Html.EditorFor(model => model.SurName, new { htmlAttributes = new { @class = "form-control" } })
-            }
-            @Html.ValidationMessageFor(model => model.SurName, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.SurName, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @if (Model.IsVerifiedFlag)
+        {
+          @Html.EditorFor(model => model.SurName, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
+        }
+        else
+        {
+          @Html.EditorFor(model => model.SurName, new { htmlAttributes = new { @class = "form-control" } })
+        }
+        @Html.ValidationMessageFor(model => model.SurName, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.PrefferedName, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @Html.EditorFor(model => model.PrefferedName, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.DescriptionFor(model => model.PrefferedName)
-            @Html.ValidationMessageFor(model => model.PrefferedName, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.PrefferedName, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @Html.EditorFor(model => model.PrefferedName, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.DescriptionFor(model => model.PrefferedName)
+        @Html.ValidationMessageFor(model => model.PrefferedName, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @if (Model.IsVerifiedFlag)
-            {
-                @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
-            }
-            else
-            {
-                @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
-            }
-            @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @if (Model.IsVerifiedFlag)
+        {
+          @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control", disabled = "disabled" } })
+        }
+        else
+        {
+          @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
+        }
+        @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Skype, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @Html.EditorFor(model => model.Skype, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Skype, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.Skype, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @Html.EditorFor(model => model.Skype, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.ValidationMessageFor(model => model.Skype, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Livejournal, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            <div class="input-group">
-                @Html.EditorFor(model => model.Livejournal, new { htmlAttributes = new { @class = "form-control" } })
-                <span class="input-group-addon">.livejournal.com</span>
-            </div>
-            @Html.ValidationMessageFor(model => model.Livejournal, "", new { @class = "text-danger" })
+      @Html.LabelFor(model => model.Livejournal, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        <div class="input-group">
+          @Html.EditorFor(model => model.Livejournal, new { htmlAttributes = new { @class = "form-control" } })
+          <span class="input-group-addon">.livejournal.com</span>
         </div>
+        @Html.ValidationMessageFor(model => model.Livejournal, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Vk, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            <div class="input-group">
-                <span class="input-group-addon">https://vk.com/</span>
-                @Html.EditorFor(model => model.Vk, new { htmlAttributes = new { @class = "form-control" } })
+      @Html.LabelFor(model => model.Telegram, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        <div class="input-group">
+          <span class="input-group-addon">https://t.me/</span>
+          @Html.EditorFor(model => model.Telegram, new { htmlAttributes = new { @class = "form-control" } })
 
-            </div>
-            @Html.DescriptionFor(model => model.Vk)
-            @Html.ValidationMessageFor(model => model.Vk, "", new { @class = "text-danger" })
         </div>
+        @Html.DescriptionFor(model => model.Telegram)
+        @Html.ValidationMessageFor(model => model.Telegram, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Telegram, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            <div class="input-group">
-                <span class="input-group-addon">https://t.me/</span>
-                @Html.EditorFor(model => model.Telegram, new { htmlAttributes = new { @class = "form-control" } })
-
-            </div>
-            @Html.DescriptionFor(model => model.Telegram)
-            @Html.ValidationMessageFor(model => model.Telegram, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.Nicknames, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @Html.EditorFor(model => model.Nicknames, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.DescriptionFor(model => model.Nicknames)
+        @Html.ValidationMessageFor(model => model.Nicknames, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Nicknames, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @Html.EditorFor(model => model.Nicknames, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.DescriptionFor(model => model.Nicknames)
-            @Html.ValidationMessageFor(model => model.Nicknames, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.GroupNames, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @Html.EditorFor(model => model.GroupNames, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.DescriptionFor(model => model.GroupNames)
+        @Html.ValidationMessageFor(model => model.GroupNames, "", new { @class = "text-danger" })
+      </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(model => model.GroupNames, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-7">
-            @Html.EditorFor(model => model.GroupNames, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.DescriptionFor(model => model.GroupNames)
-            @Html.ValidationMessageFor(model => model.GroupNames, "", new { @class = "text-danger" })
-        </div>
+      @Html.LabelFor(model => model.SocialNetworkAccess, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-7">
+        @Html.EditorFor(model => model.SocialNetworkAccess, new { htmlAttributes = new { @class = "form-control" } })
+        @Html.DescriptionFor(model => model.SocialNetworkAccess)
+        @Html.ValidationMessageFor(model => model.SocialNetworkAccess, "", new { @class = "text-danger" })
+      </div>
     </div>
-
-    @*     <div class="form-group">
-            @Html.LabelFor(model => model.BirthDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-7">
-                @Html.EditorFor(model => model.BirthDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.BirthDate, "", new { @class = "text-danger" })
-            </div>
-        </div>*@
 
     <div class="form-group">
-        <div class="col-md-offset-2 col-md-7">
-            <input type="submit" value="@(Model.LastClaimId  == null ? "Сохранить" : "Сохранить и перейти к заявке")" class="btn btn-success" />
-        </div>
+      <div class="col-md-offset-2 col-md-7">
+        <input type="submit" value="@(Model.LastClaimId  == null ? "Сохранить" : "Сохранить и перейти к заявке")" class="btn btn-success" />
+      </div>
     </div>
-</div>
+  </div>
 }
 
+<h3 id="social">Соцсети</h3>
 
+  @foreach (var social in Model.SocialLoginStatus)
+  {
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4 style="display:inline">@social.LoginProvider.FriendlyName</h4>
+        @if (social.ProviderLink != null)
+        {
+          <text>(<a href="@social.ProviderLink">@social.ProviderKey</a>)</text>
+        }
+        @if (social.AllowLink)
+        {
+          <form asp-controller="Manage" asp-action="LinkLogin" style="display:inline">
+            <input type="hidden" value="@social.LoginProvider.ProviderId" name="provider" />
+            <button type="submit" class="btn btn-default">Подключить</button>
+          </form>
+        }
+        @if (social.NeedToReLink)
+        {
+          <div class="alert-danger">
+            Необходимо подтвердить аккаунт!
+          </div>
+          <form asp-controller="Manage" asp-action="LinkLogin" style="display:inline">
+            <input type="hidden" value="@social.LoginProvider.ProviderId" name="provider" />
+            <button type="submit" class="btn btn-default">Подтвердить</button>
+          </form>
+        }
+        @if (social.AllowUnlink)
+        {
+          <form asp-controller="Manage" asp-action="RemoveLogin" style="display:inline">
+            <input type="hidden" value="@social.LoginProvider.ProviderId" name="loginProvider" />
+            <input type="hidden" value="@social.ProviderKey" name="providerKey" />
+            <button type="submit" class="btn btn-default">Отключить</button>
+          </form>
+        }
+      </div>
+    </div>
+  }
+
+<h3 id="account">Настройки аккаунта</h3>
+<div>
+  <dl class="dl-horizontal">
+    <dt>Email:</dt>
+    <dd>
+      @Model.Email
+      <span class="glyphicon glyphicon-info-sign"
+                                     title="Чтобы изменить email, обратитесь в техподдержку"></span>
+    </dd>
+    <dt>Пароль:</dt>
+    <dd>
+      [
+      @if (Model.HasPassword)
+      {
+        @Html.ActionLink("Изменить пароль", "ChangePassword")
+      }
+      else
+      {
+        @Html.ActionLink("Задать пароль", "SetPassword")
+      }
+      ]
+    </dd>
+  </dl>
+</div>
+
+<h3 id="avatar">Аватарки</h3>
+<partial name="_AvatarSelector" model="@Model.Avatars" />

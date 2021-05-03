@@ -11,16 +11,16 @@ namespace JoinRpg.Services.Interfaces
             int receiverClaimId,
             int accommodationRequestId);
             */
-        Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(int projectId,
+        Task<IEnumerable<AccommodationInvite?>?> CreateAccommodationInviteToGroupOrClaim(int projectId,
             int senderClaimId,
             string receiverClaimOrAccommodationRequestId,
             int accommodationRequestId,
             string accommodationRequestPrefix);
 
-        Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId,
+        Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
             AccommodationRequest.InviteState newState);
 
-        Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
+        Task<AccommodationInvite?> AcceptAccommodationInvite(int projectId,
             int inviteId);
 
         Task DeclineAllClaimInvites(int claimId);

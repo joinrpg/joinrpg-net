@@ -1,0 +1,42 @@
+﻿<table class="table">
+  <tr>
+    <th>Аватарка</th>
+    <th>Источник</th>
+    <th>&nbsp;</th>
+  </tr>
+  @foreach (var avatar in Model.Avatars)
+  {
+    <tr>
+      <td style="padding:5px">
+        <vc:avatar user-avatar-id-or-null="@avatar.AvatarId"
+                   email="@Model.Email"
+                   recommended-size="64"></vc:avatar>
+      </td>
+      <td>
+        @avatar.Source
+      </td>
+      <td>
+        @if (avatar.Selected)
+        {
+          <b>Выбранный</b>
+        }
+        else
+        {
+          <form asp-controller="Avatar"
+                asp-action="ChooseAvatar"
+                method="post">
+            <input type="hidden" name="userAvatarId" value="@avatar.AvatarId.Value" />
+            <input type="submit" class="btn btn-default" value="Выбрать">
+          </form>
+
+          <form asp-controller="Avatar"
+                asp-action="DeleteAvatar"
+                method="post">
+            <input type="hidden" name="userAvatarId" value="@avatar.AvatarId.Value" />
+            <input type="submit" class="btn btn-danger" value="Удалить">
+          </form>
+        }
+      </td>
+    </tr>
+  }
+</table>

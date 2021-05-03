@@ -23,7 +23,7 @@ namespace JoinRpg.Domain
         /// <summary>
         /// Returns fee info object for a specified date
         /// </summary>
-        private static ProjectFeeSetting ProjectFeeInfo(this Project project,
+        private static ProjectFeeSetting? ProjectFeeInfo(this Project project,
             DateTime operationDate)
             => project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
                 .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault();
@@ -31,7 +31,7 @@ namespace JoinRpg.Domain
         /// <summary>
         /// Returns fee info object for today
         /// </summary>
-        public static ProjectFeeSetting ProjectFeeInfo(this Project project)
+        public static ProjectFeeSetting? ProjectFeeInfo(this Project project)
             => project.ProjectFeeInfo(DateTime.UtcNow);
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace JoinRpg.Domain
         }
 
         [CanBeNull]
-        public static PaymentType GetCashPaymentType([NotNull]
+        public static PaymentType? GetCashPaymentType([NotNull]
             this Project project,
             int userId)
         {

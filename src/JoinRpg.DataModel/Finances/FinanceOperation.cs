@@ -17,7 +17,7 @@ namespace JoinRpg.DataModel
         public int MoneyAmount { get; set; }
         public int? PaymentTypeId { get; set; }
         [CanBeNull]
-        public virtual PaymentType PaymentType { get; set; }
+        public virtual PaymentType? PaymentType { get; set; }
 
         public int CommentId { get; set; }
         public virtual Comment Comment { get; set; }
@@ -157,9 +157,25 @@ namespace JoinRpg.DataModel
 
     public enum FinanceOperationState
     {
+        /// <summary>
+        /// Operation approved
+        /// </summary>
         Approved,
+
+        /// <summary>
+        /// Operation is being processed
+        /// </summary>
         Proposed,
+
+        /// <summary>
+        /// Operation was declined
+        /// </summary>
         Declined,
+
+        /// <summary>
+        /// Operation is invalid (typically online payment that doesn't have a corresponding object on the bank side)
+        /// </summary>
+        Invalid,
     }
 
     /// <summary>

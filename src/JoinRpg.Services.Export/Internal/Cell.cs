@@ -2,11 +2,7 @@ using JetBrains.Annotations;
 
 namespace JoinRpg.Services.Export.Internal
 {
-    internal class Cell
+    internal record Cell(object? Content)
     {
-        [CanBeNull]
-        public object Content { get; set; }
-
-        public bool ColumnHeader { get; set; }
     }
 }

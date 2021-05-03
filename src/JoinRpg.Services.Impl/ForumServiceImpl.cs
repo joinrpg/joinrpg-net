@@ -23,7 +23,7 @@ namespace JoinRpg.Services.Impl
         public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
         {
             var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
-            group.RequestMasterAccess(CurrentUserId);
+            _ = group.RequestMasterAccess(CurrentUserId);
             var forumThread = new ForumThread()
 
             {
@@ -51,7 +51,7 @@ namespace JoinRpg.Services.Impl
             if (emailEverybody)
             {
                 var groups = GetChildrenGroupIds(group);
-                var players = hideFromUser ? new User[] { } :
+                var players = hideFromUser ? System.Array.Empty<User>() :
                   (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Approved, groups)).Select(
                     claim => claim.Player);
                 var masters = forumThread.Project.ProjectAcls.Select(acl => acl.User);
@@ -101,7 +101,7 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<ForumEmail> AddCommentWithEmail(string commentText, ForumThread forumThread,
-          bool isVisibleToPlayer, Comment parentComment)
+          bool isVisibleToPlayer, Comment? parentComment)
         {
             var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
 

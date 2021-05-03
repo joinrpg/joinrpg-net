@@ -15,7 +15,7 @@ namespace Joinrpg.Web.Identity
 
         Task<IdentityResult> IUserStore<JoinIdentityUser>.DeleteAsync(JoinIdentityUser user, CancellationToken ct) => throw new NotSupportedException();
 
-        async Task<JoinIdentityUser> IUserStore<JoinIdentityUser>.FindByIdAsync(string userId, CancellationToken ct)
+        async Task<JoinIdentityUser?> IUserStore<JoinIdentityUser>.FindByIdAsync(string userId, CancellationToken ct)
         {
             if (int.TryParse(userId, out var intId))
             {
@@ -28,7 +28,7 @@ namespace Joinrpg.Web.Identity
             }
         }
 
-        async Task<JoinIdentityUser> IUserStore<JoinIdentityUser>.FindByNameAsync(string normalizedUserName, CancellationToken ct)
+        async Task<JoinIdentityUser?> IUserStore<JoinIdentityUser>.FindByNameAsync(string normalizedUserName, CancellationToken ct)
         {
             var dbUser = await LoadUser(normalizedUserName, ct);
             return dbUser?.ToIdentityUser();
