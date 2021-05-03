@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models
 {
@@ -62,7 +63,7 @@ namespace JoinRpg.Web.Models
 
         public AvatarIdentification Avatar { get; }
         [Editable(false)]
-        public User User { get; } //TODO: Start using ViewModel here
+        public UserLinkViewModel User { get; }
 
         public AccessReason Reason { get; }
 
@@ -76,9 +77,9 @@ namespace JoinRpg.Web.Models
         {
 
         }
-        public UserProfileDetailsViewModel([NotNull] User user, AccessReason reason)
+        public UserProfileDetailsViewModel(User user, AccessReason reason)
         {
-            User = user ?? throw new ArgumentNullException(nameof(user));
+            User = new UserLinkViewModel(user);
             Reason = reason;
             SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess();
             Avatar = AvatarIdentification.FromOptional(user.SelectedAvatarId);

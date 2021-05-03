@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Helpers
+@using JoinRpg.Helpers
 @using JoinRpg.Web.Models
 @model PaymentViewModel
 
@@ -70,7 +70,7 @@
                   <div>
                     <button type="submit" id="dlgPayOnline1Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.BankCard" class="btn btn-success" style="font-size: larger;" title="@PaymentMethodViewModel.BankCard.GetDescription()">@PaymentMethodViewModel.BankCard.GetDisplayName()</button>
                     <button type="submit" id="dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-secondary" style="font-size: larger; margin-left: 0.5em;" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
-                    </div>
+                  </div>
                 </div>
             }
         </div>
