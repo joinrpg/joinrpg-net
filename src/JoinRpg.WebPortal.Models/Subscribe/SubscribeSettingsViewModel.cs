@@ -1,6 +1,7 @@
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.GameSubscribe;
 
 namespace JoinRpg.Web.Models.Subscribe
 {

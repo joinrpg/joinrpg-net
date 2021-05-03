@@ -7,6 +7,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
 using JoinRpg.WebPortal.Managers.Subscribe;
@@ -21,7 +22,7 @@ namespace JoinRpg.Portal.Controllers
         private readonly IUserSubscribeRepository userSubscribeRepository;
         private readonly IUserRepository userRepository;
         private readonly IUriService uriService;
-        private readonly SubscribeViewService subscribeViewService;
+        private readonly IGameSubscribeClient subscribeClient;
 
         public GameSubscribeController(
             IUserSubscribeRepository userSubscribeRepository,
@@ -29,22 +30,24 @@ namespace JoinRpg.Portal.Controllers
             IUriService uriService,
             IProjectRepository projectRepository,
             IProjectService projectService,
-            SubscribeViewService subscribeViewService)
+            IGameSubscribeClient subscribeClient
+            )
             : base(projectRepository, projectService, userRepository)
         {
             this.userSubscribeRepository = userSubscribeRepository;
             this.userRepository = userRepository;
             this.uriService = uriService;
-            this.subscribeViewService = subscribeViewService;
+            this.subscribeClient = subscribeClient;
         }
 
         [HttpGet("{masterId}")]
         public async Task<ActionResult> ByMaster(int projectId, int masterId)
         {
-            var subscribeViewModel = await subscribeViewService.GetSubscribeForMaster(projectId, masterId);
+            var subscribeViewModel = await subscribeClient.GetSubscribeForMaster(projectId, masterId);
 
             var user = await UserRepository.GetById(masterId);
             var currentUser = await userRepository.GetById(User.GetUserIdOrDefault()!.Value);
+
 
             return View(
                 new SubscribeByMasterPageViewModel(

@@ -17,7 +17,7 @@ namespace JoinRpg.DI
         {
             _ = builder.RegisterTypes(RepositoriesRegistraton.GetTypes().ToArray()).AsImplementedInterfaces();
             _ = builder.RegisterTypes(Services.Impl.Services.GetTypes().ToArray()).AsImplementedInterfaces();
-            _ = builder.RegisterTypes(WebPortal.Managers.Registration.GetTypes().ToArray()).AsSelf();
+            _ = builder.RegisterTypes(WebPortal.Managers.Registration.GetTypes().ToArray()).AsSelf().AsImplementedInterfaces();
 
             _ = builder.RegisterType<ExportDataServiceImpl>().As<IExportDataService>();
             _ = builder.RegisterType<EmailServiceImpl>().As<IEmailService>();
