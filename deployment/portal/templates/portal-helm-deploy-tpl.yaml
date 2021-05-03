@@ -77,7 +77,7 @@ jobs:
             azureSubscription: $(azureSubscription)
             azurePowerShellVersion: LatestVersion
             ScriptType: FilePath
-            ScriptPath: $(Pipeline.Workspace)/DeployScripts/portal/Prepare-ChartValues.ps1
+            ScriptPath: $(Pipeline.Workspace)/DeployScripts/portal/scripts/Prepare-ChartValues.ps1
             scriptArguments:
               -VaultName '$(keyVaultName)'
               -Prefix '${{ parameters.keyVaultPrefix }}'

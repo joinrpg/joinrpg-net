@@ -7,9 +7,10 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 80
-      targetPort: 80
+    - name: http
+      targetPort: http
+      port: 80      
       protocol: TCP
-      name: http
+      
   selector:
     {{- include "portal.selectorLabels" . | nindent 4 }}

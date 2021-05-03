@@ -6,7 +6,6 @@ replicaCount: 1
 
 image:
   repository: joinrpg.azurecr.io/joinrpg.portal
-  tag: "1.0.0"
 
 secrets: {}
 
