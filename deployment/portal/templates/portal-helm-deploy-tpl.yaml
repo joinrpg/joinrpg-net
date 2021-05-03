@@ -56,7 +56,7 @@ jobs:
         ##===========================
         - pwsh: |
             Write-Host "Deployment parameters"
-            $tplParams = @{ ingressHostName = "${{ parameters.ingressHostName }}"; keyVaultPrefix = "${{ parameters.keyVaultPrefix }}"; releaseName = ${{ parameters.releaseName }}"; namespace = "${{ parameters.namespace }}"; environment = "${{ parameters.environment }}" }
+            $tplParams = @{ ingressHostName = "${{ parameters.ingressHostName }}"; keyVaultPrefix = "${{ parameters.keyVaultPrefix }}"; releaseName = "${{ parameters.releaseName }}"; namespace = "${{ parameters.namespace }}"; environment = "${{ parameters.environment }}" }
             $tplParams | ft 
           displayName: Print deploy parameters
           name: printParameters
