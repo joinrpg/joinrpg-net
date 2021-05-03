@@ -2,7 +2,6 @@ namespace JoinRpg.Web.Models.Subscribe
 {
     public class SubscribeListViewModel
     {
-        public UserProfileDetailsViewModel User { get; set; }
         public SubscribeListItemViewModel[] Items { get; set; }
 
         public string[] PaymentTypeNames { get; set; }
@@ -10,5 +9,6 @@ namespace JoinRpg.Web.Models.Subscribe
         public bool AllowChanges { get; set; }
 
         public int ProjectId { get; set; }
+        public int MasterId { get; set; }
     }
 }

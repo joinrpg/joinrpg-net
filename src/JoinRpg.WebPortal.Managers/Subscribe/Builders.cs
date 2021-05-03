@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.Data.Interfaces;
@@ -19,10 +19,10 @@ namespace JoinRpg.Web.Models.Subscribe
         {
             return new SubscribeListViewModel()
             {
-                User = new UserProfileDetailsViewModel(data.User, currentUser),
                 AllowChanges = data.User == currentUser, //TODO allow project admins to setup subscribe for other masters
                 Items = data.UserSubscriptions.Select(x => x.ToViewModel(uriService)).ToArray(),
                 ProjectId = projectId,
+                MasterId = data.User.UserId,
                 PaymentTypeNames = paymentTypes.Select(pt => pt.ToPaymentTypeName()).ToArray(),
             };
         }
@@ -57,6 +57,7 @@ namespace JoinRpg.Web.Models.Subscribe
                 Name = link.Name,
                 Link = uriService.GetUri(link),
                 UserSubscriptionId = dto.UserSubscriptionId,
+                ProjectId = dto.ProjectId,
                 Options = new SubscribeOptionsViewModel()
                 {
                     AccommodationChange = dto.Options.AccommodationChange,
