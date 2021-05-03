@@ -10,7 +10,7 @@ variables:
   - template: "portal-k8s-vars.yaml"
 
 stages:
-  - template: "templates/portal-build-deploy-tpl.yaml"
+  - template: "templates/portal-pipeline-tpl.yaml"
     parameters:
       devNamespace: 'dev2'
       devIngressHostName: 'dev2.joinrpg.ru'

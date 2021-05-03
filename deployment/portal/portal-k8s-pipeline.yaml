@@ -10,14 +10,14 @@ variables:
   - template: "portal-k8s-vars.yaml"
     
 stages:
-  - template: "templates/portal-build-deploy-tpl.yaml"
+  - template: "templates/portal-pipeline-tpl.yaml"
     parameters:
-      devNamespace: 'dev2'
-      devIngressHostName: 'dev2.joinrpg.ru'
+      devNamespace: 'dev'
+      devIngressHostName: 'dev.joinrpg.ru'
       devKeyVaultPrefix: 'dev-'
-      devEnvironment: 'Join-k8s-dev.dev2'
-      prodNamespace: 'dev3'
-      prodIngressHostName: 'dev3.joinrpg.ru'
-      prodKeyVaultPrefix: 'dev-'
-      prodEnvironment: 'Join-k8s-dev.dev3'
+      devEnvironment: 'Join-k8s-dev.dev'
+      prodNamespace: 'default'
+      prodIngressHostName: 'prod.joinrpg.ru'
+      prodKeyVaultPrefix: 'prod-'
+      prodEnvironment: 'Join-k8s-prod'
 
