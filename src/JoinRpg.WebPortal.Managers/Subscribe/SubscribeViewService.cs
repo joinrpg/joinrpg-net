@@ -2,11 +2,12 @@ using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.Models.Subscribe;
 
 namespace JoinRpg.WebPortal.Managers.Subscribe
 {
-    public class SubscribeViewService
+    public class SubscribeViewService : IGameSubscribeClient
     {
         private readonly IUriService uriService;
         private readonly IUserSubscribeRepository userSubscribeRepository;

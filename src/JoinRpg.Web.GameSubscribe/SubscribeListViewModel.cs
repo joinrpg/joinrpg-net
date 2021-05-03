@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Models.Subscribe
+namespace JoinRpg.Web.GameSubscribe
 {
     public class SubscribeListViewModel
     {
