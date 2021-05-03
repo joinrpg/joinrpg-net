@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models.Subscribe
 {
@@ -11,5 +10,6 @@ namespace JoinRpg.Web.Models.Subscribe
         public SubscribeOptionsViewModel Options { get; set; }
 
         public int UserSubscriptionId { get; set; }
+        public int ProjectId { get; set; }
     }
 }

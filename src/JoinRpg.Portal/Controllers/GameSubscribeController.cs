@@ -7,7 +7,9 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
+using JoinRpg.WebPortal.Managers.Subscribe;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
@@ -19,7 +21,7 @@ namespace JoinRpg.Portal.Controllers
         private readonly IUserSubscribeRepository userSubscribeRepository;
         private readonly IUserRepository userRepository;
         private readonly IUriService uriService;
-        private readonly IFinanceReportRepository financeReportRepository;
+        private readonly SubscribeViewService subscribeViewService;
 
         public GameSubscribeController(
             IUserSubscribeRepository userSubscribeRepository,
@@ -27,25 +29,29 @@ namespace JoinRpg.Portal.Controllers
             IUriService uriService,
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IFinanceReportRepository financeReportRepository)
+            SubscribeViewService subscribeViewService)
             : base(projectRepository, projectService, userRepository)
         {
             this.userSubscribeRepository = userSubscribeRepository;
             this.userRepository = userRepository;
             this.uriService = uriService;
-            this.financeReportRepository = financeReportRepository;
+            this.subscribeViewService = subscribeViewService;
         }
 
         [HttpGet("{masterId}")]
         public async Task<ActionResult> ByMaster(int projectId, int masterId)
         {
-            var data = await userSubscribeRepository.LoadSubscriptionsForProject(masterId, projectId);
-            var currentUser = await userRepository.GetById(User.GetUserIdOrDefault().Value);
+            var subscribeViewModel = await subscribeViewService.GetSubscribeForMaster(projectId, masterId);
 
-            var paymentTypes = await financeReportRepository.GetPaymentTypesForMaster(projectId, masterId);
+            var user = await UserRepository.GetById(masterId);
+            var currentUser = await userRepository.GetById(User.GetUserIdOrDefault()!.Value);
 
-            return View(data.ToSubscribeListViewModel(currentUser, uriService, projectId, paymentTypes));
+            return View(
+                new SubscribeByMasterPageViewModel(
+                    new UserProfileDetailsViewModel(user, currentUser),
+                    subscribeViewModel));
         }
+
 
         [HttpGet]
         public async Task<ActionResult> EditRedirect(int projectId, int subscriptionId)

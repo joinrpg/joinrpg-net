@@ -1,4 +1,4 @@
-﻿using JoinRpg.DataModel;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Subscribe
 {
