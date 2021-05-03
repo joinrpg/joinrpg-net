@@ -151,12 +151,12 @@ stages:
   - template: templates/portal-helm-deploy-tpl.yaml
     parameters:
       name: 'Deploy_Dev'
-      displayName: "Dev: deploy to $(devNamespace) namespace"
-      ingressHostName: "$(devIngressHostName)"
-      keyVaultPrefix: "$(devKeyVaultPrefix)"
+      displayName: "Dev: deploy to ${{ variables.devNamespace }} namespace"
+      ingressHostName: "${{ variables.devIngressHostName }}"
+      keyVaultPrefix: "${{ variables.devKeyVaultPrefix }}"
       releaseName: 'joinrpg-portal'
-      namespace: "$(devNamespace)"
-      environment: "$(devEnvironment)"
+      namespace: "${{ variables.devNamespace }}"
+      environment: "${{ variables.devEnvironment }}"
 
 - stage: Deploy_Prod
   displayName: Deploy Production
@@ -166,9 +166,9 @@ stages:
   - template: templates/portal-helm-deploy-tpl.yaml
     parameters:
       name: 'Deploy_Prod'
-      displayName: "Prod: deploy to $(prodNamespace) namespace"
-      ingressHostName: "$(prodIngressHostName)"
-      keyVaultPrefix: "$(prodKeyVaultPrefix)"
+      displayName: "Prod: deploy to ${{ variables.prodNamespace }} namespace"
+      ingressHostName: "${{ variables.prodIngressHostName }}"
+      keyVaultPrefix: "${{ variables.prodKeyVaultPrefix }}"
       releaseName: 'joinrpg-portal'
-      namespace: "$(prodNamespace)"
-      environment: "$(prodEnvironment)"
+      namespace: "${{ variables.prodNamespace }}"
+      environment: "${{ variables.prodEnvironment }}"
