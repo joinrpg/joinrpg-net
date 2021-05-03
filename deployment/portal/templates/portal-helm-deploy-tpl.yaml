@@ -9,12 +9,12 @@ parameters:
 - name: ingressHostName
   displayName: 'Ingress rule hostname'
   type: string
-  default: ''
+  default: 'test.host.local'
 
 - name: keyVaultPrefix
   displayName: 'KeyVault secrets prefix'
   type: string
-  default: ''
+  default: 'test-'
 
 - name: releaseName
   displayName: 'Helm release name'
