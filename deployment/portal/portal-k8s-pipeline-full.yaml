@@ -1,0 +1,174 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - 'master'
+      - 'containers/main'
+pr: none
+
+variables:
+  HELM_EXPERIMENTAL_OCI: 1
+
+  rgName: 'joinrpg-k8s'
+  aksName: 'join-main'
+  dockerfilePath: 'src/JoinRpg.Portal/Dockerfile'
+  migrateDockerfilePath: 'src/Joinrpg.Dal.Migrate/Dockerfile'
+
+  azureSubscription: 'JoinRPG-subscription-connection'
+  registryServiceConnection: 'JoinRPG-ACR-connection'
+  imageRepository: 'joinrpg.portal'
+  migrateImageRepository: 'joinrpg.migrate'
+
+  containerRegistry: 'joinrpg.azurecr.io'
+  imageFullName: '$(containerRegistry)/$(imageRepository)'
+  migrateFullName: '$(containerRegistry)/$(migrateImageRepository)'
+
+  keyVaultName: "joinrpg-k8s-kv"
+
+  buildVmImageName: 'ubuntu-latest'
+
+stages:
+##===========================
+## Build part
+##===========================
+- stage: Build
+  displayName: Build and Push image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(buildVmImageName)
+    steps:
+    ##===========================
+    ## Install tools
+    ##===========================
+    - task: gitversion/setup@0
+      displayName: Install GitVersion
+      inputs:
+        versionSpec: '5.x'
+
+    - task: HelmInstaller@1
+      displayName: Install Helm
+      inputs:
+        helmVersionToInstall: latest
+
+    ##=============================================
+    ## Get version info and create tag for image
+    ##=============================================
+    - task: gitversion/execute@0
+      name: version
+      displayName: Determine Version
+      inputs:
+        useConfigFile: true
+        configFilePath: 'GitVersion.yml'
+
+    - pwsh: |
+        $tag = "$(GitVersion.FullSemVer)" -replace '\+','-'
+        Write-Host "Container Image tag for this build: $tag"
+        Write-Host "##vso[task.setvariable variable=safeImageTag;isOutput=true]$tag"
+      displayName: "Define safe image tag"
+      name: defineTag
+
+    ##===============================================================
+    ## Build production version of image (full set of version tags)
+    ##===============================================================
+    - task: Docker@2
+      displayName: "Prod: build and push an image"
+      condition: not(contains(variables['GitVersion.FullSemVer'], '+'))
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(registryServiceConnection)
+        buildContext: .
+        tags: |
+          latest
+          $(GitVersion.Major)
+          $(GitVersion.Major).$(GitVersion.Minor)
+          $(defineTag.safeImageTag)
+
+    ##====================================================================
+    ## Build dev version of image (on safe version tag like '1.0.1-1234')
+    ##====================================================================
+    - task: Docker@2
+      displayName: "Stage: build and push an image"
+      condition: contains(variables['GitVersion.FullSemVer'], '+')
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(registryServiceConnection)
+        buildContext: .
+        tags: |
+          $(defineTag.safeImageTag)
+
+    ##====================================================================
+    ## Build migration tool image (on safe version tag like '1.0.1-1234')
+    ##====================================================================
+    - task: Docker@2
+      displayName: "Build and push migration tool image"
+      inputs:
+        command: buildAndPush
+        repository: $(migrateImageRepository)
+        dockerfile: $(migrateDockerfilePath)
+        containerRegistry: $(registryServiceConnection)
+        buildContext: .
+        tags: |
+          latest
+          $(defineTag.safeImageTag)
+
+    ##===============================================================
+    ## Prepare (inject version) and push to registry Helm Chart
+    ##===============================================================
+    - bash: |
+        sed -i 's/^version: 1\.0\.0/version: $(GitVersion.FullSemVer)/g' ./charts/joinrpg-portal/Chart.yaml
+        sed -i 's/^appVersion: 1\.0\.0/appVersion: $(defineTag.safeImageTag)/g' ./charts/joinrpg-portal/Chart.yaml
+
+        sed -i 's/tag: "1\.0\.0"/tag: "$(defineTag.safeImageTag)"/g' ./charts/joinrpg-portal/values.yaml
+
+        echo $(acrLoginPassword) | helm registry login $(containerRegistry) --username $(acrLoginName) --password-stdin
+        helm chart save ./charts/joinrpg-portal $(containerRegistry)/charts/joinrpg-portal:$(defineTag.safeImageTag)
+        helm chart save ./charts/joinrpg-portal $(containerRegistry)/charts/joinrpg-portal:latest
+        helm chart push $(containerRegistry)/charts/joinrpg-portal:$(defineTag.safeImageTag)
+        helm chart push $(containerRegistry)/charts/joinrpg-portal:latest
+      displayName: "Publish Helm chart (Portal)"
+
+    ##===============================================================
+    ## Publish scripts and charts as artifacts for deploy stage
+    ##===============================================================
+    - publish: $(System.DefaultWorkingDirectory)/deployment
+      artifact: DeployScripts
+    - publish: $(System.DefaultWorkingDirectory)/charts
+      artifact: Charts
+
+##=================================================================================
+## Deployment part
+##=================================================================================
+- stage: Deploy_Dev
+  displayName: Deploy Dev/Stage
+  dependsOn: Build
+  jobs:
+  - template: templates/portal-helm-deploy-tpl.yaml
+    parameters:
+      name: 'Deploy_Dev'
+      displayName: "Dev: deploy to ${{ variables.devNamespace }} namespace"
+      ingressHostName: "${{ variables.devIngressHostName }}"
+      keyVaultPrefix: "${{ variables.devKeyVaultPrefix }}"
+      releaseName: 'joinrpg-portal'
+      namespace: "${{ variables.devNamespace }}"
+      environment: "$(devEnvironment)"
+
+- stage: Deploy_Prod
+  displayName: Deploy Production
+  dependsOn: Deploy_Dev
+  condition: and(succeeded(), not(contains(dependencies.Build.outputs['Build.version.GitVersion.FullSemVer'], '+')))
+  jobs:
+  - template: templates/portal-helm-deploy-tpl.yaml
+    parameters:
+      name: 'Deploy_Prod'
+      displayName: "Prod: deploy to ${{ variables.prodNamespace }} namespace"
+      ingressHostName: "${{ variables.prodIngressHostName }}"
+      keyVaultPrefix: "${{ variables.prodKeyVaultPrefix }}"
+      releaseName: 'joinrpg-portal'
+      namespace: "${{ variables.prodNamespace }}"
+      environment: "$(prodEnvironment)"
