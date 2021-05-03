@@ -1,44 +1,3 @@
-parameters:
-  - name: devIngressHostName
-    displayName: '(Dev) Ingress Hostname'
-    type: string
-    default: 'dev2.joinrpg.ru'
-     
-  - name: devNamespace
-      displayName: '(Dev) K8s Namespace'
-      type: string
-      default: 'dev2'
-
-  - name: devKeyVaultPrefix
-      displayName: '(Dev) Azure KeyVault Prefix'
-      type: string
-      default: 'dev-'
-
-  - name: devEnvironment
-      displayName: '(Dev) Pipelines Environment'
-      type: string
-      default: 'Join-k8s-dev2'
-
-  - name: prodIngressHostName
-    displayName: '(Prod) Ingress Hostname'
-    type: string
-    default: 'dev3.joinrpg.ru'
-
-  - name: prodNamespace
-      displayName: '(Prod) K8s Namespace'
-      type: string
-      default: 'dev3'
-
-  - name: prodKeyVaultPrefix
-      displayName: '(Prod) Azure KeyVault Prefix'
-      type: string
-      default: 'dev-'
-
-  - name: prodEnvironment
-      displayName: '(Prod) Pipelines Environment'
-      type: string
-      default: 'Join-k8s-dev3'
-
 trigger:
   batch: true
   branches:
@@ -192,12 +151,12 @@ stages:
   - template: templates/portal-helm-deploy-tpl.yaml
     parameters:
       name: 'Deploy_Dev'
-      displayName: "Dev: deploy to ${{ parameters.devNamespace }} namespace"
-      ingressHostName: "${{ parameters.devIngressHostName }}"
-      keyVaultPrefix: "${{ parameters.devKeyVaultPrefix }}"
+      displayName: "Dev: deploy to $(devNamespace) namespace"
+      ingressHostName: "$(devIngressHostName)"
+      keyVaultPrefix: "$(devKeyVaultPrefix)"
       releaseName: 'joinrpg-portal'
-      namespace: "${{ parameters.devNamespace }}"
-      environment: "${{ parameters.devEnvironment }}"
+      namespace: "$(devNamespace)"
+      environment: "$(devEnvironment)"
 
 - stage: Deploy_Prod
   displayName: Deploy Production
@@ -207,9 +166,9 @@ stages:
   - template: templates/portal-helm-deploy-tpl.yaml
     parameters:
       name: 'Deploy_Prod'
-      displayName: "Prod: deploy to ${{ parameters.prodNamespace }} namespace"
-      ingressHostName: "${{ parameters.prodIngressHostName }}"
-      keyVaultPrefix: "${{ parameters.prodKeyVaultPrefix }}"
+      displayName: "Prod: deploy to $(prodNamespace) namespace"
+      ingressHostName: "$(prodIngressHostName)"
+      keyVaultPrefix: "$(prodKeyVaultPrefix)"
       releaseName: 'joinrpg-portal'
-      namespace: "${{ parameters.prodNamespace }}"
-      environment: "${{ parameters.prodEnvironment }}"
+      namespace: "$(prodNamespace)"
+      environment: "$(prodEnvironment)"
