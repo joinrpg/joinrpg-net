@@ -8,6 +8,9 @@ RUN dotnet publish src/JoinRpg.Portal -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:5.0.5
 WORKDIR /app
 COPY --from=build-env /app/out .
+
+#We need this to ClosedXML to work
+RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
 ENTRYPOINT ["dotnet", "JoinRpg.Portal.dll"]
 
 EXPOSE 80/tcp
