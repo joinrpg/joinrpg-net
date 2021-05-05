@@ -4,6 +4,6 @@
     @Html.DisplayFor(model => model.ClaimStatus)
     @if (Model.ClaimDenialStatus != null && Model.AccessArguments.MasterAccess)
     {
-        <text >(@Model.ClaimDenialStatus.GetDisplayName())</text>
+        <text >(@Model.ClaimDenialStatus?.GetDisplayName())</text>
     }
 </text>

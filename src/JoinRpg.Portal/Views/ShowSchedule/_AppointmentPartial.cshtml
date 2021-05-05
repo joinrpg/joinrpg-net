@@ -32,7 +32,7 @@
      slots="@slots"
      all-rooms="@(Model.AllRooms.ToString())"
      error-mode="@((Model.ErrorType == AppointmentErrorType.Intersection).ToString())"
-     errors="@(Model.ErrorType.HasValue ? Model.ErrorType.GetDisplayName() : "")">
+     errors="@(Model.ErrorType.HasValue ? Model.ErrorType?.GetDisplayName() : "")">
     <div class="appointment-interior" title="@title">
         <div class="appointment-header"><a href="@url" target="@target">@Model.DisplayName</a></div>
         @if (Model.ErrorType == AppointmentErrorType.NotLocated)

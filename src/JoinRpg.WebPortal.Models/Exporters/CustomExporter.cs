@@ -91,7 +91,14 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [MustUseReturnValue]
-        protected ITableColumn EnumColumn(Expression<Func<TRow, Enum>> func)
+        protected ITableColumn EnumColumn<TEnum>(Expression<Func<TRow, Nullable<TEnum>>> func) where TEnum : struct, Enum
+        {
+            var member = func.AsPropertyAccess();
+            return new TableColumn<string>(member, r => func.Compile()(r)?.GetDisplayName());
+        }
+
+        [MustUseReturnValue]
+        protected ITableColumn EnumColumn<TEnum>(Expression<Func<TRow, TEnum>> func) where TEnum : struct, Enum
         {
             var member = func.AsPropertyAccess();
             return new TableColumn<string>(member, r => func.Compile()(r).GetDisplayName());

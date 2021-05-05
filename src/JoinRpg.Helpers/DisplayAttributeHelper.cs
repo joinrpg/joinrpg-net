@@ -30,7 +30,7 @@ namespace JoinRpg.Helpers
         /// <summary>
         /// Returns name specified by <see cref="DisplayNameAttribute"/> or <see cref="DisplayAttribute"/>
         /// </summary>
-        public static string GetDisplayName([NotNull] this Enum enumValue)
+        public static string GetDisplayName<TEnum>([NotNull] this TEnum enumValue) where TEnum : notnull, Enum
         {
             if (enumValue is null)
             {
