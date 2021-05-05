@@ -409,6 +409,8 @@ namespace JoinRpg.Services.Impl
         {
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
+            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
+
             claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
 
             claim.MasterDeclinedDate = Now;
@@ -417,7 +419,6 @@ namespace JoinRpg.Services.Impl
 
             var roomEmail = await CommonClaimDecline(claim);
 
-            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
             if (deleteCharacter)
             {
                 if (claim.Character is null || !statusWasApproved)
