@@ -20,7 +20,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var user = await UserRepository.GetById(userId);
 
-            var currentUser = User.Identity.IsAuthenticated ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
+            var currentUser = User.Identity?.IsAuthenticated == true ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
 
             var accessReason = (AccessReason)user.GetProfileAccess(currentUser);
             var userProfileViewModel = new UserProfileViewModel()
