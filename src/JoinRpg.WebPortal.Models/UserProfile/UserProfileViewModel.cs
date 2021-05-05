@@ -25,7 +25,7 @@ namespace JoinRpg.Web.Models
           => CanGrantAccessProjects.Where(acl => ThisUserProjects.All(acl1 => acl1.ProjectId != acl.ProjectId));
 
         [ReadOnly(true)]
-        public ClaimListViewModel Claims { get; set; }
+        public ClaimListViewModel? Claims { get; set; }
 
         public UserProfileDetailsViewModel Details { get; set; }
 
@@ -47,13 +47,13 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber), UIHint("PhoneNumber")]
         public string PhoneNumber { get; }
         [Display(Name = "Skype"), UIHint("Skype")]
-        public string Skype { get; }
+        public string? Skype { get; }
         [Display(Name = "Telegram"), UIHint("Telegram")]
-        public string Telegram { get; }
+        public string? Telegram { get; }
         [Display(Name = "ЖЖ"), UIHint("Livejournal")]
-        public string Livejournal { get; }
+        public string? Livejournal { get; }
         [Display(Name = "VK"), UIHint("Vkontakte")]
-        public string Vk { get; }
+        public string? Vk { get; }
         [UIHint("Email")]
         public string Email { get; }
         [DisplayName("ФИО")]
@@ -61,7 +61,7 @@ namespace JoinRpg.Web.Models
 
         public int? AllrpgId { get; }
 
-        public AvatarIdentification Avatar { get; }
+        public AvatarIdentification? Avatar { get; }
         [Editable(false)]
         public UserLinkViewModel User { get; }
 
@@ -95,7 +95,7 @@ namespace JoinRpg.Web.Models
                 IsVerifiedUser = user.VerifiedProfileFlag;
                 IsAdmin = user.Auth.IsAdmin;
             }
-            if (HasAccess || user.Extra.SocialNetworksAccess == ContactsAccessType.Public)
+            if (HasAccess || user.Extra?.SocialNetworksAccess == ContactsAccessType.Public)
             {
                 Vk = user.Extra?.Vk;
                 AllrpgId = user.Allrpg?.Sid;
