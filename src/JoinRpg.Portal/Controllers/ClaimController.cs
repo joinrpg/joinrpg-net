@@ -673,8 +673,7 @@ namespace JoinRpg.Portal.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<ActionResult> PostAccommodationRequest(
-           AccommodationRequestViewModel viewModel)
+        public async Task<ActionResult> SetAccommodationType(AccommodationRequestViewModel viewModel)
         {
             var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
             if (claim == null)
@@ -693,10 +692,11 @@ namespace JoinRpg.Portal.Controllers
                     return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
                 }
 
-
-                _ = await _claimService.SetAccommodationType(viewModel.ProjectId,
-                  viewModel.ClaimId,
-                  viewModel.AccommodationTypeId).ConfigureAwait(false);
+                _ = await _claimService.SetAccommodationType(
+                    viewModel.ProjectId,
+                    viewModel.ClaimId,
+                    viewModel.AccommodationTypeId)
+                    .ConfigureAwait(false);
 
                 return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
             }
