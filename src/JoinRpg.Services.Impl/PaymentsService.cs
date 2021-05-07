@@ -93,7 +93,7 @@ namespace JoinRpg.Services.Impl
             var message = new PaymentMessage
             {
                 Amount = request.Money,
-                Details = $"Билет (организационный взнос) участника на «{claim.Project.ProjectName}»",
+                Details = $"Билет (организационный взнос) участника на {claim.Project.ProjectName}",
                 CustomerAccount = CurrentUserId.ToString(),
                 CustomerEmail = user.Email,
                 CustomerPhone = user.Extra?.PhoneNumber,
