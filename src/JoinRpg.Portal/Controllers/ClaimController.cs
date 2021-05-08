@@ -201,6 +201,7 @@ namespace JoinRpg.Portal.Controllers
                 claim,
                 plots,
                 UriService,
+                ps.GetConfiguredMethods(),
                 availableAccommodation,
                 potentialNeighbors,
                 incomingInvite,

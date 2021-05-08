@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using PscbApi.Models;
 
@@ -129,5 +130,10 @@ namespace JoinRpg.Services.Interfaces
         /// <param name="claimId">Database Id of a claim</param>
         /// <param name="orderId">Finance operation Id</param>
         Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId);
+
+        /// <summary>
+        /// Returns configured payment methods
+        /// </summary>
+        IReadOnlySet<PaymentMethod> GetConfiguredMethods();
     }
 }

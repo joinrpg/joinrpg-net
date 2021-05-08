@@ -21,7 +21,7 @@
     {
         <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
     }
-    @if (Model.ShowOnlinePaymentControls)
+    @if (Model.OnlinePaymentMethods.Count > 0)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
@@ -103,7 +103,7 @@
                     {
                         <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
                     }
-                    @if (Model.ShowOnlinePaymentControls)
+                    @if (Model.OnlinePaymentMethods.Count > 0)
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }

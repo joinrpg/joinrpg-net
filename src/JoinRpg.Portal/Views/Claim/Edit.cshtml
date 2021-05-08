@@ -365,9 +365,9 @@ new { Model.CharacterId, Model.ProjectId }, null)
       @await Html.PartialAsync("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
     }
 
-    @if (Model.ClaimFee.ShowOnlinePaymentControls)
+    @if (Model.ClaimFee.OnlinePaymentMethods.Count > 0)
     {
-      @await Html.PartialAsync("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
+      @await Html.PartialAsync("..\\Finances\\_PayOnlineDialog", new DialogPaymentViewModel(Model))
     }
 
     @if (Model.ClaimFee.PreferentialFeeRequestEnabled)

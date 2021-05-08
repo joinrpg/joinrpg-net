@@ -1,6 +1,6 @@
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Models
-@model PaymentViewModel
+@model DialogPaymentViewModel
 
 <div class="modal fade" id="payOnlineDialog" tabindex="-1" role="dialog">
     <div class="modal-dialog">
@@ -34,7 +34,7 @@
                     <div class="join alert alert-info">
                         <i class="glyphicon glyphicon-info-sign"></i>
                         <div style="font-size: smaller;">
-                            @await Html.PartialAsync("..\\Finances\\_PaymentLegalInfoPartial")
+                            @await Html.PartialAsync("..\\Finances\\_PaymentLegalInfoPartial", Model.Methods)
                         </div>
                     </div>
 
@@ -68,8 +68,10 @@
                 <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">
                   <button type="button" class="btn btn-default" style="margin-right: auto;" data-dismiss="modal">Отмена</button>
                   <div>
-                    <button type="submit" id="dlgPayOnline1Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.BankCard" class="btn btn-success" style="font-size: larger;" title="@PaymentMethodViewModel.BankCard.GetDescription()">@PaymentMethodViewModel.BankCard.GetDisplayName()</button>
-                    <button type="submit" id="dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-secondary" style="font-size: larger; margin-left: 0.5em;" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
+                    @foreach (var pm in Model.NumberedMethods)
+                    {
+                      <button type="submit" id="dlgPayOnlineSubmit@(pm.Index)" disabled name="@Html.NameFor(m => m.Method)" value="@pm.ToString()" class="btn @pm.PaymentMethod.GetShortName()" style="font-size: larger;" title="@pm.PaymentMethod.GetDescription()">@pm.PaymentMethod.GetDisplayName()</button>
+                    }
                   </div>
                 </div>
             }
@@ -82,15 +84,21 @@ function changeHandler()
 {
   const edMoney = document.getElementById('@Html.IdFor(m => m.Money)');
   const checkBox = document.getElementById('@Html.IdFor(m => m.AcceptContract)');
-  const submitBtn1 = document.getElementById('dlgPayOnline1Submit');
-  const submitBtn2 = document.getElementById('dlgPayOnline2Submit');
+  const submitButtons = [
+      @foreach (var pm in Model.NumberedMethods)
+      {
+        <text>document.getElementById('dlgPayOnlineSubmit@(pm.Index)'),</text>
+      }
+  ];
   const money = parseInt(edMoney.value);
   if (money >= 1 && money <= 100000 && checkBox.checked) {
-      submitBtn1.removeAttribute('disabled');
-      submitBtn2.removeAttribute('disabled');
+      for (const btn of submitButtons) {
+          btn.removeAttribute('disabled');
+      }
   } else {
-      submitBtn1.setAttribute('disabled', '');
-      submitBtn2.setAttribute('disabled', '');
+      for (const btn of submitButtons) {
+          btn.setAttribute('disabled', '');
+      }
   }
 }
 </script>

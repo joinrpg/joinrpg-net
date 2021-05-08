@@ -1,20 +1,27 @@
 ﻿@using JoinRpg.Web.Models
 @using JoinRpg.Helpers
-<p>
-  <strong>Оплата картой.</strong>
-  После нажатия кнопки «@PaymentMethodViewModel.BankCard.GetDisplayName()» вы будете перенаправлены
-  на страницу платежного сервиса «ПСКБ Онлайн» для ввода данных своей банковской карты. Поддерживаются
-  карты Master Card, Visa или МИР, а также сервисы Apple Pay (только в браузере Safari на устройствах Apple),
-  Google Pay, Samsung Pay. Если банк, выдавший вам карту, требует дополнительную проверку,
-  то произойдет переадресация на страницу банка для ввода одноразового пароля (технология 3D Secure).
-</p>
-<p>
-  <strong>Оплата по QR-коду.</strong>
-  После нажатия кнопки «@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()» вы будете
-  перенаправлены на страницу платежного сервиса «ПСКБ Онлайн», на которой произойдет отображение
-  QR-кода <a target="_blank" href="https://sbp.nspk.ru/">Системы Быстрых Платежей</a>. Для выполнения
-  оплаты мобильное приложение вашего банка должно поддерживать оплату по QR-коду.
-</p>
+@model IReadOnlySet<PaymentMethodViewModel>
+@if (Model.Contains(PaymentMethodViewModel.BankCard))
+{
+  <p>
+    <strong>Оплата картой.</strong>
+    После нажатия кнопки «@PaymentMethodViewModel.BankCard.GetDisplayName()» вы будете перенаправлены
+    на страницу платежного сервиса «ПСКБ Онлайн» для ввода данных своей банковской карты. Поддерживаются
+    карты Master Card, Visa или МИР, а также сервисы Apple Pay (только в браузере Safari на устройствах Apple),
+    Google Pay, Samsung Pay. Если банк, выдавший вам карту, требует дополнительную проверку,
+    то произойдет переадресация на страницу банка для ввода одноразового пароля (технология 3D Secure).
+  </p>
+}
+@if (Model.Contains(PaymentMethodViewModel.FastPaymentsSystem))
+{
+  <p>
+    <strong>Оплата по QR-коду.</strong>
+    После нажатия кнопки «@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()» вы будете
+    перенаправлены на страницу платежного сервиса «ПСКБ Онлайн», на которой произойдет отображение
+    QR-кода <a target="_blank" href="https://sbp.nspk.ru/">Системы Быстрых Платежей</a>. Для выполнения
+    оплаты мобильное приложение вашего банка должно поддерживать оплату по QR-коду.
+  </p>
+}
 <p>
   JoinRpg.Ru не имеет доступа к данным вашей карты или банковского аккаунта, и соответственно
   не обрабатывает и не хранит их, они обрабатываются платежным сервисом «ПСКБ Онлайн» согласно

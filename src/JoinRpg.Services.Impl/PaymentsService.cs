@@ -302,6 +302,24 @@ namespace JoinRpg.Services.Impl
             }
         }
 
+        /// <inheritdoc />
+        public IReadOnlySet<PaymentMethod> GetConfiguredMethods()
+        {
+            var result = new HashSet<PaymentMethod>(2);
+
+            if (!string.IsNullOrEmpty(_bankSecrets.MerchantId.Trim()))
+            {
+                result.Add(PaymentMethod.BankCard);
+            }
+
+            if (!string.IsNullOrEmpty(_bankSecrets.MerchantIdFastPayments.Trim()))
+            {
+                result.Add(PaymentMethod.FastPaymentsSystem);
+            }
+
+            return result;
+        }
+
         private abstract class PaymentRedirectUrl : ILinkable
         {
             /// <inheritdoc />
