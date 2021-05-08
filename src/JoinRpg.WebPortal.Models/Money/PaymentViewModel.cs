@@ -47,6 +47,10 @@ namespace JoinRpg.Web.Models
 
         public PaymentMethodViewModel Method { get; set; }
 
+        public PaymentViewModel() {}
+
+        protected PaymentViewModel(ClaimViewModel claimModel) : base(claimModel) {}
+
         /// <inheritdoc />
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
             => base.Validate(validationContext)
@@ -63,7 +67,7 @@ namespace JoinRpg.Web.Models
 
         public IReadOnlyCollection<(PaymentMethodViewModel PaymentMethod, int Index)> NumberedMethods { get; }
 
-        public DialogPaymentViewModel(ClaimViewModel claimModel)
+        public DialogPaymentViewModel(ClaimViewModel claimModel) : base(claimModel)
         {
             ActionName = "Оплатить";
             Methods = claimModel.ClaimFee.OnlinePaymentMethods;
