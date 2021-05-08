@@ -20,8 +20,8 @@ namespace JoinRpg.Web.Models
 {
     public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
     {
-        public int ClaimId { get; set; }
-        public int ProjectId { get; set; }
+        public int ClaimId { get; }
+        public int ProjectId { get; }
 
         [DisplayName("Игрок")]
         public User Player { get; set; }
@@ -105,19 +105,19 @@ namespace JoinRpg.Web.Models
         public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
 
 
-        public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
-        public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
-        public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
-        public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
-        public AccommodationRequest AccommodationRequest { get; set; }
+        public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; }
+        public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; }
+        public IEnumerable<AccommodationInvite> IncomingInvite { get; }
+        public IEnumerable<AccommodationInvite> OutgoingInvite { get; }
+        public AccommodationRequest AccommodationRequest { get; }
 
 
         public ClaimViewModel(User currentUser,
           Claim claim,
           IReadOnlyCollection<PlotElement> plotElements,
           IUriService uriService,
+          IEnumerable<PaymentMethod>? onlinePaymentMethods = null,
           IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
-          IEnumerable<AccommodationRequest>? accommodationRequests = null,
           IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
           IEnumerable<AccommodationInvite>? incomingInvite = null,
           IEnumerable<AccommodationInvite>? outgoingInvite = null)
@@ -143,18 +143,22 @@ namespace JoinRpg.Web.Models
             CharacterId = claim.CharacterId;
             CharacterActive = claim.Character?.IsActive;
             CharacterAutoCreated = claim.Character?.AutoCreated;
-            AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
-              a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
-              claim.HasMasterAccess(currentUser.UserId)).ToList();
-            PotentialNeighbors = potentialNeighbors;
+            AvailableAccommodationTypes = availableAccommodationTypes?
+                    .Where(
+                        a => a.IsPlayerSelectable
+                            || a.Id == claim.AccommodationRequest?.AccommodationTypeId
+                            || claim.HasMasterAccess(currentUser.UserId))
+                    .ToArray()
+                ?? Array.Empty<ProjectAccommodationType>();
+            PotentialNeighbors = potentialNeighbors ?? Enumerable.Empty<AccommodationPotentialNeighbors>();
             AccommodationRequest = claim.AccommodationRequest;
-            IncomingInvite = incomingInvite;
-            OutgoingInvite = outgoingInvite;
+            IncomingInvite = incomingInvite ?? Enumerable.Empty<AccommodationInvite>();
+            OutgoingInvite = outgoingInvite ?? Enumerable.Empty<AccommodationInvite>();
             OtherClaimsForThisCharacterCount = claim.IsApproved
                 ? 0
                 : claim.OtherClaimsForThisCharacter().Count();
-            HasOtherApprovedClaim = !claim.IsApproved &&
-                                    claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
+            HasOtherApprovedClaim = !claim.IsApproved
+                && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
             Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
             OtherClaimsFromThisPlayerCount =
                 OtherClaimsFromThisPlayerCount =
@@ -190,7 +194,8 @@ namespace JoinRpg.Web.Models
             {
                 // Finance admins can create any payment.
                 // User also can create any payment, but it will be moderated
-                PaymentTypes = claim.Project.ActivePaymentTypes.Select(pt => new PaymentTypeViewModel(pt));
+                PaymentTypes = claim.Project.ActivePaymentTypes
+                    .Select(pt => new PaymentTypeViewModel(pt));
             }
             else
             {
@@ -199,7 +204,8 @@ namespace JoinRpg.Web.Models
                     .Where(pt => pt.UserId == currentUser.UserId)
                     .Select(pt => new PaymentTypeViewModel(pt));
             }
-            ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
+
+            ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, onlinePaymentMethods);
 
             if (claim.Character != null)
             {
@@ -455,7 +461,7 @@ namespace JoinRpg.Web.Models
 
     public class ClaimFeeViewModel
     {
-        public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
+        public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId, IEnumerable<PaymentMethod>? onlinePaymentMethods)
         {
             Status = model.Status;
 
@@ -501,7 +507,7 @@ namespace JoinRpg.Web.Models
             ProjectId = claim.ProjectId;
             FeeVariants = claim.Project.ProjectFeeSettings
                 .Select(f => f.Fee)
-                .Union(CurrentFee)
+                .Append(CurrentFee)
                 .OrderBy(x => x)
                 .ToList();
             FinanceOperations = claim.FinanceOperations
@@ -511,7 +517,12 @@ namespace JoinRpg.Web.Models
                     fo.OperationType != FinanceOperationTypeViewModel.FeeChange
                         && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
 
-            ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
+            if (model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId)
+            {
+                OnlinePaymentMethods = new HashSet<PaymentMethodViewModel>(onlinePaymentMethods?.Select(v => (PaymentMethodViewModel) v)
+                    ?? Enumerable.Empty<PaymentMethodViewModel>());
+            }
+
             HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
 
             // Determining payment status
@@ -619,9 +630,9 @@ namespace JoinRpg.Web.Models
         public IEnumerable<FinanceOperationViewModel> VisibleFinanceOperations { get; }
 
         /// <summary>
-        /// true if online payment enabled
+        /// Configured and allowed online payment methods
         /// </summary>
-        public bool ShowOnlinePaymentControls { get; }
+        public IReadOnlySet<PaymentMethodViewModel> OnlinePaymentMethods { get; }
 
         /// <summary>
         /// true if there is any payment type(s) except online

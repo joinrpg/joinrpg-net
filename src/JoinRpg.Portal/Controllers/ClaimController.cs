@@ -17,6 +17,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -148,42 +149,62 @@ namespace JoinRpg.Portal.Controllers
               : Array.Empty<PlotElement>();
 
             IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
-            IEnumerable<AccommodationRequest>? requestForAccommodation = null;
             IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null;
             IEnumerable<AccommodationInvite>? incomingInvite = null;
             IEnumerable<AccommodationInvite>? outgoingInvite = null;
 
-
             if (claim.Project.Details.EnableAccommodation)
             {
-                availableAccommodation = await
-                    _accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
-                requestForAccommodation = await _accommodationRequestRepository
-                    .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
-                var acceptedRequest = requestForAccommodation
+                availableAccommodation = await _accommodationRepository
+                    .GetAccommodationForProject(claim.ProjectId)
+                    .ConfigureAwait(false);
+                var accommodationRequests = await _accommodationRequestRepository
+                    .GetAccommodationRequestForClaim(claim.ClaimId)
+                    .ConfigureAwait(false);
+                var acceptedRequest = accommodationRequests
                     .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
                 var acceptedRequestId = acceptedRequest?.Id;
-                var acceptedRequestAccommodationTypeIdId = acceptedRequest?.AccommodationTypeId;
+                var acceptedRequestAccommodationTypeId = acceptedRequest?.AccommodationTypeId;
 
-                if (acceptedRequestId != null)
+                if (acceptedRequestId.HasValue && acceptedRequestAccommodationTypeId.HasValue)
                 {
-                    var sameRequest = (await
-                        _accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
-                            acceptedRequestAccommodationTypeIdId.Value).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
-                        .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType)); ;
-                    var noRequest = (await
-                        _accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
-                    var currentNeighbors = (await
-                       _accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
-                            acceptedRequestId.Value).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
-                    potentialNeighbors = sameRequest.Union(noRequest).Where(element => currentNeighbors.All(el => el.ClaimId != element.ClaimId));
+                    var sameRequest = (await _accommodationRequestRepository
+                            .GetClaimsWithSameAccommodationTypeToInvite(
+                                acceptedRequestAccommodationTypeId.Value)
+                            .ConfigureAwait(false))
+                        .Where(c => c.ClaimId != claim.ClaimId)
+                        .Select(
+                            c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType));
+                    var noRequest = (await _accommodationRequestRepository
+                            .GetClaimsWithOutAccommodationRequest(claim.ProjectId)
+                            .ConfigureAwait(false))
+                        .Select(
+                            c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest));
+                    var currentNeighbors = (await _accommodationRequestRepository
+                            .GetClaimsWithSameAccommodationRequest(acceptedRequestId.Value)
+                            .ConfigureAwait(false))
+                        .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
+                    potentialNeighbors = sameRequest
+                        .Union(noRequest)
+                        .Where(element => currentNeighbors
+                            .All(el => el.ClaimId != element.ClaimId));
                 }
 
                 incomingInvite = await AccommodationInviteRepository.GetIncomingInviteForClaim(claim).ConfigureAwait(false);
                 outgoingInvite = await AccommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
             }
 
-            var claimViewModel = new ClaimViewModel(currentUser, claim, plots, UriService, availableAccommodation, requestForAccommodation, potentialNeighbors, incomingInvite, outgoingInvite);
+            var ps = HttpContext.RequestServices.GetRequiredService<IPaymentsService>();
+
+            var claimViewModel = new ClaimViewModel(
+                currentUser,
+                claim,
+                plots,
+                UriService,
+                availableAccommodation,
+                potentialNeighbors,
+                incomingInvite,
+                outgoingInvite);
 
             if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
             {
