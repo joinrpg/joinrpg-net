@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Interfaces;
 using JoinRpg.Web.XGameApi.Contract;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +10,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Web.Controllers.XGameApi
 {
     [Route("x-api/me")]
-    public class MyProfileController : XGameApiController
+    public class MyProfileController : ControllerBase
     {
-        public MyProfileController(IProjectRepository projectRepository) : base(projectRepository)
+        private readonly IProjectRepository projectRepository;
+        private readonly ICurrentUserAccessor currentUserAccessor;
+
+        public MyProfileController(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) 
         {
+            this.projectRepository = projectRepository;
+            this.currentUserAccessor = currentUserAccessor;
         }
 
         /// <summary>
@@ -21,8 +26,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
         /// </summary>
         [HttpGet, Authorize, Route("projects/active")]
         public async Task<IEnumerable<ProjectHeader>> GetActiveProjects()
-        {
-            return (await ProjectRepository.GetMyActiveProjectsAsync(User.GetUserIdOrDefault().Value)).Select(
+        { 
+            var userId = currentUserAccessor.UserId;
+            return (await projectRepository.GetMyActiveProjectsAsync(userId)).Select(
                 p => new ProjectHeader { ProjectId = p.ProjectId, ProjectName = p.ProjectName });
         }
     }
