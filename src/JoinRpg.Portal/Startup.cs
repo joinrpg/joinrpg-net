@@ -70,7 +70,7 @@ namespace JoinRpg.Portal
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices();
 
-            
+
             var dataProtection = services.AddDataProtection();
             if (blobStorageOptions.BlobStorageConfigured)
             {
@@ -176,7 +176,7 @@ namespace JoinRpg.Portal
             _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
             _ = app.UseAuthentication();
-            _ = app.UseAuthorization(); 
+            _ = app.UseAuthorization();
 
             _ = app.UseEndpoints(endpoints =>
               {
