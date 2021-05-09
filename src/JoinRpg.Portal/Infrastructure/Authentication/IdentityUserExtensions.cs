@@ -6,12 +6,19 @@ namespace JoinRpg.Portal.Infrastructure.Authentication
     {
         public static int? GetUserIdOrDefault(this ClaimsPrincipal user)
         {
-            if (!user.Identity.IsAuthenticated)
+            if (user.Identity?.IsAuthenticated != true)
             {
                 return null;
             }
-            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-            return int.TryParse(userIdString, out var i) ? (int?)i : null;
+            if (int.TryParse(user.FindFirstValue("uid"), out var uid))  // JWT tokens
+            {
+                return uid;
+            }
+            if (int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id))  // Cookie
+            {
+                return id;
+            }
+            return null;
         }
     }
 }
