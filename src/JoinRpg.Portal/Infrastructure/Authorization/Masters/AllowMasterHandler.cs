@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Web.Filter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -28,24 +28,23 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)
         {
-            if (!context.User.Identity.IsAuthenticated)
+            if (context.User.Identity?.IsAuthenticated != true)
             {
-                context.Fail();
+                // Do not need to return fail - if nobody will mark requirement as success, will fail
                 return;
             }
-            var projectIdAsObj = httpContextAccessor.HttpContext.Items[Constants.ProjectIdName];
-            if (projectIdAsObj == null || !int.TryParse(projectIdAsObj.ToString(), out var projectId))
+
+            if (httpContextAccessor.HttpContext?.GetProjectIdFromRouteOrDefault() is not int projectId)
             {
                 logger.LogError("Project id was not discovered, but master access required. That's probably problem with routing");
-                context.Fail();
                 return;
             }
+
             var project = await ProjectRepository.GetProjectAsync(projectId);
 
             if (project == null)
             {
                 logger.LogInformation("Failed to load Project={projectId}, that's incorrect id. Should be accompanied by 404.", projectId);
-                context.Fail();
                 return;
             }
 

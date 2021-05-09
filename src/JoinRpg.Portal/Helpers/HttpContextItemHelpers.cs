@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 
 namespace JoinRpg.Portal.Helpers
 {
@@ -27,6 +28,16 @@ namespace JoinRpg.Portal.Helpers
             {
                 return int.Parse(projectIdRawValue);
             }
+        }
+
+        public static int? GetProjectIdFromRouteOrDefault(this HttpContext httpContext)
+        {
+            if (httpContext.GetRouteValue("projectId") is string projectIdAsObj 
+                            && int.TryParse(projectIdAsObj.ToString(), out var projectId))
+            {
+                return projectId;
+            }
+            return null;
         }
     }
 }

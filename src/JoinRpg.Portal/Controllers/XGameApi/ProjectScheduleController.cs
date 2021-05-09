@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
 
         [HttpGet]
         [Route("all")]
-        public async Task<ActionResult<List<ProgramItemInfoApi>>> GetSchedule([FromQuery]
+        public async Task<ActionResult<List<ProgramItemInfoApi>>> GetSchedule([FromRoute]
             int projectId)
         {
             var check = await Manager.CheckScheduleConfiguration();

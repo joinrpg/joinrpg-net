@@ -39,8 +39,9 @@ namespace JoinRpg.Portal.Infrastructure
             _ = services.ConfigureApplicationCookie(SetCookieOptions());
 
             _ = services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder(
-                IdentityConstants.ApplicationScheme,
-                JwtBearerDefaults.AuthenticationScheme)
+                JwtBearerDefaults.AuthenticationScheme,
+                IdentityConstants.ApplicationScheme
+                )
                 .RequireAuthenticatedUser()
               .Build())
                 .AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>()

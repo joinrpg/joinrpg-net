@@ -18,7 +18,8 @@ namespace JoinRpg.Web.Helpers
         {
             _contextAccessor = contextAccessor;
             ProjectIdLazy = new Lazy<int>(()
-                => _contextAccessor.HttpContext.GetProjectId());
+                => _contextAccessor.HttpContext?.GetProjectIdFromRouteOrDefault()
+                ?? throw new Exception("Project id was not discovered, but master access required.That's probably problem with routing"));
         }
 
         public int ProjectId => ProjectIdLazy.Value;
