@@ -32,7 +32,7 @@ namespace JoinRpg.Portal.Helpers
 
         public static int? GetProjectIdFromRouteOrDefault(this HttpContext httpContext)
         {
-            if (httpContext.GetRouteValue("projectId") is string projectIdAsObj 
+            if (httpContext.GetRouteValue("projectId") is string projectIdAsObj
                             && int.TryParse(projectIdAsObj.ToString(), out var projectId))
             {
                 return projectId;

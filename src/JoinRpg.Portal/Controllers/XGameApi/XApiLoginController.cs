@@ -34,8 +34,8 @@ namespace JoinRpg.Portal.Controllers.XGameApi
         [IgnoreAntiforgeryToken]
         public async Task<ActionResult> Login(
             [FromForm] string username,
-            [FromForm]  string password,
-            [FromForm(Name ="grant_type")] string grantType)
+            [FromForm] string password,
+            [FromForm(Name = "grant_type")] string grantType)
         {
             if (grantType != "password")
             {
@@ -51,7 +51,7 @@ namespace JoinRpg.Portal.Controllers.XGameApi
             {
                 return Forbid();
             }
-                JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
+            JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
             return Ok(new AuthenticationResponse
             {
                 access_token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
