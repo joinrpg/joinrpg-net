@@ -1,20 +1,17 @@
 using System.Globalization;
 using Autofac;
-using Joinrpg.Web.Identity;
 using JoinRpg.BlobStorage;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -43,19 +40,11 @@ namespace JoinRpg.Portal
         {
             _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
                 .Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"))
-                .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"));
+                .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"))
+                .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
+                .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"));
 
             blobStorageOptions = Configuration.GetSection("AzureBlobStorage").Get<BlobStorageOptions>();
-
-            _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
-
-            _ = services
-                .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
-                .AddDefaultTokenProviders()
-                .AddUserStore<MyUserStore>()
-                .AddRoleStore<MyUserStore>();
-
-            _ = services.ConfigureApplicationCookie(AuthenticationConfigurator.SetCookieOptions());
 
             _ = services.AddLogging();
 
@@ -81,7 +70,7 @@ namespace JoinRpg.Portal
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices();
 
-            _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN-HEADERNAME");
+            
             var dataProtection = services.AddDataProtection();
             if (blobStorageOptions.BlobStorageConfigured)
             {
@@ -96,13 +85,10 @@ namespace JoinRpg.Portal
                 _ = mvc.AddRazorRuntimeCompilation();
             }
 
-            _ = services.AddAuthorization();
-
-            _ = services.AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>();
-
-            services
-                .AddAuthentication()
-                .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
+            _ = services.AddJoinAuth(
+                Configuration.GetSection("Jwt").Get<JwtSecretOptions>(),
+                environment,
+                Configuration.GetSection("Authentication"));
 
             _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
             _ = services.AddApplicationInsightsTelemetry();
@@ -124,6 +110,8 @@ namespace JoinRpg.Portal
                 // But it should never happen anyway (we always should be under at least one proxy)
             });
         }
+
+
 
 
         /// <summary>
@@ -188,7 +176,7 @@ namespace JoinRpg.Portal
             _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
             _ = app.UseAuthentication();
-            _ = app.UseAuthorization();
+            _ = app.UseAuthorization(); 
 
             _ = app.UseEndpoints(endpoints =>
               {
