@@ -1,16 +1,63 @@
 using System;
 using System.Threading.Tasks;
+using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Joinrpg.Web.Identity;
 
 namespace JoinRpg.Portal.Infrastructure
 {
     internal static class AuthenticationConfigurator
     {
+        public static IServiceCollection AddJoinAuth(this IServiceCollection services,
+            JwtSecretOptions jwtSecretOptions,
+            IWebHostEnvironment environment,
+            IConfigurationSection authSection)
+        {
+
+            _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
+
+            _ = services
+                .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
+                .AddDefaultTokenProviders()
+                .AddUserStore<MyUserStore>()
+                .AddRoleStore<MyUserStore>();
+
+            _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN-HEADERNAME");
+
+            _ = services.ConfigureApplicationCookie(SetCookieOptions());
+
+            _ = services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder(
+                IdentityConstants.ApplicationScheme,
+                JwtBearerDefaults.AuthenticationScheme)
+                .RequireAuthenticatedUser()
+              .Build())
+                .AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>()
+                .AddAuthentication()
+                .ConfigureJoinExternalLogins(authSection)
+                .AddJwtBearer(o =>
+                {
+                    o.RequireHttpsMetadata = !environment.IsDevelopment();
+                    o.SaveToken = false;
+                    o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretOptions.SecretKey));
+                    o.TokenValidationParameters.ValidAudience = "ApiUser";
+                    o.TokenValidationParameters.ValidIssuer = jwtSecretOptions.Issuer;
+                });
+
+            return services;
+        }
+
         public static AuthenticationBuilder ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
         {
             var googleConfig = configSection.GetSection("Google").Get<OAuthAuthenticationOptions>();
