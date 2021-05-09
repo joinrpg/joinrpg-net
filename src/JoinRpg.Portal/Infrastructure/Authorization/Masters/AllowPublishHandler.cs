@@ -13,7 +13,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)
         {
-            if (requirement.AllowPublish)
+            if (!requirement.AllowPublish)
             {
                 return;
             }
