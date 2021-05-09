@@ -34,6 +34,7 @@ namespace JoinRpg.Portal.Controllers
         private ICharacterRepository CharacterRepository { get; }
         private IAccommodationInviteRepository AccommodationInviteRepository { get; }
         private IUriService UriService { get; }
+        private IPaymentsService PaymentsService { get; set; }
 
         [HttpGet("/{projectid}/character/{CharacterId}/apply")]
         [Authorize]
@@ -80,6 +81,7 @@ namespace JoinRpg.Portal.Controllers
             IFinanceService financeService,
             ICharacterRepository characterRepository,
             IUriService uriService,
+            IPaymentsService paymentsService,
             IAccommodationRequestRepository accommodationRequestRepository,
             IAccommodationRepository accommodationRepository,
             IAccommodationInviteService accommodationInviteService,
@@ -97,6 +99,7 @@ namespace JoinRpg.Portal.Controllers
             FinanceService = financeService;
             CharacterRepository = characterRepository;
             UriService = uriService;
+            PaymentsService = paymentsService;
         }
 
         [HttpPost("~/{ProjectId}/claim/add")]
@@ -194,14 +197,12 @@ namespace JoinRpg.Portal.Controllers
                 outgoingInvite = await AccommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
             }
 
-            var ps = HttpContext.RequestServices.GetRequiredService<IPaymentsService>();
-
             var claimViewModel = new ClaimViewModel(
                 currentUser,
                 claim,
                 plots,
                 UriService,
-                ps.GetConfiguredMethods(),
+                PaymentsService.GetConfiguredMethods(),
                 availableAccommodation,
                 potentialNeighbors,
                 incomingInvite,
