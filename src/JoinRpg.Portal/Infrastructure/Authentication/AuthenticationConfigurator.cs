@@ -11,7 +11,7 @@ namespace JoinRpg.Portal.Infrastructure
 {
     internal static class AuthenticationConfigurator
     {
-        public static void ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
+        public static AuthenticationBuilder ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
         {
             var googleConfig = configSection.GetSection("Google").Get<OAuthAuthenticationOptions>();
 
@@ -36,6 +36,8 @@ namespace JoinRpg.Portal.Infrastructure
                       SetCommonProperties(options, vkConfig);
                   });
             }
+
+            return authBuilder;
 
             static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)
             {
