@@ -6,7 +6,7 @@ namespace PscbApi.Models
     /// <summary>
     /// Query for payment status
     /// </summary>
-    public class PaymentInfoQuery
+    public class PaymentInfoQueryParams
     {
         /// <summary>
         /// Order Id

@@ -16,11 +16,6 @@ namespace PscbApi
     /// </summary>
     public class BankApi
     {
-
-        private const string ApiEndpoint = "https://oos.pscb.ru";
-
-        private const string ApiDebugEndpoint = "https://oosdemo.pscb.ru";
-
         private readonly ApiConfiguration _configuration;
 
         private readonly byte[] _keyAsUtf8;
@@ -33,7 +28,7 @@ namespace PscbApi
         /// <summary>
         /// Returns actual API endpoint
         /// </summary>
-        public string ActualApiEndpoint => Debug ? ApiDebugEndpoint : ApiEndpoint;
+        public string ActualApiEndpoint => Debug ? _configuration.ApiDebugEndpoint : _configuration.ApiEndpoint;
 
         /// <summary>
         /// Returns actual API key
@@ -167,24 +162,36 @@ namespace PscbApi
             => ProtocolHelper.ParseDescriptionString(description);
 
         /// <summary>
-        /// Asks API endpoint for payment information
+        /// Returns payment information
         /// </summary>
-        /// <param name="query">Query object</param>
+        /// <param name="paymentMethod">Payment method was used for this payment</param>
+        /// <param name="orderId">Order to return info for</param>
+        /// <param name="getCardData">true to read card data</param>
+        /// <param name="getFiscalData">true to read fiscal data</param>
         /// <returns>Payment information object</returns>
         /// <remarks>
         /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-zapros-parametrov-platezha for details
         /// </remarks>
-        public async Task<PaymentInfo> GetPaymentInfoAsync(PaymentInfoQuery query)
+        public async Task<PaymentInfo> GetPaymentInfoAsync(PscbPaymentMethod paymentMethod, string orderId, bool getCardData = false, bool getFiscalData = false)
         {
-            if (query == null)
+            if (string.IsNullOrWhiteSpace(orderId))
             {
-                throw new ArgumentNullException(nameof(query));
+                throw new ArgumentNullException(nameof(orderId));
             }
 
-            query.MerchantId = _configuration.MerchantId;
-            Validator.ValidateObject(query, new ValidationContext(query));
+            var queryParams = new PaymentInfoQueryParams
+            {
+                OrderId = orderId,
+                MerchantId = paymentMethod == PscbPaymentMethod.FastPaymentsSystem
+                    ? _configuration.MerchantIdFastPayments ?? _configuration.MerchantId
+                    : _configuration.MerchantId,
+                GetCardData = getCardData,
+                GetFiscalData = getFiscalData,
+            };
 
-            return await ApiRequestAsync<PaymentInfoQuery, PaymentInfo>($"{ActualApiEndpoint}/merchantApi/checkPayment", query);
+            return await ApiRequestAsync<PaymentInfoQueryParams, PaymentInfo>(
+                $"{ActualApiEndpoint}/merchantApi/checkPayment",
+                queryParams);
         }
     }
 }
