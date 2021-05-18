@@ -36,9 +36,9 @@ namespace JoinRpg.Services.Impl
         {
             return new ApiConfiguration
             {
-#if DEBUG
-                Debug = true,
-#endif
+                Debug = _bankSecrets.Debug,
+                ApiEndpoint = _bankSecrets.ApiEndpoint,
+                ApiDebugEndpoint = _bankSecrets.ApiDebugEndpoint,
                 MerchantId = _bankSecrets.MerchantId,
                 MerchantIdFastPayments = _bankSecrets.MerchantIdFastPayments,
                 ApiKey = _bankSecrets.ApiKey,
@@ -49,7 +49,7 @@ namespace JoinRpg.Services.Impl
         }
 
         private BankApi GetApi(int projectId, int claimId)
-            => new(GetApiConfiguration(projectId, claimId));
+            => new BankApi(GetApiConfiguration(projectId, claimId));
 
         private async Task<Claim> GetClaimAsync(int projectId, int claimId)
         {
@@ -248,12 +248,21 @@ namespace JoinRpg.Services.Impl
 
             if (fo.State == FinanceOperationState.Proposed)
             {
+                var api = GetApi(projectId, claimId);
+                string orderIdStr = orderId.ToString().PadLeft(10, '0');
+
                 // Asking bank
-                PaymentInfo paymentInfo = await GetApi(projectId, claimId)
-                    .GetPaymentInfoAsync(new PaymentInfoQuery
-                    {
-                        OrderId = orderId.ToString().PadLeft(10, '0')
-                    });
+                PaymentInfo paymentInfo = await api.GetPaymentInfoAsync(
+                    PscbPaymentMethod.BankCards,
+                    orderIdStr);
+
+                if (paymentInfo.Status == PaymentInfoQueryStatus.Failure
+                    && paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+                {
+                    paymentInfo = await api.GetPaymentInfoAsync(
+                        PscbPaymentMethod.FastPaymentsSystem,
+                        orderIdStr);
+                }
 
                 // Updating status
                 if (paymentInfo.Status == PaymentInfoQueryStatus.Success)

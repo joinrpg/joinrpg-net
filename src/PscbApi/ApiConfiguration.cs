@@ -12,6 +12,16 @@ namespace PscbApi
         public bool Debug;
 
         /// <summary>
+        /// Api Endpoint
+        /// </summary>
+        public string ApiEndpoint;
+
+        /// <summary>
+        /// Api Endpoint to be used in debug mode
+        /// </summary>
+        public string ApiDebugEndpoint;
+
+        /// <summary>
         /// Api key (issued by PSCB)
         /// </summary>
         public string ApiKey;
