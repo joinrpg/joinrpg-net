@@ -310,7 +310,7 @@ namespace JoinRpg.Portal.Controllers
         /// 401 -- if logged user is not authorized to delete values
         /// 404 -- if no field or project found
         /// </returns>
-        [HttpDelete]
+        [HttpGet]
         [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
         {

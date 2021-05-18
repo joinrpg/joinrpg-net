@@ -1,7 +1,7 @@
 ﻿function Delete(id, href)
 {
     var row = document.getElementById("value" + id);
-    $("#valueToDeleteTitle").text(row.getAttribute("title"));    
+    $("#valueToDeleteTitle").text(row.getAttribute("title"));
     $("#bnStartDelete").click(function ()
     {
         $("#bnStartDelete").off("click");
@@ -19,15 +19,15 @@ function DoDelete(id, href)
     var row = document.getElementById(valueId);
     row.className += " deleting";
 
-    var xr = $.ajax(href, { method: "DELETE" })
+    var xr = $.ajax(href, { method: "GET" })
         .done(function (data, status, xr)
         {
-            if (xr.status == 200)
+            if (status === 200)
             {
                 // 200 means that this value have to be removed
                 row.remove();
             }
-            else if (xr.status == 250)
+            else if (status === 250)
             {
                 // 250 means that this value have to be hidden
                 row.className = row.className.replace("deleting", "deleted");
@@ -48,7 +48,7 @@ function DoDelete(id, href)
             // Operation failed
             var dlg = document.getElementById("dlgDeleteProgressText");
             dlg.className = "modal-body alert alert-danger";
-            dlg.innerHTML = "Не удалось удалить";            
+            dlg.innerHTML = "Не удалось удалить";
             $("#dlgDeleteProgress").modal({ keyboard: true });
             $("#dlgDeleteProgress").modal("show");
             setTimeout(function ()
