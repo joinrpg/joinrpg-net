@@ -16,8 +16,8 @@ namespace PscbApi.Models
         public string Url { get; set; }
 
         /// <summary>
-        /// Query parameters
+        /// Request data
         /// </summary>
-        public PaymentQueryParams QueryParams { get; set; }
+        public PaymentRequest Request { get; set; }
     }
 }

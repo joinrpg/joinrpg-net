@@ -104,11 +104,23 @@ namespace PscbApi
                 message.Details = "[Debug mode] " + message.Details;
             }
 
+            if (message.PaymentMethod.HasValue)
+            {
+                message.Details = ProtocolHelper.PreparePaymentPurposeString(
+                    message.Details,
+                    message.PaymentMethod.Value);
+            }
             message.CheckStringPropertyLength(m => m.Details);
             message.CheckStringPropertyLength(m => m.CustomerComment);
             message.CheckStringPropertyLength(m => m.OrderIdDisplayValue);
             foreach (var receiptItem in message.Data.Receipt.Items)
             {
+                if (message.PaymentMethod.HasValue)
+                {
+                    receiptItem.Name = ProtocolHelper.PreparePaymentPurposeString(
+                        receiptItem.Name,
+                        message.PaymentMethod.Value);
+                }
                 receiptItem.CheckStringPropertyLength(r => r.Name);
             }
             message.SuccessUrl ??= _configuration.DefaultSuccessUrl;
@@ -133,7 +145,7 @@ namespace PscbApi
             {
                 Debug = Debug,
                 Url = $"{ActualApiEndpoint}/pay",
-                QueryParams = new PaymentQueryParams
+                Request = new PaymentRequest
                 {
                     marketPlace = message.PaymentMethod == PscbPaymentMethod.FastPaymentsSystem
                         ? _configuration.MerchantIdFastPayments ?? _configuration.MerchantId
