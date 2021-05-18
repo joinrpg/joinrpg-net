@@ -6,7 +6,7 @@
 }
 
 <form id="pay" action="@Model.Url" method="post">
-    @await Html.PartialAsync("_RedirectContentPartial", Model.QueryParams)
+    @await Html.PartialAsync("_RedirectContentPartial", Model.Request)
     <button type="submit">Перейти к оплате</button>
 </form>
 
