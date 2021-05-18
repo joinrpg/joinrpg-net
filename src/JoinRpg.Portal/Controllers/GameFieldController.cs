@@ -336,10 +336,10 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanChangeFields)]
-        [HttpPost]
-        public async Task<ActionResult> Move(int projectid, int listItemId, short direction)
+        [HttpGet]
+        public async Task<ActionResult> Move(int projectId, int listItemId, short direction)
         {
-            var value = await ProjectRepository.GetProjectField(projectid, listItemId);
+            var value = await ProjectRepository.GetProjectField(projectId, listItemId);
 
             if (value == null)
             {
@@ -348,7 +348,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.MoveField(projectid, listItemId, direction);
+                await FieldSetupService.MoveField(projectId, listItemId, direction);
 
                 return ReturnToIndex();
             }
@@ -359,10 +359,10 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanChangeFields)]
-        [HttpPost]
-        public async Task<ActionResult> MoveValue(int projectid, int listItemId, int parentObjectId, short direction)
+        [HttpGet]
+        public async Task<ActionResult> MoveValue(int projectId, int listItemId, int parentObjectId, short direction)
         {
-            var value = await ProjectRepository.GetProjectField(projectid, parentObjectId);
+            var value = await ProjectRepository.GetProjectField(projectId, parentObjectId);
 
             if (value == null)
             {
@@ -371,7 +371,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.MoveFieldVariant(projectid, parentObjectId, listItemId, direction);
+                await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, direction);
 
 
                 return ReturnToField(value);
