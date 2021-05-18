@@ -28,10 +28,8 @@ namespace PscbApi
         {
             if (selector.Body.TryGetWritablePropertyInfo(out PropertyInfo pi))
             {
-                var maxLengthConstraint = pi.GetCustomAttribute<MaxLengthAttribute>()
-                        ?.Length
-                    ?? pi.GetCustomAttribute<StringLengthAttribute>()
-                        ?.MaximumLength;
+                var maxLengthConstraint = pi.GetCustomAttribute<MaxLengthAttribute>()?.Length
+                    ?? pi.GetCustomAttribute<StringLengthAttribute>()?.MaximumLength;
                 if (maxLengthConstraint.HasValue)
                 {
                     pi.SetValue(

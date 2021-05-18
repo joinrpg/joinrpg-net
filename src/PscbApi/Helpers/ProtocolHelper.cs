@@ -1,10 +1,12 @@
 // ReSharper disable IdentifierTypo
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using PscbApi.Models;
 
+// ReSharper disable once CheckNamespace
 namespace PscbApi
 {
     /// <summary>
@@ -49,5 +51,29 @@ namespace PscbApi
             return result;
         }
 
+        private static class FastPaymentsSystem
+        {
+            public const int MaxPurposeLength = 140;
+
+            public static bool IsPurposeCharAllowed(char ch)
+            {
+                var code = (int) ch;
+                return code is >= 32 and <= 126 or >= 1040 and <= 1103 or 8470;
+            }
+        }
+
+        /// <summary>
+        /// Strips chars not supported by payment method
+        /// </summary>
+        public static string PreparePaymentPurposeString(string s, PscbPaymentMethod pm)
+        {
+            if (pm != PscbPaymentMethod.FastPaymentsSystem)
+                return s;
+
+            s = new string(s.Where(FastPaymentsSystem.IsPurposeCharAllowed).ToArray());
+            return s.Length > FastPaymentsSystem.MaxPurposeLength
+                ? s.Substring(0, FastPaymentsSystem.MaxPurposeLength)
+                : s;
+        }
     }
 }
