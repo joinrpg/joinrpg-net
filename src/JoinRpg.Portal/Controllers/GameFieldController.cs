@@ -298,7 +298,7 @@ namespace JoinRpg.Portal.Controllers
 
 
         /// <summary>
-        /// Removes custom field value by HTTP DELETE request
+        /// Removes custom field value by HTTP GET request
         /// </summary>
         /// <param name="projectId">Id of a project where field is located in</param>
         /// <param name="projectFieldId">Id of a field to delete value from</param>
@@ -310,8 +310,9 @@ namespace JoinRpg.Portal.Controllers
         /// 401 -- if logged user is not authorized to delete values
         /// 404 -- if no field or project found
         /// </returns>
-        [HttpGet]
         [MasterAuthorize(Permission.CanChangeFields)]
+        // TODO: Refactor to DELETE request (require UI fixes)
+        [HttpGet("~/{projectId:int}/fields/{projectFieldId:int}/DeleteValueEx/{valueId:int}")]
         public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
         {
             try
@@ -336,8 +337,9 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanChangeFields)]
-        [HttpGet]
-        public async Task<ActionResult> Move(int projectId, int listItemId, short direction)
+        // TODO: Refactor to HEAD request (require UI fixes)
+        [HttpGet("~/{projectId:int}/fields/{listItemId:int}/move/{direction:int}")]
+        public async Task<ActionResult> Move(int projectId, int listItemId, int direction)
         {
             var value = await ProjectRepository.GetProjectField(projectId, listItemId);
 
@@ -348,7 +350,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.MoveField(projectId, listItemId, direction);
+                await FieldSetupService.MoveField(projectId, listItemId, (short) direction);
 
                 return ReturnToIndex();
             }
@@ -359,8 +361,9 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanChangeFields)]
-        [HttpGet]
-        public async Task<ActionResult> MoveValue(int projectId, int listItemId, int parentObjectId, short direction)
+        // TODO: Refactor to HEAD request (require UI fixes)
+        [HttpGet("~/{projectId:int}/fields/{parentObjectId:int}/values/{listItemId:int}/move/{direction:int}")]
+        public async Task<ActionResult> MoveValue(int projectId, int listItemId, int parentObjectId, int direction)
         {
             var value = await ProjectRepository.GetProjectField(projectId, parentObjectId);
 
@@ -371,7 +374,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, direction);
+                await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short) direction);
 
 
                 return ReturnToField(value);
