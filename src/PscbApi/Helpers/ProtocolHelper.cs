@@ -57,7 +57,7 @@ namespace PscbApi
 
             public static bool IsPurposeCharAllowed(char ch)
             {
-                var code = (int) ch;
+                var code = (int)ch;
                 return code is >= 32 and <= 126 or >= 1040 and <= 1103 or 8470;
             }
         }
