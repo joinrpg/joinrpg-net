@@ -350,7 +350,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.MoveField(projectId, listItemId, (short) direction);
+                await FieldSetupService.MoveField(projectId, listItemId, (short)direction);
 
                 return ReturnToIndex();
             }
@@ -374,7 +374,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short) direction);
+                await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
 
 
                 return ReturnToField(value);
