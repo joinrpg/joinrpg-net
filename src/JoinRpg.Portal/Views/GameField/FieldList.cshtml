@@ -33,9 +33,8 @@
     <div class="modal fade modaldialogforid" id="fastMoveModal" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
-                @using (Html.BeginForm("MoveFast", "GameField"))
+                @using (Html.BeginForm("MoveFast", "GameField", new {projectId = firstItem.ProjectId}, FormMethod.Post))
                 {
-                    <input type="hidden" name="ProjectId" id="projectId" value="@firstItem.ProjectId" />
                     <input type="hidden" name="ProjectFieldId" id="entityId" value="0" />
                     @Html.AntiForgeryToken()
                     <div class="modal-header">
@@ -46,8 +45,8 @@
                     <div class="modal-body">
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <label class="col-md-2">Поставить после поля:</label>
-                                <div class="col-md-10">
+                                <label class="col-md-4">Поставить после поля:</label>
+                                <div class="col-md-8">
                                     <select name="afterFieldId" id="afterFieldId" class="form-control">
                                         <option value="-1" selected="selected">Поставить в начало</option>
                                         @foreach (var field in Model.Items)
