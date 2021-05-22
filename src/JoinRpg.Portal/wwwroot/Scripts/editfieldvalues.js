@@ -19,7 +19,7 @@ function DoDelete(id, href)
     var row = document.getElementById(valueId);
     row.className += " deleting";
 
-    var xr = $.ajax(href, { method: "GET" })
+  var xr = $.ajax(href, { method: "DELETE",  beforeSend: addAntiforgeryTokenBeforeSend})
         .done(function (data, status, xr)
         {
             if (status === 200)

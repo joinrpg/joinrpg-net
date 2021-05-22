@@ -311,8 +311,7 @@ namespace JoinRpg.Portal.Controllers
         /// 404 -- if no field or project found
         /// </returns>
         [MasterAuthorize(Permission.CanChangeFields)]
-        // TODO: Refactor to DELETE request (require UI fixes)
-        [HttpGet("~/{projectId:int}/fields/{projectFieldId:int}/DeleteValueEx/{valueId:int}")]
+        [HttpDelete("~/{projectId:int}/fields/{projectFieldId:int}/DeleteValueEx/{valueId:int}")]
         public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
         {
             try
