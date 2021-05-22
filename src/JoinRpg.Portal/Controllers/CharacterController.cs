@@ -43,7 +43,8 @@ namespace JoinRpg.Portal.Controllers
             CharacterService = characterService;
         }
 
-        [HttpGet]
+        [HttpGet("~/{projectId}/character/{characterid}/")]
+        [HttpGet("~/{projectId}/character/{characterid}/details")]
         [AllowAnonymous]
         public async Task<ActionResult> Details(int projectid, int characterid)
         {
