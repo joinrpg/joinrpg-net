@@ -68,7 +68,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         .SingleOrDefaultAsync();
 
             var allGroups = await Ctx.Set<CharacterGroup>().AsNoTracking()
-                .Where(cg => cg.ProjectId == projectId && cg.IsActive)
+                .Where(cg => cg.ProjectId == projectId) // need to load inactive groups here
                 .Select(groupHeaderSelector)
                 .ToDictionaryAsync(d => d.CharacterGroupId);
 
@@ -107,6 +107,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
             view.AllGroups = view.DirectGroups
                 .SelectMany(g => g.FlatTree(group => group.ParentGroupIds._parentCharacterGroupIds.Select(id => allGroups[id])))
+                .Where(g => g.IsActive)
                 .Distinct()
                 .ToList();
             return view;
