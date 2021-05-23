@@ -15,6 +15,11 @@
     <p> RequestId: @Model.RequestId </p>
 }
 
+@if (Model.AspNetTrace is not null)
+{
+        <p>TraceIdentifier: @Model.AspNetTrace</p>
+}
+
 @if (!string.IsNullOrWhiteSpace(Model.Path))
 {
     <p> Путь: @Model.Path </p>
