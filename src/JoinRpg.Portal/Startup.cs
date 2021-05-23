@@ -72,7 +72,7 @@ namespace JoinRpg.Portal
 
 
             var dataProtection = services.AddDataProtection();
-            if (blobStorageOptions.BlobStorageConfigured)
+            if (blobStorageOptions.BlobStorageConfigured && !environment.IsDevelopment())
             {
                 dataProtection.PersistKeysToAzureBlobStorage(
                     blobStorageOptions.BlobStorageConnectionString,
