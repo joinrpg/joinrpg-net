@@ -83,7 +83,7 @@ namespace JoinRpg.Portal
 
             _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN-HEADERNAME");
             var dataProtection = services.AddDataProtection();
-            if (blobStorageOptions.BlobStorageConfigured)
+            if (blobStorageOptions.BlobStorageConfigured && !environment.IsDevelopment())
             {
                 dataProtection.PersistKeysToAzureBlobStorage(
                     blobStorageOptions.BlobStorageConnectionString,
