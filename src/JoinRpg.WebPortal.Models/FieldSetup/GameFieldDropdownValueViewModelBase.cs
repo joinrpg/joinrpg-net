@@ -61,9 +61,9 @@ namespace JoinRpg.Web.Models.FieldSetup
 
         public GameFieldDropdownValueViewModelBase() { }
 
-        public TimeSlotOptions? GetTimeSlotRequest(ProjectField field, string value)
+        public TimeSlotOptions? GetTimeSlotRequest(ProjectField field, string? value)
         {
-            return field.IsTimeSlot()
+            return value is not null && field.IsTimeSlot()
                 ? new TimeSlotOptions
                 {
                     StartTime = DateTimeOffset.ParseExact(

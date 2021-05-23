@@ -285,7 +285,7 @@ namespace JoinRpg.Portal.Controllers
                     viewModel.ProgrammaticValue,
                     viewModel.Price,
                     viewModel.PlayerSelectable,
-                    viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"][0])
+                    viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault())
                     ));
 
                 return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
