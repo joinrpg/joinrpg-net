@@ -21,8 +21,9 @@ namespace JoinRpg.Portal.Controllers
             return View(
                 new ErrorViewModel
                 {
-                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
-                    Path = feature?.RawTarget,
+                    RequestId = Activity.Current?.Id ?? "",
+                    AspNetTrace = HttpContext.TraceIdentifier,
+                    Path = feature?.RawTarget ?? "NO PATH",
                 }
                 );
         }

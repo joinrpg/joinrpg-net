@@ -7,5 +7,7 @@ namespace JoinRpg.Portal.Models
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
         public string Path { get; internal set; }
+
+        public string AspNetTrace { get; set; }
     }
 }
