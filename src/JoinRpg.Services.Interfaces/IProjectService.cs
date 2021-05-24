@@ -41,8 +41,6 @@ namespace JoinRpg.Services.Interfaces
 
         Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
 
-        Task UpdateSubscribeForGroup(SubscribeForGroupRequest request);
-
         Task MoveCharacterGroup(int currentUserId,
             int projectId,
             int charactergroupId,

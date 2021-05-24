@@ -21,6 +21,7 @@ namespace JoinRpg.Services.Impl
             yield return typeof(AccommodationServiceImpl);
             yield return typeof(CharacterServiceImpl);
             yield return typeof(AntiSpamServiceImpl);
+            yield return typeof(GameSubscribeService);
         }
     }
 }

@@ -7,10 +7,10 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Subscribe;
 using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
-using JoinRpg.WebPortal.Managers.Subscribe;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
@@ -23,6 +23,7 @@ namespace JoinRpg.Portal.Controllers
         private readonly IUserRepository userRepository;
         private readonly IUriService uriService;
         private readonly IGameSubscribeClient subscribeClient;
+        private readonly IGameSubscribeService gameSubscribeService;
 
         public GameSubscribeController(
             IUserSubscribeRepository userSubscribeRepository,
@@ -30,7 +31,8 @@ namespace JoinRpg.Portal.Controllers
             IUriService uriService,
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IGameSubscribeClient subscribeClient
+            IGameSubscribeClient subscribeClient,
+            IGameSubscribeService gameSubscribeService
             )
             : base(projectRepository, projectService, userRepository)
         {
@@ -38,6 +40,7 @@ namespace JoinRpg.Portal.Controllers
             this.userRepository = userRepository;
             this.uriService = uriService;
             this.subscribeClient = subscribeClient;
+            this.gameSubscribeService = gameSubscribeService;
         }
 
         [HttpGet("{masterId}")]
@@ -102,7 +105,7 @@ namespace JoinRpg.Portal.Controllers
             try
             {
                 await
-                    ProjectService.UpdateSubscribeForGroup(new SubscribeForGroupRequest
+                    gameSubscribeService.UpdateSubscribeForGroup(new SubscribeForGroupRequest
                     {
                         CharacterGroupId = group.CharacterGroupId,
                         ProjectId = group.ProjectId,
