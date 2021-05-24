@@ -27,7 +27,6 @@ namespace JoinRpg.Portal.Controllers
     [Route("{projectId}/roles/{characterGroupId}/[action]")]
     public class GameGroupsController : ControllerGameBase
     {
-
         public GameGroupsController(
             IProjectRepository projectRepository,
             IProjectService projectService,
@@ -480,41 +479,6 @@ namespace JoinRpg.Portal.Controllers
             var user = await UserRepository.GetWithSubscribe(CurrentUserId);
 
             return View(new SubscribeSettingsViewModel(user, group));
-        }
-
-        [HttpPost, ValidateAntiForgeryToken, MasterAuthorize()]
-        public async Task<ActionResult> EditSubscribe(SubscribeSettingsViewModel viewModel)
-        {
-            var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
-
-            if (group == null)
-            {
-                return NotFound();
-            }
-
-            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-
-            var serverModel = new SubscribeSettingsViewModel(user, group);
-
-            _ = serverModel.Options.AssignFrom(viewModel.Options);
-
-            try
-            {
-                await
-                    ProjectService.UpdateSubscribeForGroup(new SubscribeForGroupRequest
-                    {
-                        CharacterGroupId = group.CharacterGroupId,
-                        ProjectId = group.ProjectId,
-                    }.AssignFrom(serverModel.GetOptionsToSubscribeDirectly()));
-
-                return RedirectToIndex(group.Project);
-            }
-            catch (Exception e)
-            {
-                ModelState.AddException(e);
-                return View(serverModel);
-            }
-
         }
 
         [HttpGet, AllowAnonymous]
