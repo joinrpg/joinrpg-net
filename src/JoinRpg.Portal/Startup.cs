@@ -176,7 +176,8 @@ namespace JoinRpg.Portal
             _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
             _ = app.UseAuthentication();
-            _ = app.UseAuthorization();
+            _ = app.UseAuthorization()
+                .UseMiddleware<CsrfTokenCookieMiddleware>();
 
             _ = app.UseEndpoints(endpoints =>
               {

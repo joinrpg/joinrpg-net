@@ -91,6 +91,6 @@ $('.require-element-id')
         });
 
 function addAntiforgeryTokenBeforeSend(xhr) {
-  xhr.setRequestHeader("X-CSRF-TOKEN-HEADERNAME",
+  xhr.setRequestHeader("X-CSRF-TOKEN",
     $('input:hidden[name="__RequestVerificationToken"]').val());
 }
