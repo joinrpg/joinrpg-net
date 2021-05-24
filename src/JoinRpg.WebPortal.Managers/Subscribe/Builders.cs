@@ -21,7 +21,7 @@ namespace JoinRpg.Web.Models.Subscribe
             return new SubscribeListViewModel()
             {
                 AllowChanges = data.User == currentUser, //TODO allow project admins to setup subscribe for other masters
-                Items = data.UserSubscriptions.Select(x => x.ToViewModel(uriService)).ToArray(),
+                Items = data.UserSubscriptions.Select(x => x.ToViewModel(uriService)).ToList(),
                 ProjectId = projectId,
                 MasterId = data.User.UserId,
                 PaymentTypeNames = paymentTypes.Select(pt => pt.ToPaymentTypeName()).ToArray(),

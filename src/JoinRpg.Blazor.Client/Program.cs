@@ -15,7 +15,7 @@ namespace JoinRpg.Blazor.Client
             //Workaround for https://github.com/dotnet/aspnetcore/issues/26601
             //If top-level component is not defined in this project,
             //it should be forcefully loaded
-            _ = typeof(MasterSubscribeListContainer).ToString();
+            _ = typeof(MasterSubscribeList).ToString();
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
             builder.Services

@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 namespace JoinRpg.Web.GameSubscribe
 {
     public class SubscribeListViewModel
     {
-        public SubscribeListItemViewModel[] Items { get; set; }
+        public List<SubscribeListItemViewModel> Items { get; set; }
 
         public string[] PaymentTypeNames { get; set; }
 

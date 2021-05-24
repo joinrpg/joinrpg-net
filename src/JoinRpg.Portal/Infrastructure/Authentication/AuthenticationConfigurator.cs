@@ -34,7 +34,7 @@ namespace JoinRpg.Portal.Infrastructure
                 .AddUserStore<MyUserStore>()
                 .AddRoleStore<MyUserStore>();
 
-            _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN-HEADERNAME");
+            _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
 
             _ = services.ConfigureApplicationCookie(SetCookieOptions());
 

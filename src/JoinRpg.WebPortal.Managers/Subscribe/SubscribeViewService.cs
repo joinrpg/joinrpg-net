@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Subscribe;
 using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.Models.Subscribe;
 
@@ -13,19 +14,22 @@ namespace JoinRpg.WebPortal.Managers.Subscribe
         private readonly IUserSubscribeRepository userSubscribeRepository;
         private readonly IFinanceReportRepository financeReportRepository;
         private readonly ICurrentUserAccessor currentUserAccessor;
+        private readonly IGameSubscribeService gameSubscribeService;
         private readonly IUserRepository userRepository;
 
         public SubscribeViewService(IUriService uriService,
             IUserSubscribeRepository userSubscribeRepository,
             IUserRepository userRepository,
             IFinanceReportRepository financeReportRepository,
-            ICurrentUserAccessor currentUserAccessor)
+            ICurrentUserAccessor currentUserAccessor,
+            IGameSubscribeService gameSubscribeService)
         {
             this.uriService = uriService;
             this.userSubscribeRepository = userSubscribeRepository;
             this.userRepository = userRepository;
             this.financeReportRepository = financeReportRepository;
             this.currentUserAccessor = currentUserAccessor;
+            this.gameSubscribeService = gameSubscribeService;
         }
 
         public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
@@ -36,6 +40,11 @@ namespace JoinRpg.WebPortal.Managers.Subscribe
             var paymentTypes = await financeReportRepository.GetPaymentTypesForMaster(projectId, masterId);
 
             return data.ToSubscribeListViewModel(currentUser, uriService, projectId, paymentTypes);
+        }
+
+        public async Task RemoveSubscription(int projectId, int userSubscriptionsId)
+        {
+            await gameSubscribeService.RemoveSubscribe(new RemoveSubscribeRequest(projectId, userSubscriptionsId));
         }
     }
 }

@@ -10,13 +10,14 @@
 
 <h3>Подписки</h3>
 
-<component type="typeof(JoinRpg.Web.GameSubscribe.MasterSubscribeListContainer)"
-           render-mode="WebAssembly"
+<component type="typeof(JoinRpg.Web.GameSubscribe.MasterSubscribeList)"
+           render-mode="WebAssemblyPrerendered"
            param-ProjectId="@Model.SubscribeList.ProjectId"
            param-MasterId="@Model.SubscribeList.MasterId" />
 
 @section Scripts {
   <script src="/_framework/blazor.webassembly.js"></script>
   <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+  <script src="/Scripts/blazor-interop.js"></script>
 
 }

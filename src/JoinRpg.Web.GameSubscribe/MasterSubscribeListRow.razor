@@ -17,16 +17,22 @@
     }
     else
     {
-      <ConditionalLabel For="@(() => Model.Options.ClaimStatusChange)" Variation="@VariationStyleEnum.Success"/>
-      <ConditionalLabel For="@(() => Model.Options.Comments)" Variation="@VariationStyleEnum.Success"/>
-      <ConditionalLabel For="@(() => Model.Options.FieldChange)" Variation="@VariationStyleEnum.Success"/>
-      <ConditionalLabel For="@(() => Model.Options.MoneyOperation)" Variation="@VariationStyleEnum.Success"/>
-      <ConditionalLabel For="@(() => Model.Options.AccommodationChange)" Variation="@VariationStyleEnum.Success"/>
+      <ConditionalLabel For="@(() => Model.Options.ClaimStatusChange)" Variation="@VariationStyleEnum.Success" />
+      <ConditionalLabel For="@(() => Model.Options.Comments)" Variation="@VariationStyleEnum.Success" />
+      <ConditionalLabel For="@(() => Model.Options.FieldChange)" Variation="@VariationStyleEnum.Success" />
+      <ConditionalLabel For="@(() => Model.Options.MoneyOperation)" Variation="@VariationStyleEnum.Success" />
+      <ConditionalLabel For="@(() => Model.Options.AccommodationChange)" Variation="@VariationStyleEnum.Success" />
     }
+  </td>
+  <td>
+    <button @onclick="@(() => OnRemoveCallback.InvokeAsync(Model))" class="btn btn-danger"> Отписаться  </button>
   </td>
 </tr>
 @code {
 
     [Parameter]
     public SubscribeListItemViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<SubscribeListItemViewModel> OnRemoveCallback { get; set; }
 }
