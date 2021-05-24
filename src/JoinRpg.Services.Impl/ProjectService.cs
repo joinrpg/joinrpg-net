@@ -495,43 +495,6 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
-        {
-            _ = (await ProjectRepository.GetGroupAsync(request.ProjectId, request.CharacterGroupId))
-                .RequestMasterAccess(CurrentUserId)
-                .EnsureActive();
-
-            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-            var direct =
-                user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == request.CharacterGroupId);
-
-            if (request.AnySet())
-            {
-                if (direct == null)
-                {
-                    direct = new UserSubscription()
-                    {
-                        UserId = CurrentUserId,
-                        CharacterGroupId = request.CharacterGroupId,
-                        ProjectId = request.ProjectId,
-                    };
-                    _ = user.Subscriptions.Add(direct);
-                }
-
-                _ = direct.AssignFrom(request);
-            }
-            else
-            {
-                if (direct != null)
-                {
-                    _ = UnitOfWork.GetDbSet<UserSubscription>().Remove(direct);
-                }
-            }
-
-            await UnitOfWork.SaveChangesAsync();
-        }
-
-
     }
 }
 
