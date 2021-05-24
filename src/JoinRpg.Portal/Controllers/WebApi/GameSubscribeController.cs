@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi
 {
+    [Route("/webapi/gamesubscribe/[action]")]
     public class GameSubscribeController : ControllerBase
     {
         private readonly SubscribeViewService subscribeViewService;
@@ -14,9 +15,15 @@ namespace JoinRpg.Portal.Controllers.WebApi
             this.subscribeViewService = subscribeViewService;
         }
 
-        public async Task<SubscribeListViewModel> Index(int projectId, int masterId)
+        public async Task<SubscribeListViewModel> GetForMaster(int projectId, int masterId)
         {
             return await subscribeViewService.GetSubscribeForMaster(projectId, masterId);
+        }
+
+        [HttpPost]
+        public async Task Unsubscribe(int projectId, int userSubscriptionsId)
+        {
+            await subscribeViewService.RemoveSubscription(projectId, userSubscriptionsId);
         }
     }
 }

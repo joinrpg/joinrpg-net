@@ -17,6 +17,23 @@ namespace JoinRpg.Services.Impl
         {
         }
 
+        public async Task RemoveSubscribe(RemoveSubscribeRequest request)
+        {
+            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+
+            var direct =
+                user.Subscriptions.SingleOrDefault(s => s.UserSubscriptionId == request.UserSubscribtionId && s.ProjectId == request.ProjectId);
+
+            if (direct is null)
+            {
+                throw new JoinRpgEntityNotFoundException(request.UserSubscribtionId, nameof(UserSubscription));
+            }
+
+            _ = UnitOfWork.GetDbSet<UserSubscription>().Remove(direct);
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
         public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
         {
             _ = (await ProjectRepository.GetGroupAsync(request.ProjectId, request.CharacterGroupId))
