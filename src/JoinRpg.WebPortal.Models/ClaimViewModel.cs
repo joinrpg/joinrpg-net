@@ -14,7 +14,7 @@ using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
-
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models
 {
@@ -25,6 +25,8 @@ namespace JoinRpg.Web.Models
 
         [DisplayName("Игрок")]
         public User Player { get; set; }
+
+        public UserLinkViewModel? PlayerLink { get; set; }
 
         [Display(Name = "Статус заявки")]
         public ClaimFullStatusView Status { get; set; }
@@ -133,6 +135,7 @@ namespace JoinRpg.Web.Models
                 ExtraAccessReason.PlayerOrResponsible);
             IsMyClaim = claim.PlayerUserId == currentUser.UserId;
             Player = claim.Player;
+            PlayerLink = new UserLinkViewModel(claim.Player);
             ProjectId = claim.ProjectId;
             ProjectName = claim.Project.ProjectName;
             Status = new ClaimFullStatusView(claim, new AccessArguments(claim, currentUser.UserId));

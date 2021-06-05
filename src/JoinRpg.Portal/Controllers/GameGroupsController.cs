@@ -27,12 +27,16 @@ namespace JoinRpg.Portal.Controllers
     [Route("{projectId}/roles/{characterGroupId}/[action]")]
     public class GameGroupsController : ControllerGameBase
     {
+        private readonly IUriService uriService;
+
         public GameGroupsController(
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            IUriService uriService)
             : base(projectRepository, projectService, userRepository)
         {
+            this.uriService = uriService;
         }
 
         [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
@@ -212,14 +216,14 @@ namespace JoinRpg.Portal.Controllers
             return new
             {
                 ch.CharacterId, //TODO Remove
-                CharacterLink = GetFullyQualifiedUri("Details", "Character", new { ch.CharacterId }),
+                CharacterLink = uriService.Get(ch),
                 ch.IsAvailable,
                 ch.IsFirstCopy,
                 ch.CharacterName,
                 Description = ch.Description?.ToHtmlString(),
-                PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.GetDisplayName(),
-                PlayerId = ch.HidePlayer ? null : ch.Player?.UserId, //TODO Remove
-                PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new { ch.Player?.UserId }),
+                PlayerName = ch.HidePlayer ? "скрыто" : ch.PlayerLink?.DisplayName,
+                PlayerId = ch.HidePlayer ? null : ch.PlayerLink?.UserId, //TODO Remove
+                PlayerLink = (ch.HidePlayer) ? null : ch.PlayerLink?.GetUri(uriService).AbsoluteUri,
                 ch.ActiveClaimsCount,
                 ClaimLink =
                 ch.IsAvailable

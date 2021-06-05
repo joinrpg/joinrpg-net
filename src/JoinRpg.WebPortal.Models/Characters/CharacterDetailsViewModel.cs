@@ -7,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -32,9 +33,10 @@ namespace JoinRpg.Web.Models.Characters
         }
     }
 
+    //TODO merge everything into UserLinkViewModel and remove this interface
     public interface ICharacterWithPlayerViewModel
     {
-        User? Player { get; }
+        UserLinkViewModel? PlayerLink { get; }
         bool HidePlayer { get; }
         bool HasAccess { get; }
     }
@@ -44,7 +46,7 @@ namespace JoinRpg.Web.Models.Characters
         [ReadOnly(true), DisplayName("Входит в группы")]
         public CharacterParentGroupsViewModel ParentGroups { get; }
 
-        public User? Player { get; }
+        public UserLinkViewModel? PlayerLink { get; }
 
         public PlotDisplayViewModel Plot { get; }
 
@@ -58,7 +60,7 @@ namespace JoinRpg.Web.Models.Characters
 
         public CharacterDetailsViewModel(int? currentUserIdOrDefault, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
         {
-            Player = character.ApprovedClaim?.Player;
+            PlayerLink = UserLinkViewModel.FromOptional(character.ApprovedClaim?.Player);
             HasAccess = character.HasAnyAccess(currentUserIdOrDefault);
             ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserIdOrDefault));
             HidePlayer = character.HidePlayerForCharacter;
