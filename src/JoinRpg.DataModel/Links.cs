@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel
 {
+    // TODO add unit test to ensure that everything covered
     public enum LinkType
     {
         ResultUser,
