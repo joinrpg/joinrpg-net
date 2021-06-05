@@ -18,7 +18,7 @@
 }
 <div class="@hideClassName">
     <strong>@Html.ActionLink(Model.CharacterName ?? Model.CharacterId.ToString(), "Details", "Character", new { Model.ProjectId, Model.CharacterId }, null) </strong>
-    @if (Model.Player != null)
+    @if (Model.PlayerLink != null)
     {
         @Html.DisplayFor(model => model, "IPlayerCharacter")
     }

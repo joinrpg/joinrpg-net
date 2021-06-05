@@ -1,10 +1,14 @@
 using System;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Characters
 {
-    public class CharacterViewModel : ICharacterWithPlayerViewModel, IEquatable<CharacterViewModel>
+    public class CharacterViewModel :
+        ICharacterWithPlayerViewModel,
+        IEquatable<CharacterViewModel>,
+        ILinkable
     {
         public int CharacterId { get; set; }
         public int ProjectId { get; set; }
@@ -20,7 +24,7 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool IsActive { get; set; }
 
-        public User? Player { get; set; }
+        public UserLinkViewModel? PlayerLink { get; set; }
         public bool HidePlayer { get; set; }
         public bool HasAccess => HasMasterAccess;
         public int ActiveClaimsCount { get; set; }
@@ -37,6 +41,12 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool IsAcceptingClaims { get; set; }
         public bool HasEditRolesAccess { get; set; }
+
+        LinkType ILinkable.LinkType => LinkType.ResultCharacter;
+
+        string ILinkable.Identification => CharacterId.ToString();
+
+        int? ILinkable.ProjectId => ProjectId;
 
         public bool Equals(CharacterViewModel? other) => other != null && CharacterId == other.CharacterId;
 

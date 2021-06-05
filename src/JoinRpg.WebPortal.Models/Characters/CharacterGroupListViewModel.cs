@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -99,7 +100,10 @@ namespace JoinRpg.Web.Models.Characters
                 var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g => g.IsActive && g.IsVisible(CurrentUserId)).ToList();
                 var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
 
-                vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren)).ToList().MarkFirstAndLast();
+                vm.ChildGroups = childGroups
+                    .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))
+                    .WhereNotNull()
+                    .MarkFirstAndLast();
 
                 return vm;
             }
@@ -124,7 +128,7 @@ namespace JoinRpg.Web.Models.Characters
                     IsActive = arg.IsActive,
                     HidePlayer = arg.HidePlayerForCharacter && !arg.Project.Details.PublishPlot,
                     ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
-                    Player = arg.ApprovedClaim?.Player,
+                    PlayerLink = UserLinkViewModel.FromOptional(arg.ApprovedClaim?.Player),
                     HasMasterAccess = HasMasterAccess,
                     HasEditRolesAccess = HasEditRolesAccess,
                     ProjectId = arg.ProjectId,

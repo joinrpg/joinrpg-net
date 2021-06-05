@@ -1,11 +1,11 @@
 ﻿@model JoinRpg.Web.Models.Characters.ICharacterWithPlayerViewModel
 
-@if (Model != null && Model.Player != null)
+@if (Model != null && Model.PlayerLink != null)
 {
     if (!Model.HidePlayer || Model.HasAccess)
     {
         var hideClassName = Model.HidePlayer ? "world-object-hidden" : "";
-        <span class="@hideClassName">@Html.DisplayFor(model => Model.Player)</span>
+        <span class="@hideClassName">@Html.DisplayFor(model => Model.PlayerLink)</span>
     }
     else
     {
