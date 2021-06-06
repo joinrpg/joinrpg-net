@@ -155,7 +155,7 @@ namespace JoinRpg.Portal.Controllers
             var result = await UserManager.AddLoginAsync(user, loginInfo);
             if (!result.Succeeded)
             {
-                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
+                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
             }
 
             await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
@@ -163,7 +163,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false)
+        public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false, ManageMessageId? message = null)
         {
             var user = await UserRepository.WithProfile(CurrentUserAccessor.UserId);
             var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
@@ -199,6 +199,7 @@ namespace JoinRpg.Portal.Controllers
                 Email = user.Email,
                 HasPassword = user.PasswordHash != null,
                 Avatars = new UserAvatarListViewModel(user),
+                Message = message,
             };
 
             return base.View(model);
@@ -240,18 +241,6 @@ namespace JoinRpg.Portal.Controllers
                 return View(viewModel);
             }
         }
-
-        #region Helpers
-
-        public enum ManageMessageId
-        {
-            ChangePasswordSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
-            Error,
-        }
-
-        #endregion
     }
 
 }
