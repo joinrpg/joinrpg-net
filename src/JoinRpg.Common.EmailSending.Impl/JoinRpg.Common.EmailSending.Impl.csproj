@@ -10,7 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
-    <PackageReference Include="mailgun_csharp" Version="0.7.0-preview1 " />
+    <PackageReference Include="mailgun_csharp" Version="0.7.0-preview2 " />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>

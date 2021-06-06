@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -19,13 +20,13 @@ namespace JoinRpg.Common.EmailSending.Impl
         private string ServiceEmail { get; }
         private MessageService MessageService { get; }
 
-        public EmailSendingServiceImpl(IMailGunConfig config)
+        public EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory httpClientFactory)
         {
             EmailEnabled = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
             ApiDomain = config.ApiDomain;
             ServiceEmail = config.ServiceEmail;
 
-            MessageService = new MessageService(config.ApiKey);
+            MessageService = new MessageService(config.ApiKey, httpClientFactory);
         }
 
         public string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";
