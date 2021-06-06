@@ -13,7 +13,9 @@
 <component type="typeof(JoinRpg.Web.GameSubscribe.MasterSubscribeList)"
            render-mode="WebAssemblyPrerendered"
            param-ProjectId="@Model.SubscribeList.ProjectId"
-           param-MasterId="@Model.SubscribeList.MasterId" />
+           param-MasterId="@Model.SubscribeList.MasterId"
+           param-InitialModel="@Model.SubscribeList "
+           />
 
 @section Scripts {
   <script src="/_framework/blazor.webassembly.js"></script>
