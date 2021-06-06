@@ -1,7 +1,7 @@
 ﻿@using System.Linq.Expressions;
 @if (For.Compile()())
 {
-  <Label For="@For" @attributes="@InputAttributes">@ChildContent</Label>
+  <LabelFor For="@For" @attributes="@InputAttributes">@ChildContent</LabelFor>
 }
 @code {
     [Parameter] public Expression<Func<bool>> For { get; set; }
