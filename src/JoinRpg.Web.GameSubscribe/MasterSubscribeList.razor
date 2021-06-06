@@ -8,39 +8,39 @@
 
 <div class="master-subscribe-list">
   <table class="table">
-
-    <tr>
-      <th>Предмет подписки</th>
-      <th>Виды операций</th>
-      <th></th>
-    </tr>
-
-    @foreach (var item in _model.Items)
-    {
-      <MasterSubscribeListRow Model="@item" OnRemoveCallback="OnRemoveRow" @key="@item.UserSubscriptionId" />
-    }
-    @foreach (var paymentType in _model.PaymentTypeNames)
-    {
+    <tbody>
       <tr>
-        <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
+        <th>Предмет подписки</th>
+        <th>Виды операций</th>
+        <th></th>
+      </tr>
+
+      @foreach (var item in _model.Items)
+      {
+        <MasterSubscribeListRow Model="@item" OnRemoveCallback="OnRemoveRow" @key="@item.UserSubscriptionId" />
+      }
+      @foreach (var paymentType in _model.PaymentTypeNames)
+      {
+        <tr>
+          <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
+          <td>
+            <label class="label label-success">
+              Отмеченные взносы
+            </label>
+          </td>
+          <td></td>
+        </tr>
+      }
+      <tr>
+        <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
         <td>
           <label class="label label-success">
-            Отмеченные взносы
+            Любые изменения
           </label>
         </td>
         <td></td>
       </tr>
-    }
-    <tr>
-      <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
-      <td>
-        <label class="label label-success">
-          Любые изменения
-        </label>
-      </td>
-      <td></td>
-    </tr>
-
+    </tbody>
   </table>
 
 </div>
