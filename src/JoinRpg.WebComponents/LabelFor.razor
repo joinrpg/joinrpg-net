@@ -1,0 +1,45 @@
+﻿@using System.Linq.Expressions;
+@using JoinRpg.Helpers
+@typeparam T
+@if (ChildContent == null)
+{
+  <label @attributes="@InputAttributes" class="@labelStyle">@label</label>
+}
+else
+{
+  <label @attributes="@InputAttributes" class="@labelStyle">
+    @label
+    @ChildContent
+  </label>
+}
+@code {
+    [Parameter] public Expression<Func<T>> For { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public VariationStyleEnum? Variation { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; }
+
+    private string label {
+      get {
+        var property = For.AsPropertyAccess();
+        if (property is null)
+        {
+          throw new ArgumentException("Expression should be property access", nameof(For));
+        }
+        return property.GetDisplayName();
+      }
+    }
+
+    private string labelStyle
+    {
+      get
+      {
+        return Variation switch
+        {
+          VariationStyleEnum.Success => "label label-success",
+          _ => "label",
+        };
+      }
+    }
+}

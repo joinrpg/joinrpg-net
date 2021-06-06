@@ -7,7 +7,7 @@
 }
 
 <div class="master-subscribe-list">
-  <table class="table">
+  <table class="table"> @*Table should be moved into Components*@
     <tbody>
       <tr>
         <th>Предмет подписки</th>
@@ -24,9 +24,9 @@
         <tr>
           <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
           <td>
-            <label class="label label-success">
+            <Label Variation="VariationStyleEnum.Success">
               Отмеченные взносы
-            </label>
+            </Label>
           </td>
           <td></td>
         </tr>
@@ -34,9 +34,9 @@
       <tr>
         <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
         <td>
-          <label class="label label-success">
+          <Label Variation="VariationStyleEnum.Success">
             Любые изменения
-          </label>
+          </Label>
         </td>
         <td></td>
       </tr>
