@@ -76,5 +76,6 @@ namespace JoinRpg.Web.Models
         public bool HasPassword { get; set; }
 
         public UserAvatarListViewModel Avatars { get; set; }
+        public ManageMessageId? Message { get; set; }
     }
 }

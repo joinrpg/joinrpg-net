@@ -1,11 +1,26 @@
-﻿
-@model JoinRpg.Web.Models.EditUserProfileViewModel
+﻿@using JoinRpg.Web.Models
+ 
+@model EditUserProfileViewModel
 
 @{
   ViewBag.Title = "Редактирование профиля";
 }
 
 <h2>Настройки профиля</h2>
+
+@if (Model.Message is not null)
+{
+  <div class="alert alert-danger">
+    @(Model.Message switch 
+  {
+    ManageMessageId.SocialLoginAlreadyLinked => "Данная соцсеть уже привязана к другому аккаунту",
+    ManageMessageId.Error => "Неизвестная ошибка",
+    ManageMessageId.ChangePasswordSuccess => "Пароль изменен",
+    ManageMessageId.SetPasswordSuccess => "Пароль установлен",
+    ManageMessageId.RemoveLoginSuccess => "Соцсеть отвязана",
+  })
+  </div>
+}
 
 
 @using (Html.BeginForm())
