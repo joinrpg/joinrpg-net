@@ -83,6 +83,8 @@ namespace JoinRpg.Web.Controllers.XGameApi
                     PlayerUserId = character.ApprovedClaim?.PlayerUserId,
                     CharacterDescription = character.Description,
                     CharacterName = character.Name,
+                    PlayerInfo = character.ApprovedClaim is null ? null :
+                        new CharacterPlayerInfo(character.ApprovedClaim.PlayerUserId, character.ApprovedClaim.ClaimFeeDue() == 0),
                 };
         }
 
@@ -95,7 +97,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
         [XGameMasterAuthorize()]
         [HttpPost]
         [Route("{characterId}/fields")]
-        public async Task<string> SetCharacterFields(int projectId, int characterId, Dictionary<int, string> fieldValues)
+        public async Task<string> SetCharacterFields(int projectId, int characterId, Dictionary<int, string?> fieldValues)
         {
             await CharacterService.SetFields(projectId, characterId, fieldValues);
             return "ok";

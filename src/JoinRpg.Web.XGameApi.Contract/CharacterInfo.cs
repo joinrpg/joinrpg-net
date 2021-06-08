@@ -55,8 +55,9 @@ namespace JoinRpg.Web.XGameApi.Contract
         public IEnumerable<FieldValue> Fields { get; set; }
 
         /// <summary>
-        /// Player user id
+        /// This is legacy field. Please look into PlayerInfo
         /// </summary>
+        [Obsolete]
         public int? PlayerUserId { get; set; }
 
         /// <summary>
@@ -70,6 +71,30 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// </summary>
         [Obsolete]
         public string CharacterDescription { get; set; }
+
+
+        /// <summary>
+        /// Only set if player present (BusyStatus = HasPlayer)
+        /// </summary>
+        public CharacterPlayerInfo PlayerInfo { get; set; }
+    }
+
+    /// <summary>
+    /// Info about player
+    /// </summary>
+    public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull)
+    {
+        /// <summary>
+        /// true — claim fee paid in full
+        /// false — claim fee not paid in full
+        /// null 
+        /// </summary>
+        public bool PaidInFull { get; set; } = PaidInFull;
+
+        /// <summary>
+        /// Player user id
+        /// </summary>
+        public int PlayerUserId { get; set; } = PlayerUserId;
     }
 
     /// <summary>
