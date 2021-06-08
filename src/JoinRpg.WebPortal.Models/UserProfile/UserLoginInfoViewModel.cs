@@ -30,65 +30,50 @@ namespace JoinRpg.Web.Models
         public static IEnumerable<UserLoginInfoViewModel> GetSocialLogins(this User user)
         {
             var canRemoveLogins = user.PasswordHash != null || user.ExternalLogins.Count > 1;
-            if (user.ExternalLogins.SingleOrDefault(l => l.Provider == "Google") is UserExternalLogin googleLogin)
+            yield return GetModel(UserLoginInfoViewModel.ProviderDescViewModel.Google);
+            var vk = GetModel(UserLoginInfoViewModel.ProviderDescViewModel.Vk);
+            if (vk.ProviderKey is not null)
             {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = false,
-                    AllowUnlink = canRemoveLogins,
-                    LoginProvider = UserLoginInfoViewModel.ProviderDescViewModel.Google,
-                    ProviderKey = googleLogin.Key,
-                    NeedToReLink = false,
-                    ProviderLink = null,
-                };
+                vk.ProviderLink = $"https://vk.com/id{vk.ProviderKey}";
             }
-            else
+
+            if (vk.ProviderKey is null && user.Extra?.Vk is not null)
             {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = true,
-                    AllowUnlink = false,
-                    LoginProvider = UserLoginInfoViewModel.ProviderDescViewModel.Google,
-                    ProviderKey = null,
-                    NeedToReLink = false,
-                    ProviderLink = null,
-                };
+                vk.NeedToReLink = true;
+                vk.AllowLink = false;
+                vk.ProviderLink = $"https://vk.com/id{user.Extra?.Vk}";
             }
-            if (user.ExternalLogins.SingleOrDefault(l => l.Provider == "Vkontakte") is UserExternalLogin vkLogin)
+
+            yield return vk;
+
+            UserLoginInfoViewModel GetModel(UserLoginInfoViewModel.ProviderDescViewModel provider)
             {
-                yield return new UserLoginInfoViewModel()
+                if (user.ExternalLogins.SingleOrDefault(l =>
+                    l.Provider.ToLowerInvariant() == provider.ProviderId.ToLowerInvariant()
+                    ) is UserExternalLogin login)
                 {
-                    AllowLink = false,
-                    AllowUnlink = canRemoveLogins,
-                    LoginProvider = UserLoginInfoViewModel.ProviderDescViewModel.Vk,
-                    ProviderKey = vkLogin.Key,
-                    NeedToReLink = false,
-                    ProviderLink = $"https://vk.com/id{vkLogin.Key}",
-                };
-            }
-            else if (user.Extra?.Vk != null)
-            {
-                yield return new UserLoginInfoViewModel()
+                    return new UserLoginInfoViewModel()
+                    {
+                        AllowLink = false,
+                        AllowUnlink = canRemoveLogins,
+                        LoginProvider = provider,
+                        ProviderKey = login.Key,
+                        NeedToReLink = false,
+                        ProviderLink = null,
+                    };
+                }
+                else
                 {
-                    AllowLink = false,
-                    AllowUnlink = false,
-                    LoginProvider = UserLoginInfoViewModel.ProviderDescViewModel.Vk,
-                    ProviderKey = null,
-                    NeedToReLink = true,
-                    ProviderLink = $"https://vk.com/id{user.Extra?.Vk}",
-                };
-            }
-            else
-            {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = true,
-                    AllowUnlink = false,
-                    LoginProvider = UserLoginInfoViewModel.ProviderDescViewModel.Vk,
-                    ProviderKey = null,
-                    NeedToReLink = false,
-                    ProviderLink = null,
-                };
+                    return new UserLoginInfoViewModel()
+                    {
+                        AllowLink = true,
+                        AllowUnlink = false,
+                        LoginProvider = provider,
+                        ProviderKey = null,
+                        NeedToReLink = false,
+                        ProviderLink = null,
+                    };
+                }
             }
         }
     }
