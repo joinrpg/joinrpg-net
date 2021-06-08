@@ -33,7 +33,7 @@ namespace JoinRpg.Data.Interfaces
         public bool IsActive { get; set; }
         public bool InGame { get; set; }
         public bool IsAcceptingClaims { get; set; }
-        public ClaimView ApprovedClaim { get; set; }
+        public Claim ApprovedClaim { get; set; }
         public IReadOnlyCollection<ClaimHeader> Claims { get; set; }
         public IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
         public IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
@@ -65,6 +65,8 @@ namespace JoinRpg.Data.Interfaces
     {
         public int PlayerUserId { get; set; }
         public string JsonData { get; set; }
+
+        public bool PaidInFull { get; set; }
     }
 
     public class ClaimHeader

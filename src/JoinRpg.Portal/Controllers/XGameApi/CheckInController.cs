@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.XGameApi.Contract;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi
@@ -71,6 +72,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
         /// </summary>
         [Route("{claimId}/prepare")]
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<ClaimCheckInValidationResult>> PrepareClaimFoCheckIn([FromQuery]
             int projectId,
             [FromQuery]
