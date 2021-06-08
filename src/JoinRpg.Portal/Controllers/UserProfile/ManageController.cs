@@ -15,6 +15,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -23,6 +24,7 @@ namespace JoinRpg.Portal.Controllers
     {
         private readonly IUserService _userService;
         private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
+        private readonly ILogger<ManageController> logger;
 
         private ApplicationUserManager UserManager { get; }
 
@@ -33,7 +35,9 @@ namespace JoinRpg.Portal.Controllers
             IUserService userService,
             ICurrentUserAccessor currentUserAccessor,
             ConfigurationAdapter configurationAdapter,
-            ExternalLoginProfileExtractor externalLoginProfileExtractor)
+            ExternalLoginProfileExtractor externalLoginProfileExtractor,
+            ILogger<ManageController> logger
+            )
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -42,6 +46,7 @@ namespace JoinRpg.Portal.Controllers
             CurrentUserAccessor = currentUserAccessor;
             ConfigurationAdapter = configurationAdapter;
             this.externalLoginProfileExtractor = externalLoginProfileExtractor;
+            this.logger = logger;
         }
 
         private ApplicationSignInManager SignInManager { get; }
@@ -155,7 +160,12 @@ namespace JoinRpg.Portal.Controllers
             var result = await UserManager.AddLoginAsync(user, loginInfo);
             if (!result.Succeeded)
             {
-                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
+                if (result.Errors.Any(i => i.Code == "LoginAlreadyAssociated"))
+                {
+                    return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
+                }
+                logger.LogError("Unexpected error during linking user to another account: {loginError}", result.Errors.First().Code);
+                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
             }
 
             await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
