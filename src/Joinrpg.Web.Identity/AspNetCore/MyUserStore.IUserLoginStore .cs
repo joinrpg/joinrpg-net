@@ -38,7 +38,7 @@ namespace Joinrpg.Web.Identity
             var el =
                 dbUser.ExternalLogins.First(
                     externalLogin => externalLogin.Key == providerKey &&
-                                     externalLogin.Provider == loginProvider);
+                                     externalLogin.Provider.ToLowerInvariant() == loginProvider.ToLowerInvariant());
             _ = _ctx.Set<UserExternalLogin>().Remove(el);
             _ = await _ctx.SaveChangesAsync(cancellationToken);
         }
