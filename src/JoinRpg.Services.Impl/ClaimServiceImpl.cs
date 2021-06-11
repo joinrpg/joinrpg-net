@@ -181,7 +181,7 @@ namespace JoinRpg.Services.Impl
             var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
                 //if we failed to calculate responsible master, assign owner as responsible master
                 ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
-                //if we found no owner, assign random master 
+                //if we found no owner, assign random master
                 ?? source.Project.ProjectAcls.First().User;
 
             var claim = new Claim()
@@ -501,6 +501,64 @@ namespace JoinRpg.Services.Impl
             return email;
         }
 
+        /// <inheritdoc />
+        public async Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId)
+        {
+            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+
+            claim = claim.RequestAccess(CurrentUserId,
+                acl => acl.CanSetPlayersAccommodations,
+                claim.ClaimStatus == Claim.Status.Approved
+                    ? ExtraAccessReason.PlayerOrResponsible
+                    : ExtraAccessReason.None);
+
+            var acr = claim.AccommodationRequest;
+            if (acr is null)
+            {
+                return null;
+            }
+            if (acr.Subjects.Count == 1)
+            {
+                return acr;
+            }
+
+            var email = EmailHelpers.CreateFieldsEmail(
+                claim,
+                s => s.AccommodationChange,
+                await GetCurrentUser(),
+                Array.Empty<FieldWithPreviousAndNewValue>(),
+                new Dictionary<string, PreviousAndNewValue>()
+                {
+                    {
+                        "Тип поселения", //TODO[Localize]
+                        new PreviousAndNewValue("без поселения", acr.AccommodationType.Name)
+                    },
+                });
+            var leaveEmail = await ConsiderLeavingRoom(claim);
+
+            acr.Subjects.Remove(claim);
+            claim.AccommodationRequest_Id = null;
+            claim.AccommodationRequest = null;
+            UnitOfWork.GetDbSet<AccommodationRequest>()
+                .Add(
+                    new AccommodationRequest
+                    {
+                        ProjectId = projectId,
+                        AccommodationTypeId = acr.AccommodationTypeId,
+                        IsAccepted = AccommodationRequest.InviteState.Accepted,
+                        Subjects = new List<Claim> {claim}
+                    });
+
+            await UnitOfWork.SaveChangesAsync();
+
+            await EmailService.Email(email);
+            if (leaveEmail is not null)
+            {
+                await EmailService.Email(leaveEmail);
+            }
+
+            return acr;
+        }
 
         public async Task<AccommodationRequest> SetAccommodationType(int projectId,
             int claimId,
@@ -546,6 +604,7 @@ namespace JoinRpg.Services.Impl
 
             var leaveEmail = await ConsiderLeavingRoom(claim);
 
+            // TODO: Just change accommodation type if this claim is the only occupant of previous room
             var accommodationRequest = new AccommodationRequest
             {
                 ProjectId = projectId,
@@ -650,7 +709,7 @@ namespace JoinRpg.Services.Impl
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
             var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
-            //Grab subscribtions before change 
+            //Grab subscribtions before change
             var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
             source.EnsureCanMoveClaim(claim);
@@ -780,7 +839,7 @@ namespace JoinRpg.Services.Impl
             int characterId,
             IReadOnlyDictionary<int, string?> newFieldValue)
         {
-            //TODO: Prevent lazy load here - use repository 
+            //TODO: Prevent lazy load here - use repository
             var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
             var updatedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue,
