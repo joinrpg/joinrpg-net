@@ -5,8 +5,8 @@
 {
     public static string CountOfX(int count, string single, string multi1, string multi2)
     {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
+        string selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + selected;
     }
 }
 
@@ -14,7 +14,7 @@
   <div class="modal-dialog">
     <form method="post" class="modal-content" action="@Url.Action("SetAccommodationType", "Claim", new {Model.ProjectId, Model.ClaimId})">
         <div class="modal-header">
-          Возможные варианты проживания
+          Варианты проживания
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -39,18 +39,18 @@
           @foreach (var accommodationType in Model.AvailableAccommodationTypes)
           {
             var checkedState = "";
-            if (Model.AccommodationRequest != null && Model.AccommodationRequest.AccommodationType == accommodationType)
+            if (Model.AccommodationRequest?.AccommodationTypeId == accommodationType.Id)
             {
               checkedState = "checked";
             }
-            <div class="radio" style="margin-bottom: 2em;">
-              <label>
-                <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
-                @accommodationType.Name
-                <text>(@CountOfX(accommodationType.Capacity, "место",
-                         "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
-                <br/>
-                @accommodationType.Description.ToHtmlString()
+            <div style="margin: 1em 0; display: flex; flex-direction: row; align-items: center;">
+              <input type="radio" name="AccommodationTypeId" id="at-@(accommodationType.Id)" value="@accommodationType.Id" style="margin: 0;" @checkedState>
+              <label style="margin: 0 0 0 2em; display: block; font-weight: normal;">
+                <div>
+                  <strong>@accommodationType.Name</strong>
+                  <text>(@CountOfX(accommodationType.Capacity, "место", "места", "мест") в номере, @accommodationType.Cost&nbsp;&#8381;)</text>
+                </div>
+                <div>@accommodationType.Description.ToHtmlString()</div>
               </label>
             </div>
           }

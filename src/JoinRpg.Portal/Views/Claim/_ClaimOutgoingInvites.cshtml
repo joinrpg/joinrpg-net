@@ -1,41 +1,41 @@
 ﻿@using JoinRpg.DataModel
 @using JoinRpg.Helpers
-@using JoinRpg.Portal
 @using JoinRpg.Web.Helpers
 @model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
-
-@if (!Model.OutgoingInvite.Any())
-{
-    return;
+@{
+    AccommodationInvite[] items = Model.OutgoingInvite
+        .Where(item => item.IsAccepted != AccommodationRequest.InviteState.Accepted)
+        .ToArray();
+    if (items.Length == 0)
+        return;
 }
-
-@{ var resolveSectionClassName = ""; }
 <div class="panel panel-default" id="incomingInvite">
     <div class="panel-heading">Отправленные приглашения к совместному проживанию</div>
     <div class="panel-body">
-        <table class="table">
-            @foreach (var accommodationInvite in Model.OutgoingInvite.Where(invite=>invite.IsAccepted != AccommodationRequest.InviteState.Accepted))
+        <table class="table" style="margin: 0;">
+            @foreach (var invite in items)
             {
                 <tr>
-                    <td>@Html.DisplayFor(model => accommodationInvite.To.Player)</td>
-                    @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                    <td style="border: none; vertical-align: middle;">@Html.DisplayFor(model => invite.To.Player)</td>
+                    @if (invite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
                     {
-                        <td>
-                            @using (Html.BeginForm("DeclineInvite", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                            {
+                        <td style="border: none;">
+                            <form method="post" asp-controller="Claim" asp-action="CancelInvite" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" enctype="multipart/form-data">
                                 @Html.AntiForgeryToken()
-                                @Html.Hidden("InviteId", accommodationInvite.Id)
-                                @Html.Hidden("InviteState", AccommodationRequest.InviteState.Canceled)
-                                var name = "selfCancelInvite_" + @accommodationInvite.Id;
-                                var targetName = "#" + name;
-                                <button type="button" class="btn btn-xs" data-toggle="modal" data-target="@targetName"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отменить</button>
-                                @Html.ConfirmDialog(name, "Отменить приглашение к совместному проживанию?", "Подтвердите действие", "Да", "Нет")
-                            }
+                                @Html.Hidden("InviteId", invite.Id)
+                                <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#cancel-@(invite.Id)"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отозвать</button>
+                                @Html.ConfirmDialog(
+                                    "cancel-" + invite.Id,
+                                    "Отменить приглашение к совместному проживанию?",
+                                    "Подтвердите действие",
+                                    "Да",
+                                    "Нет")
+                            </form>
                         </td>
                     }
                     else
                     {
-                        <td class="@accommodationInvite.IsAccepted.GetAppropriateTextStyle()"> @accommodationInvite.IsAccepted.GetDescription() </td>
+                        <td class="@invite.IsAccepted.GetAppropriateTextStyle()" style="border: none;">@invite.IsAccepted.GetDescription()</td>
                     }
                 </tr>
             }

@@ -106,7 +106,6 @@ namespace JoinRpg.Web.Models
 
 
         public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
-        public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
         public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
         public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
         public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }

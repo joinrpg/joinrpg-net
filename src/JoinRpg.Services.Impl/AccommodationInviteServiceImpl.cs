@@ -192,6 +192,8 @@ namespace JoinRpg.Services.Impl
             int accommodationRequestId,
             string accommodationRequestPrefix)
         {
+            // TODO: Search for and reuse previously cancelled invitation(s) to the same person(s)
+
             if (receiverClaimOrAccommodationRequestId.StartsWith(accommodationRequestPrefix))
             {
                 return await CreateAccommodationInviteToAccommodationRequest(projectId,

@@ -110,7 +110,7 @@ namespace JoinRpg.Portal.Controllers
         public Task<ActionResult> ListWithoutRoomType(int projectId, string export) =>
             ListForRoomType(projectId, null, export);
 
-        [HttpGet("~/{ProjectId}/claims/by-roomtype/{roomTypeId}")]
+        [HttpGet("~/{ProjectId}/claims/by-roomtype/{roomTypeId?}")]
         [MasterAuthorize()]
         public async Task<ActionResult> ListForRoomType(int projectId, int? roomTypeId, string export)
         {

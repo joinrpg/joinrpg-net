@@ -708,6 +708,36 @@ namespace JoinRpg.Portal.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
+        public async Task<IActionResult> LeaveGroupAsync(int projectId, int claimId)
+        {
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
+            if (claim is null)
+            {
+                return NotFound();
+            }
+            var error = WithClaim(claim);
+            if (error is not null)
+            {
+                return error;
+            }
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return await Edit(projectId, claimId);
+                }
+
+                await _claimService.LeaveAccommodationGroupAsync(projectId, claimId);
+                return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+            }
+            catch
+            {
+                return await Edit(projectId, claimId);
+            }
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<ActionResult> Invite(InviteRequestViewModel viewModel)
         {
             var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
@@ -730,46 +760,54 @@ namespace JoinRpg.Portal.Controllers
             return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
 
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<ActionResult> DeclineInvite(InviteRequestViewModel viewModel)
+        private async Task<IActionResult> InviteActionAsync(
+            int projectId,
+            int claimId,
+            int inviteId,
+            AccommodationRequest.InviteState inviteState)
         {
-            var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
-            if (project == null)
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
+            if (claim is null)
             {
                 return NotFound();
             }
 
             if (!ModelState.IsValid)
             {
-                return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+                return await Edit(projectId, claimId);
             }
 
-            _ = await AccommodationInviteService.CancelOrDeclineAccommodationInvite(viewModel.InviteId, viewModel.InviteState).ConfigureAwait(false);
+            switch (inviteState)
+            {
+                case AccommodationRequest.InviteState.Canceled:
+                case AccommodationRequest.InviteState.Declined:
+                    await AccommodationInviteService.CancelOrDeclineAccommodationInvite(
+                        inviteId,
+                        inviteState);
+                    break;
 
-            return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+                case AccommodationRequest.InviteState.Accepted:
+                    await AccommodationInviteService.AcceptAccommodationInvite(projectId, inviteId);
+                    break;
+            }
+
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<ActionResult> AcceptInvite(InviteRequestViewModel viewModel)
-        {
-            var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
-            if (project == null)
-            {
-                return NotFound();
-            }
+        public Task<IActionResult> CancelInviteAsync(int projectId, int claimId, int inviteId)
+            => InviteActionAsync(projectId, claimId, inviteId, AccommodationRequest.InviteState.Canceled);
 
-            if (!ModelState.IsValid)
-            {
-                return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
-            }
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public Task<IActionResult> DeclineInviteAsync(int projectId, int claimId, int inviteId)
+            => InviteActionAsync(projectId, claimId, inviteId, AccommodationRequest.InviteState.Declined);
 
-            _ = await AccommodationInviteService.AcceptAccommodationInvite(viewModel.ProjectId, viewModel.InviteId).ConfigureAwait(false);
-
-            return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-        }
-
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public Task<IActionResult> AcceptInviteAsync(int projectId, int claimId, int inviteId)
+            => InviteActionAsync(projectId, claimId, inviteId, AccommodationRequest.InviteState.Accepted);
 
         [HttpGet]
         [Authorize]

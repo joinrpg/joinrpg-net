@@ -38,6 +38,18 @@ namespace JoinRpg.Services.Interfaces
 
         Task<AccommodationRequest> SetAccommodationType(int projectId, int claimId, int accommodationTypeId);
 
+        /// <summary>
+        /// Excludes a claim from any accommodation group to a single occupation
+        /// </summary>
+        /// <param name="projectId">Database Id of a project</param>
+        /// <param name="claimId">Database Id of a claim</param>
+        /// <returns>
+        /// null if claim is not accommodated
+        /// <br />Existed accommodation request if there are no neighbours in accommodation.
+        /// <br />New accommodation request if claim was in accommodation group.
+        /// </returns>
+        Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId);
+
         Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
 
 
