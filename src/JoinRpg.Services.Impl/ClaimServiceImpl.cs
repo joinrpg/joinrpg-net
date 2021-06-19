@@ -546,7 +546,7 @@ namespace JoinRpg.Services.Impl
                         ProjectId = projectId,
                         AccommodationTypeId = acr.AccommodationTypeId,
                         IsAccepted = AccommodationRequest.InviteState.Accepted,
-                        Subjects = new List<Claim> {claim}
+                        Subjects = new List<Claim> { claim }
                     });
 
             await UnitOfWork.SaveChangesAsync();

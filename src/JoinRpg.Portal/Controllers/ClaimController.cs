@@ -728,7 +728,7 @@ namespace JoinRpg.Portal.Controllers
                 }
 
                 await _claimService.LeaveAccommodationGroupAsync(projectId, claimId);
-                return RedirectToAction("Edit", "Claim", new {projectId, claimId});
+                return RedirectToAction("Edit", "Claim", new { projectId, claimId });
             }
             catch
             {
@@ -791,7 +791,7 @@ namespace JoinRpg.Portal.Controllers
                     break;
             }
 
-            return RedirectToAction("Edit", "Claim", new {projectId, claimId});
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
         [ValidateAntiForgeryToken]
