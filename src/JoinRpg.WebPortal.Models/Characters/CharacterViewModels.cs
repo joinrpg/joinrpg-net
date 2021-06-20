@@ -6,6 +6,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters
 {

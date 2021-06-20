@@ -3,6 +3,7 @@ using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Exporters
 {

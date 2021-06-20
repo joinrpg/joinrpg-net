@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

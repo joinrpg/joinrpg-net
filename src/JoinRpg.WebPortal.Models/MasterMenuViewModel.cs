@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models
 {
