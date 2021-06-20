@@ -9,7 +9,7 @@
     {
         <a href="#" class="disabled btn btn-default">@ViewBag.CountString</a>
     }
-    <a href="?export=xlsx" class="btn btn-default"
+    <a href="@(ViewBag.FullyQualifiedUri)?export=xlsx" class="btn btn-default"
        title="Экспорт в Excel">
         <span class="glyphicon glyphicon-download"></span>
         Скачать в Excel
