@@ -4,23 +4,8 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Data.Interfaces
+namespace JoinRpg.Data.Interfaces.Claims
 {
-    public enum ClaimStatusSpec
-    {
-        Any, Active, InActive,
-        Discussion,
-        OnHold, Approved,
-        ReadyForCheckIn,
-        CheckedIn,
-        ActiveOrOnHold,
-    }
-
-    public class ClaimCountByMaster
-    {
-        public int? MasterId { get; set; }
-        public int ClaimCount { get; set; }
-    }
     public interface IClaimsRepository : IDisposable
     {
         Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status);

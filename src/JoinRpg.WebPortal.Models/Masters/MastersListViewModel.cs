@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 
