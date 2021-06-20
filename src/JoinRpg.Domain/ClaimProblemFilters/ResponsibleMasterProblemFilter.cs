@@ -9,11 +9,11 @@ namespace JoinRpg.Domain.ClaimProblemFilters
         {
             if (claim.ResponsibleMasterUser == null)
             {
-                yield return new ClaimProblem(ClaimProblemType.NoResponsibleMaster, ProblemSeverity.Error, null);
+                yield return new ClaimProblem(ClaimProblemType.NoResponsibleMaster, ProblemSeverity.Error);
             }
             else if (!claim.HasMasterAccess(claim.ResponsibleMasterUserId))
             {
-                yield return new ClaimProblem(ClaimProblemType.InvalidResponsibleMaster, ProblemSeverity.Error, null);
+                yield return new ClaimProblem(ClaimProblemType.InvalidResponsibleMaster, ProblemSeverity.Error);
             }
         }
     }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
@@ -14,10 +13,10 @@ namespace JoinRpg.Domain
         {
             var comments = discussion.Comments.Where(c => c.AuthorUserId == userId).Select(c => c.Id);
             var watermarks = discussion.Watermarks.Where(wm => wm.UserId == userId).Select(c => c.CommentId);
-            return comments.Union(watermarks).Union(0).Max();
+            return comments.Union(watermarks).Append(0).Max();
         }
 
-        public static IEnumerable<Comment> InLastXDays(this IEnumerable<Comment> masterAnswers, int days) => masterAnswers.Where(comment => DateTime.UtcNow.Subtract(comment.CreatedAt) < TimeSpan.FromDays(days));
+        public static bool HasMasterCommentsInLastXDays(this Claim claim, int days) => claim.LastVisibleMasterCommentAt?.AddDays(days) >= DateTimeOffset.Now;
 
         public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId)
         {
