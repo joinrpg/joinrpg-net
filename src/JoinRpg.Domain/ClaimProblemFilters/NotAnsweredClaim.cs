@@ -21,19 +21,17 @@ namespace JoinRpg.Domain.ClaimProblemFilters
                 yield break;
             }
 
-
-            var masterAnswers = claim.CommentDiscussion.GetMasterAnswers().ToList();
-            if (!masterAnswers.Any())
+            if (claim.LastVisibleMasterCommentAt is null)
             {
                 yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered, ProblemSeverity.Error, claim.CreateDate);
             }
-            else if (!masterAnswers.InLastXDays(14).Any())
+            else if (!claim.HasMasterCommentsInLastXDays(14))
             {
-                yield return new ClaimProblem(ClaimProblemType.ClaimDiscussionStopped, ProblemSeverity.Error, masterAnswers.Last().CreatedAt);
+                yield return new ClaimProblem(ClaimProblemType.ClaimDiscussionStopped, ProblemSeverity.Error, claim.LastVisibleMasterCommentAt.Value);
             }
-            else if (!masterAnswers.InLastXDays(7).Any())
+            else if (!claim.HasMasterCommentsInLastXDays(7))
             {
-                yield return new ClaimProblem(ClaimProblemType.ClaimDiscussionStopped, ProblemSeverity.Warning, masterAnswers.Last().CreatedAt);
+                yield return new ClaimProblem(ClaimProblemType.ClaimDiscussionStopped, ProblemSeverity.Warning, claim.LastVisibleMasterCommentAt.Value);
             }
 
             if (now.Subtract(claim.CreateDate) > TimeSpan.FromDays(60))

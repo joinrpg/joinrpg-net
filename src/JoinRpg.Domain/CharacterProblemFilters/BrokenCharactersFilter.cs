@@ -29,7 +29,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
             }
             if (!group.ParentCharacterGroupIds.Any() || group.ParentCharacterGroupIds.Any(id => id == group.CharacterGroupId))
             {
-                yield return new ClaimProblem(ClaimProblemType.GroupIsBroken, ProblemSeverity.Fatal, null, group.CharacterGroupName);
+                yield return new ClaimProblem(ClaimProblemType.GroupIsBroken, ProblemSeverity.Fatal, group.CharacterGroupName);
             }
         }
     }

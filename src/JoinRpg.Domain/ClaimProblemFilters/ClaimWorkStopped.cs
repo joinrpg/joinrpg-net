@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.ClaimProblemFilters
@@ -24,14 +23,14 @@ namespace JoinRpg.Domain.ClaimProblemFilters
                 yield break;
             }
 
-            if (!claim.CommentDiscussion.GetMasterAnswers().Any())
+            if (claim.LastVisibleMasterCommentAt is null)
             {
                 yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered, ProblemSeverity.Error);
             }
 
-            else if (!claim.CommentDiscussion.GetMasterAnswers().InLastXDays(60).Any())
+            else if (!claim.HasMasterCommentsInLastXDays(60))
             {
-                yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, ProblemSeverity.Hint, claim.CommentDiscussion.GetMasterAnswers().Last().CreatedAt);
+                yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, ProblemSeverity.Hint, claim.LastVisibleMasterCommentAt.Value);
             }
         }
     }

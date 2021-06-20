@@ -91,7 +91,7 @@ namespace JoinRpg.Domain
         public ProjectField Field { get; }
 
         public FieldRelatedProblem(ClaimProblemType problemType, ProblemSeverity severity, [NotNull] ProjectField field)
-          : base(problemType, severity, null, field.FieldName) => Field = field ?? throw new ArgumentNullException(nameof(field));
+          : base(problemType, severity, field.FieldName) => Field = field ?? throw new ArgumentNullException(nameof(field));
     }
 
     public enum ClaimProblemType

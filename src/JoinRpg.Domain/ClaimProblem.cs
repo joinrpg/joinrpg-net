@@ -13,11 +13,35 @@ namespace JoinRpg.Domain
 
         public ProblemSeverity Severity { get; }
 
-        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null, string? extraInfo = null)
+        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime problemTime, string? extraInfo = null)
         {
             ProblemType = problemType;
             Severity = severity;
             ProblemTime = problemTime;
+            ExtraInfo = extraInfo;
+        }
+
+        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, string extraInfo)
+        {
+            ProblemType = problemType;
+            Severity = severity;
+            ProblemTime = null;
+            ExtraInfo = extraInfo;
+        }
+
+        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity)
+        {
+            ProblemType = problemType;
+            Severity = severity;
+            ProblemTime = null;
+            ExtraInfo = null;
+        }
+
+        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTimeOffset problemTime, string? extraInfo = null)
+        {
+            ProblemType = problemType;
+            Severity = severity;
+            ProblemTime = problemTime.DateTime;
             ExtraInfo = extraInfo;
         }
     }
