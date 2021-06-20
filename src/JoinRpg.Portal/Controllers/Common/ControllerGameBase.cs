@@ -16,6 +16,7 @@ namespace JoinRpg.Portal.Controllers.Common
 {
     [CaptureNoAccessExceptionHandler]
     [DiscoverProjectFilter]
+    [AddFullUriFilter]
     public abstract class ControllerGameBase : LegacyJoinControllerBase
     {
         [ProvidesContext, NotNull]
