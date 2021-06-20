@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models

@@ -11,6 +11,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
