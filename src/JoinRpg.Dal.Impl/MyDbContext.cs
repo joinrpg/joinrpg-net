@@ -1,14 +1,12 @@
-using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.DataModel.Users;
 
 namespace JoinRpg.Dal.Impl
 {
