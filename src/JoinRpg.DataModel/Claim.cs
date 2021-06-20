@@ -133,7 +133,16 @@ namespace JoinRpg.DataModel
 
         #endregion
 
+        public DateTimeOffset? LastMasterCommentAt { get; set; }
+        [ForeignKey(nameof(LastMasterCommentBy_Id))]
+        public User? LastMasterCommentBy { get; set; }
+        public int? LastMasterCommentBy_Id { get; set; }
 
+        public DateTimeOffset? LastVisibleMasterCommentAt { get; set; }
+        [ForeignKey(nameof(LastVisibleMasterCommentBy_Id))]
+        public User? LastVisibleMasterCommentBy { get; set; }
+        public int? LastVisibleMasterCommentBy_Id { get; set; }
+        public DateTimeOffset? LastPlayerCommentAt { get; set; }
 
         #region ILinkable impl
 

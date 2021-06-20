@@ -133,7 +133,7 @@ namespace JoinRpg.Services.Impl
             PaymentRequestDescriptor result = await GetApi(request.ProjectId, request.ClaimId)
                 .BuildPaymentRequestAsync(
                     message,
-                    async () => (await AddPaymentCommentAsync(claim.CommentDiscussion, onlinePaymentType, request))
+                    async () => (await AddPaymentCommentAsync(claim, onlinePaymentType, request))
                         .CommentId
                         .ToString()
                         .PadLeft(10, '0')
@@ -147,12 +147,12 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<Comment> AddPaymentCommentAsync(
-            CommentDiscussion discussion,
+            Claim claim,
             PaymentType paymentType,
             ClaimPaymentRequest request)
         {
-            Comment comment = CommentHelper.CreateCommentForDiscussion(
-                discussion,
+            Comment comment = CommentHelper.CreateCommentForClaim(
+                claim,
                 CurrentUserId,
                 Now,
                 request.CommentText ?? "",

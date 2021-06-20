@@ -334,8 +334,8 @@ namespace JoinRpg.Services.Impl
             ClaimPaymentTransferRequest request)
         {
             // Comment to source claim
-            Comment commentFrom = CommentHelper.CreateCommentForDiscussion(
-                claimFrom.CommentDiscussion,
+            Comment commentFrom = CommentHelper.CreateCommentForClaim(
+                claimFrom,
                 CurrentUserId,
                 Now,
                 request.CommentText,
@@ -356,8 +356,8 @@ namespace JoinRpg.Services.Impl
             _ = UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
 
             // Comment to destination claim
-            Comment commentTo = CommentHelper.CreateCommentForDiscussion(
-                claimTo.CommentDiscussion,
+            Comment commentTo = CommentHelper.CreateCommentForClaim(
+                claimTo,
                 CurrentUserId,
                 Now,
                 request.CommentText,

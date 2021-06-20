@@ -33,18 +33,13 @@ namespace JoinRpg.Services.Impl
             bool isVisibleToPlayer,
             CommentExtraAction? extraAction = null)
         {
-
-
-            var comment = CommentHelper.CreateCommentForDiscussion(claim.CommentDiscussion,
+            var comment = CommentHelper.CreateCommentForClaim(claim,
                 CurrentUserId,
                 Now,
                 commentText,
                 isVisibleToPlayer,
                 parentComment,
                 extraAction);
-
-            claim.LastUpdateDateTime = Now;
-
             return comment;
         }
 
