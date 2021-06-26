@@ -47,7 +47,6 @@ namespace JoinRpg.Portal.Controllers
         private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title,
             [AspMvcView] string viewName, IReadOnlyCollection<Claim> claims)
         {
-            var view = new ClaimListViewModel(CurrentUserId, claims, projectId);
 
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -55,10 +54,12 @@ namespace JoinRpg.Portal.Controllers
             {
                 ViewBag.MasterAccessColumn = true;
                 ViewBag.Title = title;
+                var view = new ClaimListViewModel(CurrentUserId, claims, projectId);
                 return View(viewName, view);
             }
             else
             {
+                var view = new ClaimListForExportViewModel(CurrentUserId, claims);
                 var project = await GetProjectFromList(projectId, claims);
 
                 return
@@ -76,18 +77,18 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
 
-            var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page);
-
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
+                var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page);
                 ViewBag.MasterAccessColumn = true;
                 ViewBag.Title = title + " " + characterGroup.CharacterGroupName;
                 return View("ByGroup", view);
             }
             else
             {
+                var view = new ClaimListForExportViewModel(CurrentUserId, claims);
                 return
                     await
                         ExportWithCustomFrontend(view.Items, title, exportType.Value,
@@ -268,11 +269,11 @@ namespace JoinRpg.Portal.Controllers
             ViewBag.Title = title;
 
             var viewModel = new ClaimListViewModel(
-                                       CurrentUserId,
-                                       user.Claims.ToList(),
-                                       projectId: null,
-                                       showCount: false,
-                                       showUserColumn: false);
+           CurrentUserId,
+           user.Claims.ToList(),
+           projectId: null,
+           showCount: false,
+           showUserColumn: false);
 
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -347,9 +348,9 @@ namespace JoinRpg.Portal.Controllers
                     .ToList()
             );
         }
-        private async Task<FileContentResult> ExportWithCustomFrontend(
-            IEnumerable<ClaimListItemViewModel> viewModel, string title,
-            ExportType exportType, IGeneratorFrontend<ClaimListItemViewModel> frontend, string projectName)
+        private async Task<FileContentResult> ExportWithCustomFrontend<T>(
+            IEnumerable<T> viewModel, string title,
+            ExportType exportType, IGeneratorFrontend<T> frontend, string projectName) where T : class
         {
             var generator = ExportDataService.GetGenerator(exportType, viewModel,
               frontend);

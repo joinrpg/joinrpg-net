@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
@@ -44,9 +43,6 @@ namespace JoinRpg.Web.Models.ClaimList
 
         [Display(Name = "Проблема")]
         public ICollection<ProblemViewModel> Problems { get; set; }
-
-        [NotNull, ReadOnly(true)]
-        public IReadOnlyCollection<FieldWithValue> Fields { get; }
 
         [Display(Name = "Уплачено")]
         public int FeePaid { get; }
@@ -93,7 +89,7 @@ namespace JoinRpg.Web.Models.ClaimList
 
             ProjectId = claim.ProjectId;
             ProjectName = claim.Project.ProjectName;
-            Fields = claim.GetFields();
+
             FeePaid = claim.ClaimBalance();
             FeeDue = claim.ClaimFeeDue();
             TotalFee = claim.ClaimTotalFee();
