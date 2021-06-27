@@ -153,5 +153,27 @@ namespace JoinRpg.Dal.Impl.Repositories
         public Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId) => GetClaimsImpl(projectId, active, claim => claim.CharacterGroupId == characterGroupsId);
 
         public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
+
+        public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)
+        {
+            var claims = Ctx.Set<Claim>()
+                .Where(claim => claim.ProjectId == projectId)
+              .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec));
+
+            var query =
+                from claim in claims
+                let lastMyCommentId = claim.CommentDiscussion.Comments.Where(comment => comment.AuthorUserId == userId).Max(comment => comment.CommentId)
+                let lastWatermark = claim.CommentDiscussion.Watermarks.Where(watermark => watermark.UserId == userId).Max(watermark => watermark.CommentId)
+                let comments = claim.CommentDiscussion.Comments.Where(comment => comment.IsVisibleToPlayer || hasMasterAccess)
+                let unreadComments = comments.Where(comment => comment.CommentId > lastMyCommentId && comment.CommentId > lastWatermark)
+                select
+                new
+                {
+                    claim.CommentDiscussionId,
+                    UnreadCommentsCount = unreadComments.Count()
+                };
+
+            return query.ToDictionaryAsync(x => x.CommentDiscussionId, x => x.UnreadCommentsCount);
+        }
     }
 }
