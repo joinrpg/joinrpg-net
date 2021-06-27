@@ -17,7 +17,12 @@ namespace JoinRpg.Web.Models.ClaimList
         public bool ShowCount { get; }
         public bool ShowUserColumn { get; }
 
-        public ClaimListViewModel(int currentUserId, IReadOnlyCollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
+        public ClaimListViewModel(
+            int currentUserId,
+            IReadOnlyCollection<Claim> claims,
+            int? projectId,
+            bool showCount = true,
+            bool showUserColumn = true)
         {
             Items = claims
               .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))

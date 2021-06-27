@@ -4,7 +4,7 @@ using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Exporters
 {
-    public class MyClaimListItemViewModelExporter : CustomExporter<ClaimListItemViewModel>
+    public class MyClaimListItemViewModelExporter : CustomExporter<ClaimListItemForExportViewModel>
     {
         public MyClaimListItemViewModelExporter(IUriService uriService) : base(
             uriService)
