@@ -21,6 +21,13 @@ namespace JoinRpg.Portal.Controllers
         {
             this.logger = logger;
         }
+
+        [Route("/error/404")]
+        public IActionResult NotFound(int statusCode)
+        {
+            return View();
+        }
+
         [Route("/error/{statusCode?}")]
         public IActionResult Error(int statusCode)
         {
