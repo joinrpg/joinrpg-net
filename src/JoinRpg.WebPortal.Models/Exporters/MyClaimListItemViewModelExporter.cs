@@ -15,7 +15,6 @@ namespace JoinRpg.Web.Models.Exporters
             yield return StringColumn(x => x.Name);
             yield return UriColumn(x => x);
             yield return EnumColumn(x => x.ClaimFullStatusView.ClaimStatus);
-            yield return EnumColumn(x => x.ClaimFullStatusView.ClaimDenialStatus);
             yield return DateTimeColumn(x => x.UpdateDate);
             yield return DateTimeColumn(x => x.CreateDate);
             yield return IntColumn(x => x.TotalFee);
