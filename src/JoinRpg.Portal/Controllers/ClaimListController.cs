@@ -268,21 +268,23 @@ namespace JoinRpg.Portal.Controllers
 
             ViewBag.Title = title;
 
-            var viewModel = new ClaimListViewModel(
-           CurrentUserId,
-           user.Claims.ToList(),
-           projectId: null,
-           showCount: false,
-           showUserColumn: false);
-
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
+                var viewModel = new ClaimListViewModel(
+                    CurrentUserId,
+                    user.Claims.ToList(),
+                    projectId: null,
+                    showCount: false,
+                    showUserColumn: false);
                 return base.View("Index", viewModel);
             }
             else
             {
+                var viewModel = new ClaimListForExportViewModel(
+                    CurrentUserId,
+                    user.Claims.ToList());
                 return await ExportWithCustomFrontend(
                     viewModel.Items,
                     title,
@@ -290,8 +292,6 @@ namespace JoinRpg.Portal.Controllers
                     new MyClaimListItemViewModelExporter(UriService),
                     user.PrefferedName);
             }
-
-
         }
 
         [HttpGet, MasterAuthorize()]
