@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -48,8 +47,7 @@ namespace JoinRpg.Web.Models.ClaimList
             var accessArguments = new AccessArguments(claim, currentUserId);
 
 
-            var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer)
-                .OrderByDescending(c => c.CommentId).FirstOrDefault();
+            (DateTime lastModifiedAt, User lastModifiedBy) = GetLastComment(claim, accessArguments);
 
             ClaimId = claim.ClaimId;
 
@@ -57,13 +55,35 @@ namespace JoinRpg.Web.Models.ClaimList
             Name = claim.Name;
             Player = claim.Player;
 
-            UpdateDate = lastComment?.LastEditTime ?? claim.CreateDate;
+            UpdateDate = lastModifiedAt;
             CreateDate = claim.CreateDate;
             Responsible = claim.ResponsibleMasterUser;
-            LastModifiedBy = lastComment?.Author ?? claim.Player;
+            LastModifiedBy = lastModifiedBy;
 
             ProjectId = claim.ProjectId;
             ProjectName = claim.Project.ProjectName;
+
+            static (DateTime At, User By) GetLastComment(Claim claim, AccessArguments accessArguments)
+            {
+                var lastComment = (At: claim.CreateDate, By: claim.Player);
+
+                if (claim.LastPlayerCommentAt is not null && claim.LastPlayerCommentAt > lastComment.At)
+                {
+                    lastComment = (At: claim.LastPlayerCommentAt.Value.DateTime, By: claim.Player);
+                }
+
+                if (claim.LastVisibleMasterCommentAt is not null && claim.LastVisibleMasterCommentAt > lastComment.At)
+                {
+                    lastComment = (At: claim.LastVisibleMasterCommentAt.Value.DateTime, By: claim.LastVisibleMasterCommentBy!);
+                }
+
+                if (accessArguments.MasterAccess && claim.LastMasterCommentAt is not null && claim.LastMasterCommentAt > lastComment.At)
+                {
+                    lastComment = (At: claim.LastMasterCommentAt.Value.DateTime, By: claim.LastMasterCommentBy!);
+                }
+
+                return lastComment;
+            }
         }
 
         #region Implementation of ILinkable
