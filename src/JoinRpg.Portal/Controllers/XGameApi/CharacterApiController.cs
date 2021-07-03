@@ -84,7 +84,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
                     CharacterDescription = character.Description,
                     CharacterName = character.Name,
                     PlayerInfo = character.ApprovedClaim is null ? null :
-                        new CharacterPlayerInfo(character.ApprovedClaim.PlayerUserId, character.ApprovedClaim.ClaimFeeDue() == 0),
+                        new CharacterPlayerInfo(character.ApprovedClaim.PlayerUserId, character.ApprovedClaim.ClaimFeeDue() <= 0),
                 };
         }
 
