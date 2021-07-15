@@ -41,8 +41,7 @@ namespace JoinRpg.Dal.Impl.Repositories
             Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
             return await Ctx
               .ClaimSet
-              .Include(c => c.CommentDiscussion.Comments.Select(cm => cm.Finance))
-              .Include(c => c.CommentDiscussion.Watermarks)
+              .Include(c => c.AccommodationRequest)
               .Include(c => c.Player)
               .Include(c => c.FinanceOperations)
               .Where(ClaimPredicates.GetClaimStatusPredicate(status))
@@ -154,8 +153,8 @@ namespace JoinRpg.Dal.Impl.Repositories
 
             var query =
                 from claim in claims
-                let lastMyCommentId = claim.CommentDiscussion.Comments.Where(comment => comment.AuthorUserId == userId).Max(comment => comment.CommentId)
-                let lastWatermark = claim.CommentDiscussion.Watermarks.Where(watermark => watermark.UserId == userId).Max(watermark => watermark.CommentId)
+                let lastMyCommentId = claim.CommentDiscussion.Comments.Where(comment => comment.AuthorUserId == userId).Max(comment => (int?)comment.CommentId) ?? 0
+                let lastWatermark = claim.CommentDiscussion.Watermarks.Where(watermark => watermark.UserId == userId).Max(watermark => (int?)watermark.CommentId) ?? 0
                 let comments = claim.CommentDiscussion.Comments.Where(comment => comment.IsVisibleToPlayer || hasMasterAccess)
                 let unreadComments = comments.Where(comment => comment.CommentId > lastMyCommentId && comment.CommentId > lastWatermark)
                 select

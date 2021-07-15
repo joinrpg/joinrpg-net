@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -11,20 +10,13 @@ namespace JoinRpg.Web.Models.ClaimList
     {
 
         [Display(Name = "Проблема")]
-        public ICollection<ProblemViewModel> Problems { get; set; }
+        public ICollection<ProblemViewModel> Problems { get; }
         public int UnreadCommentsCount { get; }
 
-        public ClaimListItemViewModel(Claim claim, int currentUserId) : base(claim, currentUserId)
+        public ClaimListItemViewModel(Claim claim, int currentUserId, int unreadCommentsCount, IEnumerable<ClaimProblem> problem) : base(claim, currentUserId)
         {
-            UnreadCommentsCount = claim.CommentDiscussion.GetUnreadCount(currentUserId);
-        }
-
-
-        public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)
-        {
-            Problems =
-                problem.Select(p => new ProblemViewModel(p)).ToList();
-            return this;
+            UnreadCommentsCount = unreadCommentsCount;
+            Problems = problem.Select(p => new ProblemViewModel(p)).ToList();
         }
     }
 }
