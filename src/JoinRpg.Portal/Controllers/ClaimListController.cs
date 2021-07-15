@@ -44,8 +44,7 @@ namespace JoinRpg.Portal.Controllers
 
         #region implementation
 
-        private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title,
-            [AspMvcView] string viewName, IReadOnlyCollection<Claim> claims)
+        private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, IReadOnlyCollection<Claim> claims)
         {
 
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
@@ -55,7 +54,7 @@ namespace JoinRpg.Portal.Controllers
                 ViewBag.MasterAccessColumn = true;
                 ViewBag.Title = title;
                 var view = new ClaimListViewModel(CurrentUserId, claims, projectId);
-                return View(viewName, view);
+                return View("Index", view);
             }
             else
             {
@@ -104,7 +103,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var claims = await ClaimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Active, userId);
 
-            return await ShowMasterClaimList(projectId, export, "Заявки на игроке", "Index", claims);
+            return await ShowMasterClaimList(projectId, export, "Заявки на игроке", claims);
         }
 
         [HttpGet("~/{ProjectId}/claims/without-roomtype")]
@@ -129,7 +128,7 @@ namespace JoinRpg.Portal.Controllers
                         (await AccommodationRepository.GetRoomTypeById(roomTypeId.Value)).Name;
             }
 
-            return await ShowMasterClaimList(projectId, export, title, "Index", claims);
+            return await ShowMasterClaimList(projectId, export, title, claims);
         }
 
         [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/discussing")]
@@ -179,7 +178,7 @@ namespace JoinRpg.Portal.Controllers
             var claims = await ClaimsRepository.GetClaimsForMaster(projectid, responsibleMasterId,
                 ClaimStatusSpec.Discussion);
 
-            return await ShowMasterClaimList(projectid, export, "Обсуждаемые заявки на мастере", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Обсуждаемые заявки на мастере", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -188,7 +187,7 @@ namespace JoinRpg.Portal.Controllers
             var claims = await ClaimsRepository.GetClaimsForMaster(projectid, responsiblemasterid,
                 ClaimStatusSpec.OnHold);
 
-            return await ShowMasterClaimList(projectid, export, "Лист ожидания на мастере", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Лист ожидания на мастере", claims);
         }
 
 
@@ -197,7 +196,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var claims = await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Active);
 
-            return await ShowMasterClaimList(projectId, export, "Активные заявки", "Index", claims);
+            return await ShowMasterClaimList(projectId, export, "Активные заявки", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -205,7 +204,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.InActive)).ToList();
 
-            return await ShowMasterClaimList(projectId, export, "Отклоненные/отозванные заявки", "Index", claims);
+            return await ShowMasterClaimList(projectId, export, "Отклоненные/отозванные заявки", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -213,7 +212,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Discussion)).ToList();
 
-            return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки", "Index", claims);
+            return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -221,7 +220,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.OnHold)).ToList();
 
-            return await ShowMasterClaimList(projectid, export, "Лист ожидания", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Лист ожидания", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -232,7 +231,7 @@ namespace JoinRpg.Portal.Controllers
                 .Where(claim => !claim.ClaimPaidInFull())
                 .ToList();
 
-            return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -243,7 +242,7 @@ namespace JoinRpg.Portal.Controllers
                 (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved)).Where(
                     claim => claim.HasProblemsForFields(project.ProjectFields.Where(p => p.CanPlayerEdit))).ToList();
 
-            return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims);
         }
 
         [HttpGet("~/{ProjectId}/claims/for-master/{ResponsibleMasterId}")]
@@ -256,7 +255,7 @@ namespace JoinRpg.Portal.Controllers
                 .ToList
                 ();
 
-            return await ShowMasterClaimList(projectid, export, "Заявки на мастере", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Заявки на мастере", claims);
         }
 
         [HttpGet("~/my/claims")]
@@ -301,7 +300,7 @@ namespace JoinRpg.Portal.Controllers
                 (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Any)).Where(
                     c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
             return
-                await ShowMasterClaimList(projectId, export, "Проблемные заявки", "Index", claims);
+                await ShowMasterClaimList(projectId, export, "Проблемные заявки", claims);
         }
 
         [HttpGet("~/{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}")]
@@ -313,7 +312,7 @@ namespace JoinRpg.Portal.Controllers
                     claim =>
                         claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
 
-            return await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", "Index", claims);
+            return await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -324,7 +323,7 @@ namespace JoinRpg.Portal.Controllers
                 .Where(claim => claim.ClaimBalance() > 0)
                 .ToList();
 
-            return await ShowMasterClaimList(projectid, export, "Оплаченные отклоненные заявки", "Index", claims);
+            return await ShowMasterClaimList(projectid, export, "Оплаченные отклоненные заявки", claims);
         }
 
         [HttpGet, MasterAuthorize()]
@@ -332,8 +331,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
             var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
-            return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, "Index",
-                claims.Where(c => c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
+            return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, claims.Where(c => c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
                     .ToList()
             );
         }
@@ -343,8 +341,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
             var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
-            return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.FieldName, "Index",
-                claims.Where(c => !c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
+            return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.FieldName, claims.Where(c => !c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
                     .ToList()
             );
         }
