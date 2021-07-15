@@ -21,11 +21,13 @@ namespace JoinRpg.Web.Models.ClaimList
             int currentUserId,
             IReadOnlyCollection<Claim> claims,
             int? projectId,
+            Dictionary<int, int> unreadComments,
             bool showCount = true,
-            bool showUserColumn = true)
+            bool showUserColumn = true
+            )
         {
             Items = claims
-              .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
+              .Select(c => new ClaimListItemViewModel(c, currentUserId, unreadComments.GetValueOrDefault(c.CommentDiscussionId), c.GetProblems()))
               .ToList();
             ClaimIds = claims.Select(c => c.ClaimId).ToArray();
             CharacterIds = claims.Select(c => c.CharacterId).WhereNotNull().ToArray();

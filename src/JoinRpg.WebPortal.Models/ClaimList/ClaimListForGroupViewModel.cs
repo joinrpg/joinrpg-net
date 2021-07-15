@@ -8,8 +8,8 @@ namespace JoinRpg.Web.Models.ClaimList
     {
         public CharacterGroupDetailsViewModel GroupModel { get; }
         public ClaimListForGroupViewModel
-            (int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page)
-            : base(currentUserId, claims, group.ProjectId)
+            (int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page, Dictionary<int, int> unreadComments)
+            : base(currentUserId, claims, group.ProjectId, unreadComments)
             => GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, page);
 
         int? IOperationsAwareView.CharacterGroupId => GroupModel.CharacterGroupId;

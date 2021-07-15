@@ -44,6 +44,7 @@ namespace JoinRpg.Portal.Controllers
                 userProfileViewModel.Claims = new ClaimListViewModel(CurrentUserAccessor.UserId,
                     claims,
                     null,
+                    new System.Collections.Generic.Dictionary<int, int>(), //TODO pass unread data here
                     showCount: false,
                     showUserColumn: false);
             }
