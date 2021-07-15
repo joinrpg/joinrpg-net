@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -64,13 +63,11 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .ToListAsync();
         }
 
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, ClaimPredicates.GetResponsible(userId));
 
-        public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(
-          e => e.ClaimId == claimId && e.ProjectId == projectId);
+        public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(e => e.ClaimId == claimId && e.ProjectId == projectId);
 
-        public Task<Claim> GetClaimByDiscussion(int projectId, int commentDiscussionId) => GetClaimImpl(
-          e => e.CommentDiscussionId == commentDiscussionId && e.ProjectId == projectId);
+        public Task<Claim> GetClaimByDiscussion(int projectId, int commentDiscussionId) => GetClaimImpl(e => e.CommentDiscussionId == commentDiscussionId && e.ProjectId == projectId);
 
         public async Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec)
         {
@@ -142,12 +139,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
         public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds)
         {
-            return GetClaimsImpl(projectId, active,
-              claim => (claim.CharacterGroupId != null && characterGroupsIds.Contains(claim.CharacterGroupId.Value))
-                       ||
-                       (claim.CharacterId != null &&
-                       characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0
-                        )));
+            return GetClaimsImpl(projectId, active, ClaimPredicates.GetInGroupPredicate(characterGroupsIds));
         }
 
         public Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId) => GetClaimsImpl(projectId, active, claim => claim.CharacterGroupId == characterGroupsId);
