@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -53,8 +53,6 @@ namespace JoinRpg.Web.Models
         public bool EnableFinanceAction { get; set; }
 
         public string ActionName { get; set; }
-
-        public bool AllowCancel { get; set; } = true;
 
         [Display(Name = "С финансовой операцией...")]
         public FinanceOperationActionView FinanceAction { get; set; }
