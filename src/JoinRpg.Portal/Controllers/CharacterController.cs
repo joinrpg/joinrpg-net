@@ -157,20 +157,16 @@ namespace JoinRpg.Portal.Controllers
             var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().FirstOrDefault();
             try
             {
-                await CharacterService.AddCharacter(new AddCharacterRequest()
-                {
-                    ProjectId = viewModel.ProjectId,
-                    Name = viewModel.Name,
-                    IsAcceptingClaims = viewModel.IsAcceptingClaims,
-                    ParentCharacterGroupIds =
-                        viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
-                    HidePlayerForCharacter = viewModel.HidePlayerForCharacter,
-                    IsHot = viewModel.IsHot,
-                    IsPublic = viewModel.IsPublic,
-                    FieldValues = Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
-                });
-
-
+                await CharacterService.AddCharacter(new AddCharacterRequest(
+                    ProjectId: viewModel.ProjectId,
+                    Name: viewModel.Name,
+                    IsAcceptingClaims: viewModel.IsAcceptingClaims,
+                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
+                    HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
+                    IsHot: viewModel.IsHot,
+                    IsPublic: viewModel.IsPublic,
+                    FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
+                ));
 
                 if (viewModel.ContinueCreating)
                 {
