@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
@@ -44,11 +44,11 @@ namespace JoinRpg.Web.Models
         private bool CanModerateFinance { get; }
         public bool IsCommentByPlayer { get; }
 
-        public AvatarIdentification AuthorAvatar { get; }
+        public AvatarIdentification? AuthorAvatar { get; }
         public string AuthorEmail { get; }
         public User Author { get; }
         public DateTime CreatedTime { get; }
-        public FinanceOperation Finance { get; }
+        public FinanceOperation? Finance { get; }
         public JoinHtmlString CommentText { get; }
         public int CommentId { get; }
         public IEnumerable<CommentViewModel> ChildComments { get; }
