@@ -10,6 +10,7 @@
   <environment include="Development">
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-datepicker/css/bootstrap-datepicker.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-select/css/bootstrap-select.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/multicontrol.css" />
   </environment>
@@ -18,6 +19,7 @@
           asp-fallback-href="~/lib/bootstrap/css/bootstrap.min.css"
           asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
     <link rel="stylesheet" href="~/lib/bootstrap-datepicker/css/bootstrap-datepicker.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-select/css/bootstrap-select.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/multicontrol.css" asp-append-version="true" />
   </environment>
@@ -32,6 +34,7 @@
   <environment include="Development">
     <script src="~/lib/jquery/jquery.js"></script>
     <script src="~/lib/twitter-bootstrap/js/bootstrap.js"></script>
+    <script src="~/lib/bootstrap-select/js/bootstrap-select.js"></script>
   </environment>
   <environment exclude="Development">
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
@@ -45,7 +48,8 @@
             asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
             crossorigin="anonymous"
             integrity="sha384-vhJnz1OVIdLktyixHY4Uk3OHEwdQqPppqYR8+5mjsauETgLOcEynD9oPHhhz18Nw">
-    </script>
+     </script>
+     <script src="~/lib/bootstrap-select/js/bootstrap-select.min.js"></script>
   </environment>
   <partial name="_ValidationScriptsPartial" />
   @Html.Raw(JavaScriptSnippet.FullScript)
