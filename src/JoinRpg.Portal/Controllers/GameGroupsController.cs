@@ -287,14 +287,6 @@ namespace JoinRpg.Portal.Controllers
               }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
         }
 
-        private static string GetDefaultResponsible(IClaimSource group, bool includeSelf)
-        {
-            var result = ResponsibleMasterExtensions.GetResponsibleMasters(@group, includeSelf)
-                .Select(u => u.GetDisplayName())
-                .JoinStrings(", ");
-            return string.IsNullOrWhiteSpace(result) ? "Никто" : result;
-        }
-
         private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
 
         {
