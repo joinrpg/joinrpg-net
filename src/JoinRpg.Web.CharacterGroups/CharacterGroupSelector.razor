@@ -1,0 +1,36 @@
+﻿@inject ICharacterGroupsClient groupsClient
+
+@if (items is null)
+{
+  <p>Loading...</p>
+}
+else
+{
+  <IntSelector
+               Name="@Name"
+               @bind-SelectedValues="SelectedGroups"
+               PossibleValues="items"
+               Multiple="true"
+               />
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public int[] SelectedGroups { get; set; } = new int[0];
+
+    private IntSelectListItem[] items = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+      var groups = await groupsClient.GetCharacterGroups(ProjectId);
+      items = groups
+        .Select(group =>
+          new IntSelectListItem(
+            Value: group.CharacterGroupId,
+            Text: group.Name,
+            Subtext: string.Join("→", group.FullPath),
+            ExtraSearch: string.Join(" ", group.FullPath))).ToArray();
+    }
+}

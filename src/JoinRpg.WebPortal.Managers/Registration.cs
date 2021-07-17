@@ -11,6 +11,7 @@ namespace JoinRpg.WebPortal.Managers
             yield return typeof(FieldSetupManager);
             yield return typeof(Schedule.SchedulePageManager);
             yield return typeof(Subscribe.SubscribeViewService);
+            yield return typeof(CharacterGroupList.CharacteGroupListViewService);
         }
     }
 }

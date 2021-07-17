@@ -5,6 +5,7 @@
   </PropertyGroup>
     
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.GameSubscribe\JoinRpg.Web.GameSubscribe.csproj" />
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
