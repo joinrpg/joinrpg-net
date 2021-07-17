@@ -6,6 +6,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Validation;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters
@@ -45,6 +46,9 @@ namespace JoinRpg.Web.Models.Characters
         public CustomFieldsViewModel Fields { get; set; }
 
         public bool LegacyNameMode { get; protected set; }
+
+        [CannotBeEmpty, DisplayName("Является частью групп")]
+        public List<string> ParentCharacterGroupIds { get; set; } = new();
 
         protected void FillFields(Character field, int currentUserId)
         {
