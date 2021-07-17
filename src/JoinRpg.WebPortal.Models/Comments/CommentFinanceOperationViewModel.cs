@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models

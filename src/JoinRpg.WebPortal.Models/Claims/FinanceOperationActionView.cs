@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 
 namespace JoinRpg.Web.Models
