@@ -5,12 +5,16 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models.CharacterGroups
 {
 
     public abstract class CharacterGroupViewModelBase : GameObjectViewModelBase
     {
+        [CannotBeEmpty, DisplayName("Является частью групп")]
+        public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
+
         [DisplayName("Название группы"), Required]
         public string Name { get; set; }
 

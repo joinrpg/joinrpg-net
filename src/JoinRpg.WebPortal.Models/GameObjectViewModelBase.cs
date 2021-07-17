@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models
 {
@@ -11,9 +9,6 @@ namespace JoinRpg.Web.Models
 
         [ReadOnly(true)]
         public string ProjectName { get; set; }
-
-        [CannotBeEmpty, DisplayName("Является частью групп")]
-        public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
 
         [Display(Name = "Публично?",
             Description =
