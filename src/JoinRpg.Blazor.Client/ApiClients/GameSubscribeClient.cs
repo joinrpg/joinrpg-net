@@ -1,41 +1,23 @@
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using JoinRpg.Web.GameSubscribe;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 namespace JoinRpg.Blazor.Client.ApiClients
 {
     public class GameSubscribeClient : IGameSubscribeClient
     {
         private readonly HttpClient httpClient;
-        private readonly IJSRuntime jsRuntime;
         private readonly ILogger<GameSubscribeClient> logger;
-        private readonly Lazy<Task<string?>> CsrfToken;
+        private readonly CsrfTokenProvider csrfTokenProvider;
 
-        public GameSubscribeClient(HttpClient httpClient, IJSRuntime jsRuntime, ILogger<GameSubscribeClient> logger)
+        public GameSubscribeClient(HttpClient httpClient, ILogger<GameSubscribeClient> logger, CsrfTokenProvider csrfTokenProvider)
         {
             this.httpClient = httpClient;
-            this.jsRuntime = jsRuntime;
             this.logger = logger;
-            CsrfToken = new Lazy<Task<string?>>(GetCsrfTokenAsync);
-        }
-
-        private class StringHolder { public string Content { get; set; } }
-
-        private async Task<string?> GetCsrfTokenAsync()
-        {
-            var cookies = await jsRuntime.InvokeAsync<StringHolder>("joinmethods.GetDocumentCookie");
-            return cookies
-                .Content
-                .Split(';')
-                .Select(v => v.TrimStart().Split('='))
-                .Where(s => s[0] == "CSRF-TOKEN")
-                .Select(s => s[1])
-                .FirstOrDefault();
+            this.csrfTokenProvider = csrfTokenProvider;
         }
 
         public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
@@ -49,7 +31,7 @@ namespace JoinRpg.Blazor.Client.ApiClients
         {
             try
             {
-                httpClient.DefaultRequestHeaders.Add("X-CSRF-TOKEN", await CsrfToken.Value);
+                await csrfTokenProvider.SetCsrfToken(httpClient);
                 await httpClient.PostAsync($"webapi/gamesubscribe/unsubscribe?projectId={projectId}&userSubscriptionsId={userSubscriptionsId}", null);
             }
             catch (Exception e)
@@ -58,5 +40,7 @@ namespace JoinRpg.Blazor.Client.ApiClients
                 throw;
             }
         }
+
+
     }
 }
