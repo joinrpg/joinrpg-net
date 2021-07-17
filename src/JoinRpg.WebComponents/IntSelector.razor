@@ -1,0 +1,51 @@
+﻿@inject IJSRuntime JS
+
+<select class="selectpicker"
+        data-live-search="true"
+        data-live-search-normalize="true"
+        data-size="10"
+        name="@Name"
+        multiple="@Multiple"
+        @ref="selectRef"
+        @bind="Value"
+        >
+
+  @foreach (var val in PossibleValues)
+  {
+      var selected = SelectedValues.Contains(val.Value);
+    <option
+            data-tokens="@($"{val.Text} {val.ExtraSearch}")"
+            data-subtext="@(val.Subtext)"
+            value="@val.Value"
+            selected="@selected">@val.Text</option>
+  }
+</select>
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int[] SelectedValues { get; set; } = new int[0];
+    [Parameter] public EventCallback<int[]> SelectedValuesChanged { get; set; }
+    [Parameter] public IntSelectListItem[] PossibleValues { get; set; } = null!;
+    [Parameter] public bool Multiple { get; set; } = false;
+
+    private string Value
+    {
+      get => string.Join(",", SelectedValues.Select(c => c.ToString()));
+      set => SelectedValuesChanged.InvokeAsync(value.Split(",").Select(int.Parse).ToArray());
+    }
+
+    private ElementReference selectRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+      if (firstRender)
+      {
+        await JS.InvokeVoidAsync("joinmethods.InitBootstrapSelect", selectRef);
+      }
+      else
+      {
+        await JS.InvokeVoidAsync("joinmethods.RefreshBootstrapSelect", selectRef);
+      }
+    }
+}
