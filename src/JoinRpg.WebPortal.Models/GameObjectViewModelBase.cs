@@ -19,7 +19,5 @@ namespace JoinRpg.Web.Models
             Description =
                 "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
         public bool IsPublic { get; set; } = true;
-
-        // ReSharper disable once Mvc.TemplateNotResolved
     }
 }
