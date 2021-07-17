@@ -1,0 +1,32 @@
+﻿@using System.Linq.Expressions;
+@using JoinRpg.Helpers
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection;
+  
+@typeparam T
+
+<FormRow @attributes="@InputAttributes" Label="@(For.AsPropertyAccess()?.GetDisplayName())">
+  @ChildContent
+  @if (@description is not null)
+  {
+    <div class="help-block">@description</div>
+  }
+  <ValidationMessage For="For" />
+</FormRow>
+
+@code {
+    [Parameter] public Expression<Func<T>> For { get; set; } = null!;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; } = new();
+
+    private string? description;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var property = For.AsPropertyAccess();
+        description = property.GetCustomAttribute<DisplayAttribute>()?.GetDescription();
+    }
+}
