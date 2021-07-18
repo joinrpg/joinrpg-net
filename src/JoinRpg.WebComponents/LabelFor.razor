@@ -3,11 +3,11 @@
 @typeparam T
 @if (ChildContent == null)
 {
-  <label @attributes="@InputAttributes" class="@labelStyle">@label</label>
+  <label @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">@label</label>
 }
 else
 {
-  <label @attributes="@InputAttributes" class="@labelStyle">
+  <label @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
     @label
     @ChildContent
   </label>
@@ -16,6 +16,8 @@ else
     [Parameter] public Expression<Func<T>> For { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; }
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; }
@@ -28,18 +30,6 @@ else
           throw new ArgumentException("Expression should be property access", nameof(For));
         }
         return property.GetDisplayName();
-      }
-    }
-
-    private string labelStyle
-    {
-      get
-      {
-        return Variation switch
-        {
-          VariationStyleEnum.Success => "label label-success",
-          _ => "label",
-        };
       }
     }
 }
