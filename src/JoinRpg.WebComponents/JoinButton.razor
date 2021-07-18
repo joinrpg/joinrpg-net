@@ -1,0 +1,23 @@
+﻿@if (Submit)
+{
+  <button href="#" class="@style" @onclick="OnClick">
+    @ChildContent
+  </button>
+}
+else
+{
+  <button href="#" class="@style" @onclick="OnClick" type="submit">
+    @ChildContent
+  </button>
+
+}
+@code {
+  [Parameter] public VariationStyleEnum? Variation { get; set; }
+  [Parameter] public SizeStyleEnum? Size { get; set; }
+  [Parameter] public RenderFragment ChildContent { get; set; } = null!;
+  [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+  [Parameter] public bool Submit { get; set; } = false;
+
+  private string style => BootstrapStyle.Build("btn", Variation, Size);
+
+}
