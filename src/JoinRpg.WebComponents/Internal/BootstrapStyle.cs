@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.WebComponents
+namespace JoinRpg.WebComponents
 {
     internal static class BootstrapStyle
     {
