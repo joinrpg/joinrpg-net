@@ -4,5 +4,6 @@ namespace JoinRpg.WebComponents
     {
         None,
         Success,
+        Warning,
     }
 }
