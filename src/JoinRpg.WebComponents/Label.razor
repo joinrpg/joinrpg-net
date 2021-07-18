@@ -1,25 +1,14 @@
 ﻿@using JoinRpg.Helpers
 
-<label @attributes="@InputAttributes" class="@labelStyle">
+<label @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
   @ChildContent
 </label>
 
 @code {
-    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; } 
     [Parameter] public VariationStyleEnum? Variation { get; set; }
+    [Parameter] public SizeStyleEnum? Size { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; }
-
-    private string labelStyle
-    {
-      get
-      {
-        return Variation switch
-        {
-          VariationStyleEnum.Success => "label label-success",
-          _ => "label",
-        };
-      }
-    }
 }
