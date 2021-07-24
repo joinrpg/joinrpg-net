@@ -21,14 +21,14 @@
 @if (!Model.Validator.IsApproved && Model.Validator.NotCheckedInAlready)
 {
   <div class="alert alert-danger">
-    Заявка находится в статусе @Html.DisplayFor(model => model.ClaimStatus). Регистрация невозможна. 
+    Заявка находится в статусе @Html.DisplayFor(model => model.ClaimStatus). Регистрация невозможна.
     <br/>Обратитесь к ответственному мастеру.
   </div>
 }
 
-<form asp-action="DoCheckIn" asp-route-projectId="Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+<form asp-action="DoCheckIn" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
   <input type="hidden" name="money" id="money" value="@Model.Validator.FeeDue" />
-  
+
   @if (Model.Validator.FeeDue > 0)
   {
 
