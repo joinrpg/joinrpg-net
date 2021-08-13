@@ -14,6 +14,7 @@
             <td>@Html.ActionLink(project.ProjectName, "Details", "Game", new {project.ProjectId, area =""}, null)</td>
             <td>@project.LastUpdated</td>
             <td>@if (project.LegacyMode) { <span class="label label-danger">Legacy режим</span>} </td>
+            <td><a asp-controller="Game" asp-action="Close" asp-area="" asp-route-projectId="@project.ProjectId">закрыть</a></td>
         </tr>
     }
 </table>
