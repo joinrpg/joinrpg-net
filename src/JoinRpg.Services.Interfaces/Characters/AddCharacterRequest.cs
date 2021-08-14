@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces.Characters
 {
     public record AddCharacterRequest(
         int ProjectId,

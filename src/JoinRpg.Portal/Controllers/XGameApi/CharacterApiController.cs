@@ -6,7 +6,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.XGameApi.Contract;
