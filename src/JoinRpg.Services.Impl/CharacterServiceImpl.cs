@@ -8,7 +8,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
