@@ -8,6 +8,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -66,45 +67,34 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task EditCharacter(int currentUserId,
-            int characterId,
-            int projectId,
-            string name,
-            bool isPublic,
-            IReadOnlyCollection<int> parentCharacterGroupIds,
-            bool isAcceptingClaims,
-            bool hidePlayerForCharacter,
-            IReadOnlyDictionary<int, string?> characterFields,
-            bool isHot)
+        public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
         {
-            var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
-            _ = character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-
-            _ = character.EnsureProjectActive();
+            var character = await LoadCharacter(editCharacterRequest.Id);
 
             var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
 
             if (character.Project.Details.CharacterNameLegacyMode)
             {
+                var name = Required(editCharacterRequest.Name);
                 changedAttributes.Add("Имя персонажа",
                     new PreviousAndNewValue(name, character.CharacterName.Trim()));
-                character.CharacterName = name.Trim();
+                character.CharacterName = name;
                 // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
             }
 
-            character.IsAcceptingClaims = isAcceptingClaims;
-            character.IsPublic = isPublic;
+            character.IsAcceptingClaims = editCharacterRequest.IsAcceptingClaims;
+            character.IsPublic = editCharacterRequest.IsPublic;
 
-            character.HidePlayerForCharacter = hidePlayerForCharacter;
-            character.IsHot = isHot;
+            character.HidePlayerForCharacter = editCharacterRequest.HidePlayerForCharacter;
+            character.IsHot = editCharacterRequest.IsHot;
             character.IsActive = true;
 
-            character.ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId,
-                Required(parentCharacterGroupIds),
+            character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
+                Required(editCharacterRequest.ParentCharacterGroupIds),
                 ensureNotSpecial: true);
-            var changedFields = FieldSaveHelper.SaveCharacterFields(currentUserId,
+            var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
                 character,
-                characterFields,
+                editCharacterRequest.FieldValues,
                 FieldDefaultValueGenerator);
 
             MarkChanged(character);
@@ -117,7 +107,7 @@ namespace JoinRpg.Services.Impl
 
             if (changedFields.Any() || changedAttributes.Any())
             {
-                var user = await UserRepository.GetById(currentUserId);
+                var user = await GetCurrentUser();
                 email = EmailHelpers.CreateFieldsEmail(
                     character,
                     s => s.FieldChange,
@@ -134,12 +124,9 @@ namespace JoinRpg.Services.Impl
             }
         }
 
-        public async Task DeleteCharacter(int projectId, int characterId, int currentUserId)
+        public async Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest)
         {
-            var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
-
-            _ = character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-            _ = character.EnsureProjectActive();
+            Character character = await LoadCharacter(deleteCharacterRequest.Id);
 
             if (character.HasActiveClaims())
             {
@@ -156,6 +143,13 @@ namespace JoinRpg.Services.Impl
             character.IsActive = false;
             MarkChanged(character);
             await UnitOfWork.SaveChangesAsync();
+        }
+
+        private async Task<Character> LoadCharacter(CharacterIdentification moniker)
+        {
+            var character = await CharactersRepository.GetCharacterAsync(moniker.ProjectId, moniker.CharacterId);
+
+            return character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles).EnsureProjectActive();
         }
 
         public async Task MoveCharacter(int currentUserId,

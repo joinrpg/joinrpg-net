@@ -7,18 +7,9 @@ namespace JoinRpg.Services.Interfaces.Characters
     {
         Task AddCharacter(AddCharacterRequest addCharacterRequest);
 
-        Task DeleteCharacter(int projectId, int characterId, int currentUserId);
+        Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest);
 
-        Task EditCharacter(int currentUserId,
-            int characterId,
-            int projectId,
-            string name,
-            bool isPublic,
-            IReadOnlyCollection<int> parentCharacterGroupIds,
-            bool isAcceptingClaims,
-            bool hidePlayerForCharacter,
-            IReadOnlyDictionary<int, string?> characterFields,
-            bool isHot);
+        Task EditCharacter(EditCharacterRequest editCharacterRequest);
 
         Task MoveCharacter(int currentUserId,
             int projectId,

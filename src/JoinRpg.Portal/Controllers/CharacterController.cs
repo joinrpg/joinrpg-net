@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Helpers;
@@ -90,8 +91,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
         {
             var field =
-                await CharacterRepository.GetCharacterAsync(viewModel.ProjectId,
-                    viewModel.CharacterId);
+                 await CharacterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
             try
             {
                 if (!ModelState.IsValid)
@@ -100,17 +100,16 @@ namespace JoinRpg.Portal.Controllers
                 }
 
                 await CharacterService.EditCharacter(
-                    CurrentUserId,
-                    viewModel.CharacterId,
-                    viewModel.ProjectId,
-                    viewModel.Name,
-                    viewModel.IsPublic,
-                    viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
-                    viewModel.IsAcceptingClaims &&
-                    field.ApprovedClaim == null,
-                    viewModel.HidePlayerForCharacter,
-                    Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
-                    viewModel.IsHot);
+                    new EditCharacterRequest(
+                        new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
+                        IsPublic: viewModel.IsPublic,
+                        ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
+                        IsAcceptingClaims: viewModel.IsAcceptingClaims && field.ApprovedClaim == null,
+                        HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
+                        IsHot: viewModel.IsHot,
+                        FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
+                        Name: viewModel.Name)
+                    );
 
                 return RedirectToAction("Details",
                     new { viewModel.ProjectId, viewModel.CharacterId });
@@ -219,7 +218,7 @@ namespace JoinRpg.Portal.Controllers
             var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);
             try
             {
-                await CharacterService.DeleteCharacter(projectId, characterId, CurrentUserId);
+                await CharacterService.DeleteCharacter(new DeleteCharacterRequest(new CharacterIdentification(projectId, characterId)));
 
                 return RedirectToIndex(field.Project);
             }
