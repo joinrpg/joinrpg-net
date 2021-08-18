@@ -1,18 +1,19 @@
 using System.Collections.Generic;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Characters
 {
     /// <summary>
-    /// Request from master to create new character
+    /// Request from master to edit character
     /// </summary>
-    public record AddCharacterRequest(
-        int ProjectId,
-        string Name,
+    public record EditCharacterRequest(
+        CharacterIdentification Id,
         bool IsPublic,
         IReadOnlyCollection<int> ParentCharacterGroupIds,
         bool IsAcceptingClaims,
         bool HidePlayerForCharacter,
         bool IsHot,
-        IReadOnlyDictionary<int, string?> FieldValues)
+        IReadOnlyDictionary<int, string?> FieldValues,
+        string? Name = null)
     { }
 }
