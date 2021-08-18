@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
@@ -82,7 +82,6 @@ namespace JoinRpg.Services.Impl
 
         protected void ResetImpersonation() => _impersonatedUserId = null;
 
-        [NotNull]
         protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
             where T : class, IProjectEntity
         {
@@ -95,7 +94,7 @@ namespace JoinRpg.Services.Impl
             throw new DbEntityValidationException();
         }
 
-        protected static string Required(string stringValue)
+        protected static string Required([NotNull] string? stringValue)
         {
             if (string.IsNullOrWhiteSpace(stringValue))
             {
@@ -147,7 +146,6 @@ namespace JoinRpg.Services.Impl
             }
         }
 
-        [ItemNotNull]
         protected async Task<int[]> ValidateCharacterGroupList(int projectId,
             IReadOnlyCollection<int> groupIds,
             bool ensureNotSpecial = false)
@@ -183,13 +181,13 @@ namespace JoinRpg.Services.Impl
             return characters.ToArray();
         }
 
-        protected void MarkCreatedNow([NotNull] ICreatedUpdatedTrackedForEntity entity)
+        protected void MarkCreatedNow(ICreatedUpdatedTrackedForEntity entity)
         {
             entity.UpdatedAt = entity.CreatedAt = Now;
             entity.UpdatedById = entity.CreatedById = CurrentUserId;
         }
 
-        protected void Create<T>([NotNull] T entity)
+        protected void Create<T>(T entity)
             where T : class, ICreatedUpdatedTrackedForEntity
         {
             MarkCreatedNow(entity);
@@ -197,13 +195,13 @@ namespace JoinRpg.Services.Impl
             _ = UnitOfWork.GetDbSet<T>().Add(entity);
         }
 
-        protected void MarkChanged([NotNull] ICreatedUpdatedTrackedForEntity entity)
+        protected void MarkChanged(ICreatedUpdatedTrackedForEntity entity)
         {
             entity.UpdatedAt = Now;
             entity.UpdatedById = CurrentUserId;
         }
 
-        protected void MarkTreeModified([NotNull] Project project) => project.CharacterTreeModifiedAt = Now;
+        protected void MarkTreeModified(Project project) => project.CharacterTreeModifiedAt = Now;
 
         protected async Task<User> GetCurrentUser() => await UserRepository.GetById(CurrentUserId);
     }
