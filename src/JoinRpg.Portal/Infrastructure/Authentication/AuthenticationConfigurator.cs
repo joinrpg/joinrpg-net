@@ -113,9 +113,13 @@ namespace JoinRpg.Portal.Infrastructure
 
         private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context)
         {
-            if (context.Request.Path.Value.IsApiPath())
+            if (context.Request.Path.Value?.IsApiPath() == true)
             {
                 context.Response.StatusCode = 401;
+            }
+            else if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectIdObj) && projectIdObj is int projectId)
+            {
+                context.Response.Redirect($"{context.RedirectUri}&projectId={projectId}");
             }
             else
             {

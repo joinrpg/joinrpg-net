@@ -24,6 +24,7 @@ namespace JoinRpg.Portal.Controllers
         private readonly IOptions<RecaptchaOptions> recaptchaOptions;
         private readonly IRecaptchaVerificator recaptchaVerificator;
         private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
+        private readonly Lazy<IProjectRepository> projectRepository;
 
         private ApplicationUserManager UserManager { get; }
         private ApplicationSignInManager SignInManager { get; }
@@ -37,7 +38,8 @@ namespace JoinRpg.Portal.Controllers
             IUserRepository userRepository,
             IOptions<RecaptchaOptions> recaptchaOptions,
             IRecaptchaVerificator recaptchaVerificator,
-            ExternalLoginProfileExtractor externalLoginProfileExtractor
+            ExternalLoginProfileExtractor externalLoginProfileExtractor,
+            Lazy<IProjectRepository> projectRepository
         )
         {
             UserManager = userManager;
@@ -47,6 +49,7 @@ namespace JoinRpg.Portal.Controllers
             this.recaptchaOptions = recaptchaOptions;
             this.recaptchaVerificator = recaptchaVerificator;
             this.externalLoginProfileExtractor = externalLoginProfileExtractor;
+            this.projectRepository = projectRepository;
         }
 
 
@@ -489,6 +492,14 @@ namespace JoinRpg.Portal.Controllers
         #endregion
 
         [AllowAnonymous]
-        public ActionResult AccessDenied(string returnUrl) => View("AccessDenied", returnUrl);
+        public async Task<ActionResult> AccessDenied(string returnUrl, int? projectId)
+        {
+            if (projectId is not null)
+            {
+                var project = await projectRepository.Value.GetProjectAsync(projectId.Value);
+                return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
+            }
+            return View("AccessDenied", returnUrl);
+        }
     }
 }
