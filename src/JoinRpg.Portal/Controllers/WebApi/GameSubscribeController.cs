@@ -15,6 +15,7 @@ namespace JoinRpg.Portal.Controllers.WebApi
             this.subscribeViewService = subscribeViewService;
         }
 
+        [HttpGet]
         public async Task<SubscribeListViewModel> GetForMaster(int projectId, int masterId)
         {
             return await subscribeViewService.GetSubscribeForMaster(projectId, masterId);
