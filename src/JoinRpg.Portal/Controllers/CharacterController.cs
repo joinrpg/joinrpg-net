@@ -80,7 +80,7 @@ namespace JoinRpg.Portal.Controllers
                 IsAcceptingClaims = field.IsAcceptingClaims,
                 HidePlayerForCharacter = field.HidePlayerForCharacter,
                 Name = field.CharacterName,
-                ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
+                ParentCharacterGroupIds = field.GetParentGroupsForEdit(),
                 IsHot = field.IsHot,
             }.Fill(field, CurrentUserId));
         }
@@ -104,7 +104,7 @@ namespace JoinRpg.Portal.Controllers
                     viewModel.ProjectId,
                     viewModel.Name,
                     viewModel.IsPublic,
-                    viewModel.ParentCharacterGroupIds,
+                    viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
                     viewModel.IsAcceptingClaims &&
                     field.ApprovedClaim == null,
                     viewModel.HidePlayerForCharacter,
@@ -144,7 +144,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 ProjectId = projectid,
                 ProjectName = characterGroup.Project.ProjectName,
-                ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
+                ParentCharacterGroupIds = characterGroup.AsPossibleParentForEdit(),
                 ContinueCreating = continueCreating,
             }.Fill(characterGroup, CurrentUserId));
         }
@@ -154,14 +154,14 @@ namespace JoinRpg.Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
         {
-            var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
+            var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().FirstOrDefault();
             try
             {
                 await CharacterService.AddCharacter(new AddCharacterRequest(
                     ProjectId: viewModel.ProjectId,
                     Name: viewModel.Name,
                     IsAcceptingClaims: viewModel.IsAcceptingClaims,
-                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
+                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
                     HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
                     IsHot: viewModel.IsHot,
                     IsPublic: viewModel.IsPublic,
