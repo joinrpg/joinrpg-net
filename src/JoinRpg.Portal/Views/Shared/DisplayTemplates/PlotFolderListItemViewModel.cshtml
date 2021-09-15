@@ -9,7 +9,7 @@
     <br />
     foreach (var tagName in Model.TagNames)
     {
-        @Html.ActionLink("#" + tagName, "ByTag", "Plot", new {Model.ProjectId, tagName}, null)
+        <a asp-controller="PlotList" asp-action="ByTag" asp-route-ProjectId="@Model.ProjectId" asp-route-TagName="@tagName">#@tagName</a> 
         <text> </text>
     }
 }
