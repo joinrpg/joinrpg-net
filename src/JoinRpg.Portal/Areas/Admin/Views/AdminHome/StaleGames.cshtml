@@ -1,0 +1,21 @@
+﻿@model System.Collections.Generic.IReadOnlyCollection<JoinRpg.Data.Interfaces.ProjectWithUpdateDateDto>
+
+@{
+    ViewBag.Title = "Список проблемных проектов";
+}
+
+<h2>Список проблемных проектов</h2>
+
+<table>
+    <tr><th>Проект</th><th>Последний раз обновлен</th><th>Другие проблемы</th></tr>
+    @foreach (var project in Model)
+    {
+        <tr>
+            <td>@Html.ActionLink(project.ProjectName, "Details", "Game", new {project.ProjectId, area =""}, null)</td>
+            <td>@project.LastUpdated</td>
+            <td>@if (project.LegacyMode) { <span class="label label-danger">Legacy режим</span>} </td>
+            <td><a asp-controller="Game" asp-action="Close" asp-area="" asp-route-projectId="@project.ProjectId">закрыть</a></td>
+        </tr>
+    }
+</table>
+

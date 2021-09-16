@@ -1,0 +1,77 @@
+﻿@model JoinRpg.Web.Models.Characters.CharacterGroupListItemViewModel
+<span class="dropdown" style="vertical-align: central">
+        <button class="btn btn-default dropdown-toggle btn-sm" style="vertical-align: central" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span title="действия" class="glyphicon glyphicon-option-vertical"></span>
+        </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+        <li>
+            @Html.ActionLink(
+                "список заявок",
+                "ListForGroup",
+                "ClaimList",
+                new {Model.ProjectId, Model.CharacterGroupId},
+                null)
+        </li>
+        <li>
+            @Html.ActionLink("список персонажей", "ByGroup", "CharacterList", new {Model.ProjectId, Model.CharacterGroupId},
+                null)
+        </li>
+            
+        @if (!Model.IsSpecial && ViewBag.ShowEditControls)
+        {
+            <li>
+                <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                    <span title="настроить" class="glyphicon glyphicon-pencil"></span> настроить
+                </a>
+            </li>
+        }
+        <li>
+            <a asp-controller="GameSubscribe" asp-action="EditForGroup" asp-route-projectId="@Model.ProjectId" asp-route-characterGroupId="@Model.CharacterGroupId">
+                <span class="glyphicon glyphicon-pushpin"></span> подписка
+            </a>
+
+        </li>
+
+        @if (!Model.IsRootGroup && !Model.IsSpecial && ViewBag.ShowEditControls)
+        {
+            var disabled = Model.ActiveClaimsCount != 0 ? "disabled" : "";
+            var uri = Model.ActiveClaimsCount != 0 ? "#" : Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null);
+            <li class="@disabled">
+                <a href="@uri">
+                    <span title="удалить" class="glyphicon glyphicon-trash"></span>удалить
+                </a>
+            </li>
+        }
+        @if ((!Model.First || !Model.Last) && !Model.IsRoot && !Model.IsSpecial && ViewBag.ShowEditControls)
+        {
+            var moveParameters = new
+            {
+                Model.ProjectId,
+                Model.CharacterGroupId,
+                parentCharacterGroupId = Model.Path.Last().CharacterGroupId,
+                currentRootGroupId = Model.RootGroupId
+            };
+            <li class="dropdown-header">Переместить</li>
+            if (!Model.First)
+            {
+                <li><a href="@Url.Action("MoveUp", "GameGroups", moveParameters, null)">..выше</a></li>
+            }
+            if (!Model.Last)
+            {
+                <li><a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)">..ниже</a></li>
+            }
+        }
+        @if (!Model.IsSpecial && ViewBag.ShowEditControls)
+        {
+            <li class="dropdown-header">Добавить</li>
+            <li>
+                <a href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">..персонажа</a>
+            </li>
+            <li>@Html.ActionLink("..подгруппу", "AddGroup", new {Model.ProjectId, Model.CharacterGroupId}, null)</li>
+        }
+@*        <li>
+            @Html.ActionLink("Новая тема на форуме", "CreateThread", "Forum", new { Model.ProjectId, Model.CharacterGroupId }, null)
+        </li>
+    *@
+    </ul>
+    </span>

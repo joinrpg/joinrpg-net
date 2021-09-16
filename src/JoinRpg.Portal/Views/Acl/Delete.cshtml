@@ -1,0 +1,64 @@
+﻿
+@model JoinRpg.Web.Models.DeleteAclViewModel
+
+@{
+    ViewBag.Title = "Снять доступ мастеру";
+    string header = Model.SelfRemove
+      ? "Вы точно желаете покинуть пост мастера проекта?"
+      : "Вы действительно хотите снять доступ мастеру?";
+    string submitButtonText = Model.SelfRemove
+      ? "Покинуть пост мастера"
+      : "Снять доступ";
+}
+
+<h3>@header</h3>
+<div class="form-horizontal">
+    <div>
+        @Html.DisplayFor(model => model.UserDetails)
+    </div>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.ProjectAclId)
+        @Html.HiddenFor(model => model.UserId)
+
+        if (Model.ResponsibleFor.Any())
+        {
+            <div class="alert alert-danger">Нельзя снять доступ мастеру, так как он настроен как ответственный мастер по умолчанию для:
+                <ul>
+                    @foreach (var respFor in Model.ResponsibleFor)
+                    {
+                        <li>@Html.DisplayFor(model => respFor)</li>
+                    }
+                </ul>
+                Перенастройте группы таким образом, чтобы по умолчанию этим заявкам назначался другой мастер и повторите попытку.
+            </div>
+            <div>
+                @Html.ActionLink("Назад к списку мастеров", "Index", new {Model.ProjectId})
+            </div>
+        }
+        else
+        {
+            if (Model.ClaimsCount > 0)
+            {
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new {@class = "control-label col-md-2"})
+                    <div class="col-md-6">
+                        @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(project => new SelectListItem() {Text = project.Name, Value = project.Id}), new {@class = "form-control"})
+                        @Html.DescriptionFor(model => model.ResponsibleMasterId)
+                        @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
+                    </div>
+                </div>
+            }
+
+            <div>
+                <input type="submit" value="@submitButtonText" class="btn btn-danger"/> |
+                @Html.ActionLink("Назад к списку мастеров", "Index", new {Model.ProjectId})
+            </div>
+        }
+
+
+    }
+</div>

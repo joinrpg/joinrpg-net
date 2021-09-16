@@ -1,0 +1,44 @@
+﻿@using JoinRpg.DataModel
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Helpers
+@model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
+@{
+    AccommodationInvite[] items = Model.OutgoingInvite
+        .Where(item => item.IsAccepted != AccommodationRequest.InviteState.Accepted)
+        .ToArray();
+    if (items.Length == 0)
+        return;
+}
+<div class="panel panel-default" id="incomingInvite">
+    <div class="panel-heading">Отправленные приглашения к совместному проживанию</div>
+    <div class="panel-body">
+        <table class="table" style="margin: 0;">
+            @foreach (var invite in items)
+            {
+                <tr>
+                    <td style="border: none; vertical-align: middle;">@Html.DisplayFor(model => invite.To.Player)</td>
+                    @if (invite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                    {
+                        <td style="border: none;">
+                            <form method="post" asp-controller="Claim" asp-action="CancelInvite" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("InviteId", invite.Id)
+                                <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#cancel-@(invite.Id)"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отозвать</button>
+                                @Html.ConfirmDialog(
+                                    "cancel-" + invite.Id,
+                                    "Отменить приглашение к совместному проживанию?",
+                                    "Подтвердите действие",
+                                    "Да",
+                                    "Нет")
+                            </form>
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="@invite.IsAccepted.GetAppropriateTextStyle()" style="border: none;">@invite.IsAccepted.GetDescription()</td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+</div>

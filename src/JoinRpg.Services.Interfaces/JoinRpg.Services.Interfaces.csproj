@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5</TargetFramework>
+    <AssemblyTitle>JoinRpg.Services.Interfaces</AssemblyTitle>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
+    <ProjectReference Include="..\PscbApi\PscbApi.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+</Project>

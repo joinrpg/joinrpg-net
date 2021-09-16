@@ -1,0 +1,121 @@
+﻿@using JetBrains.Annotations
+@model JoinRpg.Web.Models.Masters.MastersListViewModel
+@addTagHelper *, PermissionBadge
+@functions
+
+{
+
+    [MustUseReturnValue]
+    public static string CountOfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
+@{
+    ViewBag.Title = "Мастера";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@if (Model.CanCurrentUserGrantRights)
+{
+    <p>
+        Чтобы добавить мастера в проект, найдите его поиском (в главном меню) по email, нику или ФИО.
+    </p>
+}
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Masters.First().UserDetails)
+        </th>
+        <th class="hidden-xs" colspan="2">
+            Права доступа
+        </th>
+        <th>
+        </th>
+    </tr>
+
+    @foreach (var item in Model.Masters)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserDetails)
+            </td>
+            <td class="hidden-xs">
+                <permission-badge asp-for="@item.CanEditRoles" />
+                <permission-badge asp-for="@item.CanSendMassMails" />
+                <permission-badge asp-for="@item.CanManagePlots" />
+                <permission-badge asp-for="@item.CanManageClaims" />
+
+                @if (item.AccomodationEnabled)
+                {
+                    <permission-badge asp-for="@item.CanManageAccommodation" />
+                }
+            </td>
+            <td class="hidden-xs">
+                <permission-badge asp-for="@item.CanManageMoney" />
+                <permission-badge asp-for="@item.CanChangeFields" />
+                <permission-badge asp-for="@item.CanChangeProjectProperties" />
+                <permission-badge asp-for="@item.CanGrantRights" />
+
+                @if (item.AccomodationEnabled)
+                {
+                    <permission-badge asp-for="@item.CanSetPlayersAccommodations" />
+                }
+            </td>
+            <td>
+
+
+              @if (item.ClaimsCount > 0)
+              {
+                <div>
+                  @Html.ActionLink(
+                           CountOfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
+                           "Responsible", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null)
+                  <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null))</span>
+                </div>
+              }
+              @if (item.ResponsibleFor.Any())
+              {
+                var first = item.ResponsibleFor.First();
+                <div>
+                  <b>Отв. мастер</b>: @Html.JoinDisplayFor(", ", item.ResponsibleFor)
+                </div>
+              }
+              <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@item.ProjectId" asp-route-masterId="@item.UserId" class="btn btn-default btn-sm">
+                Подписки
+              </a>
+              @if (Model.CanCurrentUserGrantRights)
+              {
+
+                <a href="@Url.Action("Edit", new {item.ProjectId, item.ProjectAclId})" class="btn btn-default btn-sm">
+                  <span class="glyphicon glyphicon-pencil"></span> Изменить права
+                </a>
+
+
+                if (item.UserId == Model.CurrentUserId && !Model.AnyoneElseCanGrantRights)
+                {
+
+                }
+                else
+                {
+                  <a href="@Url.Action("Delete", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-trash"></span> Снять доступ
+                  </a>
+                }
+
+              }
+              else if (item.UserId == Model.CurrentUserId && Model.AnyoneElseCanGrantRights)
+              {
+                <a href="@Url.Action("RemoveYourself", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
+                  <span class="glyphicon glyphicon-trash"></span> Уйти из мастеров
+                </a>
+              }
+            </td>
+
+        </tr>
+    }
+
+</table>

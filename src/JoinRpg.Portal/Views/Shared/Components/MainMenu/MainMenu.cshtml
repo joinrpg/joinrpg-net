@@ -1,0 +1,73 @@
+﻿@model MainMenuViewModel
+@{
+    var activeProjects = Model.ProjectLinks.Where(p => p.IsActive).ToArray();
+    var archivedProjects = Model.ProjectLinks.Where(p => !p.IsActive).ToArray();
+}
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("JoinRpg", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new { area = "" }, null)</li>
+                    }
+
+                    @if (activeProjects.Length > 1)
+                    {
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои проекты <span class="caret"></span></a>
+
+                            <ul class="dropdown-menu">
+                                @foreach (var project in activeProjects)
+                                {
+                                    <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
+                                }
+                                
+                                @if (archivedProjects.Any())
+                                {
+                                    <li><hr class="list-divider"/></li>
+                                    <li>
+                                        <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                    else if (activeProjects.Length == 1)
+                    {
+                        var project = activeProjects.Single();
+                        <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
+                    }
+
+                    @if (archivedProjects.Any() && activeProjects.Length <= 1)
+                    {
+                        <li>
+                            <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                        </li>
+                    }
+
+                    @if (ViewBag.IsProduction != true)
+                    {
+                        <li class="alert-danger hidden-sm">@Html.ActionLink("Тестовая версия", "About", "Home", new { area = "" }, null)</li>
+                    }
+                    else
+                    {
+                        <li class="hidden-sm">@Html.ActionLink("О сайте", "About", "Home", new { area = "" }, null)</li>
+                    }
+                    <li class="navbar-text" style="max-width: 10em">
+                        @await Html.PartialAsync("SuperSearchPartial")
+                    </li>
+                </ul>
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </div>
+    </nav>

@@ -1,0 +1,16 @@
+﻿@using JoinRpg.Web.Models.Accommodation
+@model RoomTypeViewModel
+@{
+    ViewBag.Title = Model.Project.ProjectName + ": тип поселения «" + Model.Name + "»";
+    ViewBag.ActionName = "Сохранить";
+    ViewBag.IsNew = false;
+}
+<h2>@ViewBag.Title</h2>
+<ul class="nav nav-tabs">
+    <li><a href="@Url.Action("Index", "AccommodationType", new {Model.ProjectId})"><i class="glyphicon glyphicon-arrow-left"></i> Список типов поселения</a></li>
+    <li class="active"><a href="#">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
+    <li><a href="@Url.Action("EditRoomTypeRooms", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id })">Комнаты</a></li>
+</ul>
+@(Model.CanManageRooms
+    ? Html.Partial("_RoomTypeEdit", Model)
+    : Html.Partial("_RoomTypeOverview", Model))

@@ -1,0 +1,25 @@
+﻿@model JoinRpg.Web.Models.Subscribe.SubscribeByMasterPageViewModel
+
+@{
+  ViewBag.Title = "Настройки подписок";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@Html.DisplayFor(model => model.UserDetails)
+
+<h3>Подписки</h3>
+
+<component type="typeof(JoinRpg.Web.GameSubscribe.MasterSubscribeList)"
+           render-mode="WebAssemblyPrerendered"
+           param-ProjectId="@Model.SubscribeList.ProjectId"
+           param-MasterId="@Model.SubscribeList.MasterId"
+           param-InitialModel="@Model.SubscribeList "
+           />
+
+@section Scripts {
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+  <script src="/Scripts/blazor-interop.js"></script>
+
+}

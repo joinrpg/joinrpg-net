@@ -1,0 +1,22 @@
+﻿trigger:
+  batch: true
+  branches:
+    include:
+      - 'master'
+      - 'containers/main'
+pr: none
+
+variables:
+  - template: "portal-k8s-vars.yaml"
+
+stages:
+  - template: "templates/portal-pipeline-tpl.yaml"
+    parameters:
+      devNamespace: 'dev2'
+      devIngressHostName: 'dev2.k8s.joinrpg.ru'
+      devKeyVaultPrefix: 'dev-'
+      devEnvironment: 'Join-k8s-dev.dev2'
+      prodNamespace: 'dev3'
+      prodIngressHostName: 'prod2.k8s.joinrpg.ru'
+      prodKeyVaultPrefix: 'dev-'
+      prodEnvironment: 'Join-k8s-dev.dev3'

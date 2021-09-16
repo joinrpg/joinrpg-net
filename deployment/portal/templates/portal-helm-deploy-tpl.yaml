@@ -1,0 +1,116 @@
+##======================================================
+## Used pipeline variables
+##  - azureSubscription
+##  - keyVaultName
+##  - rgName
+##  - aksName
+##======================================================
+parameters:
+- name: ingressHostName
+  displayName: 'Ingress rule hostname'
+  type: string
+  default: 'test.host.local'
+
+- name: keyVaultPrefix
+  displayName: 'KeyVault secrets prefix'
+  type: string
+  default: 'test-'
+
+- name: releaseName
+  displayName: 'Helm release name'
+  type: string
+  default: 'joinrpg-portal'
+
+- name: namespace
+  displayName: 'K8s namespace '
+  type: string
+  default: 'default'
+
+- name: environment
+  displayName: 'DevOps Environment'
+  type: string
+  default: 'default'
+
+- name: name
+  displayName: 'Deployment job name'
+  type: string
+  default: 'Deploy'
+
+- name: displayName
+  displayName: 'Deployment job name'
+  type: string
+  default: 'Deployment'
+
+jobs:
+- deployment: ${{ parameters.name }}
+  displayName: ${{ parameters.displayName }}
+  environment: ${{ parameters.environment }}
+  pool:
+    vmImage: $(buildVmImageName)
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        ##===========================
+        ## Print parameters
+        ##===========================
+        - pwsh: |
+            Write-Host "Deployment parameters"
+            $tplParams = @{ ingressHostName = "${{ parameters.ingressHostName }}"; keyVaultPrefix = "${{ parameters.keyVaultPrefix }}"; releaseName = "${{ parameters.releaseName }}"; namespace = "${{ parameters.namespace }}"; environment = "${{ parameters.environment }}" }
+            $tplParams | ft 
+          displayName: Print deploy parameters
+          name: printParameters
+        ##===========================
+        ## Install tools
+        ##===========================
+        - task: HelmInstaller@1
+          displayName: Install Helm
+          inputs:
+            helmVersionToInstall: latest
+
+        ##==========================================================================
+        ## Get secrets from KeyVault and prepare parameters for Helm chart deploy
+        ##==========================================================================
+        - task: AzurePowerShell@4
+          displayName: Get values for Chart deployment
+          inputs:
+            azureSubscription: $(azureSubscription)
+            azurePowerShellVersion: LatestVersion
+            ScriptType: FilePath
+            ScriptPath: $(Pipeline.Workspace)/DeployScripts/portal/scripts/Prepare-ChartValues.ps1
+            scriptArguments:
+              -VaultName '$(keyVaultName)'
+              -Prefix '${{ parameters.keyVaultPrefix }}'
+              -Path '$(Pipeline.Workspace)/DeployScripts/portal/deploy-values.yaml'
+              -IngressHost '${{ parameters.ingressHostName }}'
+
+        ##==========================================================================
+        ## Run DB migration tool
+        ##==========================================================================          
+        - task: Docker@2
+          displayName: "Run DB migration tool"
+          inputs:
+            command: run
+            containerRegistry: $(registryServiceConnection)
+            arguments: --rm -e ConnectionStrings__DefaultConnection="$(DefaultConnection)" $(containerRegistry)/$(migrateImageRepository):latest
+          
+        ##==========================================================================
+        ## Deploy Helm chart
+        ##==========================================================================
+        - task: HelmDeploy@0
+          displayName: Install/Upgdare application (Helm)
+          inputs:
+            connectionType: Azure Resource Manager
+            azureSubscriptionEndpoint: $(azureSubscription)
+            azureResourceGroup: $(rgName)
+            kubernetesCluster: $(aksName)
+            useClusterAdmin: true
+            namespace: '${{ parameters.namespace }}'
+            command: upgrade
+            chartType: filepath
+            chartPath: "$(Pipeline.Workspace)/Charts/joinrpg-portal"
+            valueFile: "$(Pipeline.Workspace)/DeployScripts/portal/deploy-values.yaml"
+            releaseName: '${{ parameters.releaseName }}'
+            install: true
+            force: false
+            waitForExecution: true

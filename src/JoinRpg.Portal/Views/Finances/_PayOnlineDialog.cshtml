@@ -1,0 +1,96 @@
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Models
+@model PaymentViewModel
+
+<div class="modal fade" id="payOnlineDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("ClaimPayment", "Payments", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.ClaimId)
+                @Html.HiddenFor(model => model.OperationDate)
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">@(Model.ActionName)</h4>
+                </div>
+                <div class="modal-body">
+                    @if (!Model.ClaimApproved)
+                    {
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                            Заявка не принята. Вы точно хотите оплатить взнос?
+                        </div>
+                    }
+
+                    @if (Model.Money == 0)
+                    {
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-question-sign"></i>
+                            Вы уже вносили деньги. Вы точно хотите оплатить еще?
+                        </div>
+                    }
+
+                    <div class="join alert alert-info">
+                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <div style="font-size: smaller;">
+                            @await Html.PartialAsync("..\\Finances\\_PaymentLegalInfoPartial")
+                        </div>
+                    </div>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label for="@Html.IdFor(m => m.Money)" class="col-md-4 control-label">Сумма к оплате:</label>
+                            <div class="col-md-8">
+                                <div>
+                                    @Html.EditorFor(m => m.Money, new {htmlAttributes = new {@class = "form-control", onchange = "changeHandler()", style = "display: inline-block; max-width: 150px", min="1", max="100000"}})
+                                    ₽
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Money, "", new {@class = "text-danger"})
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <label for="@Html.IdFor(m => m.CommentText)" class="control-label">Комментарий к платежу:</label>
+                                <textarea id="@Html.IdFor(m => m.CommentText)" name="@Html.NameFor(m => m.CommentText)" class="form-control" rows="1">@Model.CommentText</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                @Html.CheckBoxFor(m => m.AcceptContract, new { onchange = "changeHandler()" })
+                                <label for="@Html.IdFor(m => m.AcceptContract)">Я прочитал(а), понял(а) и принимаю условия @Html.ActionLink("оферты", "user-agreement", "OnlinePayments")</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">
+                  <button type="button" class="btn btn-default" style="margin-right: auto;" data-dismiss="modal">Отмена</button>
+                  <div>
+                    <button type="submit" id="dlgPayOnline1Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.BankCard" class="btn btn-success" style="font-size: larger;" title="@PaymentMethodViewModel.BankCard.GetDescription()">@PaymentMethodViewModel.BankCard.GetDisplayName()</button>
+                    <button type="submit" id="dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-secondary" style="font-size: larger; margin-left: 0.5em;" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
+                  </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" defer>
+function changeHandler()
+{
+  const edMoney = document.getElementById('@Html.IdFor(m => m.Money)');
+  const checkBox = document.getElementById('@Html.IdFor(m => m.AcceptContract)');
+  const submitBtn1 = document.getElementById('dlgPayOnline1Submit');
+  const submitBtn2 = document.getElementById('dlgPayOnline2Submit');
+  const money = parseInt(edMoney.value);
+  if (money >= 1 && money <= 100000 && checkBox.checked) {
+      submitBtn1.removeAttribute('disabled');
+      submitBtn2.removeAttribute('disabled');
+  } else {
+      submitBtn1.setAttribute('disabled', '');
+      submitBtn2.setAttribute('disabled', '');
+  }
+}
+</script>

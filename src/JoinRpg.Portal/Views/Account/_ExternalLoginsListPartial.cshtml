@@ -1,0 +1,41 @@
+﻿@model JoinRpg.Web.Models.ExternalLoginListViewModel
+
+<h4>Cоциальные сети</h4>
+<hr />
+@{
+    var loginProviders = Model.ExternalLogins;
+    if (!loginProviders.Any())
+    {
+        <div>
+            <p>
+                К сожалению, логин через социальные сети выключен.
+            </p>
+        </div>
+    }
+    else
+    {
+        using (Html.BeginForm("ExternalLogin", "Account", new {ReturnUrl = Model.ReturnUrl}))
+        {
+            @Html.AntiForgeryToken()
+            <div id="socialLoginList">
+                <p>
+                    @foreach (var p in loginProviders)
+                    {
+                        var style = "btn-default";
+                        if (p.AuthenticationType == "Google")
+                        {
+                            style = "btn-danger";
+                        }
+                        if (p.AuthenticationType == "Vkontakte")
+                        {
+                            style = "btn-primary";
+                        }
+                        
+
+                        <button type="submit" class="btn @style" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">@p.AuthenticationType</button>
+                    }
+                </p>
+            </div>
+        }
+    }
+}

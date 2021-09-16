@@ -1,0 +1,34 @@
+﻿@model JoinRpg.Web.Models.ExternalLoginConfirmationViewModel
+@{
+    ViewBag.Title = "Регистрация";
+}
+<h2>@ViewBag.Title.</h2>
+<h3>Завершение регистрации через @Model.LoginProviderName </h3>
+
+@using (Html.BeginForm("ExternalLoginConfirmation", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, antiforgery: true, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.ReturnUrl)
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @await Html.PartialAsync("_RegistrationRules")
+
+    <p class="text-info">
+        Вы успешно вошли через <strong>@Model.LoginProviderName</strong>.
+        Теперь вам нужно подвердить согласие с правилами и ваш аккаунт будет создан.
+    </p>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.RulesApproved, new {@class = "col-md-2 control-label"})
+        <div class="col-md-2">
+            @Html.EditorFor(m => m.RulesApproved)
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" class="btn btn-default" value="Зарегистрироваться" />
+        </div>
+    </div>
+}

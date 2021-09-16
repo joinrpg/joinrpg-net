@@ -1,0 +1,26 @@
+﻿@using JoinRpg.Web.Models
+@model CreatePaymentTypeViewModel
+
+<div class="form-horizontal">
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, new {@class = "control-label col-md-4"})
+        <div class="col-md-8">
+            @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
+            @Html.DescriptionFor(model => model.Name)
+            @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.UserId, htmlAttributes: new {@class = "control-label col-md-4"})
+        <div class="col-md-8">
+            @Html.DropDownListFor(
+                model => model.UserId,
+                Model.Masters.Select(master => new SelectListItem {Text = master.Name, Value = master.Id}),
+                new {@class = "form-control"})
+            @Html.DescriptionFor(model => model.UserId)
+            @Html.ValidationMessageFor(model => model.UserId, "", new {@class = "text-danger"})
+        </div>
+    </div>
+</div>

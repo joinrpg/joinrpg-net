@@ -1,0 +1,71 @@
+﻿@using JoinRpg.Web.Models.Accommodation
+@using Newtonsoft.Json
+@model RoomTypeViewModel
+@{
+  ViewBag.Title = Model.Project.ProjectName + ": тип поселения «" + Model.Name + "»";
+}
+
+@section Scripts {
+  <script src="~/Scripts/roomsMessages.js"></script>
+  <script src="~/Scripts/rooms.js"></script>
+  <script src="~/Scripts/edit-funcs.js"></script>
+  <script type="text/javascript">
+    @* following variables are declared in rooms.js *@
+    projectId = @Model.ProjectId;
+    roomTypeId = @Model.Id;
+    roomsCount = @Model.RoomsCount;
+    roomCapacity = @Model.Capacity;
+    roomsCapacity = @Model.TotalCapacity;
+    requestsNotAssigned = @Html.Raw(JsonConvert.SerializeObject(Model.UnassignedRequests));
+    requestsAssignedCount = @(Model.Requests.Count - Model.UnassignedRequests.Count);
+  </script>
+}
+<h2>@ViewBag.Title</h2>
+<ul class="nav nav-tabs">
+  <li><a href="@Url.Action("Index", "AccommodationType", new {Model.ProjectId})"><i class="glyphicon glyphicon-arrow-left"></i> Список типов поселения</a></li>
+  <li><a href="@Url.Action("EditRoomType", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id})">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
+  <li class="active"><a href="#">Комнаты</a></li>
+</ul>
+
+
+<!-- Toolbar -->
+<div class="btn-group" style="margin-top: 1em;">
+  @if (Model.CanManageRooms)
+  {
+    <button id="bnAddRooms" type="button" onclick="AddRoom()" class="btn btn-default">
+      <i class="glyphicon glyphicon-plus"></i> Добавить&hellip;
+    </button>
+  }
+  @if (Model.CanAssignRooms)
+  {
+    <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
+      <i class="glyphicon glyphicon-bed"></i> Заселить всех
+    </button>
+    <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id })')" class="btn btn-default">
+      <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех
+    </button>
+  }
+</div>
+
+<!-- Not assigned requests -->
+<div id="availRequests" style="margin-top: 1em; display: @(Model.UnassignedRequests.Count > 0 ? "block" : "none")">
+  <h4>Нерасселенные участники</h4>
+  <div id="availRequestsList" class="list-group">
+    <div id="availRequestsListContainer">
+      @foreach (var req in Model.UnassignedRequests)
+      {
+        @await Html.PartialAsync("_RoomInhabitant", req)
+      }
+    </div>
+  </div>
+</div>
+
+@await Html.PartialAsync("_RoomsList", new RoomTypeRoomsListViewModel(Model))
+
+<div>
+  @await Html.PartialAsync("_BackButton", Model.ProjectId)
+</div>
+
+@await Html.PartialAsync("_RoomEditDlg")
+
+@await Html.PartialAsync("_OccupationDlg")

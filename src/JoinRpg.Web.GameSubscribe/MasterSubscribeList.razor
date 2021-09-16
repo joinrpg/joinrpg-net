@@ -1,0 +1,79 @@
+﻿
+@inject IGameSubscribeClient Client
+@if (_model is null)
+{
+  <div>Loading...</div>
+  return;
+}
+
+<div class="master-subscribe-list">
+  <table class="table"> @*Table should be moved into Components*@
+    <tbody>
+      <tr>
+        <th>Предмет подписки</th>
+        <th>Виды операций</th>
+        <th></th>
+      </tr>
+
+      @foreach (var item in _model.Items)
+      {
+        <MasterSubscribeListRow Model="@item" OnRemoveCallback="OnRemoveRow" @key="@item.UserSubscriptionId" />
+      }
+      @foreach (var paymentType in _model.PaymentTypeNames)
+      {
+        <tr>
+          <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
+          <td>
+            <Label Variation="VariationStyleEnum.Success">
+              Отмеченные взносы
+            </Label>
+          </td>
+          <td></td>
+        </tr>
+      }
+      <tr>
+        <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
+        <td>
+          <Label Variation="VariationStyleEnum.Success">
+            Любые изменения
+          </Label>
+        </td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+@code {
+    private SubscribeListViewModel? _model;
+
+    [Parameter]
+    public SubscribeListViewModel? InitialModel { get; set; }
+
+    [Parameter]
+    public int MasterId { get; set; }
+
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+      if (InitialModel != null)
+      {
+        _model = InitialModel;
+      }
+      else
+      {
+        _model = await Client.GetSubscribeForMaster(ProjectId, MasterId);
+      }
+    }
+
+    async Task OnRemoveRow(SubscribeListItemViewModel item)
+    {
+      _model!.Items.Remove(item);
+      await Client.RemoveSubscription(ProjectId, item.UserSubscriptionId);
+    }
+
+
+
+}

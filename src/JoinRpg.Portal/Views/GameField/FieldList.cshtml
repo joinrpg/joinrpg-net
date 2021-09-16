@@ -1,0 +1,72 @@
+﻿
+@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.Dialogs
+@using JoinRpg.Web.Models.FieldSetup
+@model GameFieldListViewModel
+
+@{
+    var firstItem = Model.Items.FirstOrDefault();
+}
+@if (firstItem != null)
+{
+    <div class="table-responsive" style="margin-top: 1em">
+        <table class="table">
+            <tr>
+                <th>Поле</th>
+                <th>Видимость</th>
+                <th class="price-table">@Html.RenderPriceElement("Цена,")</th>
+                <th>@Html.DisplayNameFor(model => firstItem.DescriptionDisplay)</th>
+                <th></th>
+                <th style="min-width: 6em; width: 6em;"></th>
+                <th style="min-width: 9em; width: 9em;"></th>
+            </tr>
+            @foreach (var item in Model.Items)
+            {
+                <vc:field-row field="@item"></vc:field-row>
+            }
+        </table>
+    </div>
+
+    @await Html.PartialAsync("_DeleteEntityDlg", new DeleteDialogViewModel() { ProjectId = Model.Navigation.ProjectId, Title = "Удаление поля"})
+
+
+    <div class="modal fade modaldialogforid" id="fastMoveModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                @using (Html.BeginForm("MoveFast", "GameField", new {projectId = firstItem.ProjectId}, FormMethod.Post))
+                {
+                    <input type="hidden" name="ProjectFieldId" id="entityId" value="0" />
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Переместить</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-md-4">Поставить после поля:</label>
+                                <div class="col-md-8">
+                                    <select name="afterFieldId" id="afterFieldId" class="form-control">
+                                        <option value="-1" selected="selected">Поставить в начало</option>
+                                        @foreach (var field in Model.Items)
+                                        {
+                                            <option value="@field.ProjectFieldId">@field.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Переместить</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+
+                    </div>
+                }
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+}
+

@@ -1,0 +1,95 @@
+﻿@model JoinRpg.Web.Models.RegisterViewModel
+@{
+  ViewBag.Title = "Регистрация";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<form asp-action="Register" asp-controller="Account" method="post" class="form-horizontal" role="form">
+  <h4>Создать аккаунт</h4>
+
+  @await Html.PartialAsync("_RegistrationRules")
+
+  <p>@Html.HelpLink("register", "Подробнее о регистрации")</p>
+  <hr />
+  @Html.ValidationSummary("", new { @class = "text-danger" })
+  <div class="form-group">
+    @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+    <div class="col-md-10">
+      @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+    </div>
+  </div>
+  <div class="form-group">
+    @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+    <div class="col-md-10">
+      @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+    </div>
+  </div>
+  <div class="form-group">
+    @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+    <div class="col-md-10">
+      @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+    </div>
+  </div>
+
+  <div class="form-group">
+    @Html.LabelFor(m => m.RulesApproved, new { @class = "col-md-2 control-label" })
+    <div class="col-md-2">
+      @Html.EditorFor(m => m.RulesApproved)
+    </div>
+  </div>
+
+  @if (Model.IsRecaptchaConfigured)
+  {
+    <div class="form-group">
+      <div class="col-md-offset-2 col-md-10">
+        <!-- data-callback calls when ReCaptcha passed successful
+             data-expired-callback invokes when ReCaptcha becomes too old -->
+        <div class="g-recaptcha"
+             data-sitekey="@Model.RecaptchaPublicKey"
+             data-callback="reCaptchaCallback"
+             data-expired-callback="reCaptchaExpired"></div>
+      </div>
+    </div>
+  }
+
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md-10">
+      <input type="submit" class="btn btn-default" id="btnRegister" value="Зарегистрироваться" />
+    </div>
+  </div>
+</form>
+
+@section Scripts{
+  @if (Model.IsRecaptchaConfigured)
+  {
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+    function disableSubmitButton() {
+      $("#btnRegister").attr("disabled", "disabled");
+    }
+
+    // Invokes when ReCaptcha has been verified
+    // and enables form submit button
+    function reCaptchaCallback(response) {
+      $("#btnRegister").removeAttr("disabled");
+    }
+
+    // Invokes when ReCaptcha has been expired (too old)
+    // to prevent sending form with invalid reCaptcha
+    function reCaptchaExpired() {
+      disableSubmitButton();
+    }
+
+    // Disables form submit button, if ReCaptcha is rendered,
+    // to prevent displaying server-side validation error message,
+    // which asks to contact with support (instead of requiring completing ReCaptcha).
+    // Form submit button enables by reCaptchaCallback function, called by ReCaptcha lib
+    $(document).ready(function () {
+      if ($("#g-recaptcha-response")) {
+        disableSubmitButton();
+      }
+    });
+  </script>
+  }
+}

@@ -1,0 +1,64 @@
+﻿@using System.Globalization; 
+@model JoinRpg.Web.Models.HomeViewModel
+
+@inject JoinRpg.Portal.Infrastructure.Localization.LocalizationService Localizer
+
+@{
+  ViewBag.Title = ViewBag.IsProduction ? "JoinRpg.RU" : "Dev.JoinRpg.RU";
+}
+<br />
+<div class="panel panel-default well">
+  <div class="panel-body">
+    <h2>@ViewBag.Title</h2>
+    @if (ViewBag.IsProduction)
+    {
+      <div>
+        <p>
+            Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База заявок от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
+        </p>
+
+            @Html.ActionLink("О проекте", "About", null,  null, new { @class = "btn btn-primary" })
+            <a href="https://docs.joinrpg.ru" class="btn btn-info">Документация</a>
+            @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
+            @Html.ActionLink("Как помочь?", "HowToHelp", null, new { @class = "btn btn-default" })
+        </div>
+        }
+        else
+        {
+        <div>
+            <div class="alert alert-danger">
+                   @Localizer["IndexView.Test.Hello"]<br />
+                   @Localizer["IndexView.Test.DontUseTestVersionForRealWork"]<br />
+                   @Localizer["IndexView.Test.RedirectPlayersToMainServer"] <br />
+                <a href="https://joinrpg.ru">joinrpg.ru</a> 
+            </div>. 
+
+              @Html.ActionLink(Localizer["IndexView.TestMenu.About"], "About", null, null, new { @class = "btn btn-primary" })
+            <a href="https://docs.joinrpg.ru" class="btn btn-info">@Localizer["IndexView.TestMenu.Documentation"]</a>
+             @Html.ActionLink(Localizer["IndexView.TestMenu.CreateTestApplicationDatabase"], "Create", "Game", null, new { @class = "btn btn-success" })
+            <a href="https://joinrpg.ru" class="btn btn-info">@Localizer["IndexView.TestMenu.GoToMainServer"]</a>
+  </div>
+        }
+        
+    </div>
+</div>
+
+
+<h3>Игры</h3>
+
+<div class="row">
+    @foreach (var project in Model.ActiveProjects)
+    {
+        @await Html.PartialAsync("ProjectCard", project)
+    }
+        @if (Model.HasMoreProjects)
+        {
+            <div class="col-sm-12">
+                <div class="thumbnail">
+                    <div class="caption text-center">
+                         @Html.ActionLink("Еще игры...", "BrowseGames", "Home")  / @Html.ActionLink("Архив...", "GameArchive", "Home") </div>
+                </div>
+
+    </div>
+  }
+</div>

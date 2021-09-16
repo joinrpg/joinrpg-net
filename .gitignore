@@ -198,5 +198,7 @@ ModelManifest.xml
 /Secret.config
 *.pubxml
 
+appsettings.Development.json
+
 #Libman
-Joinrpg.Portal/wwwroot/lib
+/src/JoinRpg.Portal/wwwroot/lib

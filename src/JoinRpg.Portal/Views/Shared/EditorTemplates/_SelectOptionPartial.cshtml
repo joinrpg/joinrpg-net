@@ -1,0 +1,12 @@
+﻿
+@using JoinRpg.Web.Models
+@model FieldPossibleValueViewModel
+
+@if (!Model.Selected)
+{
+    <option value="@Model.ProjectFieldDropdownValueId" price="@Model.Price">@Model.Label@(Model.HasPrice ? @" (" + Html.RenderPrice(Model.Price) + ")" : "")</option>
+}
+else
+{
+    <option value="@Model.ProjectFieldDropdownValueId" selected="selected" price="@Model.Price">@Model.Label @(Model.HasPrice ? @" (" + Html.RenderPrice(Model.Price) + ")" : "")</option>
+}

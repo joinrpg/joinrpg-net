@@ -1,0 +1,26 @@
+﻿@model JoinRpg.Portal.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Ошибка";
+}
+
+<h1 class="text-danger">Ошибка</h1>
+<h2 class="text-danger">При обработке вашего запроса возникла ошибка.</h2>
+
+<p>
+    Обратитесь в техподдержку!
+</p>
+
+@if (Model.ShowRequestId)
+{
+    <p> RequestId: @Model.RequestId </p>
+}
+
+@if (Model.AspNetTrace is not null)
+{
+        <p>TraceIdentifier: @Model.AspNetTrace</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Path))
+{
+    <p> Путь: @Model.Path </p>
+}

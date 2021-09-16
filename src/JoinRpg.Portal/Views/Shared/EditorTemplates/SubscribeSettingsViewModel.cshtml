@@ -1,0 +1,36 @@
+﻿@using JoinRpg.Domain
+
+@model JoinRpg.Web.Models.Subscribe.SubscribeSettingsViewModel
+
+@{
+ ViewData["DisableFlags"] = Model.DisabledFlags;
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.ProjectId)
+    @Html.HiddenFor(model => model.CharacterGroupId)
+
+<div class="form-horizontal">
+    <h4>Настройки подписки на «@Model.Name»</h4>
+    <hr />
+    @if (Model.DisabledFlags.AnySet())
+    {
+        <div class="alert alert-info">
+            Часть подписок включены на родительских группах и не могут быть изменены здесь.
+        </div>
+    }
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <partial name="..\\GameSubscribe\\_SubscribeOptions" for="@Model.Options" view-data="ViewData"/>
+
+    <div class="form-group">
+        <div class="col-md-12">
+            <input type="submit" value="Сохранить" class="btn btn-success" />
+        </div>
+    </div>
+
+</div>
+}

@@ -1,0 +1,20 @@
+﻿@model JoinRpg.Web.Models.HomeViewModel
+
+@{
+  ViewBag.Title = "Все игры";
+}
+@if (Model.ActiveProjects.Any())
+{
+  <h3>Игры</h3>
+
+  <div class="row">
+    @foreach (var project in Model.ActiveProjects)
+    {
+      @await Html.PartialAsync("ProjectCard", project)
+    }
+  </div>
+}
+else
+{
+  <h3>Архив игр пуст</h3>
+}

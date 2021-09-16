@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "docker" 
+    directory: "/src/JoinRpg.Portal" 
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "docker" 
+    directory: "/src/Joinrpg.Dal.Migrate" 
+    schedule:
+      interval: "daily"

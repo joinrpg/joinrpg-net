@@ -1,0 +1,12 @@
+﻿<div class="form-group">
+  <label class="control-label col-md-2">@Label</label>
+  <div class="col-md-10">
+    @ChildContent
+  </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Label { get; set; } = null!;
+
+}
