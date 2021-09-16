@@ -440,7 +440,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanEditRoles)]
-        [HttpPost]
+        [HttpGet]
         public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
 
         private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
@@ -460,7 +460,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanEditRoles)]
-        [HttpPost]
+        [HttpGet]
         public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
 
         [HttpGet, MasterAuthorize()]

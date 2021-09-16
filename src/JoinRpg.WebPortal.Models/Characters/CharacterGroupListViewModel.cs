@@ -103,6 +103,10 @@ namespace JoinRpg.Web.Models.Characters
                 vm.ChildGroups = childGroups
                     .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))
                     .WhereNotNull()
+                    .ToList();
+
+                _ = vm.ChildGroups
+                    .Where(x => !x.IsSpecial)
                     .MarkFirstAndLast();
 
                 return vm;
