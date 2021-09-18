@@ -253,7 +253,7 @@ namespace JoinRpg.Web.Models
         /// </summary>
         private void InitTotals()
         {
-            foreach (FieldBoundToViewModel key in Enum.GetValues(typeof(FieldBoundToViewModel)))
+            foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
             {
                 FieldsFee[key] = 0;
                 FieldWithFeeCount[key] = 0;

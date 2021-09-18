@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using JoinRpg.Domain;
 using JoinRpg.TestHelpers;
@@ -15,7 +16,7 @@ namespace JoinRpg.CommonUI.Models.Test
         [Fact]
         public void TranslatedToDistinct()
         {
-            EnumerationTestHelper.GetValues<AddClaimForbideReason>()
+            Enum.GetValues<AddClaimForbideReason>()
                 .Select(x => x.ToViewModel()).ShouldBeUnique();
         }
 
