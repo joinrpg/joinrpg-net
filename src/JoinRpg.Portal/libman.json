@@ -7,10 +7,6 @@
             "destination": "wwwroot/lib/jquery/"
         },
         {
-            "library": "jquery-details@0.1.0",
-            "destination": "wwwroot/lib/jquery-details/"
-        },
-        {
             "library": "jquery-validate@1.19.0",
             "destination": "wwwroot/lib/jquery-validate/"
         },
@@ -26,14 +22,5 @@
             "library": "bootstrap-datepicker@1.8.0",
             "destination": "wwwroot/lib/bootstrap-datepicker/"
         },
-        {
-            "library": "respond.js@1.4.2",
-            "destination": "wwwroot/lib/respond.js/"
-        }
-    ,
-{
-  "library": "modernizr@2.8.3",
-  "destination": "Scripts/lib/modernizr/"
-}
 ]
 }
