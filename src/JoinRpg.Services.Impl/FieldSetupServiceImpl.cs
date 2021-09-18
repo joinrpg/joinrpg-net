@@ -258,6 +258,7 @@ namespace JoinRpg.Services.Impl
             {
                 field.CharacterGroup = new CharacterGroup()
                 {
+                    CharacterGroupId = -field.ProjectFieldId, // We will need this if create both field and variant special group at once.
                     AvaiableDirectSlots = 0,
                     HaveDirectSlots = false,
                     ParentCharacterGroupIds = new[] { field.Project.RootGroup.CharacterGroupId },
