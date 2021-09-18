@@ -1,0 +1,14 @@
+﻿<h3>IntSelectorDemo</h3>
+
+<IntSelector
+                                   Name="int"
+                                   PossibleValues="@possibleValues"
+                                   @bind-SelectedValues="@Selected"
+                                   Multiple="true"
+                                   ></IntSelector>
+
+@code {
+    private readonly IntSelectListItem[] possibleValues = new IntSelectListItem[] { new(1, "Test"), new (2, "Maybe") };
+
+    private int[] Selected { get; set; } = new int[0];
+}
