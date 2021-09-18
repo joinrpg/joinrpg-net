@@ -70,6 +70,7 @@ namespace JoinRpg.Services.Impl
             var initialFieldId = -1000;
             ProjectField CreateField(string name, ProjectFieldType type)
             {
+                //NOTE: We could not here create variant for fields, because it hard to create special group correctly here 
                 var field = new ProjectField()
                 {
                     CanPlayerEdit = false,
