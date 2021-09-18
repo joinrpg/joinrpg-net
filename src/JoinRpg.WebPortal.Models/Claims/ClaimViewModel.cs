@@ -478,7 +478,7 @@ namespace JoinRpg.Web.Models
             CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
             FieldsFee = model.Fields.FieldsFee;
 
-            foreach (FinanceOperationState s in Enum.GetValues(typeof(FinanceOperationState)))
+            foreach (var s in Enum.GetValues<FinanceOperationState>())
             {
                 Balance[s] = 0;
             }
