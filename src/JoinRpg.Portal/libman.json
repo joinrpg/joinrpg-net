@@ -27,10 +27,6 @@
             "destination": "wwwroot/lib/bootstrap-datepicker/"
         },
         {
-            "library": "bootstrap-select@1.13.9",
-            "destination": "wwwroot/lib/bootstrap-select/"
-        },
-        {
             "library": "respond.js@1.4.2",
             "destination": "wwwroot/lib/respond.js/"
         }
