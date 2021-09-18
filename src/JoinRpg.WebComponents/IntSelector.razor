@@ -1,4 +1,5 @@
 ﻿@inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <select class="selectpicker"
         data-live-search="true"
@@ -36,16 +37,27 @@
     }
 
     private ElementReference selectRef;
+    private IJSObjectReference module = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
       if (firstRender)
       {
-        await JS.InvokeVoidAsync("joinmethods.InitBootstrapSelect", selectRef);
+        module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
+        await module.InvokeVoidAsync("initBootstrapSelect", selectRef);
       }
       else
       {
-        await JS.InvokeVoidAsync("joinmethods.RefreshBootstrapSelect", selectRef);
+        await module.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
       }
     }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+      if (module is not null)
+      {
+        await module.DisposeAsync();
+      }
+    }
+
 }

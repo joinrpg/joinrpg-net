@@ -30,7 +30,9 @@ namespace JoinRpg.Blazor.Client.ApiClients
         }
         private async ValueTask<string?> GetCsrfTokenAsyncFromJs()
         {
-            var cookies = await jsRuntime.InvokeAsync<StringHolder>("joinmethods.GetDocumentCookie");
+            await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "/Scripts/blazor-interop.js");
+
+            var cookies = await module.InvokeAsync<StringHolder>("getDocumentCookie");
             return cookies
                 .Content
                 .Split(';')
