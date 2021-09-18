@@ -13,34 +13,34 @@ namespace JoinRpg.Web.Test
     public class EnumTests
     {
         [Fact]
-        public void AccessReason() => EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
+        public void AccessReason() => EnumerationTestComparer.EnsureSame<UserExtensions.AccessReason, AccessReason>();
 
         [Fact]
-        public void ProjectFieldType() => EnumerationTestHelper.CheckEnums<ProjectFieldViewType, DataModel.ProjectFieldType>();
+        public void ProjectFieldType() => EnumerationTestComparer.EnsureSame<ProjectFieldViewType, DataModel.ProjectFieldType>();
 
         [Fact]
-        public void ClaimStatus() => EnumerationTestHelper.CheckEnums<ClaimStatusView, DataModel.Claim.Status>();
+        public void ClaimStatus() => EnumerationTestComparer.EnsureSame<ClaimStatusView, DataModel.Claim.Status>();
 
         [Fact]
-        public void ClaimDenialStatus() => EnumerationTestHelper.CheckEnums<ClaimDenialStatusView, DataModel.Claim.DenialStatus>();
+        public void ClaimDenialStatus() => EnumerationTestComparer.EnsureSame<ClaimDenialStatusView, DataModel.Claim.DenialStatus>();
 
         [Fact]
-        public void FinanceOperation() => EnumerationTestHelper.CheckEnums<FinanceOperationActionView, FinanceOperationAction>();
+        public void FinanceOperation() => EnumerationTestComparer.EnsureSame<FinanceOperationActionView, FinanceOperationAction>();
 
         [Fact]
         public void FinanceState()
-            => EnumerationTestHelper.CheckEnums<FinanceOperationState, FinanceOperationStateViewModel>();
+            => EnumerationTestComparer.EnsureSame<FinanceOperationState, FinanceOperationStateViewModel>();
 
         [Fact]
         public void MoneyTransferState()
-            => EnumerationTestHelper.CheckEnums<MoneyTransferState, MoneyTransferStateViewModel>();
+            => EnumerationTestComparer.EnsureSame<MoneyTransferState, MoneyTransferStateViewModel>();
 
         [Fact]
         public void ProjectType()
-            => EnumerationTestHelper.CheckEnums<ProjectTypeDto, ProjectTypeViewModel>();
+            => EnumerationTestComparer.EnsureSame<ProjectTypeDto, ProjectTypeViewModel>();
 
         [Fact]
         public void ContactsAccessType()
-            => EnumerationTestHelper.CheckEnums<ContactsAccessType, ContactsAccessTypeView>();
+            => EnumerationTestComparer.EnsureSame<ContactsAccessType, ContactsAccessTypeView>();
     }
 }

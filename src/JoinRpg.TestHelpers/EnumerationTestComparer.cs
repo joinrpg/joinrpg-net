@@ -2,19 +2,20 @@ using System;
 using System.Globalization;
 using System.Linq;
 using Shouldly;
-using Xunit;
 
 namespace JoinRpg.TestHelpers
 {
-
-    public static class EnumerationTestHelper
+    /// <summary>
+    /// Class that allows to compare two enums
+    /// </summary>
+    public static class EnumerationTestComparer
     {
         /// <summary>
         /// Compare two enums
         /// </summary>
         /// <typeparam name="TFirst"></typeparam>
         /// <typeparam name="TSecond"></typeparam>
-        public static void CheckEnums<TFirst, TSecond>()
+        public static void EnsureSame<TFirst, TSecond>()
             where TFirst : struct, Enum
             where TSecond : struct, Enum
         {
@@ -41,17 +42,6 @@ namespace JoinRpg.TestHelpers
             }
 
             return Convert.ToInt32(Enum.GetValues<TEnum>().Max(), CultureInfo.InvariantCulture);
-        }
-
-        public static TheoryData<T> GetTheoryDataForAllEnumValues<T>() where T : struct, Enum
-        {
-            var data = new TheoryData<T>();
-            foreach (var enumValue in Enum.GetValues<T>())
-            {
-                data.Add(enumValue);
-            }
-
-            return data;
         }
     }
 }
