@@ -8,7 +8,7 @@
                                    ></IntSelector>
 
 @code {
-    private readonly IntSelectListItem[] possibleValues = new IntSelectListItem[] { new(1, "Test"), new (2, "Maybe") };
+  private readonly IntSelectListItem[] possibleValues = new IntSelectListItem[] { new(1, "Test"), new (2, "Maybe") };
 
-    private int[] Selected { get; set; } = new int[0];
+  private int[] Selected { get; set; } = new[] { 1, 2 } ;
 }

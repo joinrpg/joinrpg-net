@@ -33,7 +33,7 @@
     private string Value
     {
       get => string.Join(",", SelectedValues.Select(c => c.ToString()));
-      set => SelectedValuesChanged.InvokeAsync(value.Split(",").Select(int.Parse).ToArray());
+      set => SelectedValuesChanged.InvokeAsync(value.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray());
     }
 
     private ElementReference selectRef;
@@ -44,7 +44,7 @@
       if (firstRender)
       {
         module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
-        await module.InvokeVoidAsync("initBootstrapSelect", selectRef);
+        await module.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues);
       }
       else
       {
