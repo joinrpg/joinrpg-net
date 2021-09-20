@@ -59,7 +59,6 @@ namespace JoinRpg.Portal.Controllers
             this.recaptchaVerificator = recaptchaVerificator;
             this.externalLoginProfileExtractor = externalLoginProfileExtractor;
             this.projectRepository = projectRepository;
-            this.localizer = localizer;
         }
 
 

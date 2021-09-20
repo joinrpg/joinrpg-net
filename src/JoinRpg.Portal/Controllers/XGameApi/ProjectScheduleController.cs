@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
- 
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
