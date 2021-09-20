@@ -22,11 +22,12 @@ namespace JoinRpg.Portal.Controllers
     [Authorize]
     public class AccountController : Common.ControllerBase
     {
-        private readonly IEmailService _emailService;
-        private readonly IOptions<RecaptchaOptions> _recaptchaOptions;
-        private readonly IRecaptchaVerificator _recaptchaVerificator;
-        private readonly IStringLocalizer<LocalizationSharedResource> _localizer;
+        private readonly IEmailService emailService;
+        private readonly IOptions<RecaptchaOptions> recaptchaOptions;
+        private readonly IRecaptchaVerificator recaptchaVerificator;
+        private readonly IStringLocalizer<LocalizationSharedResource> localizer;
         private readonly Lazy<IProjectRepository> projectRepository;
+        private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
 
         private static readonly string ImpossibleToVerifyRecaptcha = typeof(AccountController).FullName + ".Register.ImpossibleToVerifyCaptcha";
         private static readonly string LoginOrPasswordNotFound = typeof(AccountController).FullName + ".Login.LoginOrPasswordNotFound";
@@ -47,10 +48,9 @@ namespace JoinRpg.Portal.Controllers
             IStringLocalizer<LocalizationSharedResource> localizer
         )
         {
-            _emailService = emailService;
-            _recaptchaOptions = recaptchaOptions;
-            _recaptchaVerificator = recaptchaVerificator;
-            _localizer = localizer;
+            this.emailService = emailService;
+            this.recaptchaVerificator = recaptchaVerificator;
+            this.localizer = localizer;
 
             UserManager = userManager;
             SignInManager = signInManager;
@@ -59,7 +59,7 @@ namespace JoinRpg.Portal.Controllers
             this.recaptchaVerificator = recaptchaVerificator;
             this.externalLoginProfileExtractor = externalLoginProfileExtractor;
             this.projectRepository = projectRepository;
-            this._localizer = localizer;
+            this.localizer = localizer;
         }
 
 
@@ -131,7 +131,7 @@ namespace JoinRpg.Portal.Controllers
                 return View("Lockout");
             }
 
-            ModelState.AddModelError("", _localizer[LoginOrPasswordNotFound]);
+            ModelState.AddModelError("", localizer[LoginOrPasswordNotFound]);
             var vm = await CreateLoginPageViewModelAsync(returnUrl);
             vm.Login.Email = model.Email;
             return View(vm);
@@ -143,13 +143,13 @@ namespace JoinRpg.Portal.Controllers
         [HttpGet]
         public ActionResult Register()
         {
-            var isRecaptchaConfigured = _recaptchaVerificator.IsRecaptchaConfigured();
+            var isRecaptchaConfigured = recaptchaVerificator.IsRecaptchaConfigured();
             return View
                 (
                     new RegisterViewModel()
                     {
                         IsRecaptchaConfigured = isRecaptchaConfigured,
-                        RecaptchaPublicKey = _recaptchaOptions.Value.PublicKey,
+                        RecaptchaPublicKey = recaptchaOptions.Value.PublicKey,
                     }
                 );
         }
@@ -160,12 +160,12 @@ namespace JoinRpg.Portal.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken)
         {
-            var isRecaptchaConfigured = _recaptchaVerificator.IsRecaptchaConfigured();
+            var isRecaptchaConfigured = recaptchaVerificator.IsRecaptchaConfigured();
 
             if (!ModelState.IsValid)
             {
                 model.IsRecaptchaConfigured = isRecaptchaConfigured;
-                model.RecaptchaPublicKey = _recaptchaOptions.Value.PublicKey;
+                model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                 return View(model);
             }
 
@@ -181,9 +181,9 @@ namespace JoinRpg.Portal.Controllers
 
                 if (!isRecaptchaValid)
                 {
-                    ModelState.AddModelError("captcha", _localizer[ImpossibleToVerifyRecaptcha]);
+                    ModelState.AddModelError("captcha", localizer[ImpossibleToVerifyRecaptcha]);
                     model.IsRecaptchaConfigured = isRecaptchaConfigured;
-                    model.RecaptchaPublicKey = _recaptchaOptions.Value.PublicKey;
+                    model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                     return View(model);
                 }
             }
@@ -205,7 +205,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 ModelState.AddErrors(result);
                 model.IsRecaptchaConfigured = isRecaptchaConfigured;
-                model.RecaptchaPublicKey = _recaptchaOptions.Value.PublicKey;
+                model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                 return View(model);
             }
 
@@ -228,7 +228,7 @@ namespace JoinRpg.Portal.Controllers
             //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
             var dbUser = await UserRepository.GetById(user.UserId);
 
-            await _emailService.Email(new ConfirmEmail()
+            await emailService.Email(new ConfirmEmail()
             { CallbackUrl = callbackUrl, Recipient = dbUser });
         }
 
@@ -286,7 +286,7 @@ namespace JoinRpg.Portal.Controllers
                 var dbUser = await UserRepository.GetById(user.UserId);
 
 
-                await _emailService.Email(new RemindPasswordEmail()
+                await emailService.Email(new RemindPasswordEmail()
                 { CallbackUrl = callbackUrl, Recipient = dbUser });
 
                 return RedirectToAction("ForgotPasswordConfirmation", "Account");

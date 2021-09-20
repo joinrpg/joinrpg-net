@@ -6,6 +6,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
+using JoinRpg.Portal.Infrastructure.Localization;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,6 +56,12 @@ namespace JoinRpg.Portal
             _ = services.AddHttpClient();
 
             _ = services.AddRouting(options => options.LowercaseUrls = true);
+
+            _ = services.AddScoped<IValidationAttributeAdapterProvider, LocalizationValidationAttributeAdapterProvider>();
+            _ = services.AddScoped<DataAnnotationsLocalizationDisplayMetadataProvider>();
+            _ = services.AddSingleton<LocalizationService>();
+            _ = services.AddPortableObjectLocalization(o => o.ResourcesPath = "Resources");
+
             var mvc = services
                 .AddMvc(options =>
                 {
@@ -68,7 +76,11 @@ namespace JoinRpg.Portal
                     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
                 })
                 .AddControllersAsServices()
-                .AddViewComponentsAsServices();
+                .AddViewComponentsAsServices()
+                .AddDataAnnotationsLocalization(options =>
+                {
+                    options.DataAnnotationLocalizerProvider = (type, factory) => LocalizationService.CreateLocalizer(factory);
+                });
 
 
             var dataProtection = services.AddDataProtection();
@@ -112,8 +124,6 @@ namespace JoinRpg.Portal
         }
 
 
-
-
         /// <summary>
         /// Runs after ConfigureServices
         /// </summary>
@@ -134,7 +144,12 @@ namespace JoinRpg.Portal
                   options.DefaultRequestCulture = new RequestCulture("ru-RU");
 
                   //TODO before adding other cultures, ensure that datetime fields send correct format
-                  options.SupportedCultures = new CultureInfo[] { new CultureInfo("ru-RU") };
+                  //{
+                      options.SupportedCultures = LocalizationService.SupportedCultures;
+                      options.SupportedUICultures = LocalizationService.SupportedCultures;
+                      options.DefaultRequestCulture = new RequestCulture("ru-RU");
+
+                      options.RequestCultureProviders.Insert(0, new CulturePolicyResolvingProvider());
               });
 
             if (env.IsDevelopment())
