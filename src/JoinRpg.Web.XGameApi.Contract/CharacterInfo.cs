@@ -89,37 +89,37 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// false — claim fee not paid in full
         /// null 
         /// </summary>
-        public bool PaidInFull { get; set; } = PaidInFull;
-
-        /// <summary>
-        /// Player user id
-        /// </summary>
-        public int PlayerUserId { get; set; } = PlayerUserId;
-    }
+    public bool PaidInFull { get; set; } = PaidInFull;
 
     /// <summary>
-    /// Has player or not.
+    /// Player user id
     /// </summary>
-    public enum CharacterBusyStatus
-    {
-        /// <summary>
-        /// Has player
-        /// </summary>
-        HasPlayer,
+    public int PlayerUserId { get; set; } = PlayerUserId;
+}
 
-        /// <summary>
-        /// Has some claims, but nothing approved
-        /// </summary>
-        Discussed,
+/// <summary>
+/// Has player or not.
+/// </summary>
+public enum CharacterBusyStatus
+{
+    /// <summary>
+    /// Has player
+    /// </summary>
+    HasPlayer,
 
-        /// <summary>
-        /// No actve claims
-        /// </summary>
-        NoClaims,
+    /// <summary>
+    /// Has some claims, but nothing approved
+    /// </summary>
+    Discussed,
 
-        /// <summary>
-        /// NPC should not have any claims
-        /// </summary>
-        Npc,
-    }
+    /// <summary>
+    /// No actve claims
+    /// </summary>
+    NoClaims,
+
+    /// <summary>
+    /// NPC should not have any claims
+    /// </summary>
+    Npc,
+}
 }

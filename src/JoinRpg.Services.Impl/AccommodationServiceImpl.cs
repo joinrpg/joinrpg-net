@@ -227,12 +227,12 @@ namespace JoinRpg.Services.Impl
             // Creates new room using name and parameters from given room info
             ProjectAccommodation CreateRoom(string name)
                 => new()
-                {
-                    Name = name,
-                    AccommodationTypeId = roomTypeId,
-                    ProjectId = projectId,
-                    ProjectAccommodationType = roomType,
-                };
+            {
+                Name = name,
+                AccommodationTypeId = roomTypeId,
+                ProjectId = projectId,
+                ProjectAccommodationType = roomType,
+            };
 
             // Internal function
             // Iterates through rooms list and creates object for each room from a list

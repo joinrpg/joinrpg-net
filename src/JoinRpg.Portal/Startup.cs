@@ -145,11 +145,11 @@ namespace JoinRpg.Portal
 
                   //TODO before adding other cultures, ensure that datetime fields send correct format
                   //{
-                      options.SupportedCultures = LocalizationService.SupportedCultures;
-                      options.SupportedUICultures = LocalizationService.SupportedCultures;
-                      options.DefaultRequestCulture = new RequestCulture("ru-RU");
+                  options.SupportedCultures = LocalizationService.SupportedCultures;
+                  options.SupportedUICultures = LocalizationService.SupportedCultures;
+                  options.DefaultRequestCulture = new RequestCulture("ru-RU");
 
-                      options.RequestCultureProviders.Insert(0, new CulturePolicyResolvingProvider());
+                  options.RequestCultureProviders.Insert(0, new CulturePolicyResolvingProvider());
               });
 
             if (env.IsDevelopment())
