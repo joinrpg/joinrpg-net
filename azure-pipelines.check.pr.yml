@@ -23,6 +23,8 @@ steps:
   displayName: 'nuget restore'
   inputs:
     restoreSolution: '$(solution)'
+    feedsToUse: 'config'
+    nugetConfigPath: 'nuget.config'
 
 - task: DotNetCoreCLI@2
   inputs:
@@ -44,6 +46,7 @@ steps:
     command: 'custom'
     custom: 'format'
     arguments: '--check --verbosity diagnostic'
+
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
