@@ -82,7 +82,7 @@ namespace JoinRpg.Portal.Controllers
                 IsAcceptingClaims = field.IsAcceptingClaims,
                 HidePlayerForCharacter = field.HidePlayerForCharacter,
                 Name = field.CharacterName,
-                ParentCharacterGroupIds = field.GetParentGroupsForEdit(),
+                ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
                 IsHot = field.IsHot,
             }.Fill(field, CurrentUserId));
         }
@@ -103,7 +103,7 @@ namespace JoinRpg.Portal.Controllers
                     new EditCharacterRequest(
                         new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
                         IsPublic: viewModel.IsPublic,
-                        ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
+                        ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                         IsAcceptingClaims: viewModel.IsAcceptingClaims && field.ApprovedClaim == null,
                         HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
                         IsHot: viewModel.IsHot,
@@ -144,7 +144,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 ProjectId = projectid,
                 ProjectName = characterGroup.Project.ProjectName,
-                ParentCharacterGroupIds = characterGroup.AsPossibleParentForEdit(),
+                ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
                 ContinueCreating = continueCreating,
             }.Fill(characterGroup, CurrentUserId));
         }
@@ -154,14 +154,14 @@ namespace JoinRpg.Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
         {
-            var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().FirstOrDefault();
+            var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
             try
             {
                 await CharacterService.AddCharacter(new AddCharacterRequest(
                     ProjectId: viewModel.ProjectId,
                     Name: viewModel.Name,
                     IsAcceptingClaims: viewModel.IsAcceptingClaims,
-                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
+                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
                     IsHot: viewModel.IsHot,
                     IsPublic: viewModel.IsPublic,

@@ -109,7 +109,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.GameSubscribe",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Blazor.Client", "src\JoinRpg.Blazor.Client\JoinRpg.Blazor.Client.csproj", "{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.CharacterGroups", "src\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj", "{EF419FBC-02E8-4522-82FC-D139E6B587D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CharacterGroups", "src\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj", "{EF419FBC-02E8-4522-82FC-D139E6B587D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Blazor.ComponentBook", "src\JoinRpg.Blazor.ComponentBook\JoinRpg.Blazor.ComponentBook.csproj", "{056747C0-A711-4E85-9073-E78A6FF7DBCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -285,6 +287,10 @@ Global
 		{EF419FBC-02E8-4522-82FC-D139E6B587D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF419FBC-02E8-4522-82FC-D139E6B587D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF419FBC-02E8-4522-82FC-D139E6B587D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{056747C0-A711-4E85-9073-E78A6FF7DBCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{056747C0-A711-4E85-9073-E78A6FF7DBCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{056747C0-A711-4E85-9073-E78A6FF7DBCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{056747C0-A711-4E85-9073-E78A6FF7DBCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -323,6 +329,7 @@ Global
 		{C5FDCE34-6DE6-444A-B066-3F80D0527053} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{EF419FBC-02E8-4522-82FC-D139E6B587D2} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
+		{056747C0-A711-4E85-9073-E78A6FF7DBCD} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}

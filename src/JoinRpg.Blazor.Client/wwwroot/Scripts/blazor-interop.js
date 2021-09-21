@@ -1,11 +1,3 @@
-﻿window.joinmethods = {
-  GetDocumentCookie: function () {
+﻿export function getDocumentCookie() {
     return { content: document.cookie };
-  },
-  InitBootstrapSelect: function (ref) {
-    $(ref).selectpicker();
-  },
-  RefreshBootstrapSelect: function (ref) {
-    $(ref).selectpicker('refresh');
-  }
-}
+};

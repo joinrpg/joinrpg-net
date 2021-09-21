@@ -1,7 +1,9 @@
 ﻿
 @model JoinRpg.Web.Models.Characters.EditCharacterViewModel
 @section Scripts {
-    <script src="~/Scripts/claim.js"></script>
+  <script src="~/Scripts/claim.js"></script>
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 }
 
 
@@ -89,13 +91,16 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
-                    <div class="col-md-8">
-                        @Html.MagicSelectParent(model => model.ParentCharacterGroupIds)
-                        @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
-                    </div>
+              <div class="form-group">
+                @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                  <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterGroupSelector)"
+                             param-ProjectId="Model.ProjectId"
+                             param-Name="@("ParentCharacterGroupIds")"
+                             param-SelectedGroups="@(Model.ParentCharacterGroupIds)"
+                             render-mode="WebAssembly" />
                 </div>
+              </div>
 
                 @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
@@ -123,4 +128,3 @@
         </div>
     </div>
 }
-

@@ -48,7 +48,7 @@ namespace JoinRpg.Web.Models.Characters
         public bool LegacyNameMode { get; protected set; }
 
         [CannotBeEmpty, DisplayName("Является частью групп")]
-        public List<string> ParentCharacterGroupIds { get; set; } = new();
+        public int[] ParentCharacterGroupIds { get; set; } = new int[0] { };
 
         protected void FillFields(Character field, int currentUserId)
         {
