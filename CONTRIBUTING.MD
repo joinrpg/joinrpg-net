@@ -37,13 +37,14 @@ latest [cumulative update for SQL Server 2017](https://support.microsoft.com/en-
    appsettings.json.
 1. First logged-in user will have his email automatically confirmed and adminstrator flag will be
    set. If you want more users, you have to change DB or setup mail integration.
+1. You could run `pre-commit install` to automatically run formatting fixes on commit. (See https://pre-commit.com/#install)
 
 Submitting your changes
 ==
 
 1. 1 branch = 1 feature.
 1. Test your changes locally, etc.
-1. Execute `dotnet format`, to apply project's code styles
+1. Execute `dotnet format` (if you don't have pre-commit), to apply project's code styles. 
 1. Commit.
 1. Rebase your changes on top of `upstream/master`
 1. Open pull request via Github UI from your branch to `joinrpg/joirpg-net/master`
