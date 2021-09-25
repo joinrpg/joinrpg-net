@@ -1,0 +1,38 @@
+﻿@typeparam TValue
+@*TODO where enum not supported until 6.0 https://github.com/dotnet/aspnetcore/issues/8433*@
+@foreach (var enumValue in Enum.GetValues(typeof(TValue)).Cast<TValue>())
+{
+  <div>
+    <label>
+      <input type="radio" value="@enumValue" checked="@(enumValue.Equals(SelectedValue))" @onchange="UpdateSelected" name="@Name" />
+      @{
+          var enumVal = (System.Enum)Enum.Parse(typeof(TValue), enumValue.ToString()!); // we need this, because TValue is not constrained to be enum
+      }
+      @enumVal.GetDisplayName()
+    </label>
+    @if (enumVal.GetDescription() is string description)
+    {
+      <div class="help-block">@description</div>
+    }
+  </div>
+}
+
+@{
+  Console.WriteLine("Render");
+}
+
+@code {
+    [Parameter]
+    public TValue SelectedValue { get; set; } = default(TValue)!;
+
+    [Parameter]
+    public EventCallback<TValue> SelectedValueChanged { get; set; }
+
+    [Parameter]
+    public string Name { get; set; } = null!;
+
+    private async Task UpdateSelected(ChangeEventArgs eventArgs)
+    {
+      await SelectedValueChanged.InvokeAsync((TValue) Enum.Parse(typeof(TValue), eventArgs.Value!.ToString ()!));
+    }
+}

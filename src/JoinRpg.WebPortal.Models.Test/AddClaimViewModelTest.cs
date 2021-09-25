@@ -16,7 +16,6 @@ namespace JoinRpg.Web.Test
         public void AddClaimAllowedCharacter()
         {
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
-            vm.IsAvailable.ShouldBeTrue();
             vm.CanSendClaim.ShouldBeTrue();
         }
 
@@ -24,7 +23,6 @@ namespace JoinRpg.Web.Test
         public void AddClaimAllowedGroup()
         {
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
-            vm.IsAvailable.ShouldBeTrue();
             vm.CanSendClaim.ShouldBeTrue();
         }
 
@@ -34,7 +32,6 @@ namespace JoinRpg.Web.Test
         {
             Mock.Project.IsAcceptingClaims = false;
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
-            vm.IsAvailable.ShouldBeFalse();
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeTrue();
 
@@ -45,7 +42,6 @@ namespace JoinRpg.Web.Test
         {
             Mock.Character.IsAcceptingClaims = false;
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
-            vm.IsAvailable.ShouldBeFalse();
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
         }
@@ -55,7 +51,6 @@ namespace JoinRpg.Web.Test
         {
             Mock.Group.HaveDirectSlots = false;
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
-            vm.IsAvailable.ShouldBeFalse();
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
         }
@@ -66,7 +61,6 @@ namespace JoinRpg.Web.Test
             Mock.Group.HaveDirectSlots = true;
             Mock.Group.AvaiableDirectSlots = 0;
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
-            vm.IsAvailable.ShouldBeFalse();
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
         }

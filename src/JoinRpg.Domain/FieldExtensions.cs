@@ -30,7 +30,7 @@ namespace JoinRpg.Domain
             }
 
             return field.IsActive
-              && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || !target.IsNpc())
+              && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || !(target is Character character && character.IsNpc()))
               && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
         }
 

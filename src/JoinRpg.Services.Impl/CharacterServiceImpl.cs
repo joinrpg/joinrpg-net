@@ -44,10 +44,11 @@ namespace JoinRpg.Services.Impl
                 ProjectId = addCharacterRequest.ProjectId,
                 IsPublic = addCharacterRequest.IsPublic,
                 IsActive = true,
-                IsAcceptingClaims = addCharacterRequest.IsAcceptingClaims,
                 HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
-                IsHot = addCharacterRequest.IsHot,
             };
+
+            (_, character.IsHot, character.IsAcceptingClaims) = addCharacterRequest.CharacterTypeInfo;
+
             Create(character);
             MarkTreeModified(project);
 
@@ -76,17 +77,17 @@ namespace JoinRpg.Services.Impl
             if (character.Project.Details.CharacterNameLegacyMode)
             {
                 var name = Required(editCharacterRequest.Name);
-                changedAttributes.Add("Имя персонажа",
-                    new PreviousAndNewValue(name, character.CharacterName.Trim()));
+
+                changedAttributes.Add("Имя персонажа", new PreviousAndNewValue(name, character.CharacterName.Trim()));
                 character.CharacterName = name;
                 // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
             }
 
-            character.IsAcceptingClaims = editCharacterRequest.IsAcceptingClaims;
+            (_, character.IsHot, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
+
             character.IsPublic = editCharacterRequest.IsPublic;
 
             character.HidePlayerForCharacter = editCharacterRequest.HidePlayerForCharacter;
-            character.IsHot = editCharacterRequest.IsHot;
             character.IsActive = true;
 
             character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,

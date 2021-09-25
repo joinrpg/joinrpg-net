@@ -17,6 +17,7 @@ namespace JoinRpg.Blazor.Client
             //it should be forcefully loaded
             _ = typeof(MasterSubscribeList).ToString();
             _ = typeof(CharacterGroupSelector).ToString();
+            _ = typeof(JoinRpg.PrimitiveTypes.CharacterTypeInfo).ToString();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

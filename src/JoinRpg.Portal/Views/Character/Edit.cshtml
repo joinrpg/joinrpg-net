@@ -60,19 +60,6 @@
 
                 </div>
 
-                @if (Model.IsAcceptingClaimsEnabled)
-                {
-
-                    <div class="form-group">
-
-                        @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
-                        <div class="col-md-10">
-                            @Html.EditorFor(model => model.IsAcceptingClaims)
-                            @Html.DescriptionFor(model => model.IsAcceptingClaims)
-                        </div>
-                    </div>
-                }
-
                 <div class="form-group">
 
                     @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -82,14 +69,12 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-
-                    @Html.LabelFor(model => model.IsHot, htmlAttributes: new { @class = "control-label col-md-2" })
-                    <div class="col-md-10">
-                        @Html.EditorFor(model => model.IsHot)
-                        @Html.DescriptionFor(model => model.IsHot)
-                    </div>
-                </div>
+                <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
+                  param-Name="@("CharacterTypeInfo")"
+                  param-InitialModel="@(Model.CharacterTypeInfo)"
+                  param-ActiveClaimsCount="@Model.ActiveClaimsCount"
+                  render-mode="WebAssemblyPrerendered"
+                 />
 
               <div class="form-group">
                 @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })

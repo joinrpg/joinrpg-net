@@ -12,7 +12,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using Microsoft.AspNetCore.Authorization;
@@ -73,17 +72,17 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Edit(int projectId, int characterId)
         {
             var field = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
+            var view = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
             return View(new EditCharacterViewModel()
             {
                 ProjectId = field.ProjectId,
                 CharacterId = field.CharacterId,
                 IsPublic = field.IsPublic,
                 ProjectName = field.Project.ProjectName,
-                IsAcceptingClaims = field.IsAcceptingClaims,
+                CharacterTypeInfo = view.CharacterTypeInfo,
                 HidePlayerForCharacter = field.HidePlayerForCharacter,
                 Name = field.CharacterName,
                 ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
-                IsHot = field.IsHot,
             }.Fill(field, CurrentUserId));
         }
 
@@ -104,9 +103,8 @@ namespace JoinRpg.Portal.Controllers
                         new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
                         IsPublic: viewModel.IsPublic,
                         ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
-                        IsAcceptingClaims: viewModel.IsAcceptingClaims && field.ApprovedClaim == null,
+                        CharacterTypeInfo: viewModel.CharacterTypeInfo,
                         HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                        IsHot: viewModel.IsHot,
                         FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
                         Name: viewModel.Name)
                     );
@@ -146,6 +144,7 @@ namespace JoinRpg.Portal.Controllers
                 ProjectName = characterGroup.Project.ProjectName,
                 ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
                 ContinueCreating = continueCreating,
+                CharacterTypeInfo = new CharacterTypeInfo(CharacterType.Player),
             }.Fill(characterGroup, CurrentUserId));
         }
 
@@ -160,10 +159,9 @@ namespace JoinRpg.Portal.Controllers
                 await CharacterService.AddCharacter(new AddCharacterRequest(
                     ProjectId: viewModel.ProjectId,
                     Name: viewModel.Name,
-                    IsAcceptingClaims: viewModel.IsAcceptingClaims,
+                    CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                    IsHot: viewModel.IsHot,
                     IsPublic: viewModel.IsPublic,
                     FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
                 ));

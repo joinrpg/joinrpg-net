@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
   </ItemGroup>
 

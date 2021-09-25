@@ -31,12 +31,7 @@ namespace JoinRpg.Domain
 
         public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());
 
-        public static bool IsNpc([CanBeNull]
-            this IClaimSource? target)
-        {
-            return target is Character character && !character.IsAcceptingClaims &&
-                   character.ApprovedClaim == null;
-        }
+        public static bool IsNpc(this Character character) => !character.IsAcceptingClaims && character.ApprovedClaim == null;
 
         public static bool IsAcceptingClaims<T>(this T characterGroup)
             where T : IClaimSource => !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();

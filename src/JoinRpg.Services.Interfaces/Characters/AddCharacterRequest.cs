@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Characters
 {
@@ -10,9 +11,8 @@ namespace JoinRpg.Services.Interfaces.Characters
         string Name,
         bool IsPublic,
         IReadOnlyCollection<int> ParentCharacterGroupIds,
-        bool IsAcceptingClaims,
+        CharacterTypeInfo CharacterTypeInfo,
         bool HidePlayerForCharacter,
-        bool IsHot,
         IReadOnlyDictionary<int, string?> FieldValues)
     { }
 }

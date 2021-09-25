@@ -12,5 +12,6 @@ namespace JoinRpg.Web.Models.Characters
         NoClaims,
         [Display(Name = "NPC")]
         Npc,
+        Unknown,
     }
 }
