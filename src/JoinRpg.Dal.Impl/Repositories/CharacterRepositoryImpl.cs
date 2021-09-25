@@ -9,6 +9,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories
@@ -64,9 +65,12 @@ namespace JoinRpg.Dal.Impl.Repositories
                     ParentGroupIds = group.ParentGroupsImpl,
                 };
 
-            var character = await Ctx.Set<Character>().AsNoTracking()
-        .Where(e => e.CharacterId == characterId && e.ProjectId == projectId)
-        .SingleOrDefaultAsync();
+            var character = await Ctx
+                .Set<Character>()
+                .AsNoTracking()
+                .Include(c => c.Project.Details)
+                .Where(e => e.CharacterId == characterId && e.ProjectId == projectId)
+                .SingleOrDefaultAsync();
 
             var allGroups = await Ctx.Set<CharacterGroup>().AsNoTracking()
                 .Where(cg => cg.ProjectId == projectId) // need to load inactive groups here
@@ -84,7 +88,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 UpdatedAt = character.UpdatedAt,
                 IsActive = character.IsActive,
                 InGame = character.InGame,
-                IsAcceptingClaims = character.IsAcceptingClaims,
+                CharacterTypeInfo = new(character.IsAvailable ? CharacterType.Player : CharacterType.NonPlayer, character.IsHot),
                 JsonData = character.JsonData,
                 ApprovedClaim = await Ctx.Set<Claim>()
                     .Where(claim => claim.CharacterId == characterId &&
@@ -101,6 +105,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 DirectGroups = await Ctx.Set<CharacterGroup>()
                 .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
                 .Select(groupHeaderSelector).ToListAsync(),
+                LegacyNameMode = character.Project.Details.CharacterNameLegacyMode,
             };
 
             view.AllGroups = view.DirectGroups

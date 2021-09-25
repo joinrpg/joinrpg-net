@@ -7,12 +7,16 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters
 {
     public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidatableObject
     {
+        //TODO base UI on this
+        public CharacterTypeInfo CharacterTypeInfo => new CharacterTypeInfo(IsAcceptingClaims ? CharacterType.NonPlayer : CharacterType.NonPlayer, IsHot);
+
         [Display(Name = "Принимать заявки на этого персонажа",
             Description =
                 "Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.")]

@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Models.Characters
             {
                 return CharacterBusyStatusView.Discussed;
             }
-            if (character.IsAcceptingClaims)
+            if (character.CharacterTypeInfo.IsAcceptingClaims)
             {
                 return CharacterBusyStatusView.NoClaims;
             }

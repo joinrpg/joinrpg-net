@@ -10,9 +10,8 @@ namespace JoinRpg.Services.Interfaces.Characters
         CharacterIdentification Id,
         bool IsPublic,
         IReadOnlyCollection<int> ParentCharacterGroupIds,
-        bool IsAcceptingClaims,
+        CharacterTypeInfo CharacterTypeInfo,
         bool HidePlayerForCharacter,
-        bool IsHot,
         IReadOnlyDictionary<int, string?> FieldValues,
         string? Name = null)
     { }

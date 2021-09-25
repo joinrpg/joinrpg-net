@@ -104,9 +104,8 @@ namespace JoinRpg.Portal.Controllers
                         new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
                         IsPublic: viewModel.IsPublic,
                         ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
-                        IsAcceptingClaims: viewModel.IsAcceptingClaims && field.ApprovedClaim == null,
+                        CharacterTypeInfo: viewModel.CharacterTypeInfo,
                         HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                        IsHot: viewModel.IsHot,
                         FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
                         Name: viewModel.Name)
                     );
@@ -160,10 +159,9 @@ namespace JoinRpg.Portal.Controllers
                 await CharacterService.AddCharacter(new AddCharacterRequest(
                     ProjectId: viewModel.ProjectId,
                     Name: viewModel.Name,
-                    IsAcceptingClaims: viewModel.IsAcceptingClaims,
+                    CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                    IsHot: viewModel.IsHot,
                     IsPublic: viewModel.IsPublic,
                     FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
                 ));

@@ -7,6 +7,8 @@ namespace JoinRpg.PrimitiveTypes
         public CharacterType CharacterType { get; }
         public bool IsHot { get; }
 
+        public bool IsAcceptingClaims => CharacterType != CharacterType.NonPlayer;
+
         public CharacterTypeInfo(CharacterType CharacterType, bool IsHot = false)
         {
             this.CharacterType = CharacterType;
