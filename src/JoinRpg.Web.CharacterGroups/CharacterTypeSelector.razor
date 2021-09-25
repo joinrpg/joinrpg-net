@@ -1,0 +1,54 @@
+﻿@using JoinRpg.PrimitiveTypes
+<FormRow Label="Тип Персонажа">
+  @if (ActiveClaimsCount > 0)
+  {
+    <label>@characterType.GetDisplayName()</label>
+  }
+  else
+  {
+    <EnumRadioButtonGroup @bind-SelectedValue="@characterType" Name="@(Name + ".CharacterType")" />
+  }
+</FormRow>
+
+@if (characterType == CharacterTypeView.Player)
+{
+  <FormRow Label="Горячая роль">
+    <input type="hidden" name="@(Name + ".IsHot")" value="@(isHot ? "true" : "false")" />
+    <input type="checkbox"   @onchange="IsHotChanged" checked="@isHot"/>
+    <div class="helpblock">Горячая роль специальным образом выделяется в ролевке</div>
+  </FormRow>
+}
+
+@code {
+
+    [Parameter]
+    public CharacterTypeInfo InitialModel { get; set; } = new CharacterTypeInfo(CharacterType.Player);
+
+    [Parameter]
+    public int ActiveClaimsCount { get; set; } = 0;
+
+    [Parameter]
+    public string Name { get; set; } = "CharacterTypeInfo";
+
+    private CharacterTypeView characterType;
+    private bool isHot;
+
+    private void IsHotChanged()
+    {
+      isHot = !isHot;
+    }
+
+    protected override void OnInitialized()
+    {
+      if (InitialModel is null)
+      {
+        throw new ArgumentNullException(nameof(InitialModel));
+      }
+
+      CharacterType ct;
+      (ct, isHot, _) = InitialModel;
+
+      characterType = (CharacterTypeView)ct;
+    }
+
+}

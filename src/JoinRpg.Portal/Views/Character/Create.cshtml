@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.Portal;
+@using JoinRpg.PrimitiveTypes; 
 @model JoinRpg.Web.Models.Characters.AddCharacterViewModel
 
 @{
@@ -45,14 +46,6 @@
     </div>
 
     <div class="form-group">
-      @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
-      <div class="col-md-10">
-        @Html.EditorFor(model => model.IsAcceptingClaims)
-        @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new { @class = "text-danger" })
-      </div>
-    </div>
-
-    <div class="form-group">
       @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
       <div class="col-md-10">
         @Html.EditorFor(model => model.HidePlayerForCharacter)
@@ -60,13 +53,9 @@
       </div>
     </div>
 
-    <div class="form-group">
-      @Html.LabelFor(model => model.IsHot, htmlAttributes: new { @class = "control-label col-md-2" })
-      <div class="col-md-10">
-        @Html.EditorFor(model => model.IsHot)
-        @Html.ValidationMessageFor(model => model.IsHot, "", new { @class = "text-danger" })
-      </div>
-    </div>
+     <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
+                   param-Name="@("CharacterTypeInfo")"
+                   render-mode="WebAssemblyPrerendered" />
 
     @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 

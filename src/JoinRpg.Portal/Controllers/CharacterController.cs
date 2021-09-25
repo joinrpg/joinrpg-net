@@ -12,7 +12,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using Microsoft.AspNetCore.Authorization;
@@ -73,17 +72,17 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Edit(int projectId, int characterId)
         {
             var field = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
+            var view = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
             return View(new EditCharacterViewModel()
             {
                 ProjectId = field.ProjectId,
                 CharacterId = field.CharacterId,
                 IsPublic = field.IsPublic,
                 ProjectName = field.Project.ProjectName,
-                IsAcceptingClaims = field.IsAcceptingClaims,
+                CharacterTypeInfo = view.CharacterTypeInfo,
                 HidePlayerForCharacter = field.HidePlayerForCharacter,
                 Name = field.CharacterName,
                 ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
-                IsHot = field.IsHot,
             }.Fill(field, CurrentUserId));
         }
 
@@ -145,6 +144,7 @@ namespace JoinRpg.Portal.Controllers
                 ProjectName = characterGroup.Project.ProjectName,
                 ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
                 ContinueCreating = continueCreating,
+                CharacterTypeInfo = new CharacterTypeInfo(CharacterType.Player),
             }.Fill(characterGroup, CurrentUserId));
         }
 
