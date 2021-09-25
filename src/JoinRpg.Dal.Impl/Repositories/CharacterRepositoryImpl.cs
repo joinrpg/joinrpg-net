@@ -89,6 +89,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 ApprovedClaim = await Ctx.Set<Claim>()
                     .Where(claim => claim.CharacterId == characterId &&
                                 claim.ClaimStatus == Claim.Status.Approved)
+                    .Include(c => c.Player.Extra)
                     .SingleOrDefaultAsync(),
                 Claims = await Ctx.Set<Claim>().AsExpandable()
                 .Where(claim => claim.CharacterId == characterId &&

@@ -82,7 +82,7 @@ namespace JoinRpg.Web.XGameApi.Contract
     /// <summary>
     /// Info about player
     /// </summary>
-    public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull)
+    public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull, PlayerContacts PlayerContacts)
     {
         /// <summary>
         /// true — claim fee paid in full
@@ -95,6 +95,11 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// Player user id
         /// </summary>
         public int PlayerUserId { get; set; } = PlayerUserId;
+
+        /// <summary>
+        /// Player contacts
+        /// </summary>
+        public PlayerContacts PlayerContacts { get; set; } = PlayerContacts;
     }
 
     /// <summary>

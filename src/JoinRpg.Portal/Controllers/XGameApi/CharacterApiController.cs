@@ -84,7 +84,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
                     CharacterDescription = character.Description,
                     CharacterName = character.Name,
                     PlayerInfo = character.ApprovedClaim is null ? null :
-                        new CharacterPlayerInfo(character.ApprovedClaim.PlayerUserId, character.ApprovedClaim.ClaimFeeDue() <= 0),
+                        CreatePlayerInfo(character.ApprovedClaim),
                 };
         }
 
@@ -123,5 +123,20 @@ namespace JoinRpg.Web.Controllers.XGameApi
             projectFields.FillFrom(character);
             return projectFields;
         }
+
+
+        private static CharacterPlayerInfo CreatePlayerInfo(Claim claim)
+        {
+            return new CharacterPlayerInfo(
+                                        claim.PlayerUserId,
+                                        claim.ClaimFeeDue() <= 0,
+                                        new PlayerContacts(
+                                            claim.Player.Email,
+                                            claim.Player.Extra?.PhoneNumber,
+                                            claim.Player.Extra?.VkVerified == true ? claim.Player.Extra?.Vk : null,
+                                            claim.Player.Extra?.Telegram)
+                                        );
+        }
+
     }
 }
