@@ -63,10 +63,8 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize]
-        [HttpGet("~/{projectId}/roles/report")]
-        public Task<ActionResult> Report(int projectId) => Report(projectId, null);
-
-        [HttpGet, MasterAuthorize]
+        [HttpGet("~/{projectId}/roles/{characterGroupId:int}/report")]
+        [HttpGet("~/{projectId}/roles/all/report")]
         public async Task<ActionResult> Report(int projectId, int? characterGroupId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
