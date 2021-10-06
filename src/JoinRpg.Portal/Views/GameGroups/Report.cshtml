@@ -41,7 +41,8 @@
         }
         else
         {
-          @Html.ActionLink(item.Name, "Details", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
+          @Html.ActionLink(item.Name, "Details", "GameGroups", new { Model.ProjectId, item.CharacterGroupId }, null)
+          <text> (@Html.ActionLink("отчет", "Report", "GameGroups", new { Model.ProjectId, item.CharacterGroupId }, null))</text>
         }
       </td>
 
