@@ -88,7 +88,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 UpdatedAt = character.UpdatedAt,
                 IsActive = character.IsActive,
                 InGame = character.InGame,
-                CharacterTypeInfo = new(character.IsAvailable ? CharacterType.Player : CharacterType.NonPlayer, character.IsHot),
+                CharacterTypeInfo = new(character.IsAvailable ? CharacterType.Player : CharacterType.NonPlayer, character.IsHot, character.CharacterSlotLimit),
                 JsonData = character.JsonData,
                 ApprovedClaim = await Ctx.Set<Claim>()
                     .Where(claim => claim.CharacterId == characterId &&

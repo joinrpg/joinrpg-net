@@ -47,7 +47,7 @@ namespace JoinRpg.Services.Impl
                 HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
             };
 
-            (_, character.IsHot, character.IsAcceptingClaims) = addCharacterRequest.CharacterTypeInfo;
+            (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = addCharacterRequest.CharacterTypeInfo;
 
             Create(character);
             MarkTreeModified(project);
@@ -83,7 +83,7 @@ namespace JoinRpg.Services.Impl
                 // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
             }
 
-            (_, character.IsHot, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
+            (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
 
             character.IsPublic = editCharacterRequest.IsPublic;
 

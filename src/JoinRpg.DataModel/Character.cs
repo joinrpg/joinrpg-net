@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.DataModel
 {
@@ -105,7 +106,18 @@ namespace JoinRpg.DataModel
 
         string ILinkable.Identification => CharacterId.ToString();
         int? ILinkable.ProjectId => ProjectId;
-    }
 
+        public CharacterType CharacterType { get; set; }
+
+        /// <summary>
+        /// Maximum limit of characters that could be created from this slot
+        /// </summary>
+        public int? CharacterSlotLimit { get; set; }
+
+        /// <summary>
+        /// If this character was originally created from slot, link to original.
+        /// </summary>
+        public Character? OriginalCharacterSlot { get; set; }
+    }
 
 }

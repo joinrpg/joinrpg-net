@@ -1,0 +1,25 @@
+﻿<input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
+<input type="checkbox" @onchange="UpdateValue" checked="@internalValue" />
+
+@code {
+    [Parameter]
+    public bool Value { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+
+    [Parameter]
+    public string Name { get; set; } = null!;
+
+    private bool internalValue;
+
+    protected override void OnInitialized()
+    {
+      internalValue = Value;
+    }
+
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
+    {
+      internalValue = !internalValue;
+    }
+}

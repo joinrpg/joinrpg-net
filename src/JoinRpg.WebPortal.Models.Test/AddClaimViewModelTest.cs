@@ -38,11 +38,21 @@ namespace JoinRpg.Web.Test
         }
 
         [Fact]
-        public void CantSendClaimToNotAvailCharacter()
+        public void CantSendClaimToNPC()
         {
-            Mock.Character.IsAcceptingClaims = false;
+            Mock.Character.CharacterType = PrimitiveTypes.CharacterType.NonPlayer;
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeFalse();
+            vm.IsProjectRelatedReason.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void CanSendClaimToSlot()
+        {
+            Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
+            Mock.Character.CharacterSlotLimit = null;
+            var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+            vm.CanSendClaim.ShouldBeTrue();
             vm.IsProjectRelatedReason.ShouldBeFalse();
         }
 
@@ -61,6 +71,16 @@ namespace JoinRpg.Web.Test
             Mock.Group.HaveDirectSlots = true;
             Mock.Group.AvaiableDirectSlots = 0;
             var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+            vm.CanSendClaim.ShouldBeFalse();
+            vm.IsProjectRelatedReason.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void CantSendClaimIfNoSlotsChar()
+        {
+            Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
+            Mock.Character.CharacterSlotLimit = 0;
+            var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             vm.CanSendClaim.ShouldBeFalse();
             vm.IsProjectRelatedReason.ShouldBeFalse();
         }
