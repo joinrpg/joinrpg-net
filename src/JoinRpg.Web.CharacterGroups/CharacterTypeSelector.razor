@@ -10,19 +10,24 @@
   }
 </FormRow>
 
-@if (characterType == CharacterTypeView.Player)
+@if (characterType == CharacterTypeView.Slot)
 {
-  <FormRow Label="Горячая роль">
-    <input type="hidden" name="@(Name + ".IsHot")" value="@(isHot ? "true" : "false")" />
-    <input type="checkbox"   @onchange="IsHotChanged" checked="@isHot"/>
-    <div class="helpblock">Горячая роль специальным образом выделяется в ролевке</div>
+  <FormRow Label="Лимит персонажей в слоте" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого слота.">
+    <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" />
+  </FormRow>
+}
+
+@if (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot)
+{
+  <FormRow Label="Горячая роль" Description="Горячая роль специальным образом выделяется в ролевке">
+    <CheckboxInput @bind-Value="@isHot" Name="@(Name + ".IsHot")" />
   </FormRow>
 }
 
 @code {
 
     [Parameter]
-    public CharacterTypeInfo InitialModel { get; set; } = new CharacterTypeInfo(CharacterType.Player);
+    public CharacterTypeInfo InitialModel { get; set; } = CharacterTypeInfo.Default();
 
     [Parameter]
     public int ActiveClaimsCount { get; set; } = 0;
@@ -32,6 +37,7 @@
 
     private CharacterTypeView characterType;
     private bool isHot;
+    private int? characterSlotLimit;
 
     private void IsHotChanged()
     {
@@ -46,7 +52,7 @@
       }
 
       CharacterType ct;
-      (ct, isHot, _) = InitialModel;
+      (ct, isHot, characterSlotLimit, _) = InitialModel;
 
       characterType = (CharacterTypeView)ct;
     }

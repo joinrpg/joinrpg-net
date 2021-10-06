@@ -111,7 +111,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Blazor.Client", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CharacterGroups", "src\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj", "{EF419FBC-02E8-4522-82FC-D139E6B587D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Blazor.ComponentBook", "src\JoinRpg.Blazor.ComponentBook\JoinRpg.Blazor.ComponentBook.csproj", "{056747C0-A711-4E85-9073-E78A6FF7DBCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Blazor.ComponentBook", "src\JoinRpg.Blazor.ComponentBook\JoinRpg.Blazor.ComponentBook.csproj", "{056747C0-A711-4E85-9073-E78A6FF7DBCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

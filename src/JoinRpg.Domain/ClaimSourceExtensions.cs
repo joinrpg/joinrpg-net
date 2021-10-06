@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain
 {
@@ -31,7 +32,7 @@ namespace JoinRpg.Domain
 
         public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());
 
-        public static bool IsNpc(this Character character) => !character.IsAcceptingClaims && character.ApprovedClaim == null;
+        public static bool IsNpc(this Character character) => character.CharacterType == CharacterType.NonPlayer && character.ApprovedClaim == null;
 
         public static bool IsAcceptingClaims<T>(this T characterGroup)
             where T : IClaimSource => !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();
@@ -75,7 +76,7 @@ namespace JoinRpg.Domain
                     throw new ClaimAlreadyPresentException();
                 case AddClaimForbideReason.OnlyOneCharacter:
                     throw new OnlyOneApprovedClaimException();
-                case AddClaimForbideReason.ApprovedClaimMovedToGroup:
+                case AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot:
                 case AddClaimForbideReason.CheckedInClaimCantBeMoved:
                     throw new ClaimWrongStatusException(claim!);
                 default:
@@ -119,7 +120,7 @@ namespace JoinRpg.Domain
 
                     if (existingClaim?.IsApproved == true)
                     {
-                        yield return AddClaimForbideReason.ApprovedClaimMovedToGroup;
+                        yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
                     }
 
                     break;
@@ -129,9 +130,23 @@ namespace JoinRpg.Domain
                         yield return AddClaimForbideReason.Busy;
                     }
 
-                    if (!character.IsAcceptingClaims)
+                    if (character.IsNpc())
                     {
                         yield return AddClaimForbideReason.Npc;
+                    }
+                    else if (!character.IsAcceptingClaims)
+                    {
+                        //TODO return alternative variants
+                    }
+
+                    if (character.CharacterSlotLimit == 0)
+                    {
+                        yield return AddClaimForbideReason.SlotsExhausted;
+                    }
+
+                    if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
+                    {
+                        yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
                     }
 
                     break;
@@ -173,7 +188,7 @@ namespace JoinRpg.Domain
         Busy,
         AlreadySent,
         OnlyOneCharacter,
-        ApprovedClaimMovedToGroup,
+        ApprovedClaimMovedToGroupOrSlot,
         CheckedInClaimCantBeMoved,
     }
 }

@@ -144,7 +144,7 @@ namespace JoinRpg.Portal.Controllers
                 ProjectName = characterGroup.Project.ProjectName,
                 ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
                 ContinueCreating = continueCreating,
-                CharacterTypeInfo = new CharacterTypeInfo(CharacterType.Player),
+                CharacterTypeInfo = CharacterTypeInfo.Default(),
             }.Fill(characterGroup, CurrentUserId));
         }
 

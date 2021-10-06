@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Models.Characters
         public AddCharacterViewModel Fill(CharacterGroup characterGroup, int currentUserId)
         {
             ProjectId = characterGroup.ProjectId;
-            CharacterTypeInfo = new CharacterTypeInfo(CharacterType.Player);
+            CharacterTypeInfo = CharacterTypeInfo.Default();
             FillFields(new Character()
             {
                 Project = characterGroup.Project,
@@ -92,7 +92,7 @@ namespace JoinRpg.Web.Models.Characters
             IsActive = field.IsActive;
             IsAcceptingClaimsEnabled = field.ApprovedClaim == null;
 
-            CharacterTypeInfo = new CharacterTypeInfo(field.IsAcceptingClaims ? CharacterType.Player : CharacterType.NonPlayer, field.IsHot);
+            CharacterTypeInfo = new CharacterTypeInfo(field.CharacterType, field.IsHot, field.CharacterSlotLimit);
 
             CreatedAt = field.CreatedAt;
             UpdatedAt = field.UpdatedAt;
