@@ -30,7 +30,13 @@
     @if (Model.IsAvailable)
     {
         <text>&nbsp;</text>
-        @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, new { @class = "btn btn-default btn-xs" })
+        <a asp-controller="Claim" asp-action="AddForCharacter" asp-route-projectid="@Model.ProjectId" asp-route-characterId="@Model.CharacterId" class="btn btn-default btn-xs">
+          заявиться
+          @if (Model.SlotLimit is not null)
+          {
+            <text>&nbsp; (@Model.SlotLimit мест)</text>
+          }
+        </a>
         if (Model.IsHot)
         {
             <span class="label label-warning">Горячая роль</span>
