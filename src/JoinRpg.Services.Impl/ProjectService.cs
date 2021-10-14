@@ -114,9 +114,11 @@ namespace JoinRpg.Services.Impl
                     project.Details.CharacterNameField = CreateField("Название мероприятия", ProjectFieldType.String);
                     project.Details.CharacterNameField.MandatoryStatus = MandatoryStatus.Required;
                     project.Details.CharacterNameField.CanPlayerEdit = true;
+                    project.Details.CharacterNameField.ShowOnUnApprovedClaims = true;
 
                     project.Details.CharacterDescription = CreateField("Описание мероприятия", ProjectFieldType.Text);
                     project.Details.CharacterDescription.CanPlayerEdit = true;
+                    project.Details.CharacterNameField.ShowOnUnApprovedClaims = true;
 
                     var timeField = CreateField("Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField);
                     timeField.MasterDescription = new MarkdownString("Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
