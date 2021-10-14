@@ -13,7 +13,7 @@
 @if (characterType == CharacterTypeView.Slot)
 {
   <FormRow Label="Лимит персонажей в слоте" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого слота.">
-    <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" />
+    <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" Min="0"/>
   </FormRow>
 }
 

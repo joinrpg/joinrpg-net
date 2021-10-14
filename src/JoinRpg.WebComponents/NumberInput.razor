@@ -1,14 +1,20 @@
-﻿<input type="number" class="form-control" @onchange="UpdateValue" name="@Name" value="@Value"/>
+﻿<input type="number" class="form-control" @onchange="UpdateValue" name="@Name" value="@Value" min="@Min" max="@Max"/>
 
   @code {
       [Parameter]
-      public int? Value { get; set; } 
+      public int? Value { get; set; }
 
       [Parameter]
       public EventCallback<int?> ValueChanged { get; set; }
 
       [Parameter]
       public string Name { get; set; } = null!;
+
+      [Parameter]
+      public int? Min { get; set; }
+
+      [Parameter]
+      public int? Max { get; set; }
 
       private async Task UpdateValue(ChangeEventArgs eventArgs)
       {
