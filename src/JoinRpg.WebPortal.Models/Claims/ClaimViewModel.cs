@@ -501,7 +501,7 @@ namespace JoinRpg.Web.Models
             ProjectId = claim.ProjectId;
             FeeVariants = claim.Project.ProjectFeeSettings
                 .Select(f => f.Fee)
-                .Union(CurrentFee)
+                .Append(CurrentFee)
                 .OrderBy(x => x)
                 .ToList();
             FinanceOperations = claim.FinanceOperations

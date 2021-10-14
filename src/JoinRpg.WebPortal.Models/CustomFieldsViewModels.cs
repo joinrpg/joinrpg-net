@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Models
 
         public bool HasMasterAccess { get; }
 
-        public string Value { get; }
+        public string? Value { get; }
 
         public bool HasValue { get; }
 
@@ -386,8 +386,8 @@ namespace JoinRpg.Web.Models
         public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
 
         [CanBeNull]
-        public FieldValueViewModel FieldById(int projectFieldId) => Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
+        public FieldValueViewModel? FieldById(int projectFieldId) => Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
         [CanBeNull]
-        public FieldValueViewModel Field(ProjectField field) => FieldById(field.ProjectFieldId);
+        public FieldValueViewModel? Field(ProjectField field) => FieldById(field.ProjectFieldId);
     }
 }

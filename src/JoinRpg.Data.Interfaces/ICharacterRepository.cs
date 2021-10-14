@@ -57,7 +57,7 @@ namespace JoinRpg.Data.Interfaces
         public bool Equals(GroupHeader? other) => other != null && CharacterGroupId == other.CharacterGroupId;
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => Equals(obj as GroupHeader);
+        public override bool Equals(object? obj) => Equals(obj as GroupHeader);
 
         /// <inheritdoc />
         public override int GetHashCode() => CharacterGroupId;

@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Models
     public class AccommodationPotentialNeighborsComparer : IEqualityComparer<AccommodationPotentialNeighbors>
     {
 
-        public bool Equals(AccommodationPotentialNeighbors x, AccommodationPotentialNeighbors y)
+        public bool Equals(AccommodationPotentialNeighbors? x, AccommodationPotentialNeighbors? y)
         {
             //Check whether the objects are the same object. 
             if (Object.ReferenceEquals(x, y))
