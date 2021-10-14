@@ -53,11 +53,11 @@ namespace JoinRpg.Web.Models.Reports
 
         private class GroupChars
         {
-            public string Name { get; set; }
+            public string? Name { get; set; }
             public IReadOnlyCollection<Character> Characters { get; set; }
         }
 
-        private static Dictionary<int, string> GetChildGroups(Dictionary<int, GroupChars> gr)
+        private static Dictionary<int, string?> GetChildGroups(Dictionary<int, GroupChars> gr)
         {
             return gr.OrderBy(g => g.Key).ToDictionary(
               group => group.Key,
@@ -66,8 +66,8 @@ namespace JoinRpg.Web.Models.Reports
 
         public string Name { get; }
         public IDictionary<KeyValuePair<int, int>, CellValue> Values { get; }
-        public IDictionary<int, string> Rows { get; }
-        public IDictionary<int, string> Columns { get; }
+        public IDictionary<int, string?> Rows { get; }
+        public IDictionary<int, string?> Columns { get; }
     }
 
     public class CellValue

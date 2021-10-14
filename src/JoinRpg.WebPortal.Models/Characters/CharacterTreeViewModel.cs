@@ -84,7 +84,7 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool Equals(CharacterLinkViewModel? other) => other != null && CharacterId == other.CharacterId;
 
-        public override bool Equals(object obj) => Equals(obj as CharacterLinkViewModel);
+        public override bool Equals(object? obj) => Equals(obj as CharacterLinkViewModel);
 
         public override int GetHashCode() => CharacterId;
 
