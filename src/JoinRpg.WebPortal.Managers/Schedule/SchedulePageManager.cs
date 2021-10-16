@@ -193,6 +193,11 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         {
             var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
 
+            if (project is null)
+            {
+                return new[] { ScheduleConfigProblemsViewModel.ProjectNotFound };
+            }
+
             bool HasAccess(ProjectField roomField)
             {
                 if (roomField.IsPublic)
@@ -249,8 +254,8 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             return Impl().ToList();
         }
 
-        public IProjectRepository Project { get; }
-        public ICurrentProjectAccessor CurrentProject { get; }
-        public ICurrentUserAccessor CurrentUserAccessor { get; }
+        private IProjectRepository Project { get; }
+        private ICurrentProjectAccessor CurrentProject { get; }
+        private ICurrentUserAccessor CurrentUserAccessor { get; }
     }
 }

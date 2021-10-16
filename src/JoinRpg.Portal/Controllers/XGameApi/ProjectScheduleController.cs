@@ -23,9 +23,19 @@ namespace JoinRpg.Web.Controllers.XGameApi
 
         [HttpGet]
         [Route("all")]
+        [ProducesResponseType(410)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(200)]
         public async Task<ActionResult<List<ProgramItemInfoApi>>> GetSchedule([FromRoute]
             int projectId)
         {
+            var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
+
+            if (project is null)
+            {
+                return Problem(statusCode: 410);
+            }
+
             var check = await Manager.CheckScheduleConfiguration();
             if (check.Contains(ScheduleConfigProblemsViewModel.NoAccess))
             {
@@ -33,11 +43,11 @@ namespace JoinRpg.Web.Controllers.XGameApi
             }
             if (check.Any())
             {
-                throw new Exception($"Error {check.Select(x => x.ToString()).JoinStrings(" ,")}");
+                return Problem(detail: check.Select(x => x.ToString()).JoinStrings(" ,"), statusCode: 400);
             }
 
-            var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
             var characters = await ProjectRepository.GetCharacters(projectId);
+
             var scheduleBuilder = new ScheduleBuilder(project, characters);
             var result = scheduleBuilder.Build().AllItems.Select(slot =>
                 new ProgramItemInfoApi
