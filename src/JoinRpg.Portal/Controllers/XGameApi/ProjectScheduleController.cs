@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
             }
             if (check.Any())
             {
-                throw new Exception($"Error {check.Select(x => x.ToString()).JoinStrings(" ,")}");
+                return Problem(detail: check.Select(x => x.ToString()).JoinStrings(" ,"), statusCode: 400);
             }
 
             var characters = await ProjectRepository.GetCharacters(projectId);
