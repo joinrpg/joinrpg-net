@@ -15,5 +15,7 @@ namespace JoinRpg.Web.Models.Schedules
         NoRooms,
         [Description("Не настроено ни одного тайм-слота")]
         NoTimeSlots,
+        [Description("Проект не найден")]
+        ProjectNotFound,
     }
 }
