@@ -12,6 +12,9 @@ else
                PossibleValues="items"
                Multiple="true"
                />
+  <p>
+    @string.Join(" • ", items.Where(item => SelectedGroups.Contains(item.Value)).Select(item => item.Text))
+  </p>
 }
 
 @code {

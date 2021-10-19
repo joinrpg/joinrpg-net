@@ -27,3 +27,16 @@ export function refreshBootstrapSelect(ref) {
   $(ref).selectpicker('refresh');
 };
 
+export function getSelectedValues(ref) {
+  var results = [];
+  var i;
+  for (i = 0; i < ref.options.length; i++) {
+    if (ref.options[i].selected) {
+      results[results.length] = ref.options[i].value;
+    }
+  }
+  console.log('***');
+  console.log(ref.options[0].selected);
+  console.log(results);
+  return results;
+}
