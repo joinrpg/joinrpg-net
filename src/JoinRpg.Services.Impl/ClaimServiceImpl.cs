@@ -356,6 +356,7 @@ namespace JoinRpg.Services.Impl
             MarkCharacterChangedIfApproved(claim);
             Debug.Assert(claim.Character != null, "claim.Character != null");
             claim.Character.ApprovedClaimId = claim.ClaimId;
+            claim.Character.IsHot = false;
 
             //We need to re-save fields here. Reasons:
             // 1. If we created character during approving, we need to set name for character
