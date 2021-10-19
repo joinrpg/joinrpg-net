@@ -8,7 +8,7 @@
         name="@Name"
         multiple="@Multiple"
         @ref="selectRef"
-        @bind="Value"
+        @onchange="OnSelectionChangedAsync"
         >
 
   @foreach (var val in PossibleValues)
@@ -38,6 +38,12 @@
 
     private ElementReference selectRef;
     private IJSObjectReference module = null!;
+
+    private async Task OnSelectionChangedAsync(ChangeEventArgs eventArgs)
+    {
+      var values = await module.InvokeAsync<List<string>>("getSelectedValues", selectRef);
+      await SelectedValuesChanged.InvokeAsync(values.Select(int.Parse).ToArray());
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
