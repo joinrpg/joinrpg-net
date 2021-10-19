@@ -18,7 +18,7 @@
   </FormRow>
 }
 
-@if (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot)
+@if (!HasApprovedClaim && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
 {
   <FormRow Label="Горячая роль" Description="Горячая роль специальным образом выделяется в ролевке">
     <CheckboxInput @bind-Value="@isHot" Name="@(Name + ".IsHot")" />
@@ -32,6 +32,9 @@
 
     [Parameter]
     public int ActiveClaimsCount { get; set; } = 0;
+
+    [Parameter]
+    public bool HasApprovedClaim { get; set; } = false;
 
     [Parameter]
     public string Name { get; set; } = "CharacterTypeInfo";
