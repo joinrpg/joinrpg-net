@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.TestHelpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Money;

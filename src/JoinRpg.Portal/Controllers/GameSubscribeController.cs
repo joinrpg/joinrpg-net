@@ -7,6 +7,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Services.Interfaces.Subscribe;
 using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.Models;

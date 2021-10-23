@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Exporters;
