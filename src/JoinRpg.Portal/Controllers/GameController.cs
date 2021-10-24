@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
@@ -15,11 +15,15 @@ namespace JoinRpg.Portal.Controllers
 {
     public class GameController : Common.ControllerGameBase
     {
+        private readonly Lazy<ICreateProjectService> createProjectService;
+
         public GameController(IProjectService projectService,
             IProjectRepository projectRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            Lazy<ICreateProjectService> createProjectService)
             : base(projectRepository, projectService, userRepository)
         {
+            this.createProjectService = createProjectService;
         }
 
         [HttpGet("{projectId}/home")]
@@ -53,11 +57,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                var project = await ProjectService.AddProject(new CreateProjectRequest()
-                {
-                    ProjectType = (ProjectTypeDto)model.ProjectType,
-                    ProjectName = model.ProjectName
-                });
+                var project = await createProjectService.Value.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
 
                 return RedirectTo(project);
             }
@@ -68,7 +68,7 @@ namespace JoinRpg.Portal.Controllers
             }
         }
 
-        private IActionResult RedirectTo(Project project) => RedirectToAction("Details", new { project.ProjectId });
+        private IActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
 
         [HttpGet("/{projectId}/project/settings")]
         [MasterAuthorize(Permission.CanChangeProjectProperties)]
@@ -112,7 +112,7 @@ namespace JoinRpg.Portal.Controllers
                         IsAccommodationEnabled = viewModel.EnableAccomodation,
                     });
 
-                return RedirectTo(project);
+                return RedirectTo(new(project.ProjectId));
             }
             catch
             {

@@ -16,7 +16,7 @@ namespace JoinRpg.DI
         protected override void Load(ContainerBuilder builder)
         {
             _ = builder.RegisterTypes(RepositoriesRegistraton.GetTypes().ToArray()).AsImplementedInterfaces();
-            _ = builder.RegisterTypes(Services.Impl.Services.GetTypes().ToArray()).AsImplementedInterfaces();
+            _ = builder.RegisterTypes(Services.Impl.Services.GetTypes().ToArray()).AsImplementedInterfaces().AsSelf();
             _ = builder.RegisterTypes(WebPortal.Managers.Registration.GetTypes().ToArray()).AsSelf().AsImplementedInterfaces();
 
             _ = builder.RegisterType<ExportDataServiceImpl>().As<IExportDataService>();
