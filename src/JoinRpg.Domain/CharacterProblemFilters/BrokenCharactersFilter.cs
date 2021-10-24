@@ -6,7 +6,7 @@ using JoinRpg.Domain.ClaimProblemFilters;
 
 namespace JoinRpg.Domain.CharacterProblemFilters
 {
-    class BrokenCharactersFilter : IProblemFilter<Character>
+    internal class BrokenCharactersFilter : IProblemFilter<Character>
     {
         public IEnumerable<ClaimProblem> GetProblems(Character character)
         {

@@ -10,7 +10,7 @@ using JoinRpg.Services.Interfaces.Subscribe;
 
 namespace JoinRpg.Services.Impl
 {
-    class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
+    internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
     {
         public GameSubscribeService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor)
             : base(unitOfWork, currentUserAccessor)

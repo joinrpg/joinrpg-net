@@ -3,7 +3,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.ClaimProblemFilters
 {
-    class ResponsibleMasterProblemFilter : IProblemFilter<Claim>
+    internal class ResponsibleMasterProblemFilter : IProblemFilter<Claim>
     {
         public IEnumerable<ClaimProblem> GetProblems(Claim claim)
         {
