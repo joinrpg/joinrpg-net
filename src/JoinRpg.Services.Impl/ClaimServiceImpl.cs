@@ -114,7 +114,7 @@ namespace JoinRpg.Services.Impl
             // TODO improve valitdation here
             //source.EnsureCanMoveClaim(oldClaim);
 
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
+            var responsibleMaster = RequireResponsibleMaster(source);
             var claim = new Claim()
             {
                 CharacterGroupId = null,
@@ -125,7 +125,7 @@ namespace JoinRpg.Services.Impl
                 CreateDate = Now,
                 ClaimStatus = Claim.Status.Approved,
                 CurrentFee = 0,
-                ResponsibleMasterUserId = responsibleMaster?.UserId,
+                ResponsibleMasterUserId = responsibleMaster.UserId,
                 ResponsibleMasterUser = responsibleMaster,
                 LastUpdateDateTime = Now,
                 MasterAcceptedDate = Now,
@@ -179,11 +179,7 @@ namespace JoinRpg.Services.Impl
 
             source.EnsureCanAddClaim(CurrentUserId);
 
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
-                //if we failed to calculate responsible master, assign owner as responsible master
-                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
-                //if we found no owner, assign random master
-                ?? source.Project.ProjectAcls.First().User;
+            User responsibleMaster = RequireResponsibleMaster(source);
 
             var claim = new Claim()
             {
@@ -231,7 +227,7 @@ namespace JoinRpg.Services.Impl
 
             if (claim.Project.Details.AutoAcceptClaims)
             {
-                var userId = claim.ResponsibleMasterUserId ?? claim.Project.ProjectAcls.First().UserId;
+                var userId = claim.ResponsibleMasterUserId;
                 StartImpersonate(userId);
                 //TODO[Localize]
                 await ApproveByMaster(projectId,
@@ -239,6 +235,16 @@ namespace JoinRpg.Services.Impl
                     "Ваша заявка была принята автоматически");
                 ResetImpersonation();
             }
+        }
+
+        private static User RequireResponsibleMaster(IClaimSource source)
+        {
+            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
+                //if we failed to calculate responsible master, assign owner as responsible master
+                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
+                //if we found no owner, assign random master
+                ?? source.Project.ProjectAcls.First().User;
+            return responsibleMaster;
         }
 
         public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
@@ -333,7 +339,6 @@ namespace JoinRpg.Services.Impl
             claim.MasterAcceptedDate = Now;
             claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
-            claim.ResponsibleMasterUserId ??= CurrentUserId;
             _ = AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
             if (!claim.Project.Details.EnableManyCharacters)
@@ -740,7 +745,6 @@ namespace JoinRpg.Services.Impl
             claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
             claim.ClaimDenialStatus = null;
             SetDiscussed(claim, true);
-            claim.ResponsibleMasterUserId ??= currentUserId;
 
 
             if (claim.Character != null)
@@ -802,7 +806,6 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            claim.ResponsibleMasterUserId ??= currentUserId;
             var email =
               await
                 AddCommentWithEmail<MoveByMasterEmail>(contents, claim,
@@ -879,7 +882,7 @@ namespace JoinRpg.Services.Impl
             var newMaster = await UserRepository.GetById(responsibleMasterId);
 
             var email = await
-              AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser?.GetDisplayName() ?? "N/A"} → {newMaster.GetDisplayName()}", claim,
+              AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser.GetDisplayName() ?? "N/A"} → {newMaster.GetDisplayName()}", claim,
                 isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
                 extraAction: CommentExtraAction.ChangeResponsible, extraSubscriptions: new[] { newMaster });
 

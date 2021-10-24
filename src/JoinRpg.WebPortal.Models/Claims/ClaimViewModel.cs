@@ -163,12 +163,7 @@ namespace JoinRpg.Web.Models
                         : claim.OtherPendingClaimsForThisPlayer().Count();
             Masters = claim.Project.GetMasterListViewModel().ToList();
 
-            if (claim.ResponsibleMasterUserId is null)
-            {
-                Masters.Add(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
-            }
-
-            ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
+            ResponsibleMasterId = claim.ResponsibleMasterUserId;
             ResponsibleMaster = claim.ResponsibleMasterUser;
             Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
             Navigation =

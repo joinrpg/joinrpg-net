@@ -63,7 +63,7 @@ namespace JoinRpg.Web.Models.CheckIn
         public int ClaimId { get; }
         public int ProjectId { get; }
         [Display(Name = "Ответственный мастер")]
-        public User? Master { get; }
+        public User Master { get; }
         public IReadOnlyCollection<NotFilledFieldViewModel> NotFilledFields { get; }
         public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
         public string CurrentUserFullName { get; }

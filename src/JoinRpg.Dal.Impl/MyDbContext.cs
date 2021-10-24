@@ -89,7 +89,7 @@ namespace JoinRpg.Dal.Impl
                 .WillCascadeOnDelete(false);
 
             _ = modelBuilder.Entity<Claim>()
-                .HasOptional(c => c.ResponsibleMasterUser)
+                .HasRequired(c => c.ResponsibleMasterUser)
                 .WithMany()
                 .HasForeignKey(c => c.ResponsibleMasterUserId);
 
