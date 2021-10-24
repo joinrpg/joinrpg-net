@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace JoinRpg.WebPortal.Managers.Interfaces
 {
     /// <summary>
@@ -8,6 +10,6 @@ namespace JoinRpg.WebPortal.Managers.Interfaces
         /// <summary>
         /// Project that current page corresponds to
         /// </summary>
-        int ProjectId { get; }
+        ProjectIdentification ProjectId { get; }
     }
 }

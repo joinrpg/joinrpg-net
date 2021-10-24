@@ -7,6 +7,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;

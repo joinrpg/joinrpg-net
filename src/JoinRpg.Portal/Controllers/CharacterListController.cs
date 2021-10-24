@@ -9,6 +9,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;

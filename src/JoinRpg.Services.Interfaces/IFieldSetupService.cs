@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -12,7 +13,7 @@ namespace JoinRpg.Services.Interfaces
 
         Task DeleteField(int projectId, int projectFieldId);
 
-        Task AddField(CreateFieldRequest request);
+        Task<ProjectFieldIdentification> AddField(CreateFieldRequest request);
 
         Task CreateFieldValueVariant(CreateFieldValueVariantRequest request);
 
@@ -41,10 +42,10 @@ namespace JoinRpg.Services.Interfaces
 
     public class FieldSettingsRequest
     {
-        public int? NameField { get; set; }
-        public int? DescriptionField { get; set; }
+        public ProjectFieldIdentification? NameField { get; set; }
+        public ProjectFieldIdentification? DescriptionField { get; set; }
         public bool LegacyModelEnabled { get; set; }
-        public int ProjectId { get; set; }
+        public ProjectIdentification ProjectId { get; set; }
     }
 
     public abstract class FieldRequestBase

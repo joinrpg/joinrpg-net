@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Schedule;
