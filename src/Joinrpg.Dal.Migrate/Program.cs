@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Joinrpg.Dal.Migrate
 {
-    class Program
+    internal class Program
     {
         public static void Main(string[] args)
         {

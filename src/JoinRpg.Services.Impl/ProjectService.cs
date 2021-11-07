@@ -356,7 +356,7 @@ namespace JoinRpg.Services.Impl
                                               acl.Project.Details.EnableAccommodation;
         }
 
-        public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId)
+        public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterIdOrDefault)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
             if (userId != CurrentUserId)
@@ -385,16 +385,18 @@ namespace JoinRpg.Services.Impl
 
             if (claims.Any())
             {
-                if (newResponsibleMasterId == null)
+                if (newResponsibleMasterIdOrDefault is int newResponsible)
+                {
+                    _ = project.RequestMasterAccess(newResponsible);
+
+                    foreach (var claim in claims)
+                    {
+                        claim.ResponsibleMasterUserId = newResponsible;
+                    }
+                }
+                else
                 {
                     throw new MasterHasResponsibleException(acl);
-                }
-
-                _ = project.RequestMasterAccess((int)newResponsibleMasterId);
-
-                foreach (var claim in claims)
-                {
-                    claim.ResponsibleMasterUserId = newResponsibleMasterId;
                 }
             }
 
