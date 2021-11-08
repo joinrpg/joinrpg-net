@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="5.0.11" />
     <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="5.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="5.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.11" />
     <PackageReference Include="microsoft.aspnetcore.components.webassembly.server" Version="5.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="5.0.1" />
