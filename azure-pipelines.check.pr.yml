@@ -17,12 +17,13 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
-  displayName: 'nuget restore'
+- task: UseDotNet@2
   inputs:
-    restoreSolution: '$(solution)'
+    version: '6.0.x'
+
+- task: UseDotNet@2
+  inputs:
+    version: '5.0.x' #temporary until runtime moved
 
 - task: DotNetCoreCLI@2
   inputs:
@@ -43,7 +44,7 @@ steps:
   inputs:
     command: 'custom'
     custom: 'format'
-    arguments: '--check --verbosity diagnostic'
+    arguments: '--verify-no-changes --severity error'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
