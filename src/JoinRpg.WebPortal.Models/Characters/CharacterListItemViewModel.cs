@@ -120,7 +120,7 @@ namespace JoinRpg.Web.Models.Characters
             Groups = new CharacterParentGroupsViewModel(character,
                 character.HasMasterAccess(currentUserId));
 
-            Responsible = character.GetResponsibleMaster();
+            Responsible = character.GetResponsibleMasterOrDefault();
         }
 
         [Display(Name = "Проблемы")]

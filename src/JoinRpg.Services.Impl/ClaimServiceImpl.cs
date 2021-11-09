@@ -114,7 +114,7 @@ namespace JoinRpg.Services.Impl
             // TODO improve valitdation here
             //source.EnsureCanMoveClaim(oldClaim);
 
-            var responsibleMaster = RequireResponsibleMaster(source);
+            var responsibleMaster = source.GetResponsibleMaster();
             var claim = new Claim()
             {
                 CharacterGroupId = null,
@@ -179,7 +179,7 @@ namespace JoinRpg.Services.Impl
 
             source.EnsureCanAddClaim(CurrentUserId);
 
-            User responsibleMaster = RequireResponsibleMaster(source);
+            User responsibleMaster = source.GetResponsibleMaster();
 
             var claim = new Claim()
             {
@@ -235,16 +235,6 @@ namespace JoinRpg.Services.Impl
                     "Ваша заявка была принята автоматически");
                 ResetImpersonation();
             }
-        }
-
-        private static User RequireResponsibleMaster(IClaimSource source)
-        {
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
-                //if we failed to calculate responsible master, assign owner as responsible master
-                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
-                //if we found no owner, assign random master
-                ?? source.Project.ProjectAcls.First().User;
-            return responsibleMaster;
         }
 
         public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)

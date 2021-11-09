@@ -68,7 +68,9 @@ namespace PscbApi
         public static string PreparePaymentPurposeString(string s, PscbPaymentMethod pm)
         {
             if (pm != PscbPaymentMethod.FastPaymentsSystem)
+            {
                 return s;
+            }
 
             s = new string(s.Where(FastPaymentsSystem.IsPurposeCharAllowed).ToArray());
             return s.Length > FastPaymentsSystem.MaxPurposeLength
