@@ -46,7 +46,7 @@ namespace JoinRpg.Domain
         {
             return claimSource
               .GetParentGroupsToTop() //Get parents
-              .Union(claimSource as CharacterGroup) //Don't forget group himself
+              .Append(claimSource as CharacterGroup) //Don't forget group himself
               .WhereNotNull();
         }
 
