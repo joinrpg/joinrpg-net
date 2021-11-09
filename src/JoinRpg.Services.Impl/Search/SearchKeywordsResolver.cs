@@ -13,7 +13,7 @@ namespace JoinRpg.Services.Impl.Search
         {
             int entityId;
             // bare number in search string requires, among other, search by id. No perfect match.
-            if (Int32.TryParse(searchString.Trim(), out entityId))
+            if (int.TryParse(searchString.Trim(), out entityId))
             {
                 whenFoundItIsPerfectMatch = false;
                 return entityId;
@@ -26,7 +26,7 @@ namespace JoinRpg.Services.Impl.Search
                   searchString = Regex.Replace(searchString, Regex.Escape(k), "", RegexOptions.IgnoreCase));
 
                 //"e.g %контакты 65" is not accepted. Space between keyword and number is prohibited
-                if (!searchString.StartsWith(" ") && Int32.TryParse(searchString, out entityId))
+                if (!searchString.StartsWith(" ") && int.TryParse(searchString, out entityId))
                 {
                     whenFoundItIsPerfectMatch = true;
                     return entityId;
