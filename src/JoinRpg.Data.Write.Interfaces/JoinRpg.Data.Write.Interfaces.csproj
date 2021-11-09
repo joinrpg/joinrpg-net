@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
     <AssemblyTitle>JoinRpg.Data.Write.Interfaces</AssemblyTitle>
     <Product>JoinRpg.Data.Write.Interfaces</Product>
   </PropertyGroup>
