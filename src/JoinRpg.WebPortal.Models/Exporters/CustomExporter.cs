@@ -132,13 +132,13 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [MustUseReturnValue]
-        protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
+        protected ITableColumn ShortUserColumn(Expression<Func<TRow, User?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
 
         [MustUseReturnValue]
         private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string?>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
 
         [MustUseReturnValue]
-        protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr, string? name = null)
+        protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T?>> complexGetter, Expression<Func<T, TOut>> expr, string? name = null)
           where T : class
         {
 
@@ -151,7 +151,7 @@ namespace JoinRpg.Web.Models.Exporters
 
         [MustUseReturnValue]
         protected static ITableColumn ComplexElementMemberColumn<T1, T2, TOut>(Expression<Func<TRow, T1?>> complexGetter,
-          Expression<Func<T1, T2>> immed, Expression<Func<T2, TOut>> expr, string? name = null)
+          Expression<Func<T1, T2?>> immed, Expression<Func<T2, TOut>> expr, string? name = null)
           where T2 : class
           where T1 : class
         {
