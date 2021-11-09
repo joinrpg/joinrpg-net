@@ -62,7 +62,9 @@ namespace JoinRpg.Portal.Controllers
             else
             {
                 var view = new ClaimListForExportViewModel(CurrentUserId, claims);
+#pragma warning disable CS0612 // Type or member is obsolete
                 var project = await GetProjectFromList(projectId, claims);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                 return
                     await

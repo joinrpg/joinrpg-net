@@ -52,7 +52,9 @@ namespace JoinRpg.Portal.Controllers
         {
             var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
 
+#pragma warning disable CS0612 // Type or member is obsolete
             var project = await GetProjectFromList(projectId, characters);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var list = new CharacterListViewModel(CurrentUserId, title, characters, project);
 

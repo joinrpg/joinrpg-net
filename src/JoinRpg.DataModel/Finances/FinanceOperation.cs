@@ -55,7 +55,9 @@ namespace JoinRpg.DataModel
             // Checking payment type
             switch (OperationType)
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 case FinanceOperationType.FeeChange:
+#pragma warning restore CS0612 // Type or member is obsolete
                 case FinanceOperationType.PreferentialFeeRequest:
                 case FinanceOperationType.TransferTo:
                 case FinanceOperationType.TransferFrom:

@@ -24,7 +24,9 @@ namespace JoinRpg.Dal.Impl.Migrations
                 + $"SET OperationType = {(int)FinanceOperationType.Submit} "
                 + "WHERE MoneyAmount > 0");
             Sql("UPDATE [dbo].[FinanceOperations] "
+#pragma warning disable CS0612 // Type or member is obsolete
                 + $"SET OperationType = {(int)FinanceOperationType.FeeChange} "
+#pragma warning restore CS0612 // Type or member is obsolete
                 + "WHERE FeeChange <> 0");
 
             DropColumn("dbo.FinanceOperations", "MarkMeAsPreferential");
