@@ -18,7 +18,7 @@ namespace JoinRpg.Services.Impl
         private IEmailService EmailService { get; }
         public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => EmailService = emailService;
 
-        private int[] GetChildrenGroupIds(CharacterGroup group) => group.GetChildrenGroups().Select(g => g.CharacterGroupId).Union(group.CharacterGroupId).ToArray();
+        private int[] GetChildrenGroupIds(CharacterGroup group) => group.GetChildrenGroups().Select(g => g.CharacterGroupId).Append(group.CharacterGroupId).ToArray();
 
         public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
         {

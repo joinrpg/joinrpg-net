@@ -51,7 +51,9 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> ByTag(int projectid, string tagname)
         {
             var allFolders = await _plotRepository.GetPlotsByTag(projectid, tagname);
+#pragma warning disable CS0612 // Type or member is obsolete
             var project = await GetProjectFromList(projectid, allFolders);
+#pragma warning restore CS0612 // Type or member is obsolete
             return View("Index", new PlotFolderListViewModel(allFolders, project, CurrentUserIdOrDefault));
         }
 
@@ -83,7 +85,9 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> FlatList(int projectId)
         {
             var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+#pragma warning disable CS0612 // Type or member is obsolete
             var project = await GetProjectFromList(projectId, folders);
+#pragma warning restore CS0612 // Type or member is obsolete
             return View(
                 new PlotFolderFullListViewModel(
                     folders,
@@ -97,7 +101,9 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> FlatListUnready(int projectId)
         {
             var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+#pragma warning disable CS0612 // Type or member is obsolete
             var project = await GetProjectFromList(projectId, folders);
+#pragma warning restore CS0612 // Type or member is obsolete
             return View("FlatList",
                 new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, UriService, true));
         }
@@ -106,7 +112,9 @@ namespace JoinRpg.Portal.Controllers
         {
             var allFolders = await _plotRepository.GetPlots(projectId);
             var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
+#pragma warning disable CS0612 // Type or member is obsolete
             var project = await GetProjectFromList(projectId, folders);
+#pragma warning restore CS0612 // Type or member is obsolete
             return View("Index", new PlotFolderListViewModel(folders, project, CurrentUserIdOrDefault));
         }
     }

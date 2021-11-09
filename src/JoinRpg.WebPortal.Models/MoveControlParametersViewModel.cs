@@ -11,6 +11,6 @@ namespace JoinRpg.Web.Models
         public int ParentObjectId { get; set; }
 
         public string ActionName { get; set; } = "MoveElement";
-        public string ControllerName { get; set; }
+        public string? ControllerName { get; set; }
     }
 }

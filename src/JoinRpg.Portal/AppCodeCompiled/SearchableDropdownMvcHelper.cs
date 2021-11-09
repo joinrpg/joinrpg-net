@@ -11,6 +11,7 @@ namespace JoinRpg.Portal
 {
     public static class SearchableDropdownMvcHelper
     {
+        [Obsolete]
         public static IHtmlContent SearchableDropdownFor<TModel, TValue>(
             this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression,
@@ -38,6 +39,7 @@ namespace JoinRpg.Portal
                 expression.AsPropertyName()));
         }
 
+        [Obsolete]
         public static IHtmlContent SearchableDropdown(this IHtmlHelper self,
             string name,
             IEnumerable<ImprovedSelectListItem> items)

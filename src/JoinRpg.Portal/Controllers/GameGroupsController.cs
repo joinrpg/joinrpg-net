@@ -279,7 +279,7 @@ namespace JoinRpg.Portal.Controllers
         private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
         {
             return group.Project.GetMasterListViewModel()
-              .Union(new MasterListItemViewModel()
+              .Append(new MasterListItemViewModel()
               {
                   Id = "-1",
                   Name = "По умолчанию", // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)

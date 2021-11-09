@@ -39,9 +39,9 @@ namespace JoinRpg.Domain
               .Union(character.ApprovedClaim?.Subscriptions ?? Enumerable.Empty<UserSubscription>()) //Subscriptions of the claim itself.
               .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
               .Select(u => u.User) //Select users
-              .Union(character.ApprovedClaim?.Player) //...and player who claimed for the character
-              .Union(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
-              .Union(character.ResponsibleMasterUser) //...and the master who's responsible for the character
+              .Append(character.ApprovedClaim?.Player) //...and player who claimed for the character
+              .Append(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
+              .Append(character.ResponsibleMasterUser) //...and the master who's responsible for the character
               .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
               .VerifySubscriptions(mastersOnly, character)
               .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
@@ -60,9 +60,9 @@ namespace JoinRpg.Domain
                 .Union(claim.Character?.Subscriptions ?? Enumerable.Empty<UserSubscription>()) //and on characters
                 .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
                 .Select(u => u.User) //Select users
-                .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
-                .Union(claim.Player) //...and player himself also
-                .Union(claim.Character?.ResponsibleMasterUser)
+                .Append(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
+                .Append(claim.Player) //...and player himself also
+                .Append(claim.Character?.ResponsibleMasterUser)
                 .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
                 .VerifySubscriptions(mastersOnly, claim)
                 .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.

@@ -80,8 +80,10 @@ namespace JoinRpg.Web.Controllers.XGameApi
                             Value = field.Value,
                             DisplayString = field.DisplayString,
                         }),
+#pragma warning disable CS0612 // Type or member is obsolete
                     PlayerUserId = character.ApprovedClaim?.PlayerUserId,
                     CharacterDescription = character.Description,
+#pragma warning restore CS0612 // Type or member is obsolete
                     CharacterName = character.Name,
                     PlayerInfo = character.ApprovedClaim is null ? null :
                         CreatePlayerInfo(character.ApprovedClaim),
