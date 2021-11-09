@@ -164,20 +164,18 @@ namespace JoinRpg.Portal.Controllers
                     .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
                 var acceptedRequest = requestForAccommodation
                     .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
-                var acceptedRequestId = acceptedRequest?.Id;
-                var acceptedRequestAccommodationTypeIdId = acceptedRequest?.AccommodationTypeId;
 
-                if (acceptedRequestId != null)
+                if (acceptedRequest != null)
                 {
                     var sameRequest = (await
                         _accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
-                            acceptedRequestAccommodationTypeIdId.Value).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
+                            acceptedRequest.AccommodationTypeId).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
                         .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType)); ;
                     var noRequest = (await
                         _accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
                     var currentNeighbors = (await
                        _accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
-                            acceptedRequestId.Value).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
+                            acceptedRequest.Id).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
                     potentialNeighbors = sameRequest.Union(noRequest).Where(element => currentNeighbors.All(el => el.ClaimId != element.ClaimId));
                 }
 
