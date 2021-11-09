@@ -6,7 +6,7 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure.Stubs
 {
     internal class StubRecaptchaVerificator : IRecaptchaVerificator
     {
-        Task<bool> IRecaptchaVerificator.ValidateToken(string recaptchaToken, IPAddress clientIp) =>
+        Task<bool> IRecaptchaVerificator.ValidateToken(string recaptchaToken, IPAddress? clientIp) =>
             Task.FromResult(true);
 
         bool IRecaptchaVerificator.IsRecaptchaConfigured() => true;
