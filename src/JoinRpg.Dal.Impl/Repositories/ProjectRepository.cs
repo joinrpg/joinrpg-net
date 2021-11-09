@@ -84,8 +84,8 @@ namespace JoinRpg.Dal.Impl.Repositories
             .Include(p => p.ProjectAcls.Select(a => a.User))
             .SingleOrDefaultAsync(p => p.ProjectId == project);
 
-        public Task<Project?> GetProjectWithFieldsAsync(int project)
-          => AllProjects
+        public async Task<Project?> GetProjectWithFieldsAsync(int project)
+          => await AllProjects
             .Include(p => p.Details)
             .Include(p => p.ProjectAcls.Select(a => a.User))
             .Include(p => p.ProjectFields.Select(f => f.DropdownValues))

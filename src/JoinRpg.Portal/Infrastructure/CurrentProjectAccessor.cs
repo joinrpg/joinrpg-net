@@ -13,7 +13,7 @@ namespace JoinRpg.Portal.Infrastructure
         {
             HttpContextAccessor = httpContextAccessor;
             ProjectIdLazy = new Lazy<ProjectIdentification>(()
-                => new((int)HttpContextAccessor.HttpContext.Items[DiscoverFilters.Constants.ProjectIdName]));
+                => new((int)HttpContextAccessor.HttpContext!.Items[DiscoverFilters.Constants.ProjectIdName]!));
         }
 
         private readonly Lazy<ProjectIdentification> ProjectIdLazy;

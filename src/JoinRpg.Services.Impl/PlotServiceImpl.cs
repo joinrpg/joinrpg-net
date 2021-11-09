@@ -263,8 +263,9 @@ namespace JoinRpg.Services.Impl
                 foreach (var g in src)
                 {
                     claims.AddRange(g.Characters
-                        .Where(c => c.ApprovedClaimId.HasValue)
-                        .Select(c => c.ApprovedClaim));
+                        .Select(c => c.ApprovedClaim)
+                        .WhereNotNull()
+                        );
                     InternalGetUsersFromGroups(g.ChildGroups);
                 }
             }
@@ -294,8 +295,8 @@ namespace JoinRpg.Services.Impl
                 // Preparing list of users to send notification to
                 List<Claim> claims = GetClaimsFromGroups(plotElement.TargetGroups);
                 claims.AddRange(plotElement.TargetCharacters
-                    .Where(c => c.ApprovedClaimId.HasValue)
-                    .Select(c => c.ApprovedClaim));
+                    .Select(c => c.ApprovedClaim)
+                    .WhereNotNull());
 
                 // Now we have list of claims
                 await _email.Email(new PublishPlotElementEmail
