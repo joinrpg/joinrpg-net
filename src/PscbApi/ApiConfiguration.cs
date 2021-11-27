@@ -37,11 +37,6 @@ namespace PscbApi
         public string MerchantId;
 
         /// <summary>
-        /// Marketplace Id (issued by PSCB) for the Fast Payments System
-        /// </summary>
-        public string MerchantIdFastPayments;
-
-        /// <summary>
         /// Default url for successful payments
         /// </summary>
         public string DefaultSuccessUrl;
