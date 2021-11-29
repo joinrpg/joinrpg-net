@@ -155,7 +155,9 @@ namespace JoinRpg.Services.Impl
                 claim,
                 CurrentUserId,
                 Now,
-                request.CommentText,
+                // Do not remove null-coalescing here!
+                // Payment comment is not necessary, but it must not be null to create comment.
+                request.CommentText ?? "",
                 true,
                 null);
             comment.Finance = new FinanceOperation
