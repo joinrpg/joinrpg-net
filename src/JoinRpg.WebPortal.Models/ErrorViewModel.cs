@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models
 
         public string Description { get; set; }
 
-        public string ReturnLink { get; set; }
+        public string? ReturnLink { get; set; }
 
         public string ReturnText { get; set; }
 

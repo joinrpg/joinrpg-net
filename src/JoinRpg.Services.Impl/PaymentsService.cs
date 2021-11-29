@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
@@ -40,7 +41,6 @@ namespace JoinRpg.Services.Impl
                 ApiEndpoint = _bankSecrets.ApiEndpoint,
                 ApiDebugEndpoint = _bankSecrets.ApiDebugEndpoint,
                 MerchantId = _bankSecrets.MerchantId,
-                MerchantIdFastPayments = _bankSecrets.MerchantIdFastPayments,
                 ApiKey = _bankSecrets.ApiKey,
                 ApiDebugKey = _bankSecrets.ApiDebugKey,
                 DefaultSuccessUrl = _uriService.Get(new PaymentSuccessUrl(projectId, claimId)),
@@ -155,7 +155,7 @@ namespace JoinRpg.Services.Impl
                 claim,
                 CurrentUserId,
                 Now,
-                request.CommentText ?? "",
+                request.CommentText,
                 true,
                 null);
             comment.Finance = new FinanceOperation
@@ -204,6 +204,22 @@ namespace JoinRpg.Services.Impl
             return fo;
         }
 
+        private async Task<FinanceOperation?> LoadLastUnapprovedFinanceOperationAsync(int projectId, int claimId)
+        {
+            return await (from fo in UnitOfWork.GetDbSet<FinanceOperation>()
+                          join pt in UnitOfWork.GetDbSet<PaymentType>()
+                              on fo.PaymentTypeId equals pt.PaymentTypeId
+                          where fo.ProjectId == projectId
+                              && fo.ClaimId == claimId
+                              && fo.OperationType == FinanceOperationType.Online
+                              && pt.TypeKind == PaymentTypeKind.Online
+                              && fo.State == FinanceOperationState.Proposed
+                          select fo)
+                .Include(fo => fo.PaymentType)
+                .OrderByDescending(fo => fo.Created)
+                .FirstOrDefaultAsync();
+        }
+
         private void UpdateFinanceOperationStatus(FinanceOperation fo, PaymentData paymentData)
         {
             switch (paymentData.Status)
@@ -241,64 +257,79 @@ namespace JoinRpg.Services.Impl
             }
         }
 
-        /// <inheritdoc />
-        public async Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
+        private async Task UpdateClaimPaymentAsync(FinanceOperation fo)
         {
-            var fo = await LoadFinanceOperationAsync(projectId, claimId, orderId);
-
-            if (fo.State == FinanceOperationState.Proposed)
+            if (fo.State != FinanceOperationState.Proposed)
             {
-                var api = GetApi(projectId, claimId);
-                string orderIdStr = orderId.ToString().PadLeft(10, '0');
+                return;
+            }
 
-                // Asking bank
-                PaymentInfo paymentInfo = await api.GetPaymentInfoAsync(
-                    PscbPaymentMethod.BankCards,
+            var api = GetApi(fo.ProjectId, fo.ClaimId);
+            string orderIdStr = fo.CommentId.ToString().PadLeft(10, '0');
+
+            // Asking bank
+            PaymentInfo paymentInfo = await api.GetPaymentInfoAsync(
+                PscbPaymentMethod.BankCards,
+                orderIdStr);
+
+            if (paymentInfo.Status == PaymentInfoQueryStatus.Failure
+                && paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+            {
+                paymentInfo = await api.GetPaymentInfoAsync(
+                    PscbPaymentMethod.FastPaymentsSystem,
                     orderIdStr);
+            }
 
-                if (paymentInfo.Status == PaymentInfoQueryStatus.Failure
-                    && paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+            // Updating status
+            if (paymentInfo.Status == PaymentInfoQueryStatus.Success)
+            {
+                if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
                 {
-                    paymentInfo = await api.GetPaymentInfoAsync(
-                        PscbPaymentMethod.FastPaymentsSystem,
-                        orderIdStr);
-                }
-
-                // Updating status
-                if (paymentInfo.Status == PaymentInfoQueryStatus.Success)
-                {
-                    if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
-                    {
-                        fo.State = FinanceOperationState.Declined;
-                        fo.Changed = Now;
-                    }
-                    else if (paymentInfo.ErrorCode == null)
-                    {
-                        UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
-                        if (fo.State == FinanceOperationState.Approved)
-                        {
-                            Claim claim = await GetClaimAsync(projectId, claimId);
-                            claim.UpdateClaimFeeIfRequired(Now);
-                        }
-                    }
-                }
-                else if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
-                {
-                    fo.State = FinanceOperationState.Invalid;
+                    fo.State = FinanceOperationState.Declined;
                     fo.Changed = Now;
                 }
-                else if (IsCurrentUserAdmin)
+                else if (paymentInfo.ErrorCode == null)
                 {
-                    throw new PaymentException(fo.Project, $"Payment status check failed: {paymentInfo.ErrorDescription}");
+                    UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
+                    if (fo.State == FinanceOperationState.Approved)
+                    {
+                        Claim claim = await GetClaimAsync(fo.ProjectId, fo.ClaimId);
+                        claim.UpdateClaimFeeIfRequired(Now);
+                    }
                 }
+            }
+            else if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+            {
+                fo.State = FinanceOperationState.Invalid;
+                fo.Changed = Now;
+            }
+            else if (IsCurrentUserAdmin)
+            {
+                throw new PaymentException(
+                    fo.Project,
+                    $"Payment status check failed: {paymentInfo.ErrorDescription}");
+            }
 
-                // Saving if status was updated
-                if (fo.State != FinanceOperationState.Proposed)
-                {
-                    await UnitOfWork.SaveChangesAsync();
-                }
+            // Saving if status was updated
+            if (fo.State != FinanceOperationState.Proposed)
+            {
+                await UnitOfWork.SaveChangesAsync();
+            }
 
-                // TODO: Probably need to send some notifications?
+            // TODO: Probably need to send some notifications?
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
+            => await UpdateClaimPaymentAsync(await LoadFinanceOperationAsync(projectId, claimId, orderId));
+
+        /// <inheritdoc />
+        public async Task UpdateLastClaimPaymentAsync(int projectId, int claimId)
+        {
+            var fo = await LoadLastUnapprovedFinanceOperationAsync(projectId, claimId);
+            if (fo is not null)
+            {
+                await UpdateClaimPaymentAsync(fo);
             }
         }
 

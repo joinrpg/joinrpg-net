@@ -81,7 +81,9 @@ namespace JoinRpg.DataModel
             // Checking money value
             switch (OperationType)
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 case FinanceOperationType.FeeChange:
+#pragma warning restore CS0612 // Type or member is obsolete
                     if (MoneyAmount != 0)
                     {
                         yield return new ValidationResult($"Operation type {OperationType} must not have money amount", new[] { nameof(MoneyAmount) });

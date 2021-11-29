@@ -1,8 +1,5 @@
 using System;
-using System.Security.Policy;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -24,7 +21,7 @@ namespace JoinRpg.Portal.Controllers.Money
             _payments = payments;
         }
 
-        private string GetClaimUrl(int projectId, int claimId)
+        private string? GetClaimUrl(int projectId, int claimId)
             => Url.Action("Edit", "Claim", new { projectId, claimId });
 
         /// <summary>
@@ -89,40 +86,47 @@ namespace JoinRpg.Portal.Controllers.Money
             }
         }
 
-        private async Task<ActionResult> HandleClaimPaymentRedirect(int projectId, int claimId, string orderId, string description, string errorMessage)
+        private async Task<ActionResult> HandleClaimPaymentRedirect(int projectId, int claimId, string orderId, string? description, string errorMessage)
         {
-            if (int.TryParse(orderId, out var financeOperationId))
+            var financeOperationId = 0;
+            try
             {
-                try
+                if (int.TryParse(orderId, out financeOperationId))
                 {
                     await _payments.UpdateClaimPaymentAsync(projectId, claimId, financeOperationId);
-                    return RedirectToAction("Edit", "Claim", new { projectId, claimId });
                 }
-                catch (Exception e)
+                else
                 {
-                    return Error(
-                        new ErrorViewModel
-                        {
-                            Message = $"{errorMessage} {financeOperationId}",
-                            Description = e.Message,
-                            Data = e,
-                            ReturnLink = GetClaimUrl(projectId, claimId),
-                            ReturnText = "Вернуться к заявке",
-                        });
+                    await _payments.UpdateLastClaimPaymentAsync(projectId, claimId);
                 }
-            }
 
-            return Error(
-                new ErrorViewModel
-                {
-                    Message = $"Неверный идентификатор платежа: {orderId}",
-                    ReturnLink = GetClaimUrl(projectId, claimId),
-                    ReturnText = "Вернуться к заявке",
-                });
+                // TODO: In case of invalid payment redirect to special page
+                return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+            }
+            catch (Exception e)
+            {
+                string foText = financeOperationId > 0
+                    ? financeOperationId.ToString()
+                    : "unknown finance operation";
+                return Error(
+                    new ErrorViewModel
+                    {
+                        Message = $"{errorMessage} {foText}",
+                        Description = e.Message,
+                        Data = e,
+                        ReturnLink = GetClaimUrl(projectId, claimId),
+                        ReturnText = "Вернуться к заявке",
+                    });
+            }
         }
 
+        //TODO: why we are losing cookies here? It's ok, because we don't do anything insecure here, but still...
+        // What we are doing here?
+        // 1. ask bank about status of orderId
+        // 2. Update status if required
+        // 3. Redirect to claim
         [HttpGet]
-        [Authorize]
+        [AllowAnonymous]
         [ActionName(nameof(ClaimPaymentSuccess))]
         public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, string orderId)
             => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
@@ -130,24 +134,24 @@ namespace JoinRpg.Portal.Controllers.Money
 
 
         [HttpPost]
-        [Authorize]
+        [AllowAnonymous] //TODO see above
         public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, string orderId)
             => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
                 "Ошибка обработки успешного платежа");
 
 
         [HttpGet]
-        [Authorize]
+        [AllowAnonymous] //TODO see above
         [ActionName(nameof(ClaimPaymentFail))]
         public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, string orderId,
-            [CanBeNull] string description)
+            string? description)
             => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
                 "Ошибка обработки неудавшегося платежа");
 
         [HttpPost]
-        [Authorize]
+        [AllowAnonymous] //TODO see above
         public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, string orderId,
-            [CanBeNull] string description)
+            string? description)
             => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
                 "Ошибка обработки неудавшегося платежа");
 
