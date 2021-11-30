@@ -14,6 +14,7 @@ FROM
 Claims
 LEFT JOIN ProjectAcls ACL ON Claims.ProjectId = ACL.ProjectId AND ACL.IsOwner = 1
 WHERE [ResponsibleMasterUserId] is null");
+
             Sql("DROP INDEX IF EXISTS [nci_wi_Claims_DD27A24D517BFF9AFEC7C6C5C8FCCA84] ON [dbo].[Claims]");
             Sql("DROP INDEX IF EXISTS [Claim_Cover_index] ON [dbo].[Claims]");
             DropForeignKey("dbo.Claims", "ResponsibleMasterUserId", "dbo.Users");
