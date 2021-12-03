@@ -43,10 +43,10 @@ namespace JoinRpg.Portal.Controllers
         }
 
         private ActionResult ReturnToIndex()
-            => RedirectToAction("Index", new { CurrentProjectAccessor.ProjectId });
+            => RedirectToAction("Index", new { ProjectId = CurrentProjectAccessor.ProjectId.Value });
 
         private ActionResult ReturnToField(ProjectField value)
-            => RedirectToAction("Edit", new { CurrentProjectAccessor.ProjectId, projectFieldId = value.ProjectFieldId });
+            => RedirectToAction("Edit", new { ProjectId = CurrentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
 
 
         [HttpGet("/{ProjectId}/fields/")]
