@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="libman.json" />
+  </ItemGroup>
  
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -22,7 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="libman.json" />
+    <None Include="libman.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="libman.json" />
   </ItemGroup>
 
 </Project>
