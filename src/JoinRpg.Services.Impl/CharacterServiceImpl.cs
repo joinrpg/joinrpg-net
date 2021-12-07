@@ -83,6 +83,12 @@ namespace JoinRpg.Services.Impl
                 // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
             }
 
+            if (character.Claims.Any(claim => claim.ClaimStatus.IsActive())
+                && editCharacterRequest.CharacterTypeInfo.CharacterType != character.CharacterType)
+            {
+                throw new System.Exception("Can't change type of character with active claims");
+            }
+
             (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
 
             character.IsPublic = editCharacterRequest.IsPublic;
