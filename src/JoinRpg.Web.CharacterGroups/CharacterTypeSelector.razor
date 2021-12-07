@@ -4,6 +4,7 @@
   {
     <label>@characterType.GetDisplayName()</label>
     <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
+    <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
   }
   else
   {

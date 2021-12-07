@@ -14,6 +14,7 @@ namespace JoinRpg.Web.Models.Characters
 {
     public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidatableObject
     {
+        [Required]
         public CharacterTypeInfo CharacterTypeInfo { get; set; }
 
         [DisplayName("Имя персонажа")]
