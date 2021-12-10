@@ -1,0 +1,44 @@
+﻿@inject ICheckInClient Client
+@implements IDisposable
+@using Timer = System.Timers.Timer
+
+<h2>Статистика регистрации</h2>
+
+@if (!Loaded)
+{
+    return;
+}
+
+<div class="h1">
+  Осталось зарегистрировать: @Model.CheckedInCount
+  <br />
+  Прошло регистрацию: @Model.ReadyForCheckInCount
+</div>
+
+@code {
+
+    private CheckInStatViewModel Model = null!;
+    private bool Loaded = false;
+    private Timer timer = null!;
+
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        timer = new Timer(5000);
+        timer.Elapsed += (sender, eventArgs) => InvokeAsync(RefreshAsync);
+        timer.Start();
+        await RefreshAsync();
+    }
+
+    public void Dispose() => timer?.Dispose();
+
+    private async Task RefreshAsync()
+    {
+        Model = await Client.GetCheckInStats(new PrimitiveTypes.ProjectIdentification(ProjectId));
+        Loaded = true;
+        StateHasChanged();
+    }
+
+}

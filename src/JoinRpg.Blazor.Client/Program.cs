@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Web.CharacterGroups;
+using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.GameSubscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,11 +19,14 @@ namespace JoinRpg.Blazor.Client
             _ = typeof(MasterSubscribeList).ToString();
             _ = typeof(CharacterGroupSelector).ToString();
             _ = typeof(JoinRpg.PrimitiveTypes.CharacterTypeInfo).ToString();
+            _ = typeof(CheckInStats).ToString();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
             AddHttpClient<IGameSubscribeClient, ApiClients.GameSubscribeClient>(builder);
             AddHttpClient<ICharacterGroupsClient, ApiClients.CharacterGroupsClient>(builder);
+            AddHttpClient<ICheckInClient, ApiClients.CheckInClient>(builder);
+
             //.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
             // builder.Services.AddApiAuthorization();

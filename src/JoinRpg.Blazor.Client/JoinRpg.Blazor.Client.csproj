@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.GameSubscribe\JoinRpg.Web.GameSubscribe.csproj" />
   </ItemGroup>
 
