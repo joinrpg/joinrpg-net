@@ -3,8 +3,8 @@ WORKDIR /app
 
 COPY . ./
 #We have to build separedly to workaround https://github.com/aspnet/LibraryManager/issues/643
-RUN dotnet build src/JoinRpg.Portal --configuration Release
-RUN dotnet publish src/JoinRpg.Portal --no-build --configuration Release --output out
+RUN dotnet build src/JoinRpg.WebComponents --configuration Release --output out
+RUN dotnet publish src/JoinRpg.Portal --configuration Release --output out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0.0
