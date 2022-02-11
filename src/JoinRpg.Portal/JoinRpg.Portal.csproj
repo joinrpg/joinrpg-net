@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.2" />
     <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="6.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.2" />
     <PackageReference Include="Microsoft.Aspnetcore.Components.Webassembly.Server" Version="6.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="6.0.0" />
