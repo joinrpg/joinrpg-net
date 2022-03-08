@@ -7,7 +7,7 @@ RUN dotnet build src/JoinRpg.WebComponents --configuration Release --output out
 RUN dotnet publish src/JoinRpg.Portal --configuration Release --output out
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.2
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.3
 WORKDIR /app
 COPY --from=build-env /app/out .
 
