@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -9,8 +8,7 @@ namespace JoinRpg.Domain
 {
     public static class ResponsibleMasterExtensions
     {
-        [NotNull, ItemNotNull]
-        public static IEnumerable<User> GetResponsibleMasters([NotNull] this IClaimSource group, bool includeSelf = true)
+        private static IEnumerable<User> GetResponsibleMasters(this IClaimSource group, bool includeSelf = true)
         {
             if (group == null)
             {
@@ -48,8 +46,7 @@ namespace JoinRpg.Domain
             return candidates.Except(removedGroups).Select(c => c.ResponsibleMasterUser);
         }
 
-        [CanBeNull]
-        public static User? GetResponsibleMaster([NotNull] this Character character)
+        public static User? GetResponsibleMasterOrDefault(this Character character)
         {
             if (character == null)
             {
@@ -57,6 +54,16 @@ namespace JoinRpg.Domain
             }
 
             return character.ApprovedClaim?.ResponsibleMasterUser ?? character.GetResponsibleMasters().FirstOrDefault();
+        }
+
+        public static User GetResponsibleMaster(this IClaimSource source)
+        {
+            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
+                //if we failed to calculate responsible master, assign owner as responsible master
+                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
+                //if we found no owner, assign random master
+                ?? source.Project.ProjectAcls.First().User;
+            return responsibleMaster;
         }
     }
 }

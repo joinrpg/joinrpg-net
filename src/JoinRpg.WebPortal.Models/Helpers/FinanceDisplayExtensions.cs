@@ -11,7 +11,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Returns display name of the payment type kind
         /// </summary>
-        public static string GetDisplayName(this PaymentTypeKindViewModel kind, User user, string defaultName = null)
+        public static string GetDisplayName(this PaymentTypeKindViewModel kind, User? user, string? defaultName = null)
         {
             switch (kind)
             {
@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Returns display name of the payment type kind
         /// </summary>
-        public static string GetDisplayName(this PaymentTypeKind kind, User user, string defaultName = null)
+        public static string GetDisplayName(this PaymentTypeKind kind, User user, string? defaultName = null)
             => ((PaymentTypeKindViewModel)kind).GetDisplayName(user, defaultName);
 
         /// <summary>

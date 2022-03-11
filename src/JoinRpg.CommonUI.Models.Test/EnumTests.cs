@@ -9,8 +9,8 @@ namespace JoinRpg.CommonUI.Models.Test
         [Fact]
         public void ProblemEnum()
         {
-            EnumerationTestHelper.CheckEnums<DataModel.CommentExtraAction, CommentExtraAction>();
-            EnumerationTestHelper.CheckEnums<DataModel.PaymentTypeKind, PaymentTypeKindViewModel>();
+            EnumerationTestComparer.EnsureSame<DataModel.CommentExtraAction, CommentExtraAction>();
+            EnumerationTestComparer.EnsureSame<DataModel.PaymentTypeKind, PaymentTypeKindViewModel>();
         }
     }
 }

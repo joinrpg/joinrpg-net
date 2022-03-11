@@ -7,16 +7,15 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters
 {
     public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidatableObject
     {
-        [Display(Name = "Принимать заявки на этого персонажа",
-            Description =
-                "Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.")]
-        public bool IsAcceptingClaims { get; set; } = true;
+        [Required]
+        public CharacterTypeInfo CharacterTypeInfo { get; set; }
 
         [DisplayName("Имя персонажа")]
         public string Name { get; set; }
@@ -28,27 +27,18 @@ namespace JoinRpg.Web.Models.Characters
                 yield return new ValidationResult(
                     "Персонаж должен принадлежать хотя бы к одной группе");
             }
-
-            if (!IsAcceptingClaims && IsHot)
-            {
-                yield return new ValidationResult("На горячую роль должны приниматься заявки");
-            }
         }
 
         [Display(Name = "Всегда скрывать имя игрока",
             Description = "Скрыть личность игрока, который играет данного персонажа.")]
         public bool HidePlayerForCharacter { get; set; }
 
-        [Display(Name = "Горячая роль",
-            Description = "Горячая роль специальным образом выделяется в ролевке.")]
-        public bool IsHot { get; set; }
-
         public CustomFieldsViewModel Fields { get; set; }
 
         public bool LegacyNameMode { get; protected set; }
 
         [CannotBeEmpty, DisplayName("Является частью групп")]
-        public List<string> ParentCharacterGroupIds { get; set; } = new();
+        public int[] ParentCharacterGroupIds { get; set; } = new int[0] { };
 
         protected void FillFields(Character field, int currentUserId)
         {
@@ -62,6 +52,7 @@ namespace JoinRpg.Web.Models.Characters
         public AddCharacterViewModel Fill(CharacterGroup characterGroup, int currentUserId)
         {
             ProjectId = characterGroup.ProjectId;
+            CharacterTypeInfo = CharacterTypeInfo.Default();
             FillFields(new Character()
             {
                 Project = characterGroup.Project,
@@ -89,7 +80,7 @@ namespace JoinRpg.Web.Models.Characters
         public int ActiveClaimsCount { get; private set; }
 
         [ReadOnly(true)]
-        public bool IsAcceptingClaimsEnabled { get; private set; }
+        public bool HasApprovedClaim { get; private set; }
 
         public EditCharacterViewModel Fill(Character field, int currentUserId)
         {
@@ -100,9 +91,10 @@ namespace JoinRpg.Web.Models.Characters
 
             ActiveClaimsCount = field.Claims.Count(claim => claim.ClaimStatus.IsActive());
             IsActive = field.IsActive;
-            IsAcceptingClaimsEnabled = field.ApprovedClaim == null;
+            HasApprovedClaim = field.ApprovedClaim is not null;
 
-            IsAcceptingClaims = IsAcceptingClaims && IsAcceptingClaimsEnabled;
+            CharacterTypeInfo = new CharacterTypeInfo(field.CharacterType, field.IsHot, field.CharacterSlotLimit);
+
             CreatedAt = field.CreatedAt;
             UpdatedAt = field.UpdatedAt;
             CreatedBy = field.CreatedBy;

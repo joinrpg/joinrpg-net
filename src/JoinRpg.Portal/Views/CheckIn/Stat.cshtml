@@ -4,27 +4,14 @@
   ViewBag.Title = "Статистика по регистрации";
 }
 
-<h2>@ViewBag.Title</h2>
-
-<div class="h1">
-  Осталось зарегистрировать: <span id="readyStat"></span>
-  <br />
-  Прошло регистрацию: <span id="checkinStat"></span>
-</div>
+<component type="typeof(JoinRpg.Web.CheckIn.CheckInStats)"
+           render-mode="WebAssemblyPrerendered"
+           param-ProjectId="@ViewBag.ProjectId"
+           />
 
 @section Scripts {
-  <script type="text/javascript">
-    $(function() {
-      function load() {
-        $.getJSON("/x-game-api/@ViewBag.ProjectId/checkin/stat",
-          function(data) {
-            $('#checkinStat').text(data.CheckIn);
-            $('#readyStat').text(data.Ready);
-            setTimeout(load, 5000);
-          });
-      };
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
-      load();
-    });
-  </script>
 }
+

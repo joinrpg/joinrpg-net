@@ -202,3 +202,5 @@ appsettings.Development.json
 
 #Libman
 /src/JoinRpg.Portal/wwwroot/lib
+/src/JoinRpg.WebComponents/wwwroot/lib
+/src/JoinRpg.Blazor.ComponentBook/wwwroot/lib

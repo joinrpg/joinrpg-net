@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Models.Money
         /// <summary>
         /// Html Id
         /// </summary>
-        public string HtmlId { get; set; }
+        public string? HtmlId { get; set; }
 
         /// <summary>
         /// Class name part with currency code
@@ -38,15 +38,15 @@ namespace JoinRpg.Web.Models.Money
         /// <summary>
         /// Creates new Money model with specified value and html Id
         /// </summary>
-        public Money(int value, string htmlId) : this(value, htmlId, null) { }
+        public Money(int value, string? htmlId) : this(value, htmlId, null) { }
 
         /// <summary>
         /// Creates new Money model with specified value, html Id and currency css class code
         /// </summary>
-        public Money(int value, string htmlId, string currencyCode)
+        public Money(int value, string? htmlId, string? currencyCode)
         {
             Value = value;
-            HtmlId = htmlId ?? HtmlId;
+            HtmlId = htmlId;
             CurrencyCode = currencyCode ?? CurrencyCode;
         }
     }

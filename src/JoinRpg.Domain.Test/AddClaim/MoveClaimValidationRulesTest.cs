@@ -34,7 +34,7 @@ namespace JoinRpg.Domain.Test.AddClaim
         public void CantMoveApprovedClaimFromCharacterToGroup()
         {
             var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
-            ShouldDisAllowMove(claim, Mock.Group, AddClaimForbideReason.ApprovedClaimMovedToGroup);
+            ShouldDisAllowMove(claim, Mock.Group, AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot);
         }
 
 

@@ -12,6 +12,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -63,10 +64,8 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize]
-        [HttpGet("~/{projectId}/roles/report")]
-        public Task<ActionResult> Report(int projectId) => Report(projectId, null);
-
-        [HttpGet, MasterAuthorize]
+        [HttpGet("~/{projectId}/roles/{characterGroupId:int}/report")]
+        [HttpGet("~/{projectId}/roles/all/report")]
         public async Task<ActionResult> Report(int projectId, int? characterGroupId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -280,7 +279,7 @@ namespace JoinRpg.Portal.Controllers
         private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
         {
             return group.Project.GetMasterListViewModel()
-              .Union(new MasterListItemViewModel()
+              .Append(new MasterListItemViewModel()
               {
                   Id = "-1",
                   Name = "По умолчанию", // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)
@@ -440,7 +439,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanEditRoles)]
-        [HttpPost]
+        [HttpGet]
         public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
 
         private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
@@ -460,7 +459,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanEditRoles)]
-        [HttpPost]
+        [HttpGet]
         public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
 
         [HttpGet, MasterAuthorize()]

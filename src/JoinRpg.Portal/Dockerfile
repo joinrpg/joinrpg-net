@@ -1,11 +1,13 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:5.0.202 AS build-env
+﻿FROM mcr.microsoft.com/dotnet/sdk:6.0.100 AS build-env
 WORKDIR /app
 
 COPY . ./
-RUN dotnet publish src/JoinRpg.Portal -c Release -o out
+#We have to build separedly to workaround https://github.com/aspnet/LibraryManager/issues/643
+RUN dotnet build src/JoinRpg.WebComponents --configuration Release --output out
+RUN dotnet publish src/JoinRpg.Portal --configuration Release --output out
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:5.0.10
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.2
 WORKDIR /app
 COPY --from=build-env /app/out .
 

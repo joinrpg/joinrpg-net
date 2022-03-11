@@ -6,7 +6,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.XGameApi.Contract;
@@ -80,11 +80,13 @@ namespace JoinRpg.Web.Controllers.XGameApi
                             Value = field.Value,
                             DisplayString = field.DisplayString,
                         }),
+#pragma warning disable CS0612 // Type or member is obsolete
                     PlayerUserId = character.ApprovedClaim?.PlayerUserId,
                     CharacterDescription = character.Description,
+#pragma warning restore CS0612 // Type or member is obsolete
                     CharacterName = character.Name,
                     PlayerInfo = character.ApprovedClaim is null ? null :
-                        new CharacterPlayerInfo(character.ApprovedClaim.PlayerUserId, character.ApprovedClaim.ClaimFeeDue() <= 0),
+                        CreatePlayerInfo(character.ApprovedClaim),
                 };
         }
 
@@ -123,5 +125,20 @@ namespace JoinRpg.Web.Controllers.XGameApi
             projectFields.FillFrom(character);
             return projectFields;
         }
+
+
+        private static CharacterPlayerInfo CreatePlayerInfo(Claim claim)
+        {
+            return new CharacterPlayerInfo(
+                                        claim.PlayerUserId,
+                                        claim.ClaimFeeDue() <= 0,
+                                        new PlayerContacts(
+                                            claim.Player.Email,
+                                            claim.Player.Extra?.PhoneNumber,
+                                            claim.Player.Extra?.VkVerified == true ? claim.Player.Extra?.Vk : null,
+                                            claim.Player.Extra?.Telegram)
+                                        );
+        }
+
     }
 }

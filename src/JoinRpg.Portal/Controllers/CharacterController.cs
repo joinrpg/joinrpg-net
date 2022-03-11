@@ -9,8 +9,10 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
+using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using Microsoft.AspNetCore.Authorization;
@@ -71,17 +73,17 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Edit(int projectId, int characterId)
         {
             var field = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
+            var view = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
             return View(new EditCharacterViewModel()
             {
                 ProjectId = field.ProjectId,
                 CharacterId = field.CharacterId,
                 IsPublic = field.IsPublic,
                 ProjectName = field.Project.ProjectName,
-                IsAcceptingClaims = field.IsAcceptingClaims,
+                CharacterTypeInfo = view.CharacterTypeInfo,
                 HidePlayerForCharacter = field.HidePlayerForCharacter,
                 Name = field.CharacterName,
-                ParentCharacterGroupIds = field.GetParentGroupsForEdit(),
-                IsHot = field.IsHot,
+                ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
             }.Fill(field, CurrentUserId));
         }
 
@@ -89,8 +91,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
         {
             var field =
-                await CharacterRepository.GetCharacterAsync(viewModel.ProjectId,
-                    viewModel.CharacterId);
+                 await CharacterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
             try
             {
                 if (!ModelState.IsValid)
@@ -99,17 +100,15 @@ namespace JoinRpg.Portal.Controllers
                 }
 
                 await CharacterService.EditCharacter(
-                    CurrentUserId,
-                    viewModel.CharacterId,
-                    viewModel.ProjectId,
-                    viewModel.Name,
-                    viewModel.IsPublic,
-                    viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
-                    viewModel.IsAcceptingClaims &&
-                    field.ApprovedClaim == null,
-                    viewModel.HidePlayerForCharacter,
-                    Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
-                    viewModel.IsHot);
+                    new EditCharacterRequest(
+                        new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
+                        IsPublic: viewModel.IsPublic,
+                        ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
+                        CharacterTypeInfo: viewModel.CharacterTypeInfo,
+                        HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
+                        FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
+                        Name: viewModel.Name)
+                    );
 
                 return RedirectToAction("Details",
                     new { viewModel.ProjectId, viewModel.CharacterId });
@@ -144,8 +143,9 @@ namespace JoinRpg.Portal.Controllers
             {
                 ProjectId = projectid,
                 ProjectName = characterGroup.Project.ProjectName,
-                ParentCharacterGroupIds = characterGroup.AsPossibleParentForEdit(),
+                ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
                 ContinueCreating = continueCreating,
+                CharacterTypeInfo = CharacterTypeInfo.Default(),
             }.Fill(characterGroup, CurrentUserId));
         }
 
@@ -154,16 +154,15 @@ namespace JoinRpg.Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
         {
-            var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().FirstOrDefault();
+            var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
             try
             {
                 await CharacterService.AddCharacter(new AddCharacterRequest(
                     ProjectId: viewModel.ProjectId,
                     Name: viewModel.Name,
-                    IsAcceptingClaims: viewModel.IsAcceptingClaims,
-                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
+                    CharacterTypeInfo: viewModel.CharacterTypeInfo,
+                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                    IsHot: viewModel.IsHot,
                     IsPublic: viewModel.IsPublic,
                     FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
                 ));
@@ -218,7 +217,7 @@ namespace JoinRpg.Portal.Controllers
             var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);
             try
             {
-                await CharacterService.DeleteCharacter(projectId, characterId, CurrentUserId);
+                await CharacterService.DeleteCharacter(new DeleteCharacterRequest(new CharacterIdentification(projectId, characterId)));
 
                 return RedirectToIndex(field.Project);
             }

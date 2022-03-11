@@ -63,20 +63,15 @@
                 </a>
             </td>
             <td>
-                @switch (item.BusyStatus)
+                @if (item.Player is not null)
                 {
-                    case CharacterBusyStatusView.HasPlayer:
-                        <text>
-                            @Html.DisplayFor(modelItem => item.Player) (@Html.ActionLink("заявка", "Edit", "Claim", new { Model.ProjectId, ClaimId = item.ApprovedClaimId }, null))
-                        </text>
-                        break;
-                    case CharacterBusyStatusView.Discussed:
-                    case CharacterBusyStatusView.NoClaims:
-                    case CharacterBusyStatusView.Npc:
-                        @Html.DisplayFor(modelItem => item.BusyStatus)
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                   <text>
+                    @Html.DisplayFor(modelItem => item.Player) (@Html.ActionLink("заявка", "Edit", "Claim", new { Model.ProjectId, ClaimId = item.ApprovedClaimId }, null))
+                   </text>
+                }
+                else
+                {
+                   @Html.DisplayFor(modelItem => item.BusyStatus)
                 }
             </td>
             <td>

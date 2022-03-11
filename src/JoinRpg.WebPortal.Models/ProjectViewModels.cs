@@ -151,7 +151,7 @@ namespace JoinRpg.Web.Models
 
         public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(
             IEnumerable<T> collectionToSort,
-            Func<T, ProjectListItemViewModel> getProjectFunc)
+            Func<T, ProjectListItemViewModel?> getProjectFunc)
         {
             return collectionToSort
                 .OrderByDescending(p => getProjectFunc(p)?.IsActive)

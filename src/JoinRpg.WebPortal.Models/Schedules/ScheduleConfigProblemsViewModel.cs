@@ -4,10 +4,9 @@ namespace JoinRpg.Web.Models.Schedules
 {
     public enum ScheduleConfigProblemsViewModel
     {
-        //TODO поменять сообщение, когда сделаем настроечный экран
-        [Description("Расписание не настроено для этого проекта, обратитесь в техподдержку")]
+        [Description("Расписание не настроено для этого проекта. Вам необходимо добавить поля для помещения и расписания.")]
         FieldsNotSet,
-        [Description("У полей, привязанных к расписанию, разная видимость. Измените настройки видимости полей (публичные/игрокам/мастерам) на одинаковые")]
+        [Description("У полей, привязанных к расписанию, разная видимость. Измените настройки видимости полей (публичные/игрокам/мастерам) на одинаковые.")]
         InconsistentVisibility,
         [Description("У вас нет доступа к расписанию данного проекта")]
         NoAccess,
@@ -16,5 +15,7 @@ namespace JoinRpg.Web.Models.Schedules
         NoRooms,
         [Description("Не настроено ни одного тайм-слота")]
         NoTimeSlots,
+        [Description("Проект не найден")]
+        ProjectNotFound,
     }
 }

@@ -143,8 +143,8 @@ namespace JoinRpg.WebPortal.Managers
         {
             await Service.SetFieldSettingsAsync(new FieldSettingsRequest()
             {
-                DescriptionField = viewModel.DescriptionField > 0 ? viewModel.DescriptionField : (int?)null,
-                NameField = viewModel.NameField > 0 ? viewModel.NameField : (int?)null,
+                DescriptionField = viewModel.DescriptionField > 0 ? new(CurrentProject.ProjectId, viewModel.DescriptionField) : null,
+                NameField = viewModel.NameField > 0 ? new(CurrentProject.ProjectId, viewModel.NameField) : null,
                 LegacyModelEnabled = viewModel.LegacyModelEnabled,
                 ProjectId = CurrentProject.ProjectId,
             });

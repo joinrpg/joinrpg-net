@@ -44,9 +44,18 @@ namespace JoinRpg.Domain.Test.AddClaim
         }
 
         [Fact]
+        public void CantSendClaimIfNoSlotsChar()
+        {
+            Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
+            Mock.Character.CharacterSlotLimit = 0;
+            ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.SlotsExhausted);
+        }
+
+
+        [Fact]
         public void CantSendClaimIfCharacterIsNpc()
         {
-            Mock.Character.IsAcceptingClaims = false;
+            Mock.Character.CharacterType = PrimitiveTypes.CharacterType.NonPlayer;
             ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.Npc);
         }
 

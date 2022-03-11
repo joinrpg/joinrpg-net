@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -113,7 +114,7 @@ namespace JoinRpg.Services.Impl
             // TODO improve valitdation here
             //source.EnsureCanMoveClaim(oldClaim);
 
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
+            var responsibleMaster = source.GetResponsibleMaster();
             var claim = new Claim()
             {
                 CharacterGroupId = null,
@@ -124,7 +125,7 @@ namespace JoinRpg.Services.Impl
                 CreateDate = Now,
                 ClaimStatus = Claim.Status.Approved,
                 CurrentFee = 0,
-                ResponsibleMasterUserId = responsibleMaster?.UserId,
+                ResponsibleMasterUserId = responsibleMaster.UserId,
                 ResponsibleMasterUser = responsibleMaster,
                 LastUpdateDateTime = Now,
                 MasterAcceptedDate = Now,
@@ -178,11 +179,7 @@ namespace JoinRpg.Services.Impl
 
             source.EnsureCanAddClaim(CurrentUserId);
 
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
-                //if we failed to calculate responsible master, assign owner as responsible master
-                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
-                //if we found no owner, assign random master
-                ?? source.Project.ProjectAcls.First().User;
+            User responsibleMaster = source.GetResponsibleMaster();
 
             var claim = new Claim()
             {
@@ -230,7 +227,7 @@ namespace JoinRpg.Services.Impl
 
             if (claim.Project.Details.AutoAcceptClaims)
             {
-                var userId = claim.ResponsibleMasterUserId ?? claim.Project.ProjectAcls.First().UserId;
+                var userId = claim.ResponsibleMasterUserId;
                 StartImpersonate(userId);
                 //TODO[Localize]
                 await ApproveByMaster(projectId,
@@ -317,10 +314,21 @@ namespace JoinRpg.Services.Impl
 
             commentText ??= "";
 
+            if (claim.Character?.CharacterType == CharacterType.Slot)
+            {
+                var character = CreateCharacterFromSlot(claim.Character, claim.Player);
+                claim.Character = character;
+                claim.CharacterId = character.CharacterId;
+            }
+
+            else if (claim.Group != null)
+            {
+                ConvertToIndividual(claim);
+            }
+
             claim.MasterAcceptedDate = Now;
             claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
-            claim.ResponsibleMasterUserId ??= CurrentUserId;
             _ = AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
             if (!claim.Project.Details.EnableManyCharacters)
@@ -340,14 +348,10 @@ namespace JoinRpg.Services.Impl
                 }
             }
 
-            if (claim.Group != null)
-            {
-                ConvertToIndividual(claim);
-            }
-
             MarkCharacterChangedIfApproved(claim);
             Debug.Assert(claim.Character != null, "claim.Character != null");
             claim.Character.ApprovedClaimId = claim.ClaimId;
+            claim.Character.IsHot = false;
 
             //We need to re-save fields here. Reasons:
             // 1. If we created character during approving, we need to set name for character
@@ -365,6 +369,62 @@ namespace JoinRpg.Services.Impl
                         s => s.ClaimStatusChange,
                         CommentExtraAction.ApproveByMaster));
         }
+
+        private static Character CreateCharacterFromSlot(Character slot, User player)
+        {
+
+            switch (slot.CharacterSlotLimit)
+            {
+                case null:  // Unlimited slot
+                    break;
+                case > 0:
+                    slot.CharacterSlotLimit--;
+                    break;
+                default:
+                    throw new JoinRpgSlotLimitedException(slot);
+            }
+
+
+            if (slot.CharacterType != CharacterType.Slot)
+            {
+                throw new EntityWrongStatusException(slot);
+            }
+
+            var newCharacter = new Character()
+            {
+                ApprovedClaim = null,
+                ApprovedClaimId = null,
+                AutoCreated = true,
+                OriginalCharacterSlot = slot,
+                CanBePermanentlyDeleted = false,
+                CharacterId = -1,
+                CharacterName = slot.CharacterName, // Probably will be updated by field save
+                CharacterSlotLimit = null,
+                CharacterType = CharacterType.Player,
+                CreatedAt = DateTime.Now,
+                CreatedBy = player,
+                CreatedById = player.UserId,
+                DirectlyRelatedPlotElements = slot.DirectlyRelatedPlotElements,
+                HidePlayerForCharacter = slot.HidePlayerForCharacter,
+                InGame = false,
+                IsAcceptingClaims = true,
+                IsActive = true,
+                IsHot = false,
+                IsPublic = slot.IsPublic,
+                JsonData = slot.JsonData,
+                ParentCharacterGroupIds = slot.ParentCharacterGroupIds,
+                PlotElementOrderData = slot.PlotElementOrderData,
+                Project = slot.Project,
+                ProjectId = slot.ProjectId,
+                Subscriptions = slot.Subscriptions,
+                UpdatedAt = DateTime.Now,
+                UpdatedBy = player,
+                UpdatedById = player.UserId,
+            };
+
+            return newCharacter;
+        }
+
 
         private void ConvertToIndividual(Claim claim)
         {
@@ -675,7 +735,6 @@ namespace JoinRpg.Services.Impl
             claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
             claim.ClaimDenialStatus = null;
             SetDiscussed(claim, true);
-            claim.ResponsibleMasterUserId ??= currentUserId;
 
 
             if (claim.Character != null)
@@ -737,7 +796,6 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            claim.ResponsibleMasterUserId ??= currentUserId;
             var email =
               await
                 AddCommentWithEmail<MoveByMasterEmail>(contents, claim,
@@ -814,7 +872,7 @@ namespace JoinRpg.Services.Impl
             var newMaster = await UserRepository.GetById(responsibleMasterId);
 
             var email = await
-              AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser?.GetDisplayName() ?? "N/A"} → {newMaster.GetDisplayName()}", claim,
+              AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser.GetDisplayName() ?? "N/A"} → {newMaster.GetDisplayName()}", claim,
                 isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
                 extraAction: CommentExtraAction.ChangeResponsible, extraSubscriptions: new[] { newMaster });
 

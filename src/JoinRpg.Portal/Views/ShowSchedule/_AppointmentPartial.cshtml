@@ -14,7 +14,7 @@
         classNames += " appointment-all-rooms";
     }
     classNames += Model.Users.Count == 0 ? " appointment-no-users" : " appointment-has-users";
-    string url = Url.Action(Model.ErrorType.HasValue ? "Edit" : "Details", "Character", new { projectId = Model.ProjectId, characterId = Model.CharacterId });
+    string url = Url.Action("Details", "Character", new { projectId = Model.ProjectId, characterId = Model.CharacterId });
     string style = Model.ErrorMode
         ? string.Format("max-width: {0}px; height: {1}px;", Model.Width * 2, Model.ErrorType == AppointmentErrorType.NotLocated ? Model.Height + Model.Height / 2 : Model.Height)
         : string.Format("left: {0}px; top: {1}px; width: {2}px; height: {3}px", Model.Left, Model.Top, Model.Width - 1, Model.Height - 1);
@@ -34,7 +34,14 @@
      error-mode="@((Model.ErrorType == AppointmentErrorType.Intersection).ToString())"
      errors="@(Model.ErrorType.HasValue ? Model.ErrorType?.GetDisplayName() : "")">
     <div class="appointment-interior" title="@title">
-        <div class="appointment-header"><a href="@url" target="@target">@Model.DisplayName</a></div>
+        <div class="appointment-header">
+          <a asp-action="Details" asp-controller="Character" asp-route-ProjectId="@Model.ProjectId" asp-route-characterId="@Model.CharacterId" target="@target">@Model.DisplayName</a>
+          @if (Model.HasMasterAccess)
+          {
+              <a asp-action="Edit" asp-controller="Character" asp-route-ProjectId="@Model.ProjectId" asp-route-characterId="@Model.CharacterId">(ред.)</a>
+          }
+        </div>
+        
         @if (Model.ErrorType == AppointmentErrorType.NotLocated)
         {
             <div class="appointment-rooms"><b>Комнаты:</b> @if (Model.Rooms.Count > 0) { @(Model.AllRooms ? "все" : rooms) } else { <b class="text-danger">нет</b> }</div>

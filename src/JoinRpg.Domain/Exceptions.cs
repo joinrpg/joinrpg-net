@@ -39,9 +39,28 @@ namespace JoinRpg.Domain
 
     public abstract class JoinRpgProjectEntityException : JoinRpgProjectException
     {
+        public IProjectEntity Entity { get; set; }
         protected JoinRpgProjectEntityException(IProjectEntity entity, string message)
             : base(entity.Project, message)
-        { }
+        {
+            Entity = entity;
+        }
+    }
+
+    public class JoinRpgSlotLimitedException : JoinRpgProjectEntityException
+    {
+        public JoinRpgSlotLimitedException(Character entity) : base(entity, "Couldn't add more characters because slot is full")
+        {
+
+        }
+    }
+
+    public class JoinRpgCharacterBrokenStateException : JoinRpgProjectEntityException
+    {
+        public JoinRpgCharacterBrokenStateException(Character entity, string message) : base(entity, message)
+        {
+
+        }
     }
 
     public class JoinRpgNameFieldDeleteException : JoinRpgProjectEntityException

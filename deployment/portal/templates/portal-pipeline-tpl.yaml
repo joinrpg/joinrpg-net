@@ -55,7 +55,7 @@ stages:
     - task: HelmInstaller@1
       displayName: Install Helm
       inputs:
-        helmVersionToInstall: latest
+        helmVersionToInstall: 3.6.3
 
     ##=============================================
     ## Get version info and create tag for image

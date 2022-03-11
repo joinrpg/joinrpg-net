@@ -23,7 +23,7 @@ namespace JoinRpg.IntegrationTest.Scenarios
             var content = new FormUrlEncodedContent(
                     new[]
                     {
-                        new KeyValuePair<string, string>("Date", "29.8.2020"),
+                        new KeyValuePair<string?, string?>("Date", "29.8.2020"),
                     });
 
             var request = new HttpRequestMessage(HttpMethod.Post, "test/mockdatetime");
@@ -41,7 +41,7 @@ namespace JoinRpg.IntegrationTest.Scenarios
             var content = new FormUrlEncodedContent(
                     new[]
                     {
-                        new KeyValuePair<string, string>("Date", "29.8.2020"),
+                        new KeyValuePair<string?, string?>("Date", "29.8.2020"),
                     });
 
             var request = new HttpRequestMessage(HttpMethod.Post, "test/mockdatetime");

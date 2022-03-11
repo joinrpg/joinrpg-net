@@ -103,6 +103,10 @@ namespace JoinRpg.Web.Models.Characters
                 vm.ChildGroups = childGroups
                     .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))
                     .WhereNotNull()
+                    .ToList();
+
+                _ = vm.ChildGroups
+                    .Where(x => !x.IsSpecial)
                     .MarkFirstAndLast();
 
                 return vm;
@@ -122,7 +126,8 @@ namespace JoinRpg.Web.Models.Characters
                     CharacterId = arg.CharacterId,
                     CharacterName = arg.CharacterName,
                     IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-                    IsAvailable = arg.IsAvailable,
+                    IsAvailable = arg.IsAvailable && arg.CharacterSlotLimit != 0,
+                    SlotLimit = arg.CharacterSlotLimit,
                     Description = arg.Description.ToHtmlString(),
                     IsPublic = arg.IsPublic,
                     IsActive = arg.IsActive,

@@ -142,9 +142,7 @@ namespace PscbApi
                 Url = $"{ActualApiEndpoint}/pay",
                 Request = new PaymentRequest
                 {
-                    marketPlace = message.PaymentMethod == PscbPaymentMethod.FastPaymentsSystem
-                        ? _configuration.MerchantIdFastPayments ?? _configuration.MerchantId
-                        : _configuration.MerchantId,
+                    marketPlace = _configuration.MerchantId,
                     message = Convert.ToBase64String(messageAsJsonUtf8),
                     signature = messageWithKey.Sha256Encode().ToHexString()
                 }
@@ -182,9 +180,7 @@ namespace PscbApi
             var queryParams = new PaymentInfoQueryParams
             {
                 OrderId = orderId,
-                MerchantId = paymentMethod == PscbPaymentMethod.FastPaymentsSystem
-                    ? _configuration.MerchantIdFastPayments ?? _configuration.MerchantId
-                    : _configuration.MerchantId,
+                MerchantId = _configuration.MerchantId,
                 GetCardData = getCardData,
                 GetFiscalData = getFiscalData,
             };

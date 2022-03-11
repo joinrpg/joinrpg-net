@@ -45,7 +45,7 @@ namespace JoinRpg.Web.XGameApi.Contract
         public IOrderedEnumerable<GroupHeader> Groups { get; set; }
 
         /// <summary>
-        /// Groups that character part of 
+        /// Groups that character part of
         /// </summary>
         public IOrderedEnumerable<GroupHeader> AllGroups { get; set; }
 
@@ -82,44 +82,49 @@ namespace JoinRpg.Web.XGameApi.Contract
     /// <summary>
     /// Info about player
     /// </summary>
-    public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull)
+    public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull, PlayerContacts PlayerContacts)
     {
         /// <summary>
         /// true — claim fee paid in full
         /// false — claim fee not paid in full
-        /// null 
+        /// null
         /// </summary>
-    public bool PaidInFull { get; set; } = PaidInFull;
+        public bool PaidInFull { get; set; } = PaidInFull;
+
+        /// <summary>
+        /// Player user id
+        /// </summary>
+        public int PlayerUserId { get; set; } = PlayerUserId;
+
+        /// <summary>
+        /// Player contacts
+        /// </summary>
+        public PlayerContacts PlayerContacts { get; set; } = PlayerContacts;
+    }
 
     /// <summary>
-    /// Player user id
+    /// Has player or not.
     /// </summary>
-    public int PlayerUserId { get; set; } = PlayerUserId;
-}
+    public enum CharacterBusyStatus
+    {
+        /// <summary>
+        /// Has player
+        /// </summary>
+        HasPlayer,
 
-/// <summary>
-/// Has player or not.
-/// </summary>
-public enum CharacterBusyStatus
-{
-    /// <summary>
-    /// Has player
-    /// </summary>
-    HasPlayer,
+        /// <summary>
+        /// Has some claims, but nothing approved
+        /// </summary>
+        Discussed,
 
-    /// <summary>
-    /// Has some claims, but nothing approved
-    /// </summary>
-    Discussed,
+        /// <summary>
+        /// No actve claims
+        /// </summary>
+        NoClaims,
 
-    /// <summary>
-    /// No actve claims
-    /// </summary>
-    NoClaims,
-
-    /// <summary>
-    /// NPC should not have any claims
-    /// </summary>
-    Npc,
-}
+        /// <summary>
+        /// NPC should not have any claims
+        /// </summary>
+        Npc,
+    }
 }

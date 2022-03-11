@@ -54,7 +54,7 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool Equals(CharacterGroupListItemViewModel? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
-        public override bool Equals(object obj) => Equals(obj as CharacterGroupListItemViewModel);
+        public override bool Equals(object? obj) => Equals(obj as CharacterGroupListItemViewModel);
 
         public override int GetHashCode() => CharacterGroupId;
 

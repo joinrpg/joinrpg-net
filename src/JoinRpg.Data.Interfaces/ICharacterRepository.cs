@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Data.Interfaces
 {
@@ -32,7 +33,7 @@ namespace JoinRpg.Data.Interfaces
         public DateTime UpdatedAt { get; set; }
         public bool IsActive { get; set; }
         public bool InGame { get; set; }
-        public bool IsAcceptingClaims { get; set; }
+        public CharacterTypeInfo CharacterTypeInfo { get; set; }
         public Claim ApprovedClaim { get; set; }
         public IReadOnlyCollection<ClaimHeader> Claims { get; set; }
         public IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
@@ -40,6 +41,7 @@ namespace JoinRpg.Data.Interfaces
         public string JsonData { get; set; }
         public string Name { get; set; }
         public string? Description { get; set; }
+        public bool LegacyNameMode { get; set; }
     }
 
     public class GroupHeader : IEquatable<GroupHeader>
@@ -55,7 +57,7 @@ namespace JoinRpg.Data.Interfaces
         public bool Equals(GroupHeader? other) => other != null && CharacterGroupId == other.CharacterGroupId;
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => Equals(obj as GroupHeader);
+        public override bool Equals(object? obj) => Equals(obj as GroupHeader);
 
         /// <inheritdoc />
         public override int GetHashCode() => CharacterGroupId;

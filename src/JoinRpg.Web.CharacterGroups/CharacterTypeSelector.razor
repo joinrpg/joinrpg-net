@@ -1,0 +1,65 @@
+﻿@using JoinRpg.PrimitiveTypes
+<FormRow Label="Тип Персонажа">
+  @if (ActiveClaimsCount > 0)
+  {
+    <label>@characterType.GetDisplayName()</label>
+    <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
+    <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
+  }
+  else
+  {
+    <EnumRadioButtonGroup @bind-SelectedValue="@characterType" Name="@(Name + ".CharacterType")" />
+  }
+</FormRow>
+
+@if (characterType == CharacterTypeView.Slot)
+{
+  <FormRow Label="Лимит персонажей в слоте" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого слота.">
+    <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" Min="0"/>
+  </FormRow>
+}
+
+@if (!HasApprovedClaim && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
+{
+  <FormRow Label="Горячая роль" Description="Горячая роль специальным образом выделяется в ролевке">
+    <CheckboxInput @bind-Value="@isHot" Name="@(Name + ".IsHot")" />
+  </FormRow>
+}
+
+@code {
+
+    [Parameter]
+    public CharacterTypeInfo InitialModel { get; set; } = CharacterTypeInfo.Default();
+
+    [Parameter]
+    public int ActiveClaimsCount { get; set; } = 0;
+
+    [Parameter]
+    public bool HasApprovedClaim { get; set; } = false;
+
+    [Parameter]
+    public string Name { get; set; } = "CharacterTypeInfo";
+
+    private CharacterTypeView characterType;
+    private bool isHot;
+    private int? characterSlotLimit;
+
+    private void IsHotChanged()
+    {
+      isHot = !isHot;
+    }
+
+    protected override void OnInitialized()
+    {
+      if (InitialModel is null)
+      {
+        throw new ArgumentNullException(nameof(InitialModel));
+      }
+
+      CharacterType ct;
+      (ct, isHot, characterSlotLimit, _) = InitialModel;
+
+      characterType = (CharacterTypeView)ct;
+    }
+
+}

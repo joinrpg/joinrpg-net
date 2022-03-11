@@ -8,6 +8,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 #nullable enable
@@ -18,7 +19,7 @@ namespace JoinRpg.Services.Impl
     public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
 
-        public async Task AddField(CreateFieldRequest request)
+        public async Task<ProjectFieldIdentification> AddField(CreateFieldRequest request)
         {
             var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
@@ -50,6 +51,7 @@ namespace JoinRpg.Services.Impl
 
             _ = UnitOfWork.GetDbSet<ProjectField>().Add(field);
             await UnitOfWork.SaveChangesAsync();
+            return new ProjectFieldIdentification(new ProjectIdentification(request.ProjectId), field.ProjectFieldId);
         }
 
         public async Task UpdateFieldParams(UpdateFieldRequest request)
@@ -258,6 +260,7 @@ namespace JoinRpg.Services.Impl
             {
                 field.CharacterGroup = new CharacterGroup()
                 {
+                    CharacterGroupId = -field.ProjectFieldId, // We will need this if create both field and variant special group at once.
                     AvaiableDirectSlots = 0,
                     HaveDirectSlots = false,
                     ParentCharacterGroupIds = new[] { field.Project.RootGroup.CharacterGroupId },
@@ -394,8 +397,8 @@ namespace JoinRpg.Services.Impl
             _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             project.Details.CharacterNameLegacyMode = request.LegacyModelEnabled;
-            project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.NameField);
-            project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.DescriptionField);
+            project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.NameField?.ProjectFieldId);
+            project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.DescriptionField?.ProjectFieldId);
 
             await UnitOfWork.SaveChangesAsync();
         }

@@ -81,14 +81,14 @@ namespace JoinRpg.Web.Models.Characters
 
         public int? ApprovedClaimId { get; }
 
-        [Display(Name = "Игрок"), CanBeNull]
-        public User Player { get; set; }
+        [Display(Name = "Игрок")]
+        public User? Player { get; set; }
 
         [ReadOnly(true), DisplayName("Входит в группы")]
         public CharacterParentGroupsViewModel Groups { get; }
 
         [Display(Name = "Ответственный мастер")]
-        public User Responsible { get; }
+        public User? Responsible { get; }
 
         public CharacterListItemViewModel(
             [NotNull]
@@ -120,7 +120,7 @@ namespace JoinRpg.Web.Models.Characters
             Groups = new CharacterParentGroupsViewModel(character,
                 character.HasMasterAccess(currentUserId));
 
-            Responsible = character.GetResponsibleMaster();
+            Responsible = character.GetResponsibleMasterOrDefault();
         }
 
         [Display(Name = "Проблемы")]

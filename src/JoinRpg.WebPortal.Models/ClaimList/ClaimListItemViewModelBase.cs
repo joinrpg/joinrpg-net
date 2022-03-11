@@ -27,7 +27,7 @@ namespace JoinRpg.Web.Models.ClaimList
         public DateTime? CreateDate { get; set; }
 
         [Display(Name = "Ответственный")]
-        public User? Responsible { get; set; }
+        public User Responsible { get; set; }
 
         [CanBeNull]
         public User LastModifiedBy { get; set; }

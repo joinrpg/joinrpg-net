@@ -1,4 +1,5 @@
 using System;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.WebPortal.Managers.Interfaces;
 using Microsoft.AspNetCore.Http;
 
@@ -11,12 +12,12 @@ namespace JoinRpg.Portal.Infrastructure
         public CurrentProjectAccessor(IHttpContextAccessor httpContextAccessor)
         {
             HttpContextAccessor = httpContextAccessor;
-            ProjectIdLazy = new Lazy<int>(()
-                => (int)HttpContextAccessor.HttpContext.Items[DiscoverFilters.Constants.ProjectIdName]);
+            ProjectIdLazy = new Lazy<ProjectIdentification>(()
+                => new((int)HttpContextAccessor.HttpContext!.Items[DiscoverFilters.Constants.ProjectIdName]!));
         }
 
-        private readonly Lazy<int> ProjectIdLazy;
+        private readonly Lazy<ProjectIdentification> ProjectIdLazy;
 
-        public int ProjectId => ProjectIdLazy.Value;
+        public ProjectIdentification ProjectId => ProjectIdLazy.Value;
     }
 }

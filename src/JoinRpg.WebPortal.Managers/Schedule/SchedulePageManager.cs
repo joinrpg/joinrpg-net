@@ -43,14 +43,15 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             };
 
             MergeSlots(viewModel);
-            BuildAppointments(viewModel);
+            BuildAppointments(project, viewModel);
 
             return viewModel;
         }
 
-        private void BuildAppointments(SchedulePageViewModel viewModel)
+        private void BuildAppointments(Project project, SchedulePageViewModel viewModel)
         {
             var result = new List<AppointmentViewModel>(64);
+            var hasMasterAccess = project.HasMasterAccess(CurrentUserAccessor.UserId);
 
             for (var i = 0; i < viewModel.Rows.Count; i++)
             {
@@ -65,6 +66,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
 
                     var rowIndex = i;
                     var colIndex = j;
+
                     var appointment = new AppointmentViewModel(() => new Rect
                     {
                         Left = colIndex * viewModel.ColumnWidth,
@@ -79,6 +81,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         AllRooms = slot.ColSpan == viewModel.Columns.Count,
                         RoomIndex = colIndex,
                         RoomCount = slot.ColSpan,
+                        HasMasterAccess = hasMasterAccess,
                         TimeSlotIndex = rowIndex,
                         TimeSlotsCount = slot.RowSpan,
                         DisplayName = slot.Name,
@@ -118,7 +121,8 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         Description = source.Description.ToHtmlString(),
                         ProjectId = source.ProjectId,
                         CharacterId = source.Id,
-                        Users = source.Users
+                        Users = source.Users,
+                        HasMasterAccess = hasMasterAccess,
                     })
                 .ToList();
 
@@ -140,7 +144,8 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         Description = source.Description.ToHtmlString(),
                         ProjectId = source.ProjectId,
                         CharacterId = source.Id,
-                        Users = source.Users
+                        Users = source.Users,
+                        HasMasterAccess = hasMasterAccess,
                     })
                 .ToList();
         }
@@ -192,6 +197,11 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         public async Task<IReadOnlyCollection<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
         {
             var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+
+            if (project is null)
+            {
+                return new[] { ScheduleConfigProblemsViewModel.ProjectNotFound };
+            }
 
             bool HasAccess(ProjectField roomField)
             {
@@ -249,8 +259,8 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             return Impl().ToList();
         }
 
-        public IProjectRepository Project { get; }
-        public ICurrentProjectAccessor CurrentProject { get; }
-        public ICurrentUserAccessor CurrentUserAccessor { get; }
+        private IProjectRepository Project { get; }
+        private ICurrentProjectAccessor CurrentProject { get; }
+        private ICurrentUserAccessor CurrentUserAccessor { get; }
     }
 }

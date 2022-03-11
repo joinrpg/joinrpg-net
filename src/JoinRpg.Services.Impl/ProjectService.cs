@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl
 {
@@ -23,14 +24,13 @@ namespace JoinRpg.Services.Impl
         {
         }
 
-        public async Task<Project> AddProject(CreateProjectRequest request)
+        public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName)
         {
             var rootGroup = new CharacterGroup()
             {
                 IsPublic = true,
                 IsRoot = true,
-                //TODO[Localize]
-                CharacterGroupName = "Все роли",
+                CharacterGroupName = rootCharacterGroupName,
                 IsActive = true,
                 ResponsibleMasterUserId = CurrentUserId,
                 HaveDirectSlots = true,
@@ -42,7 +42,7 @@ namespace JoinRpg.Services.Impl
                 Active = true,
                 IsAcceptingClaims = false,
                 CreatedDate = Now,
-                ProjectName = Required(request.ProjectName),
+                ProjectName = projectName,
                 CharacterGroups = new List<CharacterGroup>()
                 {
                     rootGroup,
@@ -58,76 +58,13 @@ namespace JoinRpg.Services.Impl
                 ProjectFields = new List<ProjectField>(),
             };
             MarkTreeModified(project);
-            ConfigureProjectDefaults(project, request.ProjectType);
 
             _ = UnitOfWork.GetDbSet<Project>().Add(project);
             await UnitOfWork.SaveChangesAsync();
             return project;
         }
 
-        private static void ConfigureProjectDefaults(Project project, ProjectTypeDto projectType)
-        {
-            var initialFieldId = -1000;
-            ProjectField CreateField(string name, ProjectFieldType type)
-            {
-                var field = new ProjectField()
-                {
-                    CanPlayerEdit = false,
-                    CanPlayerView = true,
-                    FieldBoundTo = FieldBoundTo.Character,
-                    FieldName = name,
-                    FieldType = type,
-                    IsActive = true,
-                    IsPublic = true,
-                    MandatoryStatus = MandatoryStatus.Optional,
-                    IncludeInPrint = false,
-                    ValidForNpc = true,
-                    ProjectFieldId = initialFieldId,
-                    Description = new MarkdownString(""),
-                    MasterDescription = new MarkdownString(""),
-                };
-                project.ProjectFields.Add(field);
-                initialFieldId++;
-                return field;
-            }
 
-            switch (projectType)
-            {
-                case ProjectTypeDto.Larp:
-                    project.Details.CharacterNameField = CreateField("Имя персонажа", ProjectFieldType.String);
-                    project.Details.CharacterNameField.MandatoryStatus = MandatoryStatus.Required;
-
-                    project.Details.CharacterDescription = CreateField("Описание персонажа", ProjectFieldType.Text);
-                    break;
-                case ProjectTypeDto.Convention:
-                    project.Details.AutoAcceptClaims = true;
-                    project.Details.EnableAccommodation = true;
-                    project.Details.CharacterNameField = null;
-                    project.Details.CharacterDescription = null;
-                    break;
-                case ProjectTypeDto.ConventionProgram:
-                    project.Details.EnableManyCharacters = true;
-
-                    project.Details.ScheduleEnabled = true;
-
-                    project.Details.CharacterNameField = CreateField("Название мероприятия", ProjectFieldType.String);
-                    project.Details.CharacterNameField.MandatoryStatus = MandatoryStatus.Required;
-                    project.Details.CharacterNameField.CanPlayerEdit = true;
-
-                    project.Details.CharacterDescription = CreateField("Описание мероприятия", ProjectFieldType.Text);
-                    project.Details.CharacterDescription.CanPlayerEdit = true;
-
-                    var timeField = CreateField("Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField);
-                    timeField.MasterDescription = new MarkdownString("Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
-
-                    var roomField = CreateField("Место проведения мероприятия", ProjectFieldType.ScheduleRoomField);
-                    roomField.MasterDescription = new MarkdownString("Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(projectType));
-            }
-        }
 
         public async Task AddCharacterGroup(int projectId,
             string name,
@@ -419,7 +356,7 @@ namespace JoinRpg.Services.Impl
                                               acl.Project.Details.EnableAccommodation;
         }
 
-        public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId)
+        public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterIdOrDefault)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
             if (userId != CurrentUserId)
@@ -448,16 +385,18 @@ namespace JoinRpg.Services.Impl
 
             if (claims.Any())
             {
-                if (newResponsibleMasterId == null)
+                if (newResponsibleMasterIdOrDefault is int newResponsible)
+                {
+                    _ = project.RequestMasterAccess(newResponsible);
+
+                    foreach (var claim in claims)
+                    {
+                        claim.ResponsibleMasterUserId = newResponsible;
+                    }
+                }
+                else
                 {
                     throw new MasterHasResponsibleException(acl);
-                }
-
-                _ = project.RequestMasterAccess((int)newResponsibleMasterId);
-
-                foreach (var claim in claims)
-                {
-                    claim.ResponsibleMasterUserId = newResponsibleMasterId;
                 }
             }
 

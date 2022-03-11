@@ -8,22 +8,18 @@ namespace JoinRpg.Portal.Infrastructure
     // see https://remibou.github.io/CSRF-protection-with-ASPNET-Core-and-Blazor-Week-29/
     public class CsrfTokenCookieMiddleware
     {
-        private readonly IAntiforgery _antiforgery;
         private readonly RequestDelegate _next;
 
-        public CsrfTokenCookieMiddleware(IAntiforgery antiforgery, RequestDelegate next)
+        public CsrfTokenCookieMiddleware(RequestDelegate next)
         {
-            _antiforgery = antiforgery;
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, IAntiforgery antiforgery)
         {
-            if (context.Request.Cookies["CSRF-TOKEN"] == null)
-            {
-                var token = _antiforgery.GetAndStoreTokens(context);
-                context.Response.Cookies.Append("CSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
-            }
+            var token = antiforgery.GetAndStoreTokens(context);
+            context.Response.Cookies.Append("CSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
+
             await _next(context);
         }
     }

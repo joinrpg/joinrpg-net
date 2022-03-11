@@ -7,6 +7,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
@@ -42,10 +43,10 @@ namespace JoinRpg.Portal.Controllers
         }
 
         private ActionResult ReturnToIndex()
-            => RedirectToAction("Index", new { CurrentProjectAccessor.ProjectId });
+            => RedirectToAction("Index", new { ProjectId = CurrentProjectAccessor.ProjectId.Value });
 
         private ActionResult ReturnToField(ProjectField value)
-            => RedirectToAction("Edit", new { CurrentProjectAccessor.ProjectId, projectFieldId = value.ProjectFieldId });
+            => RedirectToAction("Edit", new { ProjectId = CurrentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
 
 
         [HttpGet("/{ProjectId}/fields/")]

@@ -163,12 +163,7 @@ namespace JoinRpg.Web.Models
                         : claim.OtherPendingClaimsForThisPlayer().Count();
             Masters = claim.Project.GetMasterListViewModel().ToList();
 
-            if (claim.ResponsibleMasterUserId is null)
-            {
-                Masters.Add(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
-            }
-
-            ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
+            ResponsibleMasterId = claim.ResponsibleMasterUserId;
             ResponsibleMaster = claim.ResponsibleMasterUser;
             Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
             Navigation =
@@ -350,6 +345,7 @@ namespace JoinRpg.Web.Models
     public enum FinanceOperationTypeViewModel
     {
         [Display(Name = "Изменение взноса")]
+        [Obsolete]
         FeeChange = FinanceOperationType.FeeChange,
 
         [Display(Name = "Запрос льготы")]
@@ -405,6 +401,8 @@ namespace JoinRpg.Web.Models
 
         public bool ShowLinkedClaimLinkIfTransfer { get; }
 
+        public bool IsVisible { get; }
+
         public FinanceOperationViewModel(FinanceOperation source, bool isMaster)
         {
             Id = source.CommentId;
@@ -419,6 +417,10 @@ namespace JoinRpg.Web.Models
             RowCssClass = source.State.ToRowClass();
             Date = source.OperationDate.ToShortDateString();
             ShowLinkedClaimLinkIfTransfer = isMaster;
+#pragma warning disable CS0612 // Type or member is obsolete
+            IsVisible = OperationType != FinanceOperationTypeViewModel.FeeChange
+#pragma warning restore CS0612 // Type or member is obsolete
+                        && OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest;
 
             Title = OperationType.GetDescription() ?? "";
             if (string.IsNullOrWhiteSpace(Title))
@@ -478,7 +480,7 @@ namespace JoinRpg.Web.Models
             CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
             FieldsFee = model.Fields.FieldsFee;
 
-            foreach (FinanceOperationState s in Enum.GetValues(typeof(FinanceOperationState)))
+            foreach (var s in Enum.GetValues<FinanceOperationState>())
             {
                 Balance[s] = 0;
             }
@@ -501,15 +503,13 @@ namespace JoinRpg.Web.Models
             ProjectId = claim.ProjectId;
             FeeVariants = claim.Project.ProjectFeeSettings
                 .Select(f => f.Fee)
-                .Union(CurrentFee)
+                .Append(CurrentFee)
                 .OrderBy(x => x)
                 .ToList();
             FinanceOperations = claim.FinanceOperations
                 .Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
             VisibleFinanceOperations = FinanceOperations
-                .Where(fo =>
-                    fo.OperationType != FinanceOperationTypeViewModel.FeeChange
-                        && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
+                .Where(fo => fo.IsVisible);
 
             ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
             HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);

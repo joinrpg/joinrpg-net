@@ -47,9 +47,6 @@ namespace JoinRpg.Helpers
             bool add)
             => source.Union(add ? enumerable : Enumerable.Empty<T>());
 
-        [Obsolete("Use Append()")]
-        public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t) => source.Union(new[] { t });
-
         public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
             where T : class
         {

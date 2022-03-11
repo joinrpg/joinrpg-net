@@ -14,7 +14,7 @@ namespace JoinRpg.CommonUI.Models
         AlreadySent,
         OnlyOneCharacter,
         AlredySentNotApprovedClaimToAnotherPlace,
-        ApprovedClaimMovedToGroup,
+        ApprovedClaimMovedToGroupOrSlot,
         CheckedInClaimCantBeMoved,
 
     }
@@ -41,8 +41,8 @@ namespace JoinRpg.CommonUI.Models
                     return AddClaimForbideReasonViewModel.AlreadySent;
                 case AddClaimForbideReason.OnlyOneCharacter:
                     return AddClaimForbideReasonViewModel.OnlyOneCharacter;
-                case AddClaimForbideReason.ApprovedClaimMovedToGroup:
-                    return AddClaimForbideReasonViewModel.ApprovedClaimMovedToGroup;
+                case AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot:
+                    return AddClaimForbideReasonViewModel.ApprovedClaimMovedToGroupOrSlot;
                 case AddClaimForbideReason.CheckedInClaimCantBeMoved:
                     return AddClaimForbideReasonViewModel.CheckedInClaimCantBeMoved;
                 default:

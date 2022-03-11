@@ -13,7 +13,7 @@ namespace JoinRpg.TestHelpers
     {
         public override IEnumerable<TypeInfo> GetDataSource()
         {
-            return Assembly.GetAssembly(typeof(TAssemblyClass))
+            return Assembly.GetAssembly(typeof(TAssemblyClass))!
                 .DefinedTypes
                 .Where(type => typeof(TBaseClass).IsAssignableFrom(type) && !type.IsAbstract);
         }

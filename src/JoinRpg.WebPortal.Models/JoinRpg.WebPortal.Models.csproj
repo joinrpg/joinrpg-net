@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
     <RootNamespace>JoinRpg.Web.Models</RootNamespace>
       <NoWarn>${NoWarn};1591</NoWarn>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.GameSubscribe\JoinRpg.Web.GameSubscribe.csproj" />
     <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />
@@ -19,7 +20,7 @@
   </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     </ItemGroup>
 
 </Project>

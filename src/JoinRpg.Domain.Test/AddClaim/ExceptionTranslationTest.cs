@@ -11,15 +11,11 @@ namespace JoinRpg.Domain.Test.AddClaim
     public class ExceptionTranslationTest
     {
         [Theory]
-        [MemberData(nameof(AddClaimForbideReasons))]
+        [ClassData(typeof(EnumTheoryDataGenerator<AddClaimForbideReason>))]
         public void AllForbideReasonTranslatedToThrow(AddClaimForbideReason reason)
         {
             var claim = new Claim();
             _ = Should.Throw<JoinRpgBaseException>(() => ClaimSourceExtensions.ThrowForReason(reason, claim));
         }
-
-        // ReSharper disable once MemberCanBePrivate.Global xUnit requirements
-        public static TheoryData<AddClaimForbideReason> AddClaimForbideReasons =>
-            EnumerationTestHelper.GetTheoryDataForAllEnumValues<AddClaimForbideReason>();
     }
 }

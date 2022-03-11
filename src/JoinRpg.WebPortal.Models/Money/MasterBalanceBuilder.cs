@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using MoreLinq;
 
 namespace JoinRpg.Web.Models
 {

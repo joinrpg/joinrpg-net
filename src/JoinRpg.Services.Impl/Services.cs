@@ -9,6 +9,7 @@ namespace JoinRpg.Services.Impl
         public static IEnumerable<Type> GetTypes()
         {
             yield return typeof(ProjectService);
+            yield return typeof(CreateProjectService);
             yield return typeof(ClaimServiceImpl);
             yield return typeof(SearchServiceImpl);
             yield return typeof(PlotServiceImpl);

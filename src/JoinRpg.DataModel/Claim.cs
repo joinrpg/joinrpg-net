@@ -46,8 +46,8 @@ namespace JoinRpg.DataModel
 
         public virtual ICollection<UserSubscription> Subscriptions { get; set; } = new HashSet<UserSubscription>();
 
-        public virtual User? ResponsibleMasterUser { get; set; }
-        public int? ResponsibleMasterUserId { get; set; }
+        public virtual User ResponsibleMasterUser { get; set; }
+        public int ResponsibleMasterUserId { get; set; }
 
 
         public enum DenialStatus

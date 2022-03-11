@@ -27,8 +27,6 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание")]
         public JoinHtmlString Description { get; set; }
 
-        public bool IsAvailable { get; set; }
-
         public IReadOnlyCollection<AddClaimForbideReasonViewModel> ValidationStatus
         {
             get;
@@ -82,7 +80,6 @@ namespace JoinRpg.Web.Models
             ProjectName = claimSource.Project.ProjectName;
             TargetName = claimSource.Name;
             Description = claimSource.Description.ToHtmlString();
-            IsAvailable = claimSource.IsAvailable;
             ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
             Fields = new CustomFieldsViewModel(playerUserId, claimSource);
             IsRoot = claimSource.IsRoot;

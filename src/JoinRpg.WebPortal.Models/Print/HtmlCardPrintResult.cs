@@ -4,7 +4,7 @@ namespace JoinRpg.Web.Models.Print
 {
     public class HtmlCardPrintResult
     {
-        public HtmlCardPrintResult(string html, CardSize cardSize, string backgroundUrl = null)
+        public HtmlCardPrintResult(string html, CardSize cardSize, string? backgroundUrl = null)
         {
             Html = html;
             CardSize = cardSize;
@@ -17,8 +17,8 @@ namespace JoinRpg.Web.Models.Print
         [PublicAPI]
         public CardSize CardSize { get; }
 
-        [PublicAPI, CanBeNull]
-        public string BackgroundUrl { get; }
+        [PublicAPI]
+        public string? BackgroundUrl { get; }
     }
 
     public enum CardSize

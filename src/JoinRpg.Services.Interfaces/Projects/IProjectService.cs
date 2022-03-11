@@ -1,16 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces.Projects
 {
     public interface IProjectService
     {
-        /// <summary>
-        /// Create of new project
-        /// </summary>
-        Task<Project> AddProject(CreateProjectRequest request);
-
         Task EditProject(EditProjectRequest request);
 
         Task AddCharacterGroup(int projectId,
@@ -55,18 +49,5 @@ namespace JoinRpg.Services.Interfaces
             bool modelAllowSecondRoles);
 
         Task GrantAccessAsAdmin(int projectId);
-    }
-
-    public class CreateProjectRequest
-    {
-        public string ProjectName { get; set; }
-        public ProjectTypeDto ProjectType { get; set; }
-    }
-
-    public enum ProjectTypeDto
-    {
-        Larp,
-        Convention,
-        ConventionProgram,
     }
 }

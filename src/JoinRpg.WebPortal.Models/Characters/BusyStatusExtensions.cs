@@ -1,6 +1,7 @@
 using System.Linq;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -8,36 +9,29 @@ namespace JoinRpg.Web.Models.Characters
     {
         public static CharacterBusyStatusView GetBusyStatus(this Character character)
         {
-            if (character.ApprovedClaim != null)
+            return character switch
             {
-                return CharacterBusyStatusView.HasPlayer;
-            }
-            if (character.Claims.Any(c => c.ClaimStatus.IsActive()))
-            {
-                return CharacterBusyStatusView.Discussed;
-            }
-            if (character.IsAcceptingClaims)
-            {
-                return CharacterBusyStatusView.NoClaims;
-            }
-            return CharacterBusyStatusView.Npc;
+
+                { CharacterType: CharacterType.NonPlayer } => CharacterBusyStatusView.Npc,
+                { CharacterType: CharacterType.Slot } => CharacterBusyStatusView.Slot,
+                { CharacterType: CharacterType.Player, ApprovedClaim: not null } => CharacterBusyStatusView.HasPlayer,
+                { CharacterType: CharacterType.Player } when character.Claims.Any(c => c.ClaimStatus.IsActive()) => CharacterBusyStatusView.Discussed,
+                { CharacterType: CharacterType.Player } => CharacterBusyStatusView.NoClaims,
+                _ => CharacterBusyStatusView.Unknown,
+            };
         }
 
         public static CharacterBusyStatusView GetBusyStatus(this CharacterView character)
         {
-            if (character.ApprovedClaim != null)
+            return character switch
             {
-                return CharacterBusyStatusView.HasPlayer;
-            }
-            if (character.Claims.Any(c => c.IsActive))
-            {
-                return CharacterBusyStatusView.Discussed;
-            }
-            if (character.IsAcceptingClaims)
-            {
-                return CharacterBusyStatusView.NoClaims;
-            }
-            return CharacterBusyStatusView.Npc;
+                { CharacterTypeInfo: { CharacterType: CharacterType.NonPlayer } } => CharacterBusyStatusView.Npc,
+                { CharacterTypeInfo: { CharacterType: CharacterType.Slot } } => CharacterBusyStatusView.Slot,
+                { CharacterTypeInfo: { CharacterType: CharacterType.Player }, ApprovedClaim: not null } => CharacterBusyStatusView.HasPlayer,
+                { CharacterTypeInfo: { CharacterType: CharacterType.Player }, } when character.Claims.Any(c => c.IsActive) => CharacterBusyStatusView.Discussed,
+                { CharacterTypeInfo: { CharacterType: CharacterType.Player } } => CharacterBusyStatusView.NoClaims,
+                _ => CharacterBusyStatusView.Unknown,
+            };
         }
     }
 

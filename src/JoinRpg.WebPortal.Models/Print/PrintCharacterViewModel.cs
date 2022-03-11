@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
@@ -18,10 +17,9 @@ namespace JoinRpg.Web.Models.Print
         public string CharacterName { get; }
         public int FeeDue { get; }
         public IReadOnlyCollection<CharacterGroupWithDescViewModel> Groups { get; }
-        [CanBeNull]
-        public User ResponsibleMaster { get; }
-        public string PlayerDisplayName { get; }
-        public string PlayerFullName { get; }
+        public User? ResponsibleMaster { get; }
+        public string? PlayerDisplayName { get; }
+        public string? PlayerFullName { get; }
 
         public PrintCharacterViewModelSlim(Character character)
         {
@@ -35,7 +33,7 @@ namespace JoinRpg.Web.Models.Print
                 .Distinct()
                 .Select(g => new CharacterGroupWithDescViewModel(g))
                 .ToArray();
-            ResponsibleMaster = character.GetResponsibleMaster();
+            ResponsibleMaster = character.GetResponsibleMasterOrDefault();
             PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName();
             PlayerFullName = character.ApprovedClaim?.Player.FullName;
         }
@@ -45,12 +43,12 @@ namespace JoinRpg.Web.Models.Print
     {
         public PlotDisplayViewModel Plots { get; }
         public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
-        public string PlayerPhoneNumber { get; }
+        public string? PlayerPhoneNumber { get; }
         public CustomFieldsViewModel Fields { get; }
         public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;
 
         public PrintCharacterViewModel
-          (int currentUserId, [NotNull] Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
+          (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
           : base(character)
         {
             if (character == null)

@@ -123,11 +123,18 @@ namespace JoinRpg.Services.Interfaces
         Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request);
 
         /// <summary>
-        /// Updates status of the payment (only if it is not already approved)
+        /// Updates status of a proposed payment
         /// </summary>
         /// <param name="projectId">Database Id of a project</param>
         /// <param name="claimId">Database Id of a claim</param>
         /// <param name="orderId">Finance operation Id</param>
         Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId);
+
+        /// <summary>
+        /// Updates status of the last proposed payment
+        /// </summary>
+        /// <param name="projectId">Database Id of a project</param>
+        /// <param name="claimId">Database Id of a claim</param>
+        Task UpdateLastClaimPaymentAsync(int projectId, int claimId);
     }
 }

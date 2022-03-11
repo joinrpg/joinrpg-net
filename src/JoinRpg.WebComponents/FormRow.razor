@@ -2,11 +2,21 @@
   <label class="control-label col-md-2">@Label</label>
   <div class="col-md-10">
     @ChildContent
+    @if (Description is not null)
+    {
+      <div class="help-block">@Description</div>
+    }
+    else if (DescriptionFragment is not null)
+    {
+      <div class="help-block">@Description</div>
+    }
   </div>
 </div>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string Label { get; set; } = null!;
+    [Parameter] public RenderFragment? DescriptionFragment { get; set; } = null;
+    [Parameter] public string? Description { get; set; } = null;
 
 }
