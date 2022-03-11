@@ -158,16 +158,16 @@ namespace JoinRpg.Web.Models.Accommodation
 
         public ProjectAccommodationType ToEntity()
             => new()
-        {
-            ProjectId = ProjectId,
-            Id = Id,
-            Cost = Cost,
-            Name = Name,
-            Capacity = Capacity,
-            Description = new MarkdownString(DescriptionEditable),
-            IsInfinite = IsInfinite,
-            IsPlayerSelectable = IsPlayerSelectable,
-            IsAutoFilledAccommodation = IsAutoFilledAccommodation,
-        };
+            {
+                ProjectId = ProjectId,
+                Id = Id,
+                Cost = Cost,
+                Name = Name,
+                Capacity = Capacity,
+                Description = new MarkdownString(DescriptionEditable),
+                IsInfinite = IsInfinite,
+                IsPlayerSelectable = IsPlayerSelectable,
+                IsAutoFilledAccommodation = IsAutoFilledAccommodation,
+            };
     }
 }

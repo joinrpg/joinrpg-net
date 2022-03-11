@@ -8,12 +8,12 @@ namespace Joinrpg.Web.Identity
     {
         public static JoinIdentityUser ToIdentityUser([NotNull] this User dbUser)
             => new()
-        {
-            UserName = dbUser.UserName,
-            Id = dbUser.UserId,
-            HasPassword = dbUser.PasswordHash != null,
-            EmaiLConfirmed = dbUser.Auth.EmailConfirmed,
-            PasswordHash = dbUser.PasswordHash,
-        };
+            {
+                UserName = dbUser.UserName,
+                Id = dbUser.UserId,
+                HasPassword = dbUser.PasswordHash != null,
+                EmaiLConfirmed = dbUser.Auth.EmailConfirmed,
+                PasswordHash = dbUser.PasswordHash,
+            };
     }
 }

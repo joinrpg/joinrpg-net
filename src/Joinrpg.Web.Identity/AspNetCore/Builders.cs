@@ -9,10 +9,10 @@ namespace Joinrpg.Web.Identity.AspNetCore
     {
         public static UserExternalLogin ToUserExternalLogin([NotNull] this UserLoginInfo login)
             => new()
-        {
-            Key = login.ProviderKey,
-            Provider = login.LoginProvider,
-        };
+            {
+                Key = login.ProviderKey,
+                Provider = login.LoginProvider,
+            };
 
         public static UserLoginInfo ToUserLoginInfoCore([NotNull] this UserExternalLogin uel)
             => new(uel.Provider, uel.Key, uel.Key);

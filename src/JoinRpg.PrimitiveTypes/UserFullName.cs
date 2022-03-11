@@ -7,8 +7,8 @@ namespace JoinRpg.PrimitiveTypes
     public record BornName(string Value) : SingleValueType<string>(Value)
     {
         public static BornName? FromOptional(string? value) => value == null ? null : new BornName(value);
-}
-public record SurName(string Value) : SingleValueType<string>(Value)
+    }
+    public record SurName(string Value) : SingleValueType<string>(Value)
     {
         public static SurName? FromOptional(string? value) => value == null ? null : new SurName(value);
     }
