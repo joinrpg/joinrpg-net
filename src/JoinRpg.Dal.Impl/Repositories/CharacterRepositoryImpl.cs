@@ -9,7 +9,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories

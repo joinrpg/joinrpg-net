@@ -1,4 +1,3 @@
-using System.Drawing;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models

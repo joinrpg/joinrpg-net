@@ -2,7 +2,6 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
 
     public partial class FinanceOperation : DbMigration

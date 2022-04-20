@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BitArmory.ReCaptcha;
 using JetBrains.Annotations;

@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Data.Interfaces.Subscribe
 {
     public class UserSubscriptionDto

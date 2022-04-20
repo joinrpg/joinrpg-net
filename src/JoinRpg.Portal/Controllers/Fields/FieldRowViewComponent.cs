@@ -1,4 +1,3 @@
-using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
 using Microsoft.AspNetCore.Mvc;
 

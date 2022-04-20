@@ -1,7 +1,3 @@
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace JoinRpg.Web.XGameApi.Contract.Schedule
 {
     /// <summary>
