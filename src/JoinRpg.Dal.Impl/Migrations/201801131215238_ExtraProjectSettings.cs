@@ -1,6 +1,5 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
 
     public partial class ExtraProjectSettings : DbMigration

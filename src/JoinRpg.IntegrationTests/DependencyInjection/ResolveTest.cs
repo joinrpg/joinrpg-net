@@ -1,4 +1,3 @@
-using System;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Portal;
 using JoinRpg.TestHelpers;

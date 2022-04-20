@@ -1,6 +1,4 @@
-using System;
 using System.Data.Entity.SqlServer;
-using System.Linq;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;

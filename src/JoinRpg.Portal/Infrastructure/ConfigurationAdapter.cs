@@ -1,6 +1,5 @@
 using JoinRpg.Dal.Impl;
 using JoinRpg.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
 using PscbApi;
 
 namespace JoinRpg.Portal.Infrastructure

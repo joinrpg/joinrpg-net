@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace JoinRpg.Web.Models.Print
 {
     public class PrintIndexViewModel

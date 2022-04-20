@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.Data.Interfaces
 {
     public class ProjectWithUpdateDateDto

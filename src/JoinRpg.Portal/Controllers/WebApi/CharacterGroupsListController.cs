@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using JoinRpg.Web.CharacterGroups;
 using JoinRpg.WebPortal.Managers.CharacterGroupList;
 using Microsoft.AspNetCore.Mvc;

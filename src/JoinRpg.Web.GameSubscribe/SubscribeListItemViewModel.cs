@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.Web.GameSubscribe
 {
     public class SubscribeListItemViewModel

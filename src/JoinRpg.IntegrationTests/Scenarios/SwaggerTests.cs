@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using Xunit;
 

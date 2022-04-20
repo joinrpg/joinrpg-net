@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars

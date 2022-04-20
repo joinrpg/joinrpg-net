@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using JoinRpg.Dal.Impl.Repositories;
 
 namespace JoinRpg.Dal.Impl

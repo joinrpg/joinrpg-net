@@ -1,8 +1,6 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
-    using System.Runtime.CompilerServices;
 
     public partial class CharacterNames : DbMigration
     {

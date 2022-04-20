@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel.Users;
 using JoinRpg.Helpers;

@@ -12,10 +12,11 @@
         <WarningsNotAsErrors>${WarningsNotAsErrors};CS1591</WarningsNotAsErrors>
 
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <LangVersion>9.0</LangVersion>
         <Nullable>enable</Nullable>
 
         <WarningsAsErrors>true</WarningsAsErrors>
+
+        <ImplicitUsings>enable</ImplicitUsings>
 
     </PropertyGroup>
     <!--

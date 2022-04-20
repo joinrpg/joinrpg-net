@@ -1,7 +1,5 @@
-using System;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.WebPortal.Managers.Interfaces;
-using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Infrastructure
 {

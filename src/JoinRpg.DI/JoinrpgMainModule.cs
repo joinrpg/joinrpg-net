@@ -1,4 +1,3 @@
-using System.Linq;
 using Autofac;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;

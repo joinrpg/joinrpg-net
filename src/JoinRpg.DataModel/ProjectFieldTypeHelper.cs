@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.DataModel
 {
     public static class ProjectFieldTypeHelper

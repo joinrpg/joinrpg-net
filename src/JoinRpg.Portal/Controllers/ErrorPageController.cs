@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ControllerBase = JoinRpg.Portal.Controllers.Common.ControllerBase;
 
 namespace JoinRpg.Portal.Controllers

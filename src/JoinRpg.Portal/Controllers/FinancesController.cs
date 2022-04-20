@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -20,7 +15,6 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal.Controllers
 {

@@ -1,8 +1,6 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Routing;
 
 namespace JoinRpg.Portal.Infrastructure.HealthChecks
 {

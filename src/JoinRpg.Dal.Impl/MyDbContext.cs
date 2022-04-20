@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;

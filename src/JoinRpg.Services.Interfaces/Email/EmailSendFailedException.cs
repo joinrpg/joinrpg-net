@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.Services.Interfaces.Email
 {
     public class EmailSendFailedException : Exception

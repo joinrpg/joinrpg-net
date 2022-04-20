@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.PrimitiveTypes
 {
     public record AvatarInfo(Uri Uri, int Height, int Width)

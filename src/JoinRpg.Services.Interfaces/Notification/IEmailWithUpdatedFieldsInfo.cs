@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 

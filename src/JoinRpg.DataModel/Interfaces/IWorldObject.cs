@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace JoinRpg.DataModel
 {
     public interface IWorldObject : IProjectEntity, ILinkable

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters

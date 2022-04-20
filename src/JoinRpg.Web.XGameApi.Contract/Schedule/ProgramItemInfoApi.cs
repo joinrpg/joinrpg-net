@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace JoinRpg.Web.XGameApi.Contract.Schedule
 {
     /// <summary>

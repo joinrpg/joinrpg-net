@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces.Notification

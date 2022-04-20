@@ -1,4 +1,3 @@
-using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 

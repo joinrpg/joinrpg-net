@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace JoinRpg.Web.XGameApi.Contract
 {
     /// <summary>

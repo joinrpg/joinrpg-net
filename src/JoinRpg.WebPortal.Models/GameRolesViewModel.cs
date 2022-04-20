@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 

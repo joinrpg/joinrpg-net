@@ -1,8 +1,6 @@
 // ReSharper disable IdentifierTypo
 // ReSharper disable InconsistentNaming
 // ReSharper disable CheckNamespace
-using System;
-using System.Linq;
 using Newtonsoft.Json;
 
 namespace PscbApi

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;

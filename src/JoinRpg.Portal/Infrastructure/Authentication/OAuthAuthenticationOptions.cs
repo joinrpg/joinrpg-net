@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.Portal.Infrastructure
 {
     public class OAuthAuthenticationOptions

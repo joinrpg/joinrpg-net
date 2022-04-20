@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.DataModel
 {
     public class AllrpgUserDetails

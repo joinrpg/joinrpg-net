@@ -1,6 +1,4 @@
-using System;
 using System.Data.Entity;
-using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 

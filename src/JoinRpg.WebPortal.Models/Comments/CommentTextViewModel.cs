@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Threading;
 
 namespace JoinRpg.Web.Models
 {

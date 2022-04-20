@@ -1,5 +1,4 @@
 using System.Net;
-using System.Threading.Tasks;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;

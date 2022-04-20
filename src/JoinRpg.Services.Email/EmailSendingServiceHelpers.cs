@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;

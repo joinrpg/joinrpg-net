@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace JoinRpg.Services.Interfaces.Characters
 {
     public interface ICharacterService

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.Web.GameSubscribe;
 using JoinRpg.WebPortal.Managers.Subscribe;
 using Microsoft.AspNetCore.Mvc;

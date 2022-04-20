@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using Shouldly;
