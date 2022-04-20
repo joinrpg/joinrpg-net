@@ -4,6 +4,7 @@
     <AssemblyTitle>JoinRpg.Web.XGameApi.Contract</AssemblyTitle>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>

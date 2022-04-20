@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers</AssemblyTitle>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
     <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
