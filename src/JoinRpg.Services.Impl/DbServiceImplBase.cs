@@ -1,4 +1,4 @@
-using System.Data.Entity.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
@@ -87,38 +87,50 @@ public class DbServiceImplBase
             return field;
         }
 
-        throw new DbEntityValidationException();
-    }
-
-    protected static string Required([NotNull] string? stringValue)
-    {
-        if (string.IsNullOrWhiteSpace(stringValue))
-        {
-            throw new DbEntityValidationException();
+            throw new JoinRpgEntityNotFoundException(subentityId, typeof(T).Name);
         }
+
+        protected static string Required([NotNull] string? stringValue, string fieldName)
+        {
+            if (string.IsNullOrWhiteSpace(stringValue))
+            {
+                throw new FieldRequiredException(fieldName);
+            }
 
         return stringValue.Trim();
     }
 
-    protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
-    {
-        if (items.Count == 0)
+        protected static string Required(Expression<Func<string>> itemsLambda)
         {
-            throw new DbEntityValidationException();
+            var name = itemsLambda.AsPropertyName() ?? throw new InvalidOperationException();
+            var stringValue = itemsLambda.Compile()();
+            if (string.IsNullOrWhiteSpace(stringValue))
+            {
+                throw new FieldRequiredException(name);
+            }
+
+            return stringValue;
         }
+
+        protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items, string fieldName)
+        {
+            if (items.Count == 0)
+            {
+                throw new FieldRequiredException(fieldName);
+            }
 
         return items;
     }
 
-    protected static IReadOnlyCollection<T> Required<T>(
-        Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
-    {
-        var name = itemsLambda.AsPropertyName();
-        var items = itemsLambda.Compile()();
-        if (items.Count == 0)
+        protected static IReadOnlyCollection<T> Required<T>(
+            Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
         {
-            throw new FieldRequiredException(name);
-        }
+            var name = itemsLambda.AsPropertyName() ?? throw new InvalidOperationException();
+            var items = itemsLambda.Compile()();
+            if (items.Count == 0)
+            {
+                throw new FieldRequiredException(name);
+            }
 
         return items;
     }
@@ -155,10 +167,10 @@ public class DbServiceImplBase
             throw new Exception($"Groups {missing} doesn't belong to project");
         }
 
-        if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
-        {
-            throw new DbEntityValidationException();
-        }
+            if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
+            {
+                throw new ValidationException();
+            }
 
         return groupIds.ToArray();
     }
@@ -169,10 +181,10 @@ public class DbServiceImplBase
         var characters =
             await CharactersRepository.GetCharacters(projectId, characterIds);
 
-        if (characters.Count != characterIds.Distinct().Count())
-        {
-            throw new DbEntityValidationException();
-        }
+            if (characters.Count != characterIds.Distinct().Count())
+            {
+                throw new JoinRpgEntityNotFoundException(characterIds.Except(characters.Select(c => c.CharacterId)), "character");
+            }
 
         return characters.ToArray();
     }

@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -34,26 +33,26 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = project.EnsureProjectActive();
 
-        var character = new Character
-        {
-            ParentCharacterGroupIds =
-                await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
-            ProjectId = addCharacterRequest.ProjectId,
-            IsPublic = addCharacterRequest.IsPublic,
-            IsActive = true,
-            HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
-        };
+            var character = new Character
+            {
+                ParentCharacterGroupIds =
+                    await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(() => addCharacterRequest.ParentCharacterGroupIds)),
+                ProjectId = addCharacterRequest.ProjectId,
+                IsPublic = addCharacterRequest.IsPublic,
+                IsActive = true,
+                HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
+            };
 
         (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = addCharacterRequest.CharacterTypeInfo;
 
         Create(character);
         MarkTreeModified(project);
 
-        if (project.Details.CharacterNameLegacyMode)
-        {
-            character.CharacterName = Required(addCharacterRequest.Name);
-            // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
-        }
+            if (project.Details.CharacterNameLegacyMode)
+            {
+                character.CharacterName = Required(() => addCharacterRequest.Name);
+                // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
+            }
 
         // ReSharper disable once MustUseReturnValue
         //TODO we do not send message for creating character
@@ -71,9 +70,9 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
 
-        if (character.Project.Details.CharacterNameLegacyMode)
-        {
-            var name = Required(editCharacterRequest.Name);
+            if (character.Project.Details.CharacterNameLegacyMode)
+            {
+                var name = Required(() => editCharacterRequest.Name);
 
             changedAttributes.Add("Имя персонажа", new PreviousAndNewValue(name, character.CharacterName.Trim()));
             character.CharacterName = name;
@@ -93,13 +92,13 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         character.HidePlayerForCharacter = editCharacterRequest.HidePlayerForCharacter;
         character.IsActive = true;
 
-        character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
-            Required(editCharacterRequest.ParentCharacterGroupIds),
-            ensureNotSpecial: true);
-        var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
-            character,
-            editCharacterRequest.FieldValues,
-            FieldDefaultValueGenerator);
+            character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
+                Required(() => editCharacterRequest.ParentCharacterGroupIds),
+                ensureNotSpecial: true);
+            var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+                character,
+                editCharacterRequest.FieldValues,
+                FieldDefaultValueGenerator);
 
         MarkChanged(character);
         MarkTreeModified(character.Project); //TODO: Can be smarter
@@ -132,10 +131,10 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     {
         Character character = await LoadCharacter(deleteCharacterRequest.Id);
 
-        if (character.HasActiveClaims())
-        {
-            throw new DbEntityValidationException();
-        }
+            if (character.HasActiveClaims())
+            {
+                throw new CharacterShouldNotHaveClaimsException(character);
+            }
 
         MarkTreeModified(character.Project);
 

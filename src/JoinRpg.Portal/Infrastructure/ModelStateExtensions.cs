@@ -1,4 +1,4 @@
-using System.Data.Entity.Validation;
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.Domain;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -10,48 +10,46 @@ internal static class ModelStateExtensions
     public static void AddException(this ModelStateDictionary dict, Exception exception)
     {
 
-        switch (exception)
-        {
-            case DbEntityValidationException validation:
-                var dbValidationErrors = validation.EntityValidationErrors
-                    .SelectMany(eve => eve.ValidationErrors).ToList();
-                if (dbValidationErrors.Any())
-                {
-                    foreach (var error in dbValidationErrors)
+            switch (exception)
+            {
+                case ValidationException validation:
+                    var errorMessage = validation.ValidationResult.ErrorMessage ?? "Validation error";
+                    dict.AddModelError("", errorMessage);
+                    if (validation.Source is not null)
                     {
-                        dict.AddModelError("",
-                            string.IsNullOrWhiteSpace(error.PropertyName)
-                                ? error.ErrorMessage
-                                : $"{error.PropertyName}: {error.ErrorMessage}");
+                        dict.AddModelError(validation.Source, errorMessage);
                     }
-
                     return;
-                }
 
-                dict.AddModelError("", exception.ToString());
-                return;
-
-            case FieldRequiredException required:
-                dict.AddModelError("", required.FieldName + " is required");
-                dict.AddModelError(required.FieldName, " required");
-                return;
-            case ClaimWrongStatusException _:
-            case ProjectDeactivedException _:
-            case ClaimAlreadyPresentException _:
-            case ClaimTargetIsNotAcceptingClaims _:
-            case MasterHasResponsibleException _:
-                dict.AddModelError("", exception.Message);
-                return;
-            case JoinRpgNameFieldDeleteException _:
-                dict.AddModelError("",
-                    "Невозможно удалить поле, потому что оно привязано к имени персонажа");
-                return;
-            case JoinFieldScheduleShouldBeUniqueException _:
-                dict.AddModelError("", "Невозможно добавить второе поле с настройками расписания");
-                return;
-            default:
-                dict.AddModelError("", exception.ToString());
-                break;
+                case FieldRequiredException required:
+                    dict.AddModelError("", required.FieldName + " is required");
+                    dict.AddModelError(required.FieldName, " required");
+                    return;
+                case ClaimWrongStatusException _:
+                case ProjectDeactivedException _:
+                case ClaimAlreadyPresentException _:
+                case ClaimTargetIsNotAcceptingClaims _:
+                case MasterHasResponsibleException _:
+                case CharacterShouldNotHaveClaimsException _:
+                case CharacterGroupShouldNotHaveClaimsException _:
+                case JoinRpgEntityNotFoundException _:
+                case JoinRpgCharacterBrokenStateException _:
+                    dict.AddModelError("", exception.Message);
+                    return;
+                case JoinRpgNameFieldDeleteException _:
+                    dict.AddModelError("",
+                        "Невозможно удалить поле, потому что оно привязано к имени персонажа");
+                    return;
+                case JoinFieldScheduleShouldBeUniqueException _:
+                    dict.AddModelError("", "Невозможно добавить второе поле с настройками расписания");
+                    return;
+                case JoinRpgProjectException _:
+                    dict.AddModelError("", exception.Message);
+                    return;
+                default:
+                    dict.AddModelError("", exception.ToString());
+                    break;
+            }
         }
     }
 }

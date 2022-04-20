@@ -1,6 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.Validation;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -166,8 +166,8 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
-        paymentType.IsActive = true;
-        paymentType.Name = Required(name);
+            paymentType.IsActive = true;
+            paymentType.Name = Required(name, "name");
 
         if (isDefault && !paymentType.IsDefault)
         {
@@ -429,10 +429,10 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         _ = project.RequestMasterAccess(request.Sender);
         _ = project.RequestMasterAccess(request.Receiver);
 
-        if (request.Sender == request.Receiver)
-        {
-            throw new DbEntityValidationException();
-        }
+            if (request.Sender == request.Receiver)
+            {
+                throw new ValidationException();
+            }
 
         if (request.Sender != CurrentUserId && request.Receiver != CurrentUserId)
         {
@@ -441,27 +441,27 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         CheckOperationDate(request.OperationDate);
 
-        if (request.Amount <= 0)
-        {
-            throw new DbEntityValidationException();
-        }
-
-        var transfer = new MoneyTransfer()
-        {
-            SenderId = request.Sender,
-            Amount = request.Amount,
-            Changed = DateTimeOffset.UtcNow,
-            Created = DateTimeOffset.UtcNow,
-            ChangedById = CurrentUserId,
-            CreatedById = CurrentUserId,
-            OperationDate = request.OperationDate,
-            ProjectId = request.ProjectId,
-            ReceiverId = request.Receiver,
-            TransferText = new TransferText()
+            if (request.Amount <= 0)
             {
-                Text = new MarkdownString(Required(request.Comment)),
-            },
-        };
+                throw new ValidationException();
+            }
+
+            var transfer = new MoneyTransfer()
+            {
+                SenderId = request.Sender,
+                Amount = request.Amount,
+                Changed = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
+                ChangedById = CurrentUserId,
+                CreatedById = CurrentUserId,
+                OperationDate = request.OperationDate,
+                ProjectId = request.ProjectId,
+                ReceiverId = request.Receiver,
+                TransferText = new TransferText()
+                {
+                    Text = new MarkdownString(Required(() => request.Comment)),
+                },
+            };
 
         if (CurrentUserId == request.Sender)
         {

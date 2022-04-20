@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using System.Diagnostics;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -684,13 +683,13 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     }
 
 
-    public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
-    {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-        if (claim == null)
+        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
         {
-            throw new DbEntityValidationException();
-        }
+            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+            if (claim == null)
+            {
+                throw new JoinRpgEntityNotFoundException(claimId, "claim");
+            }
 
         _ = claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
         claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
@@ -787,10 +786,10 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         MarkCharacterChangedIfApproved(claim); // after move
 
-        if (claim.IsApproved && claim.CharacterId == null)
-        {
-            throw new DbEntityValidationException();
-        }
+            if (claim.IsApproved && claim.CharacterId == null)
+            {
+                throw new ClaimWrongStatusException(claim, "Approved claim should only be moved to character");
+            }
 
         var email =
           await

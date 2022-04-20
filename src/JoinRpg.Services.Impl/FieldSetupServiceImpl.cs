@@ -75,20 +75,20 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         field.IsActive = true;
 
-        field.FieldName = Required(request.Name);
-        field.Description = new MarkdownString(request.FieldHint);
-        field.MasterDescription = new MarkdownString(request.MasterFieldHint);
-        field.CanPlayerEdit = request.CanPlayerEdit;
-        field.CanPlayerView = request.CanPlayerView;
-        field.ValidForNpc = request.ValidForNpc;
-        field.IsPublic = request.IsPublic;
-        field.MandatoryStatus = request.MandatoryStatus;
-        field.AvailableForCharacterGroupIds =
-            await ValidateCharacterGroupList(request.ProjectId, request.ShowForGroups);
-        field.IncludeInPrint = request.IncludeInPrint;
-        field.ShowOnUnApprovedClaims = request.ShowForUnapprovedClaims;
-        field.Price = request.Price;
-        field.ProgrammaticValue = request.ProgrammaticValue;
+            field.FieldName = Required(() => request.Name);
+            field.Description = new MarkdownString(request.FieldHint);
+            field.MasterDescription = new MarkdownString(request.MasterFieldHint);
+            field.CanPlayerEdit = request.CanPlayerEdit;
+            field.CanPlayerView = request.CanPlayerView;
+            field.ValidForNpc = request.ValidForNpc;
+            field.IsPublic = request.IsPublic;
+            field.MandatoryStatus = request.MandatoryStatus;
+            field.AvailableForCharacterGroupIds =
+                await ValidateCharacterGroupList(request.ProjectId, request.ShowForGroups);
+            field.IncludeInPrint = request.IncludeInPrint;
+            field.ShowOnUnApprovedClaims = request.ShowForUnapprovedClaims;
+            field.Price = request.Price;
+            field.ProgrammaticValue = request.ProgrammaticValue;
 
         CreateOrUpdateSpecialGroup(field);
     }
