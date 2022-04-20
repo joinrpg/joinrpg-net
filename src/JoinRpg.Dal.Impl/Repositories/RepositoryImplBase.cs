@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.Dal.Impl.Repositories
 {
     public abstract class RepositoryImplBase : IDisposable

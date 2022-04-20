@@ -1,6 +1,4 @@
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using AspNet.Security.OAuth.Vkontakte;
 using Joinrpg.Web.Identity;
 using JoinRpg.PrimitiveTypes;

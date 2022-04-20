@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 

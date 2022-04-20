@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models

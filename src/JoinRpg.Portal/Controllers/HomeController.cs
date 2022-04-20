@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

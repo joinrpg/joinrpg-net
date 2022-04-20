@@ -1,4 +1,3 @@
-using System;
 using System.Security.Cryptography;
 
 namespace JoinRpg.Helpers.Web

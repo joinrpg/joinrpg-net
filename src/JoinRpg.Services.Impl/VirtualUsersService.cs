@@ -1,7 +1,5 @@
-using System;
 using System.Data;
 using System.Data.Entity;
-using System.Linq;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;

@@ -1,5 +1,3 @@
-using System;
-
 namespace JoinRpg.PrimitiveTypes
 {
     public record CharacterTypeInfo

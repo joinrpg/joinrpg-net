@@ -1,4 +1,3 @@
-using System;
 using JoinRpg.Domain;
 
 namespace JoinRpg.CommonUI.Models

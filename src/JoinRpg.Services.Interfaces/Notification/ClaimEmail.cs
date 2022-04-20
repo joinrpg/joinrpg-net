@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;

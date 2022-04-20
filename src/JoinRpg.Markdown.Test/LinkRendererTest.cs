@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.DataModel;
 using Shouldly;
 using Xunit;

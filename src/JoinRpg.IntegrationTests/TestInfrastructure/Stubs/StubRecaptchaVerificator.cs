@@ -1,5 +1,4 @@
 using System.Net;
-using System.Threading.Tasks;
 using JoinRpg.Portal.Infrastructure.Authentication;
 
 namespace JoinRpg.IntegrationTests.TestInfrastructure.Stubs

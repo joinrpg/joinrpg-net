@@ -1,6 +1,5 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace JoinRpg.Portal.Areas.Admin.Controllers
 {

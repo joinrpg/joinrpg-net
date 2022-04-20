@@ -1,4 +1,3 @@
-using System;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.UserProfile;

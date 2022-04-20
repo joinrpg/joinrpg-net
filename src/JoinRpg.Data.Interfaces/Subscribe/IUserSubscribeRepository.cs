@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
 

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models

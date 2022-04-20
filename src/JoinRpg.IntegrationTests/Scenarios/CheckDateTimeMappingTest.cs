@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using JoinRpg.IntegrationTest.TestInfrastructure.MockControllers;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;

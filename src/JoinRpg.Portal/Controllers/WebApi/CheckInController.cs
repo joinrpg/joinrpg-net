@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.Web.CheckIn;
 using Microsoft.AspNetCore.Mvc;
 

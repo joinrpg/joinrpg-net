@@ -1,5 +1,4 @@
 using System.Net;
-using System.Threading.Tasks;
 using BitArmory.ReCaptcha;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using Microsoft.AspNetCore.Authorization;

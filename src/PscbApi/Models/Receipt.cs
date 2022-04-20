@@ -1,6 +1,5 @@
 // ReSharper disable IdentifierTypo
 // ReSharper disable InconsistentNaming
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 

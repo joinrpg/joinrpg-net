@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;

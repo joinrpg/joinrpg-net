@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Joinrpg.Web.Identity;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Identity

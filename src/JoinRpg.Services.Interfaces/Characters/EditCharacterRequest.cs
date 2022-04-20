@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Characters

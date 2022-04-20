@@ -16,6 +16,8 @@
 
         <WarningsAsErrors>true</WarningsAsErrors>
 
+        <ImplicitUsings>enable</ImplicitUsings>
+
     </PropertyGroup>
     <!--
     this instruction automatically allows XXX.Tests to access internals of XXX.

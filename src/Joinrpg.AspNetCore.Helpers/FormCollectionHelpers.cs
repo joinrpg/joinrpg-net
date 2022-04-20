@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.Helpers;
 using Microsoft.AspNetCore.Http;
 

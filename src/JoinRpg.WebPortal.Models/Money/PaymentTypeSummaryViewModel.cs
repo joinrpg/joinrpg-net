@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models

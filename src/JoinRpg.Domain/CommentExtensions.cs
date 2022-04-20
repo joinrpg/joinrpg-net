@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain

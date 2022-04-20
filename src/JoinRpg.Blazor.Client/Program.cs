@@ -1,11 +1,8 @@
-using System;
-using System.Threading.Tasks;
 using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Web.CharacterGroups;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.GameSubscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Blazor.Client
 {

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;

@@ -1,4 +1,3 @@
-using System;
 using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models

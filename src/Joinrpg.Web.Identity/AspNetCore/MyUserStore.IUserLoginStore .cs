@@ -1,8 +1,4 @@
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Joinrpg.Web.Identity.AspNetCore;
 using JoinRpg.DataModel;
 using Microsoft.AspNetCore.Identity;

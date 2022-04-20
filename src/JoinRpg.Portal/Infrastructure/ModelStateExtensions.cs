@@ -1,6 +1,4 @@
-using System;
 using System.Data.Entity.Validation;
-using System.Linq;
 using JoinRpg.Domain;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

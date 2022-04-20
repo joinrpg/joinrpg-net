@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.ClaimList;
 

@@ -1,10 +1,8 @@
-using System;
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.PrimitiveTypes;
-using Microsoft.AspNetCore.Http;
 #nullable enable
 
 namespace JoinRpg.Web.Helpers

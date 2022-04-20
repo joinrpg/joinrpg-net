@@ -1,12 +1,8 @@
-using System.Linq;
-using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Web.Filter;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization
 {

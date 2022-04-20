@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using JoinRpg.Domain;
 using JoinRpg.TestHelpers;
 using Shouldly;

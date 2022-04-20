@@ -1,6 +1,3 @@
-using System.Linq;
-using Microsoft.AspNetCore.Http;
-
 namespace JoinRpg.Portal.Infrastructure.DiscoverFilters
 {
     internal static class ProjectIdExtractor

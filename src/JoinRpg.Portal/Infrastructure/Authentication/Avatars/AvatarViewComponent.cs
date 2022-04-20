@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using JoinRpg.Helpers.Web;
 using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Mvc;
