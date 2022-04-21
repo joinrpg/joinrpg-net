@@ -1,11 +1,10 @@
-namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations;
+
+using System.Data.Entity.Migrations;
+
+public partial class ClaimUpdate : DbMigration
 {
-    using System.Data.Entity.Migrations;
+    public override void Up() => AddColumn("dbo.Claims", "ClaimDenialStatus", c => c.Int());
 
-    public partial class ClaimUpdate : DbMigration
-    {
-        public override void Up() => AddColumn("dbo.Claims", "ClaimDenialStatus", c => c.Int());
-
-        public override void Down() => DropColumn("dbo.Claims", "ClaimDenialStatus");
-    }
+    public override void Down() => DropColumn("dbo.Claims", "ClaimDenialStatus");
 }

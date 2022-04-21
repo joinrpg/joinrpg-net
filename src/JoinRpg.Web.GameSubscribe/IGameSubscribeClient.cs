@@ -1,8 +1,7 @@
-namespace JoinRpg.Web.GameSubscribe
+namespace JoinRpg.Web.GameSubscribe;
+
+public interface IGameSubscribeClient
 {
-    public interface IGameSubscribeClient
-    {
-        Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId);
-        Task RemoveSubscription(int projectId, int userSubscriptionsId);
-    }
+    Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId);
+    Task RemoveSubscription(int projectId, int userSubscriptionsId);
 }

@@ -1,19 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Models.Characters
+namespace JoinRpg.Web.Models.Characters;
+
+public enum CharacterBusyStatusView
 {
-    public enum CharacterBusyStatusView
-    {
-        [Display(Name = "Занят")]
-        HasPlayer,
-        [Display(Name = "Обсуждается")]
-        Discussed,
-        [Display(Name = "Нет заявок")]
-        NoClaims,
-        [Display(Name = "NPC")]
-        Npc,
-        [Display(Name = "Слот")]
-        Slot,
-        Unknown,
-    }
+    [Display(Name = "Занят")]
+    HasPlayer,
+    [Display(Name = "Обсуждается")]
+    Discussed,
+    [Display(Name = "Нет заявок")]
+    NoClaims,
+    [Display(Name = "NPC")]
+    Npc,
+    [Display(Name = "Слот")]
+    Slot,
+    Unknown,
 }

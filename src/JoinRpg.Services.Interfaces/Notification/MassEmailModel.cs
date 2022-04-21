@@ -1,7 +1,6 @@
-namespace JoinRpg.Services.Interfaces.Notification
+namespace JoinRpg.Services.Interfaces.Notification;
+
+public class MassEmailModel : EmailModelBase
 {
-    public class MassEmailModel : EmailModelBase
-    {
-        public string Subject { get; set; }
-    }
+    public string Subject { get; set; }
 }

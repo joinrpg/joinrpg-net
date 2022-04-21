@@ -1,31 +1,30 @@
-namespace JoinRpg.Portal.Infrastructure.DiscoverFilters
+namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
+
+/// <summary>
+/// Store projectId for CurrentProjectAccessor
+/// </summary>
+public class DiscoverProjectMiddleware
 {
-    /// <summary>
-    /// Store projectId for CurrentProjectAccessor
-    /// </summary>
-    public class DiscoverProjectMiddleware
+    private readonly RequestDelegate nextDelegate;
+
+    public DiscoverProjectMiddleware(RequestDelegate nextDelegate) => this.nextDelegate = nextDelegate;
+
+    /// <inheritedoc />
+    public async Task InvokeAsync(HttpContext context)
     {
-        private readonly RequestDelegate nextDelegate;
+        var httpContextItems = context.Items;
 
-        public DiscoverProjectMiddleware(RequestDelegate nextDelegate) => this.nextDelegate = nextDelegate;
-
-        /// <inheritedoc />
-        public async Task InvokeAsync(HttpContext context)
+        if (context.Request.Path.TryExtractFromPath() is int projectIdFromPath)
         {
-            var httpContextItems = context.Items;
-
-            if (context.Request.Path.TryExtractFromPath() is int projectIdFromPath)
-            {
-                httpContextItems[Constants.ProjectIdName] = projectIdFromPath;
-            }
-            else if (context.Request.Query.TryExtractFromQuery() is int projectIdFromQuery)
-            {
-                httpContextItems[Constants.ProjectIdName] = projectIdFromQuery;
-            }
-
-            await nextDelegate(context);
+            httpContextItems[Constants.ProjectIdName] = projectIdFromPath;
+        }
+        else if (context.Request.Query.TryExtractFromQuery() is int projectIdFromQuery)
+        {
+            httpContextItems[Constants.ProjectIdName] = projectIdFromQuery;
         }
 
-
+        await nextDelegate(context);
     }
+
+
 }

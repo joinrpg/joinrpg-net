@@ -5,36 +5,35 @@ using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.PrimitiveTypes;
 #nullable enable
 
-namespace JoinRpg.Web.Helpers
+namespace JoinRpg.Web.Helpers;
+
+/// <summary>
+/// Adapter to extract user data from HttpContext principal
+/// </summary>
+public class CurrentUserAccessor : ICurrentUserAccessor
 {
+    private IHttpContextAccessor HttpContextAccessor { get; }
+
+    private ClaimsPrincipal User => HttpContextAccessor.HttpContext?.User
+        ?? throw new Exception("Should be inside http request");
+
     /// <summary>
-    /// Adapter to extract user data from HttpContext principal
+    /// ctor
     /// </summary>
-    public class CurrentUserAccessor : ICurrentUserAccessor
-    {
-        private IHttpContextAccessor HttpContextAccessor { get; }
+    public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
 
-        private ClaimsPrincipal User => HttpContextAccessor.HttpContext?.User
-            ?? throw new Exception("Should be inside http request");
+    int ICurrentUserAccessor.UserId => User.GetUserIdOrDefault() ?? throw new Exception("Authorization required here");
 
-        /// <summary>
-        /// ctor
-        /// </summary>
-        public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
+    int? ICurrentUserAccessor.UserIdOrDefault => User.GetUserIdOrDefault();
 
-        int ICurrentUserAccessor.UserId => User.GetUserIdOrDefault() ?? throw new Exception("Authorization required here");
+    string ICurrentUserAccessor.DisplayName => User.FindFirst(JoinClaimTypes.DisplayName)!.Value;
 
-        int? ICurrentUserAccessor.UserIdOrDefault => User.GetUserIdOrDefault();
+    string ICurrentUserAccessor.Email => User.FindFirst(ClaimTypes.Email)!.Value;
 
-        string ICurrentUserAccessor.DisplayName => User.FindFirst(JoinClaimTypes.DisplayName)!.Value;
+    bool ICurrentUserAccessor.IsAdmin => User.IsInRole(DataModel.Security.AdminRoleName);
 
-        string ICurrentUserAccessor.Email => User.FindFirst(ClaimTypes.Email)!.Value;
-
-        bool ICurrentUserAccessor.IsAdmin => User.IsInRole(DataModel.Security.AdminRoleName);
-
-        AvatarIdentification? ICurrentUserAccessor.Avatar
-            => AvatarIdentification.FromOptional(
-                int.TryParse(User.FindFirstValue(JoinClaimTypes.AvatarId), out var avatarId) ? avatarId : null
-            );
-    }
+    AvatarIdentification? ICurrentUserAccessor.Avatar
+        => AvatarIdentification.FromOptional(
+            int.TryParse(User.FindFirstValue(JoinClaimTypes.AvatarId), out var avatarId) ? avatarId : null
+        );
 }

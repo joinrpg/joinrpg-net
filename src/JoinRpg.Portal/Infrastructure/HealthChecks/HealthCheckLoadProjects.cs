@@ -1,26 +1,25 @@
 using JoinRpg.Data.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace JoinRpg.Portal.Infrastructure.HealthChecks
+namespace JoinRpg.Portal.Infrastructure.HealthChecks;
+
+public class HealthCheckLoadProjects : IHealthCheck
 {
-    public class HealthCheckLoadProjects : IHealthCheck
+    private readonly IProjectRepository projectRepository;
+
+    public HealthCheckLoadProjects(IProjectRepository projectRepository) => this.projectRepository = projectRepository;
+
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        private readonly IProjectRepository projectRepository;
-
-        public HealthCheckLoadProjects(IProjectRepository projectRepository) => this.projectRepository = projectRepository;
-
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        try
         {
-            try
-            {
-                var x = await projectRepository.GetActiveProjectsWithClaimCount(userId: null);
-                return HealthCheckResult.Healthy();
-            }
-            catch (Exception exception)
-            {
-                return HealthCheckResult.Unhealthy("Fail to load projects", exception);
-                throw;
-            }
+            var x = await projectRepository.GetActiveProjectsWithClaimCount(userId: null);
+            return HealthCheckResult.Healthy();
+        }
+        catch (Exception exception)
+        {
+            return HealthCheckResult.Unhealthy("Fail to load projects", exception);
+            throw;
         }
     }
 }

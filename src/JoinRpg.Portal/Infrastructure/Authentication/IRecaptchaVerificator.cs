@@ -1,10 +1,9 @@
 using System.Net;
 
-namespace JoinRpg.Portal.Infrastructure.Authentication
+namespace JoinRpg.Portal.Infrastructure.Authentication;
+
+public interface IRecaptchaVerificator
 {
-    public interface IRecaptchaVerificator
-    {
-        Task<bool> ValidateToken(string recaptchaToken, IPAddress? clientIp);
-        bool IsRecaptchaConfigured();
-    }
+    Task<bool> ValidateToken(string recaptchaToken, IPAddress? clientIp);
+    bool IsRecaptchaConfigured();
 }

@@ -1,9 +1,8 @@
 using JoinRpg.Web.GameSubscribe;
 
-namespace JoinRpg.Web.Models.Subscribe
+namespace JoinRpg.Web.Models.Subscribe;
+
+public record SubscribeByMasterPageViewModel
+    (UserProfileDetailsViewModel UserDetails, SubscribeListViewModel SubscribeList)
 {
-    public record SubscribeByMasterPageViewModel
-        (UserProfileDetailsViewModel UserDetails, SubscribeListViewModel SubscribeList)
-    {
-    }
 }

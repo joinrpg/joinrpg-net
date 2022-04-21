@@ -1,6 +1,5 @@
-namespace Joinrpg.Web.Identity
+namespace Joinrpg.Web.Identity;
+
+public class IncorrectUserId
 {
-    public class IncorrectUserId
-    {
-    }
 }

@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-namespace JoinRpg.Portal.Infrastructure.Authorization
+namespace JoinRpg.Portal.Infrastructure.Authorization;
+
+// TODO sufficient?
+public class XGameMasterAuthorize : MasterAuthorize
 {
-    // TODO sufficient?
-    public class XGameMasterAuthorize : MasterAuthorize
+    public XGameMasterAuthorize()
     {
-        public XGameMasterAuthorize()
-        {
-            AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
-        }
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
     }
 }

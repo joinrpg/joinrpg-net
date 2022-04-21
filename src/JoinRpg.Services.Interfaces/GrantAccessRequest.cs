@@ -1,7 +1,6 @@
-namespace JoinRpg.Services.Interfaces
-{
-    public class GrantAccessRequest : AccessRequestBase
-    {
+namespace JoinRpg.Services.Interfaces;
 
-    }
+public class GrantAccessRequest : AccessRequestBase
+{
+
 }

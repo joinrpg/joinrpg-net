@@ -1,11 +1,10 @@
-namespace JoinRpg.Dal.Impl.Repositories
+namespace JoinRpg.Dal.Impl.Repositories;
+
+public abstract class RepositoryImplBase : IDisposable
 {
-    public abstract class RepositoryImplBase : IDisposable
-    {
-        protected MyDbContext Ctx { get; }
+    protected MyDbContext Ctx { get; }
 
-        protected RepositoryImplBase(MyDbContext ctx) => Ctx = ctx;
+    protected RepositoryImplBase(MyDbContext ctx) => Ctx = ctx;
 
-        public void Dispose() => Ctx?.Dispose();
-    }
+    public void Dispose() => Ctx?.Dispose();
 }

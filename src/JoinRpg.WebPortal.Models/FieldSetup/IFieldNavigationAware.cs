@@ -1,10 +1,9 @@
-namespace JoinRpg.Web.Models.FieldSetup
-{
-    public interface IFieldNavigationAware : IProjectIdAware
-    {
-        FieldNavigationModel Navigation { get; }
-        new int ProjectId { get; set; }
+namespace JoinRpg.Web.Models.FieldSetup;
 
-        void SetNavigation(FieldNavigationModel fieldNavigation);
-    }
+public interface IFieldNavigationAware : IProjectIdAware
+{
+    FieldNavigationModel Navigation { get; }
+    new int ProjectId { get; set; }
+
+    void SetNavigation(FieldNavigationModel fieldNavigation);
 }

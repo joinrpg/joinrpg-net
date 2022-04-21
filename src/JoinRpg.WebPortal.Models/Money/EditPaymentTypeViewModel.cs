@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models;
+
+public class EditPaymentTypeViewModel : PaymentTypeViewModelBase
 {
-    public class EditPaymentTypeViewModel : PaymentTypeViewModelBase
-    {
-        [Display(Name = "Предлагать по умолчанию")]
-        public bool IsDefault { get; set; }
-        public int PaymentTypeId { get; set; }
-    }
+    [Display(Name = "Предлагать по умолчанию")]
+    public bool IsDefault { get; set; }
+    public int PaymentTypeId { get; set; }
 }

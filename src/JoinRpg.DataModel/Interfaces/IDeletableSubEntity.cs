@@ -1,8 +1,7 @@
-namespace JoinRpg.DataModel
+namespace JoinRpg.DataModel;
+
+public interface IDeletableSubEntity
 {
-    public interface IDeletableSubEntity
-    {
-        bool CanBePermanentlyDeleted { get; }
-        bool IsActive { get; set; }
-    }
+    bool CanBePermanentlyDeleted { get; }
+    bool IsActive { get; set; }
 }

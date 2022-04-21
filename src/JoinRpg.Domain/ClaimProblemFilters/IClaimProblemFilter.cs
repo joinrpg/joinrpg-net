@@ -1,7 +1,6 @@
-namespace JoinRpg.Domain.ClaimProblemFilters
+namespace JoinRpg.Domain.ClaimProblemFilters;
+
+internal interface IProblemFilter<in TObject>
 {
-    internal interface IProblemFilter<in TObject>
-    {
-        IEnumerable<ClaimProblem> GetProblems(TObject claim);
-    }
+    IEnumerable<ClaimProblem> GetProblems(TObject claim);
 }

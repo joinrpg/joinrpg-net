@@ -6,19 +6,17 @@ using Newtonsoft.Json.Linq;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Services.Email.Test
+namespace JoinRpg.Services.Email.Test;
+
+public class TestMailGunRecepients
 {
 
-    public class TestMailGunRecepients
+    [Fact]
+    public void TestRecepientVariables()
     {
-
-        [Fact]
-        public void TestRecepientVariables()
-        {
-            var mock = new MockedProject();
-            var users = new[] { new RecepientData(mock.Player.GetDisplayName(), mock.Player.Email) };
-            var expected = JObject.Parse("{" + string.Join(", ", users.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
-            users.ToRecipientVariables().ShouldBe(expected);
-        }
+        var mock = new MockedProject();
+        var users = new[] { new RecepientData(mock.Player.GetDisplayName(), mock.Player.Email) };
+        var expected = JObject.Parse("{" + string.Join(", ", users.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
+        users.ToRecipientVariables().ShouldBe(expected);
     }
 }

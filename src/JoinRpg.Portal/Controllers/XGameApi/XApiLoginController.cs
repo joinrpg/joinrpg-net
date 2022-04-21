@@ -10,77 +10,75 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JoinRpg.Portal.Controllers.XGameApi
+namespace JoinRpg.Portal.Controllers.XGameApi;
+
+[ApiController]
+public class XApiLoginController : ControllerBase
 {
+    private readonly ApplicationUserManager userManager;
+    private readonly JwtSecretOptions secret;
+    private readonly JwtBearerOptions jwt;
 
-    [ApiController]
-    public class XApiLoginController : ControllerBase
+    public XApiLoginController(ApplicationUserManager userManager, IOptions<JwtBearerOptions> jwt, IOptions<JwtSecretOptions> secret)
     {
-        private readonly ApplicationUserManager userManager;
-        private readonly JwtSecretOptions secret;
-        private readonly JwtBearerOptions jwt;
+        this.userManager = userManager;
+        this.secret = secret.Value;
+        this.jwt = jwt.Value;
+    }
 
-        public XApiLoginController(ApplicationUserManager userManager, IOptions<JwtBearerOptions> jwt, IOptions<JwtSecretOptions> secret)
+    [HttpPost("/x-api/token")]
+    [IgnoreAntiforgeryToken]
+    public async Task<ActionResult> Login(
+        [FromForm] string username,
+        [FromForm] string password,
+        [FromForm(Name = "grant_type")] string grantType)
+    {
+        if (grantType != "password")
         {
-            this.userManager = userManager;
-            this.secret = secret.Value;
-            this.jwt = jwt.Value;
+            return BadRequest();
         }
 
-        [HttpPost("/x-api/token")]
-        [IgnoreAntiforgeryToken]
-        public async Task<ActionResult> Login(
-            [FromForm] string username,
-            [FromForm] string password,
-            [FromForm(Name = "grant_type")] string grantType)
+        var user = await userManager.FindByEmailAsync(username);
+        if (user == null)
         {
-            if (grantType != "password")
-            {
-                return BadRequest();
-            }
-
-            var user = await userManager.FindByEmailAsync(username);
-            if (user == null)
-            {
-                return Forbid();
-            }
-            if (!await userManager.CheckPasswordAsync(user, password))
-            {
-                return Forbid();
-            }
-            JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
-            return Ok(new AuthenticationResponse
-            {
-                access_token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                expires_in = (int)Math.Floor(secret.JwtLifetime.TotalSeconds),
-            });
+            return Forbid();
         }
-
-        private async Task<JwtSecurityToken> CreateJwtToken(JoinIdentityUser user)
+        if (!await userManager.CheckPasswordAsync(user, password))
         {
-            var userClaims = await userManager.GetClaimsAsync(user);
-            var roles = await userManager.GetRolesAsync(user);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.UserName),
-                new Claim("uid", user.Id.ToString()),
-            }
-            .Union(userClaims)
-            .Union(roles.Select(r => new Claim("roles", r)));
-
-
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret.SecretKey));
-            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-            var jwtSecurityToken = new JwtSecurityToken(
-                issuer: secret.Issuer,
-                audience: jwt.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.Add(secret.JwtLifetime),
-                signingCredentials: signingCredentials);
-            return jwtSecurityToken;
+            return Forbid();
         }
+        JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
+        return Ok(new AuthenticationResponse
+        {
+            access_token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
+            expires_in = (int)Math.Floor(secret.JwtLifetime.TotalSeconds),
+        });
+    }
+
+    private async Task<JwtSecurityToken> CreateJwtToken(JoinIdentityUser user)
+    {
+        var userClaims = await userManager.GetClaimsAsync(user);
+        var roles = await userManager.GetRolesAsync(user);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.UserName),
+            new Claim("uid", user.Id.ToString()),
+        }
+        .Union(userClaims)
+        .Union(roles.Select(r => new Claim("roles", r)));
+
+
+        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret.SecretKey));
+        var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+        var jwtSecurityToken = new JwtSecurityToken(
+            issuer: secret.Issuer,
+            audience: jwt.Audience,
+            claims: claims,
+            expires: DateTime.UtcNow.Add(secret.JwtLifetime),
+            signingCredentials: signingCredentials);
+        return jwtSecurityToken;
     }
 }

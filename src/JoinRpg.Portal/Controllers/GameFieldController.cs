@@ -13,423 +13,422 @@ using JoinRpg.WebPortal.Managers.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+[Authorize]
+[Route("{ProjectId}/fields/[action]")]
+public class GameFieldController : ControllerGameBase
 {
-    [Authorize]
-    [Route("{ProjectId}/fields/[action]")]
-    public class GameFieldController : ControllerGameBase
+    private IFieldSetupService FieldSetupService { get; }
+    public FieldSetupManager Manager { get; }
+    private ICurrentProjectAccessor CurrentProjectAccessor { get; }
+
+    public GameFieldController(
+        IProjectRepository projectRepository,
+        IProjectService projectService,
+        IFieldSetupService fieldSetupService,
+        IUserRepository userRepository,
+        FieldSetupManager manager,
+        ICurrentProjectAccessor currentProjectAccessor
+        )
+      : base(projectRepository, projectService, userRepository)
     {
-        private IFieldSetupService FieldSetupService { get; }
-        public FieldSetupManager Manager { get; }
-        private ICurrentProjectAccessor CurrentProjectAccessor { get; }
+        FieldSetupService = fieldSetupService;
+        Manager = manager;
+        CurrentProjectAccessor = currentProjectAccessor;
+    }
 
-        public GameFieldController(
-            IProjectRepository projectRepository,
-            IProjectService projectService,
-            IFieldSetupService fieldSetupService,
-            IUserRepository userRepository,
-            FieldSetupManager manager,
-            ICurrentProjectAccessor currentProjectAccessor
-            )
-          : base(projectRepository, projectService, userRepository)
+    private ActionResult ReturnToIndex()
+        => RedirectToAction("Index", new { ProjectId = CurrentProjectAccessor.ProjectId.Value });
+
+    private ActionResult ReturnToField(ProjectField value)
+        => RedirectToAction("Edit", new { ProjectId = CurrentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
+
+
+    [HttpGet("/{ProjectId}/fields/")]
+    [MasterAuthorize]
+    public async Task<ActionResult> Index(int projectId)
+    {
+        var model = await Manager.GetActiveAsync();
+        return ViewIfFound(model);
+    }
+
+    [HttpGet("/{ProjectId}/fields/archive")]
+    [MasterAuthorize]
+    public async Task<ActionResult> DeletedList(int projectId)
+    {
+        var model = await Manager.GetInActiveAsync();
+        return ViewIfFound("Index", model);
+    }
+
+    [HttpGet]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> Create(int projectId)
+    {
+        var model = await Manager.CreatePageAsync();
+        return ViewIfFound(model);
+    }
+
+    [HttpGet]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> Settings()
+    {
+        var model = await Manager.SettingsPagesAsync();
+        return ViewIfFound(model);
+    }
+
+    [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> Settings(FieldSettingsViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
         {
-            FieldSetupService = fieldSetupService;
-            Manager = manager;
-            CurrentProjectAccessor = currentProjectAccessor;
+            return await ViewIfFound(Manager.FillFailedSettingsModel(viewModel));
         }
-
-        private ActionResult ReturnToIndex()
-            => RedirectToAction("Index", new { ProjectId = CurrentProjectAccessor.ProjectId.Value });
-
-        private ActionResult ReturnToField(ProjectField value)
-            => RedirectToAction("Edit", new { ProjectId = CurrentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
-
-
-        [HttpGet("/{ProjectId}/fields/")]
-        [MasterAuthorize]
-        public async Task<ActionResult> Index(int projectId)
+        try
         {
-            var model = await Manager.GetActiveAsync();
-            return ViewIfFound(model);
+            await Manager.SettingsHandleAsync(viewModel);
+
+            return ReturnToIndex();
         }
-
-        [HttpGet("/{ProjectId}/fields/archive")]
-        [MasterAuthorize]
-        public async Task<ActionResult> DeletedList(int projectId)
+        catch (Exception exception)
         {
-            var model = await Manager.GetInActiveAsync();
-            return ViewIfFound("Index", model);
+            ModelState.AddException(exception);
+            return View(await Manager.FillFailedSettingsModel(viewModel));
         }
+    }
 
-        [HttpGet]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> Create(int projectId)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
         {
-            var model = await Manager.CreatePageAsync();
-            return ViewIfFound(model);
+            return await ViewIfFound(Manager.FillFailedModel(viewModel));
         }
-
-        [HttpGet]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> Settings()
+        try
         {
-            var model = await Manager.SettingsPagesAsync();
-            return ViewIfFound(model);
+            var request = new CreateFieldRequest(
+                viewModel.ProjectId,
+                (ProjectFieldType)viewModel.FieldViewType,
+                viewModel.Name,
+                viewModel.DescriptionEditable,
+                viewModel.CanPlayerEdit,
+                viewModel.CanPlayerView,
+                viewModel.IsPublic,
+                (FieldBoundTo)viewModel.FieldBoundTo,
+                (MandatoryStatus)viewModel.MandatoryStatus,
+                viewModel.ShowForGroups.GetUnprefixedGroups(),
+                viewModel.ValidForNpc,
+                viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
+                viewModel.ShowForUnApprovedClaim,
+                viewModel.Price,
+                viewModel.MasterDescriptionEditable,
+                programmaticValue: null);
+
+            await FieldSetupService.AddField(request);
+
+            return ReturnToIndex();
         }
-
-        [HttpPost]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> Settings(FieldSettingsViewModel viewModel)
+        catch (Exception exception)
         {
-            if (!ModelState.IsValid)
-            {
-                return await ViewIfFound(Manager.FillFailedSettingsModel(viewModel));
-            }
-            try
-            {
-                await Manager.SettingsHandleAsync(viewModel);
-
-                return ReturnToIndex();
-            }
-            catch (Exception exception)
-            {
-                ModelState.AddException(exception);
-                return View(await Manager.FillFailedSettingsModel(viewModel));
-            }
+            ModelState.AddException(exception);
+            return View(await Manager.FillFailedModel(viewModel));
         }
+    }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)
+    [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> Edit(int projectId, int projectFieldId)
+    {
+        var model = await Manager.EditPageAsync(projectFieldId);
+        return ViewIfFound(model);
+    }
+
+    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
+    {
+        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        var field = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == viewModel.ProjectFieldId);
+
+        if (field == null)
         {
-            if (!ModelState.IsValid)
-            {
-                return await ViewIfFound(Manager.FillFailedModel(viewModel));
-            }
-            try
-            {
-                var request = new CreateFieldRequest(
-                    viewModel.ProjectId,
-                    (ProjectFieldType)viewModel.FieldViewType,
-                    viewModel.Name,
-                    viewModel.DescriptionEditable,
-                    viewModel.CanPlayerEdit,
-                    viewModel.CanPlayerView,
-                    viewModel.IsPublic,
-                    (FieldBoundTo)viewModel.FieldBoundTo,
-                    (MandatoryStatus)viewModel.MandatoryStatus,
-                    viewModel.ShowForGroups.GetUnprefixedGroups(),
-                    viewModel.ValidForNpc,
-                    viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
-                    viewModel.ShowForUnApprovedClaim,
-                    viewModel.Price,
-                    viewModel.MasterDescriptionEditable,
-                    programmaticValue: null);
-
-                await FieldSetupService.AddField(request);
-
-                return ReturnToIndex();
-            }
-            catch (Exception exception)
-            {
-                ModelState.AddException(exception);
-                return View(await Manager.FillFailedModel(viewModel));
-            }
+            return NotFound();
         }
-
-        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> Edit(int projectId, int projectFieldId)
+        if (!ModelState.IsValid)
         {
-            var model = await Manager.EditPageAsync(projectFieldId);
-            return ViewIfFound(model);
+            viewModel.FillNotEditable(field, CurrentUserId);
+            return View(viewModel);
         }
-
-        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
+        try
         {
-            var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-            var field = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == viewModel.ProjectFieldId);
+            var request = new UpdateFieldRequest(project.ProjectId,
+                viewModel.Name,
+                viewModel.DescriptionEditable,
+                viewModel.CanPlayerEdit,
+                viewModel.CanPlayerView,
+                viewModel.IsPublic,
+                (MandatoryStatus)viewModel.MandatoryStatus,
+                viewModel.ShowForGroups.GetUnprefixedGroups(),
+                viewModel.ValidForNpc,
+                viewModel.IncludeInPrint,
+                viewModel.ShowForUnApprovedClaim,
+                viewModel.Price,
+                viewModel.MasterDescriptionEditable,
+                field.ProjectFieldId,
+                viewModel.ProgrammaticValue);
 
-            if (field == null)
-            {
-                return NotFound();
-            }
-            if (!ModelState.IsValid)
-            {
-                viewModel.FillNotEditable(field, CurrentUserId);
-                return View(viewModel);
-            }
-            try
-            {
-                var request = new UpdateFieldRequest(project.ProjectId,
-                    viewModel.Name,
-                    viewModel.DescriptionEditable,
-                    viewModel.CanPlayerEdit,
-                    viewModel.CanPlayerView,
-                    viewModel.IsPublic,
-                    (MandatoryStatus)viewModel.MandatoryStatus,
-                    viewModel.ShowForGroups.GetUnprefixedGroups(),
-                    viewModel.ValidForNpc,
-                    viewModel.IncludeInPrint,
-                    viewModel.ShowForUnApprovedClaim,
-                    viewModel.Price,
-                    viewModel.MasterDescriptionEditable,
-                    field.ProjectFieldId,
-                    viewModel.ProgrammaticValue);
+            await FieldSetupService.UpdateFieldParams(request);
 
-                await FieldSetupService.UpdateFieldParams(request);
-
-                return ReturnToIndex();
-            }
-            catch (Exception exception)
-            {
-                ModelState.AddException(exception);
-                viewModel.FillNotEditable(field, CurrentUserId);
-                return View(viewModel);
-            }
+            return ReturnToIndex();
         }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        // ReSharper disable once UnusedParameter.Global
-        public async Task<ActionResult> Delete(int projectId, int projectFieldId, IFormCollection collection)
+        catch (Exception exception)
         {
-            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-
-            try
-            {
-                await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
-
-                return ReturnToIndex();
-            }
-            catch (Exception exception)
-            {
-                ModelState.AddException(exception);
-                return View(field);
-            }
+            ModelState.AddException(exception);
+            viewModel.FillNotEditable(field, CurrentUserId);
+            return View(viewModel);
         }
+    }
 
-        [HttpGet]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> CreateValue(int projectId, int projectFieldId)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    // ReSharper disable once UnusedParameter.Global
+    public async Task<ActionResult> Delete(int projectId, int projectFieldId, IFormCollection collection)
+    {
+        var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+        try
         {
-            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-            return View(new GameFieldDropdownValueCreateViewModel(field));
+            await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
+
+            return ReturnToIndex();
         }
-
-        [HttpPost, ValidateAntiForgeryToken]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
+        catch (Exception exception)
         {
-            try
-            {
-                var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
-
-                var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault());
-
-                await
-                    FieldSetupService.CreateFieldValueVariant(
-                        new CreateFieldValueVariantRequest(
-                            viewModel.ProjectId,
-                            viewModel.Label,
-                            viewModel.Description,
-                            viewModel.ProjectFieldId,
-                            viewModel.MasterDescription,
-                            viewModel.ProgrammaticValue,
-                            viewModel.Price,
-                            viewModel.PlayerSelectable,
-                            timeSlotOptions));
-
-                return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddException(ex);
-                return View(viewModel);
-            }
+            ModelState.AddException(exception);
+            return View(field);
         }
+    }
 
-        [HttpGet]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> EditValue(int projectId, int projectFieldId, int valueId)
+    [HttpGet]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> CreateValue(int projectId, int projectFieldId)
+    {
+        var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+        return View(new GameFieldDropdownValueCreateViewModel(field));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
+    {
+        try
         {
-            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+            var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
+
+            var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault());
+
+            await
+                FieldSetupService.CreateFieldValueVariant(
+                    new CreateFieldValueVariantRequest(
+                        viewModel.ProjectId,
+                        viewModel.Label,
+                        viewModel.Description,
+                        viewModel.ProjectFieldId,
+                        viewModel.MasterDescription,
+                        viewModel.ProgrammaticValue,
+                        viewModel.Price,
+                        viewModel.PlayerSelectable,
+                        timeSlotOptions));
+
+            return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddException(ex);
+            return View(viewModel);
+        }
+    }
+
+    [HttpGet]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> EditValue(int projectId, int projectFieldId, int valueId)
+    {
+        var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+        var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
+        if (value == null)
+        {
+            return NotFound();
+        }
+        return View(new GameFieldDropdownValueEditViewModel(field, value));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> EditValue(GameFieldDropdownValueEditViewModel viewModel)
+    {
+        try
+        {
+            var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
+            await FieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
+                viewModel.ProjectId,
+                viewModel.ProjectFieldDropdownValueId,
+                viewModel.Label,
+                viewModel.Description,
+                viewModel.ProjectFieldId,
+                viewModel.MasterDescription,
+                viewModel.ProgrammaticValue,
+                viewModel.Price,
+                viewModel.PlayerSelectable,
+                viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault())
+                ));
+
+            return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
+        }
+        catch
+        {
+            return View(viewModel);
+        }
+    }
+
+
+    /// <summary>
+    /// Removes custom field value by HTTP GET request
+    /// </summary>
+    /// <param name="projectId">Id of a project where field is located in</param>
+    /// <param name="projectFieldId">Id of a field to delete value from</param>
+    /// <param name="valueId">Id of a value to delete</param>
+    /// <returns>
+    /// 200 -- if a value was successfully deleted
+    /// 250 -- if a value was marked as inactive
+    /// 500 -- if any exception occured
+    /// 401 -- if logged user is not authorized to delete values
+    /// 404 -- if no field or project found
+    /// </returns>
+    [MasterAuthorize(Permission.CanChangeFields)]
+    [HttpDelete("~/{projectId:int}/fields/{projectFieldId:int}/DeleteValueEx/{valueId:int}")]
+    public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
+    {
+        try
+        {
             var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-            if (value == null)
-            {
-                return NotFound();
-            }
-            return View(new GameFieldDropdownValueEditViewModel(field, value));
-        }
-
-        [HttpPost, ValidateAntiForgeryToken]
-        [MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> EditValue(GameFieldDropdownValueEditViewModel viewModel)
-        {
-            try
-            {
-                var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
-                await FieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
-                    viewModel.ProjectId,
-                    viewModel.ProjectFieldDropdownValueId,
-                    viewModel.Label,
-                    viewModel.Description,
-                    viewModel.ProjectFieldId,
-                    viewModel.MasterDescription,
-                    viewModel.ProgrammaticValue,
-                    viewModel.Price,
-                    viewModel.PlayerSelectable,
-                    viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault())
-                    ));
-
-                return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
-            }
-            catch
-            {
-                return View(viewModel);
-            }
-        }
-
-
-        /// <summary>
-        /// Removes custom field value by HTTP GET request
-        /// </summary>
-        /// <param name="projectId">Id of a project where field is located in</param>
-        /// <param name="projectFieldId">Id of a field to delete value from</param>
-        /// <param name="valueId">Id of a value to delete</param>
-        /// <returns>
-        /// 200 -- if a value was successfully deleted
-        /// 250 -- if a value was marked as inactive
-        /// 500 -- if any exception occured
-        /// 401 -- if logged user is not authorized to delete values
-        /// 404 -- if no field or project found
-        /// </returns>
-        [MasterAuthorize(Permission.CanChangeFields)]
-        [HttpDelete("~/{projectId:int}/fields/{projectFieldId:int}/DeleteValueEx/{valueId:int}")]
-        public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
-        {
-            try
-            {
-                var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-
-                if (value == null)
-                {
-                    return NotFound();
-                }
-
-                _ = await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
-                return value.IsActive
-                    ? Ok()
-                    : StatusCode(250);
-            }
-            catch (Exception)
-            {
-                // TODO: Implement exception logging here
-                return StatusCode(500);
-            }
-        }
-
-        [MasterAuthorize(Permission.CanChangeFields)]
-        // TODO: Refactor to HEAD request (require UI fixes)
-        [HttpGet("~/{projectId:int}/fields/{listItemId:int}/move/{direction:int}")]
-        public async Task<ActionResult> Move(int projectId, int listItemId, int direction)
-        {
-            var value = await ProjectRepository.GetProjectField(projectId, listItemId);
 
             if (value == null)
             {
                 return NotFound();
             }
 
-            try
-            {
-                await FieldSetupService.MoveField(projectId, listItemId, (short)direction);
+            _ = await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
+            return value.IsActive
+                ? Ok()
+                : StatusCode(250);
+        }
+        catch (Exception)
+        {
+            // TODO: Implement exception logging here
+            return StatusCode(500);
+        }
+    }
 
-                return ReturnToIndex();
-            }
-            catch
-            {
-                return ReturnToIndex();
-            }
+    [MasterAuthorize(Permission.CanChangeFields)]
+    // TODO: Refactor to HEAD request (require UI fixes)
+    [HttpGet("~/{projectId:int}/fields/{listItemId:int}/move/{direction:int}")]
+    public async Task<ActionResult> Move(int projectId, int listItemId, int direction)
+    {
+        var value = await ProjectRepository.GetProjectField(projectId, listItemId);
+
+        if (value == null)
+        {
+            return NotFound();
         }
 
-        [MasterAuthorize(Permission.CanChangeFields)]
-        // TODO: Refactor to HEAD request (require UI fixes)
-        [HttpGet("~/{projectId:int}/fields/{parentObjectId:int}/values/{listItemId:int}/move/{direction:int}")]
-        public async Task<ActionResult> MoveValue(int projectId, int listItemId, int parentObjectId, int direction)
+        try
         {
-            var value = await ProjectRepository.GetProjectField(projectId, parentObjectId);
+            await FieldSetupService.MoveField(projectId, listItemId, (short)direction);
 
-            if (value == null)
-            {
-                return NotFound();
-            }
+            return ReturnToIndex();
+        }
+        catch
+        {
+            return ReturnToIndex();
+        }
+    }
 
-            try
-            {
-                await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
+    [MasterAuthorize(Permission.CanChangeFields)]
+    // TODO: Refactor to HEAD request (require UI fixes)
+    [HttpGet("~/{projectId:int}/fields/{parentObjectId:int}/values/{listItemId:int}/move/{direction:int}")]
+    public async Task<ActionResult> MoveValue(int projectId, int listItemId, int parentObjectId, int direction)
+    {
+        var value = await ProjectRepository.GetProjectField(projectId, parentObjectId);
 
-
-                return ReturnToField(value);
-            }
-            catch
-            {
-                return ReturnToField(value);
-            }
+        if (value == null)
+        {
+            return NotFound();
         }
 
-        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> MassCreateValueVariants(int projectId, int projectFieldId, string valuesToAdd)
+        try
         {
-            var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-
-            if (value == null)
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                await FieldSetupService.CreateFieldValueVariants(projectId, projectFieldId, valuesToAdd);
+            await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
 
 
-                return ReturnToField(value);
-            }
-            catch
-            {
-                return ReturnToField(value);
-            }
+            return ReturnToField(value);
+        }
+        catch
+        {
+            return ReturnToField(value);
+        }
+    }
+
+    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> MassCreateValueVariants(int projectId, int projectFieldId, string valuesToAdd)
+    {
+        var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+        if (value == null)
+        {
+            return NotFound();
         }
 
-        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
-        public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
+        try
         {
-            var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-
-            if (value == null)
-            {
-                return NotFound();
-            }
-
-            if (afterFieldId == -1)
-            {
-                afterFieldId = null;
-            }
-
-            try
-            {
-                await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+            await FieldSetupService.CreateFieldValueVariants(projectId, projectFieldId, valuesToAdd);
 
 
-                return ReturnToIndex();
-            }
-            catch
-            {
-                return ReturnToIndex();
-            }
+            return ReturnToField(value);
+        }
+        catch
+        {
+            return ReturnToField(value);
+        }
+    }
+
+    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+    public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
+    {
+        var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+        if (value == null)
+        {
+            return NotFound();
+        }
+
+        if (afterFieldId == -1)
+        {
+            afterFieldId = null;
+        }
+
+        try
+        {
+            await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+
+
+            return ReturnToIndex();
+        }
+        catch
+        {
+            return ReturnToIndex();
         }
     }
 }

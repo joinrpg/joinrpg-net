@@ -1,9 +1,8 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces.Notification
+namespace JoinRpg.Services.Interfaces.Notification;
+
+public class ForumEmail : EmailModelBase
 {
-    public class ForumEmail : EmailModelBase
-    {
-        public ForumThread ForumThread { get; set; }
-    }
+    public ForumThread ForumThread { get; set; }
 }

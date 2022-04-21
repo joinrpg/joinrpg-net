@@ -1,18 +1,17 @@
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.Web.Models
-{
-    public class ApisIndexViewModel
-    {
-        public int ProjectId { get; }
-        public int RootGroupId { get; }
+namespace JoinRpg.Web.Models;
 
-        public ApisIndexViewModel(Project project, int currentUserId)
-        {
-            ProjectId = project.ProjectId;
-            RootGroupId = project.RootGroup.CharacterGroupId;
-            _ = project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
-        }
+public class ApisIndexViewModel
+{
+    public int ProjectId { get; }
+    public int RootGroupId { get; }
+
+    public ApisIndexViewModel(Project project, int currentUserId)
+    {
+        ProjectId = project.ProjectId;
+        RootGroupId = project.RootGroup.CharacterGroupId;
+        _ = project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
     }
 }

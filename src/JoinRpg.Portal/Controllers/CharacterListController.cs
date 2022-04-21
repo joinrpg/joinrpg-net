@@ -10,140 +10,139 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+[MasterAuthorize()]
+[Route("{projectId}/characters/[action]")]
+public class CharacterListController : ControllerGameBase
 {
-    [MasterAuthorize()]
-    [Route("{projectId}/characters/[action]")]
-    public class CharacterListController : ControllerGameBase
+
+    private IPlotRepository PlotRepository { get; }
+    private IUriService UriService { get; }
+    private IExportDataService ExportDataService { get; }
+
+    [HttpGet]
+    public Task<ActionResult> Active(int projectid, string export)
+     => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
+
+    [HttpGet]
+    public Task<ActionResult> Deleted(int projectId, string export)
+      => MasterCharacterList(projectId, character => !character.IsActive, export, "Удаленные персонажи");
+
+
+    [HttpGet]
+    public Task<ActionResult> Problems(int projectid, string export)
+      => MasterCharacterList(projectid,
+        character => character.ApprovedClaimId != null && character.GetProblems().Any(), export,
+        "Проблемные персонажи");
+
+    [HttpGet]
+    public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
+        var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+        return await MasterCharacterList(projectid,
+          character => character.HasProblemsForField(field) && character.IsActive, export, "Поле (непроставлено): " + field.FieldName);
+    }
 
-        private IPlotRepository PlotRepository { get; }
-        private IUriService UriService { get; }
-        private IExportDataService ExportDataService { get; }
-
-        [HttpGet]
-        public Task<ActionResult> Active(int projectid, string export)
-         => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
-
-        [HttpGet]
-        public Task<ActionResult> Deleted(int projectId, string export)
-          => MasterCharacterList(projectId, character => !character.IsActive, export, "Удаленные персонажи");
-
-
-        [HttpGet]
-        public Task<ActionResult> Problems(int projectid, string export)
-          => MasterCharacterList(projectid,
-            character => character.ApprovedClaimId != null && character.GetProblems().Any(), export,
-            "Проблемные персонажи");
-
-        [HttpGet]
-        public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
-        {
-            var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
-            return await MasterCharacterList(projectid,
-              character => character.HasProblemsForField(field) && character.IsActive, export, "Поле (непроставлено): " + field.FieldName);
-        }
-
-        private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title)
-        {
-            var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
+    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title)
+    {
+        var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
 
 #pragma warning disable CS0612 // Type or member is obsolete
-            var project = await GetProjectFromList(projectId, characters);
+        var project = await GetProjectFromList(projectId, characters);
 #pragma warning restore CS0612 // Type or member is obsolete
 
-            var list = new CharacterListViewModel(CurrentUserId, title, characters, project);
+        var list = new CharacterListViewModel(CurrentUserId, title, characters, project);
 
-            var exportType = ExportTypeNameParserHelper.ToExportType(export);
+        var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
-            if (exportType == null)
-            {
-                return View("Index", list);
-            }
-
-            return await Export(list, exportType.Value);
-        }
-
-        public CharacterListController(
-            IProjectRepository projectRepository,
-            IProjectService projectService,
-            IExportDataService exportDataService,
-            IPlotRepository plotRepository,
-            IUriService uriService,
-            IUserRepository userRepository)
-         : base(projectRepository, projectService, userRepository)
+        if (exportType == null)
         {
-            PlotRepository = plotRepository;
-            UriService = uriService;
-            ExportDataService = exportDataService;
+            return View("Index", list);
         }
 
+        return await Export(list, exportType.Value);
+    }
 
-        private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
-        {
-            var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-            return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
-        }
-
-        [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
-        public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
-        {
-            var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-            var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
-            var characters =
-              (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
-
-            if (characterGroup == null)
-            {
-                return NotFound();
-            }
-
-            var plots = await PlotRepository.GetPlotsWithTargets(projectId);
-
-            var list = new CharacterListByGroupViewModel(CurrentUserId,
-              characters, characterGroup);
-
-            var exportType = ExportTypeNameParserHelper.ToExportType(export);
-
-            if (exportType is null)
-            {
-                return View("ByGroup", list);
-            }
-
-            return await Export(list, exportType.Value);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
-        {
-            var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
-            return await MasterCharacterList(projectid,
-              character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
-              "Поле (проставлено): " + field.FieldName);
-        }
-
-        [HttpGet]
-        public Task<ActionResult> Vacant(int projectid, string export)
-          => MasterCharacterList(projectid, character => character.ApprovedClaim == null && character.IsActive, export, "Свободные персонажи");
-
-        [HttpGet]
-        public Task<ActionResult> WithPlayers(int projectid, string export)
-          => MasterCharacterList(projectid, character => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
-
-        private async Task<FileContentResult> Export(CharacterListViewModel list, ExportType exportType)
-        {
-            var generator = ExportDataService.GetGenerator(
-                exportType,
-                list.Items,
-              new CharacterListItemViewModelExporter(list.Fields, UriService));
-
-            return await ReturnExportResult(list.ProjectName + ": " + list.Title, generator);
-        }
-
-        private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
-            File(await generator.Generate(), generator.ContentType,
-                Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+    public CharacterListController(
+        IProjectRepository projectRepository,
+        IProjectService projectService,
+        IExportDataService exportDataService,
+        IPlotRepository plotRepository,
+        IUriService uriService,
+        IUserRepository userRepository)
+     : base(projectRepository, projectService, userRepository)
+    {
+        PlotRepository = plotRepository;
+        UriService = uriService;
+        ExportDataService = exportDataService;
     }
 
 
+    private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
+    {
+        var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
+    }
+
+    [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
+    public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
+    {
+        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
+        var characters =
+          (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
+
+        if (characterGroup == null)
+        {
+            return NotFound();
+        }
+
+        var plots = await PlotRepository.GetPlotsWithTargets(projectId);
+
+        var list = new CharacterListByGroupViewModel(CurrentUserId,
+          characters, characterGroup);
+
+        var exportType = ExportTypeNameParserHelper.ToExportType(export);
+
+        if (exportType is null)
+        {
+            return View("ByGroup", list);
+        }
+
+        return await Export(list, exportType.Value);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    {
+        var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+        return await MasterCharacterList(projectid,
+          character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
+          "Поле (проставлено): " + field.FieldName);
+    }
+
+    [HttpGet]
+    public Task<ActionResult> Vacant(int projectid, string export)
+      => MasterCharacterList(projectid, character => character.ApprovedClaim == null && character.IsActive, export, "Свободные персонажи");
+
+    [HttpGet]
+    public Task<ActionResult> WithPlayers(int projectid, string export)
+      => MasterCharacterList(projectid, character => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
+
+    private async Task<FileContentResult> Export(CharacterListViewModel list, ExportType exportType)
+    {
+        var generator = ExportDataService.GetGenerator(
+            exportType,
+            list.Items,
+          new CharacterListItemViewModelExporter(list.Fields, UriService));
+
+        return await ReturnExportResult(list.ProjectName + ": " + list.Title, generator);
+    }
+
+    private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
+        File(await generator.Generate(), generator.ContentType,
+            Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
 }
+
+

@@ -6,59 +6,58 @@ using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+public class UserController : Common.ControllerBase
 {
-    public class UserController : Common.ControllerBase
+    public IUserRepository UserRepository { get; }
+    public ICurrentUserAccessor CurrentUserAccessor { get; }
+
+    [HttpGet("user/{userId}")]
+    [AllowAnonymous]
+    public async Task<ActionResult> Details(int userId)
     {
-        public IUserRepository UserRepository { get; }
-        public ICurrentUserAccessor CurrentUserAccessor { get; }
+        var user = await UserRepository.GetById(userId);
 
-        [HttpGet("user/{userId}")]
-        [AllowAnonymous]
-        public async Task<ActionResult> Details(int userId)
+        var currentUser = User.Identity?.IsAuthenticated == true ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
+
+        var accessReason = (AccessReason)user.GetProfileAccess(currentUser);
+        var userProfileViewModel = new UserProfileViewModel()
         {
-            var user = await UserRepository.GetById(userId);
+            DisplayName = user.GetDisplayName(),
+            ThisUserProjects = user.ProjectAcls.Select(p => p.Project).ToLinkViewModels().ToList(),
+            UserId = user.UserId,
+            Details = new UserProfileDetailsViewModel(user, accessReason),
+            HasAdminAccess = CurrentUserAccessor.IsAdmin,
+            IsAdmin = user.Auth.IsAdmin,
+        };
 
-            var currentUser = User.Identity?.IsAuthenticated == true ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
-
-            var accessReason = (AccessReason)user.GetProfileAccess(currentUser);
-            var userProfileViewModel = new UserProfileViewModel()
-            {
-                DisplayName = user.GetDisplayName(),
-                ThisUserProjects = user.ProjectAcls.Select(p => p.Project).ToLinkViewModels().ToList(),
-                UserId = user.UserId,
-                Details = new UserProfileDetailsViewModel(user, accessReason),
-                HasAdminAccess = CurrentUserAccessor.IsAdmin,
-                IsAdmin = user.Auth.IsAdmin,
-            };
-
-            if (currentUser != null)
-            {
-                userProfileViewModel.CanGrantAccessProjects =
-                    currentUser.GetProjects(acl => acl.CanGrantRights).Where(project => project.Active).ToLinkViewModels().ToList();
-                var claims = CurrentUserAccessor.IsAdmin
-                    ? user.Claims.ToArray()
-                    : user.Claims.Where(claim => claim.HasAccess(CurrentUserAccessor.UserId, ExtraAccessReason.Player)).ToArray();
-                userProfileViewModel.Claims = new ClaimListViewModel(CurrentUserAccessor.UserId,
-                    claims,
-                    null,
-                    new System.Collections.Generic.Dictionary<int, int>(), //TODO pass unread data here
-                    showCount: false,
-                    showUserColumn: false);
-            }
-
-            return View(userProfileViewModel);
+        if (currentUser != null)
+        {
+            userProfileViewModel.CanGrantAccessProjects =
+                currentUser.GetProjects(acl => acl.CanGrantRights).Where(project => project.Active).ToLinkViewModels().ToList();
+            var claims = CurrentUserAccessor.IsAdmin
+                ? user.Claims.ToArray()
+                : user.Claims.Where(claim => claim.HasAccess(CurrentUserAccessor.UserId, ExtraAccessReason.Player)).ToArray();
+            userProfileViewModel.Claims = new ClaimListViewModel(CurrentUserAccessor.UserId,
+                claims,
+                null,
+                new System.Collections.Generic.Dictionary<int, int>(), //TODO pass unread data here
+                showCount: false,
+                showUserColumn: false);
         }
 
-        public UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor)
-            : base()
-        {
-            UserRepository = userRepository;
-            CurrentUserAccessor = currentUserAccessor;
-        }
-
-        [Authorize]
-        [HttpGet("user/me")]
-        public ActionResult Me() => RedirectToAction("Details", new { CurrentUserAccessor.UserId });
+        return View(userProfileViewModel);
     }
+
+    public UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor)
+        : base()
+    {
+        UserRepository = userRepository;
+        CurrentUserAccessor = currentUserAccessor;
+    }
+
+    [Authorize]
+    [HttpGet("user/me")]
+    public ActionResult Me() => RedirectToAction("Details", new { CurrentUserAccessor.UserId });
 }

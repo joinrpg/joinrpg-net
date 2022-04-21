@@ -1,20 +1,20 @@
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace JoinRpg.Portal
-{
-    public static class ConfirmDialogMvcHelper
-    {
+namespace JoinRpg.Portal;
 
-        public static IHtmlContent ConfirmDialog(
-            this IHtmlHelper self,
-            string confirmId,
-            string confirmInfo,
-            string confirmHeader,
-            string confirmYes,
-            string confirmNo)
-        {
-            return new HtmlString(string.Format(@"<div class=""modal fade"" tabindex=""-1"" role=""dialog"" id=""{4}"">
+public static class ConfirmDialogMvcHelper
+{
+
+    public static IHtmlContent ConfirmDialog(
+        this IHtmlHelper self,
+        string confirmId,
+        string confirmInfo,
+        string confirmHeader,
+        string confirmYes,
+        string confirmNo)
+    {
+        return new HtmlString(string.Format(@"<div class=""modal fade"" tabindex=""-1"" role=""dialog"" id=""{4}"">
                   <div class=""modal-dialog"" role=""document"">
                     <div class=""modal-content"">
                       <div class=""modal-header"">
@@ -31,11 +31,10 @@ namespace JoinRpg.Portal
                     </div><!-- /.modal-content -->
                   </div><!-- /.modal-dialog -->
                 </div><!-- /.modal -->",
-                confirmHeader,
-                confirmInfo,
-                confirmNo,
-                confirmYes,
-                confirmId));
-        }
+            confirmHeader,
+            confirmInfo,
+            confirmNo,
+            confirmYes,
+            confirmId));
     }
 }

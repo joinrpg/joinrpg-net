@@ -3,44 +3,43 @@ using Mailgun.Core.Messages;
 using Mailgun.Messages;
 using Newtonsoft.Json.Linq;
 
-namespace JoinRpg.Common.EmailSending.Impl
+namespace JoinRpg.Common.EmailSending.Impl;
+
+internal static class RecepientExtensions
 {
-    internal static class RecepientExtensions
+    public static IMessageBuilder AddUsers(this IMessageBuilder builder,
+        IEnumerable<RecepientData> recipients) => builder.AddToRecipientList(recipients.Where(x => x != null).Distinct().Select(x => x.ToMailGunRecepient()));
+
+    public static IRecipient ToMailGunRecepient(this RecepientData recipient)
     {
-        public static IMessageBuilder AddUsers(this IMessageBuilder builder,
-            IEnumerable<RecepientData> recipients) => builder.AddToRecipientList(recipients.Where(x => x != null).Distinct().Select(x => x.ToMailGunRecepient()));
-
-        public static IRecipient ToMailGunRecepient(this RecepientData recipient)
+        return new Recipient()
         {
-            return new Recipient()
+            DisplayName = recipient.DisplayName,
+            Email = recipient.Email,
+        };
+    }
+
+
+    public static JObject ToRecipientVariables(
+        this IReadOnlyCollection<RecepientData> recipients)
+    {
+        var recipientVars = new JObject();
+        foreach (var r in recipients)
+        {
+            var jobj = new JObject
             {
-                DisplayName = recipient.DisplayName,
-                Email = recipient.Email,
+                { Constants.MailGunName, r.DisplayName }
             };
-        }
 
-
-        public static JObject ToRecipientVariables(
-            this IReadOnlyCollection<RecepientData> recipients)
-        {
-            var recipientVars = new JObject();
-            foreach (var r in recipients)
+            foreach (var nameAndValue in r.RecipientSpecificValues)
             {
-                var jobj = new JObject
-                {
-                    { Constants.MailGunName, r.DisplayName }
-                };
-
-                foreach (var nameAndValue in r.RecipientSpecificValues)
-                {
-                    jobj.Add(nameAndValue.Key, nameAndValue.Value);
-                }
-
-                recipientVars.Add(r.Email, jobj);
+                jobj.Add(nameAndValue.Key, nameAndValue.Value);
             }
 
-            return recipientVars;
+            recipientVars.Add(r.Email, jobj);
         }
 
+        return recipientVars;
     }
+
 }

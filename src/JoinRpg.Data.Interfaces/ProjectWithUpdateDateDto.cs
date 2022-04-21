@@ -1,11 +1,10 @@
-namespace JoinRpg.Data.Interfaces
-{
-    public class ProjectWithUpdateDateDto
-    {
-        public int ProjectId { get; set; }
-        public string ProjectName { get; set; }
-        public DateTime LastUpdated { get; set; }
+namespace JoinRpg.Data.Interfaces;
 
-        public bool LegacyMode { get; set; }
-    }
+public class ProjectWithUpdateDateDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; }
+    public DateTime LastUpdated { get; set; }
+
+    public bool LegacyMode { get; set; }
 }

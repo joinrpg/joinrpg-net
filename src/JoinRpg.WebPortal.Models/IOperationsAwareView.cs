@@ -1,19 +1,18 @@
 using JetBrains.Annotations;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models;
+
+public interface IOperationsAwareView
 {
-    public interface IOperationsAwareView
-    {
-        int? ProjectId { get; }
+    int? ProjectId { get; }
 
-        int? CharacterGroupId => null;
+    int? CharacterGroupId => null;
 
-        bool ShowCharacterCreateButton => ProjectId is not null;
+    bool ShowCharacterCreateButton => ProjectId is not null;
 
-        [NotNull]
-        IReadOnlyCollection<int> ClaimIds { get; }
+    [NotNull]
+    IReadOnlyCollection<int> ClaimIds { get; }
 
-        [NotNull]
-        IReadOnlyCollection<int> CharacterIds { get; }
-    }
+    [NotNull]
+    IReadOnlyCollection<int> CharacterIds { get; }
 }

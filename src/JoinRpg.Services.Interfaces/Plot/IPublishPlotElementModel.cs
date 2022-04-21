@@ -1,10 +1,9 @@
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces;
+
+public interface IPublishPlotElementModel : IPlotElementModel
 {
-    public interface IPublishPlotElementModel : IPlotElementModel
-    {
 
-        bool SendNotification { get; }
+    bool SendNotification { get; }
 
-        string CommentText { get; }
-    }
+    string CommentText { get; }
 }

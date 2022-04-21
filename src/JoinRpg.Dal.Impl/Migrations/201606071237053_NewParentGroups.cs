@@ -1,27 +1,27 @@
-namespace JoinRpg.Dal.Impl.Migrations
-{
-    using System.Data.Entity.Migrations;
+namespace JoinRpg.Dal.Impl.Migrations;
 
-    public partial class NewParentGroups : DbMigration
+using System.Data.Entity.Migrations;
+
+public partial class NewParentGroups : DbMigration
+{
+    public override void Up()
     {
-        public override void Up()
-        {
-            DropForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");
-            DropForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId1", "dbo.CharacterGroups");
-            DropForeignKey("dbo.ProjectFieldCharacterGroups", "ProjectField_ProjectFieldId", "dbo.ProjectFields");
-            DropForeignKey("dbo.ProjectFieldCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");
-            DropForeignKey("dbo.CharacterCharacterGroups", "Character_CharacterId", "dbo.Characters");
-            DropForeignKey("dbo.CharacterCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");
-            DropIndex("dbo.CharacterGroupCharacterGroups", new[] { "CharacterGroup_CharacterGroupId" });
-            DropIndex("dbo.CharacterGroupCharacterGroups", new[] { "CharacterGroup_CharacterGroupId1" });
-            DropIndex("dbo.ProjectFieldCharacterGroups", new[] { "ProjectField_ProjectFieldId" });
-            DropIndex("dbo.ProjectFieldCharacterGroups", new[] { "CharacterGroup_CharacterGroupId" });
-            DropIndex("dbo.CharacterCharacterGroups", new[] { "Character_CharacterId" });
-            DropIndex("dbo.CharacterCharacterGroups", new[] { "CharacterGroup_CharacterGroupId" });
-            AddColumn("dbo.Characters", "ParentGroupsImpl_ListIds", c => c.String());
-            AddColumn("dbo.CharacterGroups", "ParentGroupsImpl_ListIds", c => c.String());
-            AddColumn("dbo.ProjectFields", "AviableForImpl_ListIds", c => c.String());
-            Sql(@"UPDATE CharacterGroups 
+        DropForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");
+        DropForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId1", "dbo.CharacterGroups");
+        DropForeignKey("dbo.ProjectFieldCharacterGroups", "ProjectField_ProjectFieldId", "dbo.ProjectFields");
+        DropForeignKey("dbo.ProjectFieldCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");
+        DropForeignKey("dbo.CharacterCharacterGroups", "Character_CharacterId", "dbo.Characters");
+        DropForeignKey("dbo.CharacterCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");
+        DropIndex("dbo.CharacterGroupCharacterGroups", new[] { "CharacterGroup_CharacterGroupId" });
+        DropIndex("dbo.CharacterGroupCharacterGroups", new[] { "CharacterGroup_CharacterGroupId1" });
+        DropIndex("dbo.ProjectFieldCharacterGroups", new[] { "ProjectField_ProjectFieldId" });
+        DropIndex("dbo.ProjectFieldCharacterGroups", new[] { "CharacterGroup_CharacterGroupId" });
+        DropIndex("dbo.CharacterCharacterGroups", new[] { "Character_CharacterId" });
+        DropIndex("dbo.CharacterCharacterGroups", new[] { "CharacterGroup_CharacterGroupId" });
+        AddColumn("dbo.Characters", "ParentGroupsImpl_ListIds", c => c.String());
+        AddColumn("dbo.CharacterGroups", "ParentGroupsImpl_ListIds", c => c.String());
+        AddColumn("dbo.ProjectFields", "AviableForImpl_ListIds", c => c.String());
+        Sql(@"UPDATE CharacterGroups 
 SET ParentGroupsImpl_ListIds = Links.Parents
 FROM CharacterGroups T
 LEFT JOIN(
@@ -56,55 +56,54 @@ LEFT JOIN(
    FOR XML PATH(N''), TYPE).value(N'.[1]', N'nvarchar(max)'), 1, 2, N'') As Parents
 FROM CharacterCharacterGroups c
 GROUP BY Character_CharacterId) Links ON Links.Character_CharacterId = T.CharacterId");
-            DropTable("dbo.CharacterGroupCharacterGroups");
-            DropTable("dbo.ProjectFieldCharacterGroups");
-            DropTable("dbo.CharacterCharacterGroups");
-        }
+        DropTable("dbo.CharacterGroupCharacterGroups");
+        DropTable("dbo.ProjectFieldCharacterGroups");
+        DropTable("dbo.CharacterCharacterGroups");
+    }
 
-        public override void Down()
-        {
-            CreateTable(
-                "dbo.CharacterCharacterGroups",
-                c => new
-                {
-                    Character_CharacterId = c.Int(nullable: false),
-                    CharacterGroup_CharacterGroupId = c.Int(nullable: false),
-                })
-                .PrimaryKey(t => new { t.Character_CharacterId, t.CharacterGroup_CharacterGroupId });
+    public override void Down()
+    {
+        CreateTable(
+            "dbo.CharacterCharacterGroups",
+            c => new
+            {
+                Character_CharacterId = c.Int(nullable: false),
+                CharacterGroup_CharacterGroupId = c.Int(nullable: false),
+            })
+            .PrimaryKey(t => new { t.Character_CharacterId, t.CharacterGroup_CharacterGroupId });
 
-            CreateTable(
-                "dbo.ProjectFieldCharacterGroups",
-                c => new
-                {
-                    ProjectField_ProjectFieldId = c.Int(nullable: false),
-                    CharacterGroup_CharacterGroupId = c.Int(nullable: false),
-                })
-                .PrimaryKey(t => new { t.ProjectField_ProjectFieldId, t.CharacterGroup_CharacterGroupId });
+        CreateTable(
+            "dbo.ProjectFieldCharacterGroups",
+            c => new
+            {
+                ProjectField_ProjectFieldId = c.Int(nullable: false),
+                CharacterGroup_CharacterGroupId = c.Int(nullable: false),
+            })
+            .PrimaryKey(t => new { t.ProjectField_ProjectFieldId, t.CharacterGroup_CharacterGroupId });
 
-            CreateTable(
-                "dbo.CharacterGroupCharacterGroups",
-                c => new
-                {
-                    CharacterGroup_CharacterGroupId = c.Int(nullable: false),
-                    CharacterGroup_CharacterGroupId1 = c.Int(nullable: false),
-                })
-                .PrimaryKey(t => new { t.CharacterGroup_CharacterGroupId, t.CharacterGroup_CharacterGroupId1 });
+        CreateTable(
+            "dbo.CharacterGroupCharacterGroups",
+            c => new
+            {
+                CharacterGroup_CharacterGroupId = c.Int(nullable: false),
+                CharacterGroup_CharacterGroupId1 = c.Int(nullable: false),
+            })
+            .PrimaryKey(t => new { t.CharacterGroup_CharacterGroupId, t.CharacterGroup_CharacterGroupId1 });
 
-            DropColumn("dbo.ProjectFields", "AviableForImpl_ListIds");
-            DropColumn("dbo.CharacterGroups", "ParentGroupsImpl_ListIds");
-            DropColumn("dbo.Characters", "ParentGroupsImpl_ListIds");
-            CreateIndex("dbo.CharacterCharacterGroups", "CharacterGroup_CharacterGroupId");
-            CreateIndex("dbo.CharacterCharacterGroups", "Character_CharacterId");
-            CreateIndex("dbo.ProjectFieldCharacterGroups", "CharacterGroup_CharacterGroupId");
-            CreateIndex("dbo.ProjectFieldCharacterGroups", "ProjectField_ProjectFieldId");
-            CreateIndex("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId1");
-            CreateIndex("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId");
-            AddForeignKey("dbo.CharacterCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId", cascadeDelete: true);
-            AddForeignKey("dbo.CharacterCharacterGroups", "Character_CharacterId", "dbo.Characters", "CharacterId", cascadeDelete: true);
-            AddForeignKey("dbo.ProjectFieldCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId", cascadeDelete: true);
-            AddForeignKey("dbo.ProjectFieldCharacterGroups", "ProjectField_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId", cascadeDelete: true);
-            AddForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId1", "dbo.CharacterGroups", "CharacterGroupId");
-            AddForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId");
-        }
+        DropColumn("dbo.ProjectFields", "AviableForImpl_ListIds");
+        DropColumn("dbo.CharacterGroups", "ParentGroupsImpl_ListIds");
+        DropColumn("dbo.Characters", "ParentGroupsImpl_ListIds");
+        CreateIndex("dbo.CharacterCharacterGroups", "CharacterGroup_CharacterGroupId");
+        CreateIndex("dbo.CharacterCharacterGroups", "Character_CharacterId");
+        CreateIndex("dbo.ProjectFieldCharacterGroups", "CharacterGroup_CharacterGroupId");
+        CreateIndex("dbo.ProjectFieldCharacterGroups", "ProjectField_ProjectFieldId");
+        CreateIndex("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId1");
+        CreateIndex("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId");
+        AddForeignKey("dbo.CharacterCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId", cascadeDelete: true);
+        AddForeignKey("dbo.CharacterCharacterGroups", "Character_CharacterId", "dbo.Characters", "CharacterId", cascadeDelete: true);
+        AddForeignKey("dbo.ProjectFieldCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId", cascadeDelete: true);
+        AddForeignKey("dbo.ProjectFieldCharacterGroups", "ProjectField_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId", cascadeDelete: true);
+        AddForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId1", "dbo.CharacterGroups", "CharacterGroupId");
+        AddForeignKey("dbo.CharacterGroupCharacterGroups", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId");
     }
 }

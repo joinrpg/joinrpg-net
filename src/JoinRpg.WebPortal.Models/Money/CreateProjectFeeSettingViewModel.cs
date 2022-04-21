@@ -1,7 +1,6 @@
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models;
+
+public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
 {
-    public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
-    {
-        public bool PreferentialFeeEnabled { get; set; }
-    }
+    public bool PreferentialFeeEnabled { get; set; }
 }

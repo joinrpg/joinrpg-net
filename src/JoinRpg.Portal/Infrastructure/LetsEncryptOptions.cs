@@ -1,7 +1,6 @@
-namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure;
+
+public class LetsEncryptOptions
 {
-    public class LetsEncryptOptions
-    {
-        public string RedirectUrl { get; set; }
-    }
+    public string RedirectUrl { get; set; }
 }

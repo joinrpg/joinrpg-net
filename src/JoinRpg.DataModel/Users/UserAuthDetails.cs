@@ -1,20 +1,19 @@
 using JetBrains.Annotations;
 
-namespace JoinRpg.DataModel
+namespace JoinRpg.DataModel;
+
+public class UserAuthDetails
 {
-    public class UserAuthDetails
-    {
-        public int UserId { get; set; }
+    public int UserId { get; set; }
 
-        public bool EmailConfirmed { get; set; }
+    public bool EmailConfirmed { get; set; }
 
-        public DateTime RegisterDate { get; set; }
+    public DateTime RegisterDate { get; set; }
 
-        public bool IsAdmin { get; set; }
+    public bool IsAdmin { get; set; }
 
-        [NotNull]
-        public string AspNetSecurityStamp { get; set; }
+    [NotNull]
+    public string AspNetSecurityStamp { get; set; }
 
-        public override string ToString() => $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";
-    }
+    public override string ToString() => $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";
 }

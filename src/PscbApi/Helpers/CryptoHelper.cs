@@ -2,20 +2,19 @@
 // ReSharper disable IdentifierTypo
 using System.Security.Cryptography;
 
-namespace PscbApi
+namespace PscbApi;
+
+internal static class CryptoHelper
 {
-    internal static class CryptoHelper
+
+    public static byte[] Sha256Encode(this IEnumerable<byte> source)
     {
-
-        public static byte[] Sha256Encode(this IEnumerable<byte> source)
+        using (var encoder = new SHA256Managed())
         {
-            using (var encoder = new SHA256Managed())
-            {
-                return encoder.ComputeHash(source.ToArray());
-            }
+            return encoder.ComputeHash(source.ToArray());
         }
-
-        public static string ToHexString(this byte[] source)
-            => string.Join("", source.Select(b => b.ToString("x2")));
     }
+
+    public static string ToHexString(this byte[] source)
+        => string.Join("", source.Select(b => b.ToString("x2")));
 }

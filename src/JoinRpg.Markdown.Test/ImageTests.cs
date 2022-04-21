@@ -2,26 +2,24 @@ using Shouldly;
 using Vereyon.Web;
 using Xunit;
 
-namespace JoinRpg.Markdown.Test
+namespace JoinRpg.Markdown.Test;
+
+public class ImageTests
 {
+    [Fact]
+    public void TestImage()
+        => @"![Image](https://joinrpg.ru/a.png)".ShouldBeHtml("<p><img src=\"https://joinrpg.ru/a.png\" alt=\"Image\"></p>");
 
-    public class ImageTests
+
+    [Fact]
+    public void ImgTagShouldSanitizeCorrectly()
     {
-        [Fact]
-        public void TestImage()
-            => @"![Image](https://joinrpg.ru/a.png)".ShouldBeHtml("<p><img src=\"https://joinrpg.ru/a.png\" alt=\"Image\"></p>");
+        var str = "<img src=\"https://joinrpg.ru/a.png\" />";
+        var sanitizer = new HtmlSanitizer();
 
-
-        [Fact]
-        public void ImgTagShouldSanitizeCorrectly()
-        {
-            var str = "<img src=\"https://joinrpg.ru/a.png\" />";
-            var sanitizer = new HtmlSanitizer();
-
-            sanitizer.WhiteListMode = true;
-            _ = sanitizer.Tag("img").AllowAttributes("src");
-            sanitizer.Sanitize(str).ShouldBe("<img src=\"https://joinrpg.ru/a.png\">");
-        }
-
+        sanitizer.WhiteListMode = true;
+        _ = sanitizer.Tag("img").AllowAttributes("src");
+        sanitizer.Sanitize(str).ShouldBe("<img src=\"https://joinrpg.ru/a.png\">");
     }
+
 }

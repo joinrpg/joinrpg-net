@@ -1,19 +1,18 @@
-namespace JoinRpg.Services.Interfaces.Characters
+namespace JoinRpg.Services.Interfaces.Characters;
+
+public interface ICharacterService
 {
-    public interface ICharacterService
-    {
-        Task AddCharacter(AddCharacterRequest addCharacterRequest);
+    Task AddCharacter(AddCharacterRequest addCharacterRequest);
 
-        Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest);
+    Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest);
 
-        Task EditCharacter(EditCharacterRequest editCharacterRequest);
+    Task EditCharacter(EditCharacterRequest editCharacterRequest);
 
-        Task MoveCharacter(int currentUserId,
-            int projectId,
-            int characterId,
-            int parentCharacterGroupId,
-            short direction);
+    Task MoveCharacter(int currentUserId,
+        int projectId,
+        int characterId,
+        int parentCharacterGroupId,
+        short direction);
 
-        Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues);
-    }
+    Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues);
 }

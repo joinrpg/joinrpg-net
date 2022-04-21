@@ -1,10 +1,9 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces;
+
+public interface IUriService
 {
-    public interface IUriService
-    {
-        string Get(ILinkable link);
-        Uri GetUri(ILinkable link);
-    }
+    string Get(ILinkable link);
+    Uri GetUri(ILinkable link);
 }

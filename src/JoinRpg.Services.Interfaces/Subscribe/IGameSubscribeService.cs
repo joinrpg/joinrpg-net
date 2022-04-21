@@ -1,8 +1,7 @@
-namespace JoinRpg.Services.Interfaces.Subscribe
+namespace JoinRpg.Services.Interfaces.Subscribe;
+
+public interface IGameSubscribeService
 {
-    public interface IGameSubscribeService
-    {
-        Task UpdateSubscribeForGroup(SubscribeForGroupRequest request);
-        Task RemoveSubscribe(RemoveSubscribeRequest request);
-    }
+    Task UpdateSubscribeForGroup(SubscribeForGroupRequest request);
+    Task RemoveSubscribe(RemoveSubscribeRequest request);
 }

@@ -1,7 +1,6 @@
-namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure;
+
+internal static class ApiPathHelper
 {
-    internal static class ApiPathHelper
-    {
-        public static bool IsApiPath(this string path) => path.Contains("x-api") || path.Contains("x-game-api");
-    }
+    public static bool IsApiPath(this string path) => path.Contains("x-api") || path.Contains("x-game-api");
 }

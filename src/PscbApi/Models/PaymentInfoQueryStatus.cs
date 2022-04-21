@@ -1,30 +1,28 @@
 using Newtonsoft.Json;
 
-namespace PscbApi.Models
+namespace PscbApi.Models;
+
+/// <summary>
+/// Status of payment information query
+/// </summary>
+[JsonConverter(typeof(IdentifiableEnumConverter))]
+public enum PaymentInfoQueryStatus
 {
+    /// <summary>
+    /// Payment found
+    /// </summary>
+    [Identifier("STATUS_SUCCESS")]
+    Success,
 
     /// <summary>
-    /// Status of payment information query
+    /// Error occured
     /// </summary>
-    [JsonConverter(typeof(IdentifiableEnumConverter))]
-    public enum PaymentInfoQueryStatus
-    {
-        /// <summary>
-        /// Payment found
-        /// </summary>
-        [Identifier("STATUS_SUCCESS")]
-        Success,
+    [Identifier("STATUS_FAIL")]
+    Fail,
 
-        /// <summary>
-        /// Error occured
-        /// </summary>
-        [Identifier("STATUS_FAIL")]
-        Fail,
-
-        /// <summary>
-        /// Error occured
-        /// </summary>
-        [Identifier("STATUS_FAILURE")]
-        Failure,
-    }
+    /// <summary>
+    /// Error occured
+    /// </summary>
+    [Identifier("STATUS_FAILURE")]
+    Failure,
 }

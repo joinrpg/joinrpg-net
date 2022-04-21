@@ -1,13 +1,12 @@
-namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure;
+
+public class OAuthAuthenticationOptions
 {
-    public class OAuthAuthenticationOptions
+    public string ClientId { get; set; }
+    public string ClientSecret { get; set; }
+    internal void Deconstruct(out string ClientId, out string ClientSecret)
     {
-        public string ClientId { get; set; }
-        public string ClientSecret { get; set; }
-        internal void Deconstruct(out string ClientId, out string ClientSecret)
-        {
-            ClientId = this.ClientId;
-            ClientSecret = this.ClientSecret;
-        }
+        ClientId = this.ClientId;
+        ClientSecret = this.ClientSecret;
     }
 }

@@ -2,19 +2,17 @@ using JoinRpg.DataModel;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Domain.Test
-{
+namespace JoinRpg.Domain.Test;
 
-    public class UserExtensionsTest
+public class UserExtensionsTest
+{
+    [Fact]
+    public void UserNameWithoutPrefferedName()
     {
-        [Fact]
-        public void UserNameWithoutPrefferedName()
+        var user = new User
         {
-            var user = new User
-            {
-                Email = "somebody@example.com",
-            };
-            user.GetDisplayName().ShouldBe("somebody");
-        }
+            Email = "somebody@example.com",
+        };
+        user.GetDisplayName().ShouldBe("somebody");
     }
 }

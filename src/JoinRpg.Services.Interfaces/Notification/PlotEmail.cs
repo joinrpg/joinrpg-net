@@ -1,18 +1,17 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces.Notification
+namespace JoinRpg.Services.Interfaces.Notification;
+
+public class PlotElementEmail : EmailModelBase
 {
-    public class PlotElementEmail : EmailModelBase
-    {
 
-        public PlotElement PlotElement { get; set; }
+    public PlotElement PlotElement { get; set; }
 
-        public IEnumerable<Claim> Claims { get; set; }
+    public IEnumerable<Claim> Claims { get; set; }
 
-    }
+}
 
-    public class PublishPlotElementEmail : PlotElementEmail
-    {
+public class PublishPlotElementEmail : PlotElementEmail
+{
 
-    }
 }

@@ -5,74 +5,72 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure;
+
+internal class Swagger
 {
-
-    internal class Swagger
+    internal static void ConfigureSwagger(SwaggerGenOptions c)
     {
-        internal static void ConfigureSwagger(SwaggerGenOptions c)
+        var securityScheme = new OpenApiSecurityScheme
         {
-            var securityScheme = new OpenApiSecurityScheme
+            Name = "JWT Authentication",
+            Description = "Enter JWT Bearer token **_only_**",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer", // must be lower case
+            BearerFormat = "JWT",
+            Reference = new OpenApiReference
             {
-                Name = "JWT Authentication",
-                Description = "Enter JWT Bearer token **_only_**",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer", // must be lower case
-                BearerFormat = "JWT",
-                Reference = new OpenApiReference
-                {
-                    Id = JwtBearerDefaults.AuthenticationScheme,
-                    Type = ReferenceType.SecurityScheme
-                }
-            };
-            c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {securityScheme, new string[] { }}
-                });
-
-            c.SwaggerDoc("v1", new OpenApiInfo()
+                Id = JwtBearerDefaults.AuthenticationScheme,
+                Type = ReferenceType.SecurityScheme
+            }
+        };
+        c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                Title = "My API",
-                Version = "v1"
+                {securityScheme, new string[] { }}
             });
-            c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
-            c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"JoinRpg.Web.XGameApi.Contract.xml"));
 
-            c.DocumentFilter<SwaggerXGameApiFilter>();
-        }
-
-        internal static void Configure(SwaggerOptions options) { }
-
-        internal static void ConfigureUI(SwaggerUIOptions c)
+        c.SwaggerDoc("v1", new OpenApiInfo()
         {
-            c.SwaggerEndpoint("v1/swagger.json", "My API V1");
-            c.ConfigObject.DeepLinking = true;
-        }
+            Title = "My API",
+            Version = "v1"
+        });
+        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"JoinRpg.Web.XGameApi.Contract.xml"));
 
-        internal static Task RedirectToSwagger(HttpContext ctx)
-        {
-            ctx.Response.Redirect("swagger/");
-            return Task.CompletedTask;
-        }
+        c.DocumentFilter<SwaggerXGameApiFilter>();
+    }
 
-        private class SwaggerXGameApiFilter : IDocumentFilter
+    internal static void Configure(SwaggerOptions options) { }
+
+    internal static void ConfigureUI(SwaggerUIOptions c)
+    {
+        c.SwaggerEndpoint("v1/swagger.json", "My API V1");
+        c.ConfigObject.DeepLinking = true;
+    }
+
+    internal static Task RedirectToSwagger(HttpContext ctx)
+    {
+        ctx.Response.Redirect("swagger/");
+        return Task.CompletedTask;
+    }
+
+    private class SwaggerXGameApiFilter : IDocumentFilter
+    {
+        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {
-            public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+            foreach (var item in swaggerDoc.Paths.ToList())
             {
-                foreach (var item in swaggerDoc.Paths.ToList())
+                var key = item.Key.ToLower();
+                if (!key.IsApiPath())
                 {
-                    var key = item.Key.ToLower();
-                    if (!key.IsApiPath())
-                    {
-                        _ = swaggerDoc.Paths.Remove(item.Key);
-                    }
+                    _ = swaggerDoc.Paths.Remove(item.Key);
                 }
-
             }
 
-
         }
+
+
     }
 }

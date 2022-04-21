@@ -1,13 +1,12 @@
-namespace JoinRpg.Web.XGameApi.Contract
+namespace JoinRpg.Web.XGameApi.Contract;
+
+/// <summary>
+/// Handout item
+/// </summary>
+public class HandoutItem
 {
     /// <summary>
-    /// Handout item
+    /// Label
     /// </summary>
-    public class HandoutItem
-    {
-        /// <summary>
-        /// Label
-        /// </summary>
-        public string Label { get; set; }
-    }
+    public string Label { get; set; }
 }

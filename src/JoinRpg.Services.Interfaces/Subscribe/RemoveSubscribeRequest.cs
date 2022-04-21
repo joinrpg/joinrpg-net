@@ -1,6 +1,5 @@
-namespace JoinRpg.Services.Interfaces.Subscribe
+namespace JoinRpg.Services.Interfaces.Subscribe;
+
+public record RemoveSubscribeRequest(int ProjectId, int UserSubscribtionId)
 {
-    public record RemoveSubscribeRequest(int ProjectId, int UserSubscribtionId)
-    {
-    }
 }

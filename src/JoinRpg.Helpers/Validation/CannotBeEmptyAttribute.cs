@@ -1,15 +1,14 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Helpers.Validation
+namespace JoinRpg.Helpers.Validation;
+
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class CannotBeEmptyAttribute : RequiredAttribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class CannotBeEmptyAttribute : RequiredAttribute
+    public override bool IsValid(object value)
     {
-        public override bool IsValid(object value)
-        {
-            var list = value as IEnumerable;
-            return list != null && list.GetEnumerator().MoveNext();
-        }
+        var list = value as IEnumerable;
+        return list != null && list.GetEnumerator().MoveNext();
     }
 }

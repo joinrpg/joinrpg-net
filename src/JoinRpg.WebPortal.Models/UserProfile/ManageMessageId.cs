@@ -1,11 +1,10 @@
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models;
+
+public enum ManageMessageId
 {
-    public enum ManageMessageId
-    {
-        ChangePasswordSuccess,
-        SetPasswordSuccess,
-        RemoveLoginSuccess,
-        Error,
-        SocialLoginAlreadyLinked,
-    }
+    ChangePasswordSuccess,
+    SetPasswordSuccess,
+    RemoveLoginSuccess,
+    Error,
+    SocialLoginAlreadyLinked,
 }

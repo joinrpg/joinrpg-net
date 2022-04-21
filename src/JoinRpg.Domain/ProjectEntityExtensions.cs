@@ -4,184 +4,183 @@ using MustUseReturnValueAttribute = JetBrains.Annotations.MustUseReturnValueAttr
 using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 using PureAttribute = JetBrains.Annotations.PureAttribute;
 
-namespace JoinRpg.Domain
+namespace JoinRpg.Domain;
+
+public static class ProjectEntityExtensions
 {
-    public static class ProjectEntityExtensions
+    [MustUseReturnValue]
+    public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Expression<Func<ProjectAcl, bool>> requiredAccess)
     {
-        [MustUseReturnValue]
-        public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Expression<Func<ProjectAcl, bool>> requiredAccess)
+        if (entity == null)
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
-            return entity.Project.ProjectAcls.Where(acl => requiredAccess.Compile()(acl)).Any(pa => pa.UserId == currentUserId);
+            throw new ArgumentNullException(nameof(entity));
         }
 
-        public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId)
-        {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
+        return entity.Project.ProjectAcls.Where(acl => requiredAccess.Compile()(acl)).Any(pa => pa.UserId == currentUserId);
+    }
 
-            return entity.HasMasterAccess(currentUserId, acl => true);
+    public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId)
+    {
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
         }
 
-        public static T RequestMasterAccess<T>([NotNull] this T field,
-            int? currentUserId,
-            Expression<Func<ProjectAcl, bool>>? accessType = null)
-        where T : IProjectEntity
+        return entity.HasMasterAccess(currentUserId, acl => true);
+    }
+
+    public static T RequestMasterAccess<T>([NotNull] this T field,
+        int? currentUserId,
+        Expression<Func<ProjectAcl, bool>>? accessType = null)
+    where T : IProjectEntity
+    {
+        if (field == null)
         {
-            if (field == null)
-            {
-                throw new ArgumentNullException(nameof(field));
-            }
-
-            if (field.Project == null)
-            {
-                throw new ArgumentNullException(nameof(field.Project));
-            }
-
-            if (accessType == null)
-            {
-                if (!field.HasMasterAccess(currentUserId))
-                {
-                    throw new NoAccessToProjectException(field.Project, currentUserId);
-                }
-            }
-            else
-            {
-                if (!field.HasMasterAccess(currentUserId, acl => accessType.Compile()(acl)))
-                {
-                    throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
-                }
-            }
-
-            return field;
+            throw new ArgumentNullException(nameof(field));
         }
 
-        public static T EnsureActive<T>(this T entity) where T : IDeletableSubEntity, IProjectEntity
+        if (field.Project == null)
         {
-            if (!entity.IsActive)
-            {
-                throw new ProjectEntityDeactivedException(entity);
-            }
-
-            if (!entity.Project.Active)
-            {
-                throw new ProjectEntityDeactivedException(entity);
-            }
-
-            return entity;
+            throw new ArgumentNullException(nameof(field.Project));
         }
 
-        public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
+        if (accessType == null)
         {
-            if (character == null)
+            if (!field.HasMasterAccess(currentUserId))
             {
-                throw new ArgumentNullException(nameof(character));
+                throw new NoAccessToProjectException(field.Project, currentUserId);
             }
-
-            return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
         }
-
-        public static bool HasAnyAccess([NotNull] this Character character, int? currentUserIdOrDefault)
+        else
         {
-            if (character == null)
+            if (!field.HasMasterAccess(currentUserId, acl => accessType.Compile()(acl)))
             {
-                throw new ArgumentNullException(nameof(character));
-            }
-
-            return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault);
-        }
-
-        public static bool HasPlotViewAccess(this Character character, int? currentUserIdOrDefault)
-        {
-            return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault) ||
-                   character.Project.Details.PublishPlot;
-        }
-
-        public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
-        {
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
-
-            return claim.PlayerUserId == currentUserIdOrDefault;
-        }
-
-        public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
-
-        public static T EnsureProjectActive<T>(this T entity)
-      where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
-
-        public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
-        {
-            if (!discussion.HasAnyAccess(currentUserId))
-            {
-                throw new NoAccessToProjectException(discussion, currentUserId);
+                throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
             }
         }
 
-        public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId);
+        return field;
+    }
 
-        public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
+    public static T EnsureActive<T>(this T entity) where T : IDeletableSubEntity, IProjectEntity
+    {
+        if (!entity.IsActive)
         {
-            var forumThread =
-              commentDiscussion.GetForumThread();
-
-            var claim =
-              commentDiscussion.GetClaim();
-            if (forumThread != null)
-            {
-                return forumThread.HasPlayerAccess(currentUserId);
-            }
-            if (claim != null)
-            {
-                return claim.HasPlayerAccesToClaim(currentUserId);
-            }
-            throw new InvalidOperationException();
+            throw new ProjectEntityDeactivedException(entity);
         }
 
-        [MustUseReturnValue]
-        public static bool HasPlayerAccess([NotNull] this IForumThread forumThread, int? currentUserId)
+        if (!entity.Project.Active)
         {
-            if (forumThread == null)
-            {
-                throw new ArgumentNullException(nameof(forumThread));
-            }
-
-            return currentUserId != null && forumThread.IsVisibleToPlayer &&
-                   forumThread.Project.Claims.OfUserApproved((int)currentUserId)
-                     .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
+            throw new ProjectEntityDeactivedException(entity);
         }
 
-        [MustUseReturnValue]
-        public static bool HasAnyAccess([NotNull] this IForumThread forumThread, int? currentUserId)
-        {
-            if (forumThread == null)
-            {
-                throw new ArgumentNullException(nameof(forumThread));
-            }
+        return entity;
+    }
 
-            return forumThread.HasMasterAccess(currentUserId) || forumThread.HasPlayerAccess(currentUserId);
+    public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
+    {
+        if (character == null)
+        {
+            throw new ArgumentNullException(nameof(character));
         }
 
-        [Pure]
-        public static Claim? GetClaim(this CommentDiscussion commentDiscussion)
+        return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
+    }
+
+    public static bool HasAnyAccess([NotNull] this Character character, int? currentUserIdOrDefault)
+    {
+        if (character == null)
         {
-            return commentDiscussion.Project.Claims.SingleOrDefault(
-              c => c.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
+            throw new ArgumentNullException(nameof(character));
         }
 
-        [Pure]
-        public static ForumThread? GetForumThread(this CommentDiscussion commentDiscussion)
+        return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault);
+    }
+
+    public static bool HasPlotViewAccess(this Character character, int? currentUserIdOrDefault)
+    {
+        return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault) ||
+               character.Project.Details.PublishPlot;
+    }
+
+    public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
+    {
+        if (claim == null)
         {
-            return commentDiscussion.Project.ForumThreads.SingleOrDefault(
-              ft => ft.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
+            throw new ArgumentNullException(nameof(claim));
         }
+
+        return claim.PlayerUserId == currentUserIdOrDefault;
+    }
+
+    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
+
+    public static T EnsureProjectActive<T>(this T entity)
+  where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
+
+    public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
+    {
+        if (!discussion.HasAnyAccess(currentUserId))
+        {
+            throw new NoAccessToProjectException(discussion, currentUserId);
+        }
+    }
+
+    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId);
+
+    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
+    {
+        var forumThread =
+          commentDiscussion.GetForumThread();
+
+        var claim =
+          commentDiscussion.GetClaim();
+        if (forumThread != null)
+        {
+            return forumThread.HasPlayerAccess(currentUserId);
+        }
+        if (claim != null)
+        {
+            return claim.HasPlayerAccesToClaim(currentUserId);
+        }
+        throw new InvalidOperationException();
+    }
+
+    [MustUseReturnValue]
+    public static bool HasPlayerAccess([NotNull] this IForumThread forumThread, int? currentUserId)
+    {
+        if (forumThread == null)
+        {
+            throw new ArgumentNullException(nameof(forumThread));
+        }
+
+        return currentUserId != null && forumThread.IsVisibleToPlayer &&
+               forumThread.Project.Claims.OfUserApproved((int)currentUserId)
+                 .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
+    }
+
+    [MustUseReturnValue]
+    public static bool HasAnyAccess([NotNull] this IForumThread forumThread, int? currentUserId)
+    {
+        if (forumThread == null)
+        {
+            throw new ArgumentNullException(nameof(forumThread));
+        }
+
+        return forumThread.HasMasterAccess(currentUserId) || forumThread.HasPlayerAccess(currentUserId);
+    }
+
+    [Pure]
+    public static Claim? GetClaim(this CommentDiscussion commentDiscussion)
+    {
+        return commentDiscussion.Project.Claims.SingleOrDefault(
+          c => c.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
+    }
+
+    [Pure]
+    public static ForumThread? GetForumThread(this CommentDiscussion commentDiscussion)
+    {
+        return commentDiscussion.Project.ForumThreads.SingleOrDefault(
+          ft => ft.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
     }
 }

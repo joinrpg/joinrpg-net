@@ -3,23 +3,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.DataModel
-{
-    [ComplexType]
-    public class IntList
-    {
-        private string _internalData;
-        public int[] _parentCharacterGroupIds = { };
+namespace JoinRpg.DataModel;
 
-        [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
-        public string ListIds
+[ComplexType]
+public class IntList
+{
+    private string _internalData;
+    public int[] _parentCharacterGroupIds = { };
+
+    [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
+    public string ListIds
+    {
+        get => _internalData;
+        set
         {
-            get => _internalData;
-            set
-            {
-                _internalData = value;
-                _parentCharacterGroupIds = value.ToIntList();
-            }
+            _internalData = value;
+            _parentCharacterGroupIds = value.ToIntList();
         }
     }
 }

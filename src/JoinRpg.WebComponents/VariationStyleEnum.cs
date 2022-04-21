@@ -1,9 +1,8 @@
-namespace JoinRpg.WebComponents
+namespace JoinRpg.WebComponents;
+
+public enum VariationStyleEnum
 {
-    public enum VariationStyleEnum
-    {
-        None,
-        Success,
-        Warning,
-    }
+    None,
+    Success,
+    Warning,
 }

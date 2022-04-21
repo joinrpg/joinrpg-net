@@ -1,8 +1,7 @@
-namespace JoinRpg.Data.Interfaces.Claims
+namespace JoinRpg.Data.Interfaces.Claims;
+
+public class ClaimCountByMaster
 {
-    public class ClaimCountByMaster
-    {
-        public int? MasterId { get; set; }
-        public int ClaimCount { get; set; }
-    }
+    public int? MasterId { get; set; }
+    public int ClaimCount { get; set; }
 }

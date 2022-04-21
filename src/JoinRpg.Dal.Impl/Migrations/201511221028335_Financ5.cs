@@ -1,11 +1,10 @@
-namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations;
+
+using System.Data.Entity.Migrations;
+
+public partial class Financ5 : DbMigration
 {
-    using System.Data.Entity.Migrations;
+    public override void Up() => DropColumn("dbo.Comments", "FinanceOperationId");
 
-    public partial class Financ5 : DbMigration
-    {
-        public override void Up() => DropColumn("dbo.Comments", "FinanceOperationId");
-
-        public override void Down() => AddColumn("dbo.Comments", "FinanceOperationId", c => c.Int());
-    }
+    public override void Down() => AddColumn("dbo.Comments", "FinanceOperationId", c => c.Int());
 }

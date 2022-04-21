@@ -6,54 +6,53 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using ControllerBase = JoinRpg.Portal.Controllers.Common.ControllerBase;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+[IgnoreAntiforgeryToken]
+[AllowAnonymous]
+[ApiExplorerSettings(IgnoreApi = true)]
+public class ErrorPageController : ControllerBase
 {
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    [IgnoreAntiforgeryToken]
-    [AllowAnonymous]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public class ErrorPageController : ControllerBase
+    private readonly ILogger<ErrorPageController> logger;
+
+    public ErrorPageController(ILogger<ErrorPageController> logger)
     {
-        private readonly ILogger<ErrorPageController> logger;
+        this.logger = logger;
+    }
 
-        public ErrorPageController(ILogger<ErrorPageController> logger)
+    [Route("/error/404")]
+    public IActionResult NotFound(int statusCode)
+    {
+        return View();
+    }
+
+    [Route("/error/{statusCode?}")]
+    public IActionResult Error(int statusCode)
+    {
+        var feature =
+            HttpContext.Features.Get<IHttpRequestFeature>();
+        var exceptionHandlerPathFeature =
+            HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+
+        if (exceptionHandlerPathFeature is not null)
         {
-            this.logger = logger;
+            logger.LogError(exceptionHandlerPathFeature.Error,
+                "Exception during web request in {errorPath}",
+                exceptionHandlerPathFeature.Path);
+        }
+        else
+        {
+            logger.LogError("It's suspicios that we hit error handler w/o exception");
         }
 
-        [Route("/error/404")]
-        public IActionResult NotFound(int statusCode)
-        {
-            return View();
-        }
-
-        [Route("/error/{statusCode?}")]
-        public IActionResult Error(int statusCode)
-        {
-            var feature =
-                HttpContext.Features.Get<IHttpRequestFeature>();
-            var exceptionHandlerPathFeature =
-                HttpContext.Features.Get<IExceptionHandlerPathFeature>();
-
-            if (exceptionHandlerPathFeature is not null)
+        return View(
+            new ErrorViewModel
             {
-                logger.LogError(exceptionHandlerPathFeature.Error,
-                    "Exception during web request in {errorPath}",
-                    exceptionHandlerPathFeature.Path);
+                RequestId = Activity.Current?.Id ?? "",
+                AspNetTrace = HttpContext.TraceIdentifier,
+                Path = feature?.RawTarget ?? "NO PATH",
             }
-            else
-            {
-                logger.LogError("It's suspicios that we hit error handler w/o exception");
-            }
-
-            return View(
-                new ErrorViewModel
-                {
-                    RequestId = Activity.Current?.Id ?? "",
-                    AspNetTrace = HttpContext.TraceIdentifier,
-                    Path = feature?.RawTarget ?? "NO PATH",
-                }
-                );
-        }
+            );
     }
 }

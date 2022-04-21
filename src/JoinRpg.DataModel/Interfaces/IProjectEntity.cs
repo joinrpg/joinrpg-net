@@ -1,11 +1,10 @@
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.DataModel
+namespace JoinRpg.DataModel;
+
+public interface IProjectEntity : IOrderableEntity
 {
-    public interface IProjectEntity : IOrderableEntity
-    {
-        [NotNull]
-        Project Project { get; }
-    }
+    [NotNull]
+    Project Project { get; }
 }

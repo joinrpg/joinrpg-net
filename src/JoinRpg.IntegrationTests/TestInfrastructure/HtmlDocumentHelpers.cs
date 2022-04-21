@@ -1,29 +1,28 @@
 using System.Net;
 using HtmlAgilityPack;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure
+namespace JoinRpg.IntegrationTests.TestInfrastructure;
+
+public static class HtmlDocumentHelpers
 {
-    public static class HtmlDocumentHelpers
+    public static string? GetTitle(this HtmlDocument doc)
     {
-        public static string? GetTitle(this HtmlDocument doc)
+        if (doc.DocumentNode.SelectSingleNode("//head/title") is HtmlNode titleNode)
         {
-            if (doc.DocumentNode.SelectSingleNode("//head/title") is HtmlNode titleNode)
-            {
-                return WebUtility.HtmlDecode(titleNode.InnerText);
-            }
-            else
-            {
-                return null;
-            }
+            return WebUtility.HtmlDecode(titleNode.InnerText);
         }
-
-        public static async Task<HtmlDocument> AsHtmlDocument(this HttpResponseMessage response)
+        else
         {
-            var responseText = await response.Content.ReadAsStringAsync();
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(responseText);
-            return doc;
+            return null;
         }
+    }
+
+    public static async Task<HtmlDocument> AsHtmlDocument(this HttpResponseMessage response)
+    {
+        var responseText = await response.Content.ReadAsStringAsync();
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(responseText);
+        return doc;
     }
 }

@@ -1,43 +1,42 @@
-namespace PscbApi
+namespace PscbApi;
+
+/// <summary>
+/// Interface for secrets provider service
+/// </summary>
+public interface IBankSecretsProvider
 {
     /// <summary>
-    /// Interface for secrets provider service
+    /// true to use debug endpoint and credentials
     /// </summary>
-    public interface IBankSecretsProvider
-    {
-        /// <summary>
-        /// true to use debug endpoint and credentials
-        /// </summary>
-        bool Debug { get; }
+    bool Debug { get; }
 
-        /// <summary>
-        /// Api Endpoint
-        /// </summary>
-        string ApiEndpoint { get; }
+    /// <summary>
+    /// Api Endpoint
+    /// </summary>
+    string ApiEndpoint { get; }
 
-        /// <summary>
-        /// Api Endpoint to be used in debug mode
-        /// </summary>
-        string ApiDebugEndpoint { get; }
+    /// <summary>
+    /// Api Endpoint to be used in debug mode
+    /// </summary>
+    string ApiDebugEndpoint { get; }
 
-        /// <summary>
-        /// Merchant id
-        /// </summary>
-        string MerchantId { get; }
+    /// <summary>
+    /// Merchant id
+    /// </summary>
+    string MerchantId { get; }
 
-        /// <summary>
-        /// Merchant Id for the Fast Payments System
-        /// </summary>
-        string MerchantIdFastPayments { get; }
+    /// <summary>
+    /// Merchant Id for the Fast Payments System
+    /// </summary>
+    string MerchantIdFastPayments { get; }
 
-        /// <summary>
-        /// Api key
-        /// </summary>
-        string ApiKey { get; }
+    /// <summary>
+    /// Api key
+    /// </summary>
+    string ApiKey { get; }
 
-        /// <summary>
-        /// Api key for sandbox access
-        /// </summary>
-        string ApiDebugKey { get; }
-    }
+    /// <summary>
+    /// Api key for sandbox access
+    /// </summary>
+    string ApiDebugKey { get; }
 }
