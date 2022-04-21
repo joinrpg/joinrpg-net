@@ -1,48 +1,47 @@
 // ReSharper disable IdentifierTypo
 using Newtonsoft.Json;
 
-namespace PscbApi.Models
+namespace PscbApi.Models;
+
+/// <summary>
+/// Types of payment objects
+/// </summary>
+[JsonConverter(typeof(IdentifiableEnumConverter))]
+public enum PaymentObjectType
 {
     /// <summary>
-    /// Types of payment objects
+    /// Unclassified object
     /// </summary>
-    [JsonConverter(typeof(IdentifiableEnumConverter))]
-    public enum PaymentObjectType
-    {
-        /// <summary>
-        /// Unclassified object
-        /// </summary>
-        [Identifier("another")]
-        Unclassified,
+    [Identifier("another")]
+    Unclassified,
 
-        /// <summary>
-        /// Commodity, goods
-        /// </summary>
-        [Identifier("commodity")]
-        Commodity,
+    /// <summary>
+    /// Commodity, goods
+    /// </summary>
+    [Identifier("commodity")]
+    Commodity,
 
-        /// <summary>
-        /// Job
-        /// </summary>
-        [Identifier("job")]
-        Job,
+    /// <summary>
+    /// Job
+    /// </summary>
+    [Identifier("job")]
+    Job,
 
-        /// <summary>
-        /// Service
-        /// </summary>
-        [Identifier("service")]
-        Service,
+    /// <summary>
+    /// Service
+    /// </summary>
+    [Identifier("service")]
+    Service,
 
-        /// <summary>
-        /// Lottery ticket or similar
-        /// </summary>
-        [Identifier("lottery")]
-        Lottery,
+    /// <summary>
+    /// Lottery ticket or similar
+    /// </summary>
+    [Identifier("lottery")]
+    Lottery,
 
-        /// <summary>
-        /// Composite object
-        /// </summary>
-        [Identifier("composite")]
-        Composite,
-    }
+    /// <summary>
+    /// Composite object
+    /// </summary>
+    [Identifier("composite")]
+    Composite,
 }

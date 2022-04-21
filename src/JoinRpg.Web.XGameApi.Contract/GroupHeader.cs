@@ -1,17 +1,16 @@
-namespace JoinRpg.Web.XGameApi.Contract
+namespace JoinRpg.Web.XGameApi.Contract;
+
+/// <summary>
+/// Character group
+/// </summary>
+public class GroupHeader
 {
     /// <summary>
-    /// Character group
+    /// Id
     /// </summary>
-    public class GroupHeader
-    {
-        /// <summary>
-        /// Id
-        /// </summary>
-        public int CharacterGroupId { get; set; }
-        /// <summary>
-        /// Name
-        /// </summary>
-        public string CharacterGroupName { get; set; }
-    }
+    public int CharacterGroupId { get; set; }
+    /// <summary>
+    /// Name
+    /// </summary>
+    public string CharacterGroupName { get; set; }
 }

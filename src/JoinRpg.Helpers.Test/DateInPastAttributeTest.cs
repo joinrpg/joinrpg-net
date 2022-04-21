@@ -4,31 +4,29 @@ using JoinRpg.Helpers.Validation;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Helpers.Test
+namespace JoinRpg.Helpers.Test;
+
+public class DateInPastAttributeTest
 {
-
-    public class DateInPastAttributeTest
+    private class ClassToValidateInPast
     {
-        private class ClassToValidateInPast
-        {
-            [DateShouldBeInPast, UsedImplicitly] public DateTime? Time { get; } = DateTime.MaxValue;
-        }
-
-        private class ClassToValidateEmpty
-        {
-            [CannotBeEmpty, UsedImplicitly] public IEnumerable<int> List { get; } = new List<int>();
-        }
-
-        [Fact]
-        public void TestShouldBeInPastFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateInPast()));
-
-        private static void Validate(object classToValidate)
-        {
-            var validationContext = new ValidationContext(classToValidate, null, null);
-            Validator.ValidateObject(classToValidate, validationContext, true);
-        }
-
-        [Fact]
-        public void TestCantBeEmptyFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateEmpty()));
+        [DateShouldBeInPast, UsedImplicitly] public DateTime? Time { get; } = DateTime.MaxValue;
     }
+
+    private class ClassToValidateEmpty
+    {
+        [CannotBeEmpty, UsedImplicitly] public IEnumerable<int> List { get; } = new List<int>();
+    }
+
+    [Fact]
+    public void TestShouldBeInPastFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateInPast()));
+
+    private static void Validate(object classToValidate)
+    {
+        var validationContext = new ValidationContext(classToValidate, null, null);
+        Validator.ValidateObject(classToValidate, validationContext, true);
+    }
+
+    [Fact]
+    public void TestCantBeEmptyFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateEmpty()));
 }

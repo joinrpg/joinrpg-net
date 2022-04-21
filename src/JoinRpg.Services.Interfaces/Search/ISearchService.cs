@@ -1,10 +1,9 @@
 using JetBrains.Annotations;
 using JoinRpg.Services.Interfaces.Search;
 
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces;
+
+public interface ISearchService
 {
-    public interface ISearchService
-    {
-        Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, [NotNull] string searchString);
-    }
+    Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, [NotNull] string searchString);
 }

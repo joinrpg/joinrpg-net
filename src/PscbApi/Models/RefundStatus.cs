@@ -1,30 +1,29 @@
 // ReSharper disable IdentifierTypo
 using Newtonsoft.Json;
 
-namespace PscbApi.Models
+namespace PscbApi.Models;
+
+/// <summary>
+/// Statuses of refund operations
+/// </summary>
+[JsonConverter(typeof(IdentifiableEnumConverter))]
+public enum RefundStatus
 {
     /// <summary>
-    /// Statuses of refund operations
+    /// Refund is in processing
     /// </summary>
-    [JsonConverter(typeof(IdentifiableEnumConverter))]
-    public enum RefundStatus
-    {
-        /// <summary>
-        /// Refund is in processing
-        /// </summary>
-        [Identifier("PROC")]
-        Processing,
+    [Identifier("PROC")]
+    Processing,
 
-        /// <summary>
-        /// Refund successfully completed
-        /// </summary>
-        [Identifier("END")]
-        Completed,
+    /// <summary>
+    /// Refund successfully completed
+    /// </summary>
+    [Identifier("END")]
+    Completed,
 
-        /// <summary>
-        /// Error during refund processing
-        /// </summary>
-        [Identifier("ERR")]
-        Error,
-    }
+    /// <summary>
+    /// Error during refund processing
+    /// </summary>
+    [Identifier("ERR")]
+    Error,
 }

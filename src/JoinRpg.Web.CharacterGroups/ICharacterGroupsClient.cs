@@ -1,7 +1,6 @@
-namespace JoinRpg.Web.CharacterGroups
+namespace JoinRpg.Web.CharacterGroups;
+
+public interface ICharacterGroupsClient
 {
-    public interface ICharacterGroupsClient
-    {
-        Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId);
-    }
+    Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId);
 }

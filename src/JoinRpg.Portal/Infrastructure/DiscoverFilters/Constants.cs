@@ -1,7 +1,6 @@
-namespace JoinRpg.Portal.Infrastructure.DiscoverFilters
+namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
+
+public class Constants
 {
-    public class Constants
-    {
-        public const string ProjectIdName = "ProjectId";
-    }
+    public const string ProjectIdName = "ProjectId";
 }

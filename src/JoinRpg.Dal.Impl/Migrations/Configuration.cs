@@ -1,36 +1,35 @@
 using System.Data.Entity.Migrations;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Dal.Impl.Migrations
-{
-    public sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
-    {
-        public Configuration()
-        {
-            AutomaticMigrationsEnabled = false;
-            CommandTimeout = 60 * 60; // 1 hour
-        }
+namespace JoinRpg.Dal.Impl.Migrations;
 
-        protected override void Seed(MyDbContext context)
+public sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
+{
+    public Configuration()
+    {
+        AutomaticMigrationsEnabled = false;
+        CommandTimeout = 60 * 60; // 1 hour
+    }
+
+    protected override void Seed(MyDbContext context)
+    {
+        if (!context.Set<User>().Any(u => u.UserName == User.OnlinePaymentVirtualUser))
         {
-            if (!context.Set<User>().Any(u => u.UserName == User.OnlinePaymentVirtualUser))
+            var user = new User()
             {
-                var user = new User()
+                UserName = User.OnlinePaymentVirtualUser,
+                Email = User.OnlinePaymentVirtualUser,
+                PrefferedName = "Online payments",
+                VerifiedProfileFlag = true,
+                Auth = new UserAuthDetails()
                 {
-                    UserName = User.OnlinePaymentVirtualUser,
-                    Email = User.OnlinePaymentVirtualUser,
-                    PrefferedName = "Online payments",
-                    VerifiedProfileFlag = true,
-                    Auth = new UserAuthDetails()
-                    {
-                        EmailConfirmed = true,
-                        RegisterDate = DateTime.UtcNow,
-                        AspNetSecurityStamp = Guid.NewGuid().ToString(),
-                    }
-                };
-                context.Set<User>().Add(user);
-            }
-            base.Seed(context);
+                    EmailConfirmed = true,
+                    RegisterDate = DateTime.UtcNow,
+                    AspNetSecurityStamp = Guid.NewGuid().ToString(),
+                }
+            };
+            context.Set<User>().Add(user);
         }
+        base.Seed(context);
     }
 }

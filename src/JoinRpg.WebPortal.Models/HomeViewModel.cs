@@ -1,8 +1,7 @@
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models;
+
+public class HomeViewModel
 {
-    public class HomeViewModel
-    {
-        public IEnumerable<ProjectListItemViewModel> ActiveProjects { get; set; } = new List<ProjectListItemViewModel>();
-        public bool HasMoreProjects { get; set; }
-    }
+    public IEnumerable<ProjectListItemViewModel> ActiveProjects { get; set; } = new List<ProjectListItemViewModel>();
+    public bool HasMoreProjects { get; set; }
 }

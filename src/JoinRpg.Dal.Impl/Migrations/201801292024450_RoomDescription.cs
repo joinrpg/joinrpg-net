@@ -1,11 +1,10 @@
-namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations;
+
+using System.Data.Entity.Migrations;
+
+public partial class RoomDescription : DbMigration
 {
-    using System.Data.Entity.Migrations;
+    public override void Up() => RenameColumn("dbo.ProjectAccommodationTypes", "Description", "Description_Contents");
 
-    public partial class RoomDescription : DbMigration
-    {
-        public override void Up() => RenameColumn("dbo.ProjectAccommodationTypes", "Description", "Description_Contents");
-
-        public override void Down() => RenameColumn("dbo.ProjectAccommodationTypes", "Description_Contents", "Description");
-    }
+    public override void Down() => RenameColumn("dbo.ProjectAccommodationTypes", "Description_Contents", "Description");
 }

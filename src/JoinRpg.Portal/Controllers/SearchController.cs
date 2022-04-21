@@ -5,49 +5,48 @@ using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+public class SearchController : Common.LegacyJoinControllerBase
 {
-    public class SearchController : Common.LegacyJoinControllerBase
+    private readonly ISearchService _searchService;
+    private readonly IProjectRepository _projectRepository;
+    private IUriService UriService { get; }
+
+    public async Task<ActionResult> Index([CanBeNull] string searchString)
     {
-        private readonly ISearchService _searchService;
-        private readonly IProjectRepository _projectRepository;
-        private IUriService UriService { get; }
+        var searchResults =
+            string.IsNullOrEmpty(searchString)
+                ? System.Array.Empty<ISearchResult>()
+                : await _searchService.SearchAsync(CurrentUserIdOrDefault, searchString);
 
-        public async Task<ActionResult> Index([CanBeNull] string searchString)
+        if (searchResults.Count == 1)
         {
-            var searchResults =
-                string.IsNullOrEmpty(searchString)
-                    ? System.Array.Empty<ISearchResult>()
-                    : await _searchService.SearchAsync(CurrentUserIdOrDefault, searchString);
-
-            if (searchResults.Count == 1)
-            {
-                return Redirect(UriService.Get(searchResults.Single()));
-            }
-
-            var projectDetails =
-                (await _projectRepository.GetAllProjectsWithClaimCount(CurrentUserIdOrDefault))
-                .ToDictionary(
-                    p => p.ProjectId,
-                    p => new ProjectListItemViewModel(p));
-
-            return View(
-                new SearchResultViewModel(
-                    searchString ?? "",
-                    searchResults,
-                    projectDetails,
-                    UriService));
+            return Redirect(UriService.Get(searchResults.Single()));
         }
 
-        public SearchController(
-            ISearchService searchService,
-            IProjectRepository projectRepository,
-            IUriService uriService,
-            IUserRepository userRepository) : base(userRepository)
-        {
-            _searchService = searchService;
-            _projectRepository = projectRepository;
-            UriService = uriService;
-        }
+        var projectDetails =
+            (await _projectRepository.GetAllProjectsWithClaimCount(CurrentUserIdOrDefault))
+            .ToDictionary(
+                p => p.ProjectId,
+                p => new ProjectListItemViewModel(p));
+
+        return View(
+            new SearchResultViewModel(
+                searchString ?? "",
+                searchResults,
+                projectDetails,
+                UriService));
+    }
+
+    public SearchController(
+        ISearchService searchService,
+        IProjectRepository projectRepository,
+        IUriService uriService,
+        IUserRepository userRepository) : base(userRepository)
+    {
+        _searchService = searchService;
+        _projectRepository = projectRepository;
+        UriService = uriService;
     }
 }

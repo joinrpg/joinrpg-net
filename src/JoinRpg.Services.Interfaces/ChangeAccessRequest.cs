@@ -1,6 +1,5 @@
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces;
+
+public class ChangeAccessRequest : AccessRequestBase
 {
-    public class ChangeAccessRequest : AccessRequestBase
-    {
-    }
 }

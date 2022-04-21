@@ -1,17 +1,16 @@
-namespace JoinRpg.DataModel
+namespace JoinRpg.DataModel;
+
+public enum ProjectFieldType
 {
-    public enum ProjectFieldType
-    {
-        String,
-        Text,
-        Dropdown,
-        Checkbox,
-        MultiSelect,
-        Header,
-        Number,
-        Login,
-        ScheduleRoomField,
-        ScheduleTimeSlotField,
-        PinCode,
-    }
+    String,
+    Text,
+    Dropdown,
+    Checkbox,
+    MultiSelect,
+    Header,
+    Number,
+    Login,
+    ScheduleRoomField,
+    ScheduleTimeSlotField,
+    PinCode,
 }

@@ -1,26 +1,25 @@
-namespace JoinRpg.WebComponents
+namespace JoinRpg.WebComponents;
+
+internal static class BootstrapStyle
 {
-    internal static class BootstrapStyle
+    public static string Build(string componentPrefix, VariationStyleEnum? variationStyle, SizeStyleEnum? size)
     {
-        public static string Build(string componentPrefix, VariationStyleEnum? variationStyle, SizeStyleEnum? size)
+        var variationString = variationStyle switch
         {
-            var variationString = variationStyle switch
-            {
-                VariationStyleEnum.Success => $" {componentPrefix}-success",
-                VariationStyleEnum.None => "",
-                null => "",
-                VariationStyleEnum.Warning => $" {componentPrefix}-warning",
-            };
+            VariationStyleEnum.Success => $" {componentPrefix}-success",
+            VariationStyleEnum.None => "",
+            null => "",
+            VariationStyleEnum.Warning => $" {componentPrefix}-warning",
+        };
 
-            var sizeString = size switch
-            {
-                SizeStyleEnum.Large => $" {componentPrefix}-lg",
-                SizeStyleEnum.Medium => $"",
-                null => "",
-                SizeStyleEnum.Small => $" {componentPrefix}-sm",
-            };
+        var sizeString = size switch
+        {
+            SizeStyleEnum.Large => $" {componentPrefix}-lg",
+            SizeStyleEnum.Medium => $"",
+            null => "",
+            SizeStyleEnum.Small => $" {componentPrefix}-sm",
+        };
 
-            return componentPrefix + variationString + sizeString;
-        }
+        return componentPrefix + variationString + sizeString;
     }
 }

@@ -1,9 +1,8 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Web.Models.Subscribe
+namespace JoinRpg.Web.Models.Subscribe;
+
+public interface ISubscribeTarget : ILinkable
 {
-    public interface ISubscribeTarget : ILinkable
-    {
-        public string Name { get; }
-    }
+    public string Name { get; }
 }

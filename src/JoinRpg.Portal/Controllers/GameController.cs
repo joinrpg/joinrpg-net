@@ -9,157 +9,156 @@ using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+public class GameController : Common.ControllerGameBase
 {
-    public class GameController : Common.ControllerGameBase
+    private readonly Lazy<ICreateProjectService> createProjectService;
+
+    public GameController(IProjectService projectService,
+        IProjectRepository projectRepository,
+        IUserRepository userRepository,
+        Lazy<ICreateProjectService> createProjectService)
+        : base(projectRepository, projectService, userRepository)
     {
-        private readonly Lazy<ICreateProjectService> createProjectService;
+        this.createProjectService = createProjectService;
+    }
 
-        public GameController(IProjectService projectService,
-            IProjectRepository projectRepository,
-            IUserRepository userRepository,
-            Lazy<ICreateProjectService> createProjectService)
-            : base(projectRepository, projectService, userRepository)
+    [HttpGet("{projectId}/home")]
+    [AllowAnonymous]
+    //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
+    public async Task<IActionResult> Details(int projectId)
+    {
+        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        if (project == null)
         {
-            this.createProjectService = createProjectService;
+            return NotFound();
         }
 
-        [HttpGet("{projectId}/home")]
-        [AllowAnonymous]
-        //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
-        public async Task<IActionResult> Details(int projectId)
-        {
-            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-            if (project == null)
-            {
-                return NotFound();
-            }
+        return View(new ProjectDetailsViewModel(project));
+    }
 
-            return View(new ProjectDetailsViewModel(project));
+    [Authorize]
+    [HttpGet("/game/create")]
+    public IActionResult Create() => View(new ProjectCreateViewModel());
+
+    // POST: Game/Create
+    [Authorize]
+    [HttpPost("/game/create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(ProjectCreateViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
         }
 
-        [Authorize]
-        [HttpGet("/game/create")]
-        public IActionResult Create() => View(new ProjectCreateViewModel());
-
-        // POST: Game/Create
-        [Authorize]
-        [HttpPost("/game/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ProjectCreateViewModel model)
+        try
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            var project = await createProjectService.Value.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
 
-            try
-            {
-                var project = await createProjectService.Value.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
+            return RedirectTo(project);
+        }
+        catch (Exception exception)
+        {
+            ModelState.AddException(exception);
+            return View(model);
+        }
+    }
 
-                return RedirectTo(project);
-            }
-            catch (Exception exception)
-            {
-                ModelState.AddException(exception);
-                return View(model);
-            }
+    private IActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
+
+    [HttpGet("/{projectId}/project/settings")]
+    [MasterAuthorize(Permission.CanChangeProjectProperties)]
+    public async Task<IActionResult> Edit(int projectId)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectId);
+        return View(new EditProjectViewModel
+        {
+            ClaimApplyRules = project.Details.ClaimApplyRules.Contents,
+            ProjectAnnounce = project.Details.ProjectAnnounce.Contents,
+            ProjectId = project.ProjectId,
+            ProjectName = project.ProjectName,
+            OriginalName = project.ProjectName,
+            IsAcceptingClaims = project.IsAcceptingClaims,
+            PublishPlot = project.Details.PublishPlot,
+            StrictlyOneCharacter = !project.Details.EnableManyCharacters,
+            Active = project.Active,
+            AutoAcceptClaims = project.Details.AutoAcceptClaims,
+            EnableAccomodation = project.Details.EnableAccommodation,
+        });
+    }
+
+    [HttpPost("/{projectId}/project/settings")]
+    [MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
+    {
+        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        try
+        {
+            await
+                ProjectService.EditProject(new EditProjectRequest
+                {
+                    ProjectId = viewModel.ProjectId,
+                    ClaimApplyRules = viewModel.ClaimApplyRules,
+                    IsAcceptingClaims = viewModel.IsAcceptingClaims,
+                    MultipleCharacters = !viewModel.StrictlyOneCharacter,
+                    ProjectAnnounce = viewModel.ProjectAnnounce,
+                    ProjectName = viewModel.ProjectName,
+                    PublishPlot = viewModel.PublishPlot,
+                    AutoAcceptClaims = viewModel.AutoAcceptClaims,
+                    IsAccommodationEnabled = viewModel.EnableAccomodation,
+                });
+
+            return RedirectTo(new(project.ProjectId));
+        }
+        catch
+        {
+            viewModel.OriginalName = project.ProjectName;
+            return View(viewModel);
+        }
+    }
+
+    [HttpGet("/{projectId}/close")]
+    [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
+    public async Task<IActionResult> Close(int projectid)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectid);
+        var isMaster =
+            project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+        return View(new CloseProjectViewModel()
+        {
+            OriginalName = project.ProjectName,
+            ProjectId = projectid,
+            PublishPlot = isMaster,
+            IsMaster = isMaster,
+        });
+    }
+
+    [HttpPost("/{projectId}/close")]
+    [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
+    public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(viewModel);
         }
 
-        private IActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
-
-        [HttpGet("/{projectId}/project/settings")]
-        [MasterAuthorize(Permission.CanChangeProjectProperties)]
-        public async Task<IActionResult> Edit(int projectId)
+        try
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            return View(new EditProjectViewModel
-            {
-                ClaimApplyRules = project.Details.ClaimApplyRules.Contents,
-                ProjectAnnounce = project.Details.ProjectAnnounce.Contents,
-                ProjectId = project.ProjectId,
-                ProjectName = project.ProjectName,
-                OriginalName = project.ProjectName,
-                IsAcceptingClaims = project.IsAcceptingClaims,
-                PublishPlot = project.Details.PublishPlot,
-                StrictlyOneCharacter = !project.Details.EnableManyCharacters,
-                Active = project.Active,
-                AutoAcceptClaims = project.Details.AutoAcceptClaims,
-                EnableAccomodation = project.Details.EnableAccommodation,
-            });
+            await ProjectService.CloseProject(viewModel.ProjectId,
+                CurrentUserId,
+                viewModel.PublishPlot);
+            return await RedirectToProject(viewModel.ProjectId);
         }
-
-        [HttpPost("/{projectId}/project/settings")]
-        [MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
+        catch (Exception ex)
         {
+            ModelState.AddException(ex);
             var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-            try
-            {
-                await
-                    ProjectService.EditProject(new EditProjectRequest
-                    {
-                        ProjectId = viewModel.ProjectId,
-                        ClaimApplyRules = viewModel.ClaimApplyRules,
-                        IsAcceptingClaims = viewModel.IsAcceptingClaims,
-                        MultipleCharacters = !viewModel.StrictlyOneCharacter,
-                        ProjectAnnounce = viewModel.ProjectAnnounce,
-                        ProjectName = viewModel.ProjectName,
-                        PublishPlot = viewModel.PublishPlot,
-                        AutoAcceptClaims = viewModel.AutoAcceptClaims,
-                        IsAccommodationEnabled = viewModel.EnableAccomodation,
-                    });
-
-                return RedirectTo(new(project.ProjectId));
-            }
-            catch
-            {
-                viewModel.OriginalName = project.ProjectName;
-                return View(viewModel);
-            }
-        }
-
-        [HttpGet("/{projectId}/close")]
-        [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
-        public async Task<IActionResult> Close(int projectid)
-        {
-            var project = await ProjectRepository.GetProjectAsync(projectid);
-            var isMaster =
+            viewModel.OriginalName = project.ProjectName;
+            viewModel.IsMaster =
                 project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
-            return View(new CloseProjectViewModel()
-            {
-                OriginalName = project.ProjectName,
-                ProjectId = projectid,
-                PublishPlot = isMaster,
-                IsMaster = isMaster,
-            });
-        }
-
-        [HttpPost("/{projectId}/close")]
-        [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
-        public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(viewModel);
-            }
-
-            try
-            {
-                await ProjectService.CloseProject(viewModel.ProjectId,
-                    CurrentUserId,
-                    viewModel.PublishPlot);
-                return await RedirectToProject(viewModel.ProjectId);
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddException(ex);
-                var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-                viewModel.OriginalName = project.ProjectName;
-                viewModel.IsMaster =
-                    project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
-                return View(viewModel);
-            }
+            return View(viewModel);
         }
     }
 }

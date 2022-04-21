@@ -1,13 +1,12 @@
-namespace JoinRpg.Dal.Impl
+namespace JoinRpg.Dal.Impl;
+
+/// <summary>
+/// Provides configuration for DbContext
+/// </summary>
+public interface IJoinDbContextConfiguration
 {
     /// <summary>
-    /// Provides configuration for DbContext
+    /// Connection String
     /// </summary>
-    public interface IJoinDbContextConfiguration
-    {
-        /// <summary>
-        /// Connection String
-        /// </summary>
-        string ConnectionString { get; }
-    }
+    string ConnectionString { get; }
 }

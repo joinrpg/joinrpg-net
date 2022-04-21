@@ -1,7 +1,6 @@
-namespace JoinRpg.DataModel
+namespace JoinRpg.DataModel;
+
+public class Security
 {
-    public class Security
-    {
-        public const string AdminRoleName = "admin";
-    }
+    public const string AdminRoleName = "admin";
 }

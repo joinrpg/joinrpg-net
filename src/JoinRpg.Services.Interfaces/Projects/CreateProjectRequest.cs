@@ -1,21 +1,20 @@
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Services.Interfaces.Projects
-{
-    public record CreateProjectRequest(ProjectName ProjectName, ProjectTypeDto ProjectType);
+namespace JoinRpg.Services.Interfaces.Projects;
 
-    public record ProjectName : SingleValueType<string>
+public record CreateProjectRequest(ProjectName ProjectName, ProjectTypeDto ProjectType);
+
+public record ProjectName : SingleValueType<string>
+{
+    public ProjectName(string value) : base(value.Trim())
     {
-        public ProjectName(string value) : base(value.Trim())
+        if (Value.Length > 100)
         {
-            if (Value.Length > 100)
-            {
-                throw new ArgumentException("Project name is too long", nameof(value));
-            }
-            if (Value.Length < 5)
-            {
-                throw new ArgumentException("Project name is too long", nameof(value));
-            }
+            throw new ArgumentException("Project name is too long", nameof(value));
+        }
+        if (Value.Length < 5)
+        {
+            throw new ArgumentException("Project name is too long", nameof(value));
         }
     }
 }

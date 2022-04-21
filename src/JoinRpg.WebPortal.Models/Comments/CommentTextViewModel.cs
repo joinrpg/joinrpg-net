@@ -1,23 +1,22 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models;
+
+public class CommentTextViewModel
 {
-    public class CommentTextViewModel
-    {
 
-        internal static int LastFormIndex = 0;
+    internal static int LastFormIndex = 0;
 
-        public CommentTextViewModel() => FormIndex = Interlocked.Increment(ref LastFormIndex);
+    public CommentTextViewModel() => FormIndex = Interlocked.Increment(ref LastFormIndex);
 
-        [Required(ErrorMessage = "Заполните текст комментария")]
-        [DisplayName("Текст комментария")]
-        [UIHint("MarkdownString")]
-        public string CommentText { get; set; }
+    [Required(ErrorMessage = "Заполните текст комментария")]
+    [DisplayName("Текст комментария")]
+    [UIHint("MarkdownString")]
+    public string CommentText { get; set; }
 
-        public bool ShowLabel { get; set; } = true;
+    public bool ShowLabel { get; set; } = true;
 
-        public int FormIndex { get; set; }
-    }
+    public int FormIndex { get; set; }
 }
 

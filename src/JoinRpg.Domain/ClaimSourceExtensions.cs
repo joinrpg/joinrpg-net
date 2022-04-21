@@ -3,189 +3,188 @@ using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Domain
+namespace JoinRpg.Domain;
+
+public static class ClaimSourceExtensions
 {
-    public static class ClaimSourceExtensions
+    [NotNull]
+    public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IClaimSource? target)
     {
-        [NotNull]
-        public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IClaimSource? target)
-        {
-            return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups))
-                       .OrderBy(g => g.CharacterGroupId)
-                       .Distinct() ?? Enumerable.Empty<CharacterGroup>();
-        }
-
-        [NotNull, ItemNotNull]
-        public static IEnumerable<CharacterGroup> GetChildrenGroups([NotNull]
-            this CharacterGroup target)
-        {
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups)).Distinct();
-        }
-
-        public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());
-
-        public static bool IsNpc(this Character character) => character.CharacterType == CharacterType.NonPlayer && character.ApprovedClaim == null;
-
-        public static bool IsAcceptingClaims<T>(this T characterGroup)
-            where T : IClaimSource => !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();
-
-        public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanAddClaim<T>(
-            this T claimSource,
-            int? playerUserId)
-            where T : IClaimSource => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
-
-
-        public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim) => ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
-
-        public static void EnsureCanAddClaim<T>(this T claimSource, int currentUserId)
-            where T : IClaimSource => ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
-
-        public static void EnsureCanMoveClaim(this IClaimSource claimSource, Claim claim) => ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
-
-        private static void ThrowIfValidationFailed(
-            IReadOnlyCollection<AddClaimForbideReason> validation,
-            Claim? claim)
-        {
-            if (validation.Any())
-            {
-                ThrowForReason(validation.First(), claim);
-            }
-        }
-
-        internal static void ThrowForReason(AddClaimForbideReason reason, Claim? claim)
-        {
-            switch (reason)
-            {
-                case AddClaimForbideReason.ProjectNotActive:
-                    throw new ProjectDeactivedException();
-                case AddClaimForbideReason.ProjectClaimsClosed:
-                case AddClaimForbideReason.SlotsExhausted:
-                case AddClaimForbideReason.NotForDirectClaims:
-                case AddClaimForbideReason.Busy:
-                case AddClaimForbideReason.Npc:
-                    throw new ClaimTargetIsNotAcceptingClaims();
-                case AddClaimForbideReason.AlreadySent:
-                    throw new ClaimAlreadyPresentException();
-                case AddClaimForbideReason.OnlyOneCharacter:
-                    throw new OnlyOneApprovedClaimException();
-                case AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot:
-                case AddClaimForbideReason.CheckedInClaimCantBeMoved:
-                    throw new ClaimWrongStatusException(claim!);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(reason), reason, message: null);
-            }
-        }
-
-        /// <summary>
-        /// Perform real validation
-        /// </summary>
-        /// <param name="claimSource">Where we are trying to add/move claim</param>
-        /// <param name="playerUserId">User</param>
-        /// <param name="existingClaim">If we already have claim (move), that's it</param>
-        /// <returns></returns>
-        private static IEnumerable<AddClaimForbideReason> ValidateImpl(this IClaimSource claimSource, int? playerUserId, Claim? existingClaim)
-        {
-            var project = claimSource.Project;
-
-            if (!project.Active)
-            {
-                yield return AddClaimForbideReason.ProjectNotActive;
-            }
-
-            if (!project.IsAcceptingClaims)
-            {
-                yield return AddClaimForbideReason.ProjectClaimsClosed;
-            }
-
-            switch (claimSource)
-            {
-                case CharacterGroup characterGroup:
-                    if (!characterGroup.HaveDirectSlots)
-                    {
-                        yield return AddClaimForbideReason.NotForDirectClaims;
-                    }
-                    else if (!characterGroup.DirectSlotsUnlimited &&
-                             characterGroup.AvaiableDirectSlots == 0)
-                    {
-                        yield return AddClaimForbideReason.SlotsExhausted;
-                    }
-
-                    if (existingClaim?.IsApproved == true)
-                    {
-                        yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
-                    }
-
-                    break;
-                case Character character:
-                    if (character.ApprovedClaimId != null)
-                    {
-                        yield return AddClaimForbideReason.Busy;
-                    }
-
-                    if (character.IsNpc())
-                    {
-                        yield return AddClaimForbideReason.Npc;
-                    }
-                    else if (!character.IsAcceptingClaims)
-                    {
-                        //TODO return alternative variants
-                    }
-
-                    if (character.CharacterSlotLimit == 0)
-                    {
-                        yield return AddClaimForbideReason.SlotsExhausted;
-                    }
-
-                    if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
-                    {
-                        yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
-                    }
-
-                    break;
-            }
-
-            if (existingClaim?.ClaimStatus == Claim.Status.CheckedIn)
-            {
-                yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
-            }
-
-            if (playerUserId is int playerId)
-            {
-                if (claimSource.Claims.OfUserActive(playerId).Any())
-                {
-                    if (!(claimSource is CharacterGroup) ||
-                        !project.Details.EnableManyCharacters)
-                    {
-                        yield return AddClaimForbideReason.AlreadySent;
-                    }
-                }
-
-                if (!project.Details.EnableManyCharacters &&
-                    project.Claims.OfUserApproved(playerId).Except(new[] { existingClaim }).Any())
-                {
-                    yield return AddClaimForbideReason.OnlyOneCharacter;
-                }
-            }
-        }
-
+        return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups))
+                   .OrderBy(g => g.CharacterGroupId)
+                   .Distinct() ?? Enumerable.Empty<CharacterGroup>();
     }
 
-    public enum AddClaimForbideReason
+    [NotNull, ItemNotNull]
+    public static IEnumerable<CharacterGroup> GetChildrenGroups([NotNull]
+        this CharacterGroup target)
     {
-        ProjectNotActive,
-        ProjectClaimsClosed,
-        NotForDirectClaims,
-        SlotsExhausted,
-        Npc,
-        Busy,
-        AlreadySent,
-        OnlyOneCharacter,
-        ApprovedClaimMovedToGroupOrSlot,
-        CheckedInClaimCantBeMoved,
+        if (target == null)
+        {
+            throw new ArgumentNullException(nameof(target));
+        }
+
+        return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups)).Distinct();
     }
+
+    public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());
+
+    public static bool IsNpc(this Character character) => character.CharacterType == CharacterType.NonPlayer && character.ApprovedClaim == null;
+
+    public static bool IsAcceptingClaims<T>(this T characterGroup)
+        where T : IClaimSource => !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();
+
+    public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanAddClaim<T>(
+        this T claimSource,
+        int? playerUserId)
+        where T : IClaimSource => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
+
+
+    public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim) => ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
+
+    public static void EnsureCanAddClaim<T>(this T claimSource, int currentUserId)
+        where T : IClaimSource => ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
+
+    public static void EnsureCanMoveClaim(this IClaimSource claimSource, Claim claim) => ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
+
+    private static void ThrowIfValidationFailed(
+        IReadOnlyCollection<AddClaimForbideReason> validation,
+        Claim? claim)
+    {
+        if (validation.Any())
+        {
+            ThrowForReason(validation.First(), claim);
+        }
+    }
+
+    internal static void ThrowForReason(AddClaimForbideReason reason, Claim? claim)
+    {
+        switch (reason)
+        {
+            case AddClaimForbideReason.ProjectNotActive:
+                throw new ProjectDeactivedException();
+            case AddClaimForbideReason.ProjectClaimsClosed:
+            case AddClaimForbideReason.SlotsExhausted:
+            case AddClaimForbideReason.NotForDirectClaims:
+            case AddClaimForbideReason.Busy:
+            case AddClaimForbideReason.Npc:
+                throw new ClaimTargetIsNotAcceptingClaims();
+            case AddClaimForbideReason.AlreadySent:
+                throw new ClaimAlreadyPresentException();
+            case AddClaimForbideReason.OnlyOneCharacter:
+                throw new OnlyOneApprovedClaimException();
+            case AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot:
+            case AddClaimForbideReason.CheckedInClaimCantBeMoved:
+                throw new ClaimWrongStatusException(claim!);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(reason), reason, message: null);
+        }
+    }
+
+    /// <summary>
+    /// Perform real validation
+    /// </summary>
+    /// <param name="claimSource">Where we are trying to add/move claim</param>
+    /// <param name="playerUserId">User</param>
+    /// <param name="existingClaim">If we already have claim (move), that's it</param>
+    /// <returns></returns>
+    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this IClaimSource claimSource, int? playerUserId, Claim? existingClaim)
+    {
+        var project = claimSource.Project;
+
+        if (!project.Active)
+        {
+            yield return AddClaimForbideReason.ProjectNotActive;
+        }
+
+        if (!project.IsAcceptingClaims)
+        {
+            yield return AddClaimForbideReason.ProjectClaimsClosed;
+        }
+
+        switch (claimSource)
+        {
+            case CharacterGroup characterGroup:
+                if (!characterGroup.HaveDirectSlots)
+                {
+                    yield return AddClaimForbideReason.NotForDirectClaims;
+                }
+                else if (!characterGroup.DirectSlotsUnlimited &&
+                         characterGroup.AvaiableDirectSlots == 0)
+                {
+                    yield return AddClaimForbideReason.SlotsExhausted;
+                }
+
+                if (existingClaim?.IsApproved == true)
+                {
+                    yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
+                }
+
+                break;
+            case Character character:
+                if (character.ApprovedClaimId != null)
+                {
+                    yield return AddClaimForbideReason.Busy;
+                }
+
+                if (character.IsNpc())
+                {
+                    yield return AddClaimForbideReason.Npc;
+                }
+                else if (!character.IsAcceptingClaims)
+                {
+                    //TODO return alternative variants
+                }
+
+                if (character.CharacterSlotLimit == 0)
+                {
+                    yield return AddClaimForbideReason.SlotsExhausted;
+                }
+
+                if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
+                {
+                    yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
+                }
+
+                break;
+        }
+
+        if (existingClaim?.ClaimStatus == Claim.Status.CheckedIn)
+        {
+            yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
+        }
+
+        if (playerUserId is int playerId)
+        {
+            if (claimSource.Claims.OfUserActive(playerId).Any())
+            {
+                if (!(claimSource is CharacterGroup) ||
+                    !project.Details.EnableManyCharacters)
+                {
+                    yield return AddClaimForbideReason.AlreadySent;
+                }
+            }
+
+            if (!project.Details.EnableManyCharacters &&
+                project.Claims.OfUserApproved(playerId).Except(new[] { existingClaim }).Any())
+            {
+                yield return AddClaimForbideReason.OnlyOneCharacter;
+            }
+        }
+    }
+
+}
+
+public enum AddClaimForbideReason
+{
+    ProjectNotActive,
+    ProjectClaimsClosed,
+    NotForDirectClaims,
+    SlotsExhausted,
+    Npc,
+    Busy,
+    AlreadySent,
+    OnlyOneCharacter,
+    ApprovedClaimMovedToGroupOrSlot,
+    CheckedInClaimCantBeMoved,
 }

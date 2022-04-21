@@ -1,15 +1,14 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Domain.ClaimProblemFilters
+namespace JoinRpg.Domain.ClaimProblemFilters;
+
+internal class ResponsibleMasterProblemFilter : IProblemFilter<Claim>
 {
-    internal class ResponsibleMasterProblemFilter : IProblemFilter<Claim>
+    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
-        public IEnumerable<ClaimProblem> GetProblems(Claim claim)
+        if (!claim.HasMasterAccess(claim.ResponsibleMasterUserId))
         {
-            if (!claim.HasMasterAccess(claim.ResponsibleMasterUserId))
-            {
-                yield return new ClaimProblem(ClaimProblemType.InvalidResponsibleMaster, ProblemSeverity.Error);
-            }
+            yield return new ClaimProblem(ClaimProblemType.InvalidResponsibleMaster, ProblemSeverity.Error);
         }
     }
 }

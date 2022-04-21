@@ -3,23 +3,22 @@ using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace JoinRpg.Web.Filter
+namespace JoinRpg.Web.Filter;
+
+public class CaptureNoAccessExceptionHandlerAttribute : ExceptionFilterAttribute
 {
-    public class CaptureNoAccessExceptionHandlerAttribute : ExceptionFilterAttribute
+    public override void OnException(ExceptionContext filterContext)
     {
-        public override void OnException(ExceptionContext filterContext)
+        var noAccess = filterContext.Exception as NoAccessToProjectException;
+        if (noAccess != null)
         {
-            var noAccess = filterContext.Exception as NoAccessToProjectException;
-            if (noAccess != null)
+            var viewResult = new ViewResult()
             {
-                var viewResult = new ViewResult()
-                {
-                    ViewName = "ErrorNoAccessToProject",
-                };
-                viewResult.ViewData.Model = new ErrorNoAccessToProjectViewModel(noAccess.Project);
-                filterContext.Result = viewResult;
-            }
-            base.OnException(filterContext);
+                ViewName = "ErrorNoAccessToProject",
+            };
+            viewResult.ViewData.Model = new ErrorNoAccessToProjectViewModel(noAccess.Project);
+            filterContext.Result = viewResult;
         }
+        base.OnException(filterContext);
     }
 }

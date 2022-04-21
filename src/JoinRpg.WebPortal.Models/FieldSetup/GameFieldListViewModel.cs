@@ -1,15 +1,14 @@
-namespace JoinRpg.Web.Models.FieldSetup
+namespace JoinRpg.Web.Models.FieldSetup;
+
+public class GameFieldListViewModel
 {
-    public class GameFieldListViewModel
+    public IEnumerable<GameFieldEditViewModel> Items { get; }
+
+    public FieldNavigationModel Navigation { get; }
+
+    public GameFieldListViewModel(FieldNavigationModel navigation, IEnumerable<GameFieldEditViewModel> fields)
     {
-        public IEnumerable<GameFieldEditViewModel> Items { get; }
-
-        public FieldNavigationModel Navigation { get; }
-
-        public GameFieldListViewModel(FieldNavigationModel navigation, IEnumerable<GameFieldEditViewModel> fields)
-        {
-            Navigation = navigation;
-            Items = fields;
-        }
+        Navigation = navigation;
+        Items = fields;
     }
 }

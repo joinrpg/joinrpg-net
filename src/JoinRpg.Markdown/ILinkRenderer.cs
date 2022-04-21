@@ -1,18 +1,17 @@
-namespace JoinRpg.Markdown
+namespace JoinRpg.Markdown;
+
+/// <summary>
+/// interfaces that allows consumers to plugin its renderers
+/// </summary>
+public interface ILinkRenderer
 {
     /// <summary>
-    /// interfaces that allows consumers to plugin its renderers
+    /// List of types to match (like %link1, %link2)
     /// </summary>
-    public interface ILinkRenderer
-    {
-        /// <summary>
-        /// List of types to match (like %link1, %link2)
-        /// </summary>
-        IEnumerable<string> LinkTypesToMatch { get; }
+    IEnumerable<string> LinkTypesToMatch { get; }
 
-        /// <summary>
-        /// Function that do actual rendering 
-        /// </summary>
-        string Render(string match, int index, string extra);
-    }
+    /// <summary>
+    /// Function that do actual rendering 
+    /// </summary>
+    string Render(string match, int index, string extra);
 }

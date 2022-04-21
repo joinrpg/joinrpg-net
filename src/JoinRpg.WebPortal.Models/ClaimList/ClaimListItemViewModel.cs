@@ -2,19 +2,18 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
-namespace JoinRpg.Web.Models.ClaimList
+namespace JoinRpg.Web.Models.ClaimList;
+
+public class ClaimListItemViewModel : ClaimListItemViewModelBase
 {
-    public class ClaimListItemViewModel : ClaimListItemViewModelBase
+
+    [Display(Name = "Проблема")]
+    public ICollection<ProblemViewModel> Problems { get; }
+    public int UnreadCommentsCount { get; }
+
+    public ClaimListItemViewModel(Claim claim, int currentUserId, int unreadCommentsCount, IEnumerable<ClaimProblem> problem) : base(claim, currentUserId)
     {
-
-        [Display(Name = "Проблема")]
-        public ICollection<ProblemViewModel> Problems { get; }
-        public int UnreadCommentsCount { get; }
-
-        public ClaimListItemViewModel(Claim claim, int currentUserId, int unreadCommentsCount, IEnumerable<ClaimProblem> problem) : base(claim, currentUserId)
-        {
-            UnreadCommentsCount = unreadCommentsCount;
-            Problems = problem.Select(p => new ProblemViewModel(p)).ToList();
-        }
+        UnreadCommentsCount = unreadCommentsCount;
+        Problems = problem.Select(p => new ProblemViewModel(p)).ToList();
     }
 }

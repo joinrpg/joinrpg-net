@@ -1,6 +1,5 @@
-namespace JoinRpg.Services.Export.Internal
+namespace JoinRpg.Services.Export.Internal;
+
+internal record Cell(object? Content)
 {
-    internal record Cell(object? Content)
-    {
-    }
 }

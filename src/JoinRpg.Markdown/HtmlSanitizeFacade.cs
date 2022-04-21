@@ -1,60 +1,59 @@
 using JetBrains.Annotations;
 using JoinRpg.Helpers.Web;
 
-namespace JoinRpg.Markdown
+namespace JoinRpg.Markdown;
+
+/// <summary>
+/// Facade for HTML sanitization
+/// </summary>
+public static class HtmlSanitizeFacade
 {
     /// <summary>
-    /// Facade for HTML sanitization
+    /// Remove all Html from string
     /// </summary>
-    public static class HtmlSanitizeFacade
+    /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
+    [NotNull]
+    public static JoinHtmlString RemoveHtml([NotNull]
+        this UnSafeHtml unsafeHtml)
     {
-        /// <summary>
-        /// Remove all Html from string
-        /// </summary>
-        /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
-        [NotNull]
-        public static JoinHtmlString RemoveHtml([NotNull]
-            this UnSafeHtml unsafeHtml)
+        if (unsafeHtml == null)
         {
-            if (unsafeHtml == null)
-            {
-                throw new ArgumentNullException(nameof(unsafeHtml));
-            }
-
-            return HtmlSanitizers.RemoveAll.Sanitize(unsafeHtml.UnValidatedValue).MarkAsHtmlString();
+            throw new ArgumentNullException(nameof(unsafeHtml));
         }
 
-        /// <summary>
-        /// Sanitize all Html, leaving safe subset
-        /// </summary>
-        /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
-        [NotNull]
-        public static JoinHtmlString SanitizeHtml([NotNull]
-            this UnSafeHtml unsafeHtml)
-        {
-            if (unsafeHtml == null)
-            {
-                throw new ArgumentNullException(nameof(unsafeHtml));
-            }
+        return HtmlSanitizers.RemoveAll.Sanitize(unsafeHtml.UnValidatedValue).MarkAsHtmlString();
+    }
 
-            return HtmlSanitizers.Simple.Sanitize(unsafeHtml.UnValidatedValue).MarkAsHtmlString();
+    /// <summary>
+    /// Sanitize all Html, leaving safe subset
+    /// </summary>
+    /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
+    [NotNull]
+    public static JoinHtmlString SanitizeHtml([NotNull]
+        this UnSafeHtml unsafeHtml)
+    {
+        if (unsafeHtml == null)
+        {
+            throw new ArgumentNullException(nameof(unsafeHtml));
         }
 
-        /// <summary>
-        /// Sanitize all Html, leaving safe subset
-        /// </summary>
-        /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
-        [NotNull]
-        public static JoinHtmlString SanitizeHtml([NotNull]
-            this string str)
-        {
-            var unsafeHtml = (UnSafeHtml?)str;
-            if (unsafeHtml == null)
-            {
-                throw new ArgumentNullException(nameof(str));
-            }
+        return HtmlSanitizers.Simple.Sanitize(unsafeHtml.UnValidatedValue).MarkAsHtmlString();
+    }
 
-            return unsafeHtml.SanitizeHtml();
+    /// <summary>
+    /// Sanitize all Html, leaving safe subset
+    /// </summary>
+    /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
+    [NotNull]
+    public static JoinHtmlString SanitizeHtml([NotNull]
+        this string str)
+    {
+        var unsafeHtml = (UnSafeHtml?)str;
+        if (unsafeHtml == null)
+        {
+            throw new ArgumentNullException(nameof(str));
         }
+
+        return unsafeHtml.SanitizeHtml();
     }
 }

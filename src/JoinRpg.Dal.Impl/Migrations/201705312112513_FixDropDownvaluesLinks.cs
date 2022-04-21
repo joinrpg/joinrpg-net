@@ -1,11 +1,10 @@
-namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations;
+
+using System.Data.Entity.Migrations;
+
+public partial class FixDropDownvaluesLinks : DbMigration
 {
-    using System.Data.Entity.Migrations;
+    public override void Up() => DropColumn("dbo.ProjectFieldDropdownValues", "CharacterGroupId");
 
-    public partial class FixDropDownvaluesLinks : DbMigration
-    {
-        public override void Up() => DropColumn("dbo.ProjectFieldDropdownValues", "CharacterGroupId");
-
-        public override void Down() => AddColumn("dbo.ProjectFieldDropdownValues", "CharacterGroupId", c => c.Int(nullable: false));
-    }
+    public override void Down() => AddColumn("dbo.ProjectFieldDropdownValues", "CharacterGroupId", c => c.Int(nullable: false));
 }

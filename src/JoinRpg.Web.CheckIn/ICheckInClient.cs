@@ -1,9 +1,8 @@
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Web.CheckIn
+namespace JoinRpg.Web.CheckIn;
+
+public interface ICheckInClient
 {
-    public interface ICheckInClient
-    {
-        Task<CheckInStatViewModel> GetCheckInStats(ProjectIdentification projectId);
-    }
+    Task<CheckInStatViewModel> GetCheckInStats(ProjectIdentification projectId);
 }

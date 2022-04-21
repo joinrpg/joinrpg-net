@@ -1,21 +1,20 @@
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.WebPortal.Managers.Interfaces;
 
-namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure;
+
+public class CurrentProjectAccessor : ICurrentProjectAccessor
 {
-    public class CurrentProjectAccessor : ICurrentProjectAccessor
+    private IHttpContextAccessor HttpContextAccessor { get; }
+
+    public CurrentProjectAccessor(IHttpContextAccessor httpContextAccessor)
     {
-        private IHttpContextAccessor HttpContextAccessor { get; }
-
-        public CurrentProjectAccessor(IHttpContextAccessor httpContextAccessor)
-        {
-            HttpContextAccessor = httpContextAccessor;
-            ProjectIdLazy = new Lazy<ProjectIdentification>(()
-                => new((int)HttpContextAccessor.HttpContext!.Items[DiscoverFilters.Constants.ProjectIdName]!));
-        }
-
-        private readonly Lazy<ProjectIdentification> ProjectIdLazy;
-
-        public ProjectIdentification ProjectId => ProjectIdLazy.Value;
+        HttpContextAccessor = httpContextAccessor;
+        ProjectIdLazy = new Lazy<ProjectIdentification>(()
+            => new((int)HttpContextAccessor.HttpContext!.Items[DiscoverFilters.Constants.ProjectIdName]!));
     }
+
+    private readonly Lazy<ProjectIdentification> ProjectIdLazy;
+
+    public ProjectIdentification ProjectId => ProjectIdLazy.Value;
 }

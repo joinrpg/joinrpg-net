@@ -2,82 +2,80 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.Web.Models.Characters
+namespace JoinRpg.Web.Models.Characters;
+
+public static class CharacterGroupReportViewModel
 {
+    [MustUseReturnValue]
+    public static IEnumerable<CharacterGroupReportItemViewModel> GetGroups(CharacterGroup field) => new CharacterGroupHierarchyBuilder(field).Generate().WhereNotNull();
 
-    public static class CharacterGroupReportViewModel
+    //TODO: unit tests
+    private class CharacterGroupHierarchyBuilder
     {
-        [MustUseReturnValue]
-        public static IEnumerable<CharacterGroupReportItemViewModel> GetGroups(CharacterGroup field) => new CharacterGroupHierarchyBuilder(field).Generate().WhereNotNull();
+        private CharacterGroup Root { get; }
 
-        //TODO: unit tests
-        private class CharacterGroupHierarchyBuilder
+        private IList<CharacterGroupReportItemViewModel> Results { get; } =
+            new List<CharacterGroupReportItemViewModel>();
+
+        public CharacterGroupHierarchyBuilder(CharacterGroup root) => Root = root;
+
+        public IList<CharacterGroupReportItemViewModel> Generate()
         {
-            private CharacterGroup Root { get; }
-
-            private IList<CharacterGroupReportItemViewModel> Results { get; } =
-                new List<CharacterGroupReportItemViewModel>();
-
-            public CharacterGroupHierarchyBuilder(CharacterGroup root) => Root = root;
-
-            public IList<CharacterGroupReportItemViewModel> Generate()
+            GenerateFrom(Root, 0);
+            foreach (var characterGroup in Root.ChildGroups.Where(cg => cg.IsActive))
             {
-                GenerateFrom(Root, 0);
-                foreach (var characterGroup in Root.ChildGroups.Where(cg => cg.IsActive))
-                {
-                    GenerateFrom(characterGroup, 1);
-                }
-
-                return Results;
+                GenerateFrom(characterGroup, 1);
             }
 
-            private void GenerateFrom(CharacterGroup characterGroup, int deepLevel)
+            return Results;
+        }
+
+        private void GenerateFrom(CharacterGroup characterGroup, int deepLevel)
+        {
+            var vm = new CharacterGroupReportItemViewModel
             {
-                var vm = new CharacterGroupReportItemViewModel
-                {
-                    CharacterGroupId = characterGroup.CharacterGroupId,
-                    DeepLevel = deepLevel,
-                    Name = characterGroup.CharacterGroupName,
-                    AvaiableDirectSlots = characterGroup.HaveDirectSlots
-                        ? characterGroup.AvaiableDirectSlots
-                        : 0,
-                    ActiveClaimsCount = characterGroup.Claims.Count(c => c.ClaimStatus.IsActive()),
-                    IsPublic = characterGroup.IsPublic,
-                };
+                CharacterGroupId = characterGroup.CharacterGroupId,
+                DeepLevel = deepLevel,
+                Name = characterGroup.CharacterGroupName,
+                AvaiableDirectSlots = characterGroup.HaveDirectSlots
+                    ? characterGroup.AvaiableDirectSlots
+                    : 0,
+                ActiveClaimsCount = characterGroup.Claims.Count(c => c.ClaimStatus.IsActive()),
+                IsPublic = characterGroup.IsPublic,
+            };
 
-                Results.Add(vm);
+            Results.Add(vm);
 
-                var flatChilds = characterGroup.FlatTree(model => model.ChildGroups.Where(c => c.IsActive)).Distinct()
-                    .ToList();
+            var flatChilds = characterGroup.FlatTree(model => model.ChildGroups.Where(c => c.IsActive)).Distinct()
+                .ToList();
 
-                var flatCharacters = flatChilds.SelectMany(c => c.Characters).Where(c => c.IsActive)
-                    .Distinct().ToList();
+            var flatCharacters = flatChilds.SelectMany(c => c.Characters).Where(c => c.IsActive)
+                .Distinct().ToList();
 
-                vm.TotalSlots = flatChilds.Sum(c =>
-                                    c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
-                                flatCharacters.Count(c => c.IsAvailable);
+            vm.TotalSlots = flatChilds.Sum(c =>
+                                c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
+                            flatCharacters.Count(c => c.IsAvailable);
 
-                vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c =>
-                                         c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots);
-                vm.TotalNpcCharacters =
-                    flatCharacters.Count(c => !c.IsAcceptingClaims && c.ApprovedClaim == null);
-                vm.TotalCharactersWithPlayers = flatCharacters.Count(c => c.ApprovedClaim != null);
-                vm.TotalInGameCharacters = flatCharacters.Count(c => c.InGame);
+            vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c =>
+                                     c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots);
+            vm.TotalNpcCharacters =
+                flatCharacters.Count(c => !c.IsAcceptingClaims && c.ApprovedClaim == null);
+            vm.TotalCharactersWithPlayers = flatCharacters.Count(c => c.ApprovedClaim != null);
+            vm.TotalInGameCharacters = flatCharacters.Count(c => c.InGame);
 
-                vm.TotalDiscussedClaims =
-                    flatCharacters.Where(c => c.ApprovedClaim == null)
-                        .Sum(c => c.Claims.Count(claim => claim.ClaimStatus.IsActive())) +
+            vm.TotalDiscussedClaims =
+                flatCharacters.Where(c => c.ApprovedClaim == null)
+                    .Sum(c => c.Claims.Count(claim => claim.ClaimStatus.IsActive())) +
 
-                    flatChilds.Sum(c => c.Claims.Count());
-                vm.TotalActiveClaims =
-                    flatCharacters.Sum(c => c.Claims.Count(claim => claim.ClaimStatus.IsActive())) +
-                    flatChilds.Sum(c => c.Claims.Count());
-                vm.TotalAcceptedClaims = flatCharacters.Count(c => c.ApprovedClaim != null);
-                vm.TotalCheckedInClaims =
-                    flatCharacters.Count(c => c.ApprovedClaim?.CheckInDate != null);
-                vm.Unlimited = vm.AvaiableDirectSlots == -1 ||
-                               flatChilds.Any(c => c.AvaiableDirectSlots == -1);
-            }
+                flatChilds.Sum(c => c.Claims.Count());
+            vm.TotalActiveClaims =
+                flatCharacters.Sum(c => c.Claims.Count(claim => claim.ClaimStatus.IsActive())) +
+                flatChilds.Sum(c => c.Claims.Count());
+            vm.TotalAcceptedClaims = flatCharacters.Count(c => c.ApprovedClaim != null);
+            vm.TotalCheckedInClaims =
+                flatCharacters.Count(c => c.ApprovedClaim?.CheckInDate != null);
+            vm.Unlimited = vm.AvaiableDirectSlots == -1 ||
+                           flatChilds.Any(c => c.AvaiableDirectSlots == -1);
         }
     }
 }

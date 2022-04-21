@@ -10,117 +10,116 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure;
+
+internal static class AuthenticationConfigurator
 {
-    internal static class AuthenticationConfigurator
+    public static IServiceCollection AddJoinAuth(this IServiceCollection services,
+        JwtSecretOptions jwtSecretOptions,
+        IWebHostEnvironment environment,
+        IConfigurationSection authSection)
     {
-        public static IServiceCollection AddJoinAuth(this IServiceCollection services,
-            JwtSecretOptions jwtSecretOptions,
-            IWebHostEnvironment environment,
-            IConfigurationSection authSection)
+
+        _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
+
+        _ = services
+            .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
+            .AddDefaultTokenProviders()
+            .AddUserStore<MyUserStore>()
+            .AddRoleStore<MyUserStore>();
+
+        _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
+
+        _ = services.ConfigureApplicationCookie(SetCookieOptions());
+
+        _ = services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder(
+            JwtBearerDefaults.AuthenticationScheme,
+            IdentityConstants.ApplicationScheme
+            )
+            .RequireAuthenticatedUser()
+          .Build())
+            .AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>()
+            .AddAuthentication()
+            .ConfigureJoinExternalLogins(authSection)
+            .AddJwtBearer(o =>
+            {
+                o.RequireHttpsMetadata = !environment.IsDevelopment();
+                o.SaveToken = false;
+                o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretOptions.SecretKey));
+                o.TokenValidationParameters.ValidAudience = "ApiUser";
+                o.TokenValidationParameters.ValidIssuer = jwtSecretOptions.Issuer;
+            });
+
+        return services;
+    }
+
+    public static AuthenticationBuilder ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
+    {
+        var googleConfig = configSection.GetSection("Google").Get<OAuthAuthenticationOptions>();
+
+        if (googleConfig is object)
         {
+            _ = authBuilder.AddGoogle(options =>
+              {
+                  options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
 
-            _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
-
-            _ = services
-                .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
-                .AddDefaultTokenProviders()
-                .AddUserStore<MyUserStore>()
-                .AddRoleStore<MyUserStore>();
-
-            _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
-
-            _ = services.ConfigureApplicationCookie(SetCookieOptions());
-
-            _ = services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder(
-                JwtBearerDefaults.AuthenticationScheme,
-                IdentityConstants.ApplicationScheme
-                )
-                .RequireAuthenticatedUser()
-              .Build())
-                .AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>()
-                .AddAuthentication()
-                .ConfigureJoinExternalLogins(authSection)
-                .AddJwtBearer(o =>
-                {
-                    o.RequireHttpsMetadata = !environment.IsDevelopment();
-                    o.SaveToken = false;
-                    o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretOptions.SecretKey));
-                    o.TokenValidationParameters.ValidAudience = "ApiUser";
-                    o.TokenValidationParameters.ValidIssuer = jwtSecretOptions.Issuer;
-                });
-
-            return services;
+                  SetCommonProperties(options, googleConfig);
+              });
         }
 
-        public static AuthenticationBuilder ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
+        var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
+
+        if (vkConfig is object)
         {
-            var googleConfig = configSection.GetSection("Google").Get<OAuthAuthenticationOptions>();
+            _ = authBuilder.AddVkontakte(options =>
+              {
+                  options.Scope.Add("email");
 
-            if (googleConfig is object)
-            {
-                _ = authBuilder.AddGoogle(options =>
-                  {
-                      options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
-
-                      SetCommonProperties(options, googleConfig);
-                  });
-            }
-
-            var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
-
-            if (vkConfig is object)
-            {
-                _ = authBuilder.AddVkontakte(options =>
-                  {
-                      options.Scope.Add("email");
-
-                      SetCommonProperties(options, vkConfig);
-                  });
-            }
-
-            return authBuilder;
-
-            static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)
-            {
-                options.SignInScheme = IdentityConstants.ExternalScheme;
-
-                (options.ClientId, options.ClientSecret) = config;
-            }
+                  SetCommonProperties(options, vkConfig);
+              });
         }
 
+        return authBuilder;
 
-        public static void ConfigureValidation(this PasswordOptions password)
+        static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)
         {
-            password.RequiredLength = 8;
-            password.RequireLowercase = false;
-            password.RequireUppercase = false;
-            password.RequireNonAlphanumeric = false;
-            password.RequireDigit = false;
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+
+            (options.ClientId, options.ClientSecret) = config;
         }
+    }
 
-        public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>
+
+    public static void ConfigureValidation(this PasswordOptions password)
+    {
+        password.RequiredLength = 8;
+        password.RequireLowercase = false;
+        password.RequireUppercase = false;
+        password.RequireNonAlphanumeric = false;
+        password.RequireDigit = false;
+    }
+
+    public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>
+    {
+        options.Events.OnRedirectToAccessDenied =
+           options.Events.OnRedirectToLogin = OnCookieRedirect;
+    };
+
+    private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        if (context.Request.Path.Value?.IsApiPath() == true)
         {
-            options.Events.OnRedirectToAccessDenied =
-               options.Events.OnRedirectToLogin = OnCookieRedirect;
-        };
-
-        private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context)
-        {
-            if (context.Request.Path.Value?.IsApiPath() == true)
-            {
-                context.Response.StatusCode = 401;
-            }
-            else if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectIdObj) && projectIdObj is int projectId)
-            {
-                context.Response.Redirect($"{context.RedirectUri}&projectId={projectId}");
-            }
-            else
-            {
-                context.Response.Redirect(context.RedirectUri);
-
-            }
-            return Task.CompletedTask;
+            context.Response.StatusCode = 401;
         }
+        else if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectIdObj) && projectIdObj is int projectId)
+        {
+            context.Response.Redirect($"{context.RedirectUri}&projectId={projectId}");
+        }
+        else
+        {
+            context.Response.Redirect(context.RedirectUri);
+
+        }
+        return Task.CompletedTask;
     }
 }

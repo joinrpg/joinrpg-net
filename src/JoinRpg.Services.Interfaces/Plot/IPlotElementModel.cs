@@ -1,15 +1,14 @@
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces;
+
+public interface IPlotElementModel
 {
-    public interface IPlotElementModel
-    {
 
-        int ProjectId { get; }
+    int ProjectId { get; }
 
-        int PlotFolderId { get; }
+    int PlotFolderId { get; }
 
-        int PlotElementId { get; }
+    int PlotElementId { get; }
 
-        int? Version { get; }
+    int? Version { get; }
 
-    }
 }

@@ -1,16 +1,15 @@
 using System.Data.Entity.Migrations;
 using JoinRpg.Dal.Impl;
 
-namespace Joinrpg.Dal.Migrate
+namespace Joinrpg.Dal.Migrate;
+
+internal class JoinMigrationsConfig : DbMigrationsConfiguration<MyDbContext>
 {
-    internal class JoinMigrationsConfig : DbMigrationsConfiguration<MyDbContext>
+    public JoinMigrationsConfig(string connectionString)
     {
-        public JoinMigrationsConfig(string connectionString)
-        {
-            TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo(connectionString, "System.Data.SqlClient");
-            MigrationsAssembly = typeof(MyDbContext).Assembly;
-            MigrationsNamespace = typeof(MyDbContext).Namespace + ".Migrations";
-            ContextKey = "JoinRpg.Dal.Impl.Migrations.Configuration";
-        }
+        TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo(connectionString, "System.Data.SqlClient");
+        MigrationsAssembly = typeof(MyDbContext).Assembly;
+        MigrationsNamespace = typeof(MyDbContext).Namespace + ".Migrations";
+        ContextKey = "JoinRpg.Dal.Impl.Migrations.Configuration";
     }
 }

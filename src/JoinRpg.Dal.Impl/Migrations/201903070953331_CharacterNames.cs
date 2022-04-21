@@ -1,31 +1,31 @@
-namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations;
+
+using System.Data.Entity.Migrations;
+
+public partial class CharacterNames : DbMigration
 {
-    using System.Data.Entity.Migrations;
-
-    public partial class CharacterNames : DbMigration
+    public override void Up()
     {
-        public override void Up()
+        DropColumn("dbo.ProjectFields", "CharacterGroupId");
+
+        AddColumn("dbo.ProjectDetails", "CharacterNameLegacyMode", c => c.Boolean(nullable: false));
+        AddColumn("dbo.ProjectDetails", "FieldsOrdering", c => c.String());
+        AddColumn("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", c => c.Int());
+        AddColumn("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", c => c.Int());
+        CreateIndex("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId");
+        CreateIndex("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId");
+        AddForeignKey("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
+        AddForeignKey("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
+
+        if (false)
         {
-            DropColumn("dbo.ProjectFields", "CharacterGroupId");
-
-            AddColumn("dbo.ProjectDetails", "CharacterNameLegacyMode", c => c.Boolean(nullable: false));
-            AddColumn("dbo.ProjectDetails", "FieldsOrdering", c => c.String());
-            AddColumn("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", c => c.Int());
-            AddColumn("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", c => c.Int());
-            CreateIndex("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId");
-            CreateIndex("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId");
-            AddForeignKey("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
-            AddForeignKey("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
-
-            if (false)
-            {
-                // Azure Pipeline has too old LocalDb
-                // https://github.com/actions/virtual-environments/issues/702
-                // It's safe to skip: all prod/staging etc already got this data migration happened
-                // Developer's DB it's highly likely have empty database in this stage.
-                // So it's probably NOP anyways 
+            // Azure Pipeline has too old LocalDb
+            // https://github.com/actions/virtual-environments/issues/702
+            // It's safe to skip: all prod/staging etc already got this data migration happened
+            // Developer's DB it's highly likely have empty database in this stage.
+            // So it's probably NOP anyways 
 #pragma warning disable CS0162 // Unreachable code detected
-                Sql(@"
+            Sql(@"
 
 INSERT INTO [dbo].[ProjectFields]
            ([FieldName]
@@ -99,28 +99,27 @@ WHERE FieldName LIKE '$$$Description'
 "
 #pragma warning restore CS0162 // Unreachable code detected
 );
-            }
-
-            DropColumn("dbo.Projects", "ProjectFieldsOrdering");
-            DropColumn("dbo.ProjectDetails", "AllrpgId");
-            DropColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer");
-
         }
 
-        public override void Down()
-        {
-            AddColumn("dbo.ProjectFields", "CharacterGroupId", c => c.Int(nullable: false));
-            AddColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer", c => c.Boolean(nullable: false));
-            AddColumn("dbo.ProjectDetails", "AllrpgId", c => c.Int());
-            AddColumn("dbo.Projects", "ProjectFieldsOrdering", c => c.String());
-            DropForeignKey("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", "dbo.ProjectFields");
-            DropForeignKey("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", "dbo.ProjectFields");
-            DropIndex("dbo.ProjectDetails", new[] { "CharacterNameField_ProjectFieldId" });
-            DropIndex("dbo.ProjectDetails", new[] { "CharacterDescription_ProjectFieldId" });
-            DropColumn("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId");
-            DropColumn("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId");
-            DropColumn("dbo.ProjectDetails", "FieldsOrdering");
-            DropColumn("dbo.ProjectDetails", "CharacterNameLegacyMode");
-        }
+        DropColumn("dbo.Projects", "ProjectFieldsOrdering");
+        DropColumn("dbo.ProjectDetails", "AllrpgId");
+        DropColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer");
+
+    }
+
+    public override void Down()
+    {
+        AddColumn("dbo.ProjectFields", "CharacterGroupId", c => c.Int(nullable: false));
+        AddColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer", c => c.Boolean(nullable: false));
+        AddColumn("dbo.ProjectDetails", "AllrpgId", c => c.Int());
+        AddColumn("dbo.Projects", "ProjectFieldsOrdering", c => c.String());
+        DropForeignKey("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", "dbo.ProjectFields");
+        DropForeignKey("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", "dbo.ProjectFields");
+        DropIndex("dbo.ProjectDetails", new[] { "CharacterNameField_ProjectFieldId" });
+        DropIndex("dbo.ProjectDetails", new[] { "CharacterDescription_ProjectFieldId" });
+        DropColumn("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId");
+        DropColumn("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId");
+        DropColumn("dbo.ProjectDetails", "FieldsOrdering");
+        DropColumn("dbo.ProjectDetails", "CharacterNameLegacyMode");
     }
 }

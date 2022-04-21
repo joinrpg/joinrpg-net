@@ -1,13 +1,12 @@
 using JoinRpg.Data.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.XGameApi
-{
-    [ApiController]
-    public class XGameApiController : ControllerBase
-    {
-        public XGameApiController(IProjectRepository projectRepository) => ProjectRepository = projectRepository;
+namespace JoinRpg.Web.Controllers.XGameApi;
 
-        public IProjectRepository ProjectRepository { get; }
-    }
+[ApiController]
+public class XGameApiController : ControllerBase
+{
+    public XGameApiController(IProjectRepository projectRepository) => ProjectRepository = projectRepository;
+
+    public IProjectRepository ProjectRepository { get; }
 }

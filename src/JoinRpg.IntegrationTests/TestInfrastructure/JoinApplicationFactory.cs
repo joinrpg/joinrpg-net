@@ -8,42 +8,41 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure
+namespace JoinRpg.IntegrationTests.TestInfrastructure;
+
+public class JoinApplicationFactory : WebApplicationFactory<Startup>
 {
-    public class JoinApplicationFactory : WebApplicationFactory<Startup>
+    protected override IHostBuilder CreateHostBuilder()
     {
-        protected override IHostBuilder CreateHostBuilder()
-        {
-            var builder = base.CreateHostBuilder();
-            return builder
-                .UseEnvironment("IntegrationTest")
-                .ConfigureContainer<ContainerBuilder>(containerBuilder =>
-                {
-                    _ = containerBuilder
-                        .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                        .Where(IsStub)
-                        .AsSelf()
-                        .AsImplementedInterfaces();
-
-                });
-
-            bool IsStub(Type type)
+        var builder = base.CreateHostBuilder();
+        return builder
+            .UseEnvironment("IntegrationTest")
+            .ConfigureContainer<ContainerBuilder>(containerBuilder =>
             {
-                return type.FullName?.StartsWith("JoinRpg.IntegrationTests.TestInfrastructure.Stubs") == true;
-            }
-        }
+                _ = containerBuilder
+                    .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                    .Where(IsStub)
+                    .AsSelf()
+                    .AsImplementedInterfaces();
 
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
-        {
-            base.ConfigureWebHost(builder);
-            _ = builder.UseTestServer();
-        }
+            });
 
-        protected override void Dispose(bool disposing)
+        bool IsStub(Type type)
         {
-            var context = Services.GetRequiredService<MyDbContext>();
-            _ = context.Database.Delete();
-            base.Dispose(disposing);
+            return type.FullName?.StartsWith("JoinRpg.IntegrationTests.TestInfrastructure.Stubs") == true;
         }
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        base.ConfigureWebHost(builder);
+        _ = builder.UseTestServer();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        var context = Services.GetRequiredService<MyDbContext>();
+        _ = context.Database.Delete();
+        base.Dispose(disposing);
     }
 }

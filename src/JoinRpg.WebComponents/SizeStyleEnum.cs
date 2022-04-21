@@ -1,9 +1,8 @@
-namespace JoinRpg.WebComponents
+namespace JoinRpg.WebComponents;
+
+public enum SizeStyleEnum
 {
-    public enum SizeStyleEnum
-    {
-        Large,
-        Medium,
-        Small,
-    }
+    Large,
+    Medium,
+    Small,
 }

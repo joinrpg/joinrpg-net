@@ -4,34 +4,33 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Areas.Admin.Controllers
+namespace JoinRpg.Portal.Areas.Admin.Controllers;
+
+[AdminAuthorize]
+[Area("Admin")]
+public class ProjectListController : JoinRpg.Portal.Controllers.Common.ControllerBase
 {
-    [AdminAuthorize]
-    [Area("Admin")]
-    public class ProjectListController : JoinRpg.Portal.Controllers.Common.ControllerBase
+    public ICurrentUserAccessor CurrentUserAccessor { get; }
+    private readonly IProjectRepository _projectRepository;
+
+    public async Task<IActionResult> Index()
     {
-        public ICurrentUserAccessor CurrentUserAccessor { get; }
-        private readonly IProjectRepository _projectRepository;
+        var allProjects = await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserAccessor.UserId);
 
-        public async Task<IActionResult> Index()
-        {
-            var allProjects = await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserAccessor.UserId);
+        var projects =
+            allProjects
+                .Select(p => new ProjectListItemViewModel(p))
+                .OrderByDescending(p => p.ClaimCount)
+                .ToList();
 
-            var projects =
-                allProjects
-                    .Select(p => new ProjectListItemViewModel(p))
-                    .OrderByDescending(p => p.ClaimCount)
-                    .ToList();
+        return View(projects);
+    }
 
-            return View(projects);
-        }
-
-        public ProjectListController(
-            IProjectRepository projectRepository,
-            ICurrentUserAccessor currentUserAccessor)
-        {
-            CurrentUserAccessor = currentUserAccessor;
-            _projectRepository = projectRepository;
-        }
+    public ProjectListController(
+        IProjectRepository projectRepository,
+        ICurrentUserAccessor currentUserAccessor)
+    {
+        CurrentUserAccessor = currentUserAccessor;
+        _projectRepository = projectRepository;
     }
 }

@@ -1,8 +1,7 @@
-namespace JoinRpg.DataModel
+namespace JoinRpg.DataModel;
+
+public enum ContactsAccessType : byte
 {
-    public enum ContactsAccessType : byte
-    {
-        OnlyForMasters = 0,
-        Public = 1,
-    }
+    OnlyForMasters = 0,
+    Public = 1,
 }

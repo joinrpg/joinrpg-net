@@ -1,23 +1,22 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces.Notification
+namespace JoinRpg.Services.Interfaces.Notification;
+
+public class InviteEmailModel : EmailModelBase
 {
-    public class InviteEmailModel : EmailModelBase
-    {
-        public ICollection<Claim> RecipientClaims;
+    public ICollection<Claim> RecipientClaims;
 
-        public Claim? GetClaimByPerson(User user) => RecipientClaims.FirstOrDefault(claim => claim.PlayerUserId == user.UserId);
-    }
+    public Claim? GetClaimByPerson(User user) => RecipientClaims.FirstOrDefault(claim => claim.PlayerUserId == user.UserId);
+}
 
-    public class NewInviteEmail : InviteEmailModel
-    {
-    }
+public class NewInviteEmail : InviteEmailModel
+{
+}
 
-    public class AcceptInviteEmail : InviteEmailModel
-    {
-    }
+public class AcceptInviteEmail : InviteEmailModel
+{
+}
 
-    public class DeclineInviteEmail : InviteEmailModel
-    {
-    }
+public class DeclineInviteEmail : InviteEmailModel
+{
 }

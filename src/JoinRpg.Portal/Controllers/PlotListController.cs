@@ -9,110 +9,109 @@ using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Controllers
+namespace JoinRpg.Portal.Controllers;
+
+[Route("{projectId}/plot/[action]")]
+public class PlotListController : ControllerGameBase
 {
-    [Route("{projectId}/plot/[action]")]
-    public class PlotListController : ControllerGameBase
+    private readonly IPlotRepository _plotRepository;
+    private IUriService UriService { get; }
+
+
+    public PlotListController(
+        IProjectRepository projectRepository,
+        IProjectService projectService,
+        IPlotRepository plotRepository,
+        IUriService uriService,
+        IUserRepository userRepository) : base(projectRepository,
+        projectService,
+        userRepository)
     {
-        private readonly IPlotRepository _plotRepository;
-        private IUriService UriService { get; }
+        _plotRepository = plotRepository;
+        UriService = uriService;
+    }
 
+    [RequireMasterOrPublish]
+    [HttpGet]
+    public async Task<ActionResult> Index(int projectId) => await PlotList(projectId, pf => true);
 
-        public PlotListController(
-            IProjectRepository projectRepository,
-            IProjectService projectService,
-            IPlotRepository plotRepository,
-            IUriService uriService,
-            IUserRepository userRepository) : base(projectRepository,
-            projectService,
-            userRepository)
-        {
-            _plotRepository = plotRepository;
-            UriService = uriService;
-        }
+    [RequireMasterOrPublish]
+    [HttpGet]
+    public async Task<ActionResult> InWork(int projectId) => await PlotList(projectId, pf => pf.InWork);
 
-        [RequireMasterOrPublish]
-        [HttpGet]
-        public async Task<ActionResult> Index(int projectId) => await PlotList(projectId, pf => true);
+    [RequireMasterOrPublish]
+    [HttpGet]
+    public async Task<ActionResult> Ready(int projectId) => await PlotList(projectId, pf => pf.Completed);
 
-        [RequireMasterOrPublish]
-        [HttpGet]
-        public async Task<ActionResult> InWork(int projectId) => await PlotList(projectId, pf => pf.InWork);
-
-        [RequireMasterOrPublish]
-        [HttpGet]
-        public async Task<ActionResult> Ready(int projectId) => await PlotList(projectId, pf => pf.Completed);
-
-        [RequireMasterOrPublish]
-        [HttpGet]
-        public async Task<ActionResult> ByTag(int projectid, string tagname)
-        {
-            var allFolders = await _plotRepository.GetPlotsByTag(projectid, tagname);
+    [RequireMasterOrPublish]
+    [HttpGet]
+    public async Task<ActionResult> ByTag(int projectid, string tagname)
+    {
+        var allFolders = await _plotRepository.GetPlotsByTag(projectid, tagname);
 #pragma warning disable CS0612 // Type or member is obsolete
-            var project = await GetProjectFromList(projectid, allFolders);
+        var project = await GetProjectFromList(projectid, allFolders);
 #pragma warning restore CS0612 // Type or member is obsolete
-            return View("Index", new PlotFolderListViewModel(allFolders, project, CurrentUserIdOrDefault));
+        return View("Index", new PlotFolderListViewModel(allFolders, project, CurrentUserIdOrDefault));
+    }
+
+
+    [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/plots")]
+    [RequireMasterOrPublish]
+    public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
+    {
+        var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        if (group == null)
+        {
+            return NotFound();
         }
 
+        //TODO slow 
+        var characterGroups = group.GetChildrenGroups().Union(new[] { group }).ToList();
+        var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
+        var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
+        var folders = await _plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
+        var project = group.Project;
 
-        [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/plots")]
-        [RequireMasterOrPublish]
-        public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
-        {
-            var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-            if (group == null)
-            {
-                return NotFound();
-            }
+        var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
 
-            //TODO slow 
-            var characterGroups = group.GetChildrenGroups().Union(new[] { group }).ToList();
-            var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
-            var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
-            var folders = await _plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
-            var project = group.Project;
+        return View("ForGroup", new PlotFolderListViewModelForGroup(folders, project, CurrentUserIdOrDefault, groupNavigation));
+    }
 
-            var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
-
-            return View("ForGroup", new PlotFolderListViewModelForGroup(folders, project, CurrentUserIdOrDefault, groupNavigation));
-        }
-
-        [RequireMasterOrPublish]
-        [HttpGet]
-        public async Task<ActionResult> FlatList(int projectId)
-        {
-            var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+    [RequireMasterOrPublish]
+    [HttpGet]
+    public async Task<ActionResult> FlatList(int projectId)
+    {
+        var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
 #pragma warning disable CS0612 // Type or member is obsolete
-            var project = await GetProjectFromList(projectId, folders);
+        var project = await GetProjectFromList(projectId, folders);
 #pragma warning restore CS0612 // Type or member is obsolete
-            return View(
-                new PlotFolderFullListViewModel(
-                    folders,
-                    project,
-                    CurrentUserIdOrDefault,
-                    UriService));
-        }
+        return View(
+            new PlotFolderFullListViewModel(
+                folders,
+                project,
+                CurrentUserIdOrDefault,
+                UriService));
+    }
 
-        [RequireMasterOrPublish]
-        [HttpGet]
-        public async Task<ActionResult> FlatListUnready(int projectId)
-        {
-            var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+    [RequireMasterOrPublish]
+    [HttpGet]
+    public async Task<ActionResult> FlatListUnready(int projectId)
+    {
+        var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
 #pragma warning disable CS0612 // Type or member is obsolete
-            var project = await GetProjectFromList(projectId, folders);
+        var project = await GetProjectFromList(projectId, folders);
 #pragma warning restore CS0612 // Type or member is obsolete
-            return View("FlatList",
-                new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, UriService, true));
-        }
+        return View("FlatList",
+            new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, UriService, true));
+    }
 
-        private async Task<ActionResult> PlotList(int projectId, Func<PlotFolder, bool> predicate)
-        {
-            var allFolders = await _plotRepository.GetPlots(projectId);
-            var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
+    private async Task<ActionResult> PlotList(int projectId, Func<PlotFolder, bool> predicate)
+    {
+        var allFolders = await _plotRepository.GetPlots(projectId);
+        var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
 #pragma warning disable CS0612 // Type or member is obsolete
-            var project = await GetProjectFromList(projectId, folders);
+        var project = await GetProjectFromList(projectId, folders);
 #pragma warning restore CS0612 // Type or member is obsolete
-            return View("Index", new PlotFolderListViewModel(folders, project, CurrentUserIdOrDefault));
-        }
+        return View("Index", new PlotFolderListViewModel(folders, project, CurrentUserIdOrDefault));
     }
 }
