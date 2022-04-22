@@ -1,35 +1,29 @@
-using System.Data.Entity.Migrations;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Dal.Impl.Migrations;
-
-public sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
+namespace JoinRpg.Dal.Impl.Migrations
 {
-    public Configuration()
+    public sealed class Configuration
     {
-        AutomaticMigrationsEnabled = false;
-        CommandTimeout = 60 * 60; // 1 hour
-    }
-
-    protected override void Seed(MyDbContext context)
-    {
-        if (!context.Set<User>().Any(u => u.UserName == User.OnlinePaymentVirtualUser))
+        //TODO how to run
+        protected void Seed(MyDbContext context)
         {
-            var user = new User()
+            if (!context.Set<User>().Any(u => u.UserName == User.OnlinePaymentVirtualUser))
             {
-                UserName = User.OnlinePaymentVirtualUser,
-                Email = User.OnlinePaymentVirtualUser,
-                PrefferedName = "Online payments",
-                VerifiedProfileFlag = true,
-                Auth = new UserAuthDetails()
+                var user = new User()
                 {
-                    EmailConfirmed = true,
-                    RegisterDate = DateTime.UtcNow,
-                    AspNetSecurityStamp = Guid.NewGuid().ToString(),
-                }
-            };
-            context.Set<User>().Add(user);
+                    UserName = User.OnlinePaymentVirtualUser,
+                    Email = User.OnlinePaymentVirtualUser,
+                    PrefferedName = "Online payments",
+                    VerifiedProfileFlag = true,
+                    Auth = new UserAuthDetails()
+                    {
+                        EmailConfirmed = true,
+                        RegisterDate = DateTime.UtcNow,
+                        AspNetSecurityStamp = Guid.NewGuid().ToString(),
+                    }
+                };
+                context.Set<User>().Add(user);
+            }
         }
-        base.Seed(context);
     }
 }
