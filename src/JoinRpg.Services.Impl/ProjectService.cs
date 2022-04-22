@@ -409,10 +409,10 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             }
         }
 
-        _ = UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
-        _ = UnitOfWork.GetDbSet<UserSubscription>()
-            .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
-                         .Where(x => x.UserId == userId && x.ProjectId == projectId));
+            _ = UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
+            UnitOfWork.GetDbSet<UserSubscription>()
+                .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
+                             .Where(x => x.UserId == userId && x.ProjectId == projectId));
 
         await UnitOfWork.SaveChangesAsync();
     }

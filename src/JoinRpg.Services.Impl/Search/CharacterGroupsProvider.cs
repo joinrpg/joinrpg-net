@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Search;
 

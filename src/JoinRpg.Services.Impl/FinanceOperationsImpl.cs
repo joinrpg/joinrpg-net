@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;

@@ -39,10 +39,11 @@ public class JoinApplicationFactory : WebApplicationFactory<Startup>
         _ = builder.UseTestServer();
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        var context = Services.GetRequiredService<MyDbContext>();
-        _ = context.Database.Delete();
-        base.Dispose(disposing);
+        protected override void Dispose(bool disposing)
+        {
+            var context = Services.GetRequiredService<MyDbContext>();
+            _ = context.Database.EnsureDeleted();
+            base.Dispose(disposing);
+        }
     }
 }

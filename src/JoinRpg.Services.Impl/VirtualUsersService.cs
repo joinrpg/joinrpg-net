@@ -1,5 +1,5 @@
 using System.Data;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
