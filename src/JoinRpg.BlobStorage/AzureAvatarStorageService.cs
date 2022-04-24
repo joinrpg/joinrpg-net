@@ -12,8 +12,8 @@ namespace JoinRpg.BlobStorage;
 internal class AzureAvatarStorageService : IAvatarStorageService
 {
     private readonly ILogger<AzureAvatarStorageService> logger;
-    private readonly IHttpClientFactory httpClientFactory;
     private readonly AzureBlobStorageConnectionFactory connectionFactory;
+    private readonly AvatarDownloader avatarDownloader;
     private readonly Random random = new();
 
     /// <summary>
@@ -21,18 +21,18 @@ internal class AzureAvatarStorageService : IAvatarStorageService
     /// </summary>
     public AzureAvatarStorageService(
         ILogger<AzureAvatarStorageService> logger,
-        IHttpClientFactory httpClientFactory,
-        AzureBlobStorageConnectionFactory connectionFactory)
+        AzureBlobStorageConnectionFactory connectionFactory,
+        AvatarDownloader avatarDownloader)
     {
         this.logger = logger;
-        this.httpClientFactory = httpClientFactory;
         this.connectionFactory = connectionFactory;
+        this.avatarDownloader = avatarDownloader;
     }
     async Task<Uri?> IAvatarStorageService.StoreAvatar(
         Uri remoteUri,
         CancellationToken ct)
     {
-        var downloadAvatarTask = DownloadAvatarAsync(remoteUri, ct);
+        var downloadAvatarTask = avatarDownloader.DownloadAvatarAsync(remoteUri, ct);
         var blobContainerClient = await connectionFactory.ConnectToAzureAsync("avatars", ct);
         var downloadResult = await downloadAvatarTask;
 
@@ -47,42 +47,6 @@ internal class AzureAvatarStorageService : IAvatarStorageService
         return blobClient.Uri;
     }
 
-    private async Task<(Stream Stream, string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, CancellationToken ct)
-    {
-        logger.LogInformation("Start downloading avatar for {avatarRemoteUri}", remoteUri);
-        // TODO: We need to check size here to prevent downloading of something too large
-        // but it's safe for now because remoteUri in practice only from "trusted sources" 
-        // (100% avatar from social networks)
-        var httpClient = httpClientFactory.CreateClient("download-avatar-client");
-
-        var response = await httpClient.GetAsync(remoteUri, ct);
-        var mediaType = response.Content.Headers.ContentType?.MediaType;
-
-        if (mediaType is null)
-        {
-            throw new Exception("Avatar should have media type");
-        }
-
-        var extension = ParseContentTypeToExtension(mediaType);
-        if (extension is null)
-        {
-            throw new Exception($"Is not safe to use {mediaType} as avatar media type");
-        }
-
-        return (await response.Content.ReadAsStreamAsync(ct), mediaType, extension);
-    }
-
-    private static string? ParseContentTypeToExtension(string mediaType)
-    {
-        return mediaType switch
-        {
-            "image/jpeg" => ".jpeg",
-            "image/png" => ".png",
-            "image/webp" => ".webp",
-            "image/avif" => ".avif",
-            _ => null,
-        };
-    }
 
     private string CreateAvatarBlobName(Uri remoteUri, string extension)
     {

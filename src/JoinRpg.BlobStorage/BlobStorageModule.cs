@@ -19,6 +19,7 @@ public class BlobStorageModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         _ = builder.RegisterType<AzureBlobStorageConnectionFactory>().AsSelf();
+        _ = builder.RegisterType<AvatarDownloader>().AsSelf();
         if (options?.BlobStorageConfigured == true)
         {
             _ = builder.RegisterType<AzureAvatarStorageService>().As<IAvatarStorageService>();
