@@ -2,6 +2,7 @@ using System.Text;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Helpers;
@@ -84,20 +85,27 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
                 return "нет игрока";
             }
 
-            return $"{player.GetDisplayName()}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
+            var contacts = new[] { GetEmailLinkImpl(player), GetVKLinkImpl(player), GetTelegramLinkImpl(player) };
+            return $"{player.GetDisplayName()}: {contacts.JoinIfNotNullOrWhitespace(", ")}";
         }
     }
 
-    private static string GetEmailLinkImpl([NotNull] User player)
+    private static string? GetEmailLinkImpl([NotNull] User player)
     {
         var email = player.Email;
-        return string.IsNullOrEmpty(email) ? "" : $"Email: <a href=\"mailto:{email}\">{email}</a>";
+        return string.IsNullOrEmpty(email) ? null : $"Email: <a href=\"mailto:{email}\">{email}</a>";
     }
 
-    private static string GetVKLinkImpl([NotNull] User player)
+    private static string? GetVKLinkImpl([NotNull] User player)
     {
         var vk = player.Extra?.Vk;
-        return string.IsNullOrEmpty(vk) ? "" : $"ВК: <a href=\"https://vk.com/{vk}\">vk.com/{vk}</a>";
+        return string.IsNullOrEmpty(vk) ? null : $"ВК: <a href=\"https://vk.com/{vk}\">vk.com/{vk}</a>";
+    }
+
+    private static string? GetTelegramLinkImpl([NotNull] User player)
+    {
+        var link = player.Extra?.Telegram;
+        return string.IsNullOrEmpty(link) ? null : $"Телеграм: <a href=\"https://t.me/{link}\">t.me/{link}</a>";
     }
 
     private string Charname(string match, int index, string extra)
