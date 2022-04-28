@@ -9,7 +9,7 @@ namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 /// This cache cannot be too large (it just id to string), so we never purge it.
 /// Avatars are immutable.
 /// </summary>
-internal class AvatarCacheDecoractor : IAvatarLoader
+public class AvatarCacheDecoractor : IAvatarLoader
 {
     private readonly IAvatarLoader innerLoader;
     private record Key(AvatarIdentification Id, int Size) { }
@@ -34,6 +34,17 @@ internal class AvatarCacheDecoractor : IAvatarLoader
         }
 
         Task<AvatarInfo> Load(Key key) => innerLoader.GetAvatar(key.Id, key.Size);
+    }
+
+    public void PurgeCache(AvatarIdentification avatarId)
+    {
+        foreach (var pair in Cache)
+        {
+            if (pair.Key.Id == avatarId)
+            {
+                _ = Cache.TryRemove(pair.Key, out _);
+            }
+        }
     }
 
 }

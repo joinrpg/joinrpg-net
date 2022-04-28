@@ -15,7 +15,8 @@ public record UserAvatarListViewModel
                 .Where(a => a.IsActive)
                 .Select(ua => new UserAvatarListItemViewModel(ua)).ToList(),
         Email: user.Email,
-        UserId: user.UserId)
+        UserId: user.UserId
+        )
     {
 
     }

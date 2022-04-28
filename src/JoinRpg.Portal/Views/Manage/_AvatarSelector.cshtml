@@ -1,4 +1,9 @@
-﻿<table class="table">
+﻿@using JoinRpg.Interfaces
+@using JoinRpg.Web.Models.UserProfile
+@model UserAvatarListViewModel
+@inject ICurrentUserAccessor CurrentUserAccessor
+
+<table class="table">
   <tr>
     <th>Аватарка</th>
     <th>Источник</th>
@@ -37,6 +42,16 @@
             <input type="submit" class="btn btn-danger" value="Удалить">
           </form>
         }
+
+        @if (CurrentUserAccessor.IsAdmin){
+            <form asp-controller="Avatar"
+                  asp-action="RecacheAvatar"
+                  method="post">
+              <input type="hidden" name="userAvatarId" value="@avatar.AvatarId.Value" />
+              <input type="submit" class="btn btn-default" value="Перекешировать">
+            </form>
+          }
+
       </td>
     </tr>
   }

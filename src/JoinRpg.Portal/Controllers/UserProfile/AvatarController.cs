@@ -1,5 +1,6 @@
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -14,17 +15,20 @@ public class AvatarController : Controller
     private readonly IAvatarService avatarService;
     private readonly ApplicationSignInManager signInManager;
     private readonly ApplicationUserManager userManager;
+    private readonly Lazy<AvatarCacheDecoractor> avatarCacheDecoractor;
 
     public AvatarController(
         ICurrentUserAccessor currentUserAccessor,
         IAvatarService avatarService,
         ApplicationSignInManager signInManager,
-        ApplicationUserManager userManager)
+        ApplicationUserManager userManager,
+        Lazy<AvatarCacheDecoractor> avatarCacheDecoractor)
     {
         this.currentUserAccessor = currentUserAccessor;
         this.avatarService = avatarService;
         this.signInManager = signInManager;
         this.userManager = userManager;
+        this.avatarCacheDecoractor = avatarCacheDecoractor;
     }
 
     [HttpPost("manage/avatars/choose")]
@@ -45,6 +49,18 @@ public class AvatarController : Controller
             currentUserAccessor.UserId,
             new AvatarIdentification(userAvatarId)
             );
+        await RefreshUserProfile();
+        return RedirectToAction("SetupProfile", "Manage");
+    }
+
+    [HttpPost("manage/avatars/recache")]
+    public async Task<IActionResult> RecacheAvatar(int userAvatarId)
+    {
+        await avatarService.RecacheAvatar(
+            currentUserAccessor.UserId,
+            new AvatarIdentification(userAvatarId)
+            );
+        avatarCacheDecoractor.Value.PurgeCache(new AvatarIdentification(userAvatarId));
         await RefreshUserProfile();
         return RedirectToAction("SetupProfile", "Manage");
     }

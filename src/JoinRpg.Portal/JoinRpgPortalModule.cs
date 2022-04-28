@@ -29,6 +29,7 @@ internal class JoinRpgPortalModule : Module
 
         builder.RegisterType<AvatarLoader>().AsImplementedInterfaces();
         builder.RegisterDecorator<AvatarCacheDecoractor, IAvatarLoader>();
+        builder.RegisterType<AvatarCacheDecoractor>().AsSelf();
 
         builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
             .Where(type => typeof(IAuthorizationHandler).IsAssignableFrom(type)).As<IAuthorizationHandler>();

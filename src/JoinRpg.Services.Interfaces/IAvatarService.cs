@@ -17,6 +17,11 @@ public interface IAvatarService
     Task DeleteAvatar(int userId, AvatarIdentification avatarIdentification);
 
     /// <summary>
+    /// Recache avatar
+    /// </summary>
+    Task RecacheAvatar(int userId, AvatarIdentification avatarIdentification);
+
+    /// <summary>
     /// Select avatar for user
     /// </summary>
     /// <param name="userId"></param>
