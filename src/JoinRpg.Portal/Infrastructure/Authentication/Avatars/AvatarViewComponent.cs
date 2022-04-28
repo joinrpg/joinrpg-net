@@ -1,5 +1,6 @@
 using JoinRpg.Helpers.Web;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
@@ -8,14 +9,19 @@ namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 public class AvatarViewComponent : ViewComponent
 {
     private readonly IAvatarLoader avatarProvider;
+    private readonly IAvatarService avatarService;
 
-    public AvatarViewComponent(IAvatarLoader avatarProvider)
-        => this.avatarProvider = avatarProvider;
+    public AvatarViewComponent(IAvatarLoader avatarProvider, IAvatarService avatarService)
+    {
+        this.avatarProvider = avatarProvider;
+        this.avatarService = avatarService;
+    }
 
     public async Task<IViewComponentResult> InvokeAsync(
         AvatarIdentification? userAvatarIdOrNull,
         string email,
-        int recommendedSize)
+        int recommendedSize,
+        int userId)
     {
         AvatarInfo avatar;
         if (userAvatarIdOrNull is AvatarIdentification userAvatarId)
@@ -24,6 +30,7 @@ public class AvatarViewComponent : ViewComponent
         }
         else
         {
+            _ = Task.Run(() => avatarService.AddGrAvatarIfRequired(userId));
             avatar = new AvatarInfo(
                 GravatarHelper.GetLink(email, recommendedSize),
                 recommendedSize,

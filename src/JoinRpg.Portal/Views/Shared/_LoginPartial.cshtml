@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using Joinrpg.Web.Identity
+@using JoinRpg.Portal.Infrastructure.Authentication
 
 @inject SignInManager<JoinIdentityUser> SignInManager
 @inject UserManager<JoinIdentityUser> UserManager
@@ -11,7 +12,8 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                   <vc:avatar user-avatar-id-or-null="@ViewBag.UserAvatar"
-                             email="@User.Identity.Name"
+                             email="@User.Identity!.Name"
+                             user-id="@User.GetUserIdOrDefault()!.Value"
                              recommended-size="24">
                   </vc:avatar>&nbsp;@ViewBag.UserDisplayName
                 </a>

@@ -21,6 +21,7 @@ public class ManageController : Common.ControllerBase
     private readonly IUserService _userService;
     private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
     private readonly ILogger<ManageController> logger;
+    private readonly IAvatarService avatarService;
 
     private ApplicationUserManager UserManager { get; }
 
@@ -32,7 +33,8 @@ public class ManageController : Common.ControllerBase
         ICurrentUserAccessor currentUserAccessor,
         ConfigurationAdapter configurationAdapter,
         ExternalLoginProfileExtractor externalLoginProfileExtractor,
-        ILogger<ManageController> logger
+        ILogger<ManageController> logger,
+        IAvatarService avatarService
         )
     {
         UserManager = userManager;
@@ -43,6 +45,7 @@ public class ManageController : Common.ControllerBase
         ConfigurationAdapter = configurationAdapter;
         this.externalLoginProfileExtractor = externalLoginProfileExtractor;
         this.logger = logger;
+        this.avatarService = avatarService;
     }
 
     private ApplicationSignInManager SignInManager { get; }
@@ -171,6 +174,8 @@ public class ManageController : Common.ControllerBase
     [HttpGet]
     public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false, ManageMessageId? message = null)
     {
+        await avatarService.AddGrAvatarIfRequired(CurrentUserAccessor.UserId);
+
         var user = await UserRepository.WithProfile(CurrentUserAccessor.UserId);
         var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
         var claimBeforeThat = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).Skip(1).FirstOrDefault() : null;
@@ -230,7 +235,7 @@ public class ManageController : Common.ControllerBase
               );
             var userId = CurrentUserAccessor.UserId;
             var user = await UserManager.FindByIdAsync(userId.ToString());
-            _ = await UserManager.UpdateSecurityStampAsync(user);
+            await SignInManager.RefreshSignInAsync(user);
             if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
             {
                 return RedirectToAction("SetupProfile");
