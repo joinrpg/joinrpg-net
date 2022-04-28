@@ -11,9 +11,13 @@ public class BlobStorageOptions
     /// Connections string to blob storage
     /// </summary>
     public string BlobStorageConnectionString { get; set; } = null!;
+    /// <summary>
+    /// Disable/enable
+    /// </summary>
+    public bool Enabled { get; set; } = true;
 
     /// <summary>
     /// Avatar storage enabled
     /// </summary>
-    public bool BlobStorageConfigured => !string.IsNullOrWhiteSpace(BlobStorageConnectionString);
+    public bool BlobStorageConfigured => !string.IsNullOrWhiteSpace(BlobStorageConnectionString) && Enabled;
 }
