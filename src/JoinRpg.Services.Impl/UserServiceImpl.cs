@@ -14,7 +14,7 @@ namespace JoinRpg.Services.Impl;
 
 /// <inheritdoc />
 [UsedImplicitly]
-public class UserServiceImpl : DbServiceImplBase, IUserService
+public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
 {
     private readonly ILogger<UserServiceImpl> logger;
     private readonly Lazy<IAvatarStorageService> avatarStorageService;
@@ -215,7 +215,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
     }
 
     /// <inheritdoc/>
-    public async Task AddGrAvatarIfRequired(int userId)
+    async Task IAvatarService.AddGrAvatarIfRequired(int userId)
     {
         logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
 
@@ -251,7 +251,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)
+    async Task IAvatarService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)
     {
         logger.LogInformation("Selecting {avatarId} for user({userId})", avatarIdentification, userId);
 
@@ -271,7 +271,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.DeleteAvatar(int userId, AvatarIdentification avatarIdentification)
+    async Task IAvatarService.DeleteAvatar(int userId, AvatarIdentification avatarIdentification)
     {
         logger.LogInformation("Deleting {avatarId} for user({userId})", avatarIdentification, userId);
 
@@ -293,6 +293,31 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
         }
 
         avatar.IsActive = false;
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    async Task IAvatarService.RecacheAvatar(int userId, AvatarIdentification avatarIdentification)
+    {
+        logger.LogInformation("Starting recache of {avatarId} for user({userId})", avatarIdentification, userId);
+
+        if (CurrentUserId != userId && !IsCurrentUserAdmin)
+        {
+            throw new JoinRpgInvalidUserException();
+        }
+
+        var user = await UserRepository.WithProfile(userId);
+        if (user.Avatars.SingleOrDefault(a => a.UserAvatarId == avatarIdentification)
+            is not UserAvatar avatar)
+        {
+            throw new JoinRpgEntityNotFoundException(avatarIdentification, "userAvatar");
+        }
+
+        var cachedUri = await avatarStorageService.Value.StoreAvatar(new Uri(avatar.OriginalUri));
+
+        avatar.CachedUri = cachedUri?.AbsoluteUri;
+
+        logger.LogInformation("Recache of {avatarId} for user({userId}) completed to {cachedAvatarUri}", avatarIdentification, userId, cachedUri);
 
         await UnitOfWork.SaveChangesAsync();
     }

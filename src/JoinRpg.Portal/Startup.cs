@@ -21,6 +21,7 @@ public class Startup
 {
     private readonly IWebHostEnvironment environment;
     private BlobStorageOptions blobStorageOptions;
+    private S3StorageOptions s3StorageOptions;
 
     public Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
@@ -36,10 +37,12 @@ public class Startup
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
             .Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"))
             .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"))
+            .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"));
 
         blobStorageOptions = Configuration.GetSection("AzureBlobStorage").Get<BlobStorageOptions>();
+        s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>();
 
         _ = services.AddLogging();
 
@@ -91,7 +94,8 @@ public class Startup
         _ = services.AddHealthChecks()
             .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"], tags: new[] { "ready" })
             .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" })
-            .AddCheck<HealthCheckBlobStorage>("Blob connect");
+            .AddCheck<HealthCheckBlobStorage>("Blob connect")
+            .AddCheck<HealthCheckS3Storage>("S3 storage");
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -116,7 +120,7 @@ public class Startup
     {
         _ = builder.RegisterModule(new JoinrpgMainModule())
             .RegisterModule(new JoinRpgPortalModule())
-            .RegisterModule(new BlobStorageModule(blobStorageOptions));
+            .RegisterModule(new BlobStorageModule(blobStorageOptions, s3StorageOptions));
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
