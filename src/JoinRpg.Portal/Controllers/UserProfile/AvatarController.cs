@@ -10,20 +10,20 @@ namespace JoinRpg.Portal.Controllers.UserProfile;
 public class AvatarController : Controller
 {
     private readonly ICurrentUserAccessor currentUserAccessor;
-    private readonly IUserService userService;
+    private readonly IAvatarService avatarService;
 
     public AvatarController(
         ICurrentUserAccessor currentUserAccessor,
-        IUserService userService)
+        IAvatarService avatarService)
     {
         this.currentUserAccessor = currentUserAccessor;
-        this.userService = userService;
+        this.avatarService = avatarService;
     }
 
     [HttpPost("manage/avatars/choose")]
     public async Task<IActionResult> ChooseAvatar(int userAvatarId)
     {
-        await userService.SelectAvatar(
+        await avatarService.SelectAvatar(
             currentUserAccessor.UserId,
             new AvatarIdentification(userAvatarId)
             );
@@ -33,7 +33,7 @@ public class AvatarController : Controller
     [HttpPost("manage/avatars/delete")]
     public async Task<IActionResult> DeleteAvatar(int userAvatarId)
     {
-        await userService.DeleteAvatar(
+        await avatarService.DeleteAvatar(
             currentUserAccessor.UserId,
             new AvatarIdentification(userAvatarId)
             );

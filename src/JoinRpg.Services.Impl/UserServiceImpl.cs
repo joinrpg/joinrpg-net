@@ -14,7 +14,7 @@ namespace JoinRpg.Services.Impl;
 
 /// <inheritdoc />
 [UsedImplicitly]
-public class UserServiceImpl : DbServiceImplBase, IUserService
+public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
 {
     private readonly ILogger<UserServiceImpl> logger;
     private readonly Lazy<IAvatarStorageService> avatarStorageService;
@@ -215,7 +215,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
     }
 
     /// <inheritdoc/>
-    public async Task AddGrAvatarIfRequired(int userId)
+    async Task IAvatarService.AddGrAvatarIfRequired(int userId)
     {
         logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
 
@@ -251,7 +251,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)
+    async Task IAvatarService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)
     {
         logger.LogInformation("Selecting {avatarId} for user({userId})", avatarIdentification, userId);
 
@@ -271,7 +271,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.DeleteAvatar(int userId, AvatarIdentification avatarIdentification)
+    async Task IAvatarService.DeleteAvatar(int userId, AvatarIdentification avatarIdentification)
     {
         logger.LogInformation("Deleting {avatarId} for user({userId})", avatarIdentification, userId);
 
