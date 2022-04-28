@@ -1,4 +1,5 @@
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Identity;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -11,13 +12,19 @@ public class AvatarController : Controller
 {
     private readonly ICurrentUserAccessor currentUserAccessor;
     private readonly IAvatarService avatarService;
+    private readonly ApplicationSignInManager signInManager;
+    private readonly ApplicationUserManager userManager;
 
     public AvatarController(
         ICurrentUserAccessor currentUserAccessor,
-        IAvatarService avatarService)
+        IAvatarService avatarService,
+        ApplicationSignInManager signInManager,
+        ApplicationUserManager userManager)
     {
         this.currentUserAccessor = currentUserAccessor;
         this.avatarService = avatarService;
+        this.signInManager = signInManager;
+        this.userManager = userManager;
     }
 
     [HttpPost("manage/avatars/choose")]
@@ -27,6 +34,7 @@ public class AvatarController : Controller
             currentUserAccessor.UserId,
             new AvatarIdentification(userAvatarId)
             );
+        await RefreshUserProfile();
         return RedirectToAction("SetupProfile", "Manage");
     }
 
@@ -37,6 +45,13 @@ public class AvatarController : Controller
             currentUserAccessor.UserId,
             new AvatarIdentification(userAvatarId)
             );
+        await RefreshUserProfile();
         return RedirectToAction("SetupProfile", "Manage");
+    }
+
+    private async Task RefreshUserProfile()
+    {
+        var user = await userManager.FindByIdAsync(currentUserAccessor.UserId.ToString());
+        await signInManager.RefreshSignInAsync(user);
     }
 }
