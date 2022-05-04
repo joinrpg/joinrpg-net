@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Dal.Impl
@@ -37,7 +38,7 @@ namespace JoinRpg.Dal.Impl
         public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
         public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
 
-        public IAccommodationRepository GetAccomodationRepository() =>
+        public IAccommodationRepository GetAccommodationRepository() =>
             new AccommodationRepositoryImpl(this);
 
         /// <inheritdoc />
@@ -49,191 +50,364 @@ namespace JoinRpg.Dal.Impl
                 .UseNpgsql(_configuration.ConnectionString);
         }
 
+        /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            ConfigureProjectDetails(modelBuilder);
+            ConfigureProject(modelBuilder);
 
-            _ = modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
-            _ = modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
+            ConfigurePlot(modelBuilder);
 
-            //_ = modelBuilder.Entity<CharacterGroup>()
-            //    .HasOptional(c => c.ResponsibleMasterUser)
-            //    .WithMany()
-            //    .HasForeignKey(c => c.ResponsibleMasterUserId);
+            ConfigureClaim(modelBuilder);
 
+            ConfigureUser(modelBuilder);
 
-            //modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project)
-            //    .WillCascadeOnDelete(false);
+            ConfigureAccommodation(modelBuilder);
 
-            //modelBuilder.Entity<Claim>().HasOptional(c => c.Group).WithMany()
-            //    .WillCascadeOnDelete(false);
-            //modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany()
-            //    .HasForeignKey(c => c.CharacterId).WillCascadeOnDelete(false);
-            //modelBuilder.Entity<Claim>().HasRequired(c => c.Player).WithMany(p => p.Claims)
-            //    .WillCascadeOnDelete(false);
-            //modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims)
-            //    .WillCascadeOnDelete(false);
+            ConfigureFinance(modelBuilder);
 
-            //modelBuilder.Entity<Character>().HasOptional(c => c.ApprovedClaim).WithMany()
-            //    .HasForeignKey(c => c.ApprovedClaimId).WillCascadeOnDelete(false);
-
-            //_ = modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments)
-            //    .WithRequired(c => c.Discussion);
-
-            //modelBuilder.Entity<Claim>()
-            //    .HasRequired(c => c.CommentDiscussion)
-            //    .WithMany()
-            //    .HasForeignKey(c => c.CommentDiscussionId)
-            //    .WillCascadeOnDelete(false);
-            //modelBuilder.Entity<ForumThread>()
-            //    .HasRequired(c => c.CommentDiscussion)
-            //    .WithMany()
-            //    .HasForeignKey(ft => ft.CommentDiscussionId)
-            //    .WillCascadeOnDelete(false);
-
-            //_ = modelBuilder.Entity<Claim>()
-            //    .HasRequired(c => c.ResponsibleMasterUser)
-            //    .WithMany()
-            //    .HasForeignKey(c => c.ResponsibleMasterUserId);
-
-            //_ = modelBuilder.Entity<Claim>()
-            //    .HasMany(c => c.FinanceOperations)
-            //    .WithRequired(fo => fo.Claim)
-            //    .HasForeignKey(fo => fo.ClaimId);
-
-            //_ = modelBuilder.Entity<AccommodationRequest>().HasMany(c => c.Subjects)
-            //    .WithOptional(c => c.AccommodationRequest);
-
-
-            //modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany()
-            //    .WillCascadeOnDelete(false);
-            //_ = modelBuilder.Entity<Comment>().HasRequired(comment => comment.CommentText)
-            //    .WithRequiredPrincipal();
-            //_ = modelBuilder.Entity<CommentText>().HasKey(pd => pd.CommentId);
-            //modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany()
-            //    .WillCascadeOnDelete(false);
-            //modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany()
-            //    .WillCascadeOnDelete(false);
-            //_ = modelBuilder.Entity<Comment>().HasRequired(c => c.Finance)
-            //    .WithRequiredPrincipal(fo => fo.Comment);
-
-            //_ = modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
-
-            //_ = modelBuilder.Entity<FinanceOperation>()
-            //    .HasOptional(fo => fo.LinkedClaim)
-            //    .WithMany()
-            //    .HasForeignKey(fo => fo.LinkedClaimId);
-
-            //_ = modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups)
-            //    .WithMany(cg => cg.DirectlyRelatedPlotFolders);
-            //modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project)
-            //    .WithMany(p => p.PlotFolders).WillCascadeOnDelete(false);
-
-            //_ = modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetCharacters)
-            //    .WithMany(c => c.DirectlyRelatedPlotElements);
-            //_ = modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetGroups)
-            //    .WithMany(c => c.DirectlyRelatedPlotElements);
-            //modelBuilder.Entity<PlotElement>().HasRequired(pf => pf.Project).WithMany()
-            //    .WillCascadeOnDelete(false);
-
-            //_ = modelBuilder.Entity<PlotElement>().HasMany(plotElement => plotElement.Texts)
-            //    .WithRequired(text => text.PlotElement);
-            //_ = modelBuilder.Entity<PlotElementTexts>()
-            //    .HasKey(text => new { text.PlotElementId, text.Version });
-
-            //_ = modelBuilder.Entity<PlotElementTexts>()
-            //    .HasOptional(text => text.AuthorUser)
-            //    .WithMany()
-            //    .HasForeignKey(text => text.AuthorUserId);
-            //ConfigureUser(modelBuilder);
-
-            //_ = modelBuilder.Entity<ProjectFieldDropdownValue>()
-            //    .HasOptional(v => v.CharacterGroup)
-            //    .WithOptionalDependent();
-
-            //_ = modelBuilder.Entity<ProjectField>()
-            //    .HasOptional(v => v.CharacterGroup)
-            //    .WithOptionalDependent();
-
-            //modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
-            //    .WillCascadeOnDelete(false);
-
-            //modelBuilder.Entity<ProjectItemTag>().HasIndex(tag => tag.TagName).IsUnique();
-            //_ = modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
-
-            _ = modelBuilder.Entity<ProjectAccommodationType>();
-            _ = modelBuilder.Entity<ProjectAccommodation>();
-            _ = modelBuilder.Entity<AccommodationRequest>();
-            _ = modelBuilder.Entity<AccommodationInvite>();
-
-            ConfigureMoneyTransfer(modelBuilder);
+            ConfigureForums(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
         }
 
-        private static void ConfigureUser(ModelBuilder modelBuilder)
+        private static void ConfigureUser(ModelBuilder mb)
         {
-            //_ = modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
-            //_ = modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
+            mb.Entity<User>(
+                eb =>
+                {
+                    eb.HasOne(e => e.Auth)
+                        .WithOne()
+                        .IsRequired();
 
-            //_ = modelBuilder.Entity<User>().HasRequired(u => u.Allrpg).WithRequiredPrincipal();
-            //_ = modelBuilder.Entity<AllrpgUserDetails>().HasKey(a => a.UserId);
+                    eb.HasOne(e => e.Allrpg)
+                        .WithOne()
+                        .IsRequired();
 
-            //_ = modelBuilder.Entity<User>().HasRequired(u => u.Extra).WithRequiredPrincipal();
-            //_ = modelBuilder.Entity<UserExtra>().HasKey(a => a.UserId);
+                    eb.HasOne(e => e.Extra)
+                        .WithOne()
+                        .IsRequired();
 
-            //_ = modelBuilder.Entity<User>()
-            //    .HasMany(u => u.ExternalLogins)
-            //    .WithRequired(uel => uel.User)
-            //    .HasForeignKey(uel => uel.UserId);
+                    eb.HasMany(u => u.ExternalLogins)
+                        .WithOne(uel => uel.User)
+                        .HasForeignKey(uel => uel.UserId);
 
-            //modelBuilder.Entity<User>().HasMany(u => u.Subscriptions).WithRequired(s => s.User)
-            //    .WillCascadeOnDelete(true);
-            //modelBuilder.Entity<UserSubscription>().HasRequired(us => us.Project).WithMany()
-            //    .WillCascadeOnDelete(false);
-            //modelBuilder.Entity<UserSubscription>()
-            //    .HasOptional(us => us.Claim)
-            //    .WithMany(c => c.Subscriptions)
-            //    .HasForeignKey(us => us.ClaimId)
-            //    .WillCascadeOnDelete(false);
+                    eb.HasMany(u => u.Subscriptions)
+                        .WithOne(s => s.User)
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.NoAction);
 
-            //modelBuilder.Entity<User>()
-            //    .HasMany(u => u.Avatars)
-            //    .WithRequired(a => a.User)
-            //    .HasForeignKey(a => a.UserId)
-            //    .WillCascadeOnDelete(false);
+                    eb.HasMany(u => u.Avatars)
+                        .WithOne(a => a.User)
+                        .HasForeignKey(a => a.UserId)
+                        .OnDelete(DeleteBehavior.NoAction);
 
-            //modelBuilder.Entity<User>()
-            //    .HasOptional(c => c.SelectedAvatar)
-            //    .WithMany()
-            //    .WillCascadeOnDelete(false);
+                    eb.HasOne(c => c.SelectedAvatar)
+                        .WithOne()
+                        .HasForeignKey<User>(e => e.SelectedAvatarId)
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            mb.Entity<UserAuthDetails>()
+                .HasKey(uad => uad.UserId);
+
+            mb.Entity<AllrpgUserDetails>()
+                .HasKey(a => a.UserId);
+
+            mb.Entity<UserExtra>()
+                .HasKey(a => a.UserId);
+
+            mb.Entity<UserAvatar>(
+                eb =>
+                {
+                    eb.HasKey(e => e.UserAvatarId);
+                    eb.HasKey(e => e.UserId);
+                });
+
+            mb.Entity<UserSubscription>(
+                eb =>
+                {
+                    eb.HasOne(e => e.Project)
+                        .WithMany()
+                        .HasForeignKey(e => e.ProjectId)
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    eb.HasOne(e => e.Claim)
+                        .WithMany(e => e.Subscriptions)
+                        .HasForeignKey(e => e.ClaimId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
+
+            mb.Entity<UserForumSubscription>(
+                eb =>
+                {
+                    eb.HasOne(e => e.User)
+                        .WithMany()
+                        .HasForeignKey(e => e.UserId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
         }
 
-        private static void ConfigureProjectDetails(ModelBuilder modelBuilder)
+        private static void ConfigureProject(ModelBuilder mb)
         {
-            //_ = modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
-            _ = modelBuilder.Entity<Project>().HasOne(p => p.Details).WithOne().IsRequired();
+            mb.Entity<Project>(
+                eb =>
+                {
+                    eb.HasOne(p => p.Details)
+                        .WithOne()
+                        .IsRequired();
+                    eb.HasMany(p => p.Characters)
+                        .WithOne(c => c.Project)
+                        .HasForeignKey(e => e.ProjectId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
 
-            _ = modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
+            mb.Entity<ProjectDetails>()
+                .HasKey(pd => pd.ProjectId);
+
+            mb.Entity<ProjectAcl>(
+                eb =>
+                {
+                    eb.HasKey(acl => acl.ProjectAclId);
+                    eb.HasKey(c => new { c.UserId, c.ProjectId });
+                });
+
+            mb.Entity<ProjectFieldDropdownValue>(
+                eb =>
+                {
+                    eb.HasOne(e => e.CharacterGroup)
+                        .WithOne()
+                        .IsRequired(false);
+                });
+
+            mb.Entity<ProjectField>(
+                eb =>
+                {
+                    eb.HasOne(v => v.CharacterGroup)
+                        .WithOne()
+                        .IsRequired(false);
+                });
+
+            mb.Entity<ProjectItemTag>(
+                eb =>
+                {
+                    eb.HasIndex(tag => tag.TagName)
+                        .IsUnique();
+                });
         }
 
-        private static void ConfigureMoneyTransfer(ModelBuilder modelBuilder)
+        private static void ConfigurePlot(ModelBuilder mb)
         {
-            //entity.HasRequired(e => e.Sender).WithMany().WillCascadeOnDelete(false);
-            //entity.HasRequired(e => e.Receiver).WithMany().WillCascadeOnDelete(false);
-            //entity.HasRequired(e => e.CreatedBy).WithMany().WillCascadeOnDelete(false);
-            //entity.HasRequired(e => e.ChangedBy).WithMany().WillCascadeOnDelete(false);
+            mb.Entity<CharacterGroup>(
+                eb =>
+                {
+                    eb.HasOne(e => e.ResponsibleMasterUser)
+                        .WithMany()
+                        .HasForeignKey(e => e.ResponsibleMasterUserId);
+                    eb.HasMany(e => e.Characters)
+                        .WithMany(e => e.Groups);
 
-            //_ = entity.HasRequired(comment => comment.TransferText).WithRequiredPrincipal();
+                });
 
-            var entity = modelBuilder.Entity<MoneyTransfer>();
-            entity.HasOne(e => e.Sender).WithMany().IsRequired().OnDelete(DeleteBehavior.NoAction);
-            entity.HasOne(e => e.Receiver).WithMany().IsRequired().OnDelete(DeleteBehavior.NoAction);
-            entity.HasOne(e => e.CreatedBy).WithMany().IsRequired().OnDelete(DeleteBehavior.NoAction);
-            entity.HasOne(e => e.ChangedBy).WithMany().IsRequired().OnDelete(DeleteBehavior.NoAction);
+            mb.Entity<Character>(
+                eb =>
+                {
+                    eb.HasOne(e => e.ApprovedClaim)
+                        .WithMany()
+                        .HasForeignKey(e => e.ApprovedClaimId)
+                        .OnDelete(DeleteBehavior.NoAction);
 
-            _ = entity.HasOne(comment => comment.TransferText).WithOne().IsRequired();
-            _ = modelBuilder.Entity<TransferText>().HasKey(pd => pd.MoneyTransferId);
+                });
+
+            mb.Entity<PlotFolder>(
+                eb =>
+                {
+                    eb.HasMany(e => e.RelatedGroups)
+                        .WithMany(e => e.DirectlyRelatedPlotFolders);
+                    eb.HasOne(e => e.Project)
+                        .WithMany(e => e.PlotFolders)
+                        .HasForeignKey(e => e.ProjectId)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasMany(e => e.PlotTags)
+                        .WithMany(e => e.Folders);
+                });
+
+            mb.Entity<PlotElement>(
+                eb =>
+                {
+                    eb.HasMany(e => e.TargetCharacters)
+                        .WithMany(e => e.DirectlyRelatedPlotElements);
+                    eb.HasMany(e => e.TargetGroups)
+                        .WithMany(e => e.DirectlyRelatedPlotElements);
+                    eb.HasOne(e => e.Project)
+                        .WithMany()
+                        .HasForeignKey(e => e.ProjectId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasMany(e => e.Texts)
+                        .WithOne(e => e.PlotElement)
+                        .HasForeignKey(e => e.PlotElementId);
+                });
+
+            mb.Entity<PlotElementTexts>(
+                eb =>
+                {
+                    eb.HasKey(e => new { e.PlotElementId, e.Version });
+                    eb.HasOne(e => e.AuthorUser)
+                        .WithMany()
+                        .HasForeignKey(e => e.AuthorUserId);
+                });
+        }
+
+        private static void ConfigureClaim(ModelBuilder mb)
+        {
+            mb.Entity<Claim>(
+                eb =>
+                {
+                    eb.HasOne(e => e.Group)
+                        .WithMany()
+                        .HasForeignKey(e => e.CharacterGroupId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.Character)
+                        .WithMany(e => e.Claims)
+                        .HasForeignKey(e => e.CharacterId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.Player)
+                        .WithMany(p => p.Claims)
+                        .HasForeignKey(e => e.PlayerUserId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.Project)
+                        .WithMany(e => e.Claims)
+                        .HasForeignKey(e => e.ProjectId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.CommentDiscussion)
+                        .WithMany()
+                        .HasForeignKey(e => e.CommentDiscussionId)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.ResponsibleMasterUser)
+                        .WithMany()
+                        .HasForeignKey(e => e.ResponsibleMasterUserId);
+                    eb.HasMany(e => e.FinanceOperations)
+                        .WithOne(e => e.Claim)
+                        .HasForeignKey(e => e.ClaimId);
+                });
+
+            mb.Entity<CommentDiscussion>(
+                eb =>
+                {
+                    eb.HasMany(e => e.Comments)
+                        .WithOne(e => e.Discussion)
+                        .HasForeignKey(e => e.CommentDiscussionId);
+                });
+
+            mb.Entity<Comment>(
+                eb =>
+                {
+                    eb.HasOne(e => e.Parent)
+                        .WithMany()
+                        .HasForeignKey(e => e.ParentCommentId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.CommentText)
+                        .WithOne()
+                        .HasPrincipalKey<CommentText>(e => e.CommentId);
+                    eb.HasOne(e => e.Project)
+                        .WithMany()
+                        .HasForeignKey(e => e.ProjectId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.Author)
+                        .WithMany()
+                        .HasForeignKey(e => e.AuthorUserId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.Finance)
+                        .WithOne(e => e.Comment)
+                        .HasPrincipalKey<FinanceOperation>(e => e.CommentId);
+                });
+
+            mb.Entity<CommentText>(
+                eb =>
+                {
+                    eb.HasKey(e => e.CommentId);
+                });
+        }
+
+        private static void ConfigureFinance(ModelBuilder mb)
+        {
+            mb.Entity<MoneyTransfer>(
+                eb =>
+                {
+                    eb.HasOne(e => e.Sender)
+                        .WithMany()
+                        .HasForeignKey(e => e.SenderId)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.Receiver)
+                        .WithMany()
+                        .HasForeignKey(e => e.ReceiverId)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.CreatedBy)
+                        .WithMany()
+                        .HasForeignKey(e => e.CreatedById)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
+                    eb.HasOne(e => e.ChangedBy)
+                        .WithMany()
+                        .HasForeignKey(e => e.ChangedById)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    eb.HasOne(e => e.TransferText)
+                        .WithOne()
+                        .HasForeignKey<TransferText>(e => e.MoneyTransferId)
+                        .IsRequired();
+                });
+
+            mb.Entity<TransferText>(
+                eb =>
+                {
+                    eb.HasKey(e => e.MoneyTransferId);
+                });
+
+            mb.Entity<FinanceOperation>(
+                eb =>
+                {
+                    eb.HasKey(fo => fo.CommentId);
+
+                    eb.HasOne(e => e.LinkedClaim)
+                        .WithMany(e => e.FinanceOperations)
+                        .HasForeignKey(e => e.LinkedClaimId);
+                });
+        }
+
+        private static void ConfigureAccommodation(ModelBuilder mb)
+        {
+            mb.Entity<AccommodationRequest>(
+                eb =>
+                {
+                    eb.HasMany(e => e.Subjects)
+                        .WithOne(e => e.AccommodationRequest)
+                        .HasForeignKey(e => e.AccommodationRequestId);
+                });
+
+            mb.Entity<ProjectAccommodationType>();
+
+            mb.Entity<ProjectAccommodation>();
+
+            mb.Entity<AccommodationRequest>();
+
+            mb.Entity<AccommodationInvite>();
+        }
+
+        private static void ConfigureForums(ModelBuilder mb)
+        {
+            mb.Entity<ForumThread>(
+                eb =>
+                {
+                    eb.HasOne(e => e.CommentDiscussion)
+                        .WithMany()
+                        .HasForeignKey(e => e.CommentDiscussionId)
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
         }
     }
 }

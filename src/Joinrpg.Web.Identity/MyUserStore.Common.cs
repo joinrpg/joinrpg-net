@@ -9,12 +9,12 @@ namespace Joinrpg.Web.Identity;
 public partial class MyUserStore
 {
     private readonly MyDbContext _ctx;
-    private readonly IDbSet<DbUser> UserSet;
+    private readonly DbSet<DbUser> _userSet;
 
     public MyUserStore(MyDbContext ctx)
     {
         _ctx = ctx;
-        UserSet = _ctx.Set<DbUser>();
+        _userSet = _ctx.Set<DbUser>();
     }
 
     /// <inheritedoc />
@@ -27,7 +27,7 @@ public partial class MyUserStore
             throw new ArgumentNullException(nameof(user));
         }
 
-        var hasAnyUser = await UserSet.AnyAsync(ct);
+        var hasAnyUser = await _userSet.AnyAsync(ct);
 
         var dbUser = new DbUser()
         {

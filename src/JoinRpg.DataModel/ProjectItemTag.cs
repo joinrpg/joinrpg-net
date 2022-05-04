@@ -6,6 +6,9 @@ public class ProjectItemTag
 {
     [Key]
     public int ProjectItemTagId { get; set; }
+
     [MaxLength(400)]
     public string TagName { get; set; }
+
+    public ICollection<PlotFolder> Folders { get; set; }
 }

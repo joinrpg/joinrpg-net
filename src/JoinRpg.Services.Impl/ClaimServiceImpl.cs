@@ -592,7 +592,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         var leaveEmail = await ConsiderLeavingRoom(claim);
 
         acr.Subjects.Remove(claim);
-        claim.AccommodationRequest_Id = null;
+        claim.AccommodationRequestId = null;
         claim.AccommodationRequest = null;
         UnitOfWork.GetDbSet<AccommodationRequest>()
             .Add(

@@ -20,5 +20,5 @@ public interface IUnitOfWork : IDisposable
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();
     ICharacterRepository GetCharactersRepository();
-    IAccommodationRepository GetAccomodationRepository();
+    IAccommodationRepository GetAccommodationRepository();
 }
