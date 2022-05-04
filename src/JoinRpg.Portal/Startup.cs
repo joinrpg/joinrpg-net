@@ -73,7 +73,7 @@ public class Startup
 
         var dataProtection = services.AddDataProtection();
 
-        if (!environment.IsDevelopment() || true)
+        if (!environment.IsDevelopment())
         {
             var dataProtectionConnectionString = Configuration.GetConnectionString("DataProtection");
             if (!string.IsNullOrWhiteSpace(dataProtectionConnectionString))
@@ -111,15 +111,23 @@ public class Startup
         _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
         _ = services.AddApplicationInsightsTelemetry();
 
-        _ = services.AddHealthChecks()
+        var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
                 Configuration["ConnectionStrings:DefaultConnection"],
                 name: "main-sqldb",
                 tags: new[] { "ready" })
 
-            .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" })
-            .AddCheck<HealthCheckBlobStorage>("Blob connect");
-            //.AddCheck<HealthCheckS3Storage>("S3 storage");
+            .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
+
+        if (blobStorageOptions.BlobStorageConfigured)
+        {
+            healthChecks.AddCheck<HealthCheckBlobStorage>("Blob connect");
+        }
+
+        if (s3StorageOptions.Configured)
+        {
+            healthChecks.AddCheck<HealthCheckS3Storage>("S3 storage");
+        }
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
