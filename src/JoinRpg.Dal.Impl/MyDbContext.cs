@@ -12,18 +12,13 @@ namespace JoinRpg.Dal.Impl
     [UsedImplicitly]
     public class MyDbContext : DbContext, IUnitOfWork
     {
-        ///// <summary>
-        ///// Constructor for migrations
-        ///// </summary>
-        //public MyDbContext() : base("DefaultConnection") => Database.Log = sql => DbEasyLog(sql);
+        private readonly IJoinDbContextConfiguration _configuration;
 
-        ///// <summary>
-        ///// Main constructor
-        ///// </summary>
-        //public MyDbContext(IJoinDbContextConfiguration configuration) : base(configuration.ConnectionString)
-        //    => Database.Log = sql => DbEasyLog(sql);
+        public MyDbContext(IJoinDbContextConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
-      //  private static void DbEasyLog(string sql) => System.Diagnostics.Debug.WriteLine(sql);
 
         public DbSet<Project> ProjectsSet => Set<Project>();
 
@@ -44,6 +39,15 @@ namespace JoinRpg.Dal.Impl
 
         public IAccommodationRepository GetAccomodationRepository() =>
             new AccommodationRepositoryImpl(this);
+
+        /// <inheritdoc />
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder
+                .EnableDetailedErrors(_configuration.DetailedErrors)
+                .EnableSensitiveDataLogging(_configuration.SensitiveLogging)
+                .UseNpgsql(_configuration.ConnectionString);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

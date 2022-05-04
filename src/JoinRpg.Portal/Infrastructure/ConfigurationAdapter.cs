@@ -27,7 +27,7 @@ public class ConfigurationAdapter : IMailGunConfig, IJoinDbContextConfiguration,
         get
         {
 
-            var connString = configuration.GetConnectionString("DefaultConnection");
+            var connString = configuration.GetConnectionString(DbConsts.DefaultConnection);
             /*       if (string.IsNullOrWhiteSpace(connString))
                    {
                        return System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString
@@ -36,6 +36,12 @@ public class ConfigurationAdapter : IMailGunConfig, IJoinDbContextConfiguration,
             return connString;
         }
     }
+
+    /// <inheritdoc />
+    public bool DetailedErrors => true;
+
+    /// <inheritdoc />
+    public bool SensitiveLogging => false; // TODO: Use local or test environment detection
 
     // TODO inject this
     internal string XsrfKey => configuration.GetValue<string>("XsrfKey");

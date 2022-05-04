@@ -1,5 +1,6 @@
 using Joinrpg.Dal.Migrate.EfCore;
 using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Dal.Impl;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +19,16 @@ internal class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
-                _ = services.AddHostedService<MigrateHostService>();
-
                 services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection"));
+
+                services.AddSingleton<IJoinDbContextConfiguration>(
+                    new DbContextConfiguration
+                    {
+                        ConnectionString = hostContext.Configuration.GetConnectionString(DbConsts.DefaultConnection),
+                        DetailedErrors = true,
+                        SensitiveLogging = false, // Logs of migrator are publicly available 
+                    });
+                services.AddDbContext<MyDbContext>();
+                _ = services.AddHostedService<MigrateEfCoreHostService<MyDbContext>>();
             });
 }
