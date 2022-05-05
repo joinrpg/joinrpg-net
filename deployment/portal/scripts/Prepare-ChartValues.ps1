@@ -18,7 +18,7 @@ param(
     [string] $ConnectionStringSecretName = "DefaultConnection",
 
     [Parameter(Mandatory=$false)]
-    [string] $ConnectionStringSecretName2 = "DataProtection",
+    [string] $ConnectionStringSecretName2 = "DataProtection"
 )
 
 ##=================================================================================
