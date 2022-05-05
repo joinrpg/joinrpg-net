@@ -35,6 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CONTRIBUTING.MD = CONTRIBUTING.MD
 		.github\dependabot.yml = .github\dependabot.yml
 		directory.build.props = directory.build.props
+		docker-compose.yml = docker-compose.yml
 		LICENSE.MD = LICENSE.MD
 		README.md = README.md
 	EndProjectSection
@@ -111,7 +112,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CharacterGroups
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Blazor.ComponentBook", "src\JoinRpg.Blazor.ComponentBook\JoinRpg.Blazor.ComponentBook.csproj", "{056747C0-A711-4E85-9073-E78A6FF7DBCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.CheckIn", "src\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj", "{8D57D69C-303D-4A7B-8D7A-D6FDBB2BCEF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CheckIn", "src\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj", "{8D57D69C-303D-4A7B-8D7A-D6FDBB2BCEF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
