@@ -35,7 +35,6 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
-            .Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"))
             .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"))
             .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
