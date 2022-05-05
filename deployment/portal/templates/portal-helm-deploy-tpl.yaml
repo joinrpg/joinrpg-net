@@ -86,19 +86,20 @@ jobs:
 
         ##==========================================================================
         ## Run DB migration tool
+        ## TODO: used latest migration image, not correct version
         ##==========================================================================          
         - task: Docker@2
           displayName: "Run DB migration tool"
           inputs:
             command: run
             containerRegistry: $(registryServiceConnection)
-            arguments: --rm -e ConnectionStrings__DefaultConnection="$(DefaultConnection)" $(containerRegistry)/$(migrateImageRepository):latest
+            arguments: --rm -env ConnectionStrings__DefaultConnection="$(DefaultConnection)" -env ConnectionStrings__DataProtection="$(DataProtection)" $(containerRegistry)/$(migrateImageRepository):latest
           
         ##==========================================================================
         ## Deploy Helm chart
         ##==========================================================================
         - task: HelmDeploy@0
-          displayName: Install/Upgdare application (Helm)
+          displayName: Install/Upgrade application (Helm)
           inputs:
             connectionType: Azure Resource Manager
             azureSubscriptionEndpoint: $(azureSubscription)

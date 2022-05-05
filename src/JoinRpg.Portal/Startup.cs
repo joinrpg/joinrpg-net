@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace JoinRpg.Portal;
 
@@ -70,11 +72,36 @@ public class Startup
 
 
         var dataProtection = services.AddDataProtection();
-        if (blobStorageOptions.BlobStorageConfigured && !environment.IsDevelopment())
+
+        if (!environment.IsDevelopment())
         {
-            dataProtection.PersistKeysToAzureBlobStorage(
-                blobStorageOptions.BlobStorageConnectionString,
-                "data-protection-keys", "joinrpg-portal-protection-keys");
+            var dataProtectionConnectionString = Configuration.GetConnectionString("DataProtection");
+            if (!string.IsNullOrWhiteSpace(dataProtectionConnectionString))
+            {
+                services.AddDbContext<DataProtectionDbContext>(
+                    options =>
+                    {
+                        options.UseNpgsql(dataProtectionConnectionString);
+                        options.EnableSensitiveDataLogging(environment.IsDevelopment());
+                        options.EnableDetailedErrors(environment.IsDevelopment());
+                    });
+
+                services.AddDatabaseDeveloperPageExceptionFilter();
+                services
+                    .AddHealthChecks()
+                    .AddNpgSql(
+                        Configuration["ConnectionStrings:DataProtection"],
+                        name: "dataprotection-db",
+                        failureStatus: HealthStatus.Degraded);
+                dataProtection.PersistKeysToDbContext<DataProtectionDbContext>();
+            }
+
+            else if (blobStorageOptions.BlobStorageConfigured)
+            {
+                dataProtection.PersistKeysToAzureBlobStorage(
+                    blobStorageOptions.BlobStorageConnectionString,
+                    "data-protection-keys", "joinrpg-portal-protection-keys");
+            }
         }
 
         if (environment.IsDevelopment())
@@ -91,11 +118,23 @@ public class Startup
         _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
         _ = services.AddApplicationInsightsTelemetry();
 
-        _ = services.AddHealthChecks()
-            .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"], tags: new[] { "ready" })
-            .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" })
-            .AddCheck<HealthCheckBlobStorage>("Blob connect")
-            .AddCheck<HealthCheckS3Storage>("S3 storage");
+        var healthChecks = services.AddHealthChecks()
+            .AddSqlServer(
+                Configuration["ConnectionStrings:DefaultConnection"],
+                name: "main-sqldb",
+                tags: new[] { "ready" })
+
+            .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
+
+        if (blobStorageOptions.BlobStorageConfigured)
+        {
+            healthChecks.AddCheck<HealthCheckBlobStorage>("Blob connect");
+        }
+
+        if (s3StorageOptions.Configured)
+        {
+            healthChecks.AddCheck<HealthCheckS3Storage>("S3 storage");
+        }
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -139,6 +178,7 @@ public class Startup
         if (env.IsDevelopment())
         {
             _ = app.UseDeveloperExceptionPage();
+            _ = app.UseMigrationsEndPoint();
         }
         else if (env.IsEnvironment("IntegrationTest"))
         {

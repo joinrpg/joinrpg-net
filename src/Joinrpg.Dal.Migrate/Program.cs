@@ -1,3 +1,7 @@
+using Joinrpg.Dal.Migrate.EfCore;
+using JoinRpg.Portal.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -15,5 +19,7 @@ internal class Program
             .ConfigureServices((hostContext, services) =>
             {
                 _ = services.AddHostedService<MigrateHostService>();
+
+                services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection"));
             });
 }
