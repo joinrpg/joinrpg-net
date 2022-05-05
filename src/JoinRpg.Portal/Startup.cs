@@ -78,7 +78,14 @@ public class Startup
             var dataProtectionConnectionString = Configuration.GetConnectionString("DataProtection");
             if (!string.IsNullOrWhiteSpace(dataProtectionConnectionString))
             {
-                services.AddDbContext<DataProtectionDbContext>(options => options.UseNpgsql(dataProtectionConnectionString));
+                services.AddDbContext<DataProtectionDbContext>(
+                    options =>
+                    {
+                        options.UseNpgsql(dataProtectionConnectionString);
+                        options.EnableSensitiveDataLogging(environment.IsDevelopment());
+                        options.EnableDetailedErrors(environment.IsDevelopment());
+                    });
+
                 services.AddDatabaseDeveloperPageExceptionFilter();
                 services
                     .AddHealthChecks()
