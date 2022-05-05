@@ -93,7 +93,7 @@ jobs:
           inputs:
             command: run
             containerRegistry: $(registryServiceConnection)
-            arguments: --rm -env ConnectionStrings__DefaultConnection="$(DefaultConnection)" -env ConnectionStrings__DataProtection="$(DataProtection)" $(containerRegistry)/$(migrateImageRepository):latest
+            arguments: --rm --env ConnectionStrings__DefaultConnection="$(DefaultConnection)" --env ConnectionStrings__DataProtection="$(DataProtection)" $(containerRegistry)/$(migrateImageRepository):latest
           
         ##==========================================================================
         ## Deploy Helm chart
