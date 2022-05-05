@@ -15,7 +15,10 @@ param(
     [string] $IngressPath = "/",
 
     [Parameter(Mandatory=$false)]
-    [string] $ConnectionStringSecretName = "ConnectionStrings--DefaultConnection"
+    [string] $ConnectionStringSecretName = "DefaultConnection",
+
+    [Parameter(Mandatory=$false)]
+    [string] $ConnectionStringSecretName2 = "DataProtection",
 )
 
 ##=================================================================================
@@ -37,10 +40,16 @@ $secrets | ?{ $_.Name.StartsWith($Prefix) } |
     $value = ConvertFrom-SecureString -SecureString $s.SecretValue -AsPlainText
 
     #Save DB Connection String as variable for next pipeline steps
-    if( $name -eq ($Prefix + $ConnectionStringSecretName) )
+    if( $name -eq ($Prefix + "ConnectionStrings--" + $ConnectionStringSecretName) )
     {
-        Write-Host "Found the database connections string secret with name $name, save to pipeline variable 'DefaultConnection'"   
-        Write-Host "##vso[task.setvariable variable=DefaultConnection;issecret=true]$value"        
+        Write-Host "Found the database connections string secret with name $name, save to pipeline variable '$ConnectionStringSecretName'"   
+        Write-Host "##vso[task.setvariable variable=$ConnectionStringSecretName;issecret=true]$value"        
+    }
+    
+    if( $name -eq ($Prefix + "ConnectionStrings--" + $ConnectionStringSecretName2) )
+    {
+        Write-Host "Found the database connections string secret with name $name, save to pipeline variable '$ConnectionStringSecretName2'"   
+        Write-Host "##vso[task.setvariable variable=$ConnectionStringSecretName2;issecret=true]$value"        
     }
     
     #Save to the secrets array
