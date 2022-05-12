@@ -50,8 +50,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Web", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Web.Test", "src\JoinRpg.Helpers.Web.Test\JoinRpg.Helpers.Web.Test.csproj", "{6B134A2C-84BF-445E-B5FC-0451E3C432CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Markdown", "src\JoinRpg.Markdown\Joinrpg.Markdown.csproj", "{9E52DF40-A040-47C2-91DC-2413270FF9B1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Markdown.Test", "src\JoinRpg.Markdown.Test\JoinRpg.Markdown.Test.csproj", "{138594D3-38DF-4025-B5B5-1049D686CC29}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Domain.Test", "src\JoinRpg.Domain.Test\JoinRpg.Domain.Test.csproj", "{F17A0823-4C0A-40C3-818F-A593FB6ADBEC}"
@@ -67,8 +65,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Common.EmailSending.Impl", "src\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj", "{E4D7A0E5-7C93-4D5B-97E1-99F1A6C2300B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DI", "src\JoinRpg.DI\JoinRpg.DI.csproj", "{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Web.Identity", "src\JoinRpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{A940653D-D2AD-4701-AE83-2A425ACCA10E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{4D578A76-DAE7-463A-9ABE-268E4D8488DA}"
 EndProject
@@ -89,8 +85,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models.Test", "src\JoinRpg.WebPortal.Models.Test\JoinRpg.WebPortal.Models.Test.csproj", "{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal", "src\JoinRpg.Portal\JoinRpg.Portal.csproj", "{BF0B9903-B260-4FBF-889F-00F93CF16D1F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.AspNetCore.Helpers", "src\JoinRpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{B664B271-D508-4C7E-B3BB-7D7C062FB77C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal.Test", "src\JoinRpg.Portal.Test\JoinRpg.Portal.Test.csproj", "{78FC0625-A66C-4152-8BE2-FEAE45F161D8}"
 EndProject
@@ -115,6 +109,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CheckIn", "src\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj", "{8D57D69C-303D-4A7B-8D7A-D6FDBB2BCEF7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Dal.DataProtection", "src\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj", "{0E2CFCD8-2F27-46B5-96DB-017C80769F60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.AspNetCore.Helpers", "src\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Markdown", "src\JoinRpg.Markdown\JoinRpg.Markdown.csproj", "{81B84432-99DD-443C-81F4-D8136B0ECED5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.Web.Identity", "src\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -186,10 +186,6 @@ Global
 		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{138594D3-38DF-4025-B5B5-1049D686CC29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{138594D3-38DF-4025-B5B5-1049D686CC29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{138594D3-38DF-4025-B5B5-1049D686CC29}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -222,10 +218,6 @@ Global
 		{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{232A3943-E85F-47AB-8FDB-B50BD8971738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{232A3943-E85F-47AB-8FDB-B50BD8971738}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{232A3943-E85F-47AB-8FDB-B50BD8971738}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -250,10 +242,6 @@ Global
 		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78FC0625-A66C-4152-8BE2-FEAE45F161D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{78FC0625-A66C-4152-8BE2-FEAE45F161D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78FC0625-A66C-4152-8BE2-FEAE45F161D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -302,6 +290,18 @@ Global
 		{0E2CFCD8-2F27-46B5-96DB-017C80769F60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2CFCD8-2F27-46B5-96DB-017C80769F60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E2CFCD8-2F27-46B5-96DB-017C80769F60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81B84432-99DD-443C-81F4-D8136B0ECED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81B84432-99DD-443C-81F4-D8136B0ECED5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81B84432-99DD-443C-81F4-D8136B0ECED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81B84432-99DD-443C-81F4-D8136B0ECED5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -320,7 +320,6 @@ Global
 		{0DEAC762-ABEF-4AE8-AC2E-5B697171E703} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 		{6B134A2C-84BF-445E-B5FC-0451E3C432CE} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
-		{9E52DF40-A040-47C2-91DC-2413270FF9B1} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 		{138594D3-38DF-4025-B5B5-1049D686CC29} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{F17A0823-4C0A-40C3-818F-A593FB6ADBEC} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{87AC11E6-9C66-468A-AC68-927D61D1E233} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
@@ -343,6 +342,7 @@ Global
 		{056747C0-A711-4E85-9073-E78A6FF7DBCD} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{8D57D69C-303D-4A7B-8D7A-D6FDBB2BCEF7} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{0E2CFCD8-2F27-46B5-96DB-017C80769F60} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
+		{81B84432-99DD-443C-81F4-D8136B0ECED5} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}
