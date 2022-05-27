@@ -12,10 +12,8 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
 
     public int? CharacterGroupId { get; set; }
 
-    [CanBeNull]
     public virtual CharacterGroup? Group { get; set; }
 
-    [CanBeNull]
     public virtual Character? Character { get; set; }
 
     public int PlayerUserId { get; set; }
@@ -95,9 +93,14 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
 
     public Status ClaimStatus { get; set; }
 
-    public int? AccommodationRequest_Id { get; set; }
+    /// <summary>
+    /// Database Id of active accommodation request
+    /// </summary>
+    public int? AccommodationRequestId { get; set; }
 
-    [ForeignKey(nameof(AccommodationRequest_Id))]
+    /// <summary>
+    /// Accommodation request
+    /// </summary>
     public virtual AccommodationRequest? AccommodationRequest { get; set; }
 
     #region Finance

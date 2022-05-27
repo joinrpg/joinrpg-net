@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -153,7 +153,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
 
         var receiversClaims = await UnitOfWork
             .GetDbSet<Claim>()
-            .Where(claim => claim.AccommodationRequest_Id == receiverAccommodationRequestId)
+            .Where(claim => claim.AccommodationRequestId == receiverAccommodationRequestId)
             .Include(c => c.Player)
             .ToArrayAsync()
             .ConfigureAwait(false);

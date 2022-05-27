@@ -1,7 +1,7 @@
-using System.Data.Entity;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 

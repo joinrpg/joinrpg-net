@@ -1,5 +1,4 @@
-using System.Data.Entity;
-using System.Data.Entity.Validation;
+using Microsoft.EntityFrameworkCore;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -28,18 +27,18 @@ public class PlotServiceImpl : DbServiceImplBase, IPlotService
             throw new ArgumentNullException(nameof(masterTitle));
         }
 
-        var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
-        var startTimeUtc = DateTime.UtcNow;
-        var plotFolder = new PlotFolder
-        {
-            CreatedDateTime = startTimeUtc,
-            ModifiedDateTime = startTimeUtc,
-            ProjectId = projectId,
-            MasterTitle = Required(masterTitle.RemoveTagNames()),
-            TodoField = todo,
-            IsActive = true,
-        };
+            var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            var startTimeUtc = DateTime.UtcNow;
+            var plotFolder = new PlotFolder
+            {
+                CreatedDateTime = startTimeUtc,
+                ModifiedDateTime = startTimeUtc,
+                ProjectId = projectId,
+                MasterTitle = Required(masterTitle.RemoveTagNames(), "masterTitle"),
+                TodoField = todo,
+                IsActive = true,
+            };
 
         await AssignTagList(plotFolder.PlotTags, masterTitle);
 
@@ -75,9 +74,9 @@ public class PlotServiceImpl : DbServiceImplBase, IPlotService
 
         await AssignTagList(folder.PlotTags, plotFolderMasterTitle);
 
-        folder.MasterTitle = Required(plotFolderMasterTitle.RemoveTagNames());
-        await UnitOfWork.SaveChangesAsync();
-    }
+            folder.MasterTitle = Required(plotFolderMasterTitle.RemoveTagNames(), "plotFolderMasterTitle");
+            await UnitOfWork.SaveChangesAsync();
+        }
 
     public async Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
@@ -107,14 +106,14 @@ public class PlotServiceImpl : DbServiceImplBase, IPlotService
             ElementType = elementType,
         };
 
-        plotElement.Texts.Add(new PlotElementTexts()
-        {
-            Content = new MarkdownString(Required(content.Trim())),
-            TodoField = todoField,
-            Version = 0,
-            ModifiedDateTime = now,
-            AuthorUserId = CurrentUserId,
-        });
+            plotElement.Texts.Add(new PlotElementTexts()
+            {
+                Content = new MarkdownString(Required(content.Trim(), "content")),
+                TodoField = todoField,
+                Version = 0,
+                ModifiedDateTime = now,
+                AuthorUserId = CurrentUserId,
+            });
 
         folder.ModifiedDateTime = now;
 
@@ -122,23 +121,19 @@ public class PlotServiceImpl : DbServiceImplBase, IPlotService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteFolder(int projectId, int plotFolderId)
-    {
-        var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-        if (!folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
+        public async Task DeleteFolder(int projectId, int plotFolderId)
         {
-            throw new DbEntityValidationException();
+            var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+
+            SmartDelete(folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots));
+            foreach (var element in folder.Elements)
+            {
+                element.IsActive = false;
+                element.ModifiedDateTime = Now;
+            }
+            folder.ModifiedDateTime = Now;
+            await UnitOfWork.SaveChangesAsync();
         }
-        var now = DateTime.UtcNow;
-        _ = SmartDelete(folder);
-        foreach (var element in folder.Elements)
-        {
-            element.IsActive = false;
-            element.ModifiedDateTime = now;
-        }
-        folder.ModifiedDateTime = now;
-        await UnitOfWork.SaveChangesAsync();
-    }
 
     public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid)
     {

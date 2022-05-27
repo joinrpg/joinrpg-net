@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;

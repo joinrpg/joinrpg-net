@@ -173,11 +173,34 @@ public class ClaimWrongStatusException : JoinRpgProjectEntityException
     {
     }
 
-    public ClaimWrongStatusException(Claim entity)
-      : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}.")
-    {
+        public ClaimWrongStatusException(Claim entity)
+          : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}.")
+        {
+        }
+
+        public ClaimWrongStatusException(Claim entity, string message)
+            : base(entity, message)
+        {
+        }
     }
-}
+
+    public class CharacterShouldNotHaveClaimsException : JoinRpgProjectEntityException
+    {
+
+        public CharacterShouldNotHaveClaimsException(Character entity)
+          : base(entity, "This operation can not be performed on character with claims")
+        {
+        }
+    }
+
+    public class CharacterGroupShouldNotHaveClaimsException : JoinRpgProjectEntityException
+    {
+
+        public CharacterGroupShouldNotHaveClaimsException(CharacterGroup entity)
+          : base(entity, "This operation can not be performed on character with claims")
+        {
+        }
+    }
 
 public class EntityWrongStatusException : JoinRpgProjectEntityException
 {

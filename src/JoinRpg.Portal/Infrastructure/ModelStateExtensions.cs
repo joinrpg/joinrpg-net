@@ -1,4 +1,4 @@
-using System.Data.Entity.Validation;
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.Domain;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -9,26 +9,15 @@ internal static class ModelStateExtensions
     //TODO messages from resources
     public static void AddException(this ModelStateDictionary dict, Exception exception)
     {
-
         switch (exception)
         {
-            case DbEntityValidationException validation:
-                var dbValidationErrors = validation.EntityValidationErrors
-                    .SelectMany(eve => eve.ValidationErrors).ToList();
-                if (dbValidationErrors.Any())
+            case ValidationException validation:
+                var errorMessage = validation.ValidationResult.ErrorMessage ?? "Validation error";
+                dict.AddModelError("", errorMessage);
+                if (validation.Source is not null)
                 {
-                    foreach (var error in dbValidationErrors)
-                    {
-                        dict.AddModelError("",
-                            string.IsNullOrWhiteSpace(error.PropertyName)
-                                ? error.ErrorMessage
-                                : $"{error.PropertyName}: {error.ErrorMessage}");
-                    }
-
-                    return;
+                    dict.AddModelError(validation.Source, errorMessage);
                 }
-
-                dict.AddModelError("", exception.ToString());
                 return;
 
             case FieldRequiredException required:
@@ -40,6 +29,10 @@ internal static class ModelStateExtensions
             case ClaimAlreadyPresentException _:
             case ClaimTargetIsNotAcceptingClaims _:
             case MasterHasResponsibleException _:
+            case CharacterShouldNotHaveClaimsException _:
+            case CharacterGroupShouldNotHaveClaimsException _:
+            case JoinRpgEntityNotFoundException _:
+            case JoinRpgCharacterBrokenStateException _:
                 dict.AddModelError("", exception.Message);
                 return;
             case JoinRpgNameFieldDeleteException _:
@@ -48,6 +41,9 @@ internal static class ModelStateExtensions
                 return;
             case JoinFieldScheduleShouldBeUniqueException _:
                 dict.AddModelError("", "Невозможно добавить второе поле с настройками расписания");
+                return;
+            case JoinRpgProjectException _:
+                dict.AddModelError("", exception.Message);
                 return;
             default:
                 dict.AddModelError("", exception.ToString());

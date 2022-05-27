@@ -1,4 +1,3 @@
-using System.Data.Entity.SqlServer;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -48,9 +47,8 @@ internal static class ClaimPredicates
     public static Expression<Func<Claim, bool>> GetMyClaim(int userId) => claim => claim.PlayerUserId == userId;
 
     public static Expression<Func<Claim, bool>> GetInGroupPredicate(int[] characterGroupsIds) =>
-        claim => (claim.CharacterGroupId != null && characterGroupsIds.Contains(claim.CharacterGroupId.Value))
-                    ||
-                    (claim.Character != null &&
-                    characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0
-                     ));
+        claim => (claim.CharacterGroupId != null
+                && characterGroupsIds.Contains(claim.CharacterGroupId.Value))
+                    || (claim.Character != null
+                        && characterGroupsIds.Any(id => claim.Character.ParentGroupsImpl.ListIds.Contains(id.ToString())));
 }

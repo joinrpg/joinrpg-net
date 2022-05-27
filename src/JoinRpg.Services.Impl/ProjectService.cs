@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
@@ -83,22 +82,22 @@ internal class ProjectService : DbServiceImplBase, IProjectService
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = project.EnsureProjectActive();
 
-        Create(new CharacterGroup()
-        {
-            AvaiableDirectSlots = directSlotsForSave,
-            HaveDirectSlots = haveDirectSlotsForSave,
-            CharacterGroupName = Required(name),
-            ParentCharacterGroupIds =
-                await ValidateCharacterGroupList(projectId,
-                    Required(() => parentCharacterGroupIds)),
-            ProjectId = projectId,
-            IsRoot = false,
-            IsSpecial = false,
-            IsPublic = isPublic,
-            IsActive = true,
-            Description = new MarkdownString(description),
-            ResponsibleMasterUserId = responsibleMasterId,
-        });
+            Create(new CharacterGroup()
+            {
+                AvaiableDirectSlots = directSlotsForSave,
+                HaveDirectSlots = haveDirectSlotsForSave,
+                CharacterGroupName = Required(name, "name"),
+                ParentCharacterGroupIds =
+                    await ValidateCharacterGroupList(projectId,
+                        Required(() => parentCharacterGroupIds)),
+                ProjectId = projectId,
+                IsRoot = false,
+                IsSpecial = false,
+                IsPublic = isPublic,
+                IsActive = true,
+                Description = new MarkdownString(description),
+                ResponsibleMasterUserId = responsibleMasterId,
+            });
 
         MarkTreeModified(project);
 
@@ -207,17 +206,17 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             .RequestMasterAccess(currentUserId, acl => acl.CanEditRoles)
             .EnsureProjectActive();
 
-        if (!characterGroup.IsRoot
-        ) //We shoud not edit root group, except of possibility of direct claims here
-        {
-            characterGroup.CharacterGroupName = Required(name);
-            characterGroup.IsPublic = isPublic;
-            characterGroup.ParentCharacterGroupIds =
-                await ValidateCharacterGroupList(projectId,
-                    Required(parentCharacterGroupIds),
-                    ensureNotSpecial: true);
-            characterGroup.Description = new MarkdownString(description);
-        }
+            if (!characterGroup.IsRoot
+            ) //We shoud not edit root group, except of possibility of direct claims here
+            {
+                characterGroup.CharacterGroupName = Required(name, "name");
+                characterGroup.IsPublic = isPublic;
+                characterGroup.ParentCharacterGroupIds =
+                    await ValidateCharacterGroupList(projectId,
+                        Required(parentCharacterGroupIds, "parentCharacterGroupIds"),
+                        ensureNotSpecial: true);
+                characterGroup.Description = new MarkdownString(description);
+            }
 
         if (responsibleMasterId != null &&
             characterGroup.Project.ProjectAcls.All(acl => acl.UserId != responsibleMasterId))
@@ -238,15 +237,15 @@ internal class ProjectService : DbServiceImplBase, IProjectService
     {
         var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-        if (characterGroup == null)
-        {
-            throw new DbEntityValidationException();
-        }
+            if (characterGroup == null)
+            {
+                throw new JoinRpgEntityNotFoundException(characterGroupId, "characterGroup");
+            }
 
-        if (characterGroup.HasActiveClaims())
-        {
-            throw new DbEntityValidationException();
-        }
+            if (characterGroup.HasActiveClaims())
+            {
+                throw new CharacterGroupShouldNotHaveClaimsException(characterGroup);
+            }
 
         _ = characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = characterGroup.EnsureProjectActive();
@@ -293,12 +292,12 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
 
-        project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
-        project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
-        project.Details.EnableManyCharacters = request.MultipleCharacters;
-        project.Details.PublishPlot = request.PublishPlot && !project.Active;
-        project.ProjectName = Required(request.ProjectName);
-        project.IsAcceptingClaims = request.IsAcceptingClaims && project.Active;
+            project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
+            project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
+            project.Details.EnableManyCharacters = request.MultipleCharacters;
+            project.Details.PublishPlot = request.PublishPlot && !project.Active;
+            project.ProjectName = Required(() => request.ProjectName);
+            project.IsAcceptingClaims = request.IsAcceptingClaims && project.Active;
 
         project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
         project.Details.EnableAccommodation = request.IsAccommodationEnabled;
@@ -360,10 +359,10 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
         }
 
-        if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
-        {
-            throw new DbEntityValidationException();
-        }
+            if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
+            {
+                throw new JoinRpgProjectException(project, "Can't remove last user with grant access");
+            }
 
         var acl = project.ProjectAcls.Single(
             a => a.ProjectId == projectId && a.UserId == userId);
@@ -410,10 +409,10 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             }
         }
 
-        _ = UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
-        _ = UnitOfWork.GetDbSet<UserSubscription>()
-            .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
-                         .Where(x => x.UserId == userId && x.ProjectId == projectId));
+            _ = UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
+            UnitOfWork.GetDbSet<UserSubscription>()
+                .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
+                             .Where(x => x.UserId == userId && x.ProjectId == projectId));
 
         await UnitOfWork.SaveChangesAsync();
     }

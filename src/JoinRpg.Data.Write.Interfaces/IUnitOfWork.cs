@@ -1,6 +1,6 @@
-using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Data.Write.Interfaces;
 
@@ -20,5 +20,5 @@ public interface IUnitOfWork : IDisposable
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();
     ICharacterRepository GetCharactersRepository();
-    IAccommodationRepository GetAccomodationRepository();
+    IAccommodationRepository GetAccommodationRepository();
 }

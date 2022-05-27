@@ -23,16 +23,16 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
         _ = group.RequestMasterAccess(CurrentUserId);
         var forumThread = new ForumThread()
 
-        {
-            CharacterGroupId = characterGroupId,
-            ProjectId = projectId,
-            Header = Required(header),
-            CreatedAt = Now,
-            ModifiedAt = Now,
-            AuthorUserId = CurrentUserId,
-            IsVisibleToPlayer = !hideFromUser,
-            CommentDiscussion = new CommentDiscussion() { ProjectId = projectId, Project = group.Project, },
-        };
+            {
+                CharacterGroupId = characterGroupId,
+                ProjectId = projectId,
+                Header = Required(header, "header"),
+                CreatedAt = Now,
+                ModifiedAt = Now,
+                AuthorUserId = CurrentUserId,
+                IsVisibleToPlayer = !hideFromUser,
+                CommentDiscussion = new CommentDiscussion() { ProjectId = projectId, Project = group.Project, },
+            };
 
         _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
             CurrentUserId,

@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 

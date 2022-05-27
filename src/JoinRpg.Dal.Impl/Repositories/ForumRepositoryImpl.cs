@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;

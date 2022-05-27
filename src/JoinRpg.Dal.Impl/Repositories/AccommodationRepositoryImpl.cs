@@ -1,8 +1,8 @@
-using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using LinqKit;
+using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 

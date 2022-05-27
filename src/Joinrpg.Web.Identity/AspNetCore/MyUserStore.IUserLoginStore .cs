@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using Joinrpg.Web.Identity.AspNetCore;
 using JoinRpg.DataModel;
 using Microsoft.AspNetCore.Identity;

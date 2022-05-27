@@ -16,7 +16,7 @@ public class AccommodationPotentialNeighbors
         ClaimName = claim.Name;
         UserName = claim.Player.PrefferedName;
         Type = type;
-        AccommodationRequestId = claim.AccommodationRequest_Id;
+        AccommodationRequestId = claim.AccommodationRequestId;
     }
 }
 

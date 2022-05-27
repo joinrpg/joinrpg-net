@@ -1,5 +1,4 @@
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -292,11 +291,11 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
         await LoadMasters(projectId);
         await LoadProjectClaims(projectId);
 
-        var result =
-          await Ctx.Set<Character>().Where(
-            character => character.ProjectId == projectId &&
-              characterGroupIds.Any(id => SqlFunctions.CharIndex(id.ToString(), character.ParentGroupsImpl.ListIds) > 0)).ToListAsync();
-        return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
+            var result =
+              await Ctx.Set<Character>().Where(
+                character => character.ProjectId == projectId &&
+                  characterGroupIds.Any(id => character.ParentGroupsImpl.ListIds.Contains(id.ToString()))).ToListAsync();
+            return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
+        }
     }
-}
 

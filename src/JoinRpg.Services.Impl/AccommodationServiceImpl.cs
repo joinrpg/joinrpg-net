@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -21,30 +21,30 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
             throw new ArgumentException("Inconsistent state. ProjectId can't be 0");
         }
 
-        ProjectAccommodationType result;
+            ProjectAccommodationType? result;
 
-        if (roomType.Id != 0)
-        {
-            result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomType.Id).ConfigureAwait(false);
-            if (result?.ProjectId != roomType.ProjectId)
+            if (roomType.Id != 0)
             {
-                return null;
+                result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomType.Id);
+                if (result?.ProjectId != roomType.ProjectId)
+                {
+                    return null;
+                }
+                result.Name = roomType.Name;
+                result.Cost = roomType.Cost;
+                result.Capacity = roomType.Capacity;
+                result.Description = roomType.Description;
+                result.IsAutoFilledAccommodation = roomType.IsAutoFilledAccommodation;
+                result.IsInfinite = roomType.IsInfinite;
+                result.IsPlayerSelectable = roomType.IsPlayerSelectable;
             }
-            result.Name = roomType.Name;
-            result.Cost = roomType.Cost;
-            result.Capacity = roomType.Capacity;
-            result.Description = roomType.Description;
-            result.IsAutoFilledAccommodation = roomType.IsAutoFilledAccommodation;
-            result.IsInfinite = roomType.IsInfinite;
-            result.IsPlayerSelectable = roomType.IsPlayerSelectable;
+            else
+            {
+                result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(roomType).Entity;
+            }
+            await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+            return result;
         }
-        else
-        {
-            result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(roomType);
-        }
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-        return result;
-    }
 
     public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypesAsync(int projectId) => await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
 
@@ -208,11 +208,11 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
     {
         //TODO: Implement rooms names checking
 
-        ProjectAccommodationType roomType = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(roomTypeId);
-        if (roomType == null)
-        {
-            throw new JoinRpgEntityNotFoundException(roomTypeId, typeof(ProjectAccommodationType).Name);
-        }
+            var roomType = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomTypeId);
+            if (roomType == null)
+            {
+                throw new JoinRpgEntityNotFoundException(roomTypeId, typeof(ProjectAccommodationType).Name);
+            }
 
         if (roomType.ProjectId != projectId)
         {
@@ -257,11 +257,11 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
             }
         }
 
-        IEnumerable<ProjectAccommodation> result =
-            UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(rooms));
-        await UnitOfWork.SaveChangesAsync();
-        return result;
-    }
+            var entities = CreateRooms(rooms).ToList();
+            UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(entities);
+            await UnitOfWork.SaveChangesAsync();
+            return entities;
+        }
 
     private ProjectAccommodation GetRoom(int roomId, int? projectId = null, int? roomTypeId = null)
     {

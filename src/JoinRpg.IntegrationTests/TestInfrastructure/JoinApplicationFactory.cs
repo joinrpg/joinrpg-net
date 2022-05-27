@@ -42,7 +42,7 @@ public class JoinApplicationFactory : WebApplicationFactory<Startup>
     protected override void Dispose(bool disposing)
     {
         var context = Services.GetRequiredService<MyDbContext>();
-        _ = context.Database.Delete();
+        _ = context.Database.EnsureDeleted();
         base.Dispose(disposing);
     }
 }

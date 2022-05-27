@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -16,17 +16,17 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
 
     public UserInfoRepository(MyDbContext ctx) => _ctx = ctx;
 
-    public Task<User> GetById(int id) => _ctx.UserSet.FindAsync(id);
-    public Task<User> WithProfile(int userId)
-    {
-        return _ctx.Set<User>()
-          .Include(u => u.Auth)
-          .Include(u => u.Allrpg)
-          .Include(u => u.Extra)
-          .Include(u => u.Avatars)
-          .Include(u => u.SelectedAvatar)
-          .SingleOrDefaultAsync(u => u.UserId == userId);
-    }
+        public async Task<User> GetById(int id) => await _ctx.UserSet.FindAsync(id);
+        public Task<User> WithProfile(int userId)
+        {
+            return _ctx.Set<User>()
+              .Include(u => u.Auth)
+              .Include(u => u.Allrpg)
+              .Include(u => u.Extra)
+              .Include(u => u.Avatars)
+              .Include(u => u.SelectedAvatar)
+              .SingleOrDefaultAsync(u => u.UserId == userId);
+        }
 
     public Task<User> GetWithSubscribe(int currentUserId)
         => _ctx
