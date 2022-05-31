@@ -10,6 +10,9 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;
 
+/// <summary>
+/// Service that send all email notifications
+/// </summary>
 [UsedImplicitly]
 public class EmailServiceImpl : IEmailService
 {
@@ -44,9 +47,7 @@ public class EmailServiceImpl : IEmailService
         var text = $@"Добрый день, %recipient.name%, 
 
 вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
-Если это вы, кликните <a href=""{
-                email.CallbackUrl
-            }"">вот по этой ссылке</a>, и мы восстановим вам пароль. 
+Если это вы, кликните <a href=""{email.CallbackUrl}"">вот по этой ссылке</a>, и мы восстановим вам пароль. 
 Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его.
 
 --
@@ -63,9 +64,7 @@ public class EmailServiceImpl : IEmailService
     {
         var text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
 
-Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{
-                email.CallbackUrl
-            }"">вот по этой ссылке</a>.
+Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{email.CallbackUrl}"">вот по этой ссылке</a>.
 
 Это необходимо для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
 
@@ -115,9 +114,7 @@ public class EmailServiceImpl : IEmailService
 
 {model.Initiator.GetDisplayName()}
 
-Чтобы ответить на комментарий, перейдите на страницу обсуждения: {
-                    _uriService.Get(model.ForumThread.CommentDiscussion)
-                }
+Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
 ");
     }
 
