@@ -10,6 +10,9 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;
 
+/// <summary>
+/// Service that send all email notifications
+/// </summary>
 [UsedImplicitly]
 public class EmailServiceImpl : IEmailService
 {
