@@ -1,0 +1,17 @@
+name: Deploy to prod
+on:
+  workflow_dispatch:
+    inputs:
+      deployVersion:
+        description: Docker image to deploy
+        required: true
+
+jobs:
+  deploy:
+    permissions: read-all
+    uses: ./.github/workflows/deploy_reusable_workflow.yml
+    with:
+      deployVersion: ${{ github.event.inputs.deployVersion }}
+      environment: prod
+      environment_url: https://joinrpg.ru
+    secrets: inherit

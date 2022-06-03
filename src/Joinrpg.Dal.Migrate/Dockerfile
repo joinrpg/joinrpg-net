@@ -1,14 +1,12 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:6.0.100 AS build-env
+﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0
+
+RUN groupadd user && \
+    useradd -g user user --home-dir "/app" --create-home
+
+USER user
+
 WORKDIR /app
 
-COPY . ./
-RUN dotnet publish src/Joinrpg.Dal.Migrate -c Release -o out
+COPY --chown=user:user ./bin/Release/net6/publish/ .
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.5
-WORKDIR /app
-COPY --from=build-env /app/out .
 ENTRYPOINT ["/app/Joinrpg.Dal.Migrate"]
-
-EXPOSE 80/tcp
-EXPOSE 443/tcp

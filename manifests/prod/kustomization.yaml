@@ -1,0 +1,61 @@
+resources:
+  - ../base
+
+namespace: prod
+
+commonLabels:
+  managed-by-kustomize-prod: "true" #Careful. Contains name of the environment, used for kubectl apply --prune
+
+patchesJson6902:
+  - target:
+      kind: Ingress
+      group: networking.k8s.io
+      version: v1
+      name: joinrpg-portal
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: joinrpg.ru
+      - op: add
+        path: /spec/tls/0/hosts/1
+        value: www.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: joinrpg-ru-tls
+      - op: add
+        path: "/metadata/annotations/nginx.ingress.kubernetes.io~1from-to-www-redirect"
+        value: true
+
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: joinrpg-portal
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+      - op: remove #Remove CPU limits to reduce latency
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 4096Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 4096Mi
+
+  - target:
+      group: policy
+      version: v1
+      kind: PodDisruptionBudget
+      name: joinrpg-portal
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 1

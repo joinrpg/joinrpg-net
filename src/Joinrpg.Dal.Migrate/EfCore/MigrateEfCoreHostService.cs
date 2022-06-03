@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Joinrpg.Dal.Migrate;
@@ -8,13 +9,16 @@ internal class MigrateEfCoreHostService<TContext> : Microsoft.Extensions.Hosting
     where TContext : DbContext
 {
     private readonly ILogger _logger;
+    private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IServiceProvider _services;
 
     public MigrateEfCoreHostService(
         IServiceProvider services,
-        ILogger<MigrateEfCoreHostService<TContext>> logger)
+        ILogger<MigrateEfCoreHostService<TContext>> logger,
+        IHostApplicationLifetime applicationLifetime)
     {
         _logger = logger;
+        _applicationLifetime = applicationLifetime;
         _services = services;
     }
 
@@ -68,6 +72,11 @@ internal class MigrateEfCoreHostService<TContext> : Microsoft.Extensions.Hosting
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing migrator");
+            Environment.ExitCode = 1;
+        }
+        finally
+        {
+            _applicationLifetime.StopApplication();
         }
     }
 }

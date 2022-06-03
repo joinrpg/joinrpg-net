@@ -1,0 +1,118 @@
+name: Build and publish
+
+on:
+  pull_request:
+    branches:
+      - 'master'
+  push:
+    tags:
+      - v**
+  workflow_dispatch:
+
+env:
+  APP_NAME: joinrpg-portal
+  MIGRATOR_NAME: joinrpg-dal-migrate
+
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-20.04
+    permissions:
+      packages: write
+      checks: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch the whole repo history
+
+    # TODO: Make GitHub Action from this script
+    - name: Git Version  # Fills env.CALCULATED_VERSION and env.CALCULATED_VERSION_IS_RELEASE
+      id: version
+      run:  iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/AntonSmolkov/HandyPoshScripts/v1.0.0/DevOps/SemVerCalc_GitHubFlow_Actions.ps1'))
+      shell: pwsh
+      env:
+        REF_NAME: ${{ github.ref_name }}
+        REF_TYPE: ${{ github.ref_type }}
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore nuget dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
+
+    - name: Restore docker images cache
+      uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Test
+      run: dotnet test -c Release --no-restore --logger trx --results-directory ./TestResults || exit 0
+
+    - name: Report tests results
+      uses: NasAmin/trx-parser@v0.2.0
+      id: trx-parser
+      with:
+        TRX_PATH: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish portal
+      run: dotnet publish -c Release --no-restore ./src/JoinRpg.Portal/JoinRpg.Portal.csproj -p:Version=${{ env.CALCULATED_VERSION }}
+
+    - name: Publish migrator
+      run: dotnet publish -c Release --no-restore ./src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj -p:Version=${{ env.CALCULATED_VERSION }}
+
+    - name: Build portal image
+      run: docker build ./src/JoinRpg.Portal --tag ${APP_NAME} --label "runnumber=${GITHUB_RUN_ID}"
+
+    - name: Build migrator image
+      run: docker build ./src/Joinrpg.Dal.Migrate --tag ${MIGRATOR_NAME} --label "runnumber=${GITHUB_RUN_ID}"
+
+    - name: Log in to docker registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+    - name: Push portal image to docker registry
+      run: |
+        APP_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${APP_NAME}
+
+        # Change all uppercase to lowercase
+        APP_IMAGE_ID=$(echo ${APP_IMAGE_ID} | tr '[A-Z]' '[a-z]')
+        VERSION=$(echo ${{ env.CALCULATED_VERSION }}  | tr '[A-Z]' '[a-z]')
+
+        docker tag ${APP_NAME} ${APP_IMAGE_ID}:${VERSION}
+        docker push ${APP_IMAGE_ID}:${VERSION}
+
+        if [[ "${{ env.CALCULATED_VERSION_IS_RELEASE }}" == "True" ]]
+        then
+          docker tag ${APP_NAME} ${APP_IMAGE_ID}:latest
+          docker push ${APP_IMAGE_ID}:latest
+        fi
+
+    - name: Push migrator image to docker registry
+      run: |
+        MIGRATOR_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${MIGRATOR_NAME}
+
+        # Change all uppercase to lowercase
+        MIGRATOR_IMAGE_ID=$(echo ${MIGRATOR_IMAGE_ID} | tr '[A-Z]' '[a-z]')
+        VERSION=$(echo ${{ env.CALCULATED_VERSION }}  | tr '[A-Z]' '[a-z]')
+
+        docker tag ${MIGRATOR_NAME} ${MIGRATOR_IMAGE_ID}:${VERSION}
+        docker push ${MIGRATOR_IMAGE_ID}:${VERSION}
+
+        if [[ "${{ env.CALCULATED_VERSION_IS_RELEASE }}" == "True" ]]
+        then
+          docker tag ${MIGRATOR_NAME} ${MIGRATOR_IMAGE_ID}:latest
+          docker push ${MIGRATOR_IMAGE_ID}:latest
+        fi

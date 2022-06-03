@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: joinrpg-dal-migrate
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  template:
+    spec:
+      containers:
+        - name: joinrpg-dal-migrate
+          envFrom:
+            - secretRef:
+                name: joinrpg-main
+                optional: false
+          image: joinrpg-dal-migrate
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 1000m
+              ephemeral-storage: 30Mi
+            requests:
+              memory: 256Mi
+              cpu: 250m
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: false
+      restartPolicy: Never
