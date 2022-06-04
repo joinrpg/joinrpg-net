@@ -26,6 +26,11 @@ internal abstract class OneTimeOperationHostedServiceBase : IHostedService
             {
                 DoWork();
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error executing migrator");
+                Environment.ExitCode = 1;
+            }
             finally
             {
                 applicationLifetime.StopApplication();
