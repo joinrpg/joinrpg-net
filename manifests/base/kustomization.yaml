@@ -5,7 +5,7 @@ resources:
   - pdp.yaml
   - db-migration-job.yaml
 
-namespace: dummy
+namespace: override-me
 
 secretGenerator:
   - name: joinrpg-main

@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - dummy-joinrpb.ru
-      secretName: dummy-joinrpb-ru-tls
+        - override-me-joinrpb.ru
+      secretName: override-me-joinrpb-ru-tls
   rules:
-    - host: dummy-joinrpb.ru
+    - host: override-me-joinrpb.ru
       http:
         paths:
           - path: /

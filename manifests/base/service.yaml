@@ -4,7 +4,6 @@ metadata:
   labels:
     app.kubernetes.io/name: joinrpg-portal
   name: joinrpg-portal
-  namespace: dummy
 spec:
   ports:
     - name: http

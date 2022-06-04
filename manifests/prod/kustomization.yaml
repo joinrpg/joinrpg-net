@@ -35,9 +35,6 @@ patchesJson6902:
       kind: Deployment
       name: joinrpg-portal
     patch: |-
-      - op: replace
-        path: /spec/replicas
-        value: 2
       - op: remove #Remove CPU limits to reduce latency
         path: /spec/template/spec/containers/0/resources/limits/cpu
       - op: replace
@@ -45,10 +42,10 @@ patchesJson6902:
         value: 1000m
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/memory
-        value: 4096Mi
+        value: 3072Mi
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/memory
-        value: 4096Mi
+        value: 3072Mi
 
   - target:
       group: policy
