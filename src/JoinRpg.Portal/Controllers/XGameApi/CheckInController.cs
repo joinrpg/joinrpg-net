@@ -106,6 +106,9 @@ public class CheckInController : XGameApiController
     /// </summary>
     [Route("checkin")]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult<string>> CheckinClaim([FromQuery]
         int projectId,
         [FromBody]
