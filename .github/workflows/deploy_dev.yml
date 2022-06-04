@@ -13,5 +13,5 @@ jobs:
     with:
       deployVersion: ${{ github.event.inputs.deployVersion }}
       environment: dev
-      environment_url: https://dev-joinrpg.ru
+      environment_url: https://dev.joinrpg.ru
     secrets: inherit
