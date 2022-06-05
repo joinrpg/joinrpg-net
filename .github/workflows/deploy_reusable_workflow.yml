@@ -28,7 +28,7 @@ jobs:
       - name: Check images existence and fill images related env vars
         id: check_existence
         run: |
-          set -eux
+          set -euxo pipefail
 
           APP_REPOSITORY_ID=$(echo ${{ github.repository_owner }}/${APP_NAME}  | tr '[A-Z]' '[a-z]')
           APP_IMAGE_ID=$(echo ghcr.io/${APP_REPOSITORY_ID}| tr '[A-Z]' '[a-z]')
