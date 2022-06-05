@@ -46,7 +46,7 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Restore nuget dependencies cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.nuget/packages
         # Look to see if there is a cache hit for the corresponding requirements file
