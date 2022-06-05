@@ -1,0 +1,159 @@
+on:
+  workflow_call:
+    inputs:
+      deployVersion:
+        required: true
+        type: string
+      environment_url:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+env:
+  APP_NAME: joinrpg-portal
+  MIGRATOR_NAME: joinrpg-dal-migrate
+
+jobs:
+  deploy:
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment_url }}
+    name: deploy
+    env:
+      ENVIRONMENT: ${{ inputs.environment }}
+    runs-on: ubuntu-20.04
+    permissions: read-all
+    steps:
+      - name: Check images existence and fill images related env vars
+        id: check_existence
+        run: |
+          set -x
+          APP_REPOSITORY_ID=$(echo ${{ github.repository_owner }}/${APP_NAME}  | tr '[A-Z]' '[a-z]')
+          APP_IMAGE_ID=$(echo ghcr.io/${APP_REPOSITORY_ID}| tr '[A-Z]' '[a-z]')
+
+          MIGRATOR_REPOSITORY_ID=$(echo ${{ github.repository_owner }}/${MIGRATOR_NAME}  | tr '[A-Z]' '[a-z]')
+          MIGRATOR_IMAGE_ID=$(echo ghcr.io/${MIGRATOR_REPOSITORY_ID}| tr '[A-Z]' '[a-z]')
+
+          COMMON_IMAGE_VERSION=$(echo ${{ inputs.deployVersion }} | tr '[A-Z]' '[a-z]')
+
+          REPOSITORY_TOKEN=$(curl -u ${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }} https://ghcr.io/token\?scope\="repository:${APP_REPOSITORY_ID}:pull" | jq -r .token)
+
+          curl --head --fail -H "Authorization: Bearer ${REPOSITORY_TOKEN}" https://ghcr.io/v2/${APP_IMAGE_ID}/manifests/${COMMON_IMAGE_VERSION}
+          curl --head --fail -H "Authorization: Bearer ${REPOSITORY_TOKEN}" https://ghcr.io/v2/${MIGRATOR_IMAGE_ID}/manifests/${COMMON_IMAGE_VERSION}
+
+          echo "APP_IMAGE_ID=${APP_IMAGE_ID}" >> $GITHUB_ENV
+          echo "MIGRATOR_IMAGE_ID=${MIGRATOR_IMAGE_ID}" >> $GITHUB_ENV
+
+          echo "COMMON_IMAGE_VERSION=${COMMON_IMAGE_VERSION}" >> $GITHUB_ENV
+
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v2.0
+        with:
+          version: v1.24.0
+
+      - name: Set kubeconfig
+        uses: azure/k8s-set-context@v2
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Turn github secrets to .env file
+        uses: shine1594/secrets-to-env-action@v1.5.2
+        with:
+          secrets: ${{ toJSON(secrets) }}
+          secrets_env: all
+          prefix_prod: 'KUBESECRET_'
+          prefix_dev: 'KUBESECRET_'
+          file_name_prod: './manifests/${{ inputs.environment }}/joinrpg-main.secret.env'
+          file_name_dev: './manifests/${{ inputs.environment }}/joinrpg-main.secret.env'
+
+      - name: Generate environment manifests
+        run: |
+            set -x
+            cat <<EOF >> ./manifests/${ENVIRONMENT}/kustomization.yaml
+
+            secretGenerator:
+            - name: joinrpg-main
+              envs:
+              - joinrpg-main.secret.env
+              behavior: replace
+
+            images:
+            - name: ${APP_NAME}
+              newName: ${{ env.APP_IMAGE_ID }}
+              newTag: ${{ env.COMMON_IMAGE_VERSION }}
+
+            - name: ${MIGRATOR_NAME}
+              newName: ${{ env.MIGRATOR_IMAGE_ID }}
+              newTag: ${{ env.COMMON_IMAGE_VERSION }}
+
+            EOF
+            #folder must present to let kustomize generate separate files
+            mkdir kustomize_output
+            kubectl kustomize ./manifests/${ENVIRONMENT}/ -o kustomize_output
+
+# Uncomment for diagnostics. Warning! Output contains base64 encoded secrets
+#      - name: Show generated environment manifests
+#        run: cat ./kustomize_output/*
+
+      - name: Apply DB migrations
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          #Add new generated secret, replace old migration job
+          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:ENVIRONMENT"
+          if ($LastExitCode -ne 0) {exit $LastExitCode}
+
+          Write-Output "Waiting for job/joinrpg-dal-migrate to be completed or failed..."
+
+          #Keep waiting while job is not completed or failed
+          while ( $(&"kubectl" "--%" "get jobs joinrpg-dal-migrate -n $env:ENVIRONMENT -o json" | ConvertFrom-Json -Depth 99).status.conditions.type -inotmatch "^Complete$|^Failed$" ){
+            if ($LastExitCode -ne 0) {exit $LastExitCode}
+
+            #Check last event for error. Must throw an error if, for instance, namespace CPU quota was exceeded
+            $LastEventForJob = &"kubectl" "--%" "get events -n $env:ENVIRONMENT --sort-by=.metadata.creationTimestamp --field-selector involvedObject.kind=Job,involvedObject.name=joinrpg-dal-migrate -o jsonpath='{.items[-1:].message}'"
+            if ($LastEventForJob -imatch "^'Error .*") { throw $LastEventForJob }
+
+            &"kubectl" "--%" "logs -n $env:ENVIRONMENT --follow job/joinrpg-dal-migrate"
+            Start-Sleep 3
+          }
+
+           #Fail step if job is Failed
+           if ($Matches[0] -eq 'Failed') {
+           Write-Output "Migration has failed. Migration's job pod info:"
+           &"kubectl" "--%"  "get pods -n $env:ENVIRONMENT --selector=job-name=joinrpg-dal-migrate -o=yaml"
+           exit 1
+           }
+        shell: pwsh
+
+      - name: Deploy to k8s
+        run: |
+          set -x
+          #Prune means - delete everything with this label which is not in the directory (e.g. old generated secrets)
+          #Same list as default but without not-namespaced resources
+          #https://github.com/kubernetes/kubernetes/blob/v1.24.0/staging/src/k8s.io/kubectl/pkg/util/prune/prune.go
+
+
+          KUBECTL_PRUNE_WHITELIST="\
+          --prune-whitelist=core/v1/ConfigMap \
+          --prune-whitelist=core/v1/Endpoints \
+          --prune-whitelist=core/v1/PersistentVolumeClaim \
+          --prune-whitelist=core/v1/Pod \
+          --prune-whitelist=core/v1/ReplicationController \
+          --prune-whitelist=core/v1/Secret \
+          --prune-whitelist=core/v1/Service \
+          --prune-whitelist=batch/v1/Job \
+          --prune-whitelist=batch/v1/CronJob \
+          --prune-whitelist=networking.k8s.io/v1/Ingress \
+          --prune-whitelist=apps/v1/DaemonSet \
+          --prune-whitelist=apps/v1/Deployment \
+          --prune-whitelist=apps/v1/ReplicaSet \
+          --prune-whitelist=apps/v1/StatefulSet
+          "
+
+          kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${ENVIRONMENT} $KUBECTL_PRUNE_WHITELIST
+          kubectl rollout status deployment/${APP_NAME} --namespace ${ENVIRONMENT}

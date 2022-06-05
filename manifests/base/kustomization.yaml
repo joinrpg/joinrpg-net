@@ -1,0 +1,13 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - pdp.yaml
+  - db-migration-job.yaml
+
+namespace: override-me
+
+secretGenerator:
+  - name: joinrpg-main
+    envs:
+      - joinrpg-main.secret.env
