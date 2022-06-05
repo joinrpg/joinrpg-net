@@ -5,6 +5,7 @@ on:
       deployVersion:
         description: Docker image to deploy
         required: true
+        default: latest
 
 jobs:
   deploy:
