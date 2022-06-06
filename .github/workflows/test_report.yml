@@ -1,7 +1,7 @@
 name: 'Test Report'
 on:
   workflow_run:
-    workflows: ['Build Project']  # runs after build with full workflow
+    workflows: ['Build and publish']  # runs after build with full workflow
     types:
       - completed
 jobs:

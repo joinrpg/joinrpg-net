@@ -3,8 +3,10 @@ name: Build and publish
 on:
   pull_request:
     branches:
-      - 'master'
+      - master
   push:
+    branches:
+      - master
     tags:
       - v**
   workflow_dispatch:
@@ -18,7 +20,7 @@ env:
 
 jobs:
   build:
-    name: Build Project
+    name: Main job
     runs-on: ubuntu-20.04
     permissions:
       packages: write
