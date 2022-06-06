@@ -23,7 +23,8 @@ jobs:
     permissions:
       packages: write
       checks: write
-      pull-requests: write
+      actions: write
+      statuses: write
 
     steps:
     - name: Checkout Repo
