@@ -5,6 +5,8 @@ on:
     branches:
       - 'master'
   push:
+    branches:
+      - master
     tags:
       - v**
   workflow_dispatch:
@@ -70,13 +72,6 @@ jobs:
     - name: Test
       run: dotnet test -c Release --no-build --logger trx --results-directory ./TestResults
 
-    - name: Upload test results to artifacts
-      uses: actions/upload-artifact@v2
-      if: success() || failure() 
-      with:
-        path: ${{ github.workspace }}/TestResults/ #This should be the path to your TRX files
-        name: test-results
-
     - name: Publish portal
       run: dotnet publish -c Release --no-build ./src/JoinRpg.Portal/JoinRpg.Portal.csproj -p:Version=${{ env.CALCULATED_VERSION }}
 
@@ -90,9 +85,11 @@ jobs:
       run: docker build ./src/Joinrpg.Dal.Migrate --tag ${MIGRATOR_NAME} --label "runnumber=${GITHUB_RUN_ID}"
 
     - name: Log in to docker registry
+      if: github.event_name != 'pull_request'
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
     - name: Push portal image to docker registry
+      if: github.event_name != 'pull_request'
       run: |
         APP_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${APP_NAME}
 
@@ -110,6 +107,7 @@ jobs:
         fi
 
     - name: Push migrator image to docker registry
+      if: github.event_name != 'pull_request'
       run: |
         MIGRATOR_IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${MIGRATOR_NAME}
 
