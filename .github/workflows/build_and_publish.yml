@@ -68,14 +68,14 @@ jobs:
       run: dotnet build -c Release --no-restore
 
     - name: Test
-      run: dotnet test -c Release --no-build --logger trx --results-directory ./TestResults || exit 0
+      run: dotnet test -c Release --no-build --logger trx --results-directory ./TestResults
 
-    - name: Report tests results
-      uses: NasAmin/trx-parser@v0.2.0
-      id: trx-parser
+    - name: Upload test results to artifacts
+      uses: actions/upload-artifact@v2
+      if: success() || failure() 
       with:
-        TRX_PATH: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
-        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        path: ${{ github.workspace }}/TestResults/ #This should be the path to your TRX files
+        name: test-results
 
     - name: Publish portal
       run: dotnet publish -c Release --no-build ./src/JoinRpg.Portal/JoinRpg.Portal.csproj -p:Version=${{ env.CALCULATED_VERSION }}
