@@ -5,7 +5,6 @@
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
     <NoWarn>${NoWarn};CS1591</NoWarn>
-    <ApplicationInsightsResourceId>/subscriptions/f0fe6f62-070f-4b7b-bcd1-c4265207fead/resourcegroups/Joinrpg-Develop/providers/microsoft.insights/components/joinrpg-develop</ApplicationInsightsResourceId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
   </PropertyGroup>
@@ -25,13 +24,10 @@
       <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.4" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.5" />
-    <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs " Version="1.2.1" />
     <PackageReference Include="BitArmory.ReCaptcha" Version="5.0.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.5" />
     <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="6.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.5" />
     <PackageReference Include="Microsoft.Aspnetcore.Components.Webassembly.Server" Version="6.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.5">

@@ -47,7 +47,7 @@ public class UserAvatar
     public string? ProviderId { get; set; }
 
     /// <summary>
-    /// Cached Uri in Azure storage
+    /// Cached Uri in storage
     /// </summary>
     public string? CachedUri { get; set; } = null!;
 

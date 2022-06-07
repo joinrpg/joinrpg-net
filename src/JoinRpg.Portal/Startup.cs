@@ -22,7 +22,6 @@ namespace JoinRpg.Portal;
 public class Startup
 {
     private readonly IWebHostEnvironment environment;
-    private BlobStorageOptions blobStorageOptions;
     private S3StorageOptions s3StorageOptions;
 
     public Startup(IConfiguration configuration, IWebHostEnvironment environment)
@@ -37,12 +36,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
-            .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"))
             .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"));
 
-        blobStorageOptions = Configuration.GetSection("AzureBlobStorage").Get<BlobStorageOptions>();
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>();
 
         _ = services.AddLogging();
@@ -94,13 +91,6 @@ public class Startup
                         failureStatus: HealthStatus.Degraded);
                 dataProtection.PersistKeysToDbContext<DataProtectionDbContext>();
             }
-
-            else if (blobStorageOptions.BlobStorageConfigured)
-            {
-                dataProtection.PersistKeysToAzureBlobStorage(
-                    blobStorageOptions.BlobStorageConnectionString,
-                    "data-protection-keys", "joinrpg-portal-protection-keys");
-            }
         }
 
         if (environment.IsDevelopment())
@@ -115,7 +105,6 @@ public class Startup
             Configuration.GetSection("Authentication"));
 
         _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
-        _ = services.AddApplicationInsightsTelemetry();
 
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
@@ -124,11 +113,6 @@ public class Startup
                 tags: new[] { "ready" })
 
             .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
-
-        if (blobStorageOptions.BlobStorageConfigured)
-        {
-            healthChecks.AddCheck<HealthCheckBlobStorage>("Blob connect");
-        }
 
         if (s3StorageOptions.Configured)
         {
@@ -158,7 +142,7 @@ public class Startup
     {
         _ = builder.RegisterModule(new JoinrpgMainModule())
             .RegisterModule(new JoinRpgPortalModule())
-            .RegisterModule(new BlobStorageModule(blobStorageOptions, s3StorageOptions));
+            .RegisterModule(new BlobStorageModule(s3StorageOptions));
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
