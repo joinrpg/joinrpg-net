@@ -115,7 +115,6 @@ public class Startup
             Configuration.GetSection("Authentication"));
 
         _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
-        _ = services.AddApplicationInsightsTelemetry();
 
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
