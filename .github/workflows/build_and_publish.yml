@@ -37,7 +37,7 @@ jobs:
     # TODO: Make GitHub Action from this script
     - name: Git Version  # Fills env.CALCULATED_VERSION and env.CALCULATED_VERSION_IS_RELEASE
       id: version
-      run:  iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/AntonSmolkov/HandyPoshScripts/v1.0.0/DevOps/SemVerCalc_GitHubFlow_Actions.ps1'))
+      run:  iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/AntonSmolkov/HandyPoshScripts/v1.0.1/DevOps/SemVerCalc_GitHubFlow_Actions.ps1'))
       shell: pwsh
       env:
         REF_NAME: ${{ github.ref_name }}
