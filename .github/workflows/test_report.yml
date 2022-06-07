@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: dorny/test-reporter@v1.5.0
         with:
-          artifact: test-results-${{ github.ref_name }} # artifact name
+          artifact: test-results # artifact name
           name: Unit tests                  # Name of the check run which will be created
           path: '*.trx'                     # Path to test results (inside artifact .zip)
           reporter: dotnet-trx              # Format of test results

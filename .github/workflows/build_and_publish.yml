@@ -77,7 +77,7 @@ jobs:
       uses: actions/upload-artifact@v3  # upload test results
       if: success() || failure()        # run this step even if previous step failed
       with:
-        name: test-results-${{ github.ref_name }}
+        name: test-results
         path: TestResults
 
     #Rest of the pipeline implies write api privileges and can't be run on PRs
