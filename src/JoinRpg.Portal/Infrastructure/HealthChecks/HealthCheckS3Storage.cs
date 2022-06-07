@@ -42,7 +42,7 @@ public class HealthCheckS3Storage : IHealthCheck
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Error during connecting to Azure blob storage");
+            logger.LogError(exception, "Error during connecting to S3 blob storage");
             return HealthCheckResult.Unhealthy(exception: exception, data: data);
         }
     }
