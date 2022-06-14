@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0.5
+FROM mcr.microsoft.com/dotnet/aspnet:6.0.6
 
 #We need this to make ClosedXML work
 RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
