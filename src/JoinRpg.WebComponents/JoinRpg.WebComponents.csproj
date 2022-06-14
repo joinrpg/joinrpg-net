@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.6" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.161" PrivateAssets="All" />
   </ItemGroup>
 
