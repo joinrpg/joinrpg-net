@@ -21,7 +21,7 @@ patchesJson6902:
         value: dev.joinrpg.ru
       - op: replace
         path: /spec/tls/0/secretName
-        value: dev-joinrpg-ru-static #dev-joinrpg-ru-tls
+        value: dev-joinrpg-ru-tls
 
   - target:
       group: apps
