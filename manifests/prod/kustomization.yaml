@@ -24,7 +24,7 @@ patchesJson6902:
         value: www.joinrpg.ru
       - op: replace
         path: /spec/tls/0/secretName
-        value: joinrpg-ru-static #joinrpg-ru-tls
+        value: joinrpg-ru-tls
       - op: add
         path: "/metadata/annotations/nginx.ingress.kubernetes.io~1from-to-www-redirect"
         value: true
