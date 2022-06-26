@@ -37,7 +37,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="6.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
-    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.161" />
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.174" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
   </ItemGroup>
   <ItemGroup>
