@@ -58,7 +58,7 @@ internal class ClosedXmlExcelBackend : IGeneratorBackend
                 break;
             case Uri uri:
                 _ = xlCell.SetValue(uri.PathAndQuery);
-                xlCell.Hyperlink.ExternalAddress = uri;
+                xlCell.GetHyperlink().ExternalAddress = uri;
                 break;
             default:
                 _ = xlCell.SetValue(_invalidCharactersRegex.Replace(cell.Content?.ToString() ?? "", ""));
