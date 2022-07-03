@@ -26,11 +26,6 @@ public interface IBankSecretsProvider
     string MerchantId { get; }
 
     /// <summary>
-    /// Merchant Id for the Fast Payments System
-    /// </summary>
-    string MerchantIdFastPayments { get; }
-
-    /// <summary>
     /// Api key
     /// </summary>
     string ApiKey { get; }

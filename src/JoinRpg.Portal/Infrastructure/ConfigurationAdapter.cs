@@ -44,7 +44,6 @@ public class ConfigurationAdapter : IMailGunConfig, IJoinDbContextConfiguration,
     string IBankSecretsProvider.ApiEndpoint => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiEndpoint");
     string IBankSecretsProvider.ApiDebugEndpoint => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiDebugEndpoint");
     string IBankSecretsProvider.MerchantId => configuration.GetValue<string>("PaymentProviders:Pscb:BankMerchantId");
-    string IBankSecretsProvider.MerchantIdFastPayments => configuration.GetValue<string>("PaymentProviders:Pscb:BankMerchantIdFastPayments");
     string IBankSecretsProvider.ApiKey => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiKey");
     string IBankSecretsProvider.ApiDebugKey => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiDebugKey");
 }
