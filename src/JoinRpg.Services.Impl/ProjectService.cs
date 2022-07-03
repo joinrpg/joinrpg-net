@@ -29,8 +29,8 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             CharacterGroupName = rootCharacterGroupName,
             IsActive = true,
             ResponsibleMasterUserId = CurrentUserId,
-            HaveDirectSlots = true,
-            AvaiableDirectSlots = -1,
+            HaveDirectSlots = false,
+            AvaiableDirectSlots = 0,
         };
         MarkCreatedNow(rootGroup);
         var project = new Project()

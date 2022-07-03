@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl;
@@ -10,12 +11,14 @@ internal class CreateProjectService : ICreateProjectService
     private readonly ProjectService projectService;
     private readonly IFieldSetupService fieldSetupService;
     private readonly IAccommodationService accommodationService;
+    private readonly ICharacterService characterService;
 
-    public CreateProjectService(ProjectService projectService, IFieldSetupService fieldSetupService, IAccommodationService accommodationService)
+    public CreateProjectService(ProjectService projectService, IFieldSetupService fieldSetupService, IAccommodationService accommodationService, ICharacterService characterService)
     {
         this.projectService = projectService;
         this.fieldSetupService = fieldSetupService;
         this.accommodationService = accommodationService;
+        this.characterService = characterService;
     }
 
     //TODO[Localize]
@@ -33,6 +36,7 @@ internal class CreateProjectService : ICreateProjectService
                 var name = await CreateField("Имя персонажа", ProjectFieldType.String, MandatoryStatus.Required);
                 var description = await CreateField("Описание персонажа", ProjectFieldType.Text);
                 await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, LegacyModelEnabled = false, DescriptionField = description, NameField = name });
+                await CreateTopLevelCharacterSlot(project, "Хочу на игру", name);
                 break;
             case ProjectTypeDto.Convention:
                 await SetupConventionParticipant(request, projectId);
@@ -94,6 +98,7 @@ internal class CreateProjectService : ICreateProjectService
             await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, LegacyModelEnabled = false, DescriptionField = description, NameField = name });
             _ = await CreateField("Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField, fieldHint: "Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
             _ = await CreateField("Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
+            await CreateTopLevelCharacterSlot(project, "Хочу заявить мероприятие", name);
         }
 
         async Task SetupConventionParticipant(CreateProjectRequest request, ProjectIdentification projectId)
@@ -130,6 +135,26 @@ internal class CreateProjectService : ICreateProjectService
                 ProjectId = projectId,
                 IsAutoFilledAccommodation = true,
             });
+
+            await CreateTopLevelCharacterSlot(project, "Участник конвента", null);
+        }
+
+        async Task CreateTopLevelCharacterSlot(Project project, string slotName, ProjectFieldIdentification? name)
+        {
+            var fields = new Dictionary<int, string?>();
+            if (name is not null)
+            {
+                fields.Add(name.ProjectFieldId, slotName);
+            }
+            await characterService.AddCharacter(new AddCharacterRequest(
+                    project.ProjectId,
+                    Name: slotName,
+                    IsPublic: true,
+                    ParentCharacterGroupIds: new[] { project.RootGroup.CharacterGroupId },
+                    CharacterTypeInfo: new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: null),
+                    HidePlayerForCharacter: false,
+                    FieldValues: fields
+                    ));
         }
     }
 

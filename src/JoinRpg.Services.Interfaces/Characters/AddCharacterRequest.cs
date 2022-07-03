@@ -7,7 +7,7 @@ namespace JoinRpg.Services.Interfaces.Characters;
 /// </summary>
 public record AddCharacterRequest(
     int ProjectId,
-    string Name,
+    string? Name,
     bool IsPublic,
     IReadOnlyCollection<int> ParentCharacterGroupIds,
     CharacterTypeInfo CharacterTypeInfo,
