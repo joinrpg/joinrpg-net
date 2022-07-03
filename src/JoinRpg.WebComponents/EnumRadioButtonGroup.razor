@@ -1,5 +1,6 @@
 ﻿@typeparam TValue
 @*TODO where enum not supported until 6.0 https://github.com/dotnet/aspnetcore/issues/8433*@
+@*TODO now it's supported and works, but it's prevent inferring https://github.com/dotnet/razor-compiler/issues/261*@
 @foreach (var enumValue in Enum.GetValues(typeof(TValue)).Cast<TValue>())
 {
   <div>
@@ -8,7 +9,7 @@
       @{
           var enumVal = (System.Enum)Enum.Parse(typeof(TValue), enumValue.ToString()!); // we need this, because TValue is not constrained to be enum
       }
-      @enumVal.GetDisplayName()
+      &nbsp;@enumVal.GetDisplayName()
     </label>
     @if (enumVal.GetDescription() is string description)
     {

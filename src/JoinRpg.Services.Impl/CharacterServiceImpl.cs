@@ -55,7 +55,14 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
         }
 
-        // ReSharper disable once MustUseReturnValue
+        if (project.Details.CharacterNameField is null)
+        {
+            //We need this for scenario of creating slots
+            //TODO: It should be disabled to create characters in other scenarios
+            //If character name is bound to players name
+            character.CharacterName = addCharacterRequest.Name ?? "PLAYER_NAME";
+        }
+
         //TODO we do not send message for creating character
         _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,

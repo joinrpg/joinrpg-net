@@ -65,7 +65,19 @@ public class ClaimController : ControllerGameBase
             return NotFound();
         }
 
-        return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
+        var viewModel = AddClaimViewModel.Create(field, CurrentUserId);
+
+        if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims))
+        {
+            var childSlots = field.Characters.Where(c => c.CharacterType == PrimitiveTypes.CharacterType.Slot).ToList();
+            if (childSlots.Count == 1)
+            {
+                return RedirectToAction("AddForCharacter", new { field.ProjectId, childSlots.Single().CharacterId });
+            }
+
+            //TODO: if we have two or more slots, offer selection from them
+        }
+        return base.View("Add", viewModel);
     }
 
     public ClaimController(
