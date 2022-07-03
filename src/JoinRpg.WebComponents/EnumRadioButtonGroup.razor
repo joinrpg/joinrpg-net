@@ -8,7 +8,7 @@
       @{
           var enumVal = (System.Enum)Enum.Parse(typeof(TValue), enumValue.ToString()!); // we need this, because TValue is not constrained to be enum
       }
-      @enumVal.GetDisplayName()
+      &nbsp;@enumVal.GetDisplayName()
     </label>
     @if (enumVal.GetDescription() is string description)
     {
