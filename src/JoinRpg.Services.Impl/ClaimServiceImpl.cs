@@ -732,22 +732,28 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         claim.ClaimDenialStatus = null;
         SetDiscussed(claim, true);
 
-
-        if (claim.Character != null)
+        if (claim.Character?.ApprovedClaim is not null)
         {
-            if (claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved))
-            {
-                claim.CharacterId = null;
-                claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
-            }
-            else
-            {
-                if (claim.Character != null)
-                {
-                    claim.Character.IsActive = true;
-                    MarkChanged(claim.Character);
-                }
-            }
+            //Idea if character already has a claim, we moving it to "dont care for character, just game"
+            //TODO[Slot]: we need to change this to moving to some default slot or disable restoring this claims
+            claim.CharacterId = null;
+            claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
+        }
+        else if (claim.Character != null)
+        {
+            //Ensure that character is active
+            claim.Character.IsActive = true;
+            MarkChanged(claim.Character);
+        }
+        else if (claim.Group is not null)
+        {
+            //Ensure that group is active
+            //TODO[Slot]: remove this
+            claim.Group.IsActive = true;
+        }
+        else
+        {
+            throw new Exception("This should not happen");
         }
 
         var email =

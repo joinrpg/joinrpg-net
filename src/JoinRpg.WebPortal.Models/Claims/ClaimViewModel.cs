@@ -42,7 +42,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
     public string? GroupName { get; set; }
 
     public int? CharacterGroupId { get; }
-    public int OtherClaimsForThisCharacterCount { get; }
+    public bool HasBlockingOtherClaimsForThisCharacter { get; }
     public int OtherClaimsFromThisPlayerCount { get; }
 
     [ReadOnly(true), DisplayName("Входит в группы")]
@@ -147,11 +147,8 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
         AccommodationRequest = claim.AccommodationRequest;
         IncomingInvite = incomingInvite;
         OutgoingInvite = outgoingInvite;
-        OtherClaimsForThisCharacterCount = claim.IsApproved
-            ? 0
-            : claim.OtherClaimsForThisCharacter().Count();
-        HasOtherApprovedClaim = !claim.IsApproved &&
-                                claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
+        HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
+        HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
         OtherClaimsFromThisPlayerCount =
             OtherClaimsFromThisPlayerCount =
