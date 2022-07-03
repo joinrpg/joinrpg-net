@@ -10,19 +10,19 @@ public static class ClaimExtensions
     public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim) => claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
 
     /// <summary>
-    /// If claims for group, not for character, this is 0
+    /// Other claims for this character is blocking approval 
     /// </summary>
-    /// <param name="claim"></param>
-    /// <returns></returns>
-    [NotNull, ItemNotNull]
-    public static IEnumerable<Claim> OtherClaimsForThisCharacter([NotNull] this Claim claim)
+    public static bool HasOtherClaimsForThisCharacter(this Claim claim)
     {
-        if (claim == null)
+        if (claim.IsApproved)
         {
-            throw new ArgumentNullException(nameof(claim));
+            return false;
         }
-
-        return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive()) ?? new List<Claim>();
+        if (claim.Character?.CharacterType == PrimitiveTypes.CharacterType.Slot)
+        {
+            return false;
+        }
+        return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive())?.Any() ?? false;
     }
 
     [NotNull]
