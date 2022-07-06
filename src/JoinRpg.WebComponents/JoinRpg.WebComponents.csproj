@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.6" />
-    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.174" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
