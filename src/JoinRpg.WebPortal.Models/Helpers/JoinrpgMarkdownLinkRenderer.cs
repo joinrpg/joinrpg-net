@@ -36,14 +36,19 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             return Fail(match, index, extra);
         }
         var groupLink = GroupLinkImpl(index, extra, group);
-        var characters = group.GetOrderedCharacters().Where(chr => chr.IsActive);
-        var builder = new StringBuilder(groupLink);
+        var characters = group
+            .GetChildrenGroups()
+            .SelectMany(g => g.GetOrderedCharacters())
+            .Union(group.GetOrderedCharacters())
+            .Distinct()
+            .Where(chr => chr.IsActive)
+            .Select(c => CharacterImpl(c));
+        var builder = new StringBuilder();
         foreach (var character in characters)
         {
-            _ = builder.Append("<br>");
-            _ = builder.Append(CharacterImpl(character));
+            _ = builder.Append("<br>").Append(character);
         }
-        return $"<p>{builder}</p>";
+        return $"<h4>Группа: {groupLink}</h4><p>{builder}</p>";
     }
 
     private string GroupName(string match, int index, string extra)
