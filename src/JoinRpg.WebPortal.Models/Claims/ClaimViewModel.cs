@@ -12,6 +12,7 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
 
@@ -131,7 +132,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
             ExtraAccessReason.PlayerOrResponsible);
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
-        PlayerLink = new UserLinkViewModel(claim.Player);
+        PlayerLink = UserLinks.Create(claim.Player);
         ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
         Status = new ClaimFullStatusView(claim, new AccessArguments(claim, currentUser.UserId));
@@ -165,8 +166,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
                 currentUser.UserId,
                 CharacterNavigationPage.Claim);
         Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
-        PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
-            (AccessReason)claim.Player.GetProfileAccess(currentUser));
+        PlayerDetails = new UserProfileDetailsViewModel(claim.Player, currentUser);
         ProjectActive = claim.Project.Active;
         CheckInStarted = claim.Project.Details.CheckInProgress;
         CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;

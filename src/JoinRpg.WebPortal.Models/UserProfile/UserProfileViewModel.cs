@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
 
@@ -77,7 +78,7 @@ public class UserProfileDetailsViewModel
     }
     public UserProfileDetailsViewModel(User user, AccessReason reason)
     {
-        User = new UserLinkViewModel(user);
+        User = UserLinks.Create(user);
         Reason = reason;
         SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess();
         Avatar = AvatarIdentification.FromOptional(user.SelectedAvatarId);

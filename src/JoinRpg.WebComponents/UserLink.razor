@@ -1,0 +1,9 @@
+﻿@inject IUriLocator<UserLinkViewModel> userLinkLocator
+<a class="join-user" href="@ProfileUri"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
+
+@code {
+    [Parameter]
+    public UserLinkViewModel Model { get; set; } = null!;
+
+    public Uri ProfileUri => userLinkLocator.GetUri(Model);
+}

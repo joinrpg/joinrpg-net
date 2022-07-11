@@ -14,6 +14,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Subscribe;
+using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -24,15 +25,17 @@ namespace JoinRpg.Portal.Controllers;
 public class GameGroupsController : ControllerGameBase
 {
     private readonly IUriService uriService;
+    private readonly IUriLocator<UserLinkViewModel> userLinkLocator;
 
     public GameGroupsController(
         IProjectRepository projectRepository,
         IProjectService projectService,
         IUserRepository userRepository,
-        IUriService uriService)
+        IUriService uriService, IUriLocator<UserLinkViewModel> userLinkLocator)
         : base(projectRepository, projectService, userRepository)
     {
         this.uriService = uriService;
+        this.userLinkLocator = userLinkLocator;
     }
 
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
@@ -217,7 +220,7 @@ public class GameGroupsController : ControllerGameBase
             Description = ch.Description?.ToHtmlString(),
             PlayerName = ch.HidePlayer ? "скрыто" : ch.PlayerLink?.DisplayName,
             PlayerId = ch.HidePlayer ? null : ch.PlayerLink?.UserId, //TODO Remove
-            PlayerLink = (ch.HidePlayer) ? null : ch.PlayerLink?.GetUri(uriService).AbsoluteUri,
+            PlayerLink = (ch.HidePlayer || ch.PlayerLink is null) ? null : userLinkLocator.GetUri(ch.PlayerLink).AbsoluteUri,
             ch.ActiveClaimsCount,
             ClaimLink =
             ch.IsAvailable
