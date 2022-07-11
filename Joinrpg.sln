@@ -97,8 +97,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.BlobStorage", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebComponents", "src\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj", "{80AF606D-0576-480E-8D2E-AE736C2EE73C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.GameSubscribe", "src\JoinRpg.Web.GameSubscribe\JoinRpg.Web.GameSubscribe.csproj", "{C5FDCE34-6DE6-444A-B066-3F80D0527053}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Blazor.Client", "src\JoinRpg.Blazor.Client\JoinRpg.Blazor.Client.csproj", "{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CharacterGroups", "src\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj", "{EF419FBC-02E8-4522-82FC-D139E6B587D2}"
@@ -107,15 +105,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Blazor.ComponentBoo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.CheckIn", "src\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj", "{8D57D69C-303D-4A7B-8D7A-D6FDBB2BCEF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Dal.DataProtection", "src\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj", "{0E2CFCD8-2F27-46B5-96DB-017C80769F60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.DataProtection", "src\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj", "{0E2CFCD8-2F27-46B5-96DB-017C80769F60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.AspNetCore.Helpers", "src\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.AspNetCore.Helpers", "src\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{F8131AC4-6771-47C6-9818-35C7EB4FBEF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Markdown", "src\JoinRpg.Markdown\JoinRpg.Markdown.csproj", "{81B84432-99DD-443C-81F4-D8136B0ECED5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Markdown", "src\JoinRpg.Markdown\JoinRpg.Markdown.csproj", "{81B84432-99DD-443C-81F4-D8136B0ECED5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.Web.Identity", "src\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Web.Identity", "src\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.ProjectCommon", "src\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj", "{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.ProjectMasterTools", "src\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj", "{3194ACF2-4BE3-4CE7-A027-EFDAF2816A4F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.ProjectCommon", "src\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj", "{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -267,10 +267,6 @@ Global
 		{80AF606D-0576-480E-8D2E-AE736C2EE73C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80AF606D-0576-480E-8D2E-AE736C2EE73C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80AF606D-0576-480E-8D2E-AE736C2EE73C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5FDCE34-6DE6-444A-B066-3F80D0527053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5FDCE34-6DE6-444A-B066-3F80D0527053}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5FDCE34-6DE6-444A-B066-3F80D0527053}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5FDCE34-6DE6-444A-B066-3F80D0527053}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -307,6 +303,10 @@ Global
 		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3194ACF2-4BE3-4CE7-A027-EFDAF2816A4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3194ACF2-4BE3-4CE7-A027-EFDAF2816A4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3194ACF2-4BE3-4CE7-A027-EFDAF2816A4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3194ACF2-4BE3-4CE7-A027-EFDAF2816A4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -341,7 +341,6 @@ Global
 		{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
 		{3623C97E-251A-4233-A359-18F76F9598C8} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 		{80AF606D-0576-480E-8D2E-AE736C2EE73C} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
-		{C5FDCE34-6DE6-444A-B066-3F80D0527053} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{6AC09F90-6D3C-46A3-AD9B-3C77FC125D4A} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{EF419FBC-02E8-4522-82FC-D139E6B587D2} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{056747C0-A711-4E85-9073-E78A6FF7DBCD} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
@@ -349,6 +348,7 @@ Global
 		{0E2CFCD8-2F27-46B5-96DB-017C80769F60} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
 		{81B84432-99DD-443C-81F4-D8136B0ECED5} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
+		{3194ACF2-4BE3-4CE7-A027-EFDAF2816A4F} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}

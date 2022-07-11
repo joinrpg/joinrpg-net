@@ -1,4 +1,4 @@
-using JoinRpg.Web.GameSubscribe;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 
 namespace JoinRpg.Web.Models.Subscribe;
 

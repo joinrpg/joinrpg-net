@@ -2,8 +2,8 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Subscribe;
-using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.Models.Subscribe;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 
 namespace JoinRpg.WebPortal.Managers.Subscribe;
 

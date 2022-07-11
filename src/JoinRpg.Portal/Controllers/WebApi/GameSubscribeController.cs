@@ -1,4 +1,4 @@
-using JoinRpg.Web.GameSubscribe;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebPortal.Managers.Subscribe;
 using Microsoft.AspNetCore.Mvc;
 

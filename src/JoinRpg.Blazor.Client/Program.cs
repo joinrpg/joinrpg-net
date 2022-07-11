@@ -1,8 +1,8 @@
 using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Web.CharacterGroups;
 using JoinRpg.Web.CheckIn;
-using JoinRpg.Web.GameSubscribe;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace JoinRpg.Blazor.Client;
