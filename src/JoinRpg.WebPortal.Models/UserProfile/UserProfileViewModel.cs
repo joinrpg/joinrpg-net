@@ -43,7 +43,7 @@ public class UserProfileViewModel
 public class UserProfileDetailsViewModel
 {
     [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber), UIHint("PhoneNumber")]
-    public string PhoneNumber { get; }
+    public string? PhoneNumber { get; }
     [Display(Name = "Skype"), UIHint("Skype")]
     public string? Skype { get; }
     [Display(Name = "Telegram"), UIHint("Telegram")]
@@ -53,9 +53,9 @@ public class UserProfileDetailsViewModel
     [Display(Name = "VK"), UIHint("Vkontakte")]
     public string? Vk { get; }
     [UIHint("Email")]
-    public string Email { get; }
+    public string? Email { get; }
     [DisplayName("ФИО")]
-    public string FullName { get; }
+    public string? FullName { get; }
 
     public int? AllrpgId { get; }
 
