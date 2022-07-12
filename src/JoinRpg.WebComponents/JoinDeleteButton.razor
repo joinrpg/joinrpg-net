@@ -1,0 +1,23 @@
+﻿@if (Submit)
+{
+  <button href="#" class="@style" @onclick="OnClick">
+    <span class="glyphicon glyphicon-trash"></span> @Label
+  </button>
+}
+else
+{
+  <button href="#" class="@style" @onclick="OnClick" type="submit">
+    <span class="glyphicon glyphicon-trash"></span> @Label
+  </button>
+
+}
+@code {
+  [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.Danger;
+  [Parameter] public SizeStyleEnum? Size { get; set; }
+  [Parameter] public string Label { get; set; } = "Удалить";
+  [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+  [Parameter] public bool Submit { get; set; } = false;
+
+  private string style => BootstrapStyle.Build("btn", Variation, Size);
+
+}
