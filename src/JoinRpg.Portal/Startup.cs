@@ -66,6 +66,13 @@ public class Startup
             .AddControllersAsServices()
             .AddViewComponentsAsServices();
 
+        services.AddRazorPages(options =>
+        {
+            options.Conventions.ConfigureFilter(new DiscoverProjectPageFilterAttribute());
+            options.Conventions.ConfigureFilter(new SetIsProductionFilterAttribute());
+            options.Conventions.ConfigureFilter(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
+        });
+
 
         var dataProtection = services.AddDataProtection();
 
@@ -209,6 +216,7 @@ public class Startup
               _ = endpoints.MapControllers();
               _ = endpoints.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
               _ = endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+              _ = endpoints.MapRazorPages();
           });
     }
 }
