@@ -2,19 +2,18 @@
 @inject IGameSubscribeClient Client
 @if (_model is null)
 {
-  <div>Loading...</div>
+  <JoinLoadingMessage />
   return;
 }
 
 <div class="master-subscribe-list">
-  <table class="table"> @*Table should be moved into Components*@
-    <tbody>
-      <tr>
+  <JoinTableSimple>
+    <TableHeader>
         <th>Предмет подписки</th>
         <th>Виды операций</th>
         <th></th>
-      </tr>
-
+    </TableHeader>
+    <TableBody>
       @foreach (var item in _model.Items)
       {
         <MasterSubscribeListRow Model="@item" OnRemoveCallback="OnRemoveRow" @key="@item.UserSubscriptionId" />
@@ -40,8 +39,8 @@
         </td>
         <td></td>
       </tr>
-    </tbody>
-  </table>
+    </TableBody>
+  </JoinTableSimple>
 
 </div>
 @code {

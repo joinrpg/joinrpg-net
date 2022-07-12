@@ -5,4 +5,5 @@ public enum VariationStyleEnum
     None,
     Success,
     Warning,
+    Danger,
 }

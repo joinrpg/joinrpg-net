@@ -30,6 +30,8 @@ public class Program
 
         builder.Services.AddTransient<CsrfTokenProvider>();
 
+        builder.Services.AddUriLocator();
+
         await builder.Build().RunAsync();
     }
 

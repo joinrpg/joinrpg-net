@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
-using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;
 

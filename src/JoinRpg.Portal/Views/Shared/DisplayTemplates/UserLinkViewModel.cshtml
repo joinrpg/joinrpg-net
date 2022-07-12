@@ -1,7 +1,10 @@
-﻿@model JoinRpg.Web.Models.UserProfile.UserLinkViewModel
+﻿@model JoinRpg.WebComponents.UserLinkViewModel
 @if (Model == null)
 {
     <span>нет</span>
     return;
 }
-<a class="join-user" href="@Url.Action("Details", "User", new {Model.UserId})"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
+<component
+  type="typeof(JoinRpg.WebComponents.UserLink)"
+  render-mode="Static"
+  param-Model="@Model" />

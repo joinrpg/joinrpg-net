@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -56,7 +57,7 @@ public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreated
 
     public CharacterDetailsViewModel(int? currentUserIdOrDefault, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
     {
-        PlayerLink = UserLinkViewModel.FromOptional(character.ApprovedClaim?.Player);
+        PlayerLink = UserLinks.Create(character.ApprovedClaim?.Player);
         HasAccess = character.HasAnyAccess(currentUserIdOrDefault);
         ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserIdOrDefault));
         HidePlayer = character.HidePlayerForCharacter;

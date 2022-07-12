@@ -11,7 +11,8 @@ namespace JoinRpg.Web.Models.Characters;
 public static class CharacterGroupListViewModel
 {
     [MustUseReturnValue]
-    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId) => new CharacterGroupHierarchyBuilder(field, currentUserId).Generate().WhereNotNull();
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId)
+        => new CharacterGroupHierarchyBuilder(field, currentUserId).Generate().WhereNotNull();
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
@@ -130,7 +131,7 @@ public static class CharacterGroupListViewModel
                 IsActive = arg.IsActive,
                 HidePlayer = arg.HidePlayerForCharacter && !arg.Project.Details.PublishPlot,
                 ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
-                PlayerLink = UserLinkViewModel.FromOptional(arg.ApprovedClaim?.Player),
+                PlayerLink = UserLinks.Create(arg.ApprovedClaim?.Player),
                 HasMasterAccess = HasMasterAccess,
                 HasEditRolesAccess = HasEditRolesAccess,
                 ProjectId = arg.ProjectId,

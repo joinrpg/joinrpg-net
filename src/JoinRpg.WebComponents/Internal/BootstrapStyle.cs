@@ -10,6 +10,8 @@ internal static class BootstrapStyle
             VariationStyleEnum.None => "",
             null => "",
             VariationStyleEnum.Warning => $" {componentPrefix}-warning",
+            VariationStyleEnum.Danger => $" {componentPrefix}-danger",
+            _ => throw new ArgumentException("Incorrect variation", nameof(variationStyle)),
         };
 
         var sizeString = size switch
@@ -18,6 +20,7 @@ internal static class BootstrapStyle
             SizeStyleEnum.Medium => $"",
             null => "",
             SizeStyleEnum.Small => $" {componentPrefix}-sm",
+            _ => throw new ArgumentException("Incorrect style", nameof(size)),
         };
 
         return componentPrefix + variationString + sizeString;
