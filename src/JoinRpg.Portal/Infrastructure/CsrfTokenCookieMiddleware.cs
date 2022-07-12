@@ -16,7 +16,10 @@ public class CsrfTokenCookieMiddleware
     public async Task InvokeAsync(HttpContext context, IAntiforgery antiforgery)
     {
         var token = antiforgery.GetAndStoreTokens(context);
-        context.Response.Cookies.Append("CSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
+        context.Response.Cookies.Append(
+            "CSRF-TOKEN",
+            token.RequestToken!,
+            new CookieOptions { HttpOnly = false, SameSite = SameSiteMode.Strict });
 
         await _next(context);
     }
