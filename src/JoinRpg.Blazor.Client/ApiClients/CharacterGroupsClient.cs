@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using JoinRpg.Web.CharacterGroups;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 

@@ -115,6 +115,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Markdown", "src\Joi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.Web.Identity", "src\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.ProjectCommon", "src\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj", "{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,6 +303,10 @@ Global
 		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98D09B9E-81F7-4FC2-BC6B-DC64B5E5EA1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -342,6 +348,7 @@ Global
 		{8D57D69C-303D-4A7B-8D7A-D6FDBB2BCEF7} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{0E2CFCD8-2F27-46B5-96DB-017C80769F60} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
 		{81B84432-99DD-443C-81F4-D8136B0ECED5} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
+		{0C7DEE5D-37AE-4C44-8215-EA8D373032CB} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}

@@ -1,4 +1,4 @@
-using JoinRpg.Web.CharacterGroups;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.CharacterGroupList;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.CharacterGroups;
+namespace JoinRpg.Web.ProjectCommon;
 
 public interface ICharacterGroupsClient
 {

@@ -2,6 +2,7 @@ using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Web.CharacterGroups;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.GameSubscribe;
+using JoinRpg.Web.ProjectCommon;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace JoinRpg.Blazor.Client;
@@ -15,6 +16,7 @@ public class Program
         //it should be forcefully loaded
         _ = typeof(MasterSubscribeList).ToString();
         _ = typeof(CharacterGroupSelector).ToString();
+        _ = typeof(CharacterTypeSelector).ToString();
         _ = typeof(JoinRpg.PrimitiveTypes.CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
 
