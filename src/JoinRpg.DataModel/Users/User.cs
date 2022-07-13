@@ -30,7 +30,7 @@ public class User
 
     public string FullName => new[] { BornName, FatherName, SurName }.JoinIfNotNullOrWhitespace(" ");
 
-    public string PrefferedName { get; set; }
+    public string? PrefferedName { get; set; }
 
     [DisplayName("Подтвержденный профиль")]
     public bool VerifiedProfileFlag { get; set; }
