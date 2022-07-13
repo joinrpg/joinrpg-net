@@ -1,0 +1,57 @@
+﻿@using JoinRpg.PrimitiveTypes;
+@inject IResponsibleMasterRuleClient Client
+@if (_model is null)
+{
+  <JoinLoadingMessage />
+  return;
+}
+
+<JoinPanelWithList Items="@_model.Items">
+  <Header>Ответственные мастера</Header>
+  <Body>
+     <p>
+      Правила срабатывают сверху вниз - первое сработавшее правило назначает заявке ответственного мастера.
+      Порядок менять пока нельзя, но автоматически более специфичная группа (например, Гриффиндор)
+      окажется раньше менее специфичной (например, Ученики Хогвартса).
+    </p>
+  </Body>
+  <ItemTemplate>
+    <ResponsibleMasterListRow
+      Model="@context"
+      OnRemoveCallback="OnRemoveRow"
+      @key="@context.Id" />
+  </ItemTemplate>
+</JoinPanelWithList>
+
+@code {
+    private ResponsibleMasterRuleListViewModel? _model;
+
+    [Parameter]
+    public ResponsibleMasterRuleListViewModel? InitialModel { get; set; }
+
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    public ProjectIdentification ProjectIdentification => new ProjectIdentification(ProjectId);
+
+    protected async override Task OnInitializedAsync()
+    {
+      if (InitialModel != null)
+      {
+        _model = InitialModel;
+      }
+      else
+      {
+        _model = await Client.GetResponsibleMasterRuleList(ProjectIdentification);
+      }
+    }
+
+    async Task OnRemoveRow(ResponsibleMasterRuleViewModel item)
+    {
+      _model!.Items.Remove(item);
+      await Client.RemoveResponsibleMasterRule(ProjectIdentification, item.Id);
+    }
+
+
+
+}

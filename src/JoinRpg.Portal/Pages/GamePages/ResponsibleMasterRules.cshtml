@@ -1,0 +1,15 @@
+﻿@page "/{projectId:int}/tools/responsible-master"
+@using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
+
+
+@model JoinRpg.Portal.Pages.GamePages.ResponsibleMasterRulesModel
+
+<h3>Настройки ответственных мастеров</h3>
+
+@(await Html.RenderComponentAsync<ResponsibleMasterRulesList>(RenderMode.WebAssembly, new {Model.ProjectId}))
+
+@section Scripts {
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
+}

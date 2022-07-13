@@ -16,5 +16,6 @@ public static class RepositoriesRegistraton
         yield return typeof(AccommodationRequestRepositoryImpl);
         yield return typeof(AccommodationInviteRepositoryImpl);
         yield return typeof(FinanceReportRepositoryImpl);
+        yield return typeof(ResponsibleMasterRulesRepository);
     }
 }

@@ -1,0 +1,40 @@
+﻿<div class="responsible-master-rule-list-row">
+
+  <div>
+    @if (Model.IsSpecial)
+    {
+        <text>Если варианты исчерпаны, </text>
+    }
+    else
+    {
+        <text>Если заявка принадлежит группе @Model.GroupName, </text>
+    }
+    назначить мастера <UserLink Model="@Model.MasterLink" />
+  </div>
+  <div class="filler">
+
+  </div>
+  <div>
+    @if (!Model.IsSpecial)
+    {
+      <JoinDeleteButton
+        OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
+        Label="Удалить правило" />
+    }
+    else
+    {
+       <JoinDeleteButton
+        Disabled="true"
+        Title="Удалить это правило невозможно, т.к. какой-то ответственный мастер все равно должен быть назначен"
+        Label="Удалить правило" />
+    }
+    </div>
+</div>
+@code {
+
+    [Parameter]
+    public ResponsibleMasterRuleViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<ResponsibleMasterRuleViewModel> OnRemoveCallback { get; set; }
+}

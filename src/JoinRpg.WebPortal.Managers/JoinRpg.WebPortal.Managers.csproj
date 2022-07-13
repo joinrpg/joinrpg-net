@@ -9,6 +9,7 @@
     <ProjectReference Include="..\JoinRpg.Web.CheckIn\JoinRpg.Web.CheckIn.csproj" />
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
     
