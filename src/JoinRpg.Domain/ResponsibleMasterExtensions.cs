@@ -40,7 +40,11 @@ public static class ResponsibleMasterExtensions
                 lookupGroups.UnionWith(currentGroup.ParentGroups);
             }
         }
-        return candidates.Except(removedGroups).Select(c => c.ResponsibleMasterUser);
+        return candidates
+            .Except(removedGroups)
+            .Select(c => c.ResponsibleMasterUser)
+            .WhereNotNull(); // It's not required, because we only add groups
+                             // with RespMaster not null. But it will make compiler happy
     }
 
     public static User? GetResponsibleMasterOrDefault(this Character character)
