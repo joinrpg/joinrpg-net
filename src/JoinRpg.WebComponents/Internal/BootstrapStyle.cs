@@ -7,8 +7,8 @@ internal static class BootstrapStyle
         var variationString = variationStyle switch
         {
             VariationStyleEnum.Success => $" {componentPrefix}-success",
-            VariationStyleEnum.None => "",
-            null => "",
+            VariationStyleEnum.None => $" {componentPrefix}-default",
+            null => $" {componentPrefix}-default",
             VariationStyleEnum.Warning => $" {componentPrefix}-warning",
             VariationStyleEnum.Danger => $" {componentPrefix}-danger",
             _ => throw new ArgumentException("Incorrect variation", nameof(variationStyle)),
