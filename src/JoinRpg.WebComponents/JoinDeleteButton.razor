@@ -1,23 +1,31 @@
-﻿@if (Submit)
-{
-  <button href="#" class="@style" @onclick="OnClick">
+﻿<button
+  href="#"
+  class="@style"
+  @onclick="OnClick"
+  type="@buttonType"
+  disabled="@Disabled"
+  title="@Title">
     <span class="glyphicon glyphicon-trash"></span> @Label
-  </button>
-}
-else
-{
-  <button href="#" class="@style" @onclick="OnClick" type="submit">
-    <span class="glyphicon glyphicon-trash"></span> @Label
-  </button>
-
-}
+</button>
 @code {
-  [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.Danger;
-  [Parameter] public SizeStyleEnum? Size { get; set; }
-  [Parameter] public string Label { get; set; } = "Удалить";
-  [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-  [Parameter] public bool Submit { get; set; } = false;
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.Danger;
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+    [Parameter] public string Label { get; set; } = "Удалить";
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public bool Submit { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public string? Title { get; set; } = null;
 
-  private string style => BootstrapStyle.Build("btn", Variation, Size);
+    private string buttonType => Submit ? "submit" : "button";
+    private string style => BootstrapStyle.Build("btn", Variation, Size);
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Disabled)
+        {
+            OnClick = EventCallback<MouseEventArgs>.Empty;
+        }
+    }
 
 }
