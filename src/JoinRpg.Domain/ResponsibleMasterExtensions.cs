@@ -5,16 +5,13 @@ namespace JoinRpg.Domain;
 
 public static class ResponsibleMasterExtensions
 {
-    private static IEnumerable<User> GetResponsibleMasters(this IClaimSource group, bool includeSelf = true)
+    private static User? SelectResponsibleMaster(this IClaimSource group, bool includeSelf = true)
     {
-        if (group == null)
-        {
-            throw new ArgumentNullException(nameof(group));
-        }
+        ArgumentNullException.ThrowIfNull(group);
 
         if (group.ResponsibleMasterUser != null && includeSelf)
         {
-            return new[] { group.ResponsibleMasterUser };
+            return group.ResponsibleMasterUser;
         }
         var candidates = new HashSet<CharacterGroup>();
         var removedGroups = new HashSet<CharacterGroup>();
@@ -42,28 +39,37 @@ public static class ResponsibleMasterExtensions
         }
         return candidates
             .Except(removedGroups)
+            .OrderBy(g => g.CharacterGroupId) // It ensures consistent order
             .Select(c => c.ResponsibleMasterUser)
-            .WhereNotNull(); // It's not required, because we only add groups
-                             // with RespMaster not null. But it will make compiler happy
+            .WhereNotNull() // It's not required, because we only add groups
+                            // with RespMaster not null. But it will make compiler happy
+            .FirstOrDefault();
     }
 
     public static User? GetResponsibleMasterOrDefault(this Character character)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
 
-        return character.ApprovedClaim?.ResponsibleMasterUser ?? character.GetResponsibleMasters().FirstOrDefault();
+        return
+            character.ApprovedClaim?.ResponsibleMasterUser
+            ?? character.SelectResponsibleMaster();
     }
 
     public static User GetResponsibleMaster(this IClaimSource source)
     {
-        var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
+        return
+            source.SelectResponsibleMaster()
+            ?? source.Project.GetDefaultResponsibleMaster();
+    }
+
+    public static User GetDefaultResponsibleMaster(this Project project)
+    {
+
+        return
+            project.RootGroup.ResponsibleMasterUser
             //if we failed to calculate responsible master, assign owner as responsible master
-            ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
-            //if we found no owner, assign random master
-            ?? source.Project.ProjectAcls.First().User;
-        return responsibleMaster;
+            ?? project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
+            //if we found no owner, assign random (but consistent) master
+            ?? project.ProjectAcls.OrderBy(u => u.UserId).First().User;
     }
 }
