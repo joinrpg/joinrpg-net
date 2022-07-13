@@ -25,7 +25,9 @@
     }
   </td>
   <td>
-    <button @onclick="@(() => OnRemoveCallback.InvokeAsync(Model))" class="btn btn-danger"> Отписаться  </button>
+    <JoinDeleteButton
+      OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
+      Label="Отписаться" />
   </td>
 </tr>
 @code {
