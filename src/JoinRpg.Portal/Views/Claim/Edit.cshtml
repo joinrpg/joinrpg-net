@@ -6,6 +6,7 @@
 @using JoinRpg.Web.Models
 @using JoinRpg.Helpers.Web
 @using JoinRpg.Web.Models.Accommodation
+@using JoinRpg.Web.Models.CharacterGroups
 
 @{
   ViewBag.Title = Model.ProjectName + " —  заявка " + Model.Navigation.Name;
@@ -96,11 +97,17 @@
               <div class="form-inline input-group-sm" style="margin-top: 0.5em">
                 @Html.DropDownListFor(
                  model => model.ResponsibleMasterId,
-                 Model.Masters.Select(master => new SelectListItem() {
-                   Text = master.Name,
-                   Value = master.Id,
-                   Disabled = master.Id == "-1"
-                 }),
+                 Model
+                 .Masters
+                 .ToSelectListItems()
+                 .Select(master =>
+                   {
+                     if (master.Value == "-1")
+                     {
+                       master.Disabled = true;
+                     }
+                     return master;
+                   }),
                  htmlAttributes: new { @class = "form-control" })
 
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })

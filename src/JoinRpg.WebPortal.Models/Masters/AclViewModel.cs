@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
@@ -176,7 +177,7 @@ public class DeleteAclViewModel : AclViewModelBase
     public bool SelfRemove { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<MasterListItemViewModel> Masters { get; private set; }
+    public IEnumerable<MasterViewModel> Masters { get; private set; }
 
     public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, IUriService uriService)
     {
@@ -189,7 +190,7 @@ public class DeleteAclViewModel : AclViewModelBase
             ClaimsCount = count,
             UserDetails = new UserProfileDetailsViewModel(acl.User, AccessReason.CoMaster),
             ResponsibleFor = groups.AsObjectLinks(uriService),
-            Masters = acl.Project.GetMasterListViewModel().Where(master => master.Id != acl.UserId.ToString()).OrderBy(m => m.Name),
+            Masters = acl.Project.GetMasterListViewModel().Where(master => master.MasterId != acl.UserId),
         };
     }
 }

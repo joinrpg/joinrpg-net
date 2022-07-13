@@ -1,15 +1,11 @@
 ﻿@using JoinRpg.Portal
 @using JoinRpg.Web.Models.CommonTypes
+@using JoinRpg.Web.Models.CharacterGroups
 @model JoinRpg.Web.Models.Money.CreateMoneyTransferViewModel
 
 @{
     ViewBag.Title = "Перевод денег от мастера к мастеру";
-    var masterSelect = Model.Masters.Select(master => new ImprovedSelectListItem()
-    {
-        Text = master.Name,
-        Value = master.Id.ToString(),
-        Subtext = master.FullName,
-    }).ToArray();
+    var masterSelect = Model.Masters.ToImprovedSelectListItems().ToArray();
 }
 
 @using (Html.BeginForm()) 

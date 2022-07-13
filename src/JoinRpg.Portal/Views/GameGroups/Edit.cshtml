@@ -1,5 +1,6 @@
 ﻿
 @using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.CharacterGroups
 @model JoinRpg.Web.Models.CharacterGroups.EditCharacterGroupViewModel
 
 @{
@@ -80,7 +81,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-6">
-                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(project => new SelectListItem() { Text = project.Name, Value = project.Id }), new {@class="form-control"})
+                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.ToSelectListItems(), new {@class="form-control"})
                 @Html.DescriptionFor(model => model.ResponsibleMasterId)
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
             </div>

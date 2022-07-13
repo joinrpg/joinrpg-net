@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.CharacterGroups
 @model CreatePaymentTypeViewModel
 
 <div class="form-horizontal">
@@ -17,7 +18,7 @@
         <div class="col-md-8">
             @Html.DropDownListFor(
                 model => model.UserId,
-                Model.Masters.Select(master => new SelectListItem {Text = master.Name, Value = master.Id}),
+                Model.Masters.ToSelectListItems(),
                 new {@class = "form-control"})
             @Html.DescriptionFor(model => model.UserId)
             @Html.ValidationMessageFor(model => model.UserId, "", new {@class = "text-danger"})

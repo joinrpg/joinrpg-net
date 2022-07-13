@@ -14,6 +14,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Subscribe;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -274,14 +275,12 @@ public class GameGroupsController : ControllerGameBase
         }, group));
     }
 
-    private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
+    private static IEnumerable<MasterViewModel> GetMasters(IClaimSource group)
     {
         return group.Project.GetMasterListViewModel()
-          .Append(new MasterListItemViewModel()
-          {
-              Id = "-1",
-              Name = "По умолчанию", // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)
-          }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
+          .Append(MasterViewModel.Empty("По умолчанию"))
+          .OrderByDescending(m => m.MasterId == -1)
+          .ThenBy(m => m.DisplayName.DisplayName);
     }
 
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
@@ -430,7 +429,7 @@ public class GameGroupsController : ControllerGameBase
     private static T FillFromCharacterGroup<T>(T viewModel, IClaimSource field)
       where T : CharacterGroupViewModelBase
     {
-        viewModel.Masters = GetMasters(field, includeSelf: true);
+        viewModel.Masters = GetMasters(field);
         viewModel.ProjectName = field.Project.ProjectName;
         viewModel.ProjectId = field.Project.ProjectId;
         return viewModel;
