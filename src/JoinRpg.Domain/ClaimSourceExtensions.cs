@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
@@ -7,7 +6,6 @@ namespace JoinRpg.Domain;
 
 public static class ClaimSourceExtensions
 {
-    [NotNull]
     public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IClaimSource? target)
     {
         return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups))
@@ -15,16 +13,20 @@ public static class ClaimSourceExtensions
                    .Distinct() ?? Enumerable.Empty<CharacterGroup>();
     }
 
-    [NotNull, ItemNotNull]
-    public static IEnumerable<CharacterGroup> GetChildrenGroups([NotNull]
+    public static IEnumerable<CharacterGroup> GetChildrenGroupsRecursive(
         this CharacterGroup target)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups)).Distinct();
+    }
+
+    public static IEnumerable<CharacterGroup> GetOrderedChildrenGroupsRecursive(
+        this CharacterGroup target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+
+        return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.GetOrderedChildGroups())).Distinct();
     }
 
     public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());

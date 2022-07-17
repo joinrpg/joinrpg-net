@@ -66,7 +66,7 @@ public class PlotListController : ControllerGameBase
         }
 
         //TODO slow 
-        var characterGroups = group.GetChildrenGroups().Union(new[] { group }).ToList();
+        var characterGroups = group.GetChildrenGroupsRecursive().Union(new[] { group }).ToList();
         var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
         var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
         var folders = await _plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);

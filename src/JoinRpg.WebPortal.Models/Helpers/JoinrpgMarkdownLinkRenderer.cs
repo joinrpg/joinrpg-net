@@ -36,10 +36,11 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             return Fail(match, index, extra);
         }
         var groupLink = GroupLinkImpl(index, extra, group);
-        var characters = group
-            .GetChildrenGroups()
-            .SelectMany(g => g.GetOrderedCharacters())
-            .Union(group.GetOrderedCharacters())
+        var characters =
+            group.GetOrderedCharacters()
+            .Union(
+                group.GetOrderedChildrenGroupsRecursive().SelectMany(g => g.GetOrderedCharacters())
+                )
             .Distinct()
             .Where(chr => chr.IsActive)
             .Select(c => CharacterImpl(c));
