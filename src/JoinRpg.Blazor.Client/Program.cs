@@ -17,14 +17,12 @@ public class Program
         _ = typeof(MasterSubscribeList).ToString();
         _ = typeof(CharacterGroupSelector).ToString();
         _ = typeof(CharacterTypeSelector).ToString();
-        _ = typeof(JoinRpg.PrimitiveTypes.CharacterTypeInfo).ToString();
+        _ = typeof(PrimitiveTypes.CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-        AddHttpClient<IGameSubscribeClient, ApiClients.GameSubscribeClient>(builder);
-        AddHttpClient<ICharacterGroupsClient, ApiClients.CharacterGroupsClient>(builder);
-        AddHttpClient<ICheckInClient, ApiClients.CheckInClient>(builder);
+        builder.AddHttpClients();
 
         //.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
@@ -37,8 +35,5 @@ public class Program
         await builder.Build().RunAsync();
     }
 
-    private static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(WebAssemblyHostBuilder builder)
-        where TClient : class
-        where TImplementation : class, TClient
-    => builder.Services.AddHttpClient<TClient, TImplementation>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+
 }
