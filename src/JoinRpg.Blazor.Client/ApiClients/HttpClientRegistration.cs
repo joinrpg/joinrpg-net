@@ -25,6 +25,6 @@ public static class HttpClientRegistration
                 .AddHttpClient<IGameSubscribeClient, GameSubscribeClient>()
                 .AddHttpClient<ICharacterGroupsClient, CharacterGroupsClient>()
                 .AddHttpClient<ICheckInClient, CheckInClient>()
-                .AddHttpClient<IResponsibleMasterRuleClient, ApiClients.ResponsibleMasterRuleClient>();
+                .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>();
     }
 }
