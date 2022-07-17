@@ -82,7 +82,7 @@ public class CharacterListController : ControllerGameBase
     private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
     {
         var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
+        return groups.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
     }
 
     [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
