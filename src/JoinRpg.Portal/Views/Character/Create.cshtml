@@ -29,7 +29,7 @@
     <div class="form-group">
       @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
       <div class="col-md-10">
-        <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterGroupSelector)"
+        <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                    param-ProjectId="Model.ProjectId"
                    param-Name="@("ParentCharacterGroupIds")"
                    param-SelectedGroups="@(Model.ParentCharacterGroupIds)"

@@ -1,0 +1,30 @@
+﻿@typeparam TItem
+<div class="@style">
+    @if (Header is not null)
+    {
+        <div class="panel-heading">@Header</div>
+    }
+    @if (Body is not null)
+    {
+       <div class="panel-body">@Body</div>
+    }
+    <ul class="list-group">
+      @foreach (var item in Items)
+      {
+        if (ItemTemplate is not null)
+          {
+            <li class="list-group-item">@ItemTemplate(item)</li>
+          }
+      }
+    </ul>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; } = null;
+    [Parameter]public IReadOnlyList<TItem> Items { get; set; } = null!;
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
+
+    private string style => BootstrapStyle.Build("panel", Variation, null);
+}

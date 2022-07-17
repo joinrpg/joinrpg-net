@@ -1,7 +1,8 @@
 using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Web.CharacterGroups;
 using JoinRpg.Web.CheckIn;
-using JoinRpg.Web.GameSubscribe;
+using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace JoinRpg.Blazor.Client;
@@ -15,14 +16,13 @@ public class Program
         //it should be forcefully loaded
         _ = typeof(MasterSubscribeList).ToString();
         _ = typeof(CharacterGroupSelector).ToString();
-        _ = typeof(JoinRpg.PrimitiveTypes.CharacterTypeInfo).ToString();
+        _ = typeof(CharacterTypeSelector).ToString();
+        _ = typeof(PrimitiveTypes.CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-        AddHttpClient<IGameSubscribeClient, ApiClients.GameSubscribeClient>(builder);
-        AddHttpClient<ICharacterGroupsClient, ApiClients.CharacterGroupsClient>(builder);
-        AddHttpClient<ICheckInClient, ApiClients.CheckInClient>(builder);
+        builder.AddHttpClients();
 
         //.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
@@ -35,8 +35,5 @@ public class Program
         await builder.Build().RunAsync();
     }
 
-    private static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(WebAssemblyHostBuilder builder)
-        where TClient : class
-        where TImplementation : class, TClient
-    => builder.Services.AddHttpClient<TClient, TImplementation>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+
 }

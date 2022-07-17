@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Web.GameSubscribe;
+namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
 public class SubscribeOptionsViewModel : ISubscriptionOptions
 {

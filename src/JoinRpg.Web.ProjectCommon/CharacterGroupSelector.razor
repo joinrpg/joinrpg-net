@@ -10,10 +10,10 @@ else
                Name="@Name"
                @bind-SelectedValues="SelectedGroups"
                PossibleValues="items"
-               Multiple="true"
+               Multiple="@Multiple"
                />
   <p>
-    @string.Join(" • ", items.Where(item => SelectedGroups.Contains(item.Value)).Select(item => item.Text))
+    @string.Join(" • ", SelectedGroupNames)
   </p>
 }
 
@@ -22,6 +22,10 @@ else
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public int ProjectId { get; set; }
     [Parameter] public int[] SelectedGroups { get; set; } = new int[0];
+    [Parameter] public bool Multiple { get; set; } = true;
+
+    public IEnumerable<string> SelectedGroupNames
+      => items.Where(item => SelectedGroups.Contains(item.Value)).Select(item => item.Text);
 
     private IntSelectListItem[] items = null!;
 
