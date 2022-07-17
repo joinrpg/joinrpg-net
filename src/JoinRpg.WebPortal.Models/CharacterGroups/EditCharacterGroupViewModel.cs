@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Validation;
-using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.CharacterGroups;
 
@@ -20,15 +19,6 @@ public abstract class CharacterGroupViewModelBase : GameObjectViewModelBase
     [Display(Name = "Заявки в группу",
         Description = "Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника». Рекомендуется выбрать вариант «Заявки вне прописанных мастерами персонажей запрещены», а вместо остальных вариантов использовать персонажи типа «Слот». Это позволит заранее прописать все нужные поля.")]
     public DirectClaimSettings HaveDirectSlots { get; set; }
-
-
-    [Display(
-      Name = "Ответственный мастер для новых заявок",
-      Description = "Ответственный мастер, который будет назначен новым заявкам. Может быть переопределен в дочерних группах. Если ответственный мастер не установлен, он берется из родительской группы. Изменение этого поля не изменит существующие заявки.")]
-    public int ResponsibleMasterId { get; set; }
-
-    [ReadOnly(true)]
-    public IEnumerable<MasterViewModel> Masters { get; set; }
 
     [Display(Name = "Описание", Description = "Для публичных сущностей будет доступно всем."),
      // ReSharper disable once Mvc.TemplateNotResolved
