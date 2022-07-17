@@ -40,6 +40,9 @@ internal class ResponsibleMasterRuleViewService : IResponsibleMasterRuleClient
 
         return new ResponsibleMasterRuleListViewModel(sortedGroups);
     }
+    public async Task AddResponsibleMasterRule(ProjectIdentification projectIdentification, int groupId, int masterId)
+        => await service.AddRule(projectIdentification, groupId, masterId);
+
     public async Task RemoveResponsibleMasterRule(ProjectIdentification projectId, int ruleId)
         => await service.RemoveRule(projectId, ruleId);
 

@@ -1,3 +1,4 @@
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,12 +14,19 @@ public class ResponsibleMasterRuleController : ControllerBase
 
     [HttpGet]
     public async Task<ResponsibleMasterRuleListViewModel> GetList(int projectId)
-        => await responsibleMasterRuleClient.GetResponsibleMasterRuleList(new PrimitiveTypes.ProjectIdentification(projectId));
+        => await responsibleMasterRuleClient.GetResponsibleMasterRuleList(new ProjectIdentification(projectId));
 
     [HttpPost]
     public async Task<ActionResult> Remove(int projectId, int ruleId)
     {
-        await responsibleMasterRuleClient.RemoveResponsibleMasterRule(new PrimitiveTypes.ProjectIdentification(projectId), ruleId);
+        await responsibleMasterRuleClient.RemoveResponsibleMasterRule(new ProjectIdentification(projectId), ruleId);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task Add(int projectId, int groupId, int masterId)
+        => await responsibleMasterRuleClient.AddResponsibleMasterRule(
+            new ProjectIdentification(projectId),
+            groupId,
+            masterId);
 }

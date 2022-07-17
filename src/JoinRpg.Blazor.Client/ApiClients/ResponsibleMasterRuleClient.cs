@@ -39,4 +39,18 @@ internal class ResponsibleMasterRuleClient : IResponsibleMasterRuleClient
             throw;
         }
     }
+
+    public async Task AddResponsibleMasterRule(ProjectIdentification projectId, int groupId, int masterId)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            await httpClient.PostAsync($"webapi/resp-master-rule/add?projectId={projectId.Value}&groupId={groupId}&masterId={masterId}", null);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during access");
+            throw;
+        }
+    }
 }
