@@ -1,0 +1,60 @@
+﻿@using JoinRpg.PrimitiveTypes
+@inject IMasterClient client
+
+@if (items is null)
+{
+   <JoinLoadingMessage />
+}
+else
+{
+  <IntSelector
+               Name="@Name"
+               @bind-SelectedValues="Selected"
+               PossibleValues="items"
+               Multiple="false"
+               />
+  <p>
+    @string.Join(" • ", items.Where(item => Selected.Contains(item.Value)).Select(item => item.Text))
+  </p>
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public int? MasterId
+    {
+        get => Selected.SingleOrDefault();
+        set => Selected = value is null ? new int[0] : new int[] { value.Value };
+    }
+
+    public UserDisplayName? MasterDispayName
+    {
+        get
+        {
+            var id = MasterId;
+            if (id is null)
+            {
+              return null;
+            }
+            return masters.Single(m => m.MasterId == id).DisplayName;
+        }
+    }
+
+    private int[] Selected { get; set; } = new int[0];
+    private IntSelectListItem[] items = null!;
+    private List<MasterViewModel> masters = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+      masters = await client.GetMasters(ProjectId);
+      items = masters
+        .Select(master =>
+          new IntSelectListItem(
+            Value: master.MasterId,
+            Text: master.DisplayName.DisplayName,
+            Subtext: master.DisplayName.FullName ?? "",
+            ExtraSearch: master.DisplayName.FullName ?? ""))
+         .ToArray();
+    }
+}
