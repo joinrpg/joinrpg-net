@@ -11,8 +11,7 @@ public class DiscoverProjectFilterAttribute : ActionFilterAttribute
     /// <inheritedoc />
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-
-        if (context.HttpContext.Items.TryGetValue(Constants.ProjectIdName, out var projectId) && context.Controller is Controller controller)
+        if (context.HttpContext.TryGetProjectIdFromItems() is int projectId && context.Controller is Controller controller)
         {
             controller.ViewBag.ProjectId = projectId;
         }

@@ -1,13 +1,24 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization;
 
 public class AllowPublishHandler : AuthorizationHandler<MasterRequirement>
 {
-    public AllowPublishHandler(IProjectRepository projectRepository) => ProjectRepository = projectRepository;
+    public AllowPublishHandler(
+        IProjectRepository projectRepository,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<AllowPublishHandler> logger)
+    {
+        ProjectRepository = projectRepository;
+        this.httpContextAccessor = httpContextAccessor;
+        this.logger = logger;
+    }
+
+    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly ILogger<AllowPublishHandler> logger;
+
     private IProjectRepository ProjectRepository { get; }
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)
@@ -16,16 +27,13 @@ public class AllowPublishHandler : AuthorizationHandler<MasterRequirement>
         {
             return;
         }
-        if (!(context.Resource is AuthorizationFilterContext mvcContext))
+
+        if (httpContextAccessor.HttpContext?.TryGetProjectIdFromItems() is not int projectId)
         {
+            logger.LogError("Project id was not discovered, but master access required. That's probably problem with routing");
             return;
         }
-        var projectIdAsObj = mvcContext.HttpContext.Items[Constants.ProjectIdName];
-        if (projectIdAsObj == null || !int.TryParse(projectIdAsObj.ToString(), out var projectId))
-        {
-            context.Fail();
-            return;
-        }
+
         var project = await ProjectRepository.GetProjectAsync(projectId);
 
         if (project == null)

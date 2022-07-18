@@ -1,6 +1,6 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Web.Filter;
 using Microsoft.AspNetCore.Authorization;
 
@@ -30,7 +30,7 @@ public class AllowMasterHandler : AuthorizationHandler<MasterRequirement>
             return;
         }
 
-        if (httpContextAccessor.HttpContext?.GetProjectIdFromRouteOrDefault() is not int projectId)
+        if (httpContextAccessor.HttpContext?.TryGetProjectIdFromItems() is not int projectId)
         {
             logger.LogError("Project id was not discovered, but master access required. That's probably problem with routing");
             return;

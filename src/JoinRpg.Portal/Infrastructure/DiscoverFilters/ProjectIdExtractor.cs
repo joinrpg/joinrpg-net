@@ -2,6 +2,19 @@ namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
 
 internal static class ProjectIdExtractor
 {
+
+    public static int? TryGetProjectIdFromItems(this HttpContext httpContext)
+    {
+        if (httpContext.Items.TryGetValue(Constants.ProjectIdName, out var projectIdBoxed))
+        {
+            if (projectIdBoxed is int projectId)
+            {
+                return projectId;
+            }
+        }
+        return null;
+    }
+
     public static int? TryExtractFromQuery(this IQueryCollection query)
     {
         if (query.ContainsKey(Constants.ProjectIdName)
