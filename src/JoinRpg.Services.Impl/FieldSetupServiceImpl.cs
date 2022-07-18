@@ -393,7 +393,6 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
-        project.Details.CharacterNameLegacyMode = request.LegacyModelEnabled;
         project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.NameField?.ProjectFieldId);
         project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.DescriptionField?.ProjectFieldId);
 

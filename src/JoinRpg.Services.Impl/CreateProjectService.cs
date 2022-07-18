@@ -35,7 +35,7 @@ internal class CreateProjectService : ICreateProjectService
             case ProjectTypeDto.Larp:
                 var name = await CreateField("Имя персонажа", ProjectFieldType.String, MandatoryStatus.Required);
                 var description = await CreateField("Описание персонажа", ProjectFieldType.Text);
-                await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, LegacyModelEnabled = false, DescriptionField = description, NameField = name });
+                await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
                 await CreateTopLevelCharacterSlot(project, "Хочу на игру", name);
                 break;
             case ProjectTypeDto.Convention:
@@ -95,7 +95,7 @@ internal class CreateProjectService : ICreateProjectService
                 });
             var name = await CreateField("Название мероприятия", ProjectFieldType.String, MandatoryStatus.Required, canPlayerEdit: true);
             var description = await CreateField("Описание мероприятия", ProjectFieldType.Text, canPlayerEdit: true);
-            await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, LegacyModelEnabled = false, DescriptionField = description, NameField = name });
+            await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
             _ = await CreateField("Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField, fieldHint: "Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
             _ = await CreateField("Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
             await CreateTopLevelCharacterSlot(project, "Хочу заявить мероприятие", name);
@@ -107,7 +107,6 @@ internal class CreateProjectService : ICreateProjectService
                 new FieldSettingsRequest()
                 {
                     ProjectId = projectId,
-                    LegacyModelEnabled = false,
                     DescriptionField = null,
                     NameField = null
                 });
@@ -148,7 +147,7 @@ internal class CreateProjectService : ICreateProjectService
             }
             await characterService.AddCharacter(new AddCharacterRequest(
                     project.ProjectId,
-                    Name: slotName,
+                    SlotName: slotName,
                     IsPublic: true,
                     ParentCharacterGroupIds: new[] { project.RootGroup.CharacterGroupId },
                     CharacterTypeInfo: new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: null),

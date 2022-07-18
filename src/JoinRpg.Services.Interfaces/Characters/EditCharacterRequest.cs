@@ -12,5 +12,5 @@ public record EditCharacterRequest(
     CharacterTypeInfo CharacterTypeInfo,
     bool HidePlayerForCharacter,
     IReadOnlyDictionary<int, string?> FieldValues,
-    string? Name = null)
+    string? SlotName = null)
 { }

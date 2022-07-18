@@ -450,14 +450,6 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         claim.CharacterGroupId = null;
         claim.Character = character;
         claim.CharacterId = character.CharacterId;
-
-        if (claim.Project.Details.CharacterNameLegacyMode)
-        {
-            //TODO[Localize]
-            //Actually, legacy mode will be probably removed before localization
-            character.CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}";
-        }
-        // if not Legacy mode, name will be set on re-saving field later
     }
 
 

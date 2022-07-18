@@ -42,7 +42,6 @@ public class FieldSettingsRequest
 {
     public ProjectFieldIdentification? NameField { get; set; }
     public ProjectFieldIdentification? DescriptionField { get; set; }
-    public bool LegacyModelEnabled { get; set; }
     public ProjectIdentification ProjectId { get; set; }
 }
 

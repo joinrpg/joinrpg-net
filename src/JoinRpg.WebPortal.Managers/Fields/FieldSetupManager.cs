@@ -108,7 +108,6 @@ public class FieldSetupManager
         {
             NameField = project.Details.CharacterNameField?.ProjectFieldId ?? -1,
             DescriptionField = project.Details.CharacterDescription?.ProjectFieldId ?? -1,
-            LegacyModelEnabled = project.Details.CharacterNameLegacyMode,
         };
         return FillSettingsModel(project, viewModel);
     }
@@ -141,7 +140,6 @@ public class FieldSetupManager
         {
             DescriptionField = viewModel.DescriptionField > 0 ? new(CurrentProject.ProjectId, viewModel.DescriptionField) : null,
             NameField = viewModel.NameField > 0 ? new(CurrentProject.ProjectId, viewModel.NameField) : null,
-            LegacyModelEnabled = viewModel.LegacyModelEnabled,
             ProjectId = CurrentProject.ProjectId,
         });
     }

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
@@ -8,11 +7,10 @@ namespace JoinRpg.Services.Impl;
 
 internal static class EmailHelpers
 {
-    public static FieldsChangedEmail CreateFieldsEmail([NotNull]
+    public static FieldsChangedEmail CreateFieldsEmail(
         Claim claim,
         Func<UserSubscription, bool> subscribePredicate,
         User initiator,
-        [NotNull]
         IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
         IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
     {
@@ -33,12 +31,10 @@ internal static class EmailHelpers
     }
 
     public static FieldsChangedEmail CreateFieldsEmail(
-        [NotNull]
         Character character,
         Func<UserSubscription, bool> subscribePredicate,
         User initiator,
-        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
     {
         if (character == null)
         {
@@ -53,6 +49,6 @@ internal static class EmailHelpers
             initiator,
             subscriptions,
             updatedFields,
-            otherChangedAttributes);
+            null);
     }
 }

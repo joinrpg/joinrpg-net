@@ -49,18 +49,12 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         Create(character);
         MarkTreeModified(project);
 
-        if (project.Details.CharacterNameLegacyMode)
-        {
-            character.CharacterName = Required(addCharacterRequest.Name);
-            // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
-        }
-
         if (project.Details.CharacterNameField is null)
         {
             //We need this for scenario of creating slots
             //TODO: It should be disabled to create characters in other scenarios
             //If character name is bound to players name
-            character.CharacterName = addCharacterRequest.Name ?? "PLAYER_NAME";
+            character.CharacterName = addCharacterRequest.SlotName ?? "PLAYER_NAME";
         }
 
         //TODO we do not send message for creating character
@@ -76,21 +70,10 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     {
         var character = await LoadCharacter(editCharacterRequest.Id);
 
-        var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
-
-        if (character.Project.Details.CharacterNameLegacyMode)
-        {
-            var name = Required(editCharacterRequest.Name);
-
-            changedAttributes.Add("Имя персонажа", new PreviousAndNewValue(name, character.CharacterName.Trim()));
-            character.CharacterName = name;
-            // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
-        }
-
         if (character.Claims.Any(claim => claim.ClaimStatus.IsActive())
             && editCharacterRequest.CharacterTypeInfo.CharacterType != character.CharacterType)
         {
-            throw new System.Exception("Can't change type of character with active claims");
+            throw new Exception("Can't change type of character with active claims");
         }
 
         (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
@@ -112,19 +95,15 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         MarkTreeModified(character.Project); //TODO: Can be smarter
 
         FieldsChangedEmail? email = null;
-        changedAttributes = changedAttributes
-            .Where(attr => attr.Value.DisplayString != attr.Value.PreviousDisplayString)
-            .ToDictionary(x => x.Key, x => x.Value);
 
-        if (changedFields.Any() || changedAttributes.Any())
+        if (changedFields.Any())
         {
             var user = await GetCurrentUser();
             email = EmailHelpers.CreateFieldsEmail(
                 character,
                 s => s.FieldChange,
                 user,
-                changedFields,
-                changedAttributes);
+                changedFields);
         }
 
         await UnitOfWork.SaveChangesAsync();
