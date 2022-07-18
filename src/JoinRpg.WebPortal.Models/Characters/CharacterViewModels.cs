@@ -32,15 +32,12 @@ public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidat
 
     public CustomFieldsViewModel Fields { get; set; }
 
-    public bool LegacyNameMode { get; protected set; }
-
     [CannotBeEmpty, DisplayName("Является частью групп")]
     public int[] ParentCharacterGroupIds { get; set; } = new int[0] { };
 
     protected void FillFields(Character field, int currentUserId)
     {
         Fields = new CustomFieldsViewModel(currentUserId, field);
-        LegacyNameMode = field.Project.Details.CharacterNameLegacyMode;
     }
 }
 

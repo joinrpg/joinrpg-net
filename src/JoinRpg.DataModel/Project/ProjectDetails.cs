@@ -26,12 +26,11 @@ public class ProjectDetails : IValidatableObject
     /// If true, character name is separate property of character, not bound to any field
     /// and could be edited only by master
     /// </summary>
+    [Obsolete("Not used any more, will be deleted soon")]
     public bool CharacterNameLegacyMode { get; set; } = true;
     /// <summary>
-    /// If legacy mode = true, always null
-    /// If legacy mode = false.
-    ///     Null = bound to player name
-    ///     Other value = bound to that field
+    ///   Null = bound to player name
+    ///   Other value = bound to that field
     /// </summary>
     [CanBeNull]
     public ProjectField? CharacterNameField { get; set; }
@@ -53,11 +52,6 @@ public class ProjectDetails : IValidatableObject
     {
         if (CharacterNameField != null)
         {
-            if (CharacterNameLegacyMode)
-
-            {
-                yield return new ValidationResult("Legacy mode is enabled");
-            }
             if (CharacterNameField.FieldType != ProjectFieldType.String || CharacterNameField.FieldBoundTo != FieldBoundTo.Character)
             {
                 yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterNameField) });

@@ -38,7 +38,6 @@ public class CharacterView : IFieldContainter
     public string JsonData { get; set; }
     public string Name { get; set; }
     public string? Description { get; set; }
-    public bool LegacyNameMode { get; set; }
 }
 
 public class GroupHeader : IEquatable<GroupHeader>

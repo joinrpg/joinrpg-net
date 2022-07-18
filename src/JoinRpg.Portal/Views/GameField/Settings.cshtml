@@ -15,30 +15,16 @@
         со @Html.HelpLink("fields/settings_for_role_list.html", "справкой о связи полей и сетки ролей").
     </div>
 
-
-@if (Model.LegacyModelEnabled)
-{
-    @await Html.PartialAsync("_SwitchFromLegacyMode", Model)
-
-}
-
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
-    @Html.HiddenFor(model => model.LegacyModelEnabled)
 
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-        @if (Model.LegacyModelEnabled)
-        {
-            @Html.HiddenFor(model => model.NameField)
-        }
-        else
-        {
-            @Html.JoinFormDropdownFor(model => model.NameField, Model.PossibleNameFields)
-        }
+
+        @Html.JoinFormDropdownFor(model => model.NameField, Model.PossibleNameFields)
 
         @Html.JoinFormDropdownFor(model => model.DescriptionField, Model.PossibleDescriptionFields)
 

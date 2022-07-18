@@ -100,7 +100,6 @@ internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepos
             DirectGroups = await Ctx.Set<CharacterGroup>()
             .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
             .Select(groupHeaderSelector).ToListAsync(),
-            LegacyNameMode = character.Project.Details.CharacterNameLegacyMode,
         };
 
         view.AllGroups = view.DirectGroups

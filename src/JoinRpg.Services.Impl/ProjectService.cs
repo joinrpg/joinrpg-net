@@ -33,6 +33,13 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             AvaiableDirectSlots = 0,
         };
         MarkCreatedNow(rootGroup);
+#pragma warning disable CS0618 // Type or member is obsolete
+        var projectDetails = new ProjectDetails()
+        {
+            //Flag will be removed later, now it should always be false
+            CharacterNameLegacyMode = false,
+        };
+#pragma warning restore CS0618 // Type or member is obsolete
         var project = new Project()
         {
             Active = true,
@@ -47,10 +54,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             {
                 ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),
             },
-            Details = new ProjectDetails()
-            {
-                CharacterNameLegacyMode = false,
-            },
+            Details = projectDetails,
             ProjectFields = new List<ProjectField>(),
         };
         MarkTreeModified(project);

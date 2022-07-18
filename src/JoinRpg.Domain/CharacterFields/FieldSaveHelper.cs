@@ -126,21 +126,20 @@ public static class FieldSaveHelper
                     fields[Project.Details.CharacterDescription.ProjectFieldId].Value);
             }
 
-            if (!Project.Details.CharacterNameLegacyMode)
-            {
-                if (Project.Details.CharacterNameField == null)
-                {
-                    SetCharacterNameFromPlayer();
-                }
-                else
-                {
-                    var name = fields[Project.Details.CharacterNameField.ProjectFieldId].Value;
 
-                    Character.CharacterName = string.IsNullOrWhiteSpace(name) ?
-                        Character.CharacterName = "CHAR" + Character.CharacterId
-                        : name;
-                }
+            if (Project.Details.CharacterNameField == null)
+            {
+                SetCharacterNameFromPlayer();
             }
+            else
+            {
+                var name = fields[Project.Details.CharacterNameField.ProjectFieldId].Value;
+
+                Character.CharacterName = string.IsNullOrWhiteSpace(name) ?
+                    Character.CharacterName = "CHAR" + Character.CharacterId
+                    : name;
+            }
+
         }
     }
 
