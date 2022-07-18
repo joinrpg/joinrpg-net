@@ -22,7 +22,7 @@ internal class RespMasterRuleService : DbServiceImplBase, IRespMasterRuleService
     {
         var characterGroup =
             (await ProjectRepository.GetGroupAsync(projectId, ruleId))
-            .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles)
+            .RequestMasterAccess(CurrentUserId, acl => acl.CanManageClaims)
             .EnsureProjectActive();
 
         if (masterId is not null)

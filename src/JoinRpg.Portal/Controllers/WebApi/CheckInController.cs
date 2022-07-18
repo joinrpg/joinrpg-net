@@ -1,9 +1,11 @@
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.CheckIn;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
 
 [Route("/webapi/checkin/[action]")]
+[RequireMaster]
 public class CheckInController : ControllerBase
 {
     private readonly ICheckInClient checkInClient;
