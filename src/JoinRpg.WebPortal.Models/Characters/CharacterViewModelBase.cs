@@ -6,8 +6,18 @@ using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidatableObject
+public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObject
 {
+    public int ProjectId { get; set; }
+
+    [ReadOnly(true)]
+    public string ProjectName { get; set; }
+
+    [Display(Name = "Публично?",
+        Description =
+            "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
+    public bool IsPublic { get; set; } = true;
+
     [Required]
     public CharacterTypeInfo CharacterTypeInfo { get; set; }
 
