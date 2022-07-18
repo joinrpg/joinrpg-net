@@ -31,7 +31,8 @@ internal class ResponsibleMasterRuleClient : IResponsibleMasterRuleClient
         try
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
-            await httpClient.PostAsync($"webapi/resp-master-rule/remove?projectId={projectId.Value}&ruleId={ruleId}", null);
+            var response = await httpClient.PostAsync($"webapi/resp-master-rule/remove?projectId={projectId.Value}&ruleId={ruleId}", null);
+            response.EnsureSuccessStatusCode();
         }
         catch (Exception e)
         {
@@ -40,12 +41,18 @@ internal class ResponsibleMasterRuleClient : IResponsibleMasterRuleClient
         }
     }
 
-    public async Task AddResponsibleMasterRule(ProjectIdentification projectId, int groupId, int masterId)
+    public async Task<ResponsibleMasterRuleListViewModel> AddResponsibleMasterRule(ProjectIdentification projectId, int groupId, int masterId)
     {
         try
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
-            await httpClient.PostAsync($"webapi/resp-master-rule/add?projectId={projectId.Value}&groupId={groupId}&masterId={masterId}", null);
+            var response = await httpClient.PostAsync($"webapi/resp-master-rule/add?projectId={projectId.Value}&groupId={groupId}&masterId={masterId}", null);
+            return await response
+                .EnsureSuccessStatusCode()
+                .Content
+                .ReadFromJsonAsync<ResponsibleMasterRuleListViewModel>()
+                ?? throw new Exception("Empty");
+
         }
         catch (Exception e)
         {

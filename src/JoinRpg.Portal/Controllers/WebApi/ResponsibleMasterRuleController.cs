@@ -24,9 +24,14 @@ public class ResponsibleMasterRuleController : ControllerBase
     }
 
     [HttpPost]
-    public async Task Add(int projectId, int groupId, int masterId)
-        => await responsibleMasterRuleClient.AddResponsibleMasterRule(
-            new ProjectIdentification(projectId),
-            groupId,
-            masterId);
+    public async Task<ResponsibleMasterRuleListViewModel> Add(
+        int projectId,
+        int groupId,
+        int masterId)
+    {
+        return await responsibleMasterRuleClient.AddResponsibleMasterRule(
+                new ProjectIdentification(projectId),
+                groupId,
+                masterId);
+    }
 }

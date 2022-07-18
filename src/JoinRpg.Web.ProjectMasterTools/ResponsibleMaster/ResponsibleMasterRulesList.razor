@@ -1,6 +1,7 @@
-﻿@using JoinRpg.PrimitiveTypes;
+﻿@using JoinRpg.PrimitiveTypes
 @using JoinRpg.Web.ProjectCommon
 @inject IResponsibleMasterRuleClient Client
+@inject ILogger<ResponsibleMasterRulesList> logger
 @if (_model is null)
 {
   <JoinLoadingMessage />
@@ -71,8 +72,19 @@
 
     async Task OnRemoveRow(ResponsibleMasterRuleViewModel item)
     {
-        _model!.Items.Remove(item);
-        await Client.RemoveResponsibleMasterRule(ProjectIdentification, item.Id);
+        var items = _model!.Items;
+        var idx = items.IndexOf(item);
+
+        items.RemoveAt(idx);
+        try
+        {
+            await Client.RemoveResponsibleMasterRule(ProjectIdentification, item.Id);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during remove resp master");
+            items.Insert(idx, item);
+        }
     }
 
     async Task PerformAdd()
@@ -88,7 +100,7 @@
             return;
         }
         Adding = false;
-        
+
         _model!.Items.Insert(
           0,
           new ResponsibleMasterRuleViewModel(
@@ -97,9 +109,16 @@
             new UserLinkViewModel(master.Value, masterSelector.MasterDispayName!.DisplayName)
           ));
 
-        await Client.AddResponsibleMasterRule(ProjectIdentification, group, master.Value);
-        // reload so server will correctly reorder them
-        _model = await Client.GetResponsibleMasterRuleList(ProjectIdentification);
+        try
+        {
+
+            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, group, master.Value);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during add resp master");
+            _model!.Items.RemoveAt(0);
+        }
     }
 
 
