@@ -17,9 +17,20 @@
   <div>
     @if (!Model.IsSpecial)
     {
-      <JoinDeleteButton
+      if (HasEditAccess)
+      {
+        <JoinDeleteButton
         OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
         Label="Удалить правило" />
+      }
+      else
+      {
+         <JoinDeleteButton
+          Disabled="true"
+          Title="Для управления настройками нужны права администратора заявок"
+          Label="Удалить правило"/>
+      }
+      
     }
     else
     {
@@ -37,4 +48,7 @@
 
     [Parameter]
     public EventCallback<ResponsibleMasterRuleViewModel> OnRemoveCallback { get; set; }
+
+    [Parameter]
+    public bool HasEditAccess { get; set; }
 }

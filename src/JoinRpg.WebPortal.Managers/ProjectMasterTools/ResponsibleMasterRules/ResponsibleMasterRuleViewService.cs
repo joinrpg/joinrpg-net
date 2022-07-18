@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
@@ -12,15 +13,18 @@ internal class ResponsibleMasterRuleViewService : IResponsibleMasterRuleClient
     private readonly IResponsibleMasterRulesRepository responsibleMasterRulesRepository;
     private readonly IRespMasterRuleService service;
     private readonly IProjectRepository projectRepository;
+    private readonly ICurrentUserAccessor currentUserAccessor;
 
     public ResponsibleMasterRuleViewService(
         IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
         IRespMasterRuleService service,
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository,
+        ICurrentUserAccessor currentUserAccessor)
     {
         this.responsibleMasterRulesRepository = responsibleMasterRulesRepository;
         this.service = service;
         this.projectRepository = projectRepository;
+        this.currentUserAccessor = currentUserAccessor;
     }
     public async Task<ResponsibleMasterRuleListViewModel> GetResponsibleMasterRuleList(ProjectIdentification projectId)
     {
@@ -38,7 +42,13 @@ internal class ResponsibleMasterRuleViewService : IResponsibleMasterRuleClient
                 UserLinks.Create(defaultUser)
             ));
 
-        return new ResponsibleMasterRuleListViewModel(sortedGroups);
+        return new ResponsibleMasterRuleListViewModel(
+                Items: sortedGroups,
+                HasEditAccess: project.HasMasterAccess(
+                    currentUserAccessor.UserIdOrDefault,
+                    acl => acl.CanManageClaims
+                    )
+            );
     }
     public async Task<ResponsibleMasterRuleListViewModel> AddResponsibleMasterRule(ProjectIdentification projectIdentification, int groupId, int masterId)
     {

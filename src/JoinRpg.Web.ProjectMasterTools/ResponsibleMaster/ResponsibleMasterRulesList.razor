@@ -32,13 +32,21 @@
     }
     else
     {
-      <JoinAddButton OnClick="() => Adding = true" Title="Добавить правило" />
+      if (_model.HasEditAccess)
+      {
+        <JoinAddButton OnClick="() => Adding = true" Title="Добавить правило" Label="Добавить правило"/>
+      }
+      else
+      {
+        <JoinAddButton Disabled="true" Title="Для управления настройками нужны права администратора заявок" Label="Добавить правило"/>
+      }
     }
   </Body>
   <ItemTemplate>
     <ResponsibleMasterListRow
       Model="@context"
       OnRemoveCallback="OnRemoveRow"
+      HasEditAccess="@_model.HasEditAccess"
       @key="@context.Id" />
   </ItemTemplate>
 </JoinPanelWithList>
