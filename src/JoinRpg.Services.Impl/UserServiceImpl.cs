@@ -56,9 +56,9 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         {
             user.SurName = userFullName.SurName?.Value;
             user.FatherName = userFullName.FatherName?.Value;
-            user.BornName = userFullName.GivenName?.Value;
+            user.BornName = userFullName.BornName?.Value;
         }
-        user.PrefferedName = userFullName.PrefferedName;
+        user.PrefferedName = userFullName.PrefferedName?.Value;
 
         user.Extra ??= new UserExtra();
         user.Extra.Gender = gender;
@@ -120,9 +120,9 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
             return;
         }
 
-        user.PrefferedName ??= userFullName.PrefferedName;
+        user.PrefferedName ??= userFullName.PrefferedName?.Value;
         user.SurName ??= userFullName.SurName?.Value;
-        user.BornName ??= userFullName.GivenName?.Value;
+        user.BornName ??= userFullName.BornName?.Value;
         user.FatherName ??= userFullName.FatherName?.Value;
 
         await UnitOfWork.SaveChangesAsync();

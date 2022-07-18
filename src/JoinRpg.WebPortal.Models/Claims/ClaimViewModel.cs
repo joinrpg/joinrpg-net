@@ -12,6 +12,7 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
@@ -58,7 +59,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
     public User ResponsibleMaster { get; set; }
 
     [ReadOnly(true)]
-    public List<MasterListItemViewModel> Masters { get; }
+    public List<MasterViewModel> Masters { get; }
 
     [ReadOnly(true)]
     public bool HasOtherApprovedClaim { get; }

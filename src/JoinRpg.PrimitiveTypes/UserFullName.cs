@@ -1,7 +1,22 @@
+using JoinRpg.Helpers;
+
 namespace JoinRpg.PrimitiveTypes;
 
-public record UserFullName(PrefferedName PrefferedName, BornName? GivenName, SurName? SurName, FatherName? FatherName)
+public record UserFullName(PrefferedName? PrefferedName, BornName? BornName, SurName? SurName, FatherName? FatherName)
 {
+    public string? FullName
+    {
+        get
+        {
+            if (BornName is null && SurName is null && FatherName is null)
+            {
+                return null;
+            }
+            return string.Join(" ",
+                new string?[] { BornName?.Value, FatherName?.Value, SurName?.Value }
+                .WhereNotNull());
+        }
+    }
 }
 
 public record BornName(string Value) : SingleValueType<string>(Value)

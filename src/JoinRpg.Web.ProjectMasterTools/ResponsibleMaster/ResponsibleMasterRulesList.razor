@@ -1,0 +1,134 @@
+﻿@using JoinRpg.PrimitiveTypes
+@using JoinRpg.Web.ProjectCommon
+@inject IResponsibleMasterRuleClient Client
+@inject ILogger<ResponsibleMasterRulesList> logger
+@if (_model is null)
+{
+  <JoinLoadingMessage />
+  return;
+}
+
+<JoinPanelWithList Items="@_model.Items">
+  <Header>Ответственные мастера</Header>
+  <Body>
+     <p>
+      Правила срабатывают сверху вниз - первое сработавшее правило назначает заявке ответственного мастера.
+      Порядок менять пока нельзя, но автоматически более специфичная группа (например, Гриффиндор)
+      окажется раньше менее специфичной (например, Ученики Хогвартса).
+    </p>
+    @if (Adding)
+    {
+      <div>
+        <FormRow Label="Группа">
+          <CharacterGroupSelector ProjectId="@ProjectId" Multiple="false" @ref="groupSelector"/>
+        </FormRow>
+        <FormRow Label="Мастер">
+          <MasterSelector ProjectId="@ProjectId" @ref="masterSelector" />
+        </FormRow>
+        <br/>
+        <JoinAddButton OnClick="() => PerformAdd()" /> |
+        <JoinCancelButton OnClick="() => Adding = false" />
+      </div>
+    }
+    else
+    {
+      if (_model.HasEditAccess)
+      {
+        <JoinAddButton OnClick="() => Adding = true" Title="Добавить правило" Label="Добавить правило"/>
+      }
+      else
+      {
+        <JoinAddButton Disabled="true" Title="Для управления настройками нужны права администратора заявок" Label="Добавить правило"/>
+      }
+    }
+  </Body>
+  <ItemTemplate>
+    <ResponsibleMasterListRow
+      Model="@context"
+      OnRemoveCallback="OnRemoveRow"
+      HasEditAccess="@_model.HasEditAccess"
+      @key="@context.Id" />
+  </ItemTemplate>
+</JoinPanelWithList>
+
+@code {
+    private ResponsibleMasterRuleListViewModel? _model;
+
+    [Parameter]
+    public ResponsibleMasterRuleListViewModel? InitialModel { get; set; }
+
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    public ProjectIdentification ProjectIdentification => new ProjectIdentification(ProjectId);
+
+    public bool Adding { get; set; }
+    private CharacterGroupSelector? groupSelector;
+    private MasterSelector? masterSelector;
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (InitialModel != null)
+        {
+            _model = InitialModel;
+        }
+        else
+        {
+            _model = await Client.GetResponsibleMasterRuleList(ProjectIdentification);
+        }
+    }
+
+    async Task OnRemoveRow(ResponsibleMasterRuleViewModel item)
+    {
+        var items = _model!.Items;
+        var idx = items.IndexOf(item);
+
+        items.RemoveAt(idx);
+        try
+        {
+            await Client.RemoveResponsibleMasterRule(ProjectIdentification, item.Id);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during remove resp master");
+            items.Insert(idx, item);
+        }
+    }
+
+    async Task PerformAdd()
+    {
+        if (Adding == false)
+        {
+            return;
+        }
+        var group = groupSelector!.SelectedGroups.SingleOrDefault();
+        var master = masterSelector!.MasterId;
+        if (master is null)
+        {
+            return;
+        }
+        Adding = false;
+
+        _model!.Items.Insert(
+          0,
+          new ResponsibleMasterRuleViewModel(
+            group,
+            groupSelector!.SelectedGroupNames.Single(),
+            new UserLinkViewModel(master.Value, masterSelector.MasterDispayName!.DisplayName)
+          ));
+
+        try
+        {
+
+            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, group, master.Value);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during add resp master");
+            _model!.Items.RemoveAt(0);
+        }
+    }
+
+
+
+}

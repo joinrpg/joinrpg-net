@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain;
 
@@ -49,26 +50,26 @@ public static class UserExtensions
         Administrator,
     }
 
+    public static UserFullName ExtractFullName(this User user)
+    {
+        return new UserFullName(
+            PrefferedName.FromOptional(user.PrefferedName),
+            BornName.FromOptional(user.BornName),
+            SurName.FromOptional(user.SurName),
+            FatherName.FromOptional(user.FatherName));
+    }
+
+    public static UserDisplayName ExtractDisplayName(this User user)
+    {
+        return UserDisplayName.Create(user.ExtractFullName(), new Email(user.Email));
+    }
+
     /// <summary>
     /// Returns display name of a user
     /// </summary>
-    [NotNull]
-    public static string GetDisplayName([NotNull] this User user)
+    public static string GetDisplayName(this User user)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-
-        if (!string.IsNullOrWhiteSpace(user.PrefferedName))
-        {
-            return user.PrefferedName;
-        }
-        if (!string.IsNullOrWhiteSpace(user.FullName))
-        {
-            return user.FullName;
-        }
-        return user.Email.TakeWhile(ch => ch != '@').AsString();
+        return user.ExtractDisplayName().DisplayName;
     }
 
     /// <summary>

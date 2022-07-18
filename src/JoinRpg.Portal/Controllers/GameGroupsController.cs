@@ -266,22 +266,11 @@ public class GameGroupsController : ControllerGameBase
             DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
             CharacterGroupId = group.CharacterGroupId,
             IsRoot = group.IsRoot,
-            ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
             CreatedAt = group.CreatedAt,
             UpdatedAt = group.UpdatedAt,
             CreatedBy = group.CreatedBy,
             UpdatedBy = group.UpdatedBy,
         }, group));
-    }
-
-    private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
-    {
-        return group.Project.GetMasterListViewModel()
-          .Append(new MasterListItemViewModel()
-          {
-              Id = "-1",
-              Name = "По умолчанию", // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)
-          }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
     }
 
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
@@ -317,13 +306,12 @@ public class GameGroupsController : ControllerGameBase
 
         try
         {
-            var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?)null : viewModel.ResponsibleMasterId;
             await ProjectService.EditCharacterGroup(
               group.ProjectId,
               CurrentUserId,
               group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
               viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
-              viewModel.DirectSlotsForSave(), responsibleMasterId);
+              viewModel.DirectSlotsForSave());
 
             return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
         }
@@ -389,7 +377,6 @@ public class GameGroupsController : ControllerGameBase
         return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
         {
             ParentCharacterGroupIds = field.AsPossibleParentForEdit(),
-            ResponsibleMasterId = -1,
         }, field));
     }
 
@@ -411,12 +398,11 @@ public class GameGroupsController : ControllerGameBase
 
         try
         {
-            var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?)null : viewModel.ResponsibleMasterId;
             await ProjectService.AddCharacterGroup(
               viewModel.ProjectId,
               viewModel.Name, viewModel.IsPublic,
               viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
-              viewModel.DirectSlotsForSave(), responsibleMasterId);
+              viewModel.DirectSlotsForSave());
 
             return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
         }
@@ -430,7 +416,6 @@ public class GameGroupsController : ControllerGameBase
     private static T FillFromCharacterGroup<T>(T viewModel, IClaimSource field)
       where T : CharacterGroupViewModelBase
     {
-        viewModel.Masters = GetMasters(field, includeSelf: true);
         viewModel.ProjectName = field.Project.ProjectName;
         viewModel.ProjectId = field.Project.ProjectId;
         return viewModel;

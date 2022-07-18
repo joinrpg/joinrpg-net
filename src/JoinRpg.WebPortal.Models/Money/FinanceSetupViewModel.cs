@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
@@ -22,7 +23,7 @@ public class FinanceSetupViewModel
     public int ProjectId { get; }
 
     [ReadOnly(true)]
-    public IEnumerable<MasterListItemViewModel> Masters { get; }
+    public IEnumerable<MasterViewModel> Masters { get; }
 
     public string CurrentUserToken { get; }
 

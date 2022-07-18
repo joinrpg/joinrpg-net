@@ -22,8 +22,10 @@ public static class HttpClientRegistration
     public static WebAssemblyHostBuilder AddHttpClients(this WebAssemblyHostBuilder builder)
     {
         return builder
+                .AddHttpClient<IMasterClient, MasterClient>()
                 .AddHttpClient<IGameSubscribeClient, GameSubscribeClient>()
                 .AddHttpClient<ICharacterGroupsClient, CharacterGroupsClient>()
-                .AddHttpClient<ICheckInClient, CheckInClient>();
+                .AddHttpClient<ICheckInClient, CheckInClient>()
+                .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>();
     }
 }

@@ -68,17 +68,9 @@ internal class ProjectService : DbServiceImplBase, IProjectService
         IReadOnlyCollection<int> parentCharacterGroupIds,
         string description,
         bool haveDirectSlotsForSave,
-        int directSlotsForSave,
-        int? responsibleMasterId)
+        int directSlotsForSave)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
-
-        if (responsibleMasterId != null &&
-            project.ProjectAcls.All(acl => acl.UserId != responsibleMasterId))
-        {
-            //TODO: Move this check into ChGroup validation
-            throw new Exception("No such master");
-        }
 
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = project.EnsureProjectActive();
@@ -97,7 +89,6 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             IsPublic = isPublic,
             IsActive = true,
             Description = new MarkdownString(description),
-            ResponsibleMasterUserId = responsibleMasterId,
         });
 
         MarkTreeModified(project);
@@ -199,8 +190,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
         IReadOnlyCollection<int> parentCharacterGroupIds,
         string description,
         bool haveDirectSlots,
-        int directSlots,
-        int? responsibleMasterId)
+        int directSlots)
     {
         var characterGroup =
             (await ProjectRepository.GetGroupAsync(projectId, characterGroupId))
@@ -218,14 +208,6 @@ internal class ProjectService : DbServiceImplBase, IProjectService
                     ensureNotSpecial: true);
             characterGroup.Description = new MarkdownString(description);
         }
-
-        if (responsibleMasterId != null &&
-            characterGroup.Project.ProjectAcls.All(acl => acl.UserId != responsibleMasterId))
-        {
-            throw new Exception("No such master");
-        }
-
-        characterGroup.ResponsibleMasterUserId = responsibleMasterId;
         characterGroup.AvaiableDirectSlots = directSlots;
         characterGroup.HaveDirectSlots = haveDirectSlots;
 

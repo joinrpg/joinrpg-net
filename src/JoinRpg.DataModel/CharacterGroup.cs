@@ -70,7 +70,7 @@ public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObj
     public IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterGroupId == CharacterGroupId);
 
     // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
-    public virtual User ResponsibleMasterUser { get; set; }
+    public virtual User? ResponsibleMasterUser { get; set; }
 
     public int? ResponsibleMasterUserId { get; set; }
 

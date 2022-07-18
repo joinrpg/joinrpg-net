@@ -10,8 +10,7 @@ public interface IProjectService
         IReadOnlyCollection<int> parentCharacterGroupIds,
         string description,
         bool haveDirectSlotsForSave,
-        int directSlotsForSave,
-        int? responsibleMasterId);
+        int directSlotsForSave);
 
     Task EditCharacterGroup(int projectId,
         int currentUserId,
@@ -21,8 +20,7 @@ public interface IProjectService
         IReadOnlyCollection<int> parentCharacterGroupIds,
         string description,
         bool haveDirectSlots,
-        int directSlots,
-        int? responsibleMasterId);
+        int directSlots);
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
 

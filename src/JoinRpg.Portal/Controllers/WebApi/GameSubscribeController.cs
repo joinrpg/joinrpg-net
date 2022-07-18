@@ -1,3 +1,4 @@
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebPortal.Managers.Subscribe;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.WebApi;
 
 [Route("/webapi/gamesubscribe/[action]")]
+[RequireMaster]
+[IgnoreAntiforgeryToken]
 public class GameSubscribeController : ControllerBase
 {
     private readonly SubscribeViewService subscribeViewService;

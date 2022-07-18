@@ -1,5 +1,6 @@
 ﻿
 @using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.CharacterGroups
 @model JoinRpg.Web.Models.CharacterGroups.EditCharacterGroupViewModel
 
 @{
@@ -77,13 +78,12 @@
             </div>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-6">
-                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(project => new SelectListItem() { Text = project.Name, Value = project.Id }), new {@class="form-control"})
-                @Html.DescriptionFor(model => model.ResponsibleMasterId)
-                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-            </div>
+        <div class="alert alert-info">
+            Настройки ответственного мастера на 
+              <a
+                asp-page="/GamePages/ResponsibleMasterRules"
+                asp-route-ProjectId="@Model.ProjectId">
+                отдельной странице</a>.
         </div>
 
         <div class="form-group">

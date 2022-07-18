@@ -1,0 +1,10 @@
+﻿.responsible-master-rule-list-row {
+    border: 2px solid;
+    padding: 5px;
+    display: flex;
+    width: 80%;
+}
+
+.filler {
+  flex: 1; /*grow*/
+}

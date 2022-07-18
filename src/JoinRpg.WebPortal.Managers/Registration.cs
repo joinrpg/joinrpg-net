@@ -10,5 +10,7 @@ public static class Registration
         yield return typeof(Subscribe.SubscribeViewService);
         yield return typeof(CharacterGroupList.CharacteGroupListViewService);
         yield return typeof(CheckIn.CheckInViewService);
+        yield return typeof(ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService);
+        yield return typeof(ProjectMasterViewService);
     }
 }

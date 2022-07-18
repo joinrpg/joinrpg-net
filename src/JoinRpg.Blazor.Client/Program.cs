@@ -2,6 +2,7 @@ using JoinRpg.Blazor.Client.ApiClients;
 using JoinRpg.Web.CharacterGroups;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -19,6 +20,7 @@ public class Program
         _ = typeof(CharacterTypeSelector).ToString();
         _ = typeof(PrimitiveTypes.CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
+        _ = typeof(ResponsibleMasterRulesList).ToString();
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
