@@ -35,8 +35,5 @@ export function getSelectedValues(ref) {
       results[results.length] = ref.options[i].value;
     }
   }
-  console.log('***');
-  console.log(ref.options[0].selected);
-  console.log(results);
   return results;
 }
