@@ -1,6 +1,7 @@
 using System.Data.Entity.Validation;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
@@ -90,11 +91,12 @@ public class DbServiceImplBase
         throw new DbEntityValidationException();
     }
 
-    protected static string Required([NotNull] string? stringValue)
+    protected static string Required([NotNull] string? stringValue,
+        [CallerArgumentExpression("stringValue")] string? fieldName = null)
     {
         if (string.IsNullOrWhiteSpace(stringValue))
         {
-            throw new DbEntityValidationException();
+            throw new FieldRequiredException(fieldName ?? "??unknown field");
         }
 
         return stringValue.Trim();
