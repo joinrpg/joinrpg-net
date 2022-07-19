@@ -6,9 +6,6 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
     <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="morelinq" Version="3.3.2" />
   </ItemGroup>
 </Project>

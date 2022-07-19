@@ -1,12 +1,9 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Helpers;
 
 public static class StaticCollectionHelpers
 {
     private static readonly Random Rng = new();
 
-    [NotNull, ItemNotNull]
     public static ISet<T> FlatTree<T>(this T obj,
         Func<T, IEnumerable<T>> parentSelectorFunc,
         bool includeSelf = true)
@@ -70,10 +67,10 @@ public static class StaticCollectionHelpers
 
     public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T>? collection) => collection ?? Enumerable.Empty<T>();
 
-    public static IEnumerable<T> Shuffle<T>([NotNull]
+    public static IEnumerable<T> Shuffle<T>(
         this IEnumerable<T> source) => Shuffle(source, Rng);
 
-    public static IEnumerable<T> Shuffle<T>([NotNull]
+    public static IEnumerable<T> Shuffle<T>(
         this IEnumerable<T> source,
         Random random)
     {
@@ -93,9 +90,8 @@ public static class StaticCollectionHelpers
         }
     }
 
-    public static IEnumerable<T> UnionUntilTotalCount<T>([NotNull]
+    public static IEnumerable<T> UnionUntilTotalCount<T>(
         this IReadOnlyCollection<T> alreadyTaken,
-        [NotNull]
         IEnumerable<T> toAdd,
         int totalLimit)
     {

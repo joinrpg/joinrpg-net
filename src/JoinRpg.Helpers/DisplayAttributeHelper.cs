@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using JetBrains.Annotations;
 
 namespace JoinRpg.Helpers;
 
@@ -13,8 +12,7 @@ public static class DisplayAttributeHelper
     /// <summary>
     /// Returns name of a member entry specified by <see cref="DisplayNameAttribute"/> or <see cref="DisplayAttribute"/>
     /// </summary>
-    [NotNull]
-    public static string GetDisplayName([NotNull] this MemberInfo propertyInfo)
+    public static string GetDisplayName(this MemberInfo propertyInfo)
     {
         if (propertyInfo == null)
         {
@@ -29,7 +27,7 @@ public static class DisplayAttributeHelper
     /// <summary>
     /// Returns name specified by <see cref="DisplayNameAttribute"/> or <see cref="DisplayAttribute"/>
     /// </summary>
-    public static string GetDisplayName<TEnum>([NotNull] this TEnum enumValue) where TEnum : notnull, Enum
+    public static string GetDisplayName<TEnum>(this TEnum enumValue) where TEnum : notnull, Enum
     {
         if (enumValue is null)
         {
