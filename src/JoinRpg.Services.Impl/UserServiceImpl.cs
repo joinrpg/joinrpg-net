@@ -201,7 +201,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
     /// <inheritdoc />
     public async Task RemoveVkFromProfile(int userId)
     {
-        logger.LogInformation("About to remove VK link from  user: {userId}");
+        logger.LogInformation("About to remove VK link from  user: {userId}", userId);
         if (CurrentUserId != userId)
         {
             throw new JoinRpgInvalidUserException();
