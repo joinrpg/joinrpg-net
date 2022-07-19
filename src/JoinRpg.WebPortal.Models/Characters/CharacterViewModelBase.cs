@@ -43,7 +43,7 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     public CustomFieldsViewModel Fields { get; set; }
 
     [CannotBeEmpty, DisplayName("Является частью групп")]
-    public int[] ParentCharacterGroupIds { get; set; } = new int[0] { };
+    public int[] ParentCharacterGroupIds { get; set; } = Array.Empty<int>();
 
     protected void FillFields(Character field, int currentUserId)
     {
