@@ -48,7 +48,11 @@
                             @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
                         </li>
                         <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
-                        <li role="separator" class="dropdown-header">По группам:</li>
+                        
+                        @if (Model.BigGroups.Any())
+                        {
+                          <li role="separator" class="dropdown-header">По группам:</li>
+                        }
                         @foreach (var cg in Model.BigGroups)
                             {
                         <li>@Html.ActionLink(cg.Name, "Details", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
@@ -78,7 +82,10 @@
                         <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId">Добавить персонажа</a>
                       </li>
 
-                      <li role="separator" class="dropdown-header">По группам:</li>
+                      @if (Model.BigGroups.Any())
+                      {
+                        <li role="separator" class="dropdown-header">По группам:</li>
+                      }
                       @foreach (var cg in Model.BigGroups)
                       {
                         <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
@@ -107,7 +114,10 @@
                         <li>@Html.ActionLink("Игрокам нужно заполнить", "SomeFieldsToFill", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
-                        <li role="separator" class="dropdown-header">По группам:</li>
+                        @if (Model.BigGroups.Any())
+                        {
+                          <li role="separator" class="dropdown-header">По группам:</li>
+                        }
                         @foreach (var cg in Model.BigGroups)
                             {
                         <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
