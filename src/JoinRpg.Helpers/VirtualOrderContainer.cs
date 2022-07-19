@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Helpers;
 
 public interface IOrderableEntity
@@ -19,13 +17,11 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
     private const char Separator = ',';
 
 
-    [NotNull, ItemNotNull]
     private List<TItem> Items { get; } = new List<TItem>();
 
 
-    public VirtualOrderContainer([CanBeNull]
-        string storedOrder,
-        [ItemNotNull] [NotNull]
+    public VirtualOrderContainer(
+        string? storedOrder,
         IEnumerable<TItem> entites)
     {
         storedOrder ??= "";

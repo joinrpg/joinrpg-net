@@ -1,19 +1,15 @@
 using System.Security.Cryptography;
 using System.Text;
-using JetBrains.Annotations;
 
 namespace JoinRpg.Helpers;
 
 public static class StaticStringHelpers
 {
-    [NotNull]
-    public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull]
+    public static string JoinIfNotNullOrWhitespace(
         this IEnumerable<string?> strings,
-        [NotNull]
         string separator) => string.Join(separator, strings.WhereNotNullOrWhiteSpace());
 
-    [NotNull, ItemNotNull]
-    public static IEnumerable<string> WhereNotNullOrWhiteSpace([ItemCanBeNull] [NotNull]
+    public static IEnumerable<string> WhereNotNullOrWhiteSpace(
         this IEnumerable<string?> strings)
     {
         if (strings == null)
@@ -24,10 +20,8 @@ public static class StaticStringHelpers
         return strings.Where(s => !string.IsNullOrWhiteSpace(s)).WhereNotNull();
     }
 
-    [NotNull]
-    public static string JoinStrings([NotNull] [ItemNotNull]
+    public static string JoinStrings(
         this IEnumerable<string> strings,
-        [NotNull]
         string separator)
     {
         if (strings == null)
@@ -43,8 +37,7 @@ public static class StaticStringHelpers
         return string.Join(separator, strings);
     }
 
-    [NotNull, PublicAPI]
-    public static string AsString([NotNull]
+    public static string AsString(
         this IEnumerable<char> strings)
     {
         if (strings == null)
@@ -55,18 +48,16 @@ public static class StaticStringHelpers
         return string.Join("", strings);
     }
 
-    public static IEnumerable<int> UnprefixNumbers([NotNull, ItemNotNull]
+    public static IEnumerable<int> UnprefixNumbers(
         this IEnumerable<string> enumerable,
-        [NotNull]
         string prefix)
     {
         return enumerable.Where(key => key.StartsWith(prefix))
             .Select(key => key.Substring(prefix.Length)).Select(int.Parse);
     }
 
-    public static int? UnprefixNumber([NotNull]
+    public static int? UnprefixNumber(
         this string number,
-        [NotNull]
         string prefix)
     {
         return number.StartsWith(prefix)
@@ -74,8 +65,7 @@ public static class StaticStringHelpers
             : null;
     }
 
-    [NotNull, PublicAPI]
-    public static string ToHexString([NotNull]
+    public static string ToHexString(
         this IEnumerable<byte> bytes)
     {
         if (bytes == null)
@@ -86,8 +76,7 @@ public static class StaticStringHelpers
         return bytes.Select(b => $"{b:x2}").JoinStrings("");
     }
 
-    [NotNull]
-    public static byte[] FromHexString([NotNull]
+    public static byte[] FromHexString(
         this string str)
     {
         if (str == null)
@@ -126,10 +115,8 @@ public static class StaticStringHelpers
         throw new ArgumentException(nameof(ch));
     }
 
-    [NotNull]
-    public static string RemoveFromString([NotNull]
+    public static string RemoveFromString(
         this string url,
-        [NotNull, ItemNotNull]
         IEnumerable<string> tokensToRemove,
         StringComparison stringComparison = StringComparison.CurrentCulture)
     {
@@ -148,10 +135,8 @@ public static class StaticStringHelpers
                 current.RemoveFromString(replaceToken, stringComparison));
     }
 
-    [NotNull, PublicAPI]
-    public static string RemoveFromString([NotNull]
+    public static string RemoveFromString(
         this string str,
-        [NotNull]
         string tokenToRemove,
         StringComparison stringComparison = StringComparison.CurrentCulture)
     {
@@ -187,7 +172,6 @@ public static class StaticStringHelpers
         return hashAlgorithm.ComputeHash(bytes).ToHexString();
     }
 
-    [NotNull]
     public static int[] ToIntList(this string? claimIds)
     {
         if (claimIds is null)
@@ -198,10 +182,8 @@ public static class StaticStringHelpers
         return claimIds.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse).ToArray();
     }
 
-    [NotNull]
-    public static string WithDefaultStringValue([CanBeNull]
-        this string value,
-        [NotNull]
+    public static string WithDefaultStringValue(
+        this string? value,
         string defaultValue)
     {
         if (defaultValue == null)
@@ -209,9 +191,9 @@ public static class StaticStringHelpers
             throw new ArgumentNullException(nameof(defaultValue));
         }
 
-        return string.IsNullOrEmpty(value) ? defaultValue : value;
+        // string.IsNullOrEmpty used from netstandard2, and here is not annotated yet.
+        return (value is null || string.IsNullOrEmpty(value)) ? defaultValue : value;
     }
 
-    [MustUseReturnValue]
     public static string ToHexString(this Guid guid) => guid.ToByteArray().ToHexString();
 }

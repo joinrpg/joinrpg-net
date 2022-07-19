@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel;
 
 [ComplexType]
 public class MarkdownString : IEquatable<MarkdownString>
 {
-    public MarkdownString([CanBeNull] string? contents) =>
+    public MarkdownString(string? contents) =>
         //TODO: Validate for correct Markdown
         Contents = contents;
 
@@ -14,7 +13,6 @@ public class MarkdownString : IEquatable<MarkdownString>
     {
     }
 
-    [CanBeNull]
     public string? Contents { get; private set; }
 
     public override string ToString() => $"Markdown({Contents})";
