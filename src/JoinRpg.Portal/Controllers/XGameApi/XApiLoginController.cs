@@ -28,6 +28,8 @@ public class XApiLoginController : ControllerBase
 
     [HttpPost("/x-api/token")]
     [IgnoreAntiforgeryToken]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(200)]
     public async Task<ActionResult> Login(
         [FromForm] string username,
         [FromForm] string password,

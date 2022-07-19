@@ -40,6 +40,6 @@ public class ProblemViewModel
 
     public ProblemSeverity Severity { get; }
 
-    public string Extra { get; }
+    public string? Extra { get; }
 }
 

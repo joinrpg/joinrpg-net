@@ -24,7 +24,9 @@ public class SchedulePageManager
 
     public async Task<SchedulePageViewModel> GetSchedule()
     {
-        var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+        var project =
+            (await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId))
+            ?? throw new JoinRpgEntityNotFoundException(CurrentProject.ProjectId, "project");
         var characters = await Project.GetCharacters(CurrentProject.ProjectId);
         var scheduleBuilder = new ScheduleBuilder(project, characters);
         var result = scheduleBuilder.Build();
