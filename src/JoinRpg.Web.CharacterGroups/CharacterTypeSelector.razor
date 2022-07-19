@@ -6,6 +6,12 @@
     <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
     <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
   }
+  else if (!CharactersHaveNameField)
+  {
+    <label>@characterType.GetDisplayName()</label>
+    <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только персонажей типа слот" />
+    <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
+  }
   else
   {
     <EnumRadioButtonGroup @bind-SelectedValue="@characterType" Name="@(Name + ".CharacterType")" />
@@ -17,6 +23,13 @@
   <FormRow Label="Лимит персонажей в слоте" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого слота.">
     <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" Min="0"/>
   </FormRow>
+
+  @if (!CharactersHaveNameField)
+  {
+      <FormRow Label="Название слота" >
+        <StringInput @bind-Value="@slotName" name="@(Name + ".SlotName")" Required="true" />
+      </FormRow>
+  }
 }
 
 @if (!HasApprovedClaim && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
@@ -37,12 +50,15 @@
     [Parameter]
     public bool HasApprovedClaim { get; set; } = false;
 
+    [Parameter] public bool CharactersHaveNameField { get; set; } = true;
+
     [Parameter]
     public string Name { get; set; } = "CharacterTypeInfo";
 
     private CharacterTypeView characterType;
     private bool isHot;
     private int? characterSlotLimit;
+    private string? slotName;
 
     private void IsHotChanged()
     {
@@ -57,9 +73,9 @@
       }
 
       CharacterType ct;
-      (ct, isHot, characterSlotLimit, _) = InitialModel;
+      (ct, isHot, characterSlotLimit, bool x, slotName) = InitialModel;
 
-      characterType = (CharacterTypeView)ct;
+      characterType = this.CharactersHaveNameField ? (CharacterTypeView)ct : CharacterTypeView.Slot;
     }
 
 }

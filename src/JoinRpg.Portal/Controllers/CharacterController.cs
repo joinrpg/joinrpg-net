@@ -101,9 +101,7 @@ public class CharacterController : Common.ControllerGameBase
                     ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                    FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
-                    //TODO we need way to set name for slots
-                    SlotName: null)
+                    FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix))
                 );
 
             return RedirectToAction("Details",
@@ -155,7 +153,6 @@ public class CharacterController : Common.ControllerGameBase
         {
             await CharacterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: viewModel.ProjectId,
-                SlotName: null, //TODO we need way to set name for slots
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
                 ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                 HidePlayerForCharacter: viewModel.HidePlayerForCharacter,

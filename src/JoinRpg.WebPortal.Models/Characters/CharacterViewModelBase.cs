@@ -21,6 +21,9 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     [Required]
     public CharacterTypeInfo CharacterTypeInfo { get; set; }
 
+    [ReadOnly(true)]
+    public bool CharactersHaveNameField { get; set; }
+
     [DisplayName("Имя персонажа")]
     public string Name { get; set; }
 
@@ -45,5 +48,6 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     protected void FillFields(Character field, int currentUserId)
     {
         Fields = new CustomFieldsViewModel(currentUserId, field);
+        CharactersHaveNameField = field.Project.Details.CharacterNameField is not null;
     }
 }

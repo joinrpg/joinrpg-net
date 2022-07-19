@@ -39,23 +39,16 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             ParentCharacterGroupIds =
                 await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
             ProjectId = addCharacterRequest.ProjectId,
+            Project = project,
             IsPublic = addCharacterRequest.IsPublic,
             IsActive = true,
             HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
         };
 
-        (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = addCharacterRequest.CharacterTypeInfo;
+        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
 
         Create(character);
         MarkTreeModified(project);
-
-        if (project.Details.CharacterNameField is null)
-        {
-            //We need this for scenario of creating slots
-            //TODO: It should be disabled to create characters in other scenarios
-            //If character name is bound to players name
-            character.CharacterName = addCharacterRequest.SlotName ?? "PLAYER_NAME";
-        }
 
         //TODO we do not send message for creating character
         _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
@@ -66,17 +59,32 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
+    private static void SetCharacterSettings(Character character, CharacterTypeInfo characterTypeInfo)
     {
-        var character = await LoadCharacter(editCharacterRequest.Id);
-
         if (character.Claims.Any(claim => claim.ClaimStatus.IsActive())
-            && editCharacterRequest.CharacterTypeInfo.CharacterType != character.CharacterType)
+            && characterTypeInfo.CharacterType != character.CharacterType)
         {
             throw new Exception("Can't change type of character with active claims");
         }
 
-        (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
+        (character.CharacterType,
+            character.IsHot,
+            character.CharacterSlotLimit,
+            character.IsAcceptingClaims,
+            _) = characterTypeInfo;
+
+        if (characterTypeInfo.CharacterType == CharacterType.Slot
+            && character.Project.Details.CharacterNameField is null)
+        {
+            character.CharacterName = Required(characterTypeInfo.SlotName);
+        }
+    }
+
+    public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
+    {
+        var character = await LoadCharacter(editCharacterRequest.Id);
+
+        SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo);
 
         character.IsPublic = editCharacterRequest.IsPublic;
 

@@ -38,8 +38,6 @@
                     </div>
                 </div>
 
-                @*TODO: We need way to change name for slots*@
-
                 <div class="form-group">
                     @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
                     <div class="col-md-10">
@@ -63,6 +61,7 @@
                   param-InitialModel="@(Model.CharacterTypeInfo)"
                   param-ActiveClaimsCount="@Model.ActiveClaimsCount"
                   param-HasApprovedClaim="@Model.HasApprovedClaim"
+                  param-CharactersHaveNameField="@Model.CharactersHaveNameField"
                   render-mode="WebAssemblyPrerendered"
                  />
 

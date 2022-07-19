@@ -15,7 +15,6 @@
   @Html.HiddenFor(model => model.ProjectId)
 
   <div class="form-horizontal">
-    @*TODO: We need way to set name for slots*@
 
     <div class="form-group">
       @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -46,7 +45,9 @@
 
      <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
                    param-Name="@("CharacterTypeInfo")"
-                   render-mode="WebAssemblyPrerendered" />
+                   param-CharactersHaveNameField="@Model.CharactersHaveNameField"
+                   render-mode="WebAssemblyPrerendered"
+                   />
 
     @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 

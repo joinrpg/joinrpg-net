@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.Helpers;
 using LinqKit;
 
@@ -83,7 +84,7 @@ internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepos
             UpdatedAt = character.UpdatedAt,
             IsActive = character.IsActive,
             InGame = character.InGame,
-            CharacterTypeInfo = new(character.CharacterType, character.IsHot, character.CharacterSlotLimit),
+            CharacterTypeInfo = character.ToCharacterTypeInfo(),
             JsonData = character.JsonData,
             ApprovedClaim = await Ctx.Set<Claim>()
                 .Where(claim => claim.CharacterId == characterId &&
