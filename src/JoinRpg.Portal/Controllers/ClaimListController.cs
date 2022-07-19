@@ -294,7 +294,7 @@ public class ClaimListController : Common.ControllerGameBase
                 title,
                 exportType.Value,
                 new MyClaimListItemViewModelExporter(UriService),
-                user.PrefferedName);
+                user.GetDisplayName());
         }
     }
 
