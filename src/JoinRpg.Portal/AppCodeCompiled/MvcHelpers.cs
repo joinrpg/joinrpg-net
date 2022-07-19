@@ -35,7 +35,7 @@ public static class MvcHtmlHelpers
     //    return htmlHelper.Hidden(propertyName, value, new { });
     //}
 
-    public static string GetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
+    public static string? GetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
         Expression<Func<TModel, TValue>> expression) => self.GetMetadataFor(expression).Description;
 
     private static string? TryGetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,

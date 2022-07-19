@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
@@ -120,7 +121,7 @@ public class PlotDisplayViewModel
 
             Elements = plots.Where(p => p.ElementType == plotElementType && p.IsActive == true)
                 .Select(selector)
-                .Where(p => p != null)
+                .WhereNotNull()
                 .Select(
                     p => new PlotElementViewModel(character,
                         currentUserId,

@@ -36,15 +36,11 @@ public static class Builders
         };
     }
 
-    private class AbstractLinkable : ISubscribeTarget
+    private record class AbstractLinkable
+        (LinkType LinkType, string Identification, int? ProjectId, string Name)
+        : ISubscribeTarget
     {
-        public LinkType LinkType { get; set; }
 
-        public string Identification { get; set; }
-
-        public int? ProjectId { get; set; }
-
-        public string Name { get; set; }
     }
 
     public static SubscribeListItemViewModel ToViewModel(this UserSubscriptionDto dto, IUriService uriService)
@@ -77,13 +73,11 @@ public static class Builders
             _ => throw new InvalidOperationException(),
         };
 
-        return new AbstractLinkable
-        {
-            LinkType = link.type,
-            Identification = link.id.ToString(),
-            ProjectId = dto.ProjectId,
-            Name = link.name,
-        };
+        return new AbstractLinkable(
+            link.type,
+            link.id.ToString(),
+            dto.ProjectId,
+            link.name);
     }
 
 }
