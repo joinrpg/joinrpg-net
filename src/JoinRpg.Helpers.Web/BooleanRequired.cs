@@ -28,26 +28,27 @@ public class BooleanRequiredAttribute : RequiredAttribute, IClientModelValidator
         return (bool)value;
     }
 
-    private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
-    {
-        if (attributes.ContainsKey(key))
-        {
-            return false;
-        }
-
-        attributes.Add(key, value);
-        return true;
-    }
-
     /// <inheritdoc cref="IClientModelValidator.AddValidation"/>
     public void AddValidation(ClientModelValidationContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        _ = MergeAttribute(context.Attributes, "data-val", "true");
-        _ = MergeAttribute(context.Attributes, "data-val-enforcetrue", ErrorMessage);
+        MergeAttribute("data-val", "true");
+        MergeAttribute("data-val-enforcetrue", ErrorMessage);
+
+        void MergeAttribute(string key, string? value)
+        {
+            if (context.Attributes.ContainsKey(key))
+            {
+                return;
+            }
+
+            if (value is null)
+            {
+                return;
+            }
+
+            context.Attributes.Add(key, value);
+        }
     }
 }
