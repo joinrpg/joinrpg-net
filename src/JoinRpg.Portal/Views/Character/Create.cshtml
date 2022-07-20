@@ -7,7 +7,7 @@
 }
 
 <h2>@ViewBag.Title</h2>
-
+<p>@Html.HelpLink("characters/slots.html", "Справка о персонажах")</p>
 
 @using (Html.BeginForm("Create", "Character", new { Model.ProjectId }, FormMethod.Post))
 {
