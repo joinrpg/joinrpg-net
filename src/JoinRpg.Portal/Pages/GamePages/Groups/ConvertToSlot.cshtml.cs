@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Characters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.GamePages;
 
+[RequireMaster]
 public class ConvertToSlotModel : PageModel
 {
     public void OnGet()
