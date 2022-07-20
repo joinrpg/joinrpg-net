@@ -312,7 +312,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         if (claim.Character?.CharacterType == CharacterType.Slot)
         {
-            var character = CreateCharacterFromSlot(claim.Character, claim.Player);
+            var character = await CreateCharacterFromSlot(claim.Character, claim.Player);
             claim.Character = character;
             claim.CharacterId = character.CharacterId;
         }
@@ -366,7 +366,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
                     CommentExtraAction.ApproveByMaster));
     }
 
-    private static Character CreateCharacterFromSlot(Character slot, User player)
+    private async Task<Character> CreateCharacterFromSlot(Character slot, User player)
     {
 
         switch (slot.CharacterSlotLimit)
@@ -417,6 +417,16 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
             UpdatedBy = player,
             UpdatedById = player.UserId,
         };
+
+        var plots = await PlotRepository.GetPlotsForCharacter(slot);
+
+        foreach (var plot in plots)
+        {
+            if (plot.TargetCharacters.Contains(slot))
+            {
+                plot.TargetCharacters.Add(newCharacter);
+            }
+        }
 
         return newCharacter;
     }
@@ -934,12 +944,19 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     }
 
     private readonly IAccommodationInviteService _accommodationInviteService;
+    private readonly IPlotService plotService;
+
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
       IFieldDefaultValueGenerator fieldDefaultValueGenerator,
         IAccommodationInviteService accommodationInviteService,
-        ICurrentUserAccessor currentUserAccessor
+        ICurrentUserAccessor currentUserAccessor,
+        IPlotService plotService
         ) : base(unitOfWork, emailService,
-      fieldDefaultValueGenerator, currentUserAccessor) => _accommodationInviteService = accommodationInviteService;
+      fieldDefaultValueGenerator, currentUserAccessor)
+    {
+        _accommodationInviteService = accommodationInviteService;
+        this.plotService = plotService;
+    }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
     {
