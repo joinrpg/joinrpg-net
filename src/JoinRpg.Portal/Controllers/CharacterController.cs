@@ -46,7 +46,7 @@ public class CharacterController : Common.ControllerGameBase
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
         var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
-        return (field?.Project == null ? NotFound() : null) ?? await ShowCharacter(field);
+        return field is null ? NotFound() : await ShowCharacter(field);
     }
 
     private async Task<ActionResult> ShowCharacter(Character character)
