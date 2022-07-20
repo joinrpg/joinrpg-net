@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
+using JoinRpg.DataModel.Extensions;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -30,7 +30,7 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
         IsActive = field.IsActive;
         HasApprovedClaim = field.ApprovedClaim is not null;
 
-        CharacterTypeInfo = new CharacterTypeInfo(field.CharacterType, field.IsHot, field.CharacterSlotLimit);
+        CharacterTypeInfo = field.ToCharacterTypeInfo();
 
         CreatedAt = field.CreatedAt;
         UpdatedAt = field.UpdatedAt;

@@ -13,13 +13,11 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     [ReadOnly(true)]
     public string ProjectName { get; set; }
 
-    [Display(Name = "Публично?",
-        Description =
-            "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
-    public bool IsPublic { get; set; } = true;
-
     [Required]
     public CharacterTypeInfo CharacterTypeInfo { get; set; }
+
+    [ReadOnly(true)]
+    public bool CharactersHaveNameField { get; set; }
 
     [DisplayName("Имя персонажа")]
     public string Name { get; set; }
@@ -33,17 +31,14 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
         }
     }
 
-    [Display(Name = "Всегда скрывать имя игрока",
-        Description = "Скрыть личность игрока, который играет данного персонажа.")]
-    public bool HidePlayerForCharacter { get; set; }
-
     public CustomFieldsViewModel Fields { get; set; }
 
     [CannotBeEmpty, DisplayName("Является частью групп")]
-    public int[] ParentCharacterGroupIds { get; set; } = new int[0] { };
+    public int[] ParentCharacterGroupIds { get; set; } = Array.Empty<int>();
 
     protected void FillFields(Character field, int currentUserId)
     {
         Fields = new CustomFieldsViewModel(currentUserId, field);
+        CharactersHaveNameField = field.Project.Details.CharacterNameField is not null;
     }
 }

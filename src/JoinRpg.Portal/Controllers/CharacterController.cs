@@ -46,7 +46,7 @@ public class CharacterController : Common.ControllerGameBase
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
         var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
-        return (field?.Project == null ? NotFound() : null) ?? await ShowCharacter(field);
+        return field is null ? NotFound() : await ShowCharacter(field);
     }
 
     private async Task<ActionResult> ShowCharacter(Character character)
@@ -73,10 +73,8 @@ public class CharacterController : Common.ControllerGameBase
         {
             ProjectId = field.ProjectId,
             CharacterId = field.CharacterId,
-            IsPublic = field.IsPublic,
             ProjectName = field.Project.ProjectName,
             CharacterTypeInfo = view.CharacterTypeInfo,
-            HidePlayerForCharacter = field.HidePlayerForCharacter,
             Name = field.CharacterName,
             ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
         }.Fill(field, CurrentUserId));
@@ -97,13 +95,9 @@ public class CharacterController : Common.ControllerGameBase
             await CharacterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                    IsPublic: viewModel.IsPublic,
                     ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                    HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                    FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
-                    //TODO we need way to set name for slots
-                    SlotName: null)
+                    FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix))
                 );
 
             return RedirectToAction("Details",
@@ -155,11 +149,8 @@ public class CharacterController : Common.ControllerGameBase
         {
             await CharacterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: viewModel.ProjectId,
-                SlotName: null, //TODO we need way to set name for slots
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
                 ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
-                HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                IsPublic: viewModel.IsPublic,
                 FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
             ));
 

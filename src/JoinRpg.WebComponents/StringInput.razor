@@ -1,0 +1,48 @@
+﻿<input type="text"
+  id="@Id"
+  class="form-control"
+  @onchange="UpdateValue"
+  name="@Name"
+  value="@Value"
+  data-val="@ValidationEnabled"
+  data-val-required="@RequiredMessageValue"
+  />
+
+<span
+  class="field-validation-valid text-danger"
+  data-valmsg-for="@Id"
+  data-valmsg-replace="true"></span>
+
+  @code {
+      [Parameter]
+      public string? Value { get; set; }
+
+      [Parameter]
+      public EventCallback<string?> ValueChanged { get; set; }
+
+      [Parameter]
+      public string? Name { get; set; } = null;
+
+      [Parameter]
+      public bool Required { get;set; } = false;
+
+      [Parameter]
+      public string? RequiredMessage { get; set; } = "Это поле обязательно к заполнению";
+
+      public string? ValidationEnabled => Required ? "true" : null;
+      public string? RequiredMessageValue => Required ? RequiredMessage : null ;
+
+      private string Id { get; set; } 
+
+      protected override void OnInitialized()
+      {
+        base.OnInitialized();
+        Id = Name ?? Random.Shared.NextInt64().ToString();
+      }
+
+      private async Task UpdateValue(ChangeEventArgs eventArgs)
+      {
+        var value = eventArgs.Value?.ToString();
+        await ValueChanged.InvokeAsync(string.IsNullOrWhiteSpace(value) ? null : value);
+      }
+    }

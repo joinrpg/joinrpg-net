@@ -265,11 +265,6 @@ public class GameGroupsController : ControllerGameBase
             HaveDirectSlots = GetDirectClaimSettings(group),
             DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
             CharacterGroupId = group.CharacterGroupId,
-            IsRoot = group.IsRoot,
-            CreatedAt = group.CreatedAt,
-            UpdatedAt = group.UpdatedAt,
-            CreatedBy = group.CreatedBy,
-            UpdatedBy = group.UpdatedBy,
         }, group));
     }
 
@@ -295,7 +290,6 @@ public class GameGroupsController : ControllerGameBase
 
         if (!ModelState.IsValid && !group.IsRoot) //TODO: We can't actually validate root group — too many errors.
         {
-            viewModel.IsRoot = group.IsRoot;
             return View(FillFromCharacterGroup(viewModel, group));
         }
 
@@ -318,7 +312,6 @@ public class GameGroupsController : ControllerGameBase
         catch (Exception e)
         {
             ModelState.AddException(e);
-            viewModel.IsRoot = group.IsRoot;
             return View(FillFromCharacterGroup(viewModel, group));
 
         }
@@ -418,6 +411,20 @@ public class GameGroupsController : ControllerGameBase
     {
         viewModel.ProjectName = field.Project.ProjectName;
         viewModel.ProjectId = field.Project.ProjectId;
+        return viewModel;
+    }
+
+    private static EditCharacterGroupViewModel FillFromCharacterGroup(
+        EditCharacterGroupViewModel viewModel,
+        CharacterGroup group)
+    {
+        viewModel.IsRoot = group.IsRoot;
+        viewModel.ShowConvertToSlotButton = group.Claims.Any() || group.HaveDirectSlots;
+        viewModel.CreatedAt = group.CreatedAt;
+        viewModel.UpdatedAt = group.UpdatedAt;
+        viewModel.CreatedBy = group.CreatedBy;
+        viewModel.UpdatedBy = group.UpdatedBy;
+        _ = FillFromCharacterGroup((CharacterGroupViewModelBase)viewModel, group);
         return viewModel;
     }
 

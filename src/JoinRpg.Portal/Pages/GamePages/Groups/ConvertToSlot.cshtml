@@ -1,0 +1,51 @@
+﻿@page "/{projectId:int}/roles/{characterGroupId:int}/convert-to-slot"
+
+@namespace JoinRpg.Portal.Pages.GamePages
+@model ConvertToSlotModel
+
+<h2>Создать слот из группы</h2>
+
+<div class="alert alert-info">
+  <h4>Зачем создавать @Html.HelpLink("characters/slots.html", "слот персонажа"):</h4>
+  <ul>
+    <li>В дальнейшем прямые заявки в группу поддерживаться не будут</li>
+    <li>Слоты персонажа позволяют заранее задать любые необходимые поля</li>
+  </ul>
+  <h4>Будут внесены следующие изменения</h4>
+  <ul>
+    <li>Под группой будет создан слот персонажей</li>
+    <li>Туда будут перенесены все заявки, поданные в группу (если они были)</li>
+    <li>Настройки лимита будут перенесены в слот (если они были)</li>
+    <li>Прямые заявки в группу будут закрыты</li>
+    <li>Название слота можно будет указать ниже</li>
+  </ul>
+</div>
+
+<form method="post">
+<div class="form-horizontal">
+        @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.CharacterGroupId)
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.SlotName, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.SlotName, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.SlotName, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Создать слот" class="btn btn-success"/>
+                <a
+                  asp-controller="GameGroup"
+                  asp-view="Edit"
+                  asp-route-ProjectId="@Model.ProjectId"
+                  asp-route-CharacterGroupId="@Model.CharacterGroupId">
+                  Назад к группе
+                </a>
+            </div>
+        </div>
+</div>
+</form>

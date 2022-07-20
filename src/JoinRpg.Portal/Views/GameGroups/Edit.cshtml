@@ -60,6 +60,20 @@
             </div>
         }
 
+        @if (Model.ShowConvertToSlotButton)
+        {
+          <div class="alert alert-warning">
+            В эту группу есть заявки. Рекомендуется 
+              <a
+                asp-page="/GamePages/Groups/ConvertToSlot"
+                asp-route-ProjectId="@Model.ProjectId"
+                asp-route-CharacterGroupId="@Model.CharacterGroupId"
+              >
+                создать слот персонажей</a>, дочерний для этой группы и переместить заявки туда.
+                Поддержка заявок в группу в перспективе будет отключена.
+          </div>
+        }
+
         <div class="form-group">
             @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">

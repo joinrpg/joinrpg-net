@@ -7,7 +7,7 @@
 }
 
 <h2>@ViewBag.Title</h2>
-
+<p>@Html.HelpLink("characters/slots.html", "Справка о персонажах")</p>
 
 @using (Html.BeginForm("Create", "Character", new { Model.ProjectId }, FormMethod.Post))
 {
@@ -15,7 +15,6 @@
   @Html.HiddenFor(model => model.ProjectId)
 
   <div class="form-horizontal">
-    @*TODO: We need way to set name for slots*@
 
     <div class="form-group">
       @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -28,25 +27,11 @@
       </div>
     </div>
 
-    <div class="form-group">
-      @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
-      <div class="col-md-10">
-        @Html.EditorFor(model => model.IsPublic)
-        @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
-      </div>
-    </div>
-
-    <div class="form-group">
-      @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-      <div class="col-md-10">
-        @Html.EditorFor(model => model.HidePlayerForCharacter)
-        @Html.ValidationMessageFor(model => model.HidePlayerForCharacter, "", new { @class = "text-danger" })
-      </div>
-    </div>
-
      <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
                    param-Name="@("CharacterTypeInfo")"
-                   render-mode="WebAssemblyPrerendered" />
+                   param-CharactersHaveNameField="@Model.CharactersHaveNameField"
+                   render-mode="WebAssemblyPrerendered"
+                   />
 
     @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 

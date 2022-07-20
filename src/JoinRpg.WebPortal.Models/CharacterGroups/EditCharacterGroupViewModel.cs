@@ -14,4 +14,6 @@ public class EditCharacterGroupViewModel : CharacterGroupViewModelBase, ICreated
     public User CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public User UpdatedBy { get; set; }
+
+    public bool ShowConvertToSlotButton { get; set; }
 }

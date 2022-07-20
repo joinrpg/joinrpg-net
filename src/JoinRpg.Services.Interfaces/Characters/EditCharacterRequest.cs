@@ -7,10 +7,7 @@ namespace JoinRpg.Services.Interfaces.Characters;
 /// </summary>
 public record EditCharacterRequest(
     CharacterIdentification Id,
-    bool IsPublic,
     IReadOnlyCollection<int> ParentCharacterGroupIds,
     CharacterTypeInfo CharacterTypeInfo,
-    bool HidePlayerForCharacter,
-    IReadOnlyDictionary<int, string?> FieldValues,
-    string? SlotName = null)
+    IReadOnlyDictionary<int, string?> FieldValues)
 { }

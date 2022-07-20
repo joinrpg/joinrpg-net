@@ -147,15 +147,10 @@ internal class CreateProjectService : ICreateProjectService
             }
             await characterService.AddCharacter(new AddCharacterRequest(
                     project.ProjectId,
-                    SlotName: slotName,
-                    IsPublic: true,
                     ParentCharacterGroupIds: new[] { project.RootGroup.CharacterGroupId },
-                    CharacterTypeInfo: new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: null),
-                    HidePlayerForCharacter: false,
+                    CharacterTypeInfo: CharacterTypeInfo.DefaultSlot(slotName),
                     FieldValues: fields
                     ));
         }
     }
-
-
 }

@@ -39,23 +39,13 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             ParentCharacterGroupIds =
                 await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
             ProjectId = addCharacterRequest.ProjectId,
-            IsPublic = addCharacterRequest.IsPublic,
-            IsActive = true,
-            HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
+            Project = project,
         };
 
-        (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = addCharacterRequest.CharacterTypeInfo;
+        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
 
         Create(character);
         MarkTreeModified(project);
-
-        if (project.Details.CharacterNameField is null)
-        {
-            //We need this for scenario of creating slots
-            //TODO: It should be disabled to create characters in other scenarios
-            //If character name is bound to players name
-            character.CharacterName = addCharacterRequest.SlotName ?? "PLAYER_NAME";
-        }
 
         //TODO we do not send message for creating character
         _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
@@ -66,22 +56,36 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
+    private static void SetCharacterSettings(Character character, CharacterTypeInfo characterTypeInfo)
     {
-        var character = await LoadCharacter(editCharacterRequest.Id);
-
         if (character.Claims.Any(claim => claim.ClaimStatus.IsActive())
-            && editCharacterRequest.CharacterTypeInfo.CharacterType != character.CharacterType)
+            && characterTypeInfo.CharacterType != character.CharacterType)
         {
             throw new Exception("Can't change type of character with active claims");
         }
 
-        (character.CharacterType, character.IsHot, character.CharacterSlotLimit, character.IsAcceptingClaims) = editCharacterRequest.CharacterTypeInfo;
+        (character.CharacterType,
+            character.IsHot,
+            character.CharacterSlotLimit,
+            character.IsAcceptingClaims,
+            _,
+            character.IsPublic,
+            character.HidePlayerForCharacter) = characterTypeInfo;
 
-        character.IsPublic = editCharacterRequest.IsPublic;
+        if (characterTypeInfo.CharacterType == CharacterType.Slot
+            && character.Project.Details.CharacterNameField is null)
+        {
+            character.CharacterName = Required(characterTypeInfo.SlotName);
+        }
 
-        character.HidePlayerForCharacter = editCharacterRequest.HidePlayerForCharacter;
         character.IsActive = true;
+    }
+
+    public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
+    {
+        var character = await LoadCharacter(editCharacterRequest.Id);
+
+        SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo);
 
         character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
             Required(editCharacterRequest.ParentCharacterGroupIds),
@@ -192,5 +196,58 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         {
             await EmailService.Email(email);
         }
+    }
+
+    public async Task<int> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName)
+    {
+        var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
+
+        group.Project
+            .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles)
+            .EnsureProjectActive();
+
+        var fields = new Dictionary<int, string?>();
+        var addCharacterRequest = new AddCharacterRequest(
+            projectId,
+            new[] { characterGroupId },
+            CharacterTypeInfo.DefaultSlot(slotName),
+            fields);
+
+        var character = new Character
+        {
+            ParentCharacterGroupIds =
+                await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
+            ProjectId = addCharacterRequest.ProjectId,
+            Project = group.Project,
+        };
+
+        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
+
+        Create(character);
+        MarkTreeModified(group.Project);
+
+        //TODO we do not send message for creating character
+        _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+            character,
+            addCharacterRequest.FieldValues,
+            FieldDefaultValueGenerator);
+
+        // Move limit to character
+        character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;
+
+        //Remove direct claim settings for groups
+        group.HaveDirectSlots = false;
+        group.AvaiableDirectSlots = 0;
+
+        // Move claims from group to character
+        foreach (var claim in group.Claims.ToList())
+        {
+            claim.CharacterGroupId = null;
+            claim.Character = character;
+        }
+
+        await UnitOfWork.SaveChangesAsync();
+
+        return character.CharacterId;
     }
 }
