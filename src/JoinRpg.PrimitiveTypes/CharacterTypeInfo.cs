@@ -45,6 +45,16 @@ public record CharacterTypeInfo
 
     public static CharacterTypeInfo Default() => new(CharacterType.Player, false, null, null, CharacterVisibility.Public);
 
+    public static CharacterTypeInfo DefaultSlot(string slotName)
+    {
+        return new(
+                                    CharacterType.Slot,
+                                    IsHot: false,
+                                    SlotLimit: null,
+                                    SlotName: slotName,
+                                    CharacterVisibility.Public);
+    }
+
     public void Deconstruct(
         out CharacterType characterType,
         out bool isHot,

@@ -197,4 +197,57 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             await EmailService.Email(email);
         }
     }
+
+    public async Task<int> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName)
+    {
+        var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
+
+        group.Project
+            .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles)
+            .EnsureProjectActive();
+
+        var fields = new Dictionary<int, string?>();
+        var addCharacterRequest = new AddCharacterRequest(
+            projectId,
+            new[] { characterGroupId },
+            CharacterTypeInfo.DefaultSlot(slotName),
+            fields);
+
+        var character = new Character
+        {
+            ParentCharacterGroupIds =
+                await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
+            ProjectId = addCharacterRequest.ProjectId,
+            Project = group.Project,
+        };
+
+        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
+
+        Create(character);
+        MarkTreeModified(group.Project);
+
+        //TODO we do not send message for creating character
+        _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+            character,
+            addCharacterRequest.FieldValues,
+            FieldDefaultValueGenerator);
+
+        // Move limit to character
+        character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;
+
+        //Remove direct claim settings for groups
+        group.HaveDirectSlots = false;
+        group.AvaiableDirectSlots = 0;
+
+        // Move claims from group to character
+        foreach (var claim in group.Claims.ToList())
+        {
+            claim.CharacterGroupId = null;
+            claim.Character = character;
+        }
+
+        await UnitOfWork.SaveChangesAsync();
+
+        return character.CharacterId;
+    }
 }
