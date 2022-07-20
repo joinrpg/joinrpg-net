@@ -73,10 +73,8 @@ public class CharacterController : Common.ControllerGameBase
         {
             ProjectId = field.ProjectId,
             CharacterId = field.CharacterId,
-            IsPublic = field.IsPublic,
             ProjectName = field.Project.ProjectName,
             CharacterTypeInfo = view.CharacterTypeInfo,
-            HidePlayerForCharacter = field.HidePlayerForCharacter,
             Name = field.CharacterName,
             ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
         }.Fill(field, CurrentUserId));
@@ -97,10 +95,8 @@ public class CharacterController : Common.ControllerGameBase
             await CharacterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                    IsPublic: viewModel.IsPublic,
                     ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                    HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
                     FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix))
                 );
 
@@ -155,8 +151,6 @@ public class CharacterController : Common.ControllerGameBase
                 ProjectId: viewModel.ProjectId,
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
                 ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
-                HidePlayerForCharacter: viewModel.HidePlayerForCharacter,
-                IsPublic: viewModel.IsPublic,
                 FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
             ));
 

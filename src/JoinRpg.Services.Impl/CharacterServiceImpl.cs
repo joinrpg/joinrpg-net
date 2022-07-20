@@ -40,9 +40,6 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
                 await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
             ProjectId = addCharacterRequest.ProjectId,
             Project = project,
-            IsPublic = addCharacterRequest.IsPublic,
-            IsActive = true,
-            HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
         };
 
         SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
@@ -71,13 +68,17 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             character.IsHot,
             character.CharacterSlotLimit,
             character.IsAcceptingClaims,
-            _) = characterTypeInfo;
+            _,
+            character.IsPublic,
+            character.HidePlayerForCharacter) = characterTypeInfo;
 
         if (characterTypeInfo.CharacterType == CharacterType.Slot
             && character.Project.Details.CharacterNameField is null)
         {
             character.CharacterName = Required(characterTypeInfo.SlotName);
         }
+
+        character.IsActive = true;
     }
 
     public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
@@ -85,11 +86,6 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         var character = await LoadCharacter(editCharacterRequest.Id);
 
         SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo);
-
-        character.IsPublic = editCharacterRequest.IsPublic;
-
-        character.HidePlayerForCharacter = editCharacterRequest.HidePlayerForCharacter;
-        character.IsActive = true;
 
         character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
             Required(editCharacterRequest.ParentCharacterGroupIds),

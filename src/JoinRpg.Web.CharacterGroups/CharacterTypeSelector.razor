@@ -1,4 +1,9 @@
 ﻿@using JoinRpg.PrimitiveTypes
+
+<FormRow Label="Видимость">
+  <EnumRadioButtonGroup @bind-SelectedValue="@characterVisibility" Name="@(Name + ".CharacterVisibility")" />
+</FormRow>
+
 <FormRow Label="Тип Персонажа">
   @if (ActiveClaimsCount > 0)
   {
@@ -56,26 +61,28 @@
     public string Name { get; set; } = "CharacterTypeInfo";
 
     private CharacterTypeView characterType;
+    private CharacterVisibilityView characterVisibility;
     private bool isHot;
     private int? characterSlotLimit;
     private string? slotName;
 
     private void IsHotChanged()
     {
-      isHot = !isHot;
+        isHot = !isHot;
     }
 
     protected override void OnInitialized()
     {
-      if (InitialModel is null)
-      {
-        throw new ArgumentNullException(nameof(InitialModel));
-      }
+        if (InitialModel is null)
+        {
+            throw new ArgumentNullException(nameof(InitialModel));
+        }
 
-      CharacterType ct;
-      (ct, isHot, characterSlotLimit, bool x, slotName) = InitialModel;
+        CharacterType ct;
+        (ct, isHot, characterSlotLimit, bool x, slotName, _, _) = InitialModel;
 
-      characterType = this.CharactersHaveNameField ? (CharacterTypeView)ct : CharacterTypeView.Slot;
+        characterType = this.CharactersHaveNameField ? (CharacterTypeView)ct : CharacterTypeView.Slot;
+        characterVisibility = (CharacterVisibilityView)InitialModel.CharacterVisibility;
     }
 
 }

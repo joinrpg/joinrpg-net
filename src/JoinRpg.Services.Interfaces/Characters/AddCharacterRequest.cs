@@ -7,9 +7,7 @@ namespace JoinRpg.Services.Interfaces.Characters;
 /// </summary>
 public record AddCharacterRequest(
     int ProjectId,
-    bool IsPublic,
     IReadOnlyCollection<int> ParentCharacterGroupIds,
     CharacterTypeInfo CharacterTypeInfo,
-    bool HidePlayerForCharacter,
     IReadOnlyDictionary<int, string?> FieldValues)
 { }

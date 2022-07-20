@@ -38,24 +38,6 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
-                    <div class="col-md-10">
-                        @Html.EditorFor(model => model.IsPublic)
-                        @Html.DescriptionFor(model => model.IsPublic)
-                    </div>
-
-                </div>
-
-                <div class="form-group">
-
-                    @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-                    <div class="col-md-10">
-                        @Html.EditorFor(model => model.HidePlayerForCharacter)
-                        @Html.DescriptionFor(model => model.HidePlayerForCharacter)
-                    </div>
-                </div>
-
                 <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
                   param-Name="@("CharacterTypeInfo")"
                   param-InitialModel="@(Model.CharacterTypeInfo)"

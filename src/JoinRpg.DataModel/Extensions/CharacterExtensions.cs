@@ -7,6 +7,19 @@ public static class CharacterExtensions
     {
         var slotName
             = character.CharacterType == CharacterType.Slot ? character.CharacterName : null;
-        return new(character.CharacterType, character.IsHot, character.CharacterSlotLimit, slotName);
+
+        var charVisibility =
+            (character.IsPublic, character.HidePlayerForCharacter) switch
+            {
+                (false, _) => CharacterVisibility.Private,
+                (true, false) => CharacterVisibility.Public,
+                (true, true) => CharacterVisibility.PlayerHidden,
+            };
+        return new(
+            character.CharacterType,
+            character.IsHot,
+            character.CharacterSlotLimit,
+            slotName,
+            charVisibility);
     }
 }

@@ -13,11 +13,6 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     [ReadOnly(true)]
     public string ProjectName { get; set; }
 
-    [Display(Name = "Публично?",
-        Description =
-            "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
-    public bool IsPublic { get; set; } = true;
-
     [Required]
     public CharacterTypeInfo CharacterTypeInfo { get; set; }
 
@@ -35,10 +30,6 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
                 "Персонаж должен принадлежать хотя бы к одной группе");
         }
     }
-
-    [Display(Name = "Всегда скрывать имя игрока",
-        Description = "Скрыть личность игрока, который играет данного персонажа.")]
-    public bool HidePlayerForCharacter { get; set; }
 
     public CustomFieldsViewModel Fields { get; set; }
 
