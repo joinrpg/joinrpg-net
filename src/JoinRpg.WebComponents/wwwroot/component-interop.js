@@ -14,7 +14,7 @@
 
 
 export function initBootstrapSelect(ref, initialValues) {
-  cachedScript("/_content/JoinRpg.WebComponents/lib/bootstrap-select/js/bootstrap-select.js", {
+  cachedScript("/lib/bootstrap-select/js/bootstrap-select.js", {
     complete: function (result) {
       $(ref).selectpicker();
       $(ref).selectpicker('val', initialValues);
