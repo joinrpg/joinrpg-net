@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.DataModel;
 
@@ -137,17 +138,4 @@ public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObj
     }
 
     public override string ToString() => $"ProjectField(Id={ProjectFieldId}, Name={FieldName})";
-}
-
-public enum FieldBoundTo
-{
-    Character,
-    Claim,
-}
-
-public enum MandatoryStatus
-{
-    Optional,
-    Recommended,
-    Required,
 }

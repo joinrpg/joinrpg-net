@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 public enum ProjectFieldType
 {
@@ -13,4 +13,17 @@ public enum ProjectFieldType
     ScheduleRoomField,
     ScheduleTimeSlotField,
     PinCode,
+}
+
+public enum FieldBoundTo
+{
+    Character,
+    Claim,
+}
+
+public enum MandatoryStatus
+{
+    Optional,
+    Recommended,
+    Required,
 }

@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 

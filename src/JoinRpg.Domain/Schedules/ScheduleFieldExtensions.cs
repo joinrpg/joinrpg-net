@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Schedules;
 

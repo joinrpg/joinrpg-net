@@ -28,7 +28,7 @@ public class GameFieldCreateViewModel : GameFieldViewModelBase
         {
             yield return
               new ValidationResult("Невозможно разрешить NPC поля, связанные с заявкой.",
-                new List<string> { nameof(DataModel.FieldBoundTo), nameof(ValidForNpc) });
+                new List<string> { nameof(FieldBoundTo), nameof(ValidForNpc) });
         }
         if (Price != 0 && !FieldViewType.SupportsPricingOnField())
         {

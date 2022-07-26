@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 // ReSharper disable once CheckNamespace
 namespace JoinRpg.Domain;

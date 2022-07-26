@@ -1,4 +1,5 @@
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.DataModel.Mocks;
 

@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.TestHelpers;
@@ -16,7 +17,7 @@ public class EnumTests
     public void AccessReason() => EnumerationTestComparer.EnsureSame<UserExtensions.AccessReason, AccessReason>();
 
     [Fact]
-    public void ProjectFieldType() => EnumerationTestComparer.EnsureSame<ProjectFieldViewType, DataModel.ProjectFieldType>();
+    public void ProjectFieldType() => EnumerationTestComparer.EnsureSame<ProjectFieldViewType, ProjectFieldType>();
 
     [Fact]
     public void ClaimStatus() => EnumerationTestComparer.EnsureSame<ClaimStatusView, DataModel.Claim.Status>();
