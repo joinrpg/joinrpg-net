@@ -11,6 +11,8 @@ namespace JoinRpg.Common.EmailSending.Impl;
 [UsedImplicitly]
 public class EmailSendingServiceImpl : IEmailSendingService
 {
+    private const int MaxRecipientsInChunk = 1000;
+
     private bool EmailEnabled { get; }
     private string ApiDomain { get; }
     private string ServiceEmail { get; }
@@ -42,14 +44,9 @@ public class EmailSendingServiceImpl : IEmailSendingService
             return;
         }
 
-        for (var i = 0; i * Constants.MaxRecipientsInChunk < to.Count; i++)
+        foreach (var recepientChunk in to.Chunk(MaxRecipientsInChunk))
         {
-            await SendEmailChunkImpl(
-                to.Skip(i * Constants.MaxRecipientsInChunk).Take(Constants.MaxRecipientsInChunk).ToList(),
-                subject,
-                text,
-                sender,
-                body);
+            await SendEmailChunkImpl(recepientChunk, subject, text, sender, body);
         }
     }
 
@@ -63,11 +60,9 @@ public class EmailSendingServiceImpl : IEmailSendingService
         var html = body.ToHtmlString().ToHtmlString();
         var text = body.ToPlainText().ToString();
 
-        for (var i = 0; i * Constants.MaxRecipientsInChunk < to.Count; i++)
+        foreach (var recepientChunk in to.Chunk(MaxRecipientsInChunk))
         {
-            await SendEmailChunkImpl(
-                to.Skip(i * Constants.MaxRecipientsInChunk).Take(Constants.MaxRecipientsInChunk).ToList(),
-                subject, text, sender, html);
+            await SendEmailChunkImpl(recepientChunk, subject, text, sender, html);
         }
     }
 
