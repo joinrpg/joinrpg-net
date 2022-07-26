@@ -70,7 +70,7 @@ jobs:
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
       - name: Turn github secrets to .env file
-        uses: shine1594/secrets-to-env-action@v1.5.2
+        uses: shine1594/secrets-to-env-action@v1.6.1
         with:
           secrets: ${{ toJSON(secrets) }}
           secrets_env: all
