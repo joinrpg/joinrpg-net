@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 public static class ProjectFieldTypeHelper
 {

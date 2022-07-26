@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models;
 

@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
 #nullable enable
