@@ -146,24 +146,19 @@ public static class CustomFieldsExtensions
           .FillIfEnabled(claim, claim.Character);
     }
 
-    [MustUseReturnValue, NotNull]
     public static AccessArguments GetAccessArguments(
-      [NotNull] this IFieldContainter entityWithFields,
+      this IFieldContainter entityWithFields,
       int userId)
     {
-        if (entityWithFields == null)
-        {
-            throw new ArgumentNullException(nameof(entityWithFields));
-        }
-
+        ArgumentNullException.ThrowIfNull(entityWithFields);
 
         if (entityWithFields is Claim claim)
         {
-            return new AccessArguments(claim, userId);
+            return AccessArgumentsFactory.Create(claim, userId);
         }
         if (entityWithFields is Character character)
         {
-            return new AccessArguments(character, userId);
+            return AccessArgumentsFactory.Create(character, userId);
         }
         throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
     }

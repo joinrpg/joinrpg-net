@@ -275,8 +275,8 @@ public class CustomFieldsViewModel
     {
         AccessArguments = new AccessArguments(
           target.HasMasterAccess(currentUserId),
-          playerAccessToCharacter: false,
-          playerAccesToClaim: true);
+          PlayerAccessToCharacter: false,
+          PlayerAccesToClaim: true);
 
         EditAllowed = target.Project.Active;
 
@@ -323,14 +323,14 @@ public class CustomFieldsViewModel
         if (onlyPlayerVisible)
         {
             AccessArguments = new AccessArguments(
-              masterAccess: false,
-              //TODO: this printing code might do smth wrong. Why Any access if we need palyer visible only?
-              playerAccessToCharacter: character.HasAnyAccess(currentUserId),
-              playerAccesToClaim: character.ApprovedClaim?.HasAccess(currentUserId, ExtraAccessReason.Player) ?? false);
+              MasterAccess: false,
+              // Not a "player visible", because it could be master that asks to view as player
+              PlayerAccessToCharacter: character.HasAnyAccess(currentUserId),
+              PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(currentUserId, ExtraAccessReason.Player) ?? false);
         }
         else
         {
-            AccessArguments = new AccessArguments(character, currentUserId);
+            AccessArguments = AccessArgumentsFactory.Create(character, currentUserId);
         }
 
         Target = character;
@@ -350,7 +350,7 @@ public class CustomFieldsViewModel
     /// </summary>
     public CustomFieldsViewModel(int? currentUserId, Claim claim) : this()
     {
-        AccessArguments = new AccessArguments(claim, currentUserId);
+        AccessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
 
         Target = claim.GetTarget();
         EditAllowed = claim.Project.Active;

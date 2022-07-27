@@ -136,7 +136,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
         PlayerLink = UserLinks.Create(claim.Player);
         ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
-        Status = new ClaimFullStatusView(claim, new AccessArguments(claim, currentUser.UserId));
+        Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser.UserId));
         CharacterGroupId = claim.CharacterGroupId;
         GroupName = claim.Group?.CharacterGroupName;
         CharacterId = claim.CharacterId;

@@ -43,7 +43,7 @@ public abstract class ClaimListItemViewModelBase : ILinkable
         {
             throw new ArgumentNullException(nameof(claim));
         }
-        var accessArguments = new AccessArguments(claim, currentUserId);
+        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
 
 
         (DateTime lastModifiedAt, User lastModifiedBy) = GetLastComment(claim, accessArguments);
