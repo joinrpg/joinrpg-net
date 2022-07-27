@@ -52,8 +52,8 @@ public static class FieldSaveHelper
         public void EnsureEditAccess(FieldWithValue field)
         {
             var accessArguments = Character != null
-                ? new AccessArguments(Character, CurrentUserId)
-                : new AccessArguments(Claim!, CurrentUserId); // Either character or claim should be not null
+                ? AccessArgumentsFactory.Create(Character, CurrentUserId)
+                : AccessArgumentsFactory.Create(Claim!, CurrentUserId); // Either character or claim should be not null
 
             var editAccess = field.HasEditAccess(accessArguments);
             if (!editAccess)
