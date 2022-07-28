@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel;
 
@@ -32,14 +31,12 @@ public class ProjectDetails : IValidatableObject
     ///   Null = bound to player name
     ///   Other value = bound to that field
     /// </summary>
-    [CanBeNull]
-    public ProjectField? CharacterNameField { get; set; }
+    public virtual ProjectField? CharacterNameField { get; set; }
     /// <summary>
     ///     Null = no character description
     ///     Other value = bound to that field
     /// </summary>
-    [CanBeNull]
-    public ProjectField? CharacterDescription { get; set; }
+    public virtual ProjectField? CharacterDescription { get; set; }
 
     /// <summary>
     /// If schedule module enabled on project
