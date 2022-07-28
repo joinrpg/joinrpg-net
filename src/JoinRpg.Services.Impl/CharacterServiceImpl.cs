@@ -29,7 +29,12 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
     public async Task AddCharacter(AddCharacterRequest addCharacterRequest)
     {
-        var project = await ProjectRepository.GetProjectAsync(addCharacterRequest.ProjectId);
+        var project = await ProjectRepository.GetProjectWithFieldsAsync(addCharacterRequest.ProjectId);
+
+        if (project is null)
+        {
+            throw new JoinRpgEntityNotFoundException(addCharacterRequest.ProjectId, "Project");
+        }
 
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = project.EnsureProjectActive();
