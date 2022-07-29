@@ -1,6 +1,5 @@
 using System.Data.Entity.Validation;
 using System.Diagnostics;
-using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -14,7 +13,6 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
 internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 {
 
@@ -152,8 +150,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         // ReSharper disable once UnusedVariable TODO decide if we should send email if FieldDefaultValueGenerator changes something
         var updatedFields =
-          FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(),
-            FieldDefaultValueGenerator);
+          fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>());
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -211,7 +208,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        var updatedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, FieldDefaultValueGenerator);
+        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields);
 
         var claimEmail = await CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
           CommentExtraAction.NewClaim);
@@ -355,8 +352,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         // 2. M.b. we need to move some field values from Claim to Characters
         // 3. (2) Could activate changing of special groups
         // ReSharper disable once MustUseReturnValue we don't need send email here
-        _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(),
-            FieldDefaultValueGenerator);
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>());
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -888,7 +884,6 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         await EmailService.Email(email);
     }
 
-    [ItemNotNull]
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
         var claim = await ClaimsRepository.GetClaim(projectId, claimId);
@@ -905,8 +900,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         //TODO: Prevent lazy load here - use repository
         var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
-        var updatedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue,
-          FieldDefaultValueGenerator);
+        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue);
         if (updatedFields.Any(f => f.Field.FieldBoundTo == FieldBoundTo.Character) && claim.Character != null)
         {
             MarkChanged(claim.Character);
@@ -944,17 +938,18 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         }
     }
 
+    private readonly FieldSaveHelper fieldSaveHelper;
     private readonly IAccommodationInviteService _accommodationInviteService;
     private readonly IPlotService plotService;
 
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+      FieldSaveHelper fieldSaveHelper,
         IAccommodationInviteService accommodationInviteService,
         ICurrentUserAccessor currentUserAccessor,
         IPlotService plotService
-        ) : base(unitOfWork, emailService,
-      fieldDefaultValueGenerator, currentUserAccessor)
+        ) : base(unitOfWork, emailService, currentUserAccessor)
     {
+        this.fieldSaveHelper = fieldSaveHelper;
         _accommodationInviteService = accommodationInviteService;
         this.plotService = plotService;
     }

@@ -13,19 +13,20 @@ namespace JoinRpg.Services.Impl;
 
 internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 {
+    private readonly FieldSaveHelper fieldSaveHelper;
+
     public CharacterServiceImpl(
         IUnitOfWork unitOfWork,
         IEmailService emailService,
-        IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+        FieldSaveHelper fieldSaveHelper,
         ICurrentUserAccessor currentUserAccessor
         ) : base(unitOfWork, currentUserAccessor)
     {
         EmailService = emailService;
-        FieldDefaultValueGenerator = fieldDefaultValueGenerator;
+        this.fieldSaveHelper = fieldSaveHelper;
     }
 
     private IEmailService EmailService { get; }
-    private IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
     public async Task AddCharacter(AddCharacterRequest addCharacterRequest)
     {
@@ -53,10 +54,9 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         MarkTreeModified(project);
 
         //TODO we do not send message for creating character
-        _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            addCharacterRequest.FieldValues,
-            FieldDefaultValueGenerator);
+            addCharacterRequest.FieldValues);
 
         await UnitOfWork.SaveChangesAsync();
     }
@@ -95,10 +95,9 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
             Required(editCharacterRequest.ParentCharacterGroupIds),
             ensureNotSpecial: true);
-        var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            editCharacterRequest.FieldValues,
-            FieldDefaultValueGenerator);
+            editCharacterRequest.FieldValues);
 
         MarkChanged(character);
         MarkTreeModified(character.Project); //TODO: Can be smarter
@@ -176,10 +175,9 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         _ = character.EnsureProjectActive();
 
-        var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            requestFieldValues,
-            FieldDefaultValueGenerator);
+            requestFieldValues);
 
         MarkChanged(character);
 
@@ -232,10 +230,9 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         MarkTreeModified(group.Project);
 
         //TODO we do not send message for creating character
-        _ = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            addCharacterRequest.FieldValues,
-            FieldDefaultValueGenerator);
+            addCharacterRequest.FieldValues);
 
         // Move limit to character
         character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;

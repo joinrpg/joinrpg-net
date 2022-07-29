@@ -6,7 +6,6 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -23,10 +22,9 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
     public FinanceOperationsImpl(
         IUnitOfWork unitOfWork,
         IEmailService emailService,
-        IFieldDefaultValueGenerator fieldDefaultValueGenerator,
         IVirtualUsersService vpu,
         ICurrentUserAccessor currentUserAccessor
-        ) : base(unitOfWork, emailService, fieldDefaultValueGenerator, currentUserAccessor) => _vpu = vpu;
+        ) : base(unitOfWork, emailService, currentUserAccessor) => _vpu = vpu;
 
     public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
