@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -52,14 +53,12 @@ public static class CharacterGroupReportViewModel
             var flatCharacters = flatChilds.SelectMany(c => c.Characters).Where(c => c.IsActive)
                 .Distinct().ToList();
 
-            vm.TotalSlots = flatChilds.Sum(c =>
-                                c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
-                            flatCharacters.Count(c => c.IsAvailable);
+            vm.TotalSlots = CountSlotsForGroups(flatChilds) + CountSlotsForCharacters(flatCharacters);
 
-            vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c =>
-                                     c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots);
+            vm.TotalCharacters = flatCharacters.Sum(x => CharacterSlotCount(x))
+                + CountSlotsForGroups(flatChilds);
             vm.TotalNpcCharacters =
-                flatCharacters.Count(c => !c.IsAcceptingClaims && c.ApprovedClaim == null);
+                flatCharacters.Count(c => c.CharacterType == PrimitiveTypes.CharacterType.NonPlayer);
             vm.TotalCharactersWithPlayers = flatCharacters.Count(c => c.ApprovedClaim != null);
             vm.TotalInGameCharacters = flatCharacters.Count(c => c.InGame);
 
@@ -75,7 +74,21 @@ public static class CharacterGroupReportViewModel
             vm.TotalCheckedInClaims =
                 flatCharacters.Count(c => c.ApprovedClaim?.CheckInDate != null);
             vm.Unlimited = vm.AvaiableDirectSlots == -1 ||
-                           flatChilds.Any(c => c.AvaiableDirectSlots == -1);
+                           flatChilds.Any(c => c.AvaiableDirectSlots == -1) || flatCharacters.Any(c => c.CharacterType == PrimitiveTypes.CharacterType.Slot && c.CharacterSlotLimit is null);
         }
+
+        private static int CountSlotsForCharacters(List<Character> flatCharacters) => flatCharacters.Sum(c => CharacterSlotCount(c));
+        private static int CountSlotsForGroups(List<CharacterGroup> flatChilds) => flatChilds.Sum(c => GroupSlotCount(c));
+        private static int CharacterSlotCount(Character c) =>
+            (c.CharacterType, c.ApprovedClaim) switch
+            {
+                (_, not null) => 0,
+                (CharacterType.Slot, null) => c.CharacterSlotLimit ?? 0,
+                (CharacterType.NonPlayer, null) => 0,
+                (CharacterType.Player, null) => 1,
+                _ => throw new InvalidOperationException(),
+            };
+
+        private static int GroupSlotCount(CharacterGroup c) => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots;
     }
 }
