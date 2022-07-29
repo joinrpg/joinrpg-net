@@ -1,0 +1,28 @@
+using JoinRpg.DataModel;
+
+namespace JoinRpg.Domain.CharacterFields;
+
+internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
+{
+    protected new Claim Claim => base.Claim!; //Claim should always exists
+
+    public SaveToClaimOnlyStrategy(Claim claim,
+        int currentUserId,
+        IFieldDefaultValueGenerator generator) : base(claim,
+        character: null,
+        currentUserId,
+        generator)
+    {
+    }
+
+    public override void Save(Dictionary<int, FieldWithValue> fields)
+    {
+        //TODO do not save fields that have values same as character's
+        Claim.JsonData = fields.Values.SerializeFields();
+    }
+
+    protected override void SetCharacterNameFromPlayer()
+    {
+        //Do nothing player could not change character yet
+    }
+}

@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -13,14 +12,11 @@ namespace JoinRpg.Services.Impl;
 public abstract class ClaimImplBase : DbServiceImplBase
 {
     protected IEmailService EmailService { get; }
-    protected IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
     protected ClaimImplBase(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator,
       ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
         EmailService = emailService;
-        FieldDefaultValueGenerator = fieldDefaultValueGenerator;
     }
 
     protected Comment AddCommentImpl(Claim claim,
