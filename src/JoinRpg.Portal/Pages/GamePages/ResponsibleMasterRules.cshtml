@@ -6,7 +6,7 @@
 
 <h3>Настройки ответственных мастеров</h3>
 
-@(await Html.RenderComponentAsync<ResponsibleMasterRulesList>(RenderMode.WebAssembly, new {Model.ProjectId}))
+@(await Html.RenderComponentAsync<ResponsibleMasterRulesList>(RenderMode.WebAssemblyPrerendered, new {Model.ProjectId}))
 
 @section Scripts {
   <script src="/_framework/blazor.webassembly.js"></script>
