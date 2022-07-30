@@ -204,3 +204,6 @@ appsettings.Development.json
 /src/JoinRpg.Portal/wwwroot/lib
 /src/JoinRpg.WebComponents/wwwroot/lib
 /src/JoinRpg.Blazor.ComponentBook/wwwroot/lib
+
+#generated kubeconfig
+/scripts/github-actions-*

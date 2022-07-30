@@ -64,7 +64,7 @@ Write-Host "Secret name will be $SECRET_NAME"
 
 $TOKEN_DATA=kubectl get secret ${SECRET_NAME} --context ${CONTEXT} --namespace ${NAMESPACE} -o jsonpath='{.data.token}' | Out-String -NoNewline
 
-$TOKEN = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($TOKEN_DATA))
+$TOKEN = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($TOKEN_DATA))
 
 # Craft kubeconfig which uses ServiceAccount created above
 
