@@ -17,7 +17,7 @@ public class RecaptchaVerificator : IRecaptchaVerificator
         this.reCaptchaService = reCaptchaService;
         this.recaptchaOptions = recaptchaOptions;
     }
-    public Task<bool> ValidateToken(string recaptchaToken, IPAddress clientIp)
+    public Task<bool> ValidateToken(string recaptchaToken, IPAddress? clientIp)
     {
         //this can be null i.e. under proxy or from localhost.
         //TODO IISIntegration, etc
@@ -32,8 +32,6 @@ public class RecaptchaVerificator : IRecaptchaVerificator
             && IsRecaptchaKeyValid(recaptchaOptions.Value.PrivateKey);
     }
 
-    private bool IsRecaptchaKeyValid(string key)
-    {
-        return !string.IsNullOrEmpty(key) && !string.Equals(key, "_");
-    }
+    private static bool IsRecaptchaKeyValid(string key)
+        => !string.IsNullOrEmpty(key) && !string.Equals(key, "_");
 }
