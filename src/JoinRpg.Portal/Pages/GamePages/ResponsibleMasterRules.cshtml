@@ -4,7 +4,11 @@
 
 @model JoinRpg.Portal.Pages.GamePages.ResponsibleMasterRulesModel
 
-<h3>Настройки ответственных мастеров</h3>
+@{
+    ViewData["Title"] = "Настройки ответственных мастеров";
+}
+
+<h3>@ViewData["Title"]</h3>
 
 @(await Html.RenderComponentAsync<ResponsibleMasterRulesList>(RenderMode.WebAssemblyPrerendered, new {Model.ProjectId}))
 
