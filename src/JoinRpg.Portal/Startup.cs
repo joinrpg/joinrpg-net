@@ -192,6 +192,12 @@ public class Startup
               }
           });
 
+        _ = app.UseSerilogRequestLogging(opts =>
+        {
+            opts.EnrichDiagnosticContext = SerilogHelper.EnrichFromRequest;
+            opts.GetLevel = SerilogHelper.ExcludeHealthChecks;
+        });
+
         _ = app
             .UseSwagger(Swagger.Configure)
             .UseSwaggerUI(Swagger.ConfigureUI);
@@ -203,12 +209,6 @@ public class Startup
 
         _ = app.UseStaticFiles()
                .UseBlazorFrameworkFiles();
-
-        _ = app.UseSerilogRequestLogging(opts =>
-        {
-            opts.EnrichDiagnosticContext = SerilogHelper.EnrichFromRequest;
-            opts.GetLevel = SerilogHelper.ExcludeHealthChecks;
-        });
 
         _ = app.UseRouting();
 
