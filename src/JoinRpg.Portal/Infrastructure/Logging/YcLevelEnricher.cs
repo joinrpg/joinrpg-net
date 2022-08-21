@@ -20,6 +20,6 @@ public class YcLevelEnricher : ILogEventEnricher
             LogEventLevel.Warning => "WARN",
             LogEventLevel.Error => "ERROR",
             LogEventLevel.Fatal => "FATAL",
-            _ => throw new ArgumentOutOfRangeException(nameof(level), level,  $@"Unknown {nameof(LogEventLevel)} kind: {level}")
+            _ => throw new ArgumentOutOfRangeException(nameof(level), level, $@"Unknown {nameof(LogEventLevel)} kind: {level}")
         };
 }

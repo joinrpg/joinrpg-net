@@ -26,6 +26,6 @@ public class SerilogRazorPagesFilter : IPageFilter
     }
 
     // Required by the interface
-    public void OnPageHandlerExecuted(PageHandlerExecutedContext context){}
-    public void OnPageHandlerExecuting(PageHandlerExecutingContext context) {}
+    public void OnPageHandlerExecuted(PageHandlerExecutedContext context) { }
+    public void OnPageHandlerExecuting(PageHandlerExecutingContext context) { }
 }

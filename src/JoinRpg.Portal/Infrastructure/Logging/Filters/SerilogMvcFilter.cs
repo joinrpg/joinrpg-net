@@ -20,5 +20,5 @@ public class SerilogMvcFilter : IActionFilter
     }
 
     // Required by the interface
-    public void OnActionExecuted(ActionExecutedContext context){}
+    public void OnActionExecuted(ActionExecutedContext context) { }
 }

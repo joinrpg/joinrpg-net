@@ -31,7 +31,7 @@ public static class SerilogExtensions
             {
                 continue;
             }
-            loggerConfiguration = loggerConfiguration.MinimumLevel.Override(@namespace,  LevelConvert.ToSerilogLevel(logLevel));
+            loggerConfiguration = loggerConfiguration.MinimumLevel.Override(@namespace, LevelConvert.ToSerilogLevel(logLevel));
         }
 
         if (serilogOptions.Structured)
