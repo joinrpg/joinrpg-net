@@ -6,6 +6,8 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
+using JoinRpg.Portal.Infrastructure.Logging;
+using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -16,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Serilog;
 
 namespace JoinRpg.Portal;
 
@@ -42,8 +45,6 @@ public class Startup
 
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>();
 
-        _ = services.AddLogging();
-
         _ = services.AddHttpContextAccessor();
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -57,6 +58,8 @@ public class Startup
                 {
                     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
                 }
+                options.Filters.Add<SerilogMvcFilter>();
+                options.Filters.Add<SerilogRazorPagesFilter>();
                 options.Filters.Add(new SetIsProductionFilterAttribute());
                 options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
 
@@ -200,6 +203,12 @@ public class Startup
 
         _ = app.UseStaticFiles()
                .UseBlazorFrameworkFiles();
+
+        _ = app.UseSerilogRequestLogging(opts =>
+        {
+            opts.EnrichDiagnosticContext = SerilogHelper.EnrichFromRequest;
+            opts.GetLevel = SerilogHelper.ExcludeHealthChecks;
+        });
 
         _ = app.UseRouting();
 
