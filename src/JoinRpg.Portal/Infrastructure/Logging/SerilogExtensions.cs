@@ -18,8 +18,8 @@ public static class SerilogExtensions
 
         var globalMinimumLogLevelSerilog = LevelConvert.ToSerilogLevel(serilogOptions.LogLevel["Default"]);
 
-        loggerConfiguration.MinimumLevel
-            .ControlledBy(new LoggingLevelSwitch(globalMinimumLogLevelSerilog))
+        loggerConfiguration
+            .MinimumLevel.ControlledBy(new LoggingLevelSwitch(globalMinimumLogLevelSerilog))
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.With<YcLevelEnricher>()

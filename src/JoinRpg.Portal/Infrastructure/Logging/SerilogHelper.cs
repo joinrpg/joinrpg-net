@@ -25,7 +25,7 @@ public static class SerilogHelper
 
         // Retrieve the IEndpointFeature selected for the request
         var endpoint = httpContext.GetEndpoint();
-        if (endpoint is object) // endpoint != null
+        if (endpoint is not null)
         {
             diagnosticContext.Set("EndpointName", endpoint.DisplayName);
         }
@@ -33,7 +33,7 @@ public static class SerilogHelper
     private static bool IsHealthCheckEndpoint(HttpContext ctx)
     {
         var endpoint = ctx.GetEndpoint();
-        if (endpoint is object) // same as !(endpoint is null)
+        if (endpoint is not null)
         {
             return string.Equals(endpoint.DisplayName, "Health checks", StringComparison.Ordinal);
         }
@@ -42,7 +42,7 @@ public static class SerilogHelper
         return false;
     }
 
-    public static LogEventLevel ExcludeHealthChecks(HttpContext ctx, double _, Exception ex) =>
+    public static LogEventLevel ExcludeHealthChecks(HttpContext ctx, double _, Exception? ex) =>
         ex != null
             ? LogEventLevel.Error
             : ctx.Response.StatusCode > 499
