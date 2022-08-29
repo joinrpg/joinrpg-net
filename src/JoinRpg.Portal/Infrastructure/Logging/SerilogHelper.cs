@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Serilog;
 using Serilog.Events;
 
@@ -28,6 +29,15 @@ public static class SerilogHelper
         if (endpoint is not null)
         {
             diagnosticContext.Set("EndpointName", endpoint.DisplayName);
+        }
+
+        if (httpContext.User.Identity?.IsAuthenticated == true)
+        {
+            diagnosticContext.Set("LoggedUser", httpContext.User.FindFirst(ClaimTypes.Email)!.Value);
+        }
+        else
+        {
+            diagnosticContext.Set("LoggedUser", "null");
         }
     }
     private static bool IsHealthCheckEndpoint(HttpContext ctx)

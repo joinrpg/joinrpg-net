@@ -23,6 +23,11 @@ public class SerilogRazorPagesFilter : IPageFilter
         _diagnosticContext.Set("ActionName", context.ActionDescriptor.DisplayName);
         _diagnosticContext.Set("ActionId", context.ActionDescriptor.Id);
         _diagnosticContext.Set("ValidationState", context.ModelState.IsValid);
+
+        if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectId))
+        {
+            _diagnosticContext.Set("ProjectId", projectId);
+        }
     }
 
     // Required by the interface

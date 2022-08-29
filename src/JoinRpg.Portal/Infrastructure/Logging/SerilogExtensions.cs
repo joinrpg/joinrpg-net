@@ -40,7 +40,8 @@ public static class SerilogExtensions
                 "AppName", "TokenId", "UserId", "UserName", "TraceId", "SpanId", "MachineName",
                 "Host", "Protocol", "Scheme", "ResponseContentType", "RequestMethod", "RequestPath",
                 "StatusCode", "Elapsed", "SourceContext", "RequestId", "ConnectionId", "EndpointName",
-                "RouteData", "ActionName", "ActionId", "ValidationState", "RazorPageHandler", "YcLevel"
+                "RouteData", "ActionName", "ActionId", "ValidationState", "RazorPageHandler", "YcLevel",
+                "QueryString", "ViewComponentName", "ViewComponentId", "LoggedUser", "ProjectId",
             };
 
             loggerConfiguration.WriteTo.Console(formatter: new CustomJsonFormatter(topLevelPropertiesNames));
