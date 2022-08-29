@@ -1,7 +1,6 @@
 using Serilog;
 using Serilog.Core;
 using Serilog.Debugging;
-using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
