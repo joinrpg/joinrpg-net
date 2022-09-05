@@ -12,7 +12,7 @@ public enum CharacterBusyStatusView
     NoClaims,
     [Display(Name = "NPC")]
     Npc,
-    [Display(Name = "Слот")]
+    [Display(Name = "Шаблон")]
     Slot,
     Unknown,
 }

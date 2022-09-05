@@ -14,7 +14,7 @@
   else if (!CharactersHaveNameField)
   {
     <label>@characterType.GetDisplayName()</label>
-    <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только персонажей типа слот" />
+    <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только шаблоны персонажей (другие типы персонажей создавать нельзя)" />
     <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
   }
   else
@@ -25,13 +25,13 @@
 
 @if (characterType == CharacterTypeView.Slot)
 {
-  <FormRow Label="Лимит персонажей в слоте" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого слота.">
+  <FormRow Label="Лимит персонажей для шаблона" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого шаблона.">
     <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" Min="0"/>
   </FormRow>
 
   @if (!CharactersHaveNameField)
   {
-      <FormRow Label="Название слота" >
+      <FormRow Label="Название шаблона персонажей" >
         <StringInput @bind-Value="@slotName" name="@(Name + ".SlotName")" Required="true" />
       </FormRow>
   }
