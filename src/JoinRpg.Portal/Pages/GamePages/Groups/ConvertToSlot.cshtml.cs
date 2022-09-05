@@ -33,6 +33,6 @@ public class ConvertToSlotModel : PageModel
 
     [BindProperty]
     [Required]
-    [Display(Name = "Название слота")]
+    [Display(Name = "Название шаблона персонажа")]
     public string SlotName { get; set; }
 }
