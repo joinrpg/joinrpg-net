@@ -32,15 +32,22 @@
         <text>&nbsp;</text>
         <a asp-controller="Claim" asp-action="AddForCharacter" asp-route-projectid="@Model.ProjectId" asp-route-characterId="@Model.CharacterId" class="btn btn-default btn-xs">
           заявиться
-          @if (Model.SlotLimit is not null)
+          @if (Model.SlotLimit is not null && Model.SlotLimit > 1)
           {
-            <text>&nbsp; (@Model.SlotLimit мест)</text>
+                <text>&nbsp; (@Html.DisplayCount_OfX(Model.SlotLimit.Value, "место", "места", "мест"))</text>
           }
         </a>
         if (Model.IsHot)
         {
             <span class="label label-warning">Горячая роль</span>
         }
+    }
+    else
+    {
+        if (Model.SlotLimit is not null && Model.SlotLimit > 1)
+          {
+                <text>&nbsp; (@Html.DisplayCount_OfX(Model.SlotLimit.Value, "место", "места", "мест"))</text>
+          }
     }
 
     @if (Model.HasEditRolesAccess)
