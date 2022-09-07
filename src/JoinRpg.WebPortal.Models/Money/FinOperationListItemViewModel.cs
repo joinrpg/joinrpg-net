@@ -19,7 +19,7 @@ public class FinOperationListItemViewModel : ILinkable
     public int FeeChange { get; }
 
     [Display(Name = "Оплачено мастеру")]
-    public User PaymentMaster { get; }
+    public User? PaymentMaster { get; }
 
     [Display(Name = "Способ оплаты"), Required]
     public string PaymentTypeName { get; }
@@ -52,8 +52,10 @@ public class FinOperationListItemViewModel : ILinkable
     public FinOperationListItemViewModel(FinanceOperation fo, IUriService uriService)
     {
         ProjectId = fo.ProjectId;
-        PaymentTypeName = fo.PaymentType?.GetDisplayName();
         PaymentMaster = fo.PaymentType?.User;
+        PaymentTypeName =
+            fo.PaymentType?.GetDisplayName()                                        // If this is a payment, get payment type
+            ?? ((FinanceOperationTypeViewModel)fo.OperationType).GetDisplayName();  // if this is other operation type, just display operation type
         Claim = fo.Claim.Name;
         FeeChange = fo.FeeChange;
         Money = fo.MoneyAmount;
@@ -62,14 +64,6 @@ public class FinOperationListItemViewModel : ILinkable
         MarkingMaster = fo.Comment.Author;
         Player = fo.Claim.Player;
         ClaimLink = uriService.Get(fo.Claim);
-
         ClaimId = fo.ClaimId;
-
-        if (fo.OperationType == FinanceOperationType.TransferFrom ||
-            fo.OperationType == FinanceOperationType.TransferTo)
-        {
-            PaymentTypeName =
-                ((FinanceOperationTypeViewModel)fo.OperationType).GetDisplayName();
-        }
     }
 }
