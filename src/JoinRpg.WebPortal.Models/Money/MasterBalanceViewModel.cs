@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
@@ -8,6 +7,7 @@ namespace JoinRpg.Web.Models;
 
 public class MasterBalanceViewModel
 {
+    [Display(Name = "Мастер")]
     public User Master { get; }
 
     [Display(Name = "Денег на руках")]
@@ -28,12 +28,16 @@ public class MasterBalanceViewModel
     public int ProjectId { get; }
 
     public MasterBalanceViewModel(
-        [NotNull] User master,
+        User master,
         int projectId,
         IReadOnlyCollection<FinanceOperation> masterOperations,
         IReadOnlyCollection<MoneyTransfer> masterTransfers)
     {
-        Master = master ?? throw new ArgumentNullException(nameof(master));
+        ArgumentNullException.ThrowIfNull(master);
+        ArgumentNullException.ThrowIfNull(masterOperations);
+        ArgumentNullException.ThrowIfNull(masterTransfers);
+
+        Master = master;
         ProjectId = projectId;
         ReceiveBalance = masterTransfers.ReceivedByMasterSum(master);
         SendBalance = masterTransfers.SendedByMasterSum(master);
