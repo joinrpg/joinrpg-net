@@ -73,15 +73,19 @@
 
     protected override void OnInitialized()
     {
-        if (InitialModel is null)
-        {
-            throw new ArgumentNullException(nameof(InitialModel));
-        }
+        ArgumentNullException.ThrowIfNull(InitialModel);
 
         CharacterType ct;
         (ct, isHot, characterSlotLimit, bool x, slotName, _, _) = InitialModel;
 
-        characterType = this.CharactersHaveNameField ? (CharacterTypeView)ct : CharacterTypeView.Slot;
+        if (!CharactersHaveNameField && ActiveClaimsCount == 0)
+        {
+            // We are creating or editing character without claims in project that have no name field
+            // We can create ONLY slots in thus projects
+            ct = CharacterType.Slot;
+        }
+
+        characterType = (CharacterTypeView)ct;
         characterVisibility = (CharacterVisibilityView)InitialModel.CharacterVisibility;
     }
 
