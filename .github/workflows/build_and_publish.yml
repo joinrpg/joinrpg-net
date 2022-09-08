@@ -57,9 +57,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget
 
-    - name: Restore docker images cache
-      uses: satackey/action-docker-layer-caching@v0.0.11
-      continue-on-error: true
+ #temporary disable docker cache
+ #   - name: Restore docker images cache
+ #     uses: satackey/action-docker-layer-caching@v0.0.11
+ #     continue-on-error: true
 
     - name: Restore
       run: dotnet restore
