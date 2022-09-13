@@ -1,0 +1,20 @@
+﻿@if (!string.IsNullOrWhiteSpace(Link))
+{
+  if (Collapse)
+  {
+     <a href="https://t.me/@Link"><span class="glyphicon glyphicon-send" aria-hidden="true"></span></a>
+  }
+  else
+  {
+    <text><span class="glyphicon glyphicon-send" aria-hidden="true"></span>&nbsp;<a href="https://t.me/@Link">@Link</a></text>
+  }
+}
+
+
+@code {
+    [Parameter]
+    public string? Link { get; set; }
+
+    [Parameter]
+    public bool Collapse { get; set; }
+}
