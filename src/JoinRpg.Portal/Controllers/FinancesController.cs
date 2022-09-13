@@ -66,14 +66,15 @@ public class FinancesController : ControllerGameBase
     }
 
     [HttpGet]
+    [RequireMaster]
     public async Task<ActionResult> Operations(int projectid, string export)
   => await GetFinanceOperationsList(projectid, export, fo => fo.MoneyFlowOperation && fo.Approved);
 
     [HttpGet]
+    [RequireMaster]
     public async Task<ActionResult> Moderation(int projectid, string export)
   => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration || (fo.State == FinanceOperationState.Proposed && fo.OperationType == FinanceOperationType.Online));
 
-    [MasterAuthorize]
     private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
     {
         var project = await ProjectRepository.GetProjectWithFinances(projectid);
