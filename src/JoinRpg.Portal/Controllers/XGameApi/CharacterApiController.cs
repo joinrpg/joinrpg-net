@@ -87,10 +87,12 @@ public class CharacterApiController : XGameApiController
 
     /// <summary>
     /// Allows to set character fields as master
+    /// </summary>
     /// <param name="projectId">Project ID</param>
     /// <param name="characterId">Character ID</param>
-    /// <param name="fieldValues">Key = FieldId, Value = field value</param>
-    /// </summary>
+    /// <param name="fieldValues">
+    /// Key = FieldId, Value = field value.
+    /// Skipped values will be left unchanged</param>
     [XGameMasterAuthorize()]
     [HttpPost]
     [Route("{characterId}/fields")]
