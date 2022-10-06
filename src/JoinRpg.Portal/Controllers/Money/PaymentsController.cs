@@ -10,13 +10,16 @@ public class PaymentsController : Common.ControllerBase
 {
     private ICurrentUserAccessor CurrentUserAccessor { get; }
     private readonly IPaymentsService _payments;
+    private readonly ILogger<PaymentsController> logger;
 
     public PaymentsController(
         ICurrentUserAccessor currentUserAccessor,
-        IPaymentsService payments)
+        IPaymentsService payments,
+        ILogger<PaymentsController> logger)
     {
         CurrentUserAccessor = currentUserAccessor;
         _payments = payments;
+        this.logger = logger;
     }
 
     private string? GetClaimUrl(int projectId, int claimId)
@@ -89,6 +92,7 @@ public class PaymentsController : Common.ControllerBase
         var financeOperationId = 0;
         try
         {
+            logger.LogInformation("Try to handle payment order {orderId} for {claimId}", orderId, claimId);
             if (int.TryParse(orderId, out financeOperationId))
             {
                 await _payments.UpdateClaimPaymentAsync(projectId, claimId, financeOperationId);
@@ -103,6 +107,7 @@ public class PaymentsController : Common.ControllerBase
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Error during handling payment result Description: {description}, ErrorMessage: {errorMessage}", description, errorMessage);
             string foText = financeOperationId > 0
                 ? financeOperationId.ToString()
                 : "unknown finance operation";
@@ -126,14 +131,14 @@ public class PaymentsController : Common.ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ActionName(nameof(ClaimPaymentSuccess))]
-    public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, string orderId)
+    public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, [FromBody] string orderId)
         => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
             "Ошибка обработки успешного платежа");
 
 
     [HttpPost]
     [AllowAnonymous] //TODO see above
-    public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, string orderId)
+    public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, [FromBody] string orderId)
         => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
             "Ошибка обработки успешного платежа");
 
@@ -141,14 +146,14 @@ public class PaymentsController : Common.ControllerBase
     [HttpGet]
     [AllowAnonymous] //TODO see above
     [ActionName(nameof(ClaimPaymentFail))]
-    public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, string orderId,
+    public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, [FromBody] string orderId,
         string? description)
         => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
             "Ошибка обработки неудавшегося платежа");
 
     [HttpPost]
     [AllowAnonymous] //TODO see above
-    public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, string orderId,
+    public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, [FromBody] string orderId,
         string? description)
         => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
             "Ошибка обработки неудавшегося платежа");
