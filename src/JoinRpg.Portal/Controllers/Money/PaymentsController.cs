@@ -11,15 +11,18 @@ public class PaymentsController : Common.ControllerBase
     private ICurrentUserAccessor CurrentUserAccessor { get; }
     private readonly IPaymentsService _payments;
     private readonly ILogger<PaymentsController> logger;
+    private readonly IHostEnvironment hostEnvironment;
 
     public PaymentsController(
         ICurrentUserAccessor currentUserAccessor,
         IPaymentsService payments,
-        ILogger<PaymentsController> logger)
+        ILogger<PaymentsController> logger,
+        IHostEnvironment hostEnvironment)
     {
         CurrentUserAccessor = currentUserAccessor;
         _payments = payments;
         this.logger = logger;
+        this.hostEnvironment = hostEnvironment;
     }
 
     private string? GetClaimUrl(int projectId, int claimId)
@@ -123,40 +126,42 @@ public class PaymentsController : Common.ControllerBase
         }
     }
 
-    //TODO: why we are losing cookies here? It's ok, because we don't do anything insecure here, but still...
     // What we are doing here?
     // 1. ask bank about status of orderId
     // 2. Update status if required
     // 3. Redirect to claim
     [HttpGet]
-    [AllowAnonymous]
     [ActionName(nameof(ClaimPaymentSuccess))]
-    public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, [FromBody] string orderId)
-        => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
-            "Ошибка обработки успешного платежа");
-
+    public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, string orderId)
+    {
+        if (hostEnvironment.IsProduction())
+        {
+            return Unauthorized(); //TODO: Remove this action when Shiko will setup local https for testing
+        }
+        return await HandleClaimPaymentRedirect(projectId, claimId, orderId, "", "Ошибка обработки успешного платежа");
+    }
 
     [HttpPost]
-    [AllowAnonymous] //TODO see above
-    public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, [FromBody] string orderId)
-        => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
-            "Ошибка обработки успешного платежа");
+    [IgnoreAntiforgeryToken] // We don't do anything insecure here, just updating payment status and redirect
+    public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, string orderId)
+        => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "", "Ошибка обработки успешного платежа");
 
 
     [HttpGet]
-    [AllowAnonymous] //TODO see above
     [ActionName(nameof(ClaimPaymentFail))]
-    public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, [FromBody] string orderId,
-        string? description)
-        => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
-            "Ошибка обработки неудавшегося платежа");
+    public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, string orderId, string? description)
+    {
+        if (hostEnvironment.IsProduction())
+        {
+            return Unauthorized(); //TODO: Remove this action when Shiko will setup local https for testing
+        }
+        return await HandleClaimPaymentRedirect(projectId, claimId, orderId, description, "Ошибка обработки неудавшегося платежа");
+    }
 
     [HttpPost]
-    [AllowAnonymous] //TODO see above
-    public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, [FromBody] string orderId,
-        string? description)
-        => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
-            "Ошибка обработки неудавшегося платежа");
+    [IgnoreAntiforgeryToken] // We don't do anything insecure here, just updating payment status and redirect
+    public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, string orderId, string? description)
+        => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description, "Ошибка обработки неудавшегося платежа");
 
     [HttpGet]
     [Authorize]
