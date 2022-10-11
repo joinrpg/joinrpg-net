@@ -17,8 +17,10 @@ public class ProjectAccommodationType : IProjectEntity
     public int Cost { get; set; }
     [Range(1, int.MaxValue)]
     public int Capacity { get; set; }
+    //Not implemented yet, do not use
     public bool IsInfinite { get; set; } = false;
     public bool IsPlayerSelectable { get; set; } = true;
+    //Not implemented yet, do not use
     public bool IsAutoFilledAccommodation { get; set; } = false;
 
     public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
