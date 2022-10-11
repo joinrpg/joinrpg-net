@@ -341,12 +341,16 @@ public class FinancesController : ControllerGameBase
         var user = await UserRepository.GetById(masterId);
 
         var operations = project.FinanceOperations
-            .Where(fo => fo.State == FinanceOperationState.Approved).ToArray();
+            .Where(fo => fo.State == FinanceOperationState.Approved)
+            .Where(fo => fo.PaymentType?.UserId == masterId)
+            .ToArray();
 
         var payments = project.PaymentTypes
             .Where(pt => pt.UserId == masterId)
             .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
-            .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
+            .Where(m => m.Total != 0)
+            .OrderByDescending(m => m.Total)
+            .ToArray();
 
 
         var viewModel = new MoneyInfoForUserViewModel(project,
@@ -412,8 +416,4 @@ public class FinancesController : ControllerGameBase
 
         return RedirectToAction("Setup", new { projectId });
     }
-
-    private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
-        File(await generator.Generate(), generator.ContentType,
-            Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
 }
