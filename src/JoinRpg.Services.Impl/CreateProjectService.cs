@@ -129,11 +129,11 @@ internal class CreateProjectService : ICreateProjectService
                 Capacity = 1,
                 Cost = 0,
                 Description = new MarkdownString("Измените свойства поселения в настройках"),
-                IsInfinite = true,
+                IsInfinite = false,
                 IsPlayerSelectable = true,
                 Name = "Вид поселения для примера",
                 ProjectId = projectId,
-                IsAutoFilledAccommodation = true,
+                IsAutoFilledAccommodation = false,
             });
 
             await CreateTopLevelCharacterSlot(project, "Участник конвента", null);
