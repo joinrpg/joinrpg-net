@@ -4,6 +4,8 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.Logging;
 using PscbApi;
 using PscbApi.Models;
 
@@ -14,6 +16,8 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
 {
 
     private readonly IBankSecretsProvider _bankSecrets;
+    private readonly ILogger<PaymentsService> logger;
+    private readonly Lazy<IEmailService> emailService;
     private readonly IUriService _uriService;
 
     /// <inheritdoc />
@@ -21,10 +25,14 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
         IUnitOfWork unitOfWork,
         IUriService uriService,
         IBankSecretsProvider bankSecrets,
-        ICurrentUserAccessor currentUserAccessor)
+        ICurrentUserAccessor currentUserAccessor,
+        Lazy<IEmailService> emailService,
+        ILogger<PaymentsService> logger)
         : base(unitOfWork, currentUserAccessor)
     {
         _bankSecrets = bankSecrets;
+        this.logger = logger;
+        this.emailService = emailService;
         _uriService = uriService;
     }
 
@@ -262,6 +270,8 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
             return;
         }
 
+        logger.LogInformation("Updating online payment for ClaimId: {claimId}, ProjectId: {projectId}", fo.ClaimId, fo.ProjectId);
+
         var api = GetApi(fo.ProjectId, fo.ClaimId);
         string orderIdStr = fo.CommentId.ToString().PadLeft(10, '0');
 
@@ -283,6 +293,7 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
         {
             if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
             {
+                logger.LogInformation("Online payment for ClaimId: {claimId}, ProjectId: {projectId} is declined", fo.ClaimId, fo.ProjectId);
                 fo.State = FinanceOperationState.Declined;
                 fo.Changed = Now;
             }
@@ -291,8 +302,24 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
                 UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
                 if (fo.State == FinanceOperationState.Approved)
                 {
+                    logger.LogInformation("Online payment for ClaimId: {claimId}, ProjectId: {projectId} is accepted", fo.ClaimId, fo.ProjectId);
+
                     Claim claim = await GetClaimAsync(fo.ProjectId, fo.ClaimId);
                     claim.UpdateClaimFeeIfRequired(Now);
+
+                    var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, Enumerable.Empty<User>(), mastersOnly: true).ToList();
+                    var email = new FinanceOperationEmail()
+                    {
+                        Claim = claim,
+                        ProjectName = claim.Project.ProjectName,
+                        Initiator = claim.Player,
+                        InitiatorType = ParcipantType.Player,
+                        Recipients = subscriptions,
+                        Text = new MarkdownString(""),
+                        CommentExtraAction = null,
+                    };
+
+                    await emailService.Value.Email(email);
                 }
             }
         }
