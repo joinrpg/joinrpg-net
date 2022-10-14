@@ -307,19 +307,7 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
                     Claim claim = await GetClaimAsync(fo.ProjectId, fo.ClaimId);
                     claim.UpdateClaimFeeIfRequired(Now);
 
-                    var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, Enumerable.Empty<User>(), mastersOnly: true).ToList();
-                    var email = new FinanceOperationEmail()
-                    {
-                        Claim = claim,
-                        ProjectName = claim.Project.ProjectName,
-                        Initiator = claim.Player,
-                        InitiatorType = ParcipantType.Player,
-                        Recipients = subscriptions,
-                        Text = new MarkdownString(""),
-                        CommentExtraAction = null,
-                    };
-
-                    await emailService.Value.Email(email);
+                    await SendPaymentNotification(claim, fo.MoneyAmount);
                 }
             }
         }
@@ -342,6 +330,31 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
         }
 
         // TODO: Probably need to send some notifications?
+    }
+
+    private async Task SendPaymentNotification(Claim claim, int sum)
+    {
+        try
+        {
+            var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, Enumerable.Empty<User>(), mastersOnly: true).ToList();
+            var email = new FinanceOperationEmail()
+            {
+                Claim = claim,
+                ProjectName = claim.Project.ProjectName,
+                Initiator = claim.Player,
+                InitiatorType = ParcipantType.Player,
+                Recipients = subscriptions,
+                //TODO[Localize]
+                Text = new MarkdownString(string.Format("Онлайн-оплата на сумму {0} подтверждена", sum)),
+                CommentExtraAction = null,
+            };
+
+            await emailService.Value.Email(email);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during payment notification send");
+        }
     }
 
     /// <inheritdoc />
