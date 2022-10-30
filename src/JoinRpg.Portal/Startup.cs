@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
@@ -58,6 +59,7 @@ public class Startup
                 {
                     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
                 }
+                options.Filters.Add<RedirectAntiforgeryValidationFailedResultFilter>();
                 options.Filters.Add<SerilogMvcFilter>();
                 options.Filters.Add<SerilogRazorPagesFilter>();
                 options.Filters.Add(new SetIsProductionFilterAttribute());
@@ -74,6 +76,7 @@ public class Startup
             options.Conventions.ConfigureFilter(new DiscoverProjectPageFilterAttribute());
             options.Conventions.ConfigureFilter(new SetIsProductionFilterAttribute());
             options.Conventions.ConfigureFilter(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
+            options.Conventions.ConfigureFilter(new RedirectAntiforgeryValidationFailedResultFilter());
         });
 
 
