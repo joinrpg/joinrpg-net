@@ -1,10 +1,9 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0.10
 
 #We need this to make ClosedXML work
-RUN apt-get update && apt-get install -y apt-utils libgdiplus libc6-dev
+RUN apt-get update && apt-get install -y fonts-liberation && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd user && \
-    useradd -g user user --home-dir "/app" --create-home
+RUN groupadd user && useradd -g user user --home-dir "/app" --create-home
 
 USER user
 

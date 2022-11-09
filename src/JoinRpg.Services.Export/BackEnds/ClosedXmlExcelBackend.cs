@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
+using ClosedXML.Graphics;
 using JoinRpg.Services.Export.Internal;
 using JoinRpg.Services.Interfaces;
 
@@ -7,7 +8,7 @@ namespace JoinRpg.Services.Export.BackEnds;
 
 internal class ClosedXmlExcelBackend : IGeneratorBackend
 {
-    private readonly Regex _invalidCharactersRegex = new("[\x00-\x08\x0B\x0C\x0E-\x1F]");
+    private static readonly Regex _invalidCharactersRegex = new("[\x00-\x08\x0B\x0C\x0E-\x1F]");
     private IXLWorksheet Sheet { get; }
 
     public string ContentType => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -15,6 +16,11 @@ internal class ClosedXmlExcelBackend : IGeneratorBackend
 
     private int currentRowIndex = 1;
     private int maxUsedColumn = 1;
+
+    static ClosedXmlExcelBackend()
+    {
+        LoadOptions.DefaultGraphicEngine = new DefaultGraphicEngine(fallbackFont: "Liberation Sans");
+    }
 
     public ClosedXmlExcelBackend()
     {
@@ -53,6 +59,9 @@ internal class ClosedXmlExcelBackend : IGeneratorBackend
 
         switch (cell.Content)
         {
+            case int num:
+                _ = xlCell.SetValue(num);
+                break;
             case DateTime time:
                 _ = xlCell.SetValue(time);
                 break;
