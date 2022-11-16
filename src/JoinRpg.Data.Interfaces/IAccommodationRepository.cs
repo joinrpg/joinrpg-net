@@ -15,7 +15,7 @@ public interface IAccommodationRepository
 
 public class RoomTypeInfoRow
 {
-    public ProjectAccommodationType RoomType { get; set; }
+    public required ProjectAccommodationType RoomType { get; set; }
     public int Occupied { get; set; }
     public int RoomsCount { get; set; }
     public int ApprovedClaims { get; set; }
@@ -26,5 +26,5 @@ public class ClaimAccommodationInfoRow
     public int ClaimId { get; set; }
     public string? AccomodationType { get; set; }
     public string? RoomName { get; set; }
-    public User User { get; set; }
+    public required User User { get; set; }
 }

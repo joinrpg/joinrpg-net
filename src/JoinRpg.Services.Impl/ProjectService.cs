@@ -86,7 +86,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             CharacterGroupName = Required(name),
             ParentCharacterGroupIds =
                 await ValidateCharacterGroupList(projectId,
-                    Required(() => parentCharacterGroupIds)),
+                    Required(parentCharacterGroupIds)),
             ProjectId = projectId,
             IsRoot = false,
             IsSpecial = false,

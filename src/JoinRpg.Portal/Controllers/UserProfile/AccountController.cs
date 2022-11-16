@@ -210,7 +210,7 @@ public class AccountController : Common.ControllerBase
         var callbackUrl = Url.Action("ConfirmEmail",
             "Account",
             new { userId = user.UserId, code },
-            protocol: Request.Scheme);
+            protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
         //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
         var dbUser = await UserRepository.GetById(user.UserId);
@@ -228,7 +228,7 @@ public class AccountController : Common.ControllerBase
         {
             return View("Error");
         }
-        var user = await UserManager.FindByIdAsync(userId.Value.ToString());
+        var user = await UserManager.FindByIdAsync(userId.Value.ToString()) ?? throw new InvalidOperationException();
         var result = await UserManager.ConfirmEmailAsync(user, code);
         if (result.Succeeded)
         {
@@ -266,7 +266,7 @@ public class AccountController : Common.ControllerBase
             var callbackUrl = Url.Action("ResetPassword",
                 "Account",
                 new { userId = user.UserId, code },
-                protocol: Request.Scheme);
+                protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
             //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
             var dbUser = await UserRepository.GetById(user.UserId);
@@ -442,7 +442,7 @@ public class AccountController : Common.ControllerBase
                 return View("ExternalLoginFailure");
             }
 
-            var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
+            var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException();
 
             var user = new JoinIdentityUser() { UserName = email };
             var result = await UserManager.CreateAsync(user);

@@ -45,9 +45,9 @@ public class GroupHeader : IEquatable<GroupHeader>
     public bool IsActive { get; set; }
     public bool IsSpecial { get; set; }
     public int CharacterGroupId { get; set; }
-    public string CharacterGroupName { get; set; }
+    public required string CharacterGroupName { get; set; }
 
-    public IntList ParentGroupIds { get; set; }
+    public required IntList ParentGroupIds { get; set; }
 
     /// <inheritdoc />
     public bool Equals(GroupHeader? other) => other != null && CharacterGroupId == other.CharacterGroupId;
@@ -62,7 +62,7 @@ public class GroupHeader : IEquatable<GroupHeader>
 public class ClaimView : IFieldContainter
 {
     public int PlayerUserId { get; set; }
-    public string JsonData { get; set; }
+    public required string JsonData { get; set; }
 
     public bool PaidInFull { get; set; }
 }
@@ -75,7 +75,7 @@ public class ClaimHeader
 public class ClaimWithPlayer
 {
     public int ClaimId { get; set; }
-    public string CharacterName { get; set; }
-    public User Player { get; set; }
-    public UserExtra Extra { get; set; }
+    public required string CharacterName { get; set; }
+    public required User Player { get; set; }
+    public required UserExtra Extra { get; set; }
 }

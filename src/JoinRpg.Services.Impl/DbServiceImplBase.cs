@@ -112,19 +112,6 @@ public class DbServiceImplBase
         return items;
     }
 
-    protected static IReadOnlyCollection<T> Required<T>(
-        Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
-    {
-        var name = itemsLambda.AsPropertyName();
-        var items = itemsLambda.Compile()();
-        if (items.Count == 0)
-        {
-            throw new FieldRequiredException(name);
-        }
-
-        return items;
-    }
-
     protected bool SmartDelete<T>(T field) where T : class, IDeletableSubEntity
     {
         if (field == null)
