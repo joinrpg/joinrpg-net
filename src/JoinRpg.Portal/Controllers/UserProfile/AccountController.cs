@@ -362,6 +362,11 @@ public class AccountController : Common.ControllerBase
     {
         var auth = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
+        if (auth.None)
+        {
+            return RedirectToAction("Login");
+        }
+
         var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
         if (loginInfo == null)
         {

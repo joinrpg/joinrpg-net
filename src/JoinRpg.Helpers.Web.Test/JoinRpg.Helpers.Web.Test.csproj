@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers.Web.Test</AssemblyTitle>
     <Product>JoinRpg.Helpers.Web.Test</Product>
     <NoWarn>${NoWarn};CS1591</NoWarn>
