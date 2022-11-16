@@ -252,16 +252,17 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
                     .Union(plotQuery)
                     .Union(plotElementQuery)
                     .Union(claimQuery)
-            group updated by new { updated.ProjectId, updated.ProjectName }
+            group updated by new { updated.ProjectId, updated.ProjectName, updated.GroupsCount }
             into gr
             select new ProjectWithUpdateDateDto()
             {
                 ProjectId = gr.Key.ProjectId,
                 ProjectName = gr.Key.ProjectName,
                 LastUpdated = gr.Max(g => g.LastUpdated),
+                GroupsCount = gr.Key.GroupsCount,
             }
             into beforeFilter
-            where beforeFilter.LastUpdated < inActiveSince
+            where beforeFilter.LastUpdated < inActiveSince || beforeFilter.GroupsCount > 0
             orderby beforeFilter.LastUpdated ascending
             select beforeFilter;
 
@@ -280,6 +281,7 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
                    ProjectId = gr.Key.ProjectId,
                    ProjectName = gr.Key.ProjectName,
                    LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
+                   GroupsCount = gr.Key.CharacterGroups.Count(g => g.HaveDirectSlots)
                };
     }
 
