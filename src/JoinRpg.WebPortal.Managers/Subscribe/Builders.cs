@@ -21,18 +21,7 @@ public static class Builders
             Items = data.UserSubscriptions.Select(x => x.ToViewModel(uriService)).ToList(),
             ProjectId = projectId,
             MasterId = data.User.UserId,
-            PaymentTypeNames = paymentTypes.Select(pt => pt.ToPaymentTypeName()).ToArray(),
-        };
-    }
-
-    private static string ToPaymentTypeName(this PaymentTypeDto dto)
-    {
-        return dto.TypeKind switch
-        {
-            PaymentTypeKind.Custom => dto.Name,
-            PaymentTypeKind.Cash => "Наличные",
-            PaymentTypeKind.Online => "Онлайн",
-            _ => throw new ArgumentOutOfRangeException("dto.TypeKind", (object)dto.TypeKind, "Wrong type"),
+            PaymentTypeNames = paymentTypes.Select(pt => ((PaymentTypeKindViewModel)pt.TypeKind).GetDisplayName(data.User)).ToArray(),
         };
     }
 

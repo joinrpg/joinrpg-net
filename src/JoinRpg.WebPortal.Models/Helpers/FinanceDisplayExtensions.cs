@@ -12,17 +12,13 @@ public static class FinanceDisplayExtensions
     /// </summary>
     public static string GetDisplayName(this PaymentTypeKindViewModel kind, User? user, string? defaultName = null)
     {
-        switch (kind)
+        return kind switch
         {
-            case PaymentTypeKindViewModel.Custom:
-                return defaultName ?? kind.GetDisplayName();
-            case PaymentTypeKindViewModel.Cash:
-                return user != null ? $@"{kind.GetDisplayName()} — {user.GetDisplayName()}" : kind.GetDisplayName();
-            case PaymentTypeKindViewModel.Online:
-                return kind.GetDisplayName();
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+            PaymentTypeKindViewModel.Custom => defaultName ?? kind.GetDisplayName(),
+            PaymentTypeKindViewModel.Cash => user != null ? $@"{kind.GetDisplayName()} — {user.GetDisplayName()}" : kind.GetDisplayName(),
+            PaymentTypeKindViewModel.Online => kind.GetDisplayName(),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
     }
 
     /// <summary>

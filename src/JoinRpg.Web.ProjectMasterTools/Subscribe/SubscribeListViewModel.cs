@@ -2,9 +2,9 @@ namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
 public class SubscribeListViewModel
 {
-    public List<SubscribeListItemViewModel> Items { get; set; }
+    public required List<SubscribeListItemViewModel> Items { get; set; }
 
-    public string[] PaymentTypeNames { get; set; }
+    public required string[] PaymentTypeNames { get; set; }
 
     public bool AllowChanges { get; set; }
 
