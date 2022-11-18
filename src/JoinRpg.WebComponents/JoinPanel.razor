@@ -1,0 +1,18 @@
+﻿<div class="@style">
+    @if (Header is not null)
+    {
+        <div class="panel-heading">@Header</div>
+    }
+    @if (Body is not null)
+    {
+       <div class="panel-body">@Body</div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
+
+    private string style => BootstrapStyle.Build("panel", Variation, null);
+}
