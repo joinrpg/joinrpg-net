@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
@@ -24,4 +25,17 @@ public class SubscribeOptionsViewModel : ISubscriptionOptions
     public bool AccommodationChange { get; set; }
 
     public bool AllSet => ClaimStatusChange && Comments && FieldChange && MoneyOperation && AccommodationChange;
+
+    public SubscriptionOptions ToOptions()
+    {
+        return new SubscriptionOptions
+        {
+            AccommodationChange = AccommodationChange,
+            ClaimStatusChange = ClaimStatusChange,
+            Comments = Comments,
+            FieldChange = FieldChange,
+            MoneyOperation = MoneyOperation,
+        };
+    }
+
 }

@@ -37,11 +37,16 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
             .RequestMasterAccess(CurrentUserId)
             .EnsureActive();
 
+        if (CurrentUserId != request.MasterId)
+        {
+            throw new JoinRpgInvalidUserException("Changing another user not implemented yet");
+        }
+
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
         var direct =
             user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == request.CharacterGroupId);
 
-        if (request.AnySet())
+        if (request.SubscriptionOptions.AnySet)
         {
             if (direct == null)
             {
@@ -54,7 +59,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
                 _ = user.Subscriptions.Add(direct);
             }
 
-            _ = direct.AssignFrom(request);
+            _ = direct.AssignFrom(request.SubscriptionOptions);
         }
         else
         {

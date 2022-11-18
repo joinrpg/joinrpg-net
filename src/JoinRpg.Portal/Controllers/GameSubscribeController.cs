@@ -102,7 +102,9 @@ public class GameSubscribeController : Common.ControllerGameBase
                 {
                     CharacterGroupId = group.CharacterGroupId,
                     ProjectId = group.ProjectId,
-                }.AssignFrom(viewModel.Options));
+                    SubscriptionOptions = viewModel.Options.ToOptions(),
+                    MasterId = CurrentUserId,
+                });
 
             return RedirectToIndex(group.Project);
         }
