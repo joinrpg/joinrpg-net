@@ -48,7 +48,7 @@ public class ScheduleBuilder
 
         var allItems = new List<ProgramItemPlaced>();
 
-        foreach (var character in characters)
+        foreach (var character in characters.Where(ch => ch.CharacterType != PrimitiveTypes.CharacterType.Slot))
         {
             var programItem = ConvertToProgramItem(character);
             var slots = SelectSlots(programItem, character);
