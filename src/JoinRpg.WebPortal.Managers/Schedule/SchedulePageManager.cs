@@ -1,7 +1,12 @@
+using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
@@ -24,12 +29,7 @@ public class SchedulePageManager
 
     public async Task<SchedulePageViewModel> GetSchedule()
     {
-        var project =
-            (await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId))
-            ?? throw new JoinRpgEntityNotFoundException(CurrentProject.ProjectId, "project");
-        var characters = await Project.GetCharacters(CurrentProject.ProjectId);
-        var scheduleBuilder = new ScheduleBuilder(project, characters);
-        var result = scheduleBuilder.Build();
+        (var project, var result) = await GetCompiledSchedule();
         var viewModel = new SchedulePageViewModel()
         {
             ProjectId = CurrentProject.ProjectId,
@@ -45,6 +45,40 @@ public class SchedulePageManager
         BuildAppointments(project, viewModel);
 
         return viewModel;
+    }
+
+    //TODO we ignore acces rights here
+    public async Task<string> GetIcalSchedule()
+    {
+        (var project, var result) = await GetCompiledSchedule();
+        var calendar = new Calendar();
+        calendar.Events.AddRange(result.AllItems.Select(BuildIcalEvent));
+
+        var serializer = new CalendarSerializer();
+        return serializer.SerializeToString(calendar); //TODO stream
+    }
+
+    private CalendarEvent BuildIcalEvent(ProgramItemPlaced evt)
+    {
+        return new CalendarEvent
+        {
+            Start = new CalDateTime(evt.StartTime.LocalDateTime),
+            End = new CalDateTime(evt.EndTime.LocalDateTime),
+            Summary = evt.ProgramItem.Name,
+            IsAllDay = false,
+            Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
+            Description = evt.ProgramItem.Description.ToPlainText().ToHtmlString(),
+        };
+    }
+
+    private async Task<(Project, ScheduleResult)> GetCompiledSchedule()
+    {
+        var project =
+    (await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId))
+    ?? throw new JoinRpgEntityNotFoundException(CurrentProject.ProjectId, "project");
+        var characters = await Project.GetCharacters(CurrentProject.ProjectId);
+        var scheduleBuilder = new ScheduleBuilder(project, characters);
+        return (project, scheduleBuilder.Build());
     }
 
     private void BuildAppointments(Project project, SchedulePageViewModel viewModel)
@@ -149,7 +183,7 @@ public class SchedulePageManager
             .ToList();
     }
 
-    private void MergeSlots(SchedulePageViewModel viewModel)
+    private static void MergeSlots(SchedulePageViewModel viewModel)
     {
         for (var rowIndex = 0; rowIndex < viewModel.Slots.Count; rowIndex++)
         {
@@ -260,5 +294,5 @@ public class SchedulePageManager
 
     private IProjectRepository Project { get; }
     private ICurrentProjectAccessor CurrentProject { get; }
-    private ICurrentUserAccessor CurrentUserAccessor { get; }
+    private ICurrentUserAccessor CurrentUserAccessor { get; set; }
 }
