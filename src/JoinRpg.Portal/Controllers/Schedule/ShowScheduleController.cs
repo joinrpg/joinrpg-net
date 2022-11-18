@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Encodings.Web;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces.Projects;
@@ -48,6 +50,14 @@ public class ShowScheduleController : Common.ControllerGameBase
         }
         var schedule = await Manager.GetSchedule();
         return View(schedule);
+    }
+
+    //TODO we ignore acces rights here
+    [HttpGet("ical")]
+    public async Task<ActionResult> Ical(int projectId)
+    {
+        var schedule = await Manager.GetIcalSchedule();
+        return File(Encoding.UTF8.GetBytes(schedule), "text/calendar");
     }
 
     [HttpGet("full")]
