@@ -21,45 +21,6 @@ public static class SubscribeOptionsExtensions
                request.MoneyOperation || request.AccommodationChange;
     }
 
-    public static bool AnyNotSet(this ISubscriptionOptions request)
-    {
-        return !request.AccommodationChange || !request.ClaimStatusChange ||
-               !request.Comments || !request.FieldChange || !request.MoneyOperation;
-    }
-
-    public static T OrSetIn<T>(this T to, ISubscriptionOptions @from)
-        where T : ISubscriptionOptions
-    {
-        to.ClaimStatusChange |= from.ClaimStatusChange;
-        to.Comments |= from.Comments;
-        to.FieldChange |= from.FieldChange;
-        to.MoneyOperation |= from.MoneyOperation;
-        to.AccommodationChange |= from.AccommodationChange;
-        return to;
-    }
-
-    public static T AndSetIn<T>(this T to, ISubscriptionOptions @from)
-        where T : ISubscriptionOptions
-    {
-        to.ClaimStatusChange &= from.ClaimStatusChange;
-        to.Comments &= from.Comments;
-        to.FieldChange &= from.FieldChange;
-        to.MoneyOperation &= from.MoneyOperation;
-        to.AccommodationChange &= from.AccommodationChange;
-        return to;
-    }
-
-    public static T AndNotSetIn<T>(this T to, ISubscriptionOptions @from)
-        where T : ISubscriptionOptions
-    {
-        to.ClaimStatusChange &= !from.ClaimStatusChange;
-        to.Comments &= !from.Comments;
-        to.FieldChange &= !from.FieldChange;
-        to.MoneyOperation &= !from.MoneyOperation;
-        to.AccommodationChange &= !from.AccommodationChange;
-        return to;
-    }
-
     public static ISubscriptionOptions AllSet()
     {
         return new OptionsImpl()

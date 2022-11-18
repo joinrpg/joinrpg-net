@@ -95,12 +95,6 @@ public class GameSubscribeController : Common.ControllerGameBase
             return NotFound();
         }
 
-        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-
-        var serverModel = new SubscribeSettingsViewModel(user, group);
-
-        _ = serverModel.Options.AssignFrom(viewModel.Options);
-
         try
         {
             await
@@ -108,13 +102,15 @@ public class GameSubscribeController : Common.ControllerGameBase
                 {
                     CharacterGroupId = group.CharacterGroupId,
                     ProjectId = group.ProjectId,
-                }.AssignFrom(serverModel.GetOptionsToSubscribeDirectly()));
+                }.AssignFrom(viewModel.Options));
 
             return RedirectToIndex(group.Project);
         }
         catch (Exception e)
         {
             ModelState.AddException(e);
+            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+            var serverModel = new SubscribeSettingsViewModel(user, group);
             return View(serverModel);
         }
 

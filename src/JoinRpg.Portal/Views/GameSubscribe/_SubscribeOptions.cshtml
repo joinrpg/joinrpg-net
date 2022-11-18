@@ -1,12 +1,5 @@
 ﻿@using JoinRpg.Web.ProjectMasterTools.Subscribe;
 @model SubscribeOptionsViewModel 
-@{
-    SubscribeOptionsViewModel disabledFlags = new SubscribeOptionsViewModel();
-    @if (ViewData.ContainsKey("DisableFlags"))
-    {
-      disabledFlags = (SubscribeOptionsViewModel)ViewData["DisableFlags"];
-    }
-}
 
 <div class="form-group">
   <label asp-for="ClaimStatusChange" class = "control-label col-md-4">
@@ -14,7 +7,7 @@
   </label>
   <div class="col-md-8">
     <div>
-      <input asp-for="@Model.ClaimStatusChange" disabled="@(disabledFlags.ClaimStatusChange)" />
+      <input asp-for="@Model.ClaimStatusChange" />
       <div><span asp-validation-for="ClaimStatusChange" class="text-danger"></span></div>
       @Html.DescriptionFor(model => model.ClaimStatusChange)
     </div>
@@ -27,7 +20,7 @@
   </label>
   <div class="col-md-8">
     <div>
-      <input asp-for="@Model.Comments" disabled="@(disabledFlags.Comments)" />
+      <input asp-for="@Model.Comments" />
       <div><span asp-validation-for="Comments" class="text-danger"></span></div>
       @Html.DescriptionFor(model => model.Comments)
     </div>
@@ -40,7 +33,7 @@
   </label>
   <div class="col-md-8">
     <div>
-      <input asp-for="@Model.FieldChange" FieldChange="@(disabledFlags.FieldChange)" />
+      <input asp-for="@Model.FieldChange" />
       <div><span asp-validation-for="Comments" class="text-danger"></span></div>
       @Html.DescriptionFor(model => model.FieldChange)
     </div>
@@ -53,7 +46,7 @@
   </label>
   <div class="col-md-8">
     <div>
-      <input asp-for="@Model.MoneyOperation" FieldChange="@(disabledFlags.MoneyOperation)" />
+      <input asp-for="@Model.MoneyOperation" />
       <div><span asp-validation-for="MoneyOperation" class="text-danger"></span></div>
       @Html.DescriptionFor(model => model.MoneyOperation)
     </div>
@@ -66,7 +59,7 @@
   </label>
   <div class="col-md-8">
     <div>
-      <input asp-for="@Model.AccommodationChange" FieldChange="@(disabledFlags.AccommodationChange)" />
+      <input asp-for="@Model.AccommodationChange" />
       <div><span asp-validation-for="AccommodationChange" class="text-danger"></span></div>
       @Html.DescriptionFor(model => model.AccommodationChange)
     </div>
