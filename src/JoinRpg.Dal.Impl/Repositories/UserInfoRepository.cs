@@ -45,7 +45,7 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
         return (user, subscribe);
     }
 
-    private Expression<Func<UserSubscription, UserSubscriptionDto>> SubscriptionDtoBuilder()
+    private static Expression<Func<UserSubscription, UserSubscriptionDto>> SubscriptionDtoBuilder()
     {
         return x =>
                 new UserSubscriptionDto()
@@ -59,7 +59,7 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
                     ClaimId = x.ClaimId,
                     ClaimName = (x.Claim.Character != null ? x.Claim.Character.CharacterName : null)
                         ?? (x.Claim.Group != null ? x.Claim.Group.CharacterGroupName : null),
-                    Options = new SubscriptionDto
+                    Options = new SubscriptionOptions
                     {
                         AccommodationChange = x.AccommodationChange,
                         ClaimStatusChange = x.ClaimStatusChange,
