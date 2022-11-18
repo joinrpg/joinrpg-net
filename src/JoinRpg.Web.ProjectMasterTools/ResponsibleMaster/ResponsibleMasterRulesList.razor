@@ -18,7 +18,7 @@
     </p>
     @if (Adding)
     {
-      <div>
+      <FormHorizontal>
         <FormRow Label="Группа">
           <CharacterGroupSelector ProjectId="@ProjectId" Multiple="false" @ref="groupSelector"/>
         </FormRow>
@@ -28,7 +28,7 @@
         <br/>
         <JoinAddButton OnClick="() => PerformAdd()" /> |
         <JoinCancelButton OnClick="() => Adding = false" />
-      </div>
+      </FormHorizontal>
     }
     else
     {
