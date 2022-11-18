@@ -23,7 +23,7 @@
     [Parameter] public RenderFragment? Header { get; set; }
     [Parameter] public RenderFragment? Body { get; set; }
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; } = null;
-    [Parameter]public IReadOnlyList<TItem> Items { get; set; } = null!;
+    [Parameter] public IReadOnlyList<TItem> Items { get; set; } = null!;
     [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
 
     private string style => BootstrapStyle.Build("panel", Variation, null);
