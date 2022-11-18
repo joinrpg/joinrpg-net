@@ -25,7 +25,8 @@ public class GameSubscribeController : ControllerBase
 
     [HttpPost]
     public async Task Unsubscribe(int projectId, int userSubscriptionsId)
-    {
-        await subscribeViewService.RemoveSubscription(projectId, userSubscriptionsId);
-    }
+        => await subscribeViewService.RemoveSubscription(projectId, userSubscriptionsId);
+
+    [HttpPost]
+    public async Task Save(int projectId, [FromBody] EditSubscribeViewModel model) => await subscribeViewService.SaveGroupSubscription(projectId, model);
 }
