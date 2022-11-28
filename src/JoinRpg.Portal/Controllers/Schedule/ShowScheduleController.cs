@@ -54,6 +54,7 @@ public class ShowScheduleController : Common.ControllerGameBase
 
     //TODO we ignore acces rights here
     [HttpGet("ical")]
+    [HttpGet("ical.ics")]
     public async Task<ActionResult> Ical(int projectId)
     {
         var schedule = await Manager.GetIcalSchedule();
