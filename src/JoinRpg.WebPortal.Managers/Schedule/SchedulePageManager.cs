@@ -84,7 +84,7 @@ public class SchedulePageManager
     private void BuildAppointments(Project project, SchedulePageViewModel viewModel)
     {
         var result = new List<AppointmentViewModel>(64);
-        var hasMasterAccess = project.HasMasterAccess(CurrentUserAccessor.UserId);
+        var hasMasterAccess = project.HasMasterAccess(CurrentUserAccessor);
 
         for (var i = 0; i < viewModel.Rows.Count; i++)
         {
@@ -242,15 +242,11 @@ public class SchedulePageManager
             {
                 return true;
             }
-            if (CurrentUserAccessor.UserIdOrDefault is null)
-            {
-                return false;
-            }
-            if (project.HasMasterAccess(CurrentUserAccessor.UserId))
+            if (project.HasMasterAccess(CurrentUserAccessor))
             {
                 return true;
             }
-            if (project.Claims.OfUserApproved(CurrentUserAccessor.UserId).Any())
+            if (CurrentUserAccessor.UserIdOrDefault is int userId && project.Claims.OfUserApproved(userId).Any())
             {
                 return roomField.CanPlayerView;
             }
