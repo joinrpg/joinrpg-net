@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using MustUseReturnValueAttribute = JetBrains.Annotations.MustUseReturnValueAttribute;
 using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 using PureAttribute = JetBrains.Annotations.PureAttribute;
@@ -27,6 +28,14 @@ public static class ProjectEntityExtensions
         }
 
         return entity.HasMasterAccess(currentUserId, acl => true);
+    }
+
+    public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        ArgumentNullException.ThrowIfNull(currentUserAccessor);
+
+        return entity.HasMasterAccess(currentUserAccessor.UserIdOrDefault, acl => true);
     }
 
     public static T RequestMasterAccess<T>([NotNull] this T field,
