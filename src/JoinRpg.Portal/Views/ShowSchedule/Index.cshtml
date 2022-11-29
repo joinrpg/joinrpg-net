@@ -6,7 +6,11 @@
 
 <h2>@ViewBag.Title</h2>
 
-@Html.ActionLink("Открыть во весь экран", "FullScreen", "ShowSchedule", new { projectId = Model.ProjectId }, new { @class = "btn btn-default" })
+<div class="alert alert-info">
+    Чтобы добавить расписание мероприятий в свой календарь, обратитесь к @Html.HelpLink("schedule/add_to_calendar.html", "инструкции"). <br />
+    @Html.ActionLink("Ссылка для копирования", "Ical", "ShowSchedule", new { projectId = Model.ProjectId })
+</div>
+
 
 <br />
 <div class="alert alert-info">
