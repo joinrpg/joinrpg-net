@@ -2,8 +2,6 @@ namespace JoinRpg.Helpers;
 
 public static class StaticCollectionHelpers
 {
-    private static readonly Random Rng = new();
-
     public static ISet<T> FlatTree<T>(this T obj,
         Func<T, IEnumerable<T>> parentSelectorFunc,
         bool includeSelf = true)
@@ -68,22 +66,15 @@ public static class StaticCollectionHelpers
     public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T>? collection) => collection ?? Enumerable.Empty<T>();
 
     public static IEnumerable<T> Shuffle<T>(
-        this IEnumerable<T> source) => Shuffle(source, Rng);
-
-    public static IEnumerable<T> Shuffle<T>(
-        this IEnumerable<T> source,
-        Random random)
+        this IEnumerable<T> source)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         var sourceArray = source.ToArray();
 
         for (var n = 0; n < sourceArray.Length; n++)
         {
-            var k = random.Next(n, sourceArray.Length);
+            var k = Random.Shared.Next(n, sourceArray.Length);
             yield return sourceArray[k];
 
             sourceArray[k] = sourceArray[n];
@@ -95,15 +86,8 @@ public static class StaticCollectionHelpers
         IEnumerable<T> toAdd,
         int totalLimit)
     {
-        if (alreadyTaken == null)
-        {
-            throw new ArgumentNullException(nameof(alreadyTaken));
-        }
-
-        if (toAdd == null)
-        {
-            throw new ArgumentNullException(nameof(toAdd));
-        }
+        ArgumentNullException.ThrowIfNull(alreadyTaken);
+        ArgumentNullException.ThrowIfNull(toAdd);
 
         return alreadyTaken.Union(
             toAdd

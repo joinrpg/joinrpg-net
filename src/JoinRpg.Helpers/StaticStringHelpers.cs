@@ -191,8 +191,7 @@ public static class StaticStringHelpers
             throw new ArgumentNullException(nameof(defaultValue));
         }
 
-        // string.IsNullOrEmpty used from netstandard2, and here is not annotated yet.
-        return (value is null || string.IsNullOrEmpty(value)) ? defaultValue : value;
+        return string.IsNullOrEmpty(value) ? defaultValue : value;
     }
 
     public static string ToHexString(this Guid guid) => guid.ToByteArray().ToHexString();
