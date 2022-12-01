@@ -19,7 +19,7 @@ public class MarkdownString : IEquatable<MarkdownString>
 
     public bool Equals(MarkdownString? other) => other is MarkdownString && string.Equals(Contents, other.Contents);
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is null)
         {

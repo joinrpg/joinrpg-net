@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers</AssemblyTitle>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
     <ItemGroup>
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
