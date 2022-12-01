@@ -42,15 +42,15 @@ public class ScheduleBuilder
 
     public ScheduleResult Build()
     {
-        Rooms = InitializeList<ScheduleRoom>(RoomField.GetOrderedValues()).ToList();
-        TimeSlots = InitializeList<TimeSlot>(TimeSlotField.GetOrderedValues()).ToList();
+        Rooms = InitializeScheduleRoomList(RoomField.GetOrderedValues()).ToList();
+        TimeSlots = InitializeTimeSlotList(TimeSlotField.GetOrderedValues()).ToList();
         Slots = InitializeSlots(TimeSlots, Rooms);
 
         var allItems = new List<ProgramItemPlaced>();
 
         foreach (var character in characters.Where(ch => ch.CharacterType != PrimitiveTypes.CharacterType.Slot))
         {
-            var programItem = ConvertToProgramItem(character);
+            var programItem = new ProgramItem(character);
             var slots = SelectSlots(programItem, character);
             PutItem(programItem, slots);
             if (slots.Any())
@@ -123,36 +123,28 @@ public class ScheduleBuilder
         return slots.ToList();
     }
 
-    private List<List<ProgramItemSlot>> InitializeSlots(List<TimeSlot> timeSlots, List<ScheduleRoom> rooms)
+    private static List<List<ProgramItemSlot>> InitializeSlots(List<TimeSlot> timeSlots, List<ScheduleRoom> rooms)
         => timeSlots.Select(time => rooms.Select(room => new ProgramItemSlot(time, room)).ToList()).ToList();
 
-    private IEnumerable<T> InitializeList<T>(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
-        where T : ScheduleItemAttribute, new()
+    private static IEnumerable<ScheduleRoom> InitializeScheduleRoomList(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
     {
         var seqId = 0;
         foreach (var variant in readOnlyList.Where(x => x.IsActive))
         {
-            var item = new T()
-            {
-                Id = variant.ProjectFieldDropdownValueId,
-                Name = variant.Label,
-                Description = variant.Description,
-                SeqId = seqId,
-            };
-            if (item is TimeSlot timeSlot)
-            {
-                timeSlot.Options = variant.GetTimeSlotOptions();
-            }
+            var item = new ScheduleRoom(variant, seqId);
             yield return item;
             seqId++;
         }
     }
 
-    private ProgramItem ConvertToProgramItem(Character character)
+    private static IEnumerable<TimeSlot> InitializeTimeSlotList(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
     {
-        return new ProgramItem(character);
+        var seqId = 0;
+        foreach (var variant in readOnlyList.Where(x => x.IsActive))
         {
-
-        };
+            var item = new TimeSlot(variant, seqId);
+            yield return item;
+            seqId++;
+        }
     }
 }
