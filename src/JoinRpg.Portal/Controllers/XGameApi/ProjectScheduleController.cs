@@ -58,7 +58,7 @@ public class ProjectScheduleController : XGameApiController
                     }),
                 StartTime = slot.StartTime,
                 EndTime = slot.EndTime,
-                Rooms = slot.Rooms.Select(room => new RoomInfoApi
+                Rooms = slot.Rooms.Distinct().Select(room => new RoomInfoApi
                 {
                     RoomId = room.Id,
                     Name = room.Name

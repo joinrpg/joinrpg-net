@@ -26,7 +26,7 @@ public class ProgramItem
 public class ProgramItemPlaced
 {
     public ProgramItemPlaced(ProgramItem programItem, List<ScheduleBuilder.ProgramItemSlot> slots)
-    : this(programItem, slots.Select(x => x.Room).ToList(), slots.Select(x => x.TimeSlot).ToList())
+    : this(programItem, slots.Select(x => x.Room).Distinct().ToList(), slots.Select(x => x.TimeSlot).ToList())
     {
     }
 
@@ -48,23 +48,38 @@ public class ProgramItemPlaced
     public ProgramItem ProgramItem { get; set; }
 }
 
-// TODO: Invent way to fix it
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-public class ScheduleItemAttribute
+public record class ScheduleItemAttribute
 {
-    public MarkdownString Description { get; internal set; }
-    public string Name { get; internal set; }
-    public int Id { get; internal set; }
-    public int SeqId { get; internal set; }
+    public MarkdownString Description { get; }
+    public string Name { get; }
+    public int Id { get; }
+    public int SeqId { get; }
+
+    public ScheduleItemAttribute(ProjectFieldDropdownValue variant, int seqId)
+    {
+        Id = variant.ProjectFieldDropdownValueId;
+        Name = variant.Label;
+        Description = variant.Description;
+        SeqId = seqId;
+    }
 }
 
-public class ScheduleRoom : ScheduleItemAttribute { }
-
-public class TimeSlot : ScheduleItemAttribute
+public record class ScheduleRoom : ScheduleItemAttribute
 {
-    public TimeSlotOptions Options { get; internal set; }
+    public ScheduleRoom(ProjectFieldDropdownValue variant, int seqId) : base(variant, seqId)
+    {
+    }
 }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+public record class TimeSlot : ScheduleItemAttribute
+{
+    public TimeSlot(ProjectFieldDropdownValue variant, int seqId) : base(variant, seqId)
+    {
+        Options = variant.GetTimeSlotOptions();
+    }
+
+    public TimeSlotOptions Options { get; }
+}
 
 public record ScheduleResult(
     IReadOnlyList<ProgramItem> NotScheduled,
