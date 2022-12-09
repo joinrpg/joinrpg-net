@@ -49,4 +49,14 @@ public class ProgramItemInfoApi
     /// If you will render this to HTML, you have to sanitize AFTER rendering.
     /// </summary>
     public string DescriptionMarkdown { get; set; }
+
+    /// <summary>
+    /// Id of project which program items belongs to. Stable, never changes.
+    /// </summary>
+    public int ProjectId { get; set; }
+
+    /// <summary>
+    /// Uri to the details of program item. Points to joinrpg.ru UI
+    /// </summary>
+    public Uri ProgramItemDetailsUri { get; set; }
 }
