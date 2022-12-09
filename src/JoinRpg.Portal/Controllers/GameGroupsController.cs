@@ -497,7 +497,7 @@ public class GameGroupsController : ControllerGameBase
 
     private bool IsClientCached(DateTime contentModified)
     {
-        string header = Request.Headers["If-Modified-Since"];
+        var header = Request.Headers["If-Modified-Since"];
 
         if (header == null)
         {
