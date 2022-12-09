@@ -19,28 +19,15 @@ public enum MagicControlStrategy
 
 public static class MagicControlHelper
 {
-    private static readonly Random Random = new();
-
-
     private static string GetImplicitGroupString(ShowImplicitGroups showGroups)
     {
-        string implicitGroupsString;
-        switch (showGroups)
+        return showGroups switch
         {
-            case ShowImplicitGroups.None:
-                implicitGroupsString = "'none'";
-                break;
-            case ShowImplicitGroups.Children:
-                implicitGroupsString = "'children'";
-                break;
-            case ShowImplicitGroups.Parents:
-                implicitGroupsString = "'parents'";
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(showGroups), showGroups, null);
-        }
-
-        return implicitGroupsString;
+            ShowImplicitGroups.None => "'none'",
+            ShowImplicitGroups.Children => "'children'",
+            ShowImplicitGroups.Parents => "'parents'",
+            _ => throw new ArgumentOutOfRangeException(nameof(showGroups), showGroups, null),
+        };
     }
 
     public static HtmlString GetMagicSelect(int projectId, bool showCharacters, ShowImplicitGroups showGroups,
@@ -70,20 +57,17 @@ public static class MagicControlHelper
             $('#{0}_control_{6}').multicontrol(options);
           }});
       </script>", propertyName, projectId, showCharacters ? "true" : "false", implicitGroupsString,
-            strategyString, elements.JoinStrings(", "), Random.Next(), showSpecial ? "json_full" : "json_real"));
+            strategyString, elements.JoinStrings(", "), Random.Shared.Next(), showSpecial ? "json_full" : "json_real"));
         return magicSelectFor;
     }
 
     private static string GetStrategyString(MagicControlStrategy strategy)
     {
-        switch (strategy)
+        return strategy switch
         {
-            case MagicControlStrategy.Changer:
-                return "changer";
-            case MagicControlStrategy.NonChanger:
-                return "nonchanger";
-            default:
-                throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
-        }
+            MagicControlStrategy.Changer => "changer",
+            MagicControlStrategy.NonChanger => "nonchanger",
+            _ => throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null),
+        };
     }
 }
