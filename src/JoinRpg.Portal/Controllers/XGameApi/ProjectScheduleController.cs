@@ -45,28 +45,40 @@ public class ProjectScheduleController : XGameApiController
         var characters = await ProjectRepository.GetCharacters(projectId);
 
         var scheduleBuilder = new ScheduleBuilder(project, characters);
-        var result = scheduleBuilder.Build().AllItems.Select(slot =>
-            new ProgramItemInfoApi
-            {
-                ProgramItemId = slot.ProgramItem.Id,
-                Name = slot.ProgramItem.Name,
-                Authors = slot.ProgramItem.Authors.Select(author =>
-                    new AuthorInfoApi
-                    {
-                        UserId = author.UserId,
-                        Name = author.GetDisplayName()
-                    }),
-                StartTime = slot.StartTime,
-                EndTime = slot.EndTime,
-                Rooms = slot.Rooms.Distinct().Select(room => new RoomInfoApi
-                {
-                    RoomId = room.Id,
-                    Name = room.Name
-                }),
-                Description = slot.ProgramItem.Description.ToPlainText().ToString(),
-                DescriptionHtml = slot.ProgramItem.Description.ToHtmlString().ToString(),
-                DescriptionMarkdown = slot.ProgramItem.Description.Contents,
-            }).ToList();
+        var result = scheduleBuilder.Build().AllItems.Select(ToProgramItemInfoApi).ToList();
         return result;
+    }
+
+    private ProgramItemInfoApi ToProgramItemInfoApi(ProgramItemPlaced slot)
+    {
+        return new ProgramItemInfoApi
+        {
+            ProgramItemId = slot.ProgramItem.Id,
+            Name = slot.ProgramItem.Name,
+            Authors = slot.ProgramItem.Authors.Select(author =>
+                            new AuthorInfoApi
+                            {
+                                UserId = author.UserId,
+                                Name = author.GetDisplayName(),
+                            }),
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            Rooms = slot.Rooms.Distinct().Select(room => new RoomInfoApi
+            {
+                RoomId = room.Id,
+                Name = room.Name,
+            }),
+            Description = slot.ProgramItem.Description.ToPlainText().ToString(),
+            DescriptionHtml = slot.ProgramItem.Description.ToHtmlString().ToString(),
+            DescriptionMarkdown = slot.ProgramItem.Description.Contents,
+            ProgramItemDetailsUri = new Uri(GetProgramItemLink(slot)),
+            ProjectId = slot.ProgramItem.ProjectId,
+        };
+
+        string GetProgramItemLink(ProgramItemPlaced slot)
+        {
+            return Url.ActionLink("Details", "Character", new { slot.ProgramItem.ProjectId, CharacterId = slot.ProgramItem.Id })
+                ?? throw new InvalidOperationException("URI should be present");
+        }
     }
 }
