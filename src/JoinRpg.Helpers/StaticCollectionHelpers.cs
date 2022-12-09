@@ -65,22 +65,6 @@ public static class StaticCollectionHelpers
 
     public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T>? collection) => collection ?? Enumerable.Empty<T>();
 
-    public static IEnumerable<T> Shuffle<T>(
-        this IEnumerable<T> source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        var sourceArray = source.ToArray();
-
-        for (var n = 0; n < sourceArray.Length; n++)
-        {
-            var k = Random.Shared.Next(n, sourceArray.Length);
-            yield return sourceArray[k];
-
-            sourceArray[k] = sourceArray[n];
-        }
-    }
-
     public static IEnumerable<T> UnionUntilTotalCount<T>(
         this IReadOnlyCollection<T> alreadyTaken,
         IEnumerable<T> toAdd,
