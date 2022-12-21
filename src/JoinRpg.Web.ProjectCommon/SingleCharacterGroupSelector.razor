@@ -1,0 +1,39 @@
+﻿<CharacterGroupSelector
+  Name="@Name"
+  ProjectId="@ProjectId"
+  SelectedGroupIds="@selectedGroupIds"
+  SelectedGroupsChanged="HandleSelectedGroupChanged"
+  Multiple="false"
+  />
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public int? SelectedGroupId { get; set; }
+    [Parameter] public EventCallback<int?> SelectedGroupIdChanged { get; set; }
+    [Parameter] public CharacterGroupDto? SelectedGroup { get; set; }
+    [Parameter] public EventCallback<CharacterGroupDto> SelectedGroupChanged { get; set; }
+
+    private int[] selectedGroupIds = Array.Empty<int>();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (SelectedGroupId is not null)
+        {
+            selectedGroupIds = new int[] { SelectedGroupId.Value };
+        }
+        else if (SelectedGroup is not null)
+        {
+            selectedGroupIds = new int[] { SelectedGroup.CharacterGroupId };
+        }
+    }
+
+    private async Task HandleSelectedGroupChanged(CharacterGroupDto[] values)
+    {
+        CharacterGroupDto? selected = values.Length == 0 ? null : values.Single();
+        await SelectedGroupIdChanged.InvokeAsync(selected?.CharacterGroupId);
+        await SelectedGroupChanged.InvokeAsync(selected);
+    }
+}

@@ -18,17 +18,7 @@
     </p>
     @if (Adding)
     {
-      <FormHorizontal>
-        <FormRow Label="Группа">
-          <CharacterGroupSelector ProjectId="@ProjectId" Multiple="false" @ref="groupSelector"/>
-        </FormRow>
-        <FormRow Label="Мастер">
-          <MasterSelector ProjectId="@ProjectId" @ref="masterSelector" />
-        </FormRow>
-        <br/>
-        <JoinAddButton OnClick="() => PerformAdd()" /> |
-        <JoinCancelButton OnClick="() => Adding = false" />
-      </FormHorizontal>
+            <AddResponsibleMasterRuleForm OnSubmit="PerformAdd" OnCancelAdd="() => Adding = false" ProjectId="@ProjectId" />
     }
     else
     {
@@ -63,8 +53,6 @@
     public ProjectIdentification ProjectIdentification => new ProjectIdentification(ProjectId);
 
     public bool Adding { get; set; }
-    private CharacterGroupSelector? groupSelector;
-    private MasterSelector? masterSelector;
 
     protected async override Task OnInitializedAsync()
     {
@@ -95,32 +83,22 @@
         }
     }
 
-    async Task PerformAdd()
+    async Task PerformAdd(AddRespMasterRuleViewModel model)
     {
-        if (Adding == false)
-        {
-            return;
-        }
-        var group = groupSelector!.SelectedGroups.SingleOrDefault();
-        var master = masterSelector!.MasterId;
-        if (master is null)
-        {
-            return;
-        }
         Adding = false;
 
         _model!.Items.Insert(
           0,
           new ResponsibleMasterRuleViewModel(
-            group,
-            groupSelector!.SelectedGroupNames.Single(),
-            new UserLinkViewModel(master.Value, masterSelector.MasterDispayName!.DisplayName)
+            model.Group.CharacterGroupId,
+            model.Group.Name,
+            new UserLinkViewModel(model.Master.MasterId, model.Master.DisplayName.DisplayName)
           ));
 
         try
         {
 
-            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, group, master.Value);
+            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, model.Group.CharacterGroupId, model.Master.MasterId);
         }
         catch (Exception exc)
         {

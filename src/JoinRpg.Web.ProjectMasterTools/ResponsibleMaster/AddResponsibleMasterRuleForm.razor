@@ -1,0 +1,50 @@
+﻿@using JoinRpg.PrimitiveTypes
+@using JoinRpg.Web.ProjectCommon
+@using Microsoft.AspNetCore.Components.Forms
+@inject ILogger<AddResponsibleMasterRuleForm> Logger
+
+<EditForm Model="_model" OnValidSubmit="OnAdd">
+    <FormHorizontal>
+        <FormRow Label="Группа">
+            <SingleCharacterGroupSelector ProjectId="@ProjectId" @bind-SelectedGroup="_model.Group" />
+        </FormRow>
+        <FormRow Label="Мастер">
+            <MasterSelector ProjectId="@ProjectId" @bind-Master="_model.Master" />
+        </FormRow>
+        <br />
+        <JoinAddButton Submit="true" /> |
+        <JoinCancelButton OnClick="OnCancelAdd" />
+    </FormHorizontal>
+</EditForm>
+
+@code {
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<AddRespMasterRuleViewModel> OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnCancelAdd { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    public ProjectIdentification ProjectIdentification => new ProjectIdentification(ProjectId);
+
+
+    private AddRespMasterRuleViewModel _model = new();
+
+    private async Task OnAdd()
+    {
+        if (_model.Group is null)
+        {
+            Logger.LogError("Unexpected null group");
+        }
+        await OnSubmit.InvokeAsync(_model);
+    }
+
+
+
+}
