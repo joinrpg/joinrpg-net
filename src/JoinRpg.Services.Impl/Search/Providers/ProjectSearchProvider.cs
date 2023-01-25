@@ -7,13 +7,16 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class ProjectSearchProvider : ISearchProvider
 {
-    public IUnitOfWork UnitOfWork { protected get; set; }
+    private readonly IUnitOfWork unitOfWork;
+
+    public ProjectSearchProvider(IUnitOfWork unitOfWork) => this.unitOfWork = unitOfWork;
+
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
 
         var results =
           await
-            UnitOfWork.GetDbSet<Project>()
+            unitOfWork.GetDbSet<Project>()
               .Where(pr =>
                 pr.Active == true && pr.ProjectName.Contains(searchString)
 

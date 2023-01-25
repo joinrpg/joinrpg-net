@@ -7,13 +7,15 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class PlotSearchProvider : ISearchProvider
 {
-    public IUnitOfWork UnitOfWork { protected get; set; }
+    private readonly IUnitOfWork unitOfWork;
+
+    public PlotSearchProvider(IUnitOfWork unitOfWork) => this.unitOfWork = unitOfWork;
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         var results =
          await
-           UnitOfWork.GetDbSet<PlotFolder>()
+            unitOfWork.GetDbSet<PlotFolder>()
              .Where(p =>
                p.IsActive && p.Project.ProjectAcls.Any(acl => acl.UserId == currentUserId) && p.MasterTitle.Contains(searchString)
              )

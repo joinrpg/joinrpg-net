@@ -16,19 +16,20 @@ internal class UserSearchProvider : ISearchProvider
   "%игрок",
   "игрок",
 };
+    private readonly IUnitOfWork unitOfWork;
 
-    public IUnitOfWork UnitOfWork { private get; set; }
+    public UserSearchProvider(IUnitOfWork unitOfWork)
+    {
+        this.unitOfWork = unitOfWork;
+    }
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-        var idToFind = SearchKeywordsResolver.TryGetId(
-          searchString,
-          keysForPerfectMath,
-          out var matchByIdIsPerfect);
+        (var idToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
         var results =
           await
-            UnitOfWork.GetDbSet<User>()
+            unitOfWork.GetDbSet<User>()
               .Where(user =>
                 //TODO Convert to PredicateBuilder
                 user.UserId == idToFind
@@ -38,7 +39,7 @@ internal class UserSearchProvider : ISearchProvider
                 || user.SurName!.Contains(searchString)
                 || user.PrefferedName!.Contains(searchString)
                 || (user.Extra != null && user.Extra.Nicknames != null && user.Extra.Nicknames.Contains(searchString))
-                || (idToFind != null && user.Extra != null && user.Extra.Vk! == "id"+ idToFind)
+                || (idToFind != null && user.Extra != null && user.Extra.Vk! == "id" + idToFind)
                 || (idToFind != null && user.ExternalLogins.Any(el => el.Key == idToFind.ToString()))
               )
               .ToListAsync();

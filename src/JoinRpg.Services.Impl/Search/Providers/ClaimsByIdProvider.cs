@@ -16,14 +16,13 @@ internal class ClaimsByIdProvider : ISearchProvider
   "заявка",
 };
 
-    public IUnitOfWork UnitOfWork { private get; set; }
+    private readonly IUnitOfWork unitOfWork;
+
+    public ClaimsByIdProvider(IUnitOfWork unitOfWork) => this.unitOfWork = unitOfWork;
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-        var idToFind = SearchKeywordsResolver.TryGetId(
-        searchString,
-        keysForPerfectMath,
-        out var matchByIdIsPerfect);
+        (var idToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
         if (idToFind == null)
         {
@@ -33,7 +32,7 @@ internal class ClaimsByIdProvider : ISearchProvider
 
         var results =
           await
-            UnitOfWork.GetDbSet<Claim>()
+            unitOfWork.GetDbSet<Claim>()
               .Where(claim => claim.ClaimId == idToFind)
               .ToListAsync();
 

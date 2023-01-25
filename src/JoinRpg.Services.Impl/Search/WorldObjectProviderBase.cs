@@ -46,6 +46,4 @@ internal class WorldObjectProviderBase
     }
 
     public static string GetFoundByIdDescription(int idToFind) => $"ID: {idToFind}";
-
-    public IUnitOfWork UnitOfWork { protected get; set; }
 }
