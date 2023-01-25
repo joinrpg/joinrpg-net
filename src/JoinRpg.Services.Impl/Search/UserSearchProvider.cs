@@ -30,14 +30,16 @@ internal class UserSearchProvider : ISearchProvider
           await
             UnitOfWork.GetDbSet<User>()
               .Where(user =>
-                //TODO There should be magic way to do this. Experiment with Expression.Voodoo
+                //TODO Convert to PredicateBuilder
                 user.UserId == idToFind
                 || user.Email.Contains(searchString)
-                || user.FatherName.Contains(searchString)
-                || user.BornName.Contains(searchString)
-                || user.SurName.Contains(searchString)
-                || user.PrefferedName.Contains(searchString)
+                || user.FatherName!.Contains(searchString)
+                || user.BornName!.Contains(searchString)
+                || user.SurName!.Contains(searchString)
+                || user.PrefferedName!.Contains(searchString)
                 || (user.Extra != null && user.Extra.Nicknames != null && user.Extra.Nicknames.Contains(searchString))
+                || (idToFind != null && user.Extra != null && user.Extra.Vk! == "id"+ idToFind)
+                || (idToFind != null && user.ExternalLogins.Any(el => el.Key == idToFind.ToString()))
               )
               .ToListAsync();
 
