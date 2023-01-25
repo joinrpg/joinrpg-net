@@ -4,17 +4,14 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal static class SearchKeywordsResolver
 {
-    public static int? TryGetId(
+    public static (int? Id, bool whenFoundItIsPerfectMatch) TryGetId(
       string searchString,
-      string[] keysForPerfectMath,
-      out bool whenFoundItIsPerfectMatch)
+      string[] keysForPerfectMath)
     {
-        int entityId;
         // bare number in search string requires, among other, search by id. No perfect match.
-        if (int.TryParse(searchString.Trim(), out entityId))
+        if (int.TryParse(searchString.Trim(), out var entityId))
         {
-            whenFoundItIsPerfectMatch = false;
-            return entityId;
+            return (entityId, false);
         }
 
         //"%контакты4196", "персонаж4196", etc provide a perfect match
@@ -26,13 +23,11 @@ internal static class SearchKeywordsResolver
             //"e.g %контакты 65" is not accepted. Space between keyword and number is prohibited
             if (!searchString.StartsWith(" ") && int.TryParse(searchString, out entityId))
             {
-                whenFoundItIsPerfectMatch = true;
-                return entityId;
+                return (entityId, true);
             }
         }
 
         // in other cases search by Id is not needed
-        whenFoundItIsPerfectMatch = false;
-        return null;
+        return (null, false);
     }
 }

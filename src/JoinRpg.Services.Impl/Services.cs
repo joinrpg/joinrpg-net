@@ -22,5 +22,12 @@ public static class Services
         yield return typeof(AntiSpamServiceImpl);
         yield return typeof(GameSubscribeService);
         yield return typeof(RespMasterRuleService);
+
+        yield return typeof(CharacterGroupsProvider);
+        yield return typeof(CharacterProvider);
+        yield return typeof(ClaimsByIdProvider);
+        yield return typeof(PlotSearchProvider);
+        yield return typeof(PlotSearchProvider);
+        yield return typeof(UserSearchProvider);
     }
 }

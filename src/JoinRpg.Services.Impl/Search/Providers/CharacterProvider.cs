@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Search;
 
@@ -6,6 +7,13 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class CharacterProvider : WorldObjectProviderBase, ISearchProvider
 {
+    private readonly IUnitOfWork unitOfWork;
+
+    public CharacterProvider(IUnitOfWork unitOfWork)
+    {
+        this.unitOfWork = unitOfWork;
+    }
+
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath =
     {
@@ -15,16 +23,12 @@ internal class CharacterProvider : WorldObjectProviderBase, ISearchProvider
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-        bool matchByIdIsPerfect;
-        var characterIdToFind = SearchKeywordsResolver.TryGetId(
-          searchString,
-          keysForPerfectMath,
-          out matchByIdIsPerfect);
+        (var characterIdToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
         //TODO we don't search anymore by description
         var results =
           await
-            UnitOfWork.GetDbSet<Character>()
+            unitOfWork.GetDbSet<Character>()
               .Where(c =>
                 (c.CharacterId == characterIdToFind
                 || c.CharacterName.Contains(searchString))

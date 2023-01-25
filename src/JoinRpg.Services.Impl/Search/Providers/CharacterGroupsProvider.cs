@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Search;
 
@@ -6,16 +7,20 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class CharacterGroupsProvider : WorldObjectProviderBase, ISearchProvider
 {
+    private readonly IUnitOfWork unitOfWork;
+
+    public CharacterGroupsProvider(IUnitOfWork unitOfWork)
+    {
+        this.unitOfWork = unitOfWork;
+    }
+
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-        int parsedValue;
-        var characterGroupIdToFind = int.TryParse(searchString.Trim(), out parsedValue)
-          ? (int?)parsedValue
-          : null;
+        int? characterGroupIdToFind = int.TryParse(searchString.Trim(), out var parsedValue) ? parsedValue : null;
 
         var queryResults =
           await
-            UnitOfWork.GetDbSet<CharacterGroup>()
+            unitOfWork.GetDbSet<CharacterGroup>()
               .Where(cg =>
                 (cg.CharacterGroupId == characterGroupIdToFind
                 || cg.CharacterGroupName.Contains(searchString)

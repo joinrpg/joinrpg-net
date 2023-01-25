@@ -14,7 +14,7 @@ public class SearchKeywordsResolverTest
 
     private void Verify(string searchString, int? expectedId, bool exactMatchFlag)
     {
-        var id = SearchKeywordsResolver.TryGetId(searchString, KeysForPerfectMath, out var isPerfectMatch);
+        (var id, var isPerfectMatch) = SearchKeywordsResolver.TryGetId(searchString, KeysForPerfectMath);
 
         id.ShouldBe(expectedId, $"ExpectedId was wrong for {searchString}");
         isPerfectMatch.ShouldBe(exactMatchFlag, $"isPerfectMathc was wrong for {searchString}");
