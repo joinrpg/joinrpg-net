@@ -1,15 +1,13 @@
-using JoinRpg.Data.Write.Interfaces;
-using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
-internal class SearchServiceImpl : DbServiceImplBase, ISearchService
+internal class SearchServiceImpl : ISearchService
 {
     private readonly IEnumerable<ISearchProvider> searchProviders;
 
-    public SearchServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IEnumerable<ISearchProvider> searchProviders) : base(unitOfWork, currentUserAccessor)
+    public SearchServiceImpl(IEnumerable<ISearchProvider> searchProviders)
     {
         this.searchProviders = searchProviders;
     }
@@ -17,7 +15,8 @@ internal class SearchServiceImpl : DbServiceImplBase, ISearchService
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         var results = new List<ISearchResult>();
-        //TODO: We like to do multiple searches in parallel. We only allowed it to do in parallel UnitOfWorks
+        //TODO: We like to do multiple searches in parallel.
+        //For it we need to convert all searchproviders to AsNoTracking()
         foreach (var task in searchProviders.Select(p => p.SearchAsync(currentUserId, searchString)))
         {
             var rGroup = await task;
