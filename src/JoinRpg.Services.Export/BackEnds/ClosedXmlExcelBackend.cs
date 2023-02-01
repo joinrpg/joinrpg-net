@@ -6,9 +6,10 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.BackEnds;
 
-internal class ClosedXmlExcelBackend : IGeneratorBackend
+internal partial class ClosedXmlExcelBackend : IGeneratorBackend
 {
-    private static readonly Regex _invalidCharactersRegex = new("[\x00-\x08\x0B\x0C\x0E-\x1F]");
+    [GeneratedRegex("[\0-\b\v\f\u000e-\u001f]")]
+    private partial Regex InvalidCharactersRegex();
     private IXLWorksheet Sheet { get; }
 
     public string ContentType => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -70,10 +71,8 @@ internal class ClosedXmlExcelBackend : IGeneratorBackend
                 xlCell.GetHyperlink().ExternalAddress = uri;
                 break;
             default:
-                _ = xlCell.SetValue(_invalidCharactersRegex.Replace(cell.Content?.ToString() ?? "", ""));
+                _ = xlCell.SetValue(InvalidCharactersRegex().Replace(cell.Content?.ToString() ?? "", ""));
                 break;
         }
     }
-
-
 }

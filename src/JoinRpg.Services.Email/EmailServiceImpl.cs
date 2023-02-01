@@ -14,7 +14,7 @@ namespace JoinRpg.Services.Email;
 /// Service that send all email notifications
 /// </summary>
 [UsedImplicitly]
-public class EmailServiceImpl : IEmailService
+public partial class EmailServiceImpl : IEmailService
 {
     #region general stuff
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
@@ -304,8 +304,7 @@ public class EmailServiceImpl : IEmailService
             throw new ArgumentNullException(nameof(model.Text.Contents));
         }
 
-        var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MessageService.GetRecepientPlaceholderName(),
-          RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        var body = NamePlaceholderRegex().Replace(model.Text.Contents, MessageService.GetRecepientPlaceholderName());
 
         await MessageService.SendEmail(model, $"{model.ProjectName}: {model.Subject}",
             $@"{body}
@@ -427,4 +426,7 @@ public class EmailServiceImpl : IEmailService
         await MessageService.SendEmails(subject, body, text,
             email.Initiator.ToRecepientData(), recipients);
     }
+
+    [GeneratedRegex("%NAME%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex NamePlaceholderRegex();
 }
