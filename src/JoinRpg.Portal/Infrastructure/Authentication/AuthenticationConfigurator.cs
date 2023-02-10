@@ -20,8 +20,6 @@ internal static class AuthenticationConfigurator
         IConfigurationSection authSection)
     {
 
-        _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
-
         _ = services
             .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
             .AddDefaultTokenProviders()
