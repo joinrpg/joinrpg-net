@@ -1,8 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -61,7 +61,7 @@ public class CharacterListController : ControllerGameBase
             return View("Index", list);
         }
 
-        return await Export(list, exportType.Value);
+        return Export(list, exportType.Value);
     }
 
     public CharacterListController(
@@ -110,7 +110,7 @@ public class CharacterListController : ControllerGameBase
             return View("ByGroup", list);
         }
 
-        return await Export(list, exportType.Value);
+        return Export(list, exportType.Value);
     }
 
     [HttpGet]
@@ -130,19 +130,15 @@ public class CharacterListController : ControllerGameBase
     public Task<ActionResult> WithPlayers(int projectid, string export)
       => MasterCharacterList(projectid, character => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
 
-    private async Task<FileContentResult> Export(CharacterListViewModel list, ExportType exportType)
+    private FileContentResult Export(CharacterListViewModel list, ExportType exportType)
     {
         var generator = ExportDataService.GetGenerator(
             exportType,
             list.Items,
           new CharacterListItemViewModelExporter(list.Fields, UriService));
 
-        return await ReturnExportResult(list.ProjectName + ": " + list.Title, generator);
+        return GeneratorResultHelper.Result(list.ProjectName + ": " + list.Title, generator);
     }
-
-    private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
-        File(await generator.Generate(), generator.ContentType,
-            Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
 }
 
 

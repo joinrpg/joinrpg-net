@@ -7,6 +7,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -93,10 +94,7 @@ public class FinancesController : ControllerGameBase
 
             var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
 
-            var fileName = project.ProjectName + ": Финансы";
-
-            return File(await generator.Generate(), generator.ContentType,
-                Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+            return GeneratorResultHelper.Result(project.ProjectName + ": Финансы", generator);
         }
     }
 
@@ -297,10 +295,7 @@ public class FinancesController : ControllerGameBase
         var generator = ExportDataService.GetGenerator(ExportType.Csv, summary,
     new MoneySummaryByMasterExporter(UriService));
 
-        var fileName = project.ProjectName + ": " + "money-summary";
-
-        return File(await generator.Generate(), generator.ContentType,
-            Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+        return GeneratorResultHelper.Result(project.ProjectName + ": Финансы", generator);
     }
 
     [MasterAuthorize(Permission.CanManageMoney)]

@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Services.Interfaces;
 
 public interface IExportDataService
@@ -15,16 +13,14 @@ public enum ExportType
 
 public interface IExportGenerator
 {
-    Task<byte[]> Generate();
+    byte[] Generate();
     string ContentType { get; }
     string FileExtension { get; }
 }
 
 public interface ITableColumn
 {
-    [CanBeNull]
     object? ExtractValue(object row);
-    [CanBeNull]
     string? Name { get; }
 }
 

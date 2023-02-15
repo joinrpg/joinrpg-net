@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -61,7 +62,6 @@ public class ClaimListController : Common.ControllerGameBase
 #pragma warning restore CS0612 // Type or member is obsolete
 
             return
-                await
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
                         new ClaimListItemViewModelExporter(project, UriService), project.ProjectName);
         }
@@ -119,7 +119,6 @@ public class ClaimListController : Common.ControllerGameBase
         {
             var view = new ClaimListForExportViewModel(CurrentUserId, claims);
             return
-                await
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
                         new ClaimListItemViewModelExporter(characterGroup.Project, UriService),
                         characterGroup.Project.ProjectName);
@@ -289,7 +288,7 @@ public class ClaimListController : Common.ControllerGameBase
             var viewModel = new ClaimListForExportViewModel(
                 CurrentUserId,
                 user.Claims.ToList());
-            return await ExportWithCustomFrontend(
+            return ExportWithCustomFrontend(
                 viewModel.Items,
                 title,
                 exportType.Value,
@@ -342,16 +341,13 @@ public class ClaimListController : Common.ControllerGameBase
                 ClaimStatusSpec.Active
         );
     }
-    private async Task<FileContentResult> ExportWithCustomFrontend<T>(
-        IEnumerable<T> viewModel, string title,
-        ExportType exportType, IGeneratorFrontend<T> frontend, string projectName) where T : class
+    private FileContentResult ExportWithCustomFrontend(
+        IEnumerable<ClaimListItemForExportViewModel> viewModel, string title,
+        ExportType exportType, IGeneratorFrontend<ClaimListItemForExportViewModel> frontend, string projectName)
     {
         var generator = ExportDataService.GetGenerator(exportType, viewModel,
           frontend);
 
-        var fileName = projectName + ": " + title;
-
-        return File(await generator.Generate(), generator.ContentType,
-            Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+        return GeneratorResultHelper.Result(projectName + ": " + title, generator);
     }
 }
