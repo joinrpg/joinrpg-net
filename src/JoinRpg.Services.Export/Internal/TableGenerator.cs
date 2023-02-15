@@ -15,23 +15,18 @@ internal class TableGenerator<TRow> : IExportGenerator where TRow : class
         Frontend = frontend;
     }
 
-    public Task<byte[]> Generate()
+    public byte[] Generate()
     {
-        //Run on background thread
-        return Task.Run(() =>
+        var columns = Frontend.ParseColumns().ToList();
+
+        Backend.WriteHeaders(columns);
+
+        foreach (var row in Data)
         {
+            Backend.WriteRow(columns.Select(tableColumn => new Cell(tableColumn.ExtractValue(row))));
+        }
 
-            var columns = Frontend.ParseColumns().ToList();
-
-            Backend.WriteHeaders(columns);
-
-            foreach (var row in Data)
-            {
-                Backend.WriteRow(columns.Select(tableColumn => new Cell(tableColumn.ExtractValue(row))));
-            }
-
-            return Backend.Generate();
-        });
+        return Backend.Generate();
     }
 
     public string ContentType => Backend.ContentType;

@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -74,12 +75,7 @@ public class AccommodationPrintController : Common.ControllerGameBase
         {
             var generator = ExportDataService.GetGenerator(exportType.Value, accommodations, new AccomodationReportExporter(UriService));
 
-            return await ReturnExportResult(project.ProjectName + ": " + "Отчет по расселению", generator);
+            return GeneratorResultHelper.Result(project.ProjectName + ": " + "Отчет по расселению", generator);
         }
     }
-
-    private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
-        File(await generator.Generate(), generator.ContentType,
-            Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
-
 }
