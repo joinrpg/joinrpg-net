@@ -8,9 +8,7 @@ public interface IProjectService
         string name,
         bool isPublic,
         IReadOnlyCollection<int> parentCharacterGroupIds,
-        string description,
-        bool haveDirectSlotsForSave,
-        int directSlotsForSave);
+        string description);
 
     Task EditCharacterGroup(int projectId,
         int currentUserId,
