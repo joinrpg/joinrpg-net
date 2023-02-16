@@ -42,7 +42,16 @@ public class SubscribeViewService : IGameSubscribeClient
     }
 
     public async Task RemoveSubscription(int projectId, int userSubscriptionsId)
+        => await gameSubscribeService.RemoveSubscribe(new RemoveSubscribeRequest(projectId, userSubscriptionsId));
+
+    public async Task SaveGroupSubscription(int projectId, EditSubscribeViewModel model)
     {
-        await gameSubscribeService.RemoveSubscribe(new RemoveSubscribeRequest(projectId, userSubscriptionsId));
+        await gameSubscribeService.UpdateSubscribeForGroup(new SubscribeForGroupRequest()
+        {
+            ProjectId = projectId,
+            CharacterGroupId = model.GroupId,
+            SubscriptionOptions = model.Options.ToOptions(),
+            MasterId = model.MasterId,
+        });
     }
 }

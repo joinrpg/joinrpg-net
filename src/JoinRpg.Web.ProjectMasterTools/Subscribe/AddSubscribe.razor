@@ -1,0 +1,71 @@
+﻿@using JoinRpg.Web.ProjectCommon
+<JoinPanel>
+  <Header>Добавление подписки</Header>
+  <Body>
+    <FormHorizontal>
+  <FormRow Label="Группа">
+     <SingleCharacterGroupSelector ProjectId="@ProjectId" @bind-SelectedGroup="@SelectedGroup" SelectedGroupId="@Model.GroupId"/>
+  </FormRow>
+
+  <FormRowFor For="@(() => Model.Options.ClaimStatusChange)">
+      <CheckboxInput @bind-Value="Model.Options.ClaimStatusChange"></CheckboxInput>
+  </FormRowFor>
+
+  <FormRowFor For="@(() => Model.Options.Comments)">
+      <CheckboxInput @bind-Value="Model.Options.Comments"></CheckboxInput>
+  </FormRowFor>
+
+
+  <FormRowFor For="@(() => Model.Options.FieldChange)">
+      <CheckboxInput @bind-Value="Model.Options.FieldChange"></CheckboxInput>
+  </FormRowFor>
+
+  <FormRowFor For="@(() => Model.Options.MoneyOperation)">
+      <CheckboxInput @bind-Value="Model.Options.MoneyOperation"></CheckboxInput>
+  </FormRowFor>
+
+
+  <FormRowFor For="@(() => Model.Options.AccommodationChange)">
+      <CheckboxInput @bind-Value="Model.Options.AccommodationChange"></CheckboxInput>
+  </FormRowFor>
+
+  <br />
+
+  <JoinAddButton OnClick="PeformSave" /> |
+  <JoinCancelButton OnClick="OnClose" />
+</FormHorizontal>
+
+  </Body>
+</JoinPanel>
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public EditSubscribeViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public int ProjectId { get; set; }
+
+    private CharacterGroupDto? SelectedGroup { get; set; } 
+    private int? SelectedGroupId { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    public SubscribeOptionsViewModel Options { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<EditSubscribeViewModel> OnSave { get; set; }
+
+    private async Task PeformSave()
+    {
+        if (SelectedGroup is null )
+        {
+            return;
+        }
+        Model.GroupId = SelectedGroup.CharacterGroupId;
+        await OnSave.InvokeAsync(Model);
+    }
+}

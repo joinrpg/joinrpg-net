@@ -1,5 +1,5 @@
 ﻿<input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
-<input type="checkbox" @onchange="UpdateValue" checked="@internalValue" />
+<input type="checkbox" name="@Name" @onchange="UpdateValue" checked="@internalValue" />
 
 @code {
     [Parameter]
@@ -15,11 +15,12 @@
 
     protected override void OnInitialized()
     {
-      internalValue = Value;
+        internalValue = Value;
     }
 
-    private void UpdateValue(ChangeEventArgs eventArgs)
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
     {
-      internalValue = !internalValue;
+        internalValue = !internalValue;
+        await ValueChanged.InvokeAsync(internalValue);
     }
 }

@@ -16,6 +16,20 @@ public class GameSubscribeClient : IGameSubscribeClient
         this.csrfTokenProvider = csrfTokenProvider;
     }
 
+    public async Task SaveGroupSubscription(int projectId, EditSubscribeViewModel model)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            _ = (await httpClient.PostAsJsonAsync($"webapi/gamesubscribe/save?projectId={projectId}", model)).EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during access");
+            throw;
+        }
+    }
+
     public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
     {
         return await httpClient.GetFromJsonAsync<SubscribeListViewModel>(
@@ -28,7 +42,8 @@ public class GameSubscribeClient : IGameSubscribeClient
         try
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
-            await httpClient.PostAsync($"webapi/gamesubscribe/unsubscribe?projectId={projectId}&userSubscriptionsId={userSubscriptionsId}", null);
+            _ = (await httpClient.PostAsync($"webapi/gamesubscribe/unsubscribe?projectId={projectId}&userSubscriptionsId={userSubscriptionsId}", null))
+                .EnsureSuccessStatusCode();
         }
         catch (Exception e)
         {

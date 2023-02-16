@@ -1,15 +1,13 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces;
 
-public class SubscribeForGroupRequest : ISubscriptionOptions
+public class SubscribeForGroupRequest
 {
 
-    public int ProjectId { get; set; }
-    public int CharacterGroupId { get; set; }
-    public bool ClaimStatusChange { get; set; }
-    public bool Comments { get; set; }
-    public bool FieldChange { get; set; }
-    public bool MoneyOperation { get; set; }
-    public bool AccommodationChange { get; set; }
+    public required int ProjectId { get; set; }
+    public required int CharacterGroupId { get; set; }
+    public required SubscriptionOptions SubscriptionOptions { get; set; }
+    public int MasterId { get; set; }
 }

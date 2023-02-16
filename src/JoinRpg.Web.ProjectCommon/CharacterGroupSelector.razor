@@ -8,11 +8,13 @@ else
 {
   <IntSelector
                Name="@Name"
-               @bind-SelectedValues="SelectedGroups"
+             SelectedValues="SelectedGroupIds"
+               SelectedValuesChanged="SelectedValuesChanged"
                PossibleValues="items"
                Multiple="@Multiple"
                />
   <p>
+
     @string.Join(" • ", SelectedGroupNames)
   </p>
 }
@@ -21,17 +23,33 @@ else
 
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public int ProjectId { get; set; }
-    [Parameter] public int[] SelectedGroups { get; set; } = new int[0];
+    [Parameter] public int[] SelectedGroupIds { get; set; } = new int[0];
+    [Parameter] public EventCallback<int[]> SelectedGroupIdsChanged { get; set; }
+    [Parameter] public EventCallback<CharacterGroupDto[]> SelectedGroupsChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;
 
-    public IEnumerable<string> SelectedGroupNames
-      => items.Where(item => SelectedGroups.Contains(item.Value)).Select(item => item.Text);
+    public IEnumerable<string> SelectedGroupNames { get; private set; } = Array.Empty<string>();
 
     private IntSelectListItem[] items = null!;
+    private List<CharacterGroupDto> groups = null!;
+
+    private async Task SelectedValuesChanged(int[] values)
+    {
+        var selectedItems = groups.Where(item => values.Contains(item.CharacterGroupId)).ToArray();
+        RefreshSelectedGroupNames(selectedItems);
+        await SelectedGroupIdsChanged.InvokeAsync(values);
+        await SelectedGroupsChanged.InvokeAsync(selectedItems);
+    }
+
+    private void RefreshSelectedGroupNames(CharacterGroupDto[] val)
+    {
+        SelectedGroupNames = val.Select(item => item.Name);
+    }
 
     protected override async Task OnInitializedAsync()
     {
-      var groups = await groupsClient.GetCharacterGroups(ProjectId);
+      groups = await groupsClient.GetCharacterGroups(ProjectId);
+      var selectedItems = groups.Where(item => SelectedGroupIds.Contains(item.CharacterGroupId)).ToArray();
       items = groups
         .Select(group =>
           new IntSelectListItem(
@@ -39,5 +57,6 @@ else
             Text: group.Name,
             Subtext: string.Join("→", group.FullPath),
             ExtraSearch: string.Join(" ", group.FullPath))).ToArray();
+        RefreshSelectedGroupNames(selectedItems);
     }
 }

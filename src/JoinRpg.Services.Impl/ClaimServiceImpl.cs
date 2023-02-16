@@ -22,7 +22,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         _ = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
         _ = user.Subscriptions.Add(
             new UserSubscription() { ClaimId = claimId, ProjectId = projectId }.AssignFrom(
-                SubscribeOptionsExtensions.AllSet()));
+                SubscriptionOptions.CreateAllSet()));
         await UnitOfWork.SaveChangesAsync();
     }
 
