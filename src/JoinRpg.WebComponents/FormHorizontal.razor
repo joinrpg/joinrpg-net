@@ -1,0 +1,7 @@
+﻿<div class="form-horizontal">
+  @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
