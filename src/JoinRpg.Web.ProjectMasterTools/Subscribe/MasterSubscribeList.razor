@@ -1,9 +1,19 @@
-﻿
+﻿@using JoinRpg.Web.ProjectCommon
+@using Microsoft.JSInterop
 @inject IGameSubscribeClient Client
-@if (_model is null)
+@if (model is null)
 {
   <JoinLoadingMessage />
   return;
+}
+
+@if (addingModel is not null)
+{
+    <AddSubscribe ProjectId="@ProjectId" Model="@addingModel" OnClose="@(() => {addingModel = null;})" OnSave="OnAddRow" />
+}
+else
+{
+    <JoinAddButton Label="Подписаться на группу" OnClick="OnAddClicked" Disabled="@(!model.AllowChanges)"/> 
 }
 
 <div class="master-subscribe-list">
@@ -14,11 +24,11 @@
         <th></th>
     </TableHeader>
     <TableBody>
-      @foreach (var item in _model.Items)
+      @foreach (var item in model.Items)
       {
         <MasterSubscribeListRow Model="@item" OnRemoveCallback="OnRemoveRow" @key="@item.UserSubscriptionId" />
       }
-      @foreach (var paymentType in _model.PaymentTypeNames)
+      @foreach (var paymentType in model.PaymentTypeNames)
       {
         <tr>
           <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
@@ -44,7 +54,9 @@
 
 </div>
 @code {
-    private SubscribeListViewModel? _model;
+    private SubscribeListViewModel? model;
+
+    private EditSubscribeViewModel? addingModel = null;
 
     [Parameter]
     public SubscribeListViewModel? InitialModel { get; set; }
@@ -57,22 +69,38 @@
 
     protected async override Task OnInitializedAsync()
     {
-      if (InitialModel != null)
-      {
-        _model = InitialModel;
-      }
-      else
-      {
-        _model = await Client.GetSubscribeForMaster(ProjectId, MasterId);
-      }
+        if (InitialModel != null)
+        {
+            model = InitialModel;
+        }
+        else
+        {
+            model = await Client.GetSubscribeForMaster(ProjectId, MasterId);
+        }
     }
 
     async Task OnRemoveRow(SubscribeListItemViewModel item)
     {
-      _model!.Items.Remove(item);
-      await Client.RemoveSubscription(ProjectId, item.UserSubscriptionId);
+        model!.Items.Remove(item);
+        await Client.RemoveSubscription(ProjectId, item.UserSubscriptionId);
     }
 
+    private async Task OnAddRow(EditSubscribeViewModel added)
+    {
+        await Client.SaveGroupSubscription(ProjectId, added);
+        addingModel = null;
+        model = await Client.GetSubscribeForMaster(ProjectId, MasterId);
+    }
 
+    private void OnAddClicked()
+    {
+        addingModel = new()
+            {
+                GroupId = -1, //Will be ignored
+                MasterId = MasterId,
+                Options = new(),
+                UserSubscriptionId = null,
+            };
+    }
 
 }

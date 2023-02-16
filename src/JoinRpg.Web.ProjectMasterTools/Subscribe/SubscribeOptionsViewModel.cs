@@ -4,7 +4,7 @@ using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
-public class SubscribeOptionsViewModel : ISubscriptionOptions
+public record class SubscribeOptionsViewModel : ISubscriptionOptions
 {
 
     [Display(

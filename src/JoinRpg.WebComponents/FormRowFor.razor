@@ -11,7 +11,10 @@
   {
     <div class="help-block">@description</div>
   }
-  <ValidationMessage For="For" />
+  @if (EditContext is not null)
+    {
+        <ValidationMessage For="For" />
+    }
 </FormRow>
 
 @code {
@@ -21,12 +24,14 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; } = new();
 
+    [CascadingParameter] EditContext? EditContext { get; set; }
+
     private string? description;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
         var property = For.AsPropertyAccess();
-        description = property.GetCustomAttribute<DisplayAttribute>()?.GetDescription();
+        description = property?.GetCustomAttribute<DisplayAttribute>()?.GetDescription();
     }
 }

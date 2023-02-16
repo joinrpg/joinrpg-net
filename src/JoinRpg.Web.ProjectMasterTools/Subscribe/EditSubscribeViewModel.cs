@@ -1,6 +1,6 @@
 namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
-public class EditSubscribeViewModel
+public record class EditSubscribeViewModel
 {
     public required SubscribeOptionsViewModel Options { get; set; }
 
