@@ -393,8 +393,7 @@ public class GameGroupsController : ControllerGameBase
             await ProjectService.AddCharacterGroup(
               viewModel.ProjectId,
               viewModel.Name, viewModel.IsPublic,
-              viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
-              viewModel.DirectSlotsForSave());
+              viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description);
 
             return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
         }
@@ -418,7 +417,7 @@ public class GameGroupsController : ControllerGameBase
         CharacterGroup group)
     {
         viewModel.IsRoot = group.IsRoot;
-        viewModel.ShowConvertToSlotButton = group.Claims.Any() || group.HaveDirectSlots;
+        viewModel.HasOldStyleGroupClaims = group.Claims.Any() || group.HaveDirectSlots;
         viewModel.CreatedAt = group.CreatedAt;
         viewModel.UpdatedAt = group.UpdatedAt;
         viewModel.CreatedBy = group.CreatedBy;

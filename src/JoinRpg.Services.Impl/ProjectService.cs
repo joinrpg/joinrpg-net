@@ -70,9 +70,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
         string name,
         bool isPublic,
         IReadOnlyCollection<int> parentCharacterGroupIds,
-        string description,
-        bool haveDirectSlotsForSave,
-        int directSlotsForSave)
+        string description)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -81,8 +79,8 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
         Create(new CharacterGroup()
         {
-            AvaiableDirectSlots = directSlotsForSave,
-            HaveDirectSlots = haveDirectSlotsForSave,
+            AvaiableDirectSlots = 0,
+            HaveDirectSlots = false,
             CharacterGroupName = Required(name),
             ParentCharacterGroupIds =
                 await ValidateCharacterGroupList(projectId,
