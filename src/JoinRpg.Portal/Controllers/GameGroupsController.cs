@@ -12,7 +12,6 @@ using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.Subscribe;
 using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -451,20 +450,6 @@ public class GameGroupsController : ControllerGameBase
     [MasterAuthorize(Permission.CanEditRoles)]
     [HttpGet]
     public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
-
-    [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> EditSubscribe(int projectId, int characterGroupId)
-    {
-        var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
-        if (group == null)
-        {
-            return NotFound();
-        }
-
-        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-
-        return View(new SubscribeSettingsViewModel(user, group));
-    }
 
     [HttpGet, AllowAnonymous]
     public async Task<ActionResult> Details(int projectId, int characterGroupId)
