@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -21,7 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
-        <PackageReference Include="morelinq" Version="3.4.1" />
+        <PackageReference Include="morelinq" Version="3.4.2" />
     </ItemGroup>
 
 </Project>
