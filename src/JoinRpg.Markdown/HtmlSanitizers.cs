@@ -6,10 +6,10 @@ namespace JoinRpg.Markdown;
 internal static class HtmlSanitizers
 {
     private static readonly Lazy<HtmlSanitizer> SimpleHtml5Sanitizer = new(InitHtml5Sanitizer);
-    public static IHtmlSanitizer Simple { get; } = SimpleHtml5Sanitizer.Value;
+    public static IHtmlSanitizer Simple => SimpleHtml5Sanitizer.Value;
 
     private static readonly Lazy<HtmlSanitizer> RemoveAllHtmlSanitizer = new(InitRemoveSanitizer);
-    public static IHtmlSanitizer RemoveAll { get; } = RemoveAllHtmlSanitizer.Value;
+    public static IHtmlSanitizer RemoveAll => RemoveAllHtmlSanitizer.Value;
 
     private static HtmlSanitizer InitRemoveSanitizer()
     {
@@ -59,7 +59,7 @@ internal static class HtmlSanitizers
 internal class AllowWhiteListedIframeDomains : UrlCheckerAttributeSanitizer
 {
     private AllowWhiteListedIframeDomains() { }
-    public static new AllowWhiteListedIframeDomains Default { get; private set; } = new AllowWhiteListedIframeDomains();
+    public static AllowWhiteListedIframeDomains Default { get; private set; } = new AllowWhiteListedIframeDomains();
 
     protected override bool AttributeUrlCheck(HtmlAttribute attribute)
     {
