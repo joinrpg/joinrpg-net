@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.5.0" />
-    <PackageReference Include="AWSSDK.S3" Version="3.7.103.26" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.103.50" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
