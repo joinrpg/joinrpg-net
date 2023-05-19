@@ -45,7 +45,7 @@ patchesJson6902:
         value: 3072Mi
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/memory
-        value: 3072Mi
+        value: 2048Mi
 
   - target:
       group: policy
