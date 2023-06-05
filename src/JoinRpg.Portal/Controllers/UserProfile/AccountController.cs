@@ -442,7 +442,13 @@ public class AccountController : Common.ControllerBase
                 return View("ExternalLoginFailure");
             }
 
-            var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException();
+            var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
+
+            if (email is null)
+            {
+                ModelState.AddModelError("", "Невозможно создать аккаунт, если в соцсети не указан ваш email. Создайте аккаунт обычным способом, а потом привяжите к нему соцсеть");
+                return View(model);
+            }
 
             var user = new JoinIdentityUser() { UserName = email };
             var result = await UserManager.CreateAsync(user);
