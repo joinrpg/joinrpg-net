@@ -45,10 +45,9 @@ jobs:
         REF_TYPE: ${{ github.ref_type }}
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.3
+      uses: actions/setup-dotnet@v3.2.0
       with:
-        dotnet-version: 7.0.x
-        dotnet-quality: ga
+        global-json-file: global.json
 
     - name: Restore nuget dependencies cache
       uses: actions/cache@v3
