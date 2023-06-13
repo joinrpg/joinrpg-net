@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0.5
+FROM mcr.microsoft.com/dotnet/aspnet:7.0.7
 
 RUN groupadd user && \
     useradd -g user user --home-dir "/app" --create-home
