@@ -44,7 +44,7 @@ public class CheckInController : XGameApiController
                         PlayerId = claim.Player.UserId,
                         NickName = claim.Player.GetDisplayName(),
                         FullName = claim.Player.FullName,
-                        OtherNicks = claim.Player.Extra?.Nicknames ?? "",
+                        OtherNicks = claim.Extra?.Nicknames ?? "",
                     },
                 });
     }

@@ -30,7 +30,7 @@ public class CheckInListItemViewModel
         CharacterName = claim.CharacterName;
         Fullname = claim.Player.FullName;
         NickName = claim.Player.GetDisplayName();
-        OtherNicks = claim.Player.Extra?.Nicknames ?? "";
+        OtherNicks = claim.Extra?.Nicknames ?? "";
     }
 
     public string OtherNicks { get; }
