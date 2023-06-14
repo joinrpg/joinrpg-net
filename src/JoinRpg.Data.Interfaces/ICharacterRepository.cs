@@ -31,7 +31,7 @@ public class CharacterView : IFieldContainter
     public bool IsActive { get; set; }
     public bool InGame { get; set; }
     public CharacterTypeInfo CharacterTypeInfo { get; set; }
-    public Claim ApprovedClaim { get; set; }
+    public Claim? ApprovedClaim { get; set; }
     public IReadOnlyCollection<ClaimHeader> Claims { get; set; }
     public IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
     public IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
@@ -77,5 +77,5 @@ public class ClaimWithPlayer
     public int ClaimId { get; set; }
     public required string CharacterName { get; set; }
     public required User Player { get; set; }
-    public required UserExtra Extra { get; set; }
+    public required UserExtra? Extra { get; set; }
 }

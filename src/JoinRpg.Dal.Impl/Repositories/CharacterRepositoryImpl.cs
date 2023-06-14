@@ -75,8 +75,12 @@ internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepos
 
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
 
-        var view =
-        new CharacterView()
+        List<GroupHeader> directGroups = await Ctx.Set<CharacterGroup>()
+                    .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
+                    .Select(groupHeaderSelector)
+                    .ToListAsync();
+
+        var view = new CharacterView()
         {
             CharacterId = character.CharacterId,
             Name = character.CharacterName,
@@ -98,16 +102,13 @@ internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepos
               {
                   IsActive = activeClaimPredicate.Invoke(claim),
               }).ToListAsync(),
-            DirectGroups = await Ctx.Set<CharacterGroup>()
-            .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
-            .Select(groupHeaderSelector).ToListAsync(),
-        };
-
-        view.AllGroups = view.DirectGroups
+            DirectGroups = directGroups,
+            AllGroups = directGroups
             .SelectMany(g => g.FlatTree(group => group.ParentGroupIds._parentCharacterGroupIds.Select(id => allGroups[id])))
             .Where(g => g.IsActive)
             .Distinct()
-            .ToList();
+            .ToList()
+        };
         return view;
     }
 
