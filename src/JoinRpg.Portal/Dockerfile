@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0.5
+FROM mcr.microsoft.com/dotnet/aspnet:7.0.7
 
 #We need this to make ClosedXML work
 RUN apt-get update && apt-get install -y fonts-liberation && rm -rf /var/lib/apt/lists/*
