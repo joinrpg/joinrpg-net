@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Common.EmailSending.Impl</AssemblyTitle>
@@ -9,6 +9,6 @@
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="mailgun_csharp" Version="0.7.0 " />
+    <PackageReference Include="mailgun_csharp" Version="0.8.0 " />
   </ItemGroup>
 </Project>
