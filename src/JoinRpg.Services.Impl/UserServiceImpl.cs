@@ -73,14 +73,12 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         var tokensToRemove = new[]
           {"http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",};
         user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
-        user.Extra.Telegram = telegram?.RemoveFromString(tokensToRemove);
+        user.Extra.Telegram = telegram?.RemoveFromString(tokensToRemove).TrimStart('@');
 
         user.Extra.SocialNetworksAccess = socialAccessType;
 
         await UnitOfWork.SaveChangesAsync();
     }
-
-#nullable enable
 
     /// <inheritdoc />
     public async Task SetAdminFlag(int userId, bool administratorFlag)

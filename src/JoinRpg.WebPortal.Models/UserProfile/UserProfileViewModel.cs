@@ -12,9 +12,9 @@ namespace JoinRpg.Web.Models;
 
 public class UserProfileViewModel
 {
-    public string DisplayName { get; set; }
+    public required string DisplayName { get; set; }
 
-    public IEnumerable<ProjectLinkViewModel> ThisUserProjects { get; set; }
+    public required IEnumerable<ProjectLinkViewModel> ThisUserProjects { get; set; }
 
     [ReadOnly(true)]
     public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = Array.Empty<ProjectLinkViewModel>();
@@ -26,10 +26,7 @@ public class UserProfileViewModel
     [ReadOnly(true)]
     public ClaimListViewModel? Claims { get; set; }
 
-    public UserProfileDetailsViewModel Details { get; set; }
-
-    [ReadOnly(true)]
-    public string Hash { get; set; }
+    public required UserProfileDetailsViewModel Details { get; set; }
 
     [ReadOnly(true)]
     public bool HasAdminAccess { get; set; }
@@ -88,7 +85,7 @@ public class UserProfileDetailsViewModel
             Email = user.Email;
             FullName = user.FullName;
             Skype = user.Extra?.Skype;
-            Telegram = user.Extra?.Telegram;
+            Telegram = user.Extra?.Telegram?.TrimStart('@');
             Livejournal = user.Extra?.Livejournal;
             PhoneNumber = user.Extra?.PhoneNumber ?? "";
             IsVerifiedUser = user.VerifiedProfileFlag;

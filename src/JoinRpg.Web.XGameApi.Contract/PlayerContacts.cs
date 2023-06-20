@@ -24,5 +24,5 @@ public record PlayerContacts(string Email, string? Phone, string? VKontakte, str
     /// <summary>
     /// Telegram (not verified, just as entered by user)
     /// </summary>
-    public string? Telegram { get; set; } = Telegram;
+    public string? Telegram { get; set; } = Telegram?.TrimStart('@');
 }
