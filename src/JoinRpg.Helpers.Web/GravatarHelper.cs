@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 
 namespace JoinRpg.Helpers.Web;
 
@@ -9,7 +10,12 @@ public static class GravatarHelper
     /// </summary>
     public static Uri GetLink(string email, int size)
     {
-        static string GravatarHash(string email) => email.ToLowerInvariant().ToHexHash(MD5.Create());
+        ArgumentNullException.ThrowIfNull(email);
+        static string GravatarHash(string email)
+        {
+            var bytes = Encoding.UTF8.GetBytes(email.ToLowerInvariant());
+            return Convert.ToHexString(MD5.HashData(bytes));
+        }
 
         return new($"https://www.gravatar.com/avatar/{GravatarHash(email)}?d=identicon&s={size}");
     }

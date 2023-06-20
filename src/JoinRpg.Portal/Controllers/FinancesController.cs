@@ -276,7 +276,7 @@ public class FinancesController : ControllerGameBase
     {
         var project = await ProjectRepository.GetProjectWithFinances(projectId);
 
-        var guid = new Guid(token.FromHexString());
+        var guid = new Guid(Convert.FromHexString(token));
 
         var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
 

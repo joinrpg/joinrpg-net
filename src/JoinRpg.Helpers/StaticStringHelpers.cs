@@ -1,6 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
-
 namespace JoinRpg.Helpers;
 
 public static class StaticStringHelpers
@@ -12,10 +9,7 @@ public static class StaticStringHelpers
     public static IEnumerable<string> WhereNotNullOrWhiteSpace(
         this IEnumerable<string?> strings)
     {
-        if (strings == null)
-        {
-            throw new ArgumentNullException(nameof(strings));
-        }
+        ArgumentNullException.ThrowIfNull(strings);
 
         return strings.Where(s => !string.IsNullOrWhiteSpace(s)).WhereNotNull();
     }
@@ -24,26 +18,15 @@ public static class StaticStringHelpers
         this IEnumerable<string> strings,
         string separator)
     {
-        if (strings == null)
-        {
-            throw new ArgumentNullException(nameof(strings));
-        }
-
-        if (separator == null)
-        {
-            throw new ArgumentNullException(nameof(separator));
-        }
+        ArgumentNullException.ThrowIfNull(strings);
+        ArgumentNullException.ThrowIfNull(separator);
 
         return string.Join(separator, strings);
     }
 
-    public static string AsString(
-        this IEnumerable<char> strings)
+    public static string AsString(this IEnumerable<char> strings)
     {
-        if (strings == null)
-        {
-            throw new ArgumentNullException(nameof(strings));
-        }
+        ArgumentNullException.ThrowIfNull(strings);
 
         return string.Join("", strings);
     }
@@ -53,7 +36,7 @@ public static class StaticStringHelpers
         string prefix)
     {
         return enumerable.Where(key => key.StartsWith(prefix))
-            .Select(key => key.Substring(prefix.Length)).Select(int.Parse);
+            .Select(key => key[prefix.Length..]).Select(int.Parse);
     }
 
     public static int? UnprefixNumber(
@@ -61,69 +44,19 @@ public static class StaticStringHelpers
         string prefix)
     {
         return number.StartsWith(prefix)
-            ? int.Parse(number.Substring(prefix.Length))
+            ? int.Parse(number[prefix.Length..])
             : null;
     }
 
-    public static string ToHexString(
-        this IEnumerable<byte> bytes)
-    {
-        if (bytes == null)
-        {
-            throw new ArgumentNullException(nameof(bytes));
-        }
-
-        return bytes.Select(b => $"{b:x2}").JoinStrings("");
-    }
-
-    public static byte[] FromHexString(
-        this string str)
-    {
-        if (str == null)
-        {
-            throw new ArgumentNullException(nameof(str));
-        }
-
-        str = str.Trim();
-        if (str.Length % 2 == 1)
-        {
-            str = "0" + str;
-        }
-
-        var result = new byte[str.Length / 2];
-        for (var i = 0; i < str.Length; i += 2)
-        {
-            result[i / 2] = (byte)(HexCharToInt(str[i + 1]) + HexCharToInt(str[i]) * 16);
-        }
-
-        return result;
-    }
-
-    private static int HexCharToInt(char ch)
-    {
-        if (char.IsDigit(ch))
-        {
-            return ch - '0';
-        }
-
-        ch = char.ToLowerInvariant(ch);
-        if (ch >= 'a' && ch <= 'f')
-        {
-            return ch - 'a' + 10;
-        }
-
-        throw new ArgumentException(nameof(ch));
-    }
-
     public static string RemoveFromString(
-        this string url,
+        this string str,
         IEnumerable<string> tokensToRemove,
         StringComparison stringComparison = StringComparison.CurrentCulture)
     {
-        ArgumentNullException.ThrowIfNull(url);
+        ArgumentNullException.ThrowIfNull(str);
         ArgumentNullException.ThrowIfNull(tokensToRemove);
 
-        return tokensToRemove.Aggregate(url,
+        return tokensToRemove.Aggregate(str,
             (current, replaceToken) =>
                 current.RemoveFromString(replaceToken, stringComparison));
     }
@@ -133,15 +66,8 @@ public static class StaticStringHelpers
         string tokenToRemove,
         StringComparison stringComparison = StringComparison.CurrentCulture)
     {
-        if (str == null)
-        {
-            throw new ArgumentNullException(nameof(str));
-        }
-
-        if (tokenToRemove == null)
-        {
-            throw new ArgumentNullException(nameof(tokenToRemove));
-        }
+        ArgumentNullException.ThrowIfNull(str);
+        ArgumentNullException.ThrowIfNull(tokenToRemove);
 
         var retval = str;
         // find the first occurence of oldValue
@@ -157,12 +83,6 @@ public static class StaticStringHelpers
         }
 
         return retval;
-    }
-
-    public static string ToHexHash(this string str, HashAlgorithm hashAlgorithm)
-    {
-        var bytes = Encoding.UTF8.GetBytes(str);
-        return hashAlgorithm.ComputeHash(bytes).ToHexString();
     }
 
     public static int[] ToIntList(this string? claimIds)
@@ -184,5 +104,5 @@ public static class StaticStringHelpers
         return string.IsNullOrEmpty(value) ? defaultValue : value;
     }
 
-    public static string ToHexString(this Guid guid) => guid.ToByteArray().ToHexString();
+    public static string ToHexString(this Guid guid) => Convert.ToHexString(guid.ToByteArray());
 }
