@@ -120,15 +120,8 @@ public static class StaticStringHelpers
         IEnumerable<string> tokensToRemove,
         StringComparison stringComparison = StringComparison.CurrentCulture)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
-
-        if (tokensToRemove == null)
-        {
-            throw new ArgumentNullException(nameof(tokensToRemove));
-        }
+        ArgumentNullException.ThrowIfNull(url);
+        ArgumentNullException.ThrowIfNull(tokensToRemove);
 
         return tokensToRemove.Aggregate(url,
             (current, replaceToken) =>
@@ -186,10 +179,7 @@ public static class StaticStringHelpers
         this string? value,
         string defaultValue)
     {
-        if (defaultValue == null)
-        {
-            throw new ArgumentNullException(nameof(defaultValue));
-        }
+        ArgumentNullException.ThrowIfNull(defaultValue);
 
         return string.IsNullOrEmpty(value) ? defaultValue : value;
     }

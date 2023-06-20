@@ -110,7 +110,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     private static string? GetTelegramLinkImpl([NotNull] User player)
     {
-        var link = player.Extra?.Telegram;
+        var link = player.Extra?.Telegram?.TrimStart('@');
         return string.IsNullOrEmpty(link) ? null : $"Телеграм: <a href=\"https://t.me/{link}\">t.me/{link}</a>";
     }
 
@@ -132,7 +132,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     public string Render(string match, int index, string extra)
     {
-        if (match.Length > 1 && match[0] == '%' && _matches.ContainsKey(match.Substring(1)))
+        if (match.Length > 1 && match[0] == '%' && _matches.ContainsKey(match[1..]))
         {
             return _matches[match.Substring(1)](match, index, extra);
         }
