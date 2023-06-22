@@ -33,4 +33,12 @@ internal class SaveToCharacterOnlyStrategy : CharacterExistsStrategyBase
         //M.b. Disallow create characters in this scenarios?
         Character.CharacterName = Character.CharacterName ?? "PLAYER_NAME";
     }
+
+    protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
+    {
+        Character.JsonData = fields
+            .Values
+            .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character)
+            .SerializeFields();
+    }
 }

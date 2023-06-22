@@ -15,7 +15,7 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
     {
     }
 
-    public override void Save(Dictionary<int, FieldWithValue> fields)
+    protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
     {
         //TODO do not save fields that have values same as character's
         Claim.JsonData = fields.Values.SerializeFields();

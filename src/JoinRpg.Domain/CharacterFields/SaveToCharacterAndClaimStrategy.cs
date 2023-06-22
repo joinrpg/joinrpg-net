@@ -17,17 +17,14 @@ internal class SaveToCharacterAndClaimStrategy : CharacterExistsStrategyBase
     {
     }
 
-    public override void Save(Dictionary<int, FieldWithValue> fields)
+    protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
     {
-        Character.JsonData = fields.Values
+        Character.JsonData = fields
+            .Values
             .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character).SerializeFields();
 
         Claim.JsonData = fields.Values
             .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Claim).SerializeFields();
-
-        SetCharacterDescription(fields);
-
-        UpdateSpecialGroups(fields);
     }
 
     protected override void SetCharacterNameFromPlayer() => Character.CharacterName = Claim.Player.GetDisplayName();
