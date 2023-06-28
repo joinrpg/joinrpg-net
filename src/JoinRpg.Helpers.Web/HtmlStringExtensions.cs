@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Html;
 
 namespace JoinRpg.Helpers.Web;
@@ -11,8 +10,7 @@ public static class HtmlStringExtensions
     /// <summary>
     /// Default value for IHtmlString
     /// </summary>
-    [NotNull]
-    public static JoinHtmlString WithDefaultStringValue([NotNull] this JoinHtmlString toHtmlString, [NotNull] string defaultValue)
+    public static JoinHtmlString WithDefaultStringValue(this JoinHtmlString toHtmlString, string defaultValue)
     {
         if (toHtmlString == null)
         {

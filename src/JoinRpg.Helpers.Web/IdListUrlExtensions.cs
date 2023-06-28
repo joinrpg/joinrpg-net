@@ -1,5 +1,4 @@
 using System.Text;
-using JetBrains.Annotations;
 
 namespace JoinRpg.Helpers.Web;
 
@@ -43,7 +42,7 @@ public static class IdListUrlExtensions
             yield return int.Parse(buffer) + 25;
         }
     }
-    private static string MagicJoin([NotNull] this IEnumerable<int> list)
+    private static string MagicJoin(this IEnumerable<int> list)
     {
         if (list == null)
         {
