@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Markdown;
@@ -12,9 +11,7 @@ public static class HtmlSanitizeFacade
     /// Remove all Html from string
     /// </summary>
     /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
-    [NotNull]
-    public static JoinHtmlString RemoveHtml([NotNull]
-        this UnSafeHtml unsafeHtml)
+    public static JoinHtmlString RemoveHtml(this UnSafeHtml unsafeHtml)
     {
         if (unsafeHtml == null)
         {
@@ -28,9 +25,7 @@ public static class HtmlSanitizeFacade
     /// Sanitize all Html, leaving safe subset
     /// </summary>
     /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
-    [NotNull]
-    public static JoinHtmlString SanitizeHtml([NotNull]
-        this UnSafeHtml unsafeHtml)
+    public static JoinHtmlString SanitizeHtml(this UnSafeHtml unsafeHtml)
     {
         if (unsafeHtml == null)
         {
@@ -44,9 +39,7 @@ public static class HtmlSanitizeFacade
     /// Sanitize all Html, leaving safe subset
     /// </summary>
     /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
-    [NotNull]
-    public static JoinHtmlString SanitizeHtml([NotNull]
-        this string str)
+    public static JoinHtmlString SanitizeHtml(this string str)
     {
         var unsafeHtml = (UnSafeHtml?)str;
         if (unsafeHtml == null)

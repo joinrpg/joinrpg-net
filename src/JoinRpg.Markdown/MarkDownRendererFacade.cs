@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 using Markdig;
@@ -14,8 +13,7 @@ public static class MarkDownRendererFacade
     /// <summary>
     /// Converts markdown to HtmlString with all sanitization
     /// </summary>
-    [NotNull]
-    public static JoinHtmlString ToHtmlString([CanBeNull]
+    public static JoinHtmlString ToHtmlString(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
         => PerformRender(markdownString,
@@ -26,8 +24,7 @@ public static class MarkDownRendererFacade
     /// <summary>
     /// Converts markdown to plain text
     /// </summary>
-    [NotNull]
-    public static JoinHtmlString ToPlainText([CanBeNull]
+    public static JoinHtmlString ToPlainText(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
         =>
