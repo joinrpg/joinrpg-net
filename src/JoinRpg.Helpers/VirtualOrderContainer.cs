@@ -10,6 +10,12 @@ public static class VirtualOrderContainerFacade
     //Factory function enable type inference
     public static VirtualOrderContainer<TChild> Create<TChild>(IEnumerable<TChild> childs,
         string ordering) where TChild : class, IOrderableEntity => new(ordering, childs);
+
+    public static Lazy<VirtualOrderContainer<TChild>>
+        CreateLazy<TChild>(IEnumerable<TChild> childs, string ordering)
+        where TChild : class, IOrderableEntity
+        => new(() => new(ordering, childs));
+
 }
 
 public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
@@ -25,10 +31,8 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
         IEnumerable<TItem> entites)
     {
         storedOrder ??= "";
-        if (entites == null)
-        {
-            throw new ArgumentNullException(nameof(entites));
-        }
+
+        ArgumentNullException.ThrowIfNull(entites);
 
         var list = entites.ToList(); // Copy 
 
@@ -49,8 +53,9 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
 
     private IEnumerable<int> ParseStoredData(string storedOrder)
     {
-        return storedOrder.Split(Separator).WhereNotNullOrWhiteSpace()
-            .Select(orderItem => int.Parse(orderItem.Trim()));
+        return storedOrder
+            .Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(orderItem => int.Parse(orderItem.AsSpan().Trim()));
     }
 
     private static TItem? FindItem(ICollection<TItem> list, int virtualOrderItem)
