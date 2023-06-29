@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 
@@ -33,7 +32,7 @@ public class Project : IProjectEntity
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 
-    [NotNull] public virtual ProjectDetails Details { get; set; }
+    public virtual ProjectDetails Details { get; set; }
 
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
 

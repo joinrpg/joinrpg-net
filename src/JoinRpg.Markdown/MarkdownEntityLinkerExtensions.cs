@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Markdig;
 
 namespace JoinRpg.Markdown;
@@ -6,7 +5,7 @@ namespace JoinRpg.Markdown;
 internal static class MarkdownEntityLinkerExtensions
 {
     public static MarkdownPipelineBuilder UseEntityLinker(this MarkdownPipelineBuilder pipeline,
-      [NotNull] ILinkRenderer renderer)
+      ILinkRenderer renderer)
     {
         if (renderer == null)
         {

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -31,13 +30,13 @@ public class Comment : IValidatableObject, ILinkable, ICommentHeader
 
     public int CommentDiscussionId { get; set; }
 
-    [NotNull, ForeignKey(nameof(CommentDiscussionId))]
+    [ForeignKey(nameof(CommentDiscussionId))]
     public virtual CommentDiscussion Discussion { get; set; }
 
     public int? ParentCommentId { get; set; }
     public virtual Comment? Parent { get; set; }
 
-    [NotNull]
+
     public virtual CommentText CommentText { get; set; }
 
     [Column("CreatedTime")]
@@ -79,7 +78,7 @@ public class Comment : IValidatableObject, ILinkable, ICommentHeader
 public class CommentText
 {
     public int CommentId { get; set; }
-    [NotNull]
+
     public MarkdownString Text { get; set; } = new MarkdownString();
 }
 

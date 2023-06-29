@@ -1,5 +1,4 @@
 using System.Text;
-using JetBrains.Annotations;
 using Markdig.Helpers;
 using Markdig.Parsers;
 
@@ -9,7 +8,7 @@ internal class LinkerParser : InlineParser
 {
     private ILinkRenderer LinkRenderer { get; }
 
-    public LinkerParser([NotNull] ILinkRenderer linkRenderer) => LinkRenderer = linkRenderer ?? throw new ArgumentNullException(nameof(linkRenderer));
+    public LinkerParser(ILinkRenderer linkRenderer) => LinkRenderer = linkRenderer ?? throw new ArgumentNullException(nameof(linkRenderer));
 
     private TextMatchHelper? _textMatchHelper;
 

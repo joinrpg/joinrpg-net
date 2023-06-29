@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -34,7 +33,6 @@ public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObj
 
     public IntList ParentGroupsImpl { get; set; } = new IntList();
 
-    [NotNull, ItemNotNull]
     public IEnumerable<CharacterGroup> ParentGroups
       => Project.CharacterGroups.Where(c => ParentCharacterGroupIds.Contains(c.CharacterGroupId));
 

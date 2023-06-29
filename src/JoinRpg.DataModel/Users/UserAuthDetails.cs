@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.DataModel;
 
 public class UserAuthDetails
@@ -12,7 +10,7 @@ public class UserAuthDetails
 
     public bool IsAdmin { get; set; }
 
-    [NotNull]
+
     public string AspNetSecurityStamp { get; set; }
 
     public override string ToString() => $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";

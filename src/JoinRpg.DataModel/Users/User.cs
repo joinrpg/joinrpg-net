@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.DataModel.Users;
 using JoinRpg.Helpers;
 
@@ -35,11 +34,11 @@ public class User
     [DisplayName("Подтвержденный профиль")]
     public bool VerifiedProfileFlag { get; set; }
 
-    [NotNull]
+
     public virtual UserAuthDetails Auth { get; set; }
 
     public virtual AllrpgUserDetails Allrpg { get; set; }
-    [CanBeNull]
+
     public virtual UserExtra? Extra { get; set; }
 
     public virtual HashSet<UserSubscription> Subscriptions { get; set; }

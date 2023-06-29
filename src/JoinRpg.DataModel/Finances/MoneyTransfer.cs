@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel.Finances;
 
@@ -37,7 +36,7 @@ public class MoneyTransfer : IProjectEntity
     public DateTimeOffset OperationDate { get; set; }
 
 
-    [NotNull]
+
     public virtual TransferText TransferText { get; set; }
 }
 
@@ -53,6 +52,6 @@ public enum MoneyTransferState
 public class TransferText
 {
     public int MoneyTransferId { get; set; }
-    [NotNull]
+
     public MarkdownString Text { get; set; } = new MarkdownString();
 }

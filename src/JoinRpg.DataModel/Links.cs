@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.DataModel;
 
 // TODO add unit test to ensure that everything covered
@@ -20,7 +18,7 @@ public enum LinkType
 public interface ILinkable
 {
     LinkType LinkType { get; }
-    [NotNull]
+
     string Identification { get; }
     int? ProjectId { get; }
 }
