@@ -1,12 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.DataModel;
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
 
 public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity, ILinkable
 {
@@ -52,7 +50,6 @@ public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedF
 
     public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);
 
-    [CanBeNull/*, InverseProperty(null)*/]
     public virtual Claim? ApprovedClaim { get; set; }
 
     [ForeignKey(nameof(ApprovedClaim))/*, InverseProperty(null)*/]

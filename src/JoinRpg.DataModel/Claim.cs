@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -12,10 +11,10 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
 
     public int? CharacterGroupId { get; set; }
 
-    [CanBeNull]
+
     public virtual CharacterGroup? Group { get; set; }
 
-    [CanBeNull]
+
     public virtual Character? Character { get; set; }
 
     public int PlayerUserId { get; set; }
@@ -24,7 +23,7 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     int IOrderableEntity.Id => ClaimId;
     public virtual Project Project { get; set; }
 
-    [NotNull]
+
     public virtual User Player { get; set; }
 
     public DateTime? PlayerAcceptedDate { get; set; }
@@ -77,7 +76,7 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
 
 
     public int CommentDiscussionId { get; set; }
-    [NotNull]
+
     public virtual CommentDiscussion CommentDiscussion { get; set; }
 
 

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -8,7 +7,7 @@ public class PlotFolder : IProjectEntity, IDeletableSubEntity
 {
     public int PlotFolderId { get; set; }
     public int ProjectId { get; set; }
-    [NotNull]
+
     public virtual Project Project { get; set; }
 
     int IOrderableEntity.Id => PlotFolderId;

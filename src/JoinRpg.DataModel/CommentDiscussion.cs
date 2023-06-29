@@ -1,15 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
 
 public interface ICommentDiscussionHeader : IProjectEntity
 {
-    [NotNull, ItemNotNull]
+
     IEnumerable<ReadCommentWatermark> Watermarks { get; }
-    [NotNull, ItemNotNull]
+
     IEnumerable<ICommentHeader> Comments { get; }
 }
 
@@ -21,7 +20,7 @@ public class CommentDiscussion : IProjectEntity, ILinkable, ICommentDiscussionHe
 
     public int ProjectId { get; set; }
 
-    [ForeignKey(nameof(ProjectId)), NotNull]
+    [ForeignKey(nameof(ProjectId))]
     public virtual Project Project { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();

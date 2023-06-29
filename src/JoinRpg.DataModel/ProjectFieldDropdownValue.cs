@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -43,7 +42,7 @@ public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity, IV
     /// </summary>
     public string? ProgrammaticValue { get; set; }
 
-    [CanBeNull]
+
     public virtual CharacterGroup CharacterGroup { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

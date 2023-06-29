@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -9,9 +8,9 @@ namespace JoinRpg.DataModel;
 public class IntList
 {
     private string _internalData;
-    public int[] _parentCharacterGroupIds = { };
+    public int[] _parentCharacterGroupIds = Array.Empty<int>();
 
-    [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public string ListIds
     {
         get => _internalData;

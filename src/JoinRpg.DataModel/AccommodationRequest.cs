@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel;
 
@@ -17,12 +16,10 @@ public class AccommodationRequest
     public virtual ICollection<Claim> Subjects { get; set; }
 
     public int AccommodationTypeId { get; set; }
-    [NotNull]
     [ForeignKey("AccommodationTypeId")]
     public virtual ProjectAccommodationType AccommodationType { get; set; }
 
     public int? AccommodationId { get; set; }
-    [CanBeNull]
     [ForeignKey("AccommodationId")]
     public virtual ProjectAccommodation? Accommodation { get; set; }
 

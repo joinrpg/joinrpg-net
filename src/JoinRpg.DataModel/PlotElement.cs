@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -24,7 +23,7 @@ public class PlotElement : IProjectEntity, IDeletableSubEntity
 
     //TODO: Add here "mentioned characters" concept
 
-    [NotNull]
+
     public virtual ICollection<PlotElementTexts> Texts { get; set; } = new HashSet<PlotElementTexts>();
 
     public DateTime CreatedDateTime { get; set; }
@@ -52,7 +51,7 @@ public class PlotElementTexts
 {
     public int PlotElementId { get; set; }
 
-    [NotNull]
+
     public MarkdownString Content { get; set; } = new MarkdownString();
 
     public string TodoField { get; set; }

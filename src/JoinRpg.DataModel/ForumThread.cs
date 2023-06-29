@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -10,7 +9,7 @@ public class ForumThread : IValidatableObject, IForumThread
 {
     public int ForumThreadId { get; set; }
     public int CharacterGroupId { get; set; }
-    [NotNull]
+
     public virtual CharacterGroup CharacterGroup { get; set; }
     [ForeignKey(nameof(Project))]
     public int ProjectId { get; set; }
