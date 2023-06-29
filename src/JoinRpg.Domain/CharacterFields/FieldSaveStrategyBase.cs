@@ -32,15 +32,7 @@ internal abstract class FieldSaveStrategyBase
 
     public abstract void Save(Dictionary<int, FieldWithValue> fields);
 
-    public Dictionary<int, FieldWithValue> LoadFields()
-    {
-        var fields =
-            Project.GetFieldsNotFilledWithoutOrder()
-                .ToList()
-                .FillIfEnabled(Claim, Character)
-                .ToDictionary(f => f.Field.ProjectFieldId);
-        return fields;
-    }
+    public abstract IReadOnlyCollection<FieldWithValue> GetFields();
 
     public void EnsureEditAccess(FieldWithValue field)
     {
@@ -77,9 +69,25 @@ internal abstract class FieldSaveStrategyBase
         }
 
         field.Value = newValue;
-        field.MarkUsed();
+        MarkUsed(field);
 
         return true;
+    }
+
+    private static void MarkUsed(FieldWithValue field)
+    {
+        if (!field.Field.WasEverUsed)
+        {
+            field.Field.WasEverUsed = true;
+        }
+
+        if (field.Field.HasValueList())
+        {
+            foreach (var val in field.GetDropdownValues().Where(v => !v.WasEverUsed))
+            {
+                val.WasEverUsed = true;
+            }
+        }
     }
 
     public string? GenerateDefaultValue(FieldWithValue field)

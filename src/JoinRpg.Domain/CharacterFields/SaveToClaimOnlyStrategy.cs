@@ -25,4 +25,6 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
     {
         //Do nothing player could not change character yet
     }
+
+    public override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields();
 }

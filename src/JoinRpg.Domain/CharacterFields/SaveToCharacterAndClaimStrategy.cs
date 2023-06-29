@@ -31,4 +31,5 @@ internal class SaveToCharacterAndClaimStrategy : CharacterExistsStrategyBase
     }
 
     protected override void SetCharacterNameFromPlayer() => Character.CharacterName = Claim.Player.GetDisplayName();
+    public override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields();
 }
