@@ -10,12 +10,14 @@ public class DateInPastAttributeTest
 {
     private class ClassToValidateInPast
     {
-        [DateShouldBeInPast, UsedImplicitly] public DateTime? Time { get; } = DateTime.MaxValue;
+        [DateShouldBeInPast]
+        public DateTime? Time { get; } = DateTime.MaxValue;
     }
 
     private class ClassToValidateEmpty
     {
-        [CannotBeEmpty, UsedImplicitly] public IEnumerable<int> List { get; } = new List<int>();
+        [CannotBeEmpty]
+        public IEnumerable<int> List { get; } = new List<int>();
     }
 
     [Fact]
