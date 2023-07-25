@@ -42,4 +42,13 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
         }
 
     }
+
+    public override void Save(Dictionary<int, FieldWithValue> fields)
+    {
+        base.Save(fields);
+
+        SetCharacterDescription(fields);
+
+        UpdateSpecialGroups(fields);
+    }
 }

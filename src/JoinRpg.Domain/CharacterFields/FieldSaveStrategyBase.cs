@@ -30,7 +30,9 @@ internal abstract class FieldSaveStrategyBase
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>
         UpdatedFields.Where(uf => uf.PreviousDisplayString != uf.DisplayString).ToList();
 
-    public abstract void Save(Dictionary<int, FieldWithValue> fields);
+    public virtual void Save(Dictionary<int, FieldWithValue> fields) => SerializeFields(fields);
+
+    protected abstract void SerializeFields(Dictionary<int, FieldWithValue> fields);
 
     public abstract IReadOnlyCollection<FieldWithValue> GetFields();
 
