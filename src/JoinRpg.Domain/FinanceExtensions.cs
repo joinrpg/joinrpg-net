@@ -139,11 +139,7 @@ public static class FinanceExtensions
     /// </summary>
     private static int CalcClaimFieldsFee(this Claim claim)
     {
-        var values = claim.Project.GetFieldsNotFilledWithoutOrder()
-            .ToList()
-            .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null);
-
-        return values.Sum(f => f.GetCurrentFee());
+        return claim.GetFields().Sum(f => f.GetCurrentFee());
     }
 
     /// <summary>

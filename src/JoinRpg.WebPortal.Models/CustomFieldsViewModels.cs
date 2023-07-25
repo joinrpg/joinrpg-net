@@ -283,12 +283,7 @@ public class CustomFieldsViewModel
         Target = target;
 
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
-
-        var fieldsList = target.Project.GetFieldsNotFilled();
-        if (target is Character character)
-        {
-            _ = fieldsList.FillIfEnabled(claim: null, character: character);
-        }
+        var fieldsList = target.GetFieldsForClaimSource();
         Fields =
           fieldsList
             .Select(ch => CreateFieldValueView(ch, renderer))
@@ -336,11 +331,9 @@ public class CustomFieldsViewModel
         Target = character;
         var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
         Fields =
-          character.Project.GetFieldsNotFilled()
+          character.GetFields()
             .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character)
             .Where(f => !wherePrintEnabled || f.Field.IncludeInPrint)
-            .ToList()
-            .FillIfEnabled(character.ApprovedClaim, character)
             .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
             .ToArray();
     }
@@ -358,9 +351,7 @@ public class CustomFieldsViewModel
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 
         Fields =
-          claim.Project.GetFieldsNotFilled()
-            .ToList()
-            .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null)
+          claim.GetFields()
             .Select(ch => CreateFieldValueView(ch, renderer))
             .ToArray();
     }

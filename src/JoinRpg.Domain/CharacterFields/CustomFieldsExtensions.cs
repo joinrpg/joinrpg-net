@@ -1,40 +1,13 @@
-using JetBrains.Annotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using Newtonsoft.Json;
 
-// ReSharper disable once CheckNamespace
 namespace JoinRpg.Domain;
 
 public static class CustomFieldsExtensions
 {
-    [NotNull, ItemNotNull, MustUseReturnValue]
-    public static IReadOnlyList<FieldWithValue> GetFieldsNotFilled([NotNull] this Project project)
-    {
-        if (project == null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
-
-        return
-          project.GetOrderedFields()
-            .Select(pf => new FieldWithValue(pf, value: null)).ToList().AsReadOnly();
-    }
-
-    /// <summary>
-    /// That method is faster than GetFieldsNotFilled()
-    /// </summary>
-    public static IEnumerable<FieldWithValue> GetFieldsNotFilledWithoutOrder([NotNull] this Project project)
-    {
-        if (project == null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
-
-        return project.ProjectFields.Select(pf => new FieldWithValue(pf, null));
-    }
-
-    [MustUseReturnValue]
-    public static string SerializeFields([NotNull] this IEnumerable<FieldWithValue> fieldWithValues)
+    public static string SerializeFields(this IEnumerable<FieldWithValue> fieldWithValues)
     {
         if (fieldWithValues == null)
         {
@@ -48,102 +21,66 @@ public static class CustomFieldsExtensions
               .ToDictionary(pair => pair.Field.ProjectFieldId, pair => pair.Value));
     }
 
-    private static Dictionary<int, string> DeserializeFieldValues([CanBeNull] this IFieldContainter containter)
+    private static Dictionary<int, string> DeserializeFieldValues(this IFieldContainter containter)
     {
-        return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter?.JsonData ?? "") ??
+        return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter.JsonData ?? "") ??
                new Dictionary<int, string>();
     }
 
-    public static void MarkUsed([NotNull] this FieldWithValue field)
+    private static IReadOnlyCollection<FieldWithValue> GetFieldsForContainers(Project project, params Dictionary<int, string>?[] containers)
     {
-        if (field == null)
-        {
-            throw new ArgumentNullException(nameof(field));
-        }
+        var fields = project.GetOrderedFields().Select(pf => new FieldWithValue(pf, value: null)).ToList();
 
-        if (!field.Field.WasEverUsed)
+        foreach (var characterFieldValue in fields)
         {
-            field.Field.WasEverUsed = true;
-        }
-
-        if (field.Field.HasValueList())
-        {
-            foreach (var val in field.GetDropdownValues().Where(v => !v.WasEverUsed))
+            foreach (var data in containers.WhereNotNull())
             {
-                val.WasEverUsed = true;
+                var value = data.GetValueOrDefault(characterFieldValue.Field.ProjectFieldId);
+                if (value != null)
+                {
+                    try
+                    {
+                        characterFieldValue.Value = value;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.ProjectFieldId}, Value = {value}", e);
+                    }
+
+                }
             }
         }
+
+        return fields.AsReadOnly();
     }
 
-    public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues,
-      [CanBeNull] IFieldContainter? container)
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character)
+        => GetFieldsForContainers(character.Project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
+
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, Project project)
+    => GetFieldsForContainers(project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
+
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim)
     {
-        if (characterFieldValues == null)
+        if (claim.IsApproved)
         {
-            throw new ArgumentNullException(nameof(characterFieldValues));
+            return claim.Character!.GetFields();
         }
-
-        if (container == null)
-        {
-            return;
-        }
-        var data = container.DeserializeFieldValues();
-        foreach (var characterFieldValue in characterFieldValues)
-        {
-            var value = data.GetValueOrDefault(characterFieldValue.Field.ProjectFieldId);
-            if (value != null)
-            {
-                try
-                {
-                    characterFieldValue.Value = value;
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.ProjectFieldId}, Value = {value}", e);
-                }
-
-            }
-        }
+        var publicFields = claim.Project.ProjectFields.Where(f => f.IsPublic).Select(x => x.ProjectFieldId).ToList();
+        return GetFieldsForContainers(claim.Project, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
+            claim.DeserializeFieldValues());
     }
 
-    public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
-      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim? claim,
-      [CanBeNull] Character? character)
+    public static IReadOnlyCollection<FieldWithValue> GetFieldsForClaimSource(this IClaimSource claimSource)
     {
-        if (characterFieldValues == null)
+        if (claimSource is Character character)
         {
-            throw new ArgumentNullException(nameof(characterFieldValues));
+            return character.GetFields();
         }
-
-        characterFieldValues.FillFrom(claim);
-        characterFieldValues.FillFrom(character);
-        return characterFieldValues;
-    }
-
-    public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Character character)
-    {
-        if (character == null)
+        else
         {
-            throw new ArgumentNullException(nameof(character));
+            return GetFieldsForContainers(claimSource.Project);
         }
-
-        return character.Project
-          .GetFieldsNotFilled()
-          .ToList()
-          .FillIfEnabled(character.ApprovedClaim, character);
-    }
-
-    public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Claim claim)
-    {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
-
-        return claim.Project
-          .GetFieldsNotFilled()
-          .ToList()
-          .FillIfEnabled(claim, claim.Character);
     }
 
     public static AccessArguments GetAccessArguments(

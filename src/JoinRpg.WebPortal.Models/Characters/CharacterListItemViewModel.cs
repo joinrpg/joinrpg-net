@@ -109,9 +109,7 @@ public class CharacterListItemViewModel : ILinkable
         Name = character.CharacterName;
         CharacterId = character.CharacterId;
         ProjectId = character.ProjectId;
-        Fields = character.Project.GetFieldsNotFilledWithoutOrder().ToList();
-        Fields.FillFrom(character);
-        Fields.FillFrom(character.ApprovedClaim);
+        Fields = character.GetFields();
         Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
 
         Groups = new CharacterParentGroupsViewModel(character,

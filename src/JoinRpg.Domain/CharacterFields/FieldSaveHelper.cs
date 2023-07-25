@@ -72,7 +72,7 @@ public class FieldSaveHelper
 
         var strategy = CreateStrategy(currentUserId, character, claim);
 
-        var fields = strategy.LoadFields();
+        var fields = strategy.GetFields().ToDictionary(f => f.Field.ProjectFieldId);
 
         AssignValues(newFieldValue, fields, strategy);
 
