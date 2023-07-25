@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.XGameApi.Contract;
@@ -7,11 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi;
 
-[Route("x-game-api/{projectId}/metadata"), XGameMasterAuthorize()]
+[Route("x-game-api/{projectId}/metadata"), XGameMasterAuthorize]
 public class MetaDataApiController : XGameApiController
 {
-    public MetaDataApiController(IProjectRepository projectRepository) : base(projectRepository)
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
+    public MetaDataApiController(IProjectRepository projectRepository, IProjectMetadataRepository projectMetadataRepository) : base(projectRepository)
     {
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     /// <summary>
@@ -21,24 +23,24 @@ public class MetaDataApiController : XGameApiController
     [Route("fields")]
     public async Task<ProjectFieldsMetadata> GetFieldsList(int projectId)
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return
             new ProjectFieldsMetadata
             {
                 ProjectId = project.ProjectId,
                 ProjectName = project.ProjectName,
-                Fields = project.GetOrderedFields().Select(field =>
+                Fields = project.SortedFields.Select(field =>
                     new ProjectFieldInfo
                     {
-                        FieldName = field.FieldName,
-                        ProjectFieldId = field.ProjectFieldId,
+                        FieldName = field.Name,
+                        ProjectFieldId = field.Id.ProjectFieldId,
                         IsActive = field.IsActive,
-                        FieldType = field.FieldType.ToString(),
+                        FieldType = field.Type.ToString(),
                         ProgrammaticValue = field.ProgrammaticValue,
-                        ValueList = field.GetOrderedValues().Select(variant =>
+                        ValueList = field.SortedVariants.Select(variant =>
                             new ProjectFieldVariant
                             {
-                                ProjectFieldVariantId = variant.ProjectFieldDropdownValueId,
+                                ProjectFieldVariantId = variant.Id.ProjectFieldVariantId,
                                 Label = variant.Label,
                                 IsActive = variant.IsActive,
                                 Description = variant.Description.ToHtmlString().ToHtmlString(),

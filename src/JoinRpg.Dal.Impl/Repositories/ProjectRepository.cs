@@ -5,12 +5,14 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
 [UsedImplicitly]
-internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
+internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, IProjectMetadataRepository
 {
     public ProjectRepository(MyDbContext ctx) : base(ctx)
     {
@@ -297,6 +299,71 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
             character => character.ProjectId == projectId &&
               characterGroupIds.Any(id => SqlFunctions.CharIndex(id.ToString(), character.ParentGroupsImpl.ListIds) > 0)).ToListAsync();
         return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
+    }
+
+    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId)
+    {
+        var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
+
+        var fieldSettings = new ProjectFieldSettings(
+            NameField: ProjectFieldIdentification.FromOptional(projectId, project.Details.CharacterNameField?.ProjectFieldId),
+            DescriptionField: ProjectFieldIdentification.FromOptional(projectId, project.Details.CharacterDescription?.ProjectFieldId)
+            );
+
+
+        return new ProjectInfo(
+            projectId,
+            project.ProjectName,
+            project.Details.FieldsOrdering,
+            CreateFields(project, fieldSettings).ToList(),
+            fieldSettings);
+
+        IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
+        {
+            foreach (var field in project.ProjectFields)
+            {
+                var fieldId = new ProjectFieldIdentification(projectId, field.ProjectFieldId);
+                yield return new ProjectFieldInfo(
+                    fieldId,
+                    field.FieldName,
+                    field.FieldType,
+                    field.FieldBoundTo,
+                    CreateVariants(field, fieldId).ToList(),
+                    field.ValuesOrdering,
+                    field.Price,
+                    field.CanPlayerEdit,
+                    field.ShowOnUnApprovedClaims,
+                    field.IsPublic,
+                    field.CanPlayerView,
+                    field.MandatoryStatus,
+                    field.ValidForNpc,
+                    field.IsActive,
+                    field.AvailableForCharacterGroupIds,
+                    field.Description,
+                    field.MasterDescription,
+                    field.IncludeInPrint,
+                    fieldSettings,
+                    field.ProgrammaticValue);
+            }
+        }
+
+        IEnumerable<ProjectFieldVariant> CreateVariants(ProjectField field, ProjectFieldIdentification fieldId)
+        {
+            foreach (var variant in field.DropdownValues)
+            {
+                yield return new ProjectFieldVariant(
+                        new(fieldId, variant.ProjectFieldDropdownValueId),
+                        variant.Label,
+                        variant.Price,
+                        variant.PlayerSelectable,
+                        variant.IsActive,
+                        variant.CharacterGroup.CharacterGroupId,
+                        variant.Description,
+                        variant.MasterDescription,
+                        variant.ProgrammaticValue
+                    );
+            }
+        }
     }
 }
 
