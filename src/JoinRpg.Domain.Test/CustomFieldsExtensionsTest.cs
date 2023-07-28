@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Shouldly;
 using Xunit;
 
@@ -52,6 +53,7 @@ public class CustomFieldsExtensionsTest
         VerifyClaim( //Ensure that
           projectMock.CreateApprovedClaim(projectMock.Character, projectMock.Player), //when claim is approved
           projectMock.Player, //then the user who created the claim can see only the fields below
+          projectMock.ProjectInfo,
           allFieldsExceptMasterOnly);
     }
 
@@ -62,6 +64,7 @@ public class CustomFieldsExtensionsTest
         VerifyClaim(
           projectMock.CreateClaim(projectMock.Character, projectMock.Player), //when claim is not yet approved
           projectMock.Player, //then the user who created the claim can see only the fields below
+          projectMock.ProjectInfo,
           projectMock.PublicField);
     }
 
@@ -71,6 +74,7 @@ public class CustomFieldsExtensionsTest
         VerifyClaim( //Ensure that
           projectMock.CreateApprovedClaim(projectMock.Character, projectMock.Player), //when claim is approved
           projectMock.Master, //then a Master sees every field
+          projectMock.ProjectInfo,
           allFields);
     }
 
@@ -87,6 +91,7 @@ public class CustomFieldsExtensionsTest
         VerifyClaim( //Ensure that
           projectMock.CreateApprovedClaim(projectMock.Character, projectMock.Player), //when claim is approved
           anotherPlayer, //then other users see ony public info
+          projectMock.ProjectInfo,
           projectMock.PublicField);
     }
 
@@ -96,14 +101,15 @@ public class CustomFieldsExtensionsTest
         VerifyClaim( //Ensure that
           projectMock.CreateClaim(projectMock.Character, projectMock.Player), //when claim is not yet approved
           projectMock.Master, //then a Master sees every field
+          projectMock.ProjectInfo,
           allFields);
     }
 
-    private void VerifyClaim(Claim claim, User viewerUser, params ProjectField[] expectedFields)
+    private void VerifyClaim(Claim claim, User viewerUser, ProjectInfo projectInfo, params ProjectField[] expectedFields)
     {
         var accessPredicate = claim.GetAccessArguments(viewerUser.UserId);
 
-        IList<FieldWithValue> userVisibleFields = claim.GetFields().Where(f => f.HasViewAccess(accessPredicate)).ToList();
+        IList<FieldWithValue> userVisibleFields = claim.GetFields(projectInfo).Where(f => f.HasViewAccess(accessPredicate)).ToList();
 
         AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
     }

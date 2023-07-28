@@ -35,15 +35,15 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns total sum of claim fee and all finance operations
     /// </summary>
-    private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee)
-        => claim.ClaimCurrentFee(operationDate, fieldsFee)
+    private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee, ProjectInfo projectInfo)
+        => claim.ClaimCurrentFee(operationDate, fieldsFee, projectInfo)
            + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
 
     /// <summary>
     /// Returns total sum of claim fee and all finance operations using current date
     /// </summary>
-    public static int ClaimTotalFee(this Claim claim, int? fieldsFee = null)
-        => claim.ClaimTotalFee(DateTime.UtcNow, fieldsFee);
+    public static int ClaimTotalFee(this Claim claim, ProjectInfo projectInfo, int? fieldsFee = null)
+        => claim.ClaimTotalFee(DateTime.UtcNow, fieldsFee, projectInfo);
 
     /// <summary>
     /// Returns base fee (taken from project settings or claim's property CurrentFee)
@@ -54,16 +54,16 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns actual fee for a claim (as a sum of claim fee and fields fee) using current date
     /// </summary>
-    public static int ClaimCurrentFee(this Claim claim, int? fieldsFee)
-        => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee);
+    public static int ClaimCurrentFee(this Claim claim, int? fieldsFee, ProjectInfo projectInfo)
+        => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee, projectInfo);
 
     /// <summary>
     /// Returns actual fee for a claim (as a sum of claim fee and fields fee)
     /// </summary>
-    private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
+    private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee, ProjectInfo projectInfo)
     {
         return claim.BaseFee(operationDate)
-               + claim.ClaimFieldsFee(fieldsFee)
+               + claim.ClaimFieldsFee(fieldsFee, projectInfo)
                + claim.ClaimAccommodationFee();
         /******************************************************************
          * If you want to add additional fee to a claim's fee,
@@ -102,8 +102,8 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns claim payment status from claim' data
     /// </summary>
-    public static ClaimPaymentStatus PaymentStatus(this Claim claim)
-        => GetClaimPaymentStatus(claim.ClaimTotalFee(), claim.ClaimBalance());
+    public static ClaimPaymentStatus PaymentStatus(this Claim claim, ProjectInfo projectInfo)
+        => GetClaimPaymentStatus(claim.ClaimTotalFee(projectInfo), claim.ClaimBalance());
 
     /// <summary>
     /// Returns total sum of all money flow operations
@@ -137,19 +137,19 @@ public static class FinanceExtensions
     /// <summary>
     /// Calculates total fields fee
     /// </summary>
-    private static int CalcClaimFieldsFee(this Claim claim)
+    private static int CalcClaimFieldsFee(this Claim claim, ProjectInfo projectInfo)
     {
-        return claim.GetFields().Sum(f => f.GetCurrentFee());
+        return claim.GetFields(projectInfo).Sum(f => f.GetCurrentFee());
     }
 
     /// <summary>
     /// Returns actual total claim fields fee
     /// </summary>
-    private static int ClaimFieldsFee(this Claim claim, int? fieldsFee)
+    private static int ClaimFieldsFee(this Claim claim, int? fieldsFee, ProjectInfo projectInfo)
     {
         if (fieldsFee == null)
         {
-            fieldsFee = claim.FieldsFee ?? claim.CalcClaimFieldsFee();
+            fieldsFee = claim.FieldsFee ?? claim.CalcClaimFieldsFee(projectInfo);
         }
         // cache
         claim.FieldsFee = fieldsFee;
@@ -166,8 +166,8 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns how many money left to pay
     /// </summary>
-    public static int ClaimFeeDue(this Claim claim)
-        => claim.ClaimTotalFee() - claim.ClaimBalance();
+    public static int ClaimFeeDue(this Claim claim, ProjectInfo projectInfo)
+        => claim.ClaimTotalFee(projectInfo) - claim.ClaimBalance();
 
     /// <summary>
     /// Returns sum of all approved finance operations
@@ -192,17 +192,17 @@ public static class FinanceExtensions
         }
     }
 
-    public static bool ClaimPaidInFull(this Claim claim)
-        => claim.ClaimBalance() >= claim.ClaimTotalFee();
+    public static bool ClaimPaidInFull(this Claim claim, ProjectInfo projectInfo)
+        => claim.ClaimBalance() >= claim.ClaimTotalFee(projectInfo);
 
-    private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate)
-        => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1), null);
+    private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate, ProjectInfo projectInfo)
+        => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1), null, projectInfo);
 
-    public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate)
+    public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate, ProjectInfo projectInfo)
     {
         if (claim.Project.ProjectFeeSettings.Any() //If project has fee 
             && claim.CurrentFee == null //and fee not already fixed for claim
-            && claim.ClaimPaidInFull(operationDate) //and current fee is payed in full
+            && claim.ClaimPaidInFull(operationDate, projectInfo) //and current fee is payed in full
         )
         {
             claim.CurrentFee = claim.ProjectFeeForDate(operationDate); //fix fee for claim

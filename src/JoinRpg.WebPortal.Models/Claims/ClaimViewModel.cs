@@ -163,7 +163,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
 
         ResponsibleMasterId = claim.ResponsibleMasterUserId;
         ResponsibleMaster = claim.ResponsibleMasterUser;
-        Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
+        Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo);
         Navigation =
             CharacterNavigationViewModel.FromClaim(claim,
                 currentUser.UserId,
@@ -191,7 +191,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
                 .Where(pt => pt.UserId == currentUser.UserId)
                 .Select(pt => new PaymentTypeViewModel(pt));
         }
-        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
+        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo);
 
         if (claim.Character != null)
         {
@@ -454,7 +454,7 @@ public class FinanceOperationViewModel
 
 public class ClaimFeeViewModel
 {
-    public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
+    public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId, ProjectInfo projectInfo)
     {
         Status = model.Status;
 
@@ -473,8 +473,8 @@ public class ClaimFeeViewModel
         FieldsTotalFee = model.Fields.FieldsTotalFee;
 
         HasFieldsWithFee = model.Fields.HasFieldsWithFee;
-        CurrentTotalFee = claim.ClaimTotalFee(FieldsTotalFee);
-        CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
+        CurrentTotalFee = claim.ClaimTotalFee(projectInfo, FieldsTotalFee);
+        CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee, projectInfo);
         FieldsFee = model.Fields.FieldsFee;
 
         foreach (var s in Enum.GetValues<FinanceOperationState>())

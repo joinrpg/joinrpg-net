@@ -341,7 +341,7 @@ public class CustomFieldsViewModel
     /// <summary>
     /// Called from Claim and Claim list
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, Claim claim) : this()
+    public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo) : this()
     {
         AccessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
 
@@ -351,7 +351,7 @@ public class CustomFieldsViewModel
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 
         Fields =
-          claim.GetFields()
+          claim.GetFields(projectInfo)
             .Select(ch => CreateFieldValueView(ch, renderer))
             .ToArray();
     }

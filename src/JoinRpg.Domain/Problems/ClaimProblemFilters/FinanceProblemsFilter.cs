@@ -11,11 +11,11 @@ public class FinanceProblemsFilter : IProblemFilter<Claim>
         {
             yield return new ClaimProblem(ClaimProblemType.FinanceModerationRequired, ProblemSeverity.Warning);
         }
-        if (claim.ClaimTotalFee() < claim.ClaimBalance() && claim.Project.Details.FinanceWarnOnOverPayment)
+        if (claim.ClaimTotalFee(projectInfo) < claim.ClaimBalance() && claim.Project.Details.FinanceWarnOnOverPayment)
         {
             yield return new ClaimProblem(ClaimProblemType.TooManyMoney, ProblemSeverity.Error);
         }
-        if (!claim.ClaimPaidInFull() && claim.ClaimBalance() > 0)
+        if (!claim.ClaimPaidInFull(projectInfo) && claim.ClaimBalance() > 0)
         {
             yield return new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Hint);
         }

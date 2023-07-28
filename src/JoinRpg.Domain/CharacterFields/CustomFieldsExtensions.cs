@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Domain;
@@ -60,7 +61,7 @@ public static class CustomFieldsExtensions
     public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, Project project)
     => GetFieldsForContainers(project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
-    public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim)
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim, ProjectInfo projectInfo)
     {
         if (claim.IsApproved)
         {

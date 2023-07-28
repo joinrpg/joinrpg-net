@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
@@ -28,13 +29,13 @@ public class ClaimListItemForExportViewModel : ClaimListItemViewModelBase
     [Display(Name = "Льготник")]
     public bool PreferentialFeeUser { get; }
 
-    public ClaimListItemForExportViewModel(Claim claim, int currentUserId) : base(claim, currentUserId)
+    public ClaimListItemForExportViewModel(Claim claim, int currentUserId, ProjectInfo projectInfo) : base(claim, currentUserId)
     {
-        Fields = claim.GetFields();
+        Fields = claim.GetFields(projectInfo);
 
         FeePaid = claim.ClaimBalance();
-        FeeDue = claim.ClaimFeeDue();
-        TotalFee = claim.ClaimTotalFee();
+        FeeDue = claim.ClaimFeeDue(projectInfo);
+        TotalFee = claim.ClaimTotalFee(projectInfo);
 
         PreferentialFeeUser = claim.PreferentialFeeUser;
 
