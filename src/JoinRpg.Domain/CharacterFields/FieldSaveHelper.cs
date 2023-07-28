@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -22,21 +21,19 @@ public class FieldSaveHelper
     /// <returns>Fields that have changed.</returns>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
-        [NotNull]
         Claim claim,
-        [NotNull]
-        IReadOnlyDictionary<int, string?> newFieldValue
-        )
+        IReadOnlyDictionary<int, string?> newFieldValue,
+        ProjectInfo projectInfo)
     {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
+        ArgumentNullException.ThrowIfNull(newFieldValue);
+        ArgumentNullException.ThrowIfNull(projectInfo);
 
         return SaveCharacterFieldsImpl(currentUserId,
             claim.Character,
             claim,
-            newFieldValue);
+            newFieldValue,
+            projectInfo);
     }
 
     /// <summary>
@@ -46,31 +43,28 @@ public class FieldSaveHelper
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Character character,
-        IReadOnlyDictionary<int, string?> newFieldValue)
+        IReadOnlyDictionary<int, string?> newFieldValue,
+        ProjectInfo projectInfo)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
+        ArgumentNullException.ThrowIfNull(newFieldValue);
+        ArgumentNullException.ThrowIfNull(projectInfo);
 
         return SaveCharacterFieldsImpl(currentUserId,
             character,
             character.ApprovedClaim,
-            newFieldValue);
+            newFieldValue,
+            projectInfo);
     }
 
     private IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(
         int currentUserId,
         Character? character,
         Claim? claim,
-        IReadOnlyDictionary<int, string?> newFieldValue)
+        IReadOnlyDictionary<int, string?> newFieldValue,
+        ProjectInfo projectInfo)
     {
-        if (newFieldValue == null)
-        {
-            throw new ArgumentNullException(nameof(newFieldValue));
-        }
-
-        var strategy = CreateStrategy(currentUserId, character, claim);
+        var strategy = CreateStrategy(currentUserId, character, claim, projectInfo);
 
         var fields = strategy.GetFields().ToDictionary(f => f.Field.ProjectFieldId);
 
@@ -83,13 +77,13 @@ public class FieldSaveHelper
     }
 
     private FieldSaveStrategyBase CreateStrategy(int currentUserId, Character? character,
-        Claim? claim)
+        Claim? claim, ProjectInfo projectInfo)
     {
         return (claim, character) switch
         {
-            (null, Character ch) => new SaveToCharacterOnlyStrategy(ch, currentUserId, generator),
-            ({ IsApproved: true }, Character ch) => new SaveToCharacterAndClaimStrategy(claim!, ch, currentUserId, generator),
-            ({ IsApproved: false }, _) => new SaveToClaimOnlyStrategy(claim!, currentUserId, generator),
+            (null, Character ch) => new SaveToCharacterOnlyStrategy(ch, currentUserId, generator, projectInfo),
+            ({ IsApproved: true }, Character ch) => new SaveToCharacterAndClaimStrategy(claim!, ch, currentUserId, generator, projectInfo),
+            ({ IsApproved: false }, _) => new SaveToClaimOnlyStrategy(claim!, currentUserId, generator, projectInfo),
             _ => throw new InvalidOperationException("Either claim or character should be correct"),
         };
     }

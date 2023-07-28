@@ -8,10 +8,12 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
 
     public SaveToClaimOnlyStrategy(Claim claim,
         int currentUserId,
-        IFieldDefaultValueGenerator generator) : base(claim,
+        IFieldDefaultValueGenerator generator,
+        PrimitiveTypes.ProjectMetadata.ProjectInfo projectInfo) : base(claim,
         character: null,
         currentUserId,
-        generator)
+        generator,
+        projectInfo)
     {
     }
 

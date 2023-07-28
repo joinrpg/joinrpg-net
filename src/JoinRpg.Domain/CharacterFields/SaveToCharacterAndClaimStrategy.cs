@@ -10,10 +10,12 @@ internal class SaveToCharacterAndClaimStrategy : CharacterExistsStrategyBase
     public SaveToCharacterAndClaimStrategy(Claim claim,
         Character character,
         int currentUserId,
-        IFieldDefaultValueGenerator generator) : base(claim,
+        IFieldDefaultValueGenerator generator,
+        ProjectInfo projectInfo) : base(claim,
         character,
         currentUserId,
-        generator)
+        generator,
+        projectInfo)
     {
     }
 

@@ -11,13 +11,16 @@ internal abstract class FieldSaveStrategyBase
     private IFieldDefaultValueGenerator Generator { get; }
     protected Project Project { get; }
 
+    protected ProjectInfo ProjectInfo { get; }
+
     private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } =
         new List<FieldWithPreviousAndNewValue>();
 
     protected FieldSaveStrategyBase(Claim? claim,
         Character? character,
         int currentUserId,
-        IFieldDefaultValueGenerator generator)
+        IFieldDefaultValueGenerator generator,
+        ProjectInfo projectInfo)
     {
         Claim = claim;
         Character = character;
@@ -25,6 +28,7 @@ internal abstract class FieldSaveStrategyBase
         Generator = generator;
         Project = character?.Project ?? claim?.Project ?? throw new ArgumentNullException("",
                 "Either character or claim should be not null");
+        ProjectInfo = projectInfo;
     }
 
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>

@@ -1,4 +1,5 @@
 using System.Data.Entity.Validation;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -14,16 +15,18 @@ namespace JoinRpg.Services.Impl;
 internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 {
     private readonly FieldSaveHelper fieldSaveHelper;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
 
     public CharacterServiceImpl(
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         FieldSaveHelper fieldSaveHelper,
-        ICurrentUserAccessor currentUserAccessor
-        ) : base(unitOfWork, currentUserAccessor)
+        ICurrentUserAccessor currentUserAccessor,
+        IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, currentUserAccessor)
     {
         EmailService = emailService;
         this.fieldSaveHelper = fieldSaveHelper;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     private IEmailService EmailService { get; }
@@ -36,6 +39,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         {
             throw new JoinRpgEntityNotFoundException(addCharacterRequest.ProjectId, "Project");
         }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(addCharacterRequest.ProjectId));
 
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = project.EnsureProjectActive();
@@ -56,7 +61,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         //TODO we do not send message for creating character
         _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            addCharacterRequest.FieldValues);
+            addCharacterRequest.FieldValues,
+            projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
     }
@@ -90,6 +96,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     {
         var character = await LoadCharacter(editCharacterRequest.Id);
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(editCharacterRequest.Id.ProjectId));
+
         SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo);
 
         character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
@@ -97,7 +105,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             ensureNotSpecial: true);
         var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            editCharacterRequest.FieldValues);
+            editCharacterRequest.FieldValues,
+            projectInfo);
 
         MarkChanged(character);
         MarkTreeModified(character.Project); //TODO: Can be smarter
@@ -171,13 +180,15 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     public async Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues)
     {
         var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
 
         _ = character.EnsureProjectActive();
 
         var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            requestFieldValues);
+            requestFieldValues,
+            projectInfo);
 
         MarkChanged(character);
 
@@ -204,6 +215,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     public async Task<int> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName)
     {
         var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
         group.Project
             .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles)
@@ -232,7 +245,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         //TODO we do not send message for creating character
         _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            addCharacterRequest.FieldValues);
+            addCharacterRequest.FieldValues, projectInfo);
 
         // Move limit to character
         character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;

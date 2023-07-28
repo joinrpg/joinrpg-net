@@ -8,11 +8,13 @@ internal class SaveToCharacterOnlyStrategy : CharacterExistsStrategyBase
     public SaveToCharacterOnlyStrategy(
         Character character,
         int currentUserId,
-        IFieldDefaultValueGenerator generator)
+        IFieldDefaultValueGenerator generator,
+        ProjectInfo projectInfo)
         : base(claim: null,
         character,
         currentUserId,
-        generator)
+        generator,
+        projectInfo)
     {
     }
 
