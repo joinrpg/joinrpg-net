@@ -1,4 +1,4 @@
-namespace JoinRpg.Domain.ClaimProblemFilters;
+namespace JoinRpg.Domain.Problems;
 
 internal interface IProblemFilter<in TObject>
 {

@@ -1,9 +1,8 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain.ClaimProblemFilters;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
-namespace JoinRpg.Domain.CharacterProblemFilters;
+namespace JoinRpg.Domain.Problems;
 
 internal class FieldNotSetFilterBase
 {
@@ -56,32 +55,4 @@ internal class FieldNotSetFilterBase
 
     [MustUseReturnValue]
     private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue) => new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
-}
-
-internal class FieldNotSetFilterCharacter : FieldNotSetFilterBase, IProblemFilter<Character>
-{
-    #region Implementation of IProblemFilter<in Character>
-
-    public IEnumerable<ClaimProblem> GetProblems(Character character)
-    {
-        return
-          CheckFields(
-            character.GetFields()
-              .Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Character || character.ApprovedClaim != null)
-              .ToList(), character);
-    }
-
-    #endregion
-}
-
-internal class FieldNotSetFilterClaim : FieldNotSetFilterBase, IProblemFilter<Claim>
-{
-    #region Implementation of IProblemFilter<in Character>
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
-    {
-        var projectFields = claim.GetFields();
-
-        return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
-    }
-    #endregion
 }

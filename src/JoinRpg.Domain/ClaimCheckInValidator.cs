@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Problems;
 
 namespace JoinRpg.Domain;
 

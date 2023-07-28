@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Domain.ClaimProblemFilters;
+namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class ClaimWorkStopped : IProblemFilter<Claim>
 {

@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models.ClaimList;

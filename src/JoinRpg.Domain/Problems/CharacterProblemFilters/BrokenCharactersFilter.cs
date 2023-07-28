@@ -1,7 +1,6 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain.ClaimProblemFilters;
 
-namespace JoinRpg.Domain.CharacterProblemFilters;
+namespace JoinRpg.Domain.Problems.CharacterProblemFilters;
 
 internal class BrokenCharactersFilter : IProblemFilter<Character>
 {
