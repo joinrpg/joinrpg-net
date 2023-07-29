@@ -1,6 +1,6 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 
@@ -8,8 +8,15 @@ public class ClaimCheckInValidator
 
 {
     private readonly Claim claim;
+    private readonly IProblemValidator<Claim> claimValidator;
+    private readonly ProjectInfo projectInfo;
 
-    public ClaimCheckInValidator([NotNull] Claim claim) => this.claim = claim ?? throw new ArgumentNullException(nameof(claim));
+    public ClaimCheckInValidator(Claim claim, IProblemValidator<Claim> claimValidator, ProjectInfo projectInfo)
+    {
+        this.claim = claim ?? throw new ArgumentNullException(nameof(claim));
+        this.claimValidator = claimValidator;
+        this.projectInfo = projectInfo;
+    }
 
     public int FeeDue => claim.ClaimFeeDue();
 
@@ -18,8 +25,7 @@ public class ClaimCheckInValidator
 
     public bool IsApproved => claim.ClaimStatus == Claim.Status.Approved;
 
-    public IReadOnlyCollection<FieldRelatedProblem> NotFilledFields => claim.GetProblems()
-      .OfType<FieldRelatedProblem>().ToList();
+    public IReadOnlyCollection<FieldRelatedProblem> NotFilledFields => claimValidator.ValidateFieldsOnly(claim, projectInfo).ToList();
 
     public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved &&
                                          !NotFilledFields.Any();

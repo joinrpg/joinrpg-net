@@ -7,6 +7,7 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
@@ -116,11 +117,11 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
       Claim claim,
       IReadOnlyCollection<PlotElement> plotElements,
       IUriService uriService,
+      ProjectInfo projectInfo,
+      IProblemValidator<Claim> problemValidator,
       IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
       IEnumerable<AccommodationRequest>? accommodationRequests = null,
-      IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
-      IEnumerable<AccommodationInvite>? incomingInvite = null,
-      IEnumerable<AccommodationInvite>? outgoingInvite = null)
+      IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null, IEnumerable<AccommodationInvite>? incomingInvite = null, IEnumerable<AccommodationInvite>? outgoingInvite = null)
     {
         ClaimId = claim.ClaimId;
         CommentDiscussionId = claim.CommentDiscussionId;
@@ -167,12 +168,12 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
             CharacterNavigationViewModel.FromClaim(claim,
                 currentUser.UserId,
                 CharacterNavigationPage.Claim);
-        Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
+        Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
         PlayerDetails = new UserProfileDetailsViewModel(claim.Player, currentUser);
         ProjectActive = claim.Project.Active;
         CheckInStarted = claim.Project.Details.CheckInProgress;
         CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
-        Validator = new ClaimCheckInValidator(claim);
+        Validator = new ClaimCheckInValidator(claim, problemValidator, projectInfo);
 
         AccommodationEnabled = claim.Project.Details.EnableAccommodation;
 

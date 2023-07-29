@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -17,6 +18,9 @@ namespace JoinRpg.Portal.Controllers;
 [MasterAuthorize()] //TODO specific permission
 public class CheckInController : ControllerGameBase
 {
+    private readonly IProblemValidator<Claim> claimValidator;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     [ProvidesContext]
     private IClaimsRepository ClaimsRepository { get; }
 
@@ -30,20 +34,23 @@ public class CheckInController : ControllerGameBase
     private ICharacterRepository CharacterRepository { get; }
 
     public CheckInController(
-        [NotNull]
-    IProjectRepository projectRepository,
+        IProjectRepository projectRepository,
         IProjectService projectService,
         IClaimsRepository claimsRepository,
         IPlotRepository plotRepository,
         IClaimService claimService,
         ICharacterRepository characterRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IProjectMetadataRepository projectMetadataRepository,
+        IProblemValidator<Claim> claimValidator)
       : base(projectRepository, projectService, userRepository)
     {
         ClaimsRepository = claimsRepository;
         PlotRepository = plotRepository;
         ClaimService = claimService;
         CharacterRepository = characterRepository;
+        this.projectMetadataRepository = projectMetadataRepository;
+        this.claimValidator = claimValidator;
     }
 
     [HttpGet]
@@ -101,10 +108,15 @@ public class CheckInController : ControllerGameBase
 
     private async Task<ActionResult> ShowCheckInForm(Claim claim)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
+
         return View("CheckIn", new CheckInClaimModel(claim, await GetCurrentUserAsync(),
           claim.Character == null
             ? null
-            : await PlotRepository.GetPlotsForCharacter(claim.Character)));
+            : await PlotRepository.GetPlotsForCharacter(claim.Character),
+          claimValidator,
+          projectInfo
+          ));
     }
 
     [HttpPost, ValidateAntiForgeryToken]

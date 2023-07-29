@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
@@ -20,12 +21,34 @@ public class ClaimListViewModel : IOperationsAwareView
         IReadOnlyCollection<Claim> claims,
         int? projectId,
         Dictionary<int, int> unreadComments,
+        IProblemValidator<Claim> claimValidator,
+        ProjectInfo projectInfo,
         bool showCount = true,
         bool showUserColumn = true
         )
+        : this (currentUserId, claims, projectId, unreadComments, claimValidator, new[] { projectInfo }, showCount, showUserColumn)
+    {
+    }
+
+    public ClaimListViewModel(
+       int currentUserId,
+       IReadOnlyCollection<Claim> claims,
+       int? projectId,
+       Dictionary<int, int> unreadComments,
+       IProblemValidator<Claim> claimValidator,
+       IReadOnlyCollection<ProjectInfo> projectInfos,
+       bool showCount = true,
+       bool showUserColumn = true
+       )
     {
         Items = claims
-          .Select(c => new ClaimListItemViewModel(c, currentUserId, unreadComments.GetValueOrDefault(c.CommentDiscussionId), c.GetProblems()))
+          .Select(c =>
+            new ClaimListItemViewModel(
+                c,
+                currentUserId,
+                unreadComments.GetValueOrDefault(c.CommentDiscussionId),
+                claimValidator.Validate(c, projectInfos.Single(pi => pi.ProjectId.Value == c.ProjectId)))
+            )
           .ToList();
         ClaimIds = claims.Select(c => c.ClaimId).ToArray();
         CharacterIds = claims.Select(c => c.CharacterId).WhereNotNull().ToArray();

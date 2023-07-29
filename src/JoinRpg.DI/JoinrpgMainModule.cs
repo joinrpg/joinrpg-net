@@ -1,7 +1,6 @@
 using Autofac;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
@@ -32,8 +31,6 @@ public class JoinrpgMainModule : Module
         _ = builder.RegisterType<VirtualUsersService>().As<IVirtualUsersService>().SingleInstance();
 
         _ = builder.RegisterType<PaymentsService>().As<IPaymentsService>();
-
-        _ = builder.RegisterType<FieldSaveHelper>().AsSelf().InstancePerLifetimeScope();
 
         base.Load(builder);
     }

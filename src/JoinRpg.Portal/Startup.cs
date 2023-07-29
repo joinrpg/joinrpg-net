@@ -2,6 +2,7 @@ using System.Globalization;
 using Autofac;
 using JoinRpg.BlobStorage;
 using JoinRpg.DI;
+using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
@@ -154,6 +155,7 @@ public class Startup
     public void ConfigureContainer(ContainerBuilder builder)
     {
         _ = builder.RegisterModule(new JoinrpgMainModule())
+            .RegisterModule(new JoinRpgDomainModule())
             .RegisterModule(new JoinRpgPortalModule())
             .RegisterModule(new BlobStorageModule(s3StorageOptions));
     }
