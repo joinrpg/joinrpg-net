@@ -1,10 +1,11 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class ClaimWorkStopped : IProblemFilter<Claim>
 {
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
+    public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
     {
         if (claim.Project.Active)
         {

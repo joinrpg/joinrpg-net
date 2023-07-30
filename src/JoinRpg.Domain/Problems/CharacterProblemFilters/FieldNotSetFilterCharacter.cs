@@ -7,7 +7,7 @@ internal class FieldNotSetFilterCharacter : FieldNotSetFilterBase, IProblemFilte
 {
     #region Implementation of IProblemFilter<in Character>
 
-    public IEnumerable<ClaimProblem> GetProblems(Character character)
+    public IEnumerable<ClaimProblem> GetProblems(Character character, ProjectInfo projectInfo)
     {
         return
           CheckFields(

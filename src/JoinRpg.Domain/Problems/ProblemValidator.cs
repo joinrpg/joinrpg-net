@@ -22,7 +22,7 @@ internal class ProblemValidator<TObject> : IProblemValidator<TObject> where TObj
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         return filters
-            .SelectMany(filter => filter.GetProblems(claim))
+            .SelectMany(filter => filter.GetProblems(claim, projectInfo))
             .Where(problem => problem.Severity >= minimalSeverity);
     }
 

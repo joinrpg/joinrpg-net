@@ -6,7 +6,7 @@ namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 internal class FieldNotSetFilterClaim : FieldNotSetFilterBase, IProblemFilter<Claim>
 {
     #region Implementation of IProblemFilter<in Claim>
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
+    public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
     {
         var projectFields = claim.GetFields();
 
