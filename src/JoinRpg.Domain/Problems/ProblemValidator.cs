@@ -1,8 +1,9 @@
+using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Problems;
-internal class ProblemValidator<TObject> : IProblemValidator<TObject>
+internal class ProblemValidator<TObject> : IProblemValidator<TObject> where TObject : IFieldContainter
 {
     private readonly IEnumerable<IProblemFilter<TObject>> filters;
 

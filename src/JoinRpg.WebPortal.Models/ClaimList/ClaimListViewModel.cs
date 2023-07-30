@@ -26,7 +26,7 @@ public class ClaimListViewModel : IOperationsAwareView
         bool showCount = true,
         bool showUserColumn = true
         )
-        : this (currentUserId, claims, projectId, unreadComments, claimValidator, new[] { projectInfo }, showCount, showUserColumn)
+        : this(currentUserId, claims, projectId, unreadComments, claimValidator, new[] { projectInfo }, showCount, showUserColumn)
     {
     }
 

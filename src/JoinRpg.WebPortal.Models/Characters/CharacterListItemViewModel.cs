@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -13,11 +14,13 @@ public class CharacterListByGroupViewModel : CharacterListViewModel, IOperations
 {
     public CharacterListByGroupViewModel(int currentUserId,
         IReadOnlyCollection<Character> characters,
-        CharacterGroup group)
+        CharacterGroup group,
+        ProjectInfo projectInfo,
+        IProblemValidator<Character> problemValidator)
         : base(currentUserId,
             $"Персонажи — {group.CharacterGroupName}",
             characters,
-            group.Project)
+            group.Project, projectInfo, problemValidator)
     {
         GroupModel =
             new CharacterGroupDetailsViewModel(group,
@@ -45,13 +48,15 @@ public class CharacterListViewModel : IOperationsAwareView
         int currentUserId,
         string title,
         IReadOnlyCollection<Character> characters,
-        Project project)
+        Project project,
+        ProjectInfo projectInfo,
+        IProblemValidator<Character> problemValidator)
     {
         Items = characters.Select(
             character =>
                 new CharacterListItemViewModel(character,
                     currentUserId,
-                    character.GetProblems())).ToArray();
+                    problemValidator.Validate(character, projectInfo))).ToArray();
         ProjectName = project.ProjectName;
         ProjectId = project.ProjectId;
         Title = title;

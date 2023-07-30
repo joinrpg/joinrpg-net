@@ -103,7 +103,7 @@ public class ClaimListController : Common.ControllerGameBase
     private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<Claim, ProjectInfo, bool> predicate)
     {
         var claims = await ClaimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new (projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
         return await ___ShowMasterClaimList(projectId, export, title, claims.Where(c => predicate(c, projectInfo)).ToList(), claimStatusSpec);
 
