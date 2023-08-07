@@ -1,4 +1,4 @@
-using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 
 namespace JoinRpg.Web.Models;
 

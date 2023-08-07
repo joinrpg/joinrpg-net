@@ -1,6 +1,9 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +13,9 @@ namespace JoinRpg.Portal.Controllers;
 
 public class UserController : Common.ControllerBase
 {
+    private readonly IProblemValidator<Claim> claimValidator;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     public IUserRepository UserRepository { get; }
     public ICurrentUserAccessor CurrentUserAccessor { get; }
 
@@ -39,22 +45,31 @@ public class UserController : Common.ControllerBase
             var claims = CurrentUserAccessor.IsAdmin
                 ? user.Claims.ToArray()
                 : user.Claims.Where(claim => claim.HasAccess(CurrentUserAccessor.UserId, ExtraAccessReason.Player)).ToArray();
+
+            var projectInfos = new List<ProjectInfo>();
+            foreach (var projectId in claims.Select(c => c.ProjectId).Distinct())
+            {
+                projectInfos.Add(await projectMetadataRepository.GetProjectMetadata(new(projectId)));
+            }
             userProfileViewModel.Claims = new ClaimListViewModel(CurrentUserAccessor.UserId,
                 claims,
                 null,
-                new System.Collections.Generic.Dictionary<int, int>(), //TODO pass unread data here
-                showCount: false,
+                new Dictionary<int, int>(), //TODO pass unread data here
+                claimValidator,
+                projectInfos, showCount: false,
                 showUserColumn: false);
         }
 
         return View(userProfileViewModel);
     }
 
-    public UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor)
+    public UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, IProblemValidator<Claim> claimValidator, IProjectMetadataRepository projectMetadataRepository)
         : base()
     {
         UserRepository = userRepository;
         CurrentUserAccessor = currentUserAccessor;
+        this.claimValidator = claimValidator;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     [Authorize]

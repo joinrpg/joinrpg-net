@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
@@ -15,6 +16,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
 
@@ -26,6 +28,9 @@ public class ClaimController : ControllerGameBase
     private readonly IClaimsRepository _claimsRepository;
     private readonly IAccommodationRequestRepository _accommodationRequestRepository;
     private readonly IAccommodationRepository _accommodationRepository;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+    private readonly IProblemValidator<Claim> claimValidator;
+
     private IAccommodationInviteService AccommodationInviteService { get; }
     private IFinanceService FinanceService { get; }
     private ICharacterRepository CharacterRepository { get; }
@@ -93,7 +98,9 @@ public class ClaimController : ControllerGameBase
         IAccommodationRepository accommodationRepository,
         IAccommodationInviteService accommodationInviteService,
         IAccommodationInviteRepository accommodationInviteRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IProjectMetadataRepository projectMetadataRepository,
+        IProblemValidator<Claim> claimValidator)
         : base(projectRepository, projectService, userRepository)
     {
         _claimService = claimService;
@@ -106,6 +113,8 @@ public class ClaimController : ControllerGameBase
         FinanceService = financeService;
         CharacterRepository = characterRepository;
         UriService = uriService;
+        this.projectMetadataRepository = projectMetadataRepository;
+        this.claimValidator = claimValidator;
     }
 
     [HttpPost("~/{ProjectId}/claim/add")]
@@ -191,7 +200,9 @@ public class ClaimController : ControllerGameBase
             outgoingInvite = await AccommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
         }
 
-        var claimViewModel = new ClaimViewModel(currentUser, claim, plots, UriService, availableAccommodation, requestForAccommodation, potentialNeighbors, incomingInvite, outgoingInvite);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
+
+        var claimViewModel = new ClaimViewModel(currentUser, claim, plots, UriService, projectInfo, claimValidator, availableAccommodation, requestForAccommodation, potentialNeighbors, incomingInvite, outgoingInvite);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
         {
@@ -561,7 +572,9 @@ public class ClaimController : ControllerGameBase
             return NotFound();
         }
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+
+        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator);
 
         await _claimService.SubscribeClaimToUser(projectid, claimid);
         var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -582,8 +595,9 @@ public class ClaimController : ControllerGameBase
         {
             return NotFound();
         }
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService);
+        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator);
 
 
         await _claimService.UnsubscribeClaimToUser(projectid, claimid);

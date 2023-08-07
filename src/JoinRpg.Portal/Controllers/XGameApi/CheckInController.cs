@@ -1,6 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.XGameApi.Contract;
@@ -11,6 +13,9 @@ namespace JoinRpg.Web.Controllers.XGameApi;
 [Route("x-game-api/{projectId}/checkin"), XGameMasterAuthorize()]
 public class CheckInController : XGameApiController
 {
+    private readonly IProblemValidator<Claim> claimValidator;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private IClaimsRepository ClaimsRepository { get; }
 
     private IClaimService ClaimsService { get; }
@@ -18,10 +23,14 @@ public class CheckInController : XGameApiController
 
     public CheckInController(IProjectRepository projectRepository,
         IClaimsRepository claimsRepository,
-        IClaimService claimsService) : base(projectRepository)
+        IClaimService claimsService,
+        IProblemValidator<Claim> claimValidator,
+        IProjectMetadataRepository projectMetadataRepository) : base(projectRepository)
     {
         ClaimsRepository = claimsRepository;
         ClaimsService = claimsService;
+        this.claimValidator = claimValidator;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     /// <summary>
@@ -83,7 +92,9 @@ public class CheckInController : XGameApiController
             return NotFound();
         }
 
-        var validator = new ClaimCheckInValidator(claim);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
+        var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         return
             new ClaimCheckInValidationResult
             {

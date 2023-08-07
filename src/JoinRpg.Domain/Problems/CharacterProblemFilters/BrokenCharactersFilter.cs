@@ -1,11 +1,11 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain.ClaimProblemFilters;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
-namespace JoinRpg.Domain.CharacterProblemFilters;
+namespace JoinRpg.Domain.Problems.CharacterProblemFilters;
 
 internal class BrokenCharactersFilter : IProblemFilter<Character>
 {
-    public IEnumerable<ClaimProblem> GetProblems(Character character)
+    public IEnumerable<ClaimProblem> GetProblems(Character character, ProjectInfo projectInfo)
     {
         var groups = character.GetParentGroupsToTop().Where(g => g.IsActive && !g.IsSpecial).ToArray();
         if (!groups.Any())

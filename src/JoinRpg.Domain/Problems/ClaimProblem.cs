@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace JoinRpg.Domain;
+namespace JoinRpg.Domain.Problems;
 
 public class ClaimProblem
 {

@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;
 
@@ -10,7 +12,11 @@ namespace JoinRpg.Web.Models.CheckIn;
 
 public class CheckInClaimModel : IProjectIdAware
 {
-    public CheckInClaimModel(Claim claim, User currentUser, IReadOnlyCollection<PlotElement>? plotElements)
+    public CheckInClaimModel(Claim claim,
+        User currentUser,
+        IReadOnlyCollection<PlotElement>? plotElements,
+        IProblemValidator<Claim> claimValidator,
+        ProjectInfo projectInfo)
     {
         if (claim == null)
         {
@@ -22,7 +28,7 @@ public class CheckInClaimModel : IProjectIdAware
             throw new ArgumentNullException(nameof(currentUser));
         }
 
-        Validator = new ClaimCheckInValidator(claim);
+        Validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
         PlayerDetails = new UserProfileDetailsViewModel(claim.Player, (AccessReason)claim.Player.GetProfileAccess(currentUser));

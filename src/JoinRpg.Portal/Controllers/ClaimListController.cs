@@ -2,9 +2,12 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -18,6 +21,9 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{ProjectId}/claims/[action]")]
 public class ClaimListController : Common.ControllerGameBase
 {
+    private readonly IProblemValidator<Claim> claimValidator;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private IExportDataService ExportDataService { get; }
     private IClaimsRepository ClaimsRepository { get; }
     private IAccommodationRepository AccommodationRepository { get; }
@@ -30,20 +36,25 @@ public class ClaimListController : Common.ControllerGameBase
         IClaimsRepository claimsRepository,
         IUriService uriService,
         IAccommodationRepository accommodationRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IProblemValidator<Claim> claimValidator,
+        IProjectMetadataRepository projectMetadataRepository
+        )
         : base(projectRepository, projectService, userRepository)
     {
         ExportDataService = exportDataService;
         ClaimsRepository = claimsRepository;
         UriService = uriService;
         AccommodationRepository = accommodationRepository;
+        this.claimValidator = claimValidator;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     #region implementation
 
     private async Task<ActionResult> ___ShowMasterClaimList(int projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
     {
-
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
         if (exportType == null)
@@ -51,7 +62,7 @@ public class ClaimListController : Common.ControllerGameBase
             ViewBag.MasterAccessColumn = true;
             ViewBag.Title = title;
             var unreadComments = await ClaimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(CurrentUserId, claims, projectId, unreadComments);
+            var view = new ClaimListViewModel(CurrentUserId, claims, projectId, unreadComments, claimValidator, projectInfo);
             return View("Index", view);
         }
         else
@@ -89,11 +100,12 @@ public class ClaimListController : Common.ControllerGameBase
 
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<Claim, bool> predicate)
+    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<Claim, ProjectInfo, bool> predicate)
     {
         var claims = await ClaimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec);
+        return await ___ShowMasterClaimList(projectId, export, title, claims.Where(c => predicate(c, projectInfo)).ToList(), claimStatusSpec);
 
     }
 
@@ -106,11 +118,12 @@ public class ClaimListController : Common.ControllerGameBase
         }
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(characterGroup.ProjectId));
 
         if (exportType == null)
         {
             var unreadComments = await ClaimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page, unreadComments);
+            var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page, unreadComments, claimValidator, projectInfo);
             ViewBag.MasterAccessColumn = true;
             ViewBag.Title = title + " " + characterGroup.CharacterGroupName;
             return View("ByGroup", view);
@@ -221,7 +234,7 @@ public class ClaimListController : Common.ControllerGameBase
     [MasterAuthorize()]
     public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
         => await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", ClaimStatusSpec.Any, responsibleMasterId,
-            claim => claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning));
+            (claim, projectInfo) => claimValidator.Validate(claim, projectInfo, ProblemSeverity.Warning).Any());
     #endregion
 
     #region By Status
@@ -253,10 +266,13 @@ public class ClaimListController : Common.ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> SomeFieldsToFill(int projectid, string export)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectid);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
+        var playerEditableFields = projectInfo.UnsortedFields.Where(p => p.CanPlayerEdit).Select(c => c.Id).ToList();
+        var loadedClaims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
         var claims =
-            (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved)).Where(
-                claim => claim.HasProblemsForFields(project.ProjectFields.Where(p => p.CanPlayerEdit))).ToList();
+            loadedClaims
+            .Where(claim => claimValidator.ValidateFieldsOnly(claim, projectInfo, playerEditableFields).Any())
+            .ToList();
 
         return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved);
     }
@@ -272,22 +288,31 @@ public class ClaimListController : Common.ControllerGameBase
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
+        var claims = user.Claims.ToList();
+        var projectInfos = new List<ProjectInfo>();
+        foreach (var projectId in claims.Select(c => c.ProjectId).Distinct())
+        {
+            projectInfos.Add(await projectMetadataRepository.GetProjectMetadata(new(projectId)));
+        }
+
         if (exportType == null)
         {
             var viewModel = new ClaimListViewModel(
                 CurrentUserId,
-                user.Claims.ToList(),
+                claims,
                 projectId: null,
                 showCount: false,
+                claimValidator: claimValidator,
+                projectInfos: projectInfos,
                 showUserColumn: false,
-                unreadComments: new Dictionary<int, int>()); //TODO Pass unread info here
+                unreadComments: new Dictionary<int, int>()); ; //TODO Pass unread info here
             return base.View("Index", viewModel);
         }
         else
         {
             var viewModel = new ClaimListForExportViewModel(
                 CurrentUserId,
-                user.Claims.ToList());
+                claims);
             return ExportWithCustomFrontend(
                 viewModel.Items,
                 title,
@@ -300,9 +325,10 @@ public class ClaimListController : Common.ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Problems(int projectId, string export)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         var claims =
-            (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Any)).Where(
-                c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
+            (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Any))
+            .Where(c => claimValidator.Validate(c, projectInfo, ProblemSeverity.Warning).Any()).ToList();
         return
             await ShowMasterClaimList(projectId, export, "Проблемные заявки", claims, ClaimStatusSpec.Any);
     }

@@ -1,14 +1,17 @@
 using System.Data.Entity.Validation;
 using System.Diagnostics;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -44,7 +47,9 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
         claim.EnsureCanChangeStatus(Claim.Status.CheckedIn);
 
-        var validator = new ClaimCheckInValidator(claim);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
+        var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         if (!validator.CanCheckInInPrinciple)
         {
             throw new ClaimWrongStatusException(claim);
@@ -95,6 +100,8 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
         var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
         oldClaim.EnsureStatus(Claim.Status.CheckedIn);
 
@@ -170,6 +177,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         IReadOnlyDictionary<int, string?> fields)
     {
         var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
         source.EnsureCanAddClaim(CurrentUserId);
 
@@ -299,6 +307,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task ApproveByMaster(int projectId, int claimId, string commentText)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
         if (claim.ClaimStatus == Claim.Status.CheckedIn)
@@ -899,6 +908,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     {
         //TODO: Prevent lazy load here - use repository
         var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue);
         if (updatedFields.Any(f => f.Field.FieldBoundTo == FieldBoundTo.Character) && claim.Character != null)
@@ -941,17 +951,21 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     private readonly FieldSaveHelper fieldSaveHelper;
     private readonly IAccommodationInviteService _accommodationInviteService;
     private readonly IPlotService plotService;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+    private readonly IProblemValidator<Claim> claimValidator;
 
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
       FieldSaveHelper fieldSaveHelper,
         IAccommodationInviteService accommodationInviteService,
         ICurrentUserAccessor currentUserAccessor,
-        IPlotService plotService
-        ) : base(unitOfWork, emailService, currentUserAccessor)
+        IPlotService plotService,
+        IProjectMetadataRepository projectMetadataRepository, IProblemValidator<Claim> claimValidator) : base(unitOfWork, emailService, currentUserAccessor)
     {
         this.fieldSaveHelper = fieldSaveHelper;
         _accommodationInviteService = accommodationInviteService;
         this.plotService = plotService;
+        this.projectMetadataRepository = projectMetadataRepository;
+        this.claimValidator = claimValidator;
     }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
