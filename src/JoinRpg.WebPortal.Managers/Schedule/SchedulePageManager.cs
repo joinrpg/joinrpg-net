@@ -6,7 +6,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
@@ -16,15 +15,19 @@ namespace JoinRpg.WebPortal.Managers.Schedule;
 
 public class SchedulePageManager
 {
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     public SchedulePageManager(
         IProjectRepository project,
         ICurrentProjectAccessor currentProject,
-        ICurrentUserAccessor currentUserAccessor
+        ICurrentUserAccessor currentUserAccessor,
+        IProjectMetadataRepository projectMetadataRepository
         )
     {
         Project = project;
         CurrentProject = currentProject;
         CurrentUserAccessor = currentUserAccessor;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     public async Task<SchedulePageViewModel> GetSchedule()
@@ -76,8 +79,11 @@ public class SchedulePageManager
         var project =
     (await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId))
     ?? throw new JoinRpgEntityNotFoundException(CurrentProject.ProjectId, "project");
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+
         var characters = await Project.GetCharacters(CurrentProject.ProjectId);
-        var scheduleBuilder = new ScheduleBuilder(project, characters);
+        var scheduleBuilder = new ScheduleBuilder(project, characters, projectInfo);
         return (project, scheduleBuilder.Build());
     }
 
@@ -286,6 +292,16 @@ public class SchedulePageManager
         }
 
         return Impl().ToList();
+    }
+
+    public async Task<ScheduleBuilder> GetBuilder()
+    {
+        var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+        var characters = await Project.GetCharacters(CurrentProject.ProjectId);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+
+        return new ScheduleBuilder(project!, characters, projectInfo);
     }
 
     private IProjectRepository Project { get; }
