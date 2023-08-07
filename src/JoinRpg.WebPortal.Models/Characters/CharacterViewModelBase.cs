@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -36,9 +37,9 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     [CannotBeEmpty, DisplayName("Является частью групп")]
     public int[] ParentCharacterGroupIds { get; set; } = Array.Empty<int>();
 
-    protected void FillFields(Character field, int currentUserId)
+    protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
     {
-        Fields = new CustomFieldsViewModel(currentUserId, field);
+        Fields = new CustomFieldsViewModel(currentUserId, field, projectInfo);
         CharactersHaveNameField = field.Project.Details.CharacterNameField is not null;
     }
 }

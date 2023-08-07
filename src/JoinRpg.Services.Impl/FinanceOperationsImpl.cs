@@ -308,7 +308,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         claim.FinanceOperations.Add(financeOperation);
 
-        claim.UpdateClaimFeeIfRequired(request.OperationDate);
+        claim.UpdateClaimFeeIfRequired(request.OperationDate, projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -397,7 +397,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
             request);
 
         // Trying to fix fee in destination claim
-        claimTo.UpdateClaimFeeIfRequired(Now);
+        claimTo.UpdateClaimFeeIfRequired(Now, projectInfo);
         await UnitOfWork.SaveChangesAsync();
     }
 

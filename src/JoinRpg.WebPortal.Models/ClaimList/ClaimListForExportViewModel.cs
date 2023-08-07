@@ -8,7 +8,7 @@ public class ClaimListForExportViewModel
     public IEnumerable<ClaimListItemForExportViewModel> Items { get; }
 
     public ClaimListForExportViewModel(int currentUserId, IReadOnlyCollection<Claim> claims, ProjectInfo projectInfo)
-        :this(currentUserId, claims.Select(c => (c, projectInfo)).ToList())
+        : this(currentUserId, claims.Select(c => (c, projectInfo)).ToList())
     {
     }
 

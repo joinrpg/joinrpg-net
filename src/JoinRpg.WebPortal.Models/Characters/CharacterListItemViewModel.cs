@@ -56,7 +56,7 @@ public class CharacterListViewModel : IOperationsAwareView
             character =>
                 new CharacterListItemViewModel(character,
                     currentUserId,
-                    problemValidator.Validate(character, projectInfo))).ToArray();
+                    projectInfo, problemValidator)).ToArray();
         ProjectName = project.ProjectName;
         ProjectId = project.ProjectId;
         Title = title;
@@ -94,10 +94,10 @@ public class CharacterListItemViewModel : ILinkable
     public User? Responsible { get; }
 
     public CharacterListItemViewModel(
-        [NotNull]
         Character character,
         int currentUserId,
-        IEnumerable<ClaimProblem> problems)
+        ProjectInfo projectInfo,
+        IProblemValidator<Character> problemValidator)
     {
         if (character == null)
         {
@@ -115,8 +115,8 @@ public class CharacterListItemViewModel : ILinkable
         Name = character.CharacterName;
         CharacterId = character.CharacterId;
         ProjectId = character.ProjectId;
-        Fields = character.GetFields();
-        Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
+        Fields = character.GetFields(projectInfo);
+        Problems = problemValidator.Validate(character, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
 
         Groups = new CharacterParentGroupsViewModel(character,
             character.HasMasterAccess(currentUserId));

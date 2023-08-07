@@ -2,6 +2,7 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
@@ -55,7 +56,12 @@ public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreated
     public CharacterNavigationViewModel Navigation { get; }
     public bool HasMasterAccess { get; }
 
-    public CharacterDetailsViewModel(int? currentUserIdOrDefault, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
+    public CharacterDetailsViewModel(
+        int? currentUserIdOrDefault,
+        Character character,
+        IReadOnlyCollection<PlotElement> plots,
+        IUriService uriService,
+        ProjectInfo projectInfo)
     {
         PlayerLink = UserLinks.Create(character.ApprovedClaim?.Player);
         HasAccess = character.HasAnyAccess(currentUserIdOrDefault);
@@ -64,7 +70,7 @@ public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreated
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
             currentUserIdOrDefault);
-        Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, disableEdit: true);
+        Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, projectInfo, disableEdit: true);
         Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character, uriService);
 
         HasMasterAccess = character.HasMasterAccess(currentUserIdOrDefault);

@@ -9,6 +9,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
@@ -16,6 +17,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
@@ -39,15 +41,17 @@ public class ClaimController : ControllerGameBase
 
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
+    public async Task<ActionResult> AddForCharacter(int projectId, int characterid)
     {
-        var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
+        var field = await CharacterRepository.GetCharacterAsync(projectId, characterid);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
         if (field == null)
         {
             return NotFound();
         }
 
-        return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
+        return View("Add", AddClaimViewModel.Create(field, CurrentUserId, projectInfo));
     }
 
     [HttpGet("/{projectid}/apply")]
@@ -62,19 +66,21 @@ public class ClaimController : ControllerGameBase
 
     [HttpGet("/{projectid}/roles/{characterGroupId}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
+    public async Task<ActionResult> AddForGroup(int projectId, int characterGroupId)
     {
-        var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
+        var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
         if (field == null)
         {
             return NotFound();
         }
 
-        var viewModel = AddClaimViewModel.Create(field, CurrentUserId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+
+        var viewModel = AddClaimViewModel.Create(field, CurrentUserId, projectInfo);
 
         if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims))
         {
-            var childSlots = field.Characters.Where(c => c.CharacterType == PrimitiveTypes.CharacterType.Slot).ToList();
+            var childSlots = field.Characters.Where(c => c.CharacterType == CharacterType.Slot).ToList();
             if (childSlots.Count == 1)
             {
                 return RedirectToAction("AddForCharacter", new { field.ProjectId, childSlots.Single().CharacterId });
@@ -141,7 +147,8 @@ public class ClaimController : ControllerGameBase
         {
             ModelState.AddException(exception);
             var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId).ConfigureAwait(false);
-            return View(viewModel.Fill(source, CurrentUserId));
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+            return View(viewModel.Fill(source, CurrentUserId, projectInfo));
         }
     }
 

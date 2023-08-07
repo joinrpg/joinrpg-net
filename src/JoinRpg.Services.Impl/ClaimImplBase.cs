@@ -104,7 +104,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
 
         claim.FinanceOperations.Add(financeOperation);
 
-        claim.UpdateClaimFeeIfRequired(operationDate);
+        claim.UpdateClaimFeeIfRequired(operationDate, projectInfo);
 
         var email = await CreateClaimEmail<FinanceOperationEmail>(claim, contents,
           s => s.MoneyOperation,

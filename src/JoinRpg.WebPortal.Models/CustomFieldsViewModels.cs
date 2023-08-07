@@ -271,7 +271,7 @@ public class CustomFieldsViewModel
     /// <summary>
     /// Called from AddClaimViewModel
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, IClaimSource target) : this()
+    public CustomFieldsViewModel(int? currentUserId, IClaimSource target, ProjectInfo projectInfo) : this()
     {
         AccessArguments = new AccessArguments(
           target.HasMasterAccess(currentUserId),
@@ -283,7 +283,7 @@ public class CustomFieldsViewModel
         Target = target;
 
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
-        var fieldsList = target.GetFieldsForClaimSource();
+        var fieldsList = target.GetFieldsForClaimSource(projectInfo);
         Fields =
           fieldsList
             .Select(ch => CreateFieldValueView(ch, renderer))
@@ -301,6 +301,7 @@ public class CustomFieldsViewModel
     /// </summary>
     /// <param name="currentUserId">ID of the currect user logged in</param>
     /// <param name="character">Character to print</param>
+    /// <param name="projectInfo"></param>
     /// <param name="disableEdit">disable editing (incl. cases where it's done to speeds up the app)</param>
     /// <param name="onlyPlayerVisible">
     /// Used for printing, when the user who prints has master access,
@@ -310,9 +311,9 @@ public class CustomFieldsViewModel
     public CustomFieldsViewModel(
       int? currentUserId,
       Character character,
+      ProjectInfo projectInfo,
       bool disableEdit = false,
-      bool onlyPlayerVisible = false,
-      bool wherePrintEnabled = false) : this()
+      bool onlyPlayerVisible = false, bool wherePrintEnabled = false) : this()
     {
         EditAllowed = !disableEdit && character.Project.Active;
         if (onlyPlayerVisible)
@@ -331,7 +332,7 @@ public class CustomFieldsViewModel
         Target = character;
         var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
         Fields =
-          character.GetFields()
+          character.GetFields(projectInfo)
             .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character)
             .Where(f => !wherePrintEnabled || f.Field.IncludeInPrint)
             .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))

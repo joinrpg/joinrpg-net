@@ -118,7 +118,7 @@ public class CustomFieldsExtensionsTest
     {
         var accessPredicate = projectMock.Character.GetAccessArguments(viewerUser.UserId);
 
-        IList<FieldWithValue> userVisibleFields = projectMock.Character.GetFields()
+        IList<FieldWithValue> userVisibleFields = projectMock.Character.GetFields(projectMock.ProjectInfo)
             .Where(f => f.HasViewAccess(accessPredicate)).ToList();
 
         AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);

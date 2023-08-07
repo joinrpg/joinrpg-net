@@ -55,7 +55,7 @@ public static class CustomFieldsExtensions
         return fields.AsReadOnly();
     }
 
-    public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character)
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character, ProjectInfo projectInfo)
         => GetFieldsForContainers(character.Project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, Project project)
@@ -65,18 +65,18 @@ public static class CustomFieldsExtensions
     {
         if (claim.IsApproved)
         {
-            return claim.Character!.GetFields();
+            return claim.Character!.GetFields(projectInfo);
         }
         var publicFields = claim.Project.ProjectFields.Where(f => f.IsPublic).Select(x => x.ProjectFieldId).ToList();
         return GetFieldsForContainers(claim.Project, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
             claim.DeserializeFieldValues());
     }
 
-    public static IReadOnlyCollection<FieldWithValue> GetFieldsForClaimSource(this IClaimSource claimSource)
+    public static IReadOnlyCollection<FieldWithValue> GetFieldsForClaimSource(this IClaimSource claimSource, ProjectInfo projectInfo)
     {
         if (claimSource is Character character)
         {
-            return character.GetFields();
+            return character.GetFields(projectInfo);
         }
         else
         {

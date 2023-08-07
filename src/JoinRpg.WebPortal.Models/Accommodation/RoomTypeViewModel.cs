@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
@@ -74,7 +75,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// </summary>
     public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
 
-    public RoomTypeViewModel([NotNull] ProjectAccommodationType entity, int userId)
+    public RoomTypeViewModel([NotNull] ProjectAccommodationType entity, int userId, ProjectInfo projectInfo)
         : this(entity.Project, userId)
     {
         if (entity.ProjectId == 0 || entity.Id == 0)
@@ -92,7 +93,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         DescriptionView = entity.Description.ToHtmlString();
 
         // Creating a list of requests associated with this room type
-        Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
+        Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar, projectInfo)).ToList();
 
         // Creating a list of requests not assigned to any room
         var ua = Requests.Where(ar => ar.RoomId == 0).ToList();

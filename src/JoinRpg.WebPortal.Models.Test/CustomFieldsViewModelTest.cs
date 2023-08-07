@@ -14,14 +14,14 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void HideMasterOnlyFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group, Mock.ProjectInfo);
         (vm.FieldById(Mock.MasterOnlyField.ProjectFieldId)?.CanView ?? false).ShouldBeFalse();
     }
 
     [Fact]
     public void HideUnApprovedFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group, Mock.ProjectInfo);
         (vm.FieldById(Mock.HideForUnApprovedClaim.ProjectFieldId)?.CanView ?? false).ShouldBeFalse();
     }
 
@@ -31,7 +31,7 @@ public class CustomFieldsViewModelTest
         MockedProject.AssignFieldValues(Mock.Character,
             new FieldWithValue(Mock.PublicField, "1"));
 
-        var vm = new CustomFieldsViewModel(currentUserId: null, character: Mock.Character);
+        var vm = new CustomFieldsViewModel(currentUserId: null, character: Mock.Character, projectInfo: Mock.ProjectInfo);
 
         var publicField = vm.FieldById(Mock.PublicField.ProjectFieldId);
         _ = publicField.ShouldNotBeNull();
@@ -44,7 +44,7 @@ public class CustomFieldsViewModelTest
     {
         MockedProject.AssignFieldValues(Mock.Character, new FieldWithValue(Mock.PublicField, "1"));
 
-        var vm = new CustomFieldsViewModel(currentUserId: null, character: Mock.Character, disableEdit: true);
+        var vm = new CustomFieldsViewModel(currentUserId: null, character: Mock.Character, projectInfo: Mock.ProjectInfo, disableEdit: true);
         var publicField = vm.FieldById(Mock.PublicField.ProjectFieldId);
         _ = publicField.ShouldNotBeNull();
         publicField.CanView.ShouldBeTrue();
@@ -54,7 +54,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character, Mock.ProjectInfo);
         var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
 
         _ = characterField.ShouldNotBeNull();
@@ -71,7 +71,7 @@ public class CustomFieldsViewModelTest
         var claim = mock.CreateClaim(mock.Character, mock.Player);
         MockedProject.AssignFieldValues(claim, new FieldWithValue(mock.CharacterField, "test"));
 
-        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
+        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim, mock.ProjectInfo);
 
         var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
@@ -88,7 +88,7 @@ public class CustomFieldsViewModelTest
         var mock = new MockedProject();
         var claim = mock.CreateClaim(mock.Character, mock.Player);
 
-        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
+        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim, mock.ProjectInfo);
 
         var characterField = vm.Field(mock.CharacterField);
 
@@ -104,7 +104,7 @@ public class CustomFieldsViewModelTest
     {
         var mock = new MockedProject();
 
-        var vm = new CustomFieldsViewModel(mock.Player.UserId, (IClaimSource)mock.Character);
+        var vm = new CustomFieldsViewModel(mock.Player.UserId, (IClaimSource)mock.Character, mock.ProjectInfo);
 
         var characterField = vm.Field(mock.CharacterField);
 
@@ -119,7 +119,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimForCharacterTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character, Mock.ProjectInfo);
         var characterField = vm.Field(Mock.CharacterField);
         _ = characterField.ShouldNotBeNull();
 
@@ -135,7 +135,7 @@ public class CustomFieldsViewModelTest
         var conditionalHeader = Mock.CreateConditionalHeader();
         var claim = Mock.CreateApprovedClaim(Mock.CharacterWithoutGroup, Mock.Player);
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
         var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
         _ = characterField.ShouldNotBeNull();
@@ -151,7 +151,7 @@ public class CustomFieldsViewModelTest
         var conditionalHeader = Mock.CreateConditionalHeader();
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
         var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
         _ = characterField.ShouldNotBeNull();
@@ -165,7 +165,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimForGroupTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group, Mock.ProjectInfo);
         var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
         _ = characterField.ShouldNotBeNull();
         characterField.ShouldBeHidden();
@@ -182,7 +182,7 @@ public class CustomFieldsViewModelTest
         var value = new FieldWithValue(field, "xxx");
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character, Mock.ProjectInfo);
         var characterField = vm.Field(field);
         _ = characterField.ShouldNotBeNull();
         characterField.ShouldBeVisible();
@@ -199,7 +199,7 @@ public class CustomFieldsViewModelTest
         var value = new FieldWithValue(field, "xxx");
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character, Mock.ProjectInfo);
         var characterField = vm.Field(field);
         _ = characterField.ShouldNotBeNull();
         characterField.ShouldBeVisible();
@@ -221,7 +221,7 @@ public class CustomFieldsViewModelTest
         var value = new FieldWithValue(field, "xxx");
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character, Mock.ProjectInfo);
         var characterField = vm.Field(field);
         _ = characterField.ShouldNotBeNull();
         characterField.ShouldBeVisible();

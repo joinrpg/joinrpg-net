@@ -15,17 +15,21 @@ public class AccommodationTypeController : Common.ControllerGameBase
 {
     private IAccommodationRepository AccommodationRepository { get; }
     private readonly IAccommodationService _accommodationService;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
 
     public AccommodationTypeController(
         IProjectRepository projectRepository,
         IProjectService projectService,
         IAccommodationService accommodationService,
         IAccommodationRepository accommodationRepository,
-        IUserRepository userRepository) : base(projectRepository,
+        IUserRepository userRepository,
+        IProjectMetadataRepository projectMetadataRepository)
+        : base(projectRepository,
             projectService,
             userRepository)
     {
         AccommodationRepository = accommodationRepository;
+        this.projectMetadataRepository = projectMetadataRepository;
         _accommodationService = accommodationService;
     }
 
@@ -74,7 +78,9 @@ public class AccommodationTypeController : Common.ControllerGameBase
             return Forbid();
         }
 
-        return View(new RoomTypeViewModel(entity, CurrentUserId));
+        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
+        return View(new RoomTypeViewModel(entity, CurrentUserId, pi));
     }
 
     /// <summary>
@@ -90,7 +96,9 @@ public class AccommodationTypeController : Common.ControllerGameBase
             return Forbid();
         }
 
-        return View(new RoomTypeViewModel(entity, CurrentUserId));
+        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
+        return View(new RoomTypeViewModel(entity, CurrentUserId, pi));
     }
 
     /// <summary>

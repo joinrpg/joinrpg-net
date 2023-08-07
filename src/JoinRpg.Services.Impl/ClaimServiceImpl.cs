@@ -251,7 +251,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
             {
                 throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
             }
-            extraAction = PerformFinanceOperation(financeAction, parentComment, claim);
+            extraAction = PerformFinanceOperation(financeAction, parentComment, claim, projectInfo);
             predicate = s => s.Comments || s.MoneyOperation;
         }
 
@@ -265,7 +265,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     }
 
     private CommentExtraAction? PerformFinanceOperation(FinanceOperationAction financeAction,
-      Comment parentComment, Claim claim)
+      Comment parentComment, Claim claim, ProjectInfo projectInfo)
     {
         var finance = parentComment?.Finance;
         if (finance == null)
@@ -288,7 +288,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
                 {
                     claim.PreferentialFeeUser = true;
                 }
-                claim.UpdateClaimFeeIfRequired(finance.OperationDate);
+                claim.UpdateClaimFeeIfRequired(finance.OperationDate, projectInfo);
                 return CommentExtraAction.ApproveFinance;
             case FinanceOperationAction.Decline:
                 finance.State = FinanceOperationState.Declined;

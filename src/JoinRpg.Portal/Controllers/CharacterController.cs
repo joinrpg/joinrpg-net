@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.ExtendedProperties;
 using JetBrains.Annotations;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
@@ -13,12 +14,16 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Evaluation;
+using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/character/{characterid}/[action]")]
 public class CharacterController : Common.ControllerGameBase
 {
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private IPlotRepository PlotRepository { get; }
     private ICharacterRepository CharacterRepository { get; }
     private IUriService UriService { get; }
@@ -31,13 +36,15 @@ public class CharacterController : Common.ControllerGameBase
         ICharacterRepository characterRepository,
         IUriService uriService,
         IUserRepository userRepository,
-        ICharacterService characterService)
+        ICharacterService characterService,
+        IProjectMetadataRepository projectMetadataRepository)
         : base(projectRepository, projectService, userRepository)
     {
         PlotRepository = plotRepository;
         CharacterRepository = characterRepository;
         UriService = uriService;
         CharacterService = characterService;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     [HttpGet("~/{projectId}/character/{characterid}/")]
@@ -54,11 +61,13 @@ public class CharacterController : Common.ControllerGameBase
         var plots = character.HasPlotViewAccess(CurrentUserIdOrDefault)
             ? await ShowPlotsForCharacter(character)
             : Enumerable.Empty<PlotElement>();
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(character.ProjectId));
         return View("Details",
             new CharacterDetailsViewModel(CurrentUserIdOrDefault,
                 character,
                 plots.ToList(),
-                UriService));
+                UriService, projectInfo));
     }
 
     private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character) =>
@@ -69,6 +78,7 @@ public class CharacterController : Common.ControllerGameBase
     {
         var field = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
         var view = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
         return View(new EditCharacterViewModel()
         {
             ProjectId = field.ProjectId,
@@ -77,7 +87,7 @@ public class CharacterController : Common.ControllerGameBase
             CharacterTypeInfo = view.CharacterTypeInfo,
             Name = field.CharacterName,
             ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
-        }.Fill(field, CurrentUserId));
+        }.Fill(field, CurrentUserId, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
@@ -85,11 +95,13 @@ public class CharacterController : Common.ControllerGameBase
     {
         var field =
              await CharacterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
         try
         {
             if (!ModelState.IsValid)
             {
-                return View(viewModel.Fill(field, CurrentUserId));
+                return View(viewModel.Fill(field, CurrentUserId, projectInfo));
             }
 
             await CharacterService.EditCharacter(
@@ -106,7 +118,7 @@ public class CharacterController : Common.ControllerGameBase
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            return View(viewModel.Fill(field, CurrentUserId));
+            return View(viewModel.Fill(field, CurrentUserId, projectInfo));
         }
     }
 
@@ -124,6 +136,8 @@ public class CharacterController : Common.ControllerGameBase
             characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid.Value);
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
+
         if (characterGroup == null)
         {
             return NotFound();
@@ -136,7 +150,7 @@ public class CharacterController : Common.ControllerGameBase
             ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
             ContinueCreating = continueCreating,
             CharacterTypeInfo = CharacterTypeInfo.Default(),
-        }.Fill(characterGroup, CurrentUserId));
+        }.Fill(characterGroup, CurrentUserId, projectInfo));
     }
 
     [HttpPost("~/{ProjectId}/character/create")]
@@ -179,7 +193,9 @@ public class CharacterController : Common.ControllerGameBase
                         characterGroupId);
             }
 
-            return View(viewModel.Fill(characterGroup, CurrentUserId));
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+
+            return View(viewModel.Fill(characterGroup, CurrentUserId, projectInfo));
         }
     }
 

@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -17,6 +18,7 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
 
     private readonly IBankSecretsProvider _bankSecrets;
     private readonly ILogger<PaymentsService> logger;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
     private readonly Lazy<IEmailService> emailService;
     private readonly IUriService _uriService;
 
@@ -27,11 +29,13 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
         IBankSecretsProvider bankSecrets,
         ICurrentUserAccessor currentUserAccessor,
         Lazy<IEmailService> emailService,
-        ILogger<PaymentsService> logger)
+        ILogger<PaymentsService> logger,
+        IProjectMetadataRepository projectMetadataRepository)
         : base(unitOfWork, currentUserAccessor)
     {
         _bankSecrets = bankSecrets;
         this.logger = logger;
+        this.projectMetadataRepository = projectMetadataRepository;
         this.emailService = emailService;
         _uriService = uriService;
     }
@@ -305,7 +309,9 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
                     logger.LogInformation("Online payment for ClaimId: {claimId}, ProjectId: {projectId} is accepted", fo.ClaimId, fo.ProjectId);
 
                     Claim claim = await GetClaimAsync(fo.ProjectId, fo.ClaimId);
-                    claim.UpdateClaimFeeIfRequired(Now);
+                    var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(fo.ProjectId));
+
+                    claim.UpdateClaimFeeIfRequired(Now, projectInfo);
 
                     await SendPaymentNotification(claim, fo.MoneyAmount);
                 }

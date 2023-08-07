@@ -27,7 +27,7 @@ internal class SaveToCharacterOnlyStrategy : CharacterExistsStrategyBase
         UpdateSpecialGroups(fields);
     }
 
-    public override IReadOnlyCollection<FieldWithValue> GetFields() => Character.GetFields();
+    public override IReadOnlyCollection<FieldWithValue> GetFields() => Character.GetFields(ProjectInfo);
 
     protected override void SetCharacterNameFromPlayer()
     {

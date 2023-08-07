@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -18,10 +19,10 @@ public class PrintCharacterViewModelSlim
     public string? PlayerDisplayName { get; }
     public string? PlayerFullName { get; }
 
-    public PrintCharacterViewModelSlim(Character character)
+    public PrintCharacterViewModelSlim(Character character, ProjectInfo projectInfo)
     {
         CharacterName = character.CharacterName;
-        FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.ProjectFeeInfo()?.Fee ?? 0;
+        FeeDue = character.ApprovedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0;
         ProjectName = character.Project.ProjectName;
 
         Groups =
@@ -45,8 +46,8 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
     public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;
 
     public PrintCharacterViewModel
-      (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
-      : base(character)
+      (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService, ProjectInfo projectInfo)
+      : base(character, projectInfo)
     {
         if (character == null)
         {
@@ -64,7 +65,7 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
             .ToArray();
 
         PlayerPhoneNumber = character.ApprovedClaim?.Player.Extra?.PhoneNumber;
-        Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true, onlyPlayerVisible: true, wherePrintEnabled: true);
+        Fields = new CustomFieldsViewModel(currentUserId, character, projectInfo, disableEdit: true, onlyPlayerVisible: true, wherePrintEnabled: true);
     }
 }
 
