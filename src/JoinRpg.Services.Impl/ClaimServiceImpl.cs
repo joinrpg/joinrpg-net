@@ -11,7 +11,6 @@ using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -44,10 +43,8 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task CheckInClaim(int projectId, int claimId, int money)
     {
-        var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId); //TODO Specific right
         claim.EnsureCanChangeStatus(Claim.Status.CheckedIn);
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
         var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         if (!validator.CanCheckInInPrinciple)
@@ -100,9 +97,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+        var (oldClaim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId); //TODO Specific right
         oldClaim.EnsureStatus(Claim.Status.CheckedIn);
 
         Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
@@ -177,7 +172,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         IReadOnlyDictionary<int, string?> fields)
     {
         var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(projectId));
 
         source.EnsureCanAddClaim(CurrentUserId);
 
@@ -241,8 +236,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-        var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
-            ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, ExtraAccessReason.Player);
 
         SetDiscussed(claim, isVisibleToPlayer);
 
@@ -307,8 +301,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task ApproveByMaster(int projectId, int claimId, string commentText)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(projectId, claimId);
 
         if (claim.ClaimStatus == Claim.Status.CheckedIn)
         {
@@ -471,7 +464,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText, bool deleteCharacter)
     {
-        var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
+        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
 
         var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
 
@@ -694,13 +687,8 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-        if (claim == null)
-        {
-            throw new DbEntityValidationException();
-        }
+        var (claim, _) = await LoadClaimAsMaster(new(projectId), claimId, acl => false, ExtraAccessReason.Player);
 
-        _ = claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
         claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
         claim.PlayerDeclinedDate = Now;
@@ -733,7 +721,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
-        var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
 
         claim.EnsureCanChangeStatus(Claim.Status.AddedByUser);
         claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
@@ -775,7 +763,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId, int? characterId)
     {
-        var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
         var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
         //Grab subscribtions before change
@@ -870,8 +858,8 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
     {
-        var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-        _ = claim.RequestMasterAccess(currentUserId);
+        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
+
         _ = claim.RequestMasterAccess(responsibleMasterId);
 
         if (responsibleMasterId == claim.ResponsibleMasterUserId)
@@ -893,22 +881,16 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         await EmailService.Email(email);
     }
 
-    private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
+    private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-
-        return claim.RequestAccess(currentUserId,
-            acl => acl.CanManageClaims,
-            ExtraAccessReason.ResponsibleMaster);
+        return await LoadClaimAsMaster(new(projectId), claimId, acl => acl.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 
     public async Task SaveFieldsFromClaim(int projectId,
-        int characterId,
+        int claimId,
         IReadOnlyDictionary<int, string?> newFieldValue)
     {
-        //TODO: Prevent lazy load here - use repository
-        var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, ExtraAccessReason.Player);
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue);
         if (updatedFields.Any(f => f.Field.FieldBoundTo == FieldBoundTo.Character) && claim.Character != null)
@@ -926,7 +908,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     public async Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents)
     {
 
-        var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
         MarkCharacterChangedIfApproved(claim);
         claim.ChangeStatusWithCheck(Claim.Status.OnHold);
 
@@ -951,7 +933,6 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     private readonly FieldSaveHelper fieldSaveHelper;
     private readonly IAccommodationInviteService _accommodationInviteService;
     private readonly IPlotService plotService;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
     private readonly IProblemValidator<Claim> claimValidator;
 
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
@@ -959,12 +940,12 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         IAccommodationInviteService accommodationInviteService,
         ICurrentUserAccessor currentUserAccessor,
         IPlotService plotService,
-        IProjectMetadataRepository projectMetadataRepository, IProblemValidator<Claim> claimValidator) : base(unitOfWork, emailService, currentUserAccessor)
+        IProjectMetadataRepository projectMetadataRepository,
+        IProblemValidator<Claim> claimValidator) : base(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository)
     {
         this.fieldSaveHelper = fieldSaveHelper;
         _accommodationInviteService = accommodationInviteService;
         this.plotService = plotService;
-        this.projectMetadataRepository = projectMetadataRepository;
         this.claimValidator = claimValidator;
     }
 
