@@ -14,17 +14,21 @@ namespace JoinRpg.Web.Controllers.XGameApi;
 [Route("x-game-api/{projectId}/characters"), XGameMasterAuthorize()]
 public class CharacterApiController : XGameApiController
 {
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private ICharacterRepository CharacterRepository { get; }
     private ICharacterService CharacterService { get; }
 
     public CharacterApiController(
         IProjectRepository projectRepository,
         ICharacterRepository characterRepository,
-        ICharacterService characterService
+        ICharacterService characterService,
+        IProjectMetadataRepository projectMetadataRepository
         ) : base(projectRepository)
     {
         CharacterRepository = characterRepository;
         CharacterService = characterService;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     /// <summary>
@@ -58,6 +62,7 @@ public class CharacterApiController : XGameApiController
     {
         var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
         var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return
             new CharacterInfo
             {
@@ -68,7 +73,7 @@ public class CharacterApiController : XGameApiController
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
                 Groups = ToGroupHeaders(character.DirectGroups),
                 AllGroups = ToGroupHeaders(character.AllGroups),
-                Fields = character.GetFields(project).Where(field => field.HasViewableValue)
+                Fields = character.GetFields(projectInfo, project).Where(field => field.HasViewableValue)
                     .Select(field => new FieldValue
                     {
                         ProjectFieldId = field.Field.ProjectFieldId,

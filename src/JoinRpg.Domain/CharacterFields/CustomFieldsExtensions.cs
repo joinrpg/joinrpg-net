@@ -58,7 +58,7 @@ public static class CustomFieldsExtensions
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character, ProjectInfo projectInfo)
         => GetFieldsForContainers(character.Project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
-    public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, Project project)
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, ProjectInfo projectInfo, Project project)
     => GetFieldsForContainers(project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim, ProjectInfo projectInfo)
