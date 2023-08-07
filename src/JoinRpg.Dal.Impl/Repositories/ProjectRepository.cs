@@ -310,13 +310,16 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
             DescriptionField: ProjectFieldIdentification.FromOptional(projectId, project.Details.CharacterDescription?.ProjectFieldId)
             );
 
+        var financeSettings = new ProjectFinanceSettings(project.Details.PreferentialFeeEnabled);
 
         return new ProjectInfo(
             projectId,
             project.ProjectName,
             project.Details.FieldsOrdering,
             CreateFields(project, fieldSettings).ToList(),
-            fieldSettings);
+            fieldSettings,
+            financeSettings,
+            project.Details.EnableAccommodation);
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
         {
