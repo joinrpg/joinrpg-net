@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using JetBrains.Annotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -23,12 +24,12 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         IVirtualUsersService vpu,
-        ICurrentUserAccessor currentUserAccessor
-        ) : base(unitOfWork, emailService, currentUserAccessor) => _vpu = vpu;
+        ICurrentUserAccessor currentUserAccessor,
+        IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository) => _vpu = vpu;
 
     public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
-        var claim = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
+        var (claim, _) = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
         var paymentType =
             claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == request.PaymentTypeId);
 
@@ -234,9 +235,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task ChangeFee(int projectId, int claimId, int feeValue)
     {
-        var claim = (await ClaimsRepository.GetClaim(projectId, claimId))
-
-            .RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+        var (claim, _) = await LoadClaimAsMaster(new(projectId), claimId, acl => acl.CanManageMoney);
 
         _ = AddCommentImpl(claim,
             null,
@@ -272,7 +271,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task MarkPreferential(MarkPreferentialRequest request)
     {
-        var claim = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
+        var (claim, _) = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
 
         claim.PreferentialFeeUser = request.Preferential;
         await UnitOfWork.SaveChangesAsync();
@@ -280,7 +279,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request)
     {
-        var claim = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
 
         CheckOperationDate(request.OperationDate);
 
@@ -379,23 +378,10 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
         // Loading source claim
-        Claim claimFrom = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
-        if (claimFrom == null)
-        {
-            throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
-        }
-
-        if (!claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
-        {
-            throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
-        }
+        var (claimFrom, projectInfo) = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
 
         // Loading destination claim
-        Claim claimTo = await ClaimsRepository.GetClaim(request.ProjectId, request.ToClaimId);
-        if (claimTo == null)
-        {
-            throw new JoinRpgEntityNotFoundException(request.ToClaimId, nameof(Claim));
-        }
+        var (claimTo, _) = await LoadClaimAsMaster(request);
 
         // Checking money amount
         var availableMoney = claimFrom.GetPaymentSum();

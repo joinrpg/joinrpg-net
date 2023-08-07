@@ -1,9 +1,12 @@
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -11,12 +14,17 @@ namespace JoinRpg.Services.Impl;
 
 public abstract class ClaimImplBase : DbServiceImplBase
 {
+    protected IProjectMetadataRepository ProjectMetadataRepository { get; }
+
     protected IEmailService EmailService { get; }
 
-    protected ClaimImplBase(IUnitOfWork unitOfWork, IEmailService emailService,
-      ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
+    protected ClaimImplBase(IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        ICurrentUserAccessor currentUserAccessor,
+        IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, currentUserAccessor)
     {
         EmailService = emailService;
+        ProjectMetadataRepository = projectMetadataRepository;
     }
 
     protected Comment AddCommentImpl(Claim claim,
@@ -38,6 +46,8 @@ public abstract class ClaimImplBase : DbServiceImplBase
     protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int feeChange,
     int money, PaymentType paymentType, Claim claim)
     {
+
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
         _ = paymentType.EnsureActive();
 
         CheckOperationDate(operationDate);
@@ -115,15 +125,22 @@ public abstract class ClaimImplBase : DbServiceImplBase
         }
     }
 
-    protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
+    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
+        => LoadClaimAsMaster(request.ProjectIdentification, request.ClaimId, accessType, reason);
+
+    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, ExtraAccessReason reason = ExtraAccessReason.None)
+        => LoadClaimAsMaster(projectId, claimId, acl => true, reason);
+
+    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, ExtraAccessReason reason = ExtraAccessReason.None) => LoadClaimAsMaster(request, acl => true, reason);
+
+
+    protected async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
     {
-        var claim = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
+        var claim = await ClaimsRepository.GetClaim(projectId.Value, claimId);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(projectId);
 
-        return claim.RequestAccess(CurrentUserId, accessType, reason);
+        return (claim.RequestAccess(CurrentUserId, accessType, reason), projectInfo);
     }
-
-    protected Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, ExtraAccessReason reason = ExtraAccessReason.None) => LoadClaimAsMaster(request, acl => true, reason);
-
 
     protected async Task<TEmail> CreateClaimEmail<TEmail>(
         [NotNull] Claim claim,
