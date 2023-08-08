@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Mvc;

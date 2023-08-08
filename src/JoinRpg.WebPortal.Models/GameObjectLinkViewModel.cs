@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models;

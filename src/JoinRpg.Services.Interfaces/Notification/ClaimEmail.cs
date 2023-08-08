@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Notification;
 

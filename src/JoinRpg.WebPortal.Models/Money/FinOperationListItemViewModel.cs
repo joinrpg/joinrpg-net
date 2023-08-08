@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models;

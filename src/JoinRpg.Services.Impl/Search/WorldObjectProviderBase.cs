@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Impl.Search;
 

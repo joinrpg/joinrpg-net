@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.PrimitiveTypes;
 
 // TODO add unit test to ensure that everything covered
 public enum LinkType
@@ -13,12 +13,4 @@ public enum LinkType
     CommentDiscussion,
     PaymentSuccess,
     PaymentFail,
-}
-
-public interface ILinkable
-{
-    LinkType LinkType { get; }
-
-    string Identification { get; }
-    int? ProjectId { get; }
 }
