@@ -332,7 +332,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost]
     [MasterAuthorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
+    public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
     {
         var claim = await _claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
@@ -347,7 +347,7 @@ public class ClaimController : ControllerGameBase
                 return await ShowClaim(claim);
             }
             await
-              _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+              _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
 
             return ReturnToClaim(projectId, claimId);
         }
