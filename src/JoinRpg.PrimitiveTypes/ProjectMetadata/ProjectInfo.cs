@@ -14,13 +14,17 @@ public record class ProjectInfo
     public ProjectFieldInfo? CharacterDescriptionField { get; }
 
     public ProjectFieldSettings ProjectFieldSettings { get; }
+    public ProjectFinanceSettings ProjectFinanceSettings { get; }
+    public bool AccomodationEnabled { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
         string projectName,
         string ordering,
         IReadOnlyCollection<ProjectFieldInfo> fields,
-        ProjectFieldSettings projectFieldSettings
+        ProjectFieldSettings projectFieldSettings,
+        ProjectFinanceSettings projectFinanceSettings,
+        bool accomodationEnabled
         )
     {
         UnsortedFields = fields;
@@ -28,7 +32,8 @@ public record class ProjectInfo
         ProjectName = projectName;
         container = VirtualOrderContainerFacade.CreateLazy(fields, ordering);
         ProjectFieldSettings = projectFieldSettings;
-
+        ProjectFinanceSettings = projectFinanceSettings;
+        AccomodationEnabled = accomodationEnabled;
         if (projectFieldSettings.NameField is ProjectFieldIdentification nameField)
         {
             CharacterNameField = GetFieldById(nameField);
