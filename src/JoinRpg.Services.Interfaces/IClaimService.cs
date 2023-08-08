@@ -20,8 +20,7 @@ public interface IClaimService
 
     Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
 
-    Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
-      int? characterId);
+    Task MoveByMaster(int projectId, int claimId, string contents, int characterId);
 
     Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId);
 
@@ -49,8 +48,6 @@ public interface IClaimService
     Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId);
 
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
-
-
 }
 
 public enum FinanceOperationAction

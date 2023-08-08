@@ -761,10 +761,10 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         await EmailService.Email(email);
     }
 
-    public async Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId, int? characterId)
+    public async Task MoveByMaster(int projectId, int claimId, string contents, int characterId)
     {
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
-        var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
+        var source = (Character)await ProjectRepository.GetClaimSource(projectId, null, characterId);
 
         //Grab subscribtions before change
         var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
@@ -777,22 +777,17 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         {
             claim.Character.ApprovedClaim = null;
         }
-        claim.CharacterGroupId = characterGroupId;
+        claim.CharacterGroupId = null;
         claim.CharacterId = characterId;
-        claim.Group = source as CharacterGroup; //That fields is required later
-        claim.Character = source as Character; //That fields is required later
+        claim.Group = null;
+        claim.Character = source; //That fields is required later
 
-        if (claim.Character != null && claim.IsApproved)
+        if (claim.IsApproved)
         {
             claim.Character.ApprovedClaim = claim;
         }
 
         MarkCharacterChangedIfApproved(claim); // after move
-
-        if (claim.IsApproved && claim.CharacterId == null)
-        {
-            throw new DbEntityValidationException();
-        }
 
         var email =
           await

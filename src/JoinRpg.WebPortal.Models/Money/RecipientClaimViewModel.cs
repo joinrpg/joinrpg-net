@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -15,6 +16,7 @@ public class RecipientClaimViewModel : JoinSelectListItem
 
     public string Status { get; }
 
+    [SetsRequiredMembers]
     public RecipientClaimViewModel(Claim source)
     {
         ClaimId = source.ClaimId;
