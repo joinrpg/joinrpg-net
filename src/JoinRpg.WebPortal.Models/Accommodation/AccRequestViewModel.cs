@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Models.Accommodation;
@@ -39,13 +40,13 @@ public class AccRequestViewModel
     public string PaymentStatusTitle
         => FeeToPay > 0 ? $@"Не оплачено {FeeToPay} из {FeeTotal}" : "Все оплачено полностью";
 
-    public AccRequestViewModel(AccommodationRequest entity)
+    public AccRequestViewModel(AccommodationRequest entity, ProjectInfo projectInfo)
     {
         Id = entity.Id;
         ProjectId = entity.ProjectId;
         AccommodationTypeId = entity.AccommodationTypeId;
         RoomId = entity.AccommodationId ?? 0;
-        Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c)).ToList();
+        Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c, projectInfo)).ToList();
         FeeTotal = Participants.Sum(p => p.FeeTotal);
         FeeToPay = Participants.Sum(p => p.FeeToPay);
         FeeToPay = FeeToPay > 0 ? FeeToPay : 0; // if FeeToPay < 0 we have overpaid
@@ -67,13 +68,13 @@ public class RequestParticipantViewModel
     public string UserName
         => User?.GetDisplayName() ?? "";
 
-    public RequestParticipantViewModel(Claim claim)
+    public RequestParticipantViewModel(Claim claim, ProjectInfo projectInfo)
     {
         ClaimId = claim.ClaimId;
         Claim = claim;
         UserId = claim.PlayerUserId;
         User = claim.Player;
-        FeeTotal = Claim.ClaimTotalFee();
-        FeeToPay = Claim.ClaimFeeDue();
+        FeeTotal = Claim.ClaimTotalFee(projectInfo);
+        FeeToPay = Claim.ClaimFeeDue(projectInfo);
     }
 }

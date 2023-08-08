@@ -8,7 +8,7 @@ internal class FieldNotSetFilterClaim : FieldNotSetFilterBase, IProblemFilter<Cl
     #region Implementation of IProblemFilter<in Claim>
     public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
     {
-        var projectFields = claim.GetFields();
+        var projectFields = claim.GetFields(projectInfo);
 
         return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
     }

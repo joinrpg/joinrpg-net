@@ -8,10 +8,12 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
 
     public SaveToClaimOnlyStrategy(Claim claim,
         int currentUserId,
-        IFieldDefaultValueGenerator generator) : base(claim,
+        IFieldDefaultValueGenerator generator,
+        PrimitiveTypes.ProjectMetadata.ProjectInfo projectInfo) : base(claim,
         character: null,
         currentUserId,
-        generator)
+        generator,
+        projectInfo)
     {
     }
 
@@ -26,5 +28,5 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
         //Do nothing player could not change character yet
     }
 
-    public override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields();
+    public override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields(ProjectInfo);
 }

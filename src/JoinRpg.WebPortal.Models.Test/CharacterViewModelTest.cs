@@ -14,7 +14,7 @@ public class CharacterViewModelTest
     public void AddCharacterViewModelHaveSimpleFields()
     {
         var field = _mock.CreateField(new ProjectField());
-        var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId);
+        var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId, _mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
 
         _ = fieldView.ShouldNotBeNull();
@@ -28,7 +28,7 @@ public class CharacterViewModelTest
     public void AddCharacterViewModelWithConditionalField()
     {
         var field = _mock.CreateConditionalField(new ProjectField(), _mock.Group);
-        var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId);
+        var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId, _mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
 
         _ = fieldView.ShouldNotBeNull();
@@ -44,7 +44,7 @@ public class CharacterViewModelTest
         var field = _mock.CreateConditionalField(new ProjectField(), _mock.Group);
 
         var groupForClaim = _mock.CreateCharacterGroup(new CharacterGroup());
-        var vm = new AddCharacterViewModel().Fill(groupForClaim, _mock.Master.UserId);
+        var vm = new AddCharacterViewModel().Fill(groupForClaim, _mock.Master.UserId, _mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
 
         _ = fieldView.ShouldNotBeNull();

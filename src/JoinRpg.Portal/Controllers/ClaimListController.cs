@@ -9,6 +9,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.ClaimList;
@@ -67,7 +68,7 @@ public class ClaimListController : Common.ControllerGameBase
         }
         else
         {
-            var view = new ClaimListForExportViewModel(CurrentUserId, claims);
+            var view = new ClaimListForExportViewModel(CurrentUserId, claims, projectInfo);
 #pragma warning disable CS0612 // Type or member is obsolete
             var project = await GetProjectFromList(projectId, claims);
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -117,8 +118,9 @@ public class ClaimListController : Common.ControllerGameBase
             return NotFound();
         }
 
-        var exportType = ExportTypeNameParserHelper.ToExportType(export);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(characterGroup.ProjectId));
+
+        var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
         if (exportType == null)
         {
@@ -130,7 +132,7 @@ public class ClaimListController : Common.ControllerGameBase
         }
         else
         {
-            var view = new ClaimListForExportViewModel(CurrentUserId, claims);
+            var view = new ClaimListForExportViewModel(CurrentUserId, claims, projectInfo);
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
                         new ClaimListItemViewModelExporter(characterGroup.Project, UriService),
@@ -255,9 +257,11 @@ public class ClaimListController : Common.ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> WaitingForFee(int projectid, string export)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+
         var claims =
             (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved))
-            .Where(claim => !claim.ClaimPaidInFull())
+            .Where(claim => !claim.ClaimPaidInFull(projectInfo))
             .ToList();
 
         return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", claims, ClaimStatusSpec.Approved);
@@ -312,7 +316,7 @@ public class ClaimListController : Common.ControllerGameBase
         {
             var viewModel = new ClaimListForExportViewModel(
                 CurrentUserId,
-                claims);
+                claims.Select(c => (c, projectInfos.Single(pi => pi.ProjectId.Value == c.ProjectId))).ToList());
             return ExportWithCustomFrontend(
                 viewModel.Items,
                 title,
@@ -351,7 +355,9 @@ public class ClaimListController : Common.ControllerGameBase
     {
         var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
         var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
-        return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, claims.Where(c => c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+
+        return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, claims.Where(c => c.GetFields(projectInfo).Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
                 .ToList(),
                 ClaimStatusSpec.Active
         );
@@ -362,7 +368,8 @@ public class ClaimListController : Common.ControllerGameBase
     {
         var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
         var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
-        return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.FieldName, claims.Where(c => !c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+        return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.FieldName, claims.Where(c => !c.GetFields(projectInfo).Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
                 .ToList(),
                 ClaimStatusSpec.Active
         );

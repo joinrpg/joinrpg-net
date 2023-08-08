@@ -15,14 +15,14 @@ public class AddClaimViewModelTest
     [Fact]
     public void AddClaimAllowedCharacter()
     {
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
     }
 
     [Fact]
     public void AddClaimAllowedGroup()
     {
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
     }
 
@@ -31,7 +31,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimIfProjectDisabled()
     {
         Mock.Project.IsAcceptingClaims = false;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeTrue();
 
@@ -41,7 +41,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimToNPC()
     {
         Mock.Character.CharacterType = PrimitiveTypes.CharacterType.NonPlayer;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -51,7 +51,7 @@ public class AddClaimViewModelTest
     {
         Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = null;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -60,7 +60,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimToNotAvailGroup()
     {
         Mock.Group.HaveDirectSlots = false;
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -70,7 +70,7 @@ public class AddClaimViewModelTest
     {
         Mock.Group.HaveDirectSlots = true;
         Mock.Group.AvaiableDirectSlots = 0;
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -80,7 +80,7 @@ public class AddClaimViewModelTest
     {
         Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = 0;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -89,7 +89,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimToSameGroup()
     {
         _ = Mock.CreateClaim(Mock.Group, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -99,7 +99,7 @@ public class AddClaimViewModelTest
     {
         Mock.Project.Details.EnableManyCharacters = true;
         _ = Mock.CreateClaim(Mock.Group, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -108,7 +108,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimToSameCharacter()
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -118,7 +118,7 @@ public class AddClaimViewModelTest
     {
         Mock.Project.Details.EnableManyCharacters = true;
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -127,7 +127,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimIfHasApproved()
     {
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -137,7 +137,7 @@ public class AddClaimViewModelTest
     {
         Mock.Project.Details.EnableManyCharacters = true;
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -147,7 +147,7 @@ public class AddClaimViewModelTest
     public void AllowSendClaimEvenIfHasAnotherNotApproved()
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
         vm.ValidationStatus.ShouldContain(AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace);
@@ -160,7 +160,7 @@ public class AddClaimViewModelTest
         var value = new FieldWithValue(field, "xxx");
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
         _ = fieldView.ShouldNotBeNull();
         fieldView.ShouldBeVisible();
@@ -175,7 +175,7 @@ public class AddClaimViewModelTest
         var value = new FieldWithValue(field, "xxx");
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
         _ = fieldView.ShouldNotBeNull();
         fieldView.ShouldBeHidden();

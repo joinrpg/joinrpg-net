@@ -152,7 +152,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         // ReSharper disable once UnusedVariable TODO decide if we should send email if FieldDefaultValueGenerator changes something
         var updatedFields =
-          fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>());
+          fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -211,7 +211,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields);
+        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
 
         var claimEmail = await CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
           CommentExtraAction.NewClaim);
@@ -251,7 +251,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
             {
                 throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
             }
-            extraAction = PerformFinanceOperation(financeAction, parentComment, claim);
+            extraAction = PerformFinanceOperation(financeAction, parentComment, claim, projectInfo);
             predicate = s => s.Comments || s.MoneyOperation;
         }
 
@@ -265,7 +265,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     }
 
     private CommentExtraAction? PerformFinanceOperation(FinanceOperationAction financeAction,
-      Comment parentComment, Claim claim)
+      Comment parentComment, Claim claim, ProjectInfo projectInfo)
     {
         var finance = parentComment?.Finance;
         if (finance == null)
@@ -288,7 +288,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
                 {
                     claim.PreferentialFeeUser = true;
                 }
-                claim.UpdateClaimFeeIfRequired(finance.OperationDate);
+                claim.UpdateClaimFeeIfRequired(finance.OperationDate, projectInfo);
                 return CommentExtraAction.ApproveFinance;
             case FinanceOperationAction.Decline:
                 finance.State = FinanceOperationState.Declined;
@@ -354,7 +354,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         // 2. M.b. we need to move some field values from Claim to Characters
         // 3. (2) Could activate changing of special groups
         // ReSharper disable once MustUseReturnValue we don't need send email here
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>());
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -892,7 +892,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, ExtraAccessReason.Player);
 
-        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue);
+        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue, projectInfo);
         if (updatedFields.Any(f => f.Field.FieldBoundTo == FieldBoundTo.Character) && claim.Character != null)
         {
             MarkChanged(claim.Character);

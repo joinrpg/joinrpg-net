@@ -1,12 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Characters;
 
 public class AddCharacterViewModel : CharacterViewModelBase
 {
-    public AddCharacterViewModel Fill(CharacterGroup characterGroup, int currentUserId)
+    public AddCharacterViewModel Fill(CharacterGroup characterGroup, int currentUserId, ProjectInfo projectInfo)
     {
         ProjectId = characterGroup.ProjectId;
         CharacterTypeInfo = CharacterTypeInfo.Default();
@@ -16,7 +17,7 @@ public class AddCharacterViewModel : CharacterViewModelBase
             ProjectId = ProjectId,
             IsAcceptingClaims = true,
             ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
-        }, currentUserId);
+        }, currentUserId, projectInfo);
         return this;
     }
 

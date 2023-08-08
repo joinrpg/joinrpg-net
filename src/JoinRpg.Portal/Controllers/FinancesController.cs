@@ -31,6 +31,8 @@ public class FinancesController : ControllerGameBase
     private IVirtualUsersService VirtualUsers { get; }
     public ICurrentUserAccessor CurrentUserAccessor { get; }
     private readonly ILogger<FinancesController> logger;
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private IUnitOfWork UnitOfWork { get; }
 
     public FinancesController(
@@ -44,7 +46,8 @@ public class FinancesController : ControllerGameBase
         IUserRepository userRepository,
         IVirtualUsersService vpu,
         ICurrentUserAccessor currentUserAccessor,
-        ILogger<FinancesController> logger
+        ILogger<FinancesController> logger,
+        IProjectMetadataRepository projectMetadataRepository
         )
         : base(projectRepository, projectService, userRepository)
     {
@@ -56,6 +59,7 @@ public class FinancesController : ControllerGameBase
         UnitOfWork = uow;
         CurrentUserAccessor = currentUserAccessor;
         this.logger = logger;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     [HttpGet]
@@ -363,6 +367,8 @@ public class FinancesController : ControllerGameBase
     [ActionName("unfixed-list")]
     public async Task<ActionResult> ListUnfixedPayments(int projectId)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
         Project project = await UnitOfWork.GetDbSet<Project>()
             .Include(p => p.ProjectFeeSettings)
             .Include(p => p.ProjectFields)
@@ -380,7 +386,7 @@ public class FinancesController : ControllerGameBase
         {
             _ = s.AppendLine($"{claim.ClaimId,10}" +
                 $" {claim.ClaimBalance(),10}" +
-                $" {claim.ClaimTotalFee(),10}");
+                $" {claim.ClaimTotalFee(projectInfo),10}");
         }
 
         return Content(s.ToString(), "text/plain", Encoding.ASCII);
@@ -391,6 +397,8 @@ public class FinancesController : ControllerGameBase
     [ActionName("unfixed-fix")]
     public async Task<ActionResult> FixUnfixedPayments(int projectId)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
         Project project = await UnitOfWork.GetDbSet<Project>()
             .Include(p => p.ProjectFeeSettings)
             .Include(p => p.ProjectFields)
@@ -404,7 +412,7 @@ public class FinancesController : ControllerGameBase
         DateTime now = DateTime.UtcNow;
         foreach (Claim claim in claims)
         {
-            claim.UpdateClaimFeeIfRequired(now);
+            claim.UpdateClaimFeeIfRequired(now, projectInfo);
         }
 
         await UnitOfWork.SaveChangesAsync();

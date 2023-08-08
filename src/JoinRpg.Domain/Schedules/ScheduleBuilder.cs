@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Schedules;
 
@@ -8,15 +9,18 @@ namespace JoinRpg.Domain.Schedules;
 public class ScheduleBuilder
 {
     private readonly ICollection<Character> characters;
+    private readonly ProjectInfo projectInfo;
+
     private ProjectField TimeSlotField { get; }
 
     private ProjectField RoomField { get; }
 
-    public ScheduleBuilder(Project project, ICollection<Character> characters)
+    public ScheduleBuilder(Project project, ICollection<Character> characters, ProjectInfo projectInfo)
     {
         this.characters = characters.Where(ch => ch.IsActive).ToList();
         RoomField = project.GetRoomFieldOrDefault() ?? throw new Exception("Schedule not enabled");
         TimeSlotField = project.GetTimeSlotFieldOrDefault() ?? throw new Exception("Schedule not enabled");
+        this.projectInfo = projectInfo;
     }
 
     private HashSet<ProgramItem> NotScheduled { get; } = new HashSet<ProgramItem>();
@@ -98,7 +102,7 @@ public class ScheduleBuilder
 
     private List<ProgramItemSlot> SelectSlots(ProgramItem programItem, Character character)
     {
-        var fields = character.GetFields();
+        var fields = character.GetFields(projectInfo);
 
         List<int> GetSlotIndexes(ProjectField field, IEnumerable<ScheduleItemAttribute> items)
         {

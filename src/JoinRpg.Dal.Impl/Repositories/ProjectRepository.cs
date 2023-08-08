@@ -305,6 +305,12 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
     {
         var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
+        return CreateInfoFromProject(project, projectId);
+    }
+
+    // This is internal to allow usage in tests
+    internal static ProjectInfo CreateInfoFromProject(Project project, ProjectIdentification projectId)
+    {
         var fieldSettings = new ProjectFieldSettings(
             NameField: ProjectFieldIdentification.FromOptional(projectId, project.Details.CharacterNameField?.ProjectFieldId),
             DescriptionField: ProjectFieldIdentification.FromOptional(projectId, project.Details.CharacterDescription?.ProjectFieldId)

@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.XGameApi.Contract;
@@ -14,17 +15,21 @@ namespace JoinRpg.Web.Controllers.XGameApi;
 [Route("x-game-api/{projectId}/characters"), XGameMasterAuthorize()]
 public class CharacterApiController : XGameApiController
 {
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private ICharacterRepository CharacterRepository { get; }
     private ICharacterService CharacterService { get; }
 
     public CharacterApiController(
         IProjectRepository projectRepository,
         ICharacterRepository characterRepository,
-        ICharacterService characterService
+        ICharacterService characterService,
+        IProjectMetadataRepository projectMetadataRepository
         ) : base(projectRepository)
     {
         CharacterRepository = characterRepository;
         CharacterService = characterService;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     /// <summary>
@@ -58,6 +63,7 @@ public class CharacterApiController : XGameApiController
     {
         var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
         var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return
             new CharacterInfo
             {
@@ -68,7 +74,7 @@ public class CharacterApiController : XGameApiController
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
                 Groups = ToGroupHeaders(character.DirectGroups),
                 AllGroups = ToGroupHeaders(character.AllGroups),
-                Fields = character.GetFields(project).Where(field => field.HasViewableValue)
+                Fields = character.GetFields(projectInfo, project).Where(field => field.HasViewableValue)
                     .Select(field => new FieldValue
                     {
                         ProjectFieldId = field.Field.ProjectFieldId,
@@ -81,7 +87,7 @@ public class CharacterApiController : XGameApiController
 #pragma warning restore CS0612 // Type or member is obsolete
                 CharacterName = character.Name,
                 PlayerInfo = character.ApprovedClaim is null ? null :
-                    CreatePlayerInfo(character.ApprovedClaim),
+                    CreatePlayerInfo(character.ApprovedClaim, projectInfo),
             };
     }
 
@@ -115,11 +121,11 @@ public class CharacterApiController : XGameApiController
             .OrderBy(group => group.CharacterGroupId);
     }
 
-    private static CharacterPlayerInfo CreatePlayerInfo(Claim claim)
+    private static CharacterPlayerInfo CreatePlayerInfo(Claim claim, ProjectInfo projectInfo)
     {
         return new CharacterPlayerInfo(
                                     claim.PlayerUserId,
-                                    claim.ClaimFeeDue() <= 0,
+                                    claim.ClaimFeeDue(projectInfo) <= 0,
                                     new PlayerContacts(
                                         claim.Player.Email,
                                         claim.Player.Extra?.PhoneNumber,

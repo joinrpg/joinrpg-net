@@ -42,11 +42,9 @@ public class ProjectScheduleController : XGameApiController
             return Problem(detail: check.Select(x => x.ToString()).JoinStrings(" ,"), statusCode: 400);
         }
 
-        var characters = await ProjectRepository.GetCharacters(projectId);
+        var scheduleBuilder = await Manager.GetBuilder();
 
-        var scheduleBuilder = new ScheduleBuilder(project, characters);
-        var result = scheduleBuilder.Build().AllItems.Select(ToProgramItemInfoApi).ToList();
-        return result;
+        return scheduleBuilder.Build().AllItems.Select(ToProgramItemInfoApi).ToList();
     }
 
     private ProgramItemInfoApi ToProgramItemInfoApi(ProgramItemPlaced slot)

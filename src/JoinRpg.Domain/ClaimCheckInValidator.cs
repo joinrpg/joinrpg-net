@@ -18,7 +18,7 @@ public class ClaimCheckInValidator
         this.projectInfo = projectInfo;
     }
 
-    public int FeeDue => claim.ClaimFeeDue();
+    public int FeeDue => claim.ClaimFeeDue(projectInfo);
 
     public bool NotCheckedInAlready => claim.CheckInDate == null &&
                                        claim.ClaimStatus != Claim.Status.CheckedIn;

@@ -130,12 +130,17 @@ public class CharacterListController : ControllerGameBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    public async Task<ActionResult> ByAssignedField(int projectfieldId, int projectId, string export)
     {
-        var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
-        return await MasterCharacterList(projectid,
-          (character, projectInfo) => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
-          "Поле (проставлено): " + field.FieldName);
+        var projectIdentification = new ProjectIdentification(projectId);
+        var pi = await projectMetadataRepository.GetProjectMetadata(projectIdentification);
+        var field = pi.GetFieldById(new ProjectFieldIdentification(projectIdentification, projectfieldId));
+
+        return await MasterCharacterList(
+          projectId,
+          (character, projectInfo) => character.IsActive && character.GetFields(projectInfo).Single(f => f.Field.ProjectFieldId == projectfieldId).HasEditableValue,
+          export,
+          "Поле (проставлено): " + field.Name);
     }
 
     [HttpGet]

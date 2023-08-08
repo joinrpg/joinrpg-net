@@ -1,3 +1,4 @@
+using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -16,6 +17,8 @@ public class MockedProject
 
     public Character Character { get; }
     public Character CharacterWithoutGroup { get; }
+
+    public ProjectInfo ProjectInfo { get; }
 
     private static void FixProjectSubEntities(Project project1)
     {
@@ -125,6 +128,8 @@ public class MockedProject
         });
 
         Character.ParentCharacterGroupIds = new[] { Group.CharacterGroupId };
+
+        ProjectInfo = ProjectRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
 
     }
 

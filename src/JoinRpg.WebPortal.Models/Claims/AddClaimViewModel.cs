@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models;
 
@@ -39,13 +40,13 @@ public class AddClaimViewModel : IProjectIdAware
     [ReadOnly(true)]
     public CustomFieldsViewModel Fields { get; private set; }
 
-    public static AddClaimViewModel Create(Character character, int playerUserId)
-        => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, playerUserId);
+    public static AddClaimViewModel Create(Character character, int playerUserId, ProjectInfo projectInfo)
+        => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, playerUserId, projectInfo);
 
-    public static AddClaimViewModel Create(CharacterGroup group, int playerUserId)
-        => new AddClaimViewModel { CharacterGroupId = group.CharacterGroupId }.Fill(group, playerUserId);
+    public static AddClaimViewModel Create(CharacterGroup group, int playerUserId, ProjectInfo projectInfo)
+        => new AddClaimViewModel { CharacterGroupId = group.CharacterGroupId }.Fill(group, playerUserId, projectInfo);
 
-    public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId)
+    public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId, ProjectInfo projectInfo)
     {
         var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId)
             .Select(x => x.ToViewModel()).ToList();
@@ -79,7 +80,7 @@ public class AddClaimViewModel : IProjectIdAware
         TargetName = claimSource.Name;
         Description = claimSource.Description.ToHtmlString();
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
-        Fields = new CustomFieldsViewModel(playerUserId, claimSource);
+        Fields = new CustomFieldsViewModel(playerUserId, claimSource, projectInfo);
         IsRoot = claimSource.IsRoot;
         return this;
     }
