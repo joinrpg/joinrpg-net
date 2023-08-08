@@ -18,9 +18,9 @@ public interface IClaimService
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
     Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents);
 
-    Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
+    Task RestoreByMaster(int projectId, int claimId, string commentText, int characterId);
 
-    Task MoveByMaster(int projectId, int claimId, string contents, int characterId);
+    Task MoveByMaster(int projectId, int claimId, string commentText, int characterId);
 
     Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId);
 

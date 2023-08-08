@@ -719,43 +719,39 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
     }
 
 
-    public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
+    public async Task RestoreByMaster(int projectId, int claimId, string commentText, int characterId)
     {
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
+        var character = (Character)await ProjectRepository.GetClaimSource(projectId, null, characterId);
+
+        //Grab subscribtions before change
+        var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
+
 
         claim.EnsureCanChangeStatus(Claim.Status.AddedByUser);
         claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
         claim.ClaimDenialStatus = null;
         SetDiscussed(claim, true);
 
-        if (claim.Character?.ApprovedClaim is not null)
+        if (character.ApprovedClaim is not null)
         {
-            //Idea if character already has a claim, we moving it to "dont care for character, just game"
-            //TODO[Slot]: we need to change this to moving to some default slot or disable restoring this claims
-            claim.CharacterId = null;
-            claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
+            // Персонаж, куда мы пытаемся восстановить заявку, уже занят.
+            throw new ClaimTargetIsNotAcceptingClaims();
         }
-        else if (claim.Character != null)
-        {
-            //Ensure that character is active
-            claim.Character.IsActive = true;
-            MarkChanged(claim.Character);
-        }
-        else if (claim.Group is not null)
-        {
-            //Ensure that group is active
-            //TODO[Slot]: remove this
-            claim.Group.IsActive = true;
-        }
-        else
-        {
-            throw new Exception("This should not happen");
-        }
+
+        claim.Character = character;
+        claim.CharacterId = characterId;
+        claim.Group = null;
+        claim.CharacterGroupId = null;
+
+        //Ensure that character is active
+        claim.Character.IsActive = true;
+        MarkChanged(claim.Character);
 
         var email =
           await
             AddCommentWithEmail<RestoreByMasterEmail>(commentText, claim, true,
-              s => s.ClaimStatusChange, null, CommentExtraAction.RestoreByMaster);
+              s => s.ClaimStatusChange, null, CommentExtraAction.RestoreByMaster, extraSubscriptions: subscribe);
 
         await UnitOfWork.SaveChangesAsync();
         await EmailService.Email(email);

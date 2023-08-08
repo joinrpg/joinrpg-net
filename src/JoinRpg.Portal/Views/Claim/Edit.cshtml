@@ -342,15 +342,20 @@ new { Model.ProjectId, Model.Player.UserId }, null).
                 <div class="alert alert-warning">
                   На этого персонажа есть другие утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
 new { Model.CharacterId, Model.ProjectId }, null)
-                  При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
+                  Вам необходимо выбрать, куда перенести эту заявку.
                 </div>
+                            @await Html.PartialAsync("AvailClaimTargetsPartial", Model.PotentialCharactersToMove)
               }
-              @if (Model.CharacterActive == false)
+              else
               {
-                <div class="alert alert-info">
-                  Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
-                </div>
-              }
+                if (Model.CharacterActive == false)
+                {
+                  <div class="alert alert-info">
+                    Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
+                  </div>
+                }
+                @Html.HiddenFor(model => model.CharacterId)
+              }       
               @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
               {
               ActionName = "Восстановить заявку"
