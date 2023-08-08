@@ -1,4 +1,4 @@
-﻿using JoinRpg.DataModel;
+using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -15,8 +15,6 @@ public class CharacterGroupLinkViewModel : ILinkable
     public int ProjectId { get; }
     public bool IsActive { get; }
 
-    public bool IsRoot { get; }
-
     public CharacterGroupLinkViewModel(CharacterGroup group)
     {
         CharacterGroupId = group.CharacterGroupId;
@@ -24,6 +22,5 @@ public class CharacterGroupLinkViewModel : ILinkable
         IsPublic = group.IsPublic;
         ProjectId = group.ProjectId;
         IsActive = group.IsActive;
-        IsRoot = group.IsRoot;
     }
 }
