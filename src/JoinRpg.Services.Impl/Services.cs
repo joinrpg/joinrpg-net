@@ -19,7 +19,6 @@ public static class Services
         yield return typeof(AccommodationInviteServiceImpl);
         yield return typeof(AccommodationServiceImpl);
         yield return typeof(CharacterServiceImpl);
-        yield return typeof(AntiSpamServiceImpl);
         yield return typeof(GameSubscribeService);
         yield return typeof(RespMasterRuleService);
 
