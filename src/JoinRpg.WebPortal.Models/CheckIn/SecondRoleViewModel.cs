@@ -17,7 +17,7 @@ public class SecondRoleViewModel
           characters.Select(
             c => new CharacterListItemViewModel()
             {
-                Id = c.CharacterId.ToString(),
+                Id = c.CharacterId,
                 Name = c.CharacterName,
                 Master = ResponsibleMasterExtensions.GetResponsibleMasterOrDefault(c)?.GetDisplayName() ?? "нет",
             });
@@ -40,8 +40,8 @@ public class SecondRoleViewModel
 
     public class CharacterListItemViewModel
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Master { get; set; }
+        public int Id { get; set; }
+        public required string Name { get; set; }
+        public required string Master { get; set; }
     }
 }

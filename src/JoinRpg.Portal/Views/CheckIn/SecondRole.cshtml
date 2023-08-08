@@ -27,9 +27,9 @@
         
         @Html.SearchableDropdownFor(model => model.CharacterId, Model.Characters.Select(
           character =>
-            new ImprovedSelectListItem()
+            new JoinSelectListItem()
             {
-              Value = character.Id.ToString(),
+              Value = character.Id,
               Text = character.Name,
               Subtext = "<br /> Мастер: " + character.Master
             }))

@@ -2,13 +2,13 @@ namespace JoinRpg.Web.Models.CommonTypes;
 
 public class JoinSelectListItem
 {
-    public string ExtraSearch { get; set; }
-    public string Subtext { get; set; }
+    public string? ExtraSearch { get; set; }
+    public string? Subtext { get; set; }
 
     public bool Disabled { get; set; }
     public bool Selected { get; set; }
-    public string Text { get; set; }
-    public int Value { get; set; }
+    public required string Text { get; set; }
+    public required int Value { get; set; }
 }
 
 public static class JoinSelectListItemHelpers
@@ -28,9 +28,9 @@ public static class JoinSelectListItemHelpers
 [Obsolete("JoinSelectListItem")]
 public class ImprovedSelectListItem
 {
-    public string ExtraSearch { get; set; }
-    public string Subtext { get; set; }
+    public required string ExtraSearch { get; set; }
+    public required string Subtext { get; set; }
 
-    public string Text { get; set; }
-    public string Value { get; set; }
+    public required string Text { get; set; }
+    public required string Value { get; set; }
 }

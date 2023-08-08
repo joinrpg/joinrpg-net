@@ -39,17 +39,17 @@ public class CharacterGroupWithDescViewModel : CharacterGroupLinkViewModel
 
 public class CharacterTreeItem : CharacterGroupLinkViewModel, IEquatable<CharacterTreeItem>
 {
-    public int DeepLevel { get; set; }
+    public required int DeepLevel { get; set; }
 
-    public bool FirstCopy { get; set; }
+    public required bool FirstCopy { get; set; }
 
-    public IList<CharacterLinkViewModel> Characters { get; set; }
+    public required IList<CharacterLinkViewModel> Characters { get; set; }
 
-    public IEnumerable<CharacterTreeItem> ChildGroups { get; set; }
+    public required IEnumerable<CharacterTreeItem> ChildGroups { get; set; }
 
-    public IEnumerable<CharacterTreeItem> Path { get; set; }
+    public required IEnumerable<CharacterTreeItem> Path { get; set; }
 
-    public bool IsSpecial { get; set; }
+    public required bool IsSpecial { get; set; }
 
     public bool Equals(CharacterTreeItem? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
