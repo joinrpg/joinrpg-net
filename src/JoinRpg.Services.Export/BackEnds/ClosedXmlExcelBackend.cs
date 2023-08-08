@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
-using ClosedXML.Graphics;
 using JoinRpg.Services.Export.Internal;
 using JoinRpg.Services.Interfaces;
 
@@ -17,11 +16,6 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
 
     private int currentRowIndex = 1;
     private int maxUsedColumn = 1;
-
-    static ClosedXmlExcelBackend()
-    {
-        LoadOptions.DefaultGraphicEngine = new DefaultGraphicEngine(fallbackFont: "Liberation Sans");
-    }
 
     public ClosedXmlExcelBackend()
     {
