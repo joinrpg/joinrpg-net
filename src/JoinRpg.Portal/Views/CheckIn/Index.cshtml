@@ -15,9 +15,9 @@
 
   @Html.SearchableDropdownFor(model => model.ClaimId, Model.Claims.Select(
   claim =>
-  new ImprovedSelectListItem()
+  new JoinSelectListItem()
   {
-    Value = claim.ClaimId.ToString(),
+    Value = claim.ClaimId,
     Text = claim.CharacterName,
     ExtraSearch = claim.OtherNicks,
     Subtext = claim.NickName + " (" + claim.Fullname + " )"

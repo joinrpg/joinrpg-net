@@ -24,7 +24,7 @@ public class RecipientClaimViewModel : JoinSelectListItem
         Player = source.Player;
         Status = ((ClaimStatusView)source.ClaimStatus).GetDisplayName();
 
-        Text = $"{Name} ({Status}" + (Player != null ? $", {Player.GetDisplayName()}" : "") + ")";
+        Text = $"{Name} ({Status}, {Player.GetDisplayName()})";
         Value = ClaimId;
     }
 }

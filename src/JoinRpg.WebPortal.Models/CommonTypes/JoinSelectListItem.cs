@@ -28,9 +28,9 @@ public static class JoinSelectListItemHelpers
 [Obsolete("JoinSelectListItem")]
 public class ImprovedSelectListItem
 {
-    public string ExtraSearch { get; set; }
-    public string Subtext { get; set; }
+    public required string ExtraSearch { get; set; }
+    public required string Subtext { get; set; }
 
-    public string Text { get; set; }
-    public string Value { get; set; }
+    public required string Text { get; set; }
+    public required string Value { get; set; }
 }
