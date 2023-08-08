@@ -1,18 +1,19 @@
 using JoinRpg.DataModel;
-using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
 public class MenuViewModelBase
 {
+    // Constructed only in SetCommonMenuParameters and it's ensures that every member is set
     public int ProjectId { get; set; }
-    public string ProjectName { get; set; }
+    public string ProjectName { get; set; } = null!;
     public bool IsActive { get; set; }
     public bool IsAcceptingClaims { get; set; }
     public bool EnableAccommodation { get; set; }
     public int? RootGroupId { get; set; }
-    public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
+    public IEnumerable<CharacterGroupLinkSlimViewModel> BigGroups { get; set; } = null!;
     public bool IsAdmin { get; set; }
     public bool ShowSchedule { get; set; }
 }

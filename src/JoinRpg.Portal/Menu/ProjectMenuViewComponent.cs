@@ -5,6 +5,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,7 +59,7 @@ public class ProjectMenuViewComponent : ViewComponent
         //TODO[GroupsLoad]. If we not loaded groups already, that's slow
         menuModel.BigGroups = project.RootGroup.ChildGroups.Where(
                 cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(CurrentUserAccessor.UserIdOrDefault))
-            .Select(cg => new CharacterGroupLinkViewModel(cg)).ToList();
+            .Select(cg => new CharacterGroupLinkSlimViewModel(new(cg.ProjectId), cg.CharacterGroupId, cg.CharacterGroupName, cg.IsPublic, cg.IsActive)).ToList();
         menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
         menuModel.IsActive = project.Active;
         menuModel.RootGroupId = project.RootGroup.CharacterGroupId;

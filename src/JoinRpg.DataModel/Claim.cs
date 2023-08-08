@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.DataModel;
 

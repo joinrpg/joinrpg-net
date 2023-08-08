@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.Portal.Infrastructure.Authentication
+@using JoinRpg.Web.ProjectCommon;
 @model JoinRpg.Web.Models.MasterMenuViewModel
 
 <div class="navbar navbar-default">
@@ -55,7 +56,7 @@
                         }
                         @foreach (var cg in Model.BigGroups)
                             {
-                        <li>@Html.ActionLink(cg.Name, "Details", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                              <li>@(await Html.RenderComponentAsync<CharacterGroupLink>(RenderMode.Static, new {Model = cg})) </li>
                             }
                     </ul>
                 </li>
