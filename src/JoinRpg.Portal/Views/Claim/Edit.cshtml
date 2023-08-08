@@ -310,14 +310,9 @@ new { Model.ProjectId, Model.Player.UserId }, null).
               Если вы хотите изменить состав групп у <b>существующего</b> персонажа,
               <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)</b> его.
             </div>
-            ViewBag.ShowGroupsInAvailClaim = false;
-          }
-          else
-          {
-            ViewBag.ShowGroupsInAvailClaim = true;
           }
           <form asp-action="Move" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-            @await Html.PartialAsync("AvailClaimTargetsPartial", Model.Data)
+            @await Html.PartialAsync("AvailClaimTargetsPartial", Model.PotentialCharactersToMove)
             @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
             {
             ActionName = "Переместить заявку"

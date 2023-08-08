@@ -7,10 +7,12 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
@@ -67,7 +69,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
     public bool HasOtherApprovedClaim { get; }
 
     [ReadOnly(true)]
-    public IList<CharacterTreeItem> Data { get; }
+    public IList<JoinSelectListItem> PotentialCharactersToMove { get; }
 
     public bool HidePlayer => false;
 
@@ -153,7 +155,11 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
         OutgoingInvite = outgoingInvite;
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
-        Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
+        PotentialCharactersToMove = claim.Project.Characters
+            .Where(x => x.IsAvailable)
+            .Where(x => !claim.IsApproved || x.CharacterType != CharacterType.Slot)
+            .Select(ToJoinSelectListItem)
+            .ToList();
         OtherClaimsFromThisPlayerCount =
             OtherClaimsFromThisPlayerCount =
                 claim.IsApproved || claim.Project.Details.EnableManyCharacters
@@ -211,6 +217,15 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
         {
             Plot = PlotDisplayViewModel.Empty();
         }
+    }
+
+    private static JoinSelectListItem ToJoinSelectListItem(Character x)
+    {
+        return new JoinSelectListItem()
+        {
+            Value = x.CharacterId,
+            Text = x.CharacterName,
+        };
     }
 
     public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,

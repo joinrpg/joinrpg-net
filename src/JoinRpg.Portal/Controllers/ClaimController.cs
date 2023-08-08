@@ -407,13 +407,9 @@ public class ClaimController : ControllerGameBase
 
     }
 
-    /// <param name="projectId"></param>
-    /// <param name="claimId"></param>
-    /// <param name="viewModel"></param>
-    /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
     [MasterAuthorize()]
     [HttpPost]
-    public async Task<ActionResult> Move(int projectId, int claimId, ClaimOperationViewModel viewModel, string claimTarget)
+    public async Task<ActionResult> Move(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
     {
         var claim = await _claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
@@ -427,10 +423,8 @@ public class ClaimController : ControllerGameBase
             {
                 return await ShowClaim(claim);
             }
-            var characterGroupId = claimTarget.UnprefixNumber(CharacterAndGroupPrefixer.GroupFieldPrefix);
-            var characterId = claimTarget.UnprefixNumber(CharacterAndGroupPrefixer.CharFieldPrefix);
-            await
-              _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText, characterGroupId, characterId);
+
+            await _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
 
             return ReturnToClaim(projectId, claimId);
         }
