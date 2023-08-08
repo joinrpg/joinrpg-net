@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace JoinRpg.Web.Helpers;
 
 [UsedImplicitly]
-internal class UriServiceImpl : IUriService, IUriLocator<UserLinkViewModel>
+internal class UriServiceImpl : IUriService, IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
 {
     private readonly Lazy<IUrlHelper> urlHelper;
 
@@ -90,4 +91,6 @@ internal class UriServiceImpl : IUriService, IUriLocator<UserLinkViewModel>
     }
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
         new(CreateLink(LinkType.ResultUser, target.UserId.ToString(), projectId: null)!);
+    Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target) =>
+         new(CreateLink(LinkType.ResultCharacterGroup, target.CharacterGroupId.ToString(), projectId: target.ProjectId.Value)!);
 }

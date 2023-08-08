@@ -1,0 +1,10 @@
+﻿@inject IUriLocator<CharacterGroupLinkSlimViewModel> linkLocator
+<a href="@TargetUri">@Model.Name</a>
+
+@code {
+    // TODO Use IsPublic, IsActive
+    [Parameter] [EditorRequired]
+    public CharacterGroupLinkSlimViewModel Model { get; set; } = null!;
+
+    public Uri TargetUri => linkLocator.GetUri(Model);
+}
