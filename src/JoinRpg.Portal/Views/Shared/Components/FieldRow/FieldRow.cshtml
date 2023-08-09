@@ -10,17 +10,19 @@
             <br />
             @Html.DisplayFor(modelItem => item.FieldViewType)
             <br />
-            @Html.DisplayNameFor(model => item.FieldBoundTo)
-            @Html.DisplayFor(model => item.FieldBoundTo)
+            @if (item.FieldBoundTo == FieldBoundToViewModel.Claim)
+            {
+              <span class="label label-primary">Привязано к заявке</span>
+            }
         </td>
         <td>
             @if (item.IsPublic)
             {
-            <span class="label label-primary">Публичное</span>
+            <span class="label label-success">Публичное</span>
             }
             else if (item.CanPlayerView)
             {
-            <span class="label label-info">Игроку</span>
+            <span class="label label-info">Видно игроку</span>
             }
             else
             {
