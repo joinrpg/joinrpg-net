@@ -366,7 +366,7 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
                         variant.Price,
                         variant.PlayerSelectable,
                         variant.IsActive,
-                        variant.CharacterGroup.CharacterGroupId,
+                        variant.CharacterGroup?.CharacterGroupId,
                         variant.Description,
                         variant.MasterDescription,
                         variant.ProgrammaticValue

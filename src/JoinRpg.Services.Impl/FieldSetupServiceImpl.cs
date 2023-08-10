@@ -215,7 +215,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             {
                 AvaiableDirectSlots = 0,
                 HaveDirectSlots = false,
-                ParentCharacterGroupIds = new[] { field.CharacterGroup.CharacterGroupId },
+                ParentCharacterGroupIds = new[] { field.CharacterGroup!.CharacterGroupId }, // CreateOrUpdateSpecialGroup (field) ensures this
                 ProjectId = fieldValue.ProjectId,
                 IsRoot = false,
                 IsSpecial = true,
@@ -223,16 +223,14 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             };
             MarkCreatedNow(fieldValue.CharacterGroup);
         }
-        UpdateSpecialGroupProperties(fieldValue);
+        UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
     }
 
-    private void UpdateSpecialGroupProperties(ProjectFieldDropdownValue fieldValue)
+    // Character group i bound into fieldValue here, but it passed implicitly for removing null warning
+    private void UpdateSpecialGroupProperties(ProjectFieldDropdownValue fieldValue, CharacterGroup characterGroup)
     {
         var field = fieldValue.ProjectField;
-        var characterGroup = fieldValue.CharacterGroup;
         var specialGroupName = fieldValue.GetSpecialGroupName();
-
-        Debug.Assert(characterGroup != null, "characterGroup != null");
 
         if (characterGroup.IsPublic != field.IsPublic ||
             characterGroup.IsActive != fieldValue.IsActive ||
@@ -277,15 +275,14 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
                 continue; //We can't convert to LINQ because of RSRP-457084
             }
 
-            UpdateSpecialGroupProperties(fieldValue);
+            UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
         }
 
-        UpdateSpecialGroupProperties(field);
+        UpdateSpecialGroupProperties(field, field.CharacterGroup);
     }
 
-    private void UpdateSpecialGroupProperties(ProjectField field)
+    private void UpdateSpecialGroupProperties(ProjectField field, CharacterGroup characterGroup)
     {
-        var characterGroup = field.CharacterGroup;
         var specialGroupName = field.GetSpecialGroupName();
 
         if (characterGroup.IsPublic != field.IsPublic || characterGroup.IsActive != field.IsActive ||
