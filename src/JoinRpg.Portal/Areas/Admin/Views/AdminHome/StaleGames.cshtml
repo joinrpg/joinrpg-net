@@ -16,7 +16,9 @@
             <td>
               @if (project.GroupsCount > 0)
                 {
+                  <a  asp-page="/GamePages/MassConvertToSlot" asp-route-ProjectId="@project.ProjectId">
                     <span class="label label-default">Группы с заявками: @project.GroupsCount</span>
+                  </a>
                 }
               </td>
             <td><a asp-controller="Game" asp-action="Close" asp-area="" asp-route-projectId="@project.ProjectId">закрыть</a></td>

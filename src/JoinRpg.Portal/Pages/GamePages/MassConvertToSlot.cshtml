@@ -34,6 +34,7 @@
 <form method="post">
     <div class="form-horizontal">
         @Html.HiddenFor(model => model.ProjectId)
+        @Html.AntiForgeryToken()
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">

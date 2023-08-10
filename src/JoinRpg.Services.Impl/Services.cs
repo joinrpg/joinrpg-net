@@ -28,5 +28,7 @@ public static class Services
         yield return typeof(PlotSearchProvider);
         yield return typeof(PlotSearchProvider);
         yield return typeof(UserSearchProvider);
+
+        yield return typeof(SlotMassConvertService);
     }
 }

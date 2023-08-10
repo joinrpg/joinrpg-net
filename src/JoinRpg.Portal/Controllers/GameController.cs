@@ -138,7 +138,7 @@ public class GameController : Common.ControllerGameBase
 
     [HttpPost("/{projectId}/close")]
     [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
-    public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
+    public async Task<IActionResult> Close(CloseProjectViewModel viewModel, [FromServices] ISlotMassConvertService massConvertService)
     {
         if (!ModelState.IsValid)
         {
@@ -147,6 +147,7 @@ public class GameController : Common.ControllerGameBase
 
         try
         {
+            await massConvertService.MassConvert(new(viewModel.ProjectId));
             await ProjectService.CloseProject(viewModel.ProjectId,
                 CurrentUserId,
                 viewModel.PublishPlot);
