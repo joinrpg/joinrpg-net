@@ -112,7 +112,7 @@ public class DbServiceImplBase
         return items;
     }
 
-    protected bool SmartDelete<T>(T field) where T : class, IDeletableSubEntity
+    protected bool SmartDelete<T>(T? field) where T : class, IDeletableSubEntity
     {
         if (field == null)
         {

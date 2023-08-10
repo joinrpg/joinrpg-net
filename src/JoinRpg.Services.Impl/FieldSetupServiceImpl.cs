@@ -223,16 +223,14 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             };
             MarkCreatedNow(fieldValue.CharacterGroup);
         }
-        UpdateSpecialGroupProperties(fieldValue);
+        UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
     }
 
-    private void UpdateSpecialGroupProperties(ProjectFieldDropdownValue fieldValue)
+    // Character group i bound into fieldValue here, but it passed implicitly for removing null warning
+    private void UpdateSpecialGroupProperties(ProjectFieldDropdownValue fieldValue, CharacterGroup characterGroup)
     {
         var field = fieldValue.ProjectField;
-        var characterGroup = fieldValue.CharacterGroup;
         var specialGroupName = fieldValue.GetSpecialGroupName();
-
-        Debug.Assert(characterGroup != null, "characterGroup != null");
 
         if (characterGroup.IsPublic != field.IsPublic ||
             characterGroup.IsActive != fieldValue.IsActive ||
@@ -277,7 +275,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
                 continue; //We can't convert to LINQ because of RSRP-457084
             }
 
-            UpdateSpecialGroupProperties(fieldValue);
+            UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
         }
 
         UpdateSpecialGroupProperties(field);

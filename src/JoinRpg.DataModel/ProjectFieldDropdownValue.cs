@@ -43,7 +43,7 @@ public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity, IV
     public string? ProgrammaticValue { get; set; }
 
 
-    public virtual CharacterGroup CharacterGroup { get; set; }
+    public virtual CharacterGroup? CharacterGroup { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

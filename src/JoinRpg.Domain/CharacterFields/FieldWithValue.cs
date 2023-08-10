@@ -1,9 +1,7 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
-// ReSharper disable once CheckNamespace
 namespace JoinRpg.Domain;
 
 public class FieldWithValue
@@ -23,7 +21,6 @@ public class FieldWithValue
 
     public ProjectField Field { get; }
 
-    [CanBeNull]
     public string? Value
     {
         get => _value;
@@ -37,7 +34,6 @@ public class FieldWithValue
         }
     }
 
-    [NotNull]
     public string DisplayString => GetDisplayValue(Value, SelectedIds);
 
     //TODO: there is a bug here (note Value used instead of value)
@@ -73,11 +69,12 @@ public class FieldWithValue
             );
     }
 
-    [ItemNotNull, NotNull]
     public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues() => OrderedValueCache.Value.Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
 
-    [NotNull, ItemNotNull]
-    public IEnumerable<CharacterGroup> GetSpecialGroupsToApply() => Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
+    public IEnumerable<int> GetSpecialGroupsToApply() =>
+        Field.HasSpecialGroup() ?
+            GetDropdownValues().Select(c => c.CharacterGroup?.CharacterGroupId).WhereNotNull()
+        : Enumerable.Empty<int>();
 
     public bool HasViewAccess(AccessArguments accessArguments)
     {

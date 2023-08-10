@@ -32,20 +32,8 @@ public static class FieldExtensions
           && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
     }
 
-    [NotNull]
-    public static int[] GenerateSpecialGroupsList([NotNull, ItemNotNull] this IEnumerable<FieldWithValue> fieldValues)
-    {
-        if (fieldValues == null)
-        {
-            throw new ArgumentNullException(nameof(fieldValues));
-        }
-
-        return fieldValues.SelectMany(v => v.GetSpecialGroupsToApply().Select(g => g.CharacterGroupId)).ToArray();
-    }
-
     public static bool CanHaveValue(this ProjectField projectField) => projectField.FieldType != ProjectFieldType.Header;
 
-    [CanBeNull, MustUseReturnValue]
     public static ProjectFieldDropdownValue? GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)
     {
         return group.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
