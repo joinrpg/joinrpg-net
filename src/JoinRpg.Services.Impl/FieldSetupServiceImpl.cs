@@ -215,7 +215,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             {
                 AvaiableDirectSlots = 0,
                 HaveDirectSlots = false,
-                ParentCharacterGroupIds = new[] { field.CharacterGroup.CharacterGroupId },
+                ParentCharacterGroupIds = new[] { field.CharacterGroup!.CharacterGroupId }, // CreateOrUpdateSpecialGroup (field) ensures this
                 ProjectId = fieldValue.ProjectId,
                 IsRoot = false,
                 IsSpecial = true,
@@ -278,12 +278,11 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
         }
 
-        UpdateSpecialGroupProperties(field);
+        UpdateSpecialGroupProperties(field, field.CharacterGroup);
     }
 
-    private void UpdateSpecialGroupProperties(ProjectField field)
+    private void UpdateSpecialGroupProperties(ProjectField field, CharacterGroup characterGroup)
     {
-        var characterGroup = field.CharacterGroup;
         var specialGroupName = field.GetSpecialGroupName();
 
         if (characterGroup.IsPublic != field.IsPublic || characterGroup.IsActive != field.IsActive ||
