@@ -86,6 +86,7 @@ public class GameController : Common.ControllerGameBase
             Active = project.Active,
             AutoAcceptClaims = project.Details.AutoAcceptClaims,
             EnableAccomodation = project.Details.EnableAccommodation,
+            HasGroupClaims = project.Claims.Any(c => c.Group != null) || project.CharacterGroups.Any(cg => cg.HaveDirectSlots),
         });
     }
 
