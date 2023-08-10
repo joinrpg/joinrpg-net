@@ -84,6 +84,9 @@ public class EditProjectViewModel
     public bool EnableAccomodation { get; set; }
 
     public bool Active { get; set; }
+
+    [ReadOnly(true)]
+    public bool HasGroupClaims { get; set; }
 }
 
 public class CloseProjectViewModel

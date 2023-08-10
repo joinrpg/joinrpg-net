@@ -15,5 +15,5 @@ public interface ICharacterService
         short direction);
 
     Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues);
-    Task<int> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName);
+    Task<int?> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName, bool allowToChangeInactive);
 }
