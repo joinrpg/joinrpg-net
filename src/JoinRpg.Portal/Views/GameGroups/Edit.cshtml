@@ -94,7 +94,12 @@
         else
         {
           <div class="alert alert-info">
-            Заявки в группу больше не поддерживаются. Создайте шаблон персонажа вместо этого.
+            Заявки в группу больше не поддерживаются.
+            <a asp-controller="Character" asp-action="Create" asp-route-ProjectId="@Model.ProjectId" asp-route-CharacterGroupId="@Model.CharacterGroupId" >
+                    Создайте шаблон персонажа
+                </a>
+                @await Html.HelpLink("characters/slot", "")
+                вместо этого.
           </div>
         }
 

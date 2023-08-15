@@ -34,7 +34,7 @@
                 <div class="panel-heading">
                     <div class="btn-group" role="group">
 
-                        @if (!Model.IsSpecial && Model.ShowEditControls)
+                        @if (!Model.IsSpecial && Model.ShowEditControls && !Model.IsRootGroup)
                         {
                             <a type="button" class="btn btn-default" href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
                                 <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
