@@ -1,0 +1,7 @@
+<a href="https://docs.joinrpg.ru/ru/latest/@Link"><span class="glyphicon glyphicon-question-sign"></span>&nbsp;@Message</a>
+
+@code
+{
+    [Parameter][EditorRequired] public string Link { get; set; } = null!;
+    [Parameter] public string Message { get; set; } = "";
+}

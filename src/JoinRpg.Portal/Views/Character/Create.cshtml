@@ -7,7 +7,7 @@
 }
 
 <h2>@ViewBag.Title</h2>
-<p>@Html.HelpLink("characters/slots.html", "Справка о персонажах")</p>
+<p>@await Html.HelpLink("characters/slots.html", "Справка о персонажах")</p>
 
 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 

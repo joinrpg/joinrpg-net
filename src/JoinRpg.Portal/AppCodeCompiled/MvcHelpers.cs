@@ -128,10 +128,9 @@ public static class MvcHtmlHelpers
         return string.Format(template ?? defaultPriceTemplate, price);
     }
 
-    public static IHtmlContent HelpLink(this IHtmlHelper self, string link, string message)
+    public static Task<IHtmlContent> HelpLink(this IHtmlHelper self, string link = "", string message = "")
     {
-        return new HtmlString(
-            $"<a href=\"https://docs.joinrpg.ru/ru/latest/{link}\"><span class=\"glyphicon glyphicon-question-sign\"></span>&nbsp;{message}</a>");
+        return self.RenderComponentAsync<WebComponents.HelpLink>(RenderMode.Static, new { link, message });
     }
 
     public static TValue GetValue<TModel, TValue>(this IHtmlHelper<TModel> self,

@@ -10,7 +10,7 @@
 
   @await Html.PartialAsync("_RegistrationRules")
 
-  <p>@Html.HelpLink("register", "Подробнее о регистрации")</p>
+  <p>@await Html.HelpLink("register", "Подробнее о регистрации")</p>
   <hr />
   @Html.ValidationSummary("", new { @class = "text-danger" })
   <div class="form-group">
