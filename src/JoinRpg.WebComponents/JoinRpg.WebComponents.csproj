@@ -33,4 +33,12 @@
     <None Update="libman.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <UpToDateCheckInput Remove="HelpLink.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="HelpLink.razor" />
+  </ItemGroup>
+
 </Project>
