@@ -32,7 +32,7 @@ public class CharacterTreeBuilder
         var vm = new CharacterTreeItem(characterGroup)
         {
             DeepLevel = deepLevel,
-            FirstCopy = prevCopy is not null,
+            FirstCopy = prevCopy is null,
             Characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(CurrentUserId)).Select(GenerateCharacter).ToList(),
             Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
             IsSpecial = characterGroup.IsSpecial,
