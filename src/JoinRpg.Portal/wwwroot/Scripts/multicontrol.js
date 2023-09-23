@@ -1150,10 +1150,12 @@ MultiControl.App.prototype.processData = function (data) {
         }
         if (!!group.Characters) {
             for (j = 0; j < group.Characters.length; j++) {
-                character = group.Characters[j];
-                if (character.IsFirstCopy) {
+              character = group.Characters[j];
+              let id = 'character^' + character.CharacterId;
+              character_model = this.CharacterList[id];
+              if (!character_model) {
                     character_option = {
-                        id: 'character^' + character.CharacterId,
+                        id: id,
                         name: character.CharacterName,
                         checkable: false,
                         checked: false,
@@ -1163,11 +1165,8 @@ MultiControl.App.prototype.processData = function (data) {
                     character_model = new MultiControl.Models.Character(character_option, this.ActionManager,
                         this.Settings.strategy);
                     this.CharacterList[character_model.getId()] = character_model;
-                }
-                else {
-                    character_model = this.CharacterList['character^' + character.CharacterId];
-                }
-                character_model.addParent(group_model);
+              }
+              character_model.addParent(group_model);
             }
         }
     }

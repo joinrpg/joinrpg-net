@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -8,7 +7,7 @@ public class CharacterTreeBuilder
 {
     private CharacterGroup Root { get; }
 
-    private IList<int> AlreadyOutputedChars { get; } = new List<int>();
+    private readonly Dictionary<int, CharacterLinkViewModel> alreadyOutputedChars = new();
 
     private IList<CharacterTreeItem> Results { get; } = new List<CharacterTreeItem>();
 
@@ -18,7 +17,6 @@ public class CharacterTreeBuilder
         CurrentUserId = currentUserId;
     }
 
-    [MustUseReturnValue]
     public IList<CharacterTreeItem> Generate()
     {
         _ = GenerateFrom(Root, 0, new List<CharacterGroup>());
@@ -36,10 +34,15 @@ public class CharacterTreeBuilder
             Characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(CurrentUserId)).Select(GenerateCharacter).ToList(),
             Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
             IsSpecial = characterGroup.IsSpecial,
-            ChildGroups = prevCopy?.ChildGroups ?? CreateChilds().ToList(),
+            ChildGroups = prevCopy?.ChildGroups!, //Will be set later
         };
 
-        Results.Add(vm);
+        Results.Add(vm); // Надо добавить в список перед тем, как добавлять детей, иначе клиент сходит с ума
+
+        if (vm.ChildGroups is null)
+        {
+            vm.ChildGroups = CreateChilds().ToList();
+        }
 
         return vm;
 
@@ -57,14 +60,13 @@ public class CharacterTreeBuilder
 
     private CharacterLinkViewModel GenerateCharacter(Character arg)
     {
-        var vm = new CharacterLinkViewModel(arg)
+        if (alreadyOutputedChars.TryGetValue(arg.CharacterId, out var prevCopy))
         {
-            IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-        };
-        if (vm.IsFirstCopy)
-        {
-            AlreadyOutputedChars.Add(vm.CharacterId);
+            return prevCopy;
         }
+        var vm = new CharacterLinkViewModel(arg);
+        alreadyOutputedChars.Add(arg.CharacterId, vm);
+
         return vm;
     }
 }
