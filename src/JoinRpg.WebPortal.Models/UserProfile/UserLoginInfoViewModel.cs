@@ -3,11 +3,11 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Web.Models;
 
 
-    public record ProviderDescViewModel(string ProviderId, string FriendlyName)
-    {
-        public static readonly ProviderDescViewModel Google = new("Google", "Google");
-        public static readonly ProviderDescViewModel Vk = new("Vkontakte", "ВК");
-    }
+public record ProviderDescViewModel(string ProviderId, string FriendlyName)
+{
+    public static readonly ProviderDescViewModel Google = new("Google", "Google");
+    public static readonly ProviderDescViewModel Vk = new("Vkontakte", "ВК");
+}
 
 public record UserLoginInfoViewModel
 {
@@ -20,6 +20,7 @@ public record UserLoginInfoViewModel
     public bool AllowLink { get; set; }
     public bool AllowUnlink { get; set; }
     public bool NeedToReLink { get; set; }
+    public bool Present => ProviderLink is not null && ProviderKey is not null;
 }
 
 public static class UserLoginInfoViewModelBuilder

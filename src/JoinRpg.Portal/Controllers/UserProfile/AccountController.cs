@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces.Notification;
@@ -377,6 +378,7 @@ public class AccountController : Common.ControllerBase
         var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
 
         // If sign in failed, may be we have user with same email. Let's bind.
+        // TODO if we need to bind more google accounts
         if (!result.Succeeded && !string.IsNullOrWhiteSpace(email))
         {
             var user = await UserManager.FindByEmailAsync(email);
@@ -393,6 +395,11 @@ public class AccountController : Common.ControllerBase
 
         if (result.Succeeded)
         {
+            var isGoogle = loginInfo.LoginProvider == ProviderDescViewModel.Google.ProviderId;
+            if (isGoogle)
+            {
+                return RedirectToAction("GoogleDeprecated", new { returnUrl });
+            }
             return RedirectToLocal(returnUrl);
         }
 
@@ -416,6 +423,19 @@ public class AccountController : Common.ControllerBase
             }
             );
 
+    }
+
+    public async Task<ActionResult> GoogleDeprecated(string returnUrl, [FromServices] ICurrentUserAccessor currentUserAccessor)
+    {
+        var user = await UserRepository.WithProfile(currentUserAccessor.UserId);
+
+        var viewModel = new GoogleDeprecatedViewModel(
+            VkLogin: user.GetSocialLogins().Single(s => s.LoginProvider.ProviderId == ProviderDescViewModel.Vk.ProviderId),
+            HasPassword: user.PasswordHash != null,
+            RedirectUrl: Url.IsLocalUrl(returnUrl) ? returnUrl : "/",
+            Email: currentUserAccessor.Email);
+
+        return View(viewModel);
     }
 
     //

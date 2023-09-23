@@ -32,13 +32,6 @@ public class ExternalLoginProfileExtractor
                   new AvatarInfo(new Uri(vkAvatar), 50, 50));
             }
         }
-
-        if (TryGetClaim(loginInfo, "urn:google:photo") is string googleAvatar)
-        {
-            await userService.SetGoogleIfNotSetWithoutAccessChecks(user.Id,
-                 new AvatarInfo(new Uri(googleAvatar), 96, 96));
-        }
-        //var googleProfileLink = loginInfo.Principal.FindFirstValue("urn:google:profile");
     }
 
     private static UserFullName TryGetUserName(ExternalLoginInfo loginInfo)
@@ -52,7 +45,7 @@ public class ExternalLoginProfileExtractor
 
     private static VkId? TryGetVkId(ExternalLoginInfo loginInfo)
     {
-        return loginInfo.LoginProvider == ProviderDescViewModel.Vk.ProviderId 
+        return loginInfo.LoginProvider == ProviderDescViewModel.Vk.ProviderId
             && loginInfo.Principal.FindFirstValue(ClaimTypes.NameIdentifier) is string id
             ? new VkId(id)
             : null;

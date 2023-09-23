@@ -1,0 +1,96 @@
+﻿@using JoinRpg.Web.Models;
+@model JoinRpg.Web.Models.GoogleDeprecatedViewModel
+@{
+    ViewBag.Title = "Проверка доступности аккаунта";
+}
+
+<h2>@ViewBag.Title</h2>
+<div>
+    <p class="alert alert-warning">
+        <b>Прочтите это сообщение внимательно, чтобы не потерять доступ к своему аккаунту</b>. <br />
+        Вы вошли в свой аккаунт, используя вход через Google. С 1 декабря 2023 года это способ входа будет отключен — это связано с тем, что с 1 декабря авторизация
+        с использованием иностранных провайдеров запрещена на территории РФ. Чтобы не потерять доступ к своему аккаунту, убедитесь, что у вас настроены альтернативные способы
+        входа.
+    </p>
+
+    <table class="table">
+      <tr><th>Способ входа</th><th>Статус</th><th>Действие</th></tr>
+      <tr>
+        <td>Вконтакте</td>
+        <td>
+                @if (Model.VkLogin.Present)
+                {
+                    <span class="label label-success">Настроен</span>
+                }
+                else
+                {
+                    <span class="label label-warning">Не подключена</span>
+                }
+        </td>
+        <td>
+          @if (Model.VkLogin.Present)
+          {
+                    <text>Проверьте, что у вас есть доступ к <a href="@Model.VkLogin.ProviderLink">@Model.VkLogin.ProviderLink</a>.</text>
+          }
+          else
+          {
+                    <form asp-controller="Manage" asp-action="LinkLogin" style="display:inline">
+                        <input type="hidden" value="@Model.VkLogin.LoginProvider.ProviderId" name="provider" />
+                        <button type="submit" class="btn btn-default">Подключить</button>
+                    </form>
+          }
+         </td>
+       </tr>
+        <tr>
+            <td>Пароль</td>
+            <td>
+                @if (Model.HasPassword)
+                {
+                  <span class="label label-success">Настроен</span> 
+                }
+                else
+                {
+                    <span class="label label-warning">Не установлен</span>
+                }
+            </td>
+            <td>
+                @if (Model.HasPassword)
+                {
+                    <p>Попробуйте залогиниться по паролю, чтобы убедиться, что вы его помните.</p>
+                    @using (Html.BeginForm("Login", "Account", new { ReturnUrl = Model.RedirectUrl }, FormMethod.Post, antiforgery: true, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.Email)
+                        <div class="form-group">
+                            <label class="control-label col-md-2">Пароль</label>
+                            <div class="col-md-3">
+                                @Html.Password("Password", "", new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-2">
+                                <input type="submit" value="Войти" class="btn btn-success" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            
+                        </div>
+                    }
+                    <text>Если вы не помните пароль, то @Html.ActionLink("сбросьте", "ForgotPassword") его.</text>
+                }
+                else
+                {
+                    <a asp-controller="Manage" asp-action="SetPassword" class="btn btn-default">Установить пароль.</a>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td><span class="label label-success">Установлена</span>.</td>
+            <td>
+                Проверьте, что у вас есть доступ к почте <a href="@Model.Email">@Model.Email</a>. Это позволит вам сбросить пароль, если вы его забудете. Если у вас нет доступа, обратитесь в техподдержку.
+            </td>
+        </tr>
+    </table>
+
+    <a href="@Model.RedirectUrl" class="btn btn-success" style="text-align: center">Я все проверил и хочу продолжить</a>
+
+</div>
