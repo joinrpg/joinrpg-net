@@ -19,8 +19,8 @@ public class ExternalLoginConfirmationViewModel
 
 public class ExternalLoginListViewModel
 {
-    public string ReturnUrl { get; set; }
-    public List<AuthenticationDescriptionViewModel> ExternalLogins { get; set; }
+    public required string ReturnUrl { get; set; }
+    public required List<AuthenticationDescriptionViewModel> ExternalLogins { get; set; }
 }
 
 public class AuthenticationDescriptionViewModel

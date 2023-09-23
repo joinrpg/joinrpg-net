@@ -355,8 +355,6 @@ public class AccountController : Common.ControllerBase
         return Challenge(authenticationProperties, provider);
     }
 
-    //
-    // GET: /Account/ExternalLoginCallback
     [AllowAnonymous]
     public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
     {

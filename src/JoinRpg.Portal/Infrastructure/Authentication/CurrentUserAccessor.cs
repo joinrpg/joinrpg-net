@@ -3,7 +3,6 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.PrimitiveTypes;
-#nullable enable
 
 namespace JoinRpg.Web.Helpers;
 
