@@ -192,7 +192,7 @@ public class GameGroupsController : ControllerGameBase
                       g.FirstCopy,
                       Path = g.Path.Select(gr => gr.Name),
                       PathIds = g.Path.Select(gr => gr.CharacterGroupId),
-                      Characters = g.Characters.Select(ConvertCharacterToJsonSlim),
+                      g.Characters,
                   }),
         });
     }
@@ -225,17 +225,6 @@ public class GameGroupsController : ControllerGameBase
             ch.IsAvailable
               ? GetFullyQualifiedUri("AddForCharacter", "Claim", new { ch.ProjectId, ch.CharacterId })
               : null,
-        };
-    }
-
-    private object ConvertCharacterToJsonSlim(CharacterLinkViewModel ch)
-    {
-        return new
-        {
-            ch.CharacterId,
-            ch.IsAvailable,
-            ch.IsFirstCopy,
-            ch.CharacterName,
         };
     }
 
