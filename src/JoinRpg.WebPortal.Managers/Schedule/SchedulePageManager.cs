@@ -8,6 +8,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Interfaces;
 
@@ -116,7 +117,7 @@ public class SchedulePageManager
                 {
                     ErrorType = viewModel.ConflictedProgramItems.FirstOrDefault(pi => pi.Id == slot.Id) != null
                         ? AppointmentErrorType.Intersection
-                        : (AppointmentErrorType?)null,
+                        : null,
                     AllRooms = slot.ColSpan == viewModel.Columns.Count,
                     RoomIndex = colIndex,
                     RoomCount = slot.ColSpan,
@@ -236,13 +237,22 @@ public class SchedulePageManager
     public async Task<IReadOnlyCollection<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
     {
         var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+        ProjectInfo projectInfo;
+        try
+        {
+            projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        }
+        catch (InvalidOperationException)
+        {
+            return new[] { ScheduleConfigProblemsViewModel.ProjectNotFound };
+        }
 
         if (project is null)
         {
             return new[] { ScheduleConfigProblemsViewModel.ProjectNotFound };
         }
 
-        bool HasAccess(ProjectField roomField)
+        bool HasAccess(ProjectFieldInfo roomField)
         {
             if (roomField.IsPublic)
             {
@@ -261,8 +271,8 @@ public class SchedulePageManager
 
         IEnumerable<ScheduleConfigProblemsViewModel> Impl()
         {
-            var roomField = project.GetRoomFieldOrDefault();
-            var timeSlotField = project.GetTimeSlotFieldOrDefault();
+            var roomField = projectInfo.RoomField;
+            var timeSlotField = projectInfo.TimeSlotField;
             if (roomField is null || timeSlotField is null)
             {
                 yield return ScheduleConfigProblemsViewModel.FieldsNotSet;
@@ -279,12 +289,12 @@ public class SchedulePageManager
                     yield return ScheduleConfigProblemsViewModel.NoAccess;
                 }
 
-                if (!timeSlotField.DropdownValues.Any())
+                if (!timeSlotField.Variants.Any())
                 {
                     yield return ScheduleConfigProblemsViewModel.NoTimeSlots;
                 }
 
-                if (!roomField.DropdownValues.Any())
+                if (!roomField.Variants.Any())
                 {
                     yield return ScheduleConfigProblemsViewModel.NoRooms;
                 }
@@ -296,7 +306,6 @@ public class SchedulePageManager
 
     public async Task<ScheduleBuilder> GetBuilder()
     {
-        var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
         var characters = await Project.GetCharacters(CurrentProject.ProjectId);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
