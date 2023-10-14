@@ -1,6 +1,4 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 
@@ -13,20 +11,19 @@ public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewMod
 
     public int ProjectFieldDropdownValueId { get; set; }
 
-    public GameFieldDropdownValueEditViewModel(ProjectField field, ProjectFieldDropdownValue value) : base(field)
+    public GameFieldDropdownValueEditViewModel(ProjectFieldInfo field, ProjectFieldVariant value) : base(field)
     {
         Label = value.Label;
         Description = value.Description.Contents;
         IsActive = value.IsActive;
         Price = value.Price;
-        ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
-        PlayerSelectable = value.PlayerSelectable;
+        ProjectFieldDropdownValueId = value.Id.ProjectFieldVariantId;
+        PlayerSelectable = value.IsPlayerSelectable;
         ProgrammaticValue = value.ProgrammaticValue;
-        if (field.IsTimeSlot())
+        if (value is TimeSlotFieldVariant timeSlotFieldVariant)
         {
-            var options = value.GetTimeSlotOptions();
-            TimeSlotInMinutes = options.TimeSlotInMinutes;
-            TimeSlotStartTime = options.StartTime;
+            TimeSlotInMinutes = timeSlotFieldVariant.TimeSlotOptions.TimeSlotInMinutes;
+            TimeSlotStartTime = timeSlotFieldVariant.TimeSlotOptions.StartTime;
         }
     }
 

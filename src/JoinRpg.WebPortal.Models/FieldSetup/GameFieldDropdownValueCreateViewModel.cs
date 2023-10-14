@@ -1,6 +1,4 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 
@@ -9,15 +7,32 @@ namespace JoinRpg.Web.Models.FieldSetup;
 /// </summary>
 public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewModelBase
 {
-    public GameFieldDropdownValueCreateViewModel(ProjectField field) : base(field)
+    public GameFieldDropdownValueCreateViewModel(ProjectFieldInfo field) : base(field)
     {
-        Label = $"Вариант {field.DropdownValues.Count + 1}";
-        if (field.IsTimeSlot())
+        Label = $"Вариант {field.Variants.Count + 1}";
+        if (field.IsTimeSlot)
         {
-            var options = field.GetDefaultTimeSlotOptions();
+            var options = GetDefaultTimeSlotOptions(field);
             TimeSlotInMinutes = options.TimeSlotInMinutes;
             TimeSlotStartTime = options.StartTime;
         }
+    }
+
+    private static TimeSlotOptions GetDefaultTimeSlotOptions(ProjectFieldInfo field)
+    {
+        var prev = field.LastVariant as TimeSlotFieldVariant;
+
+        if (prev?.TimeSlotOptions is null)
+        {
+            return TimeSlotOptions.CreateDefault();
+        }
+
+        var prevOptions = prev.TimeSlotOptions;
+        return new TimeSlotOptions()
+        {
+            TimeSlotInMinutes = prevOptions.TimeSlotInMinutes,
+            StartTime = prevOptions.EndTime.AddMinutes(10),
+        };
     }
 
     public GameFieldDropdownValueCreateViewModel() { }//For binding

@@ -11,15 +11,15 @@ public class ScheduleBuilder
     private readonly ICollection<Character> characters;
     private readonly ProjectInfo projectInfo;
 
-    private ProjectField TimeSlotField { get; }
+    private ProjectFieldInfo TimeSlotField { get; }
 
-    private ProjectField RoomField { get; }
+    private ProjectFieldInfo RoomField { get; }
 
-    public ScheduleBuilder(Project project, ICollection<Character> characters, ProjectInfo projectInfo)
+    public ScheduleBuilder(ICollection<Character> characters, ProjectInfo projectInfo)
     {
         this.characters = characters.Where(ch => ch.IsActive).ToList();
-        RoomField = project.GetRoomFieldOrDefault() ?? throw new Exception("Schedule not enabled");
-        TimeSlotField = project.GetTimeSlotFieldOrDefault() ?? throw new Exception("Schedule not enabled");
+        RoomField = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
+        TimeSlotField = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
         this.projectInfo = projectInfo;
     }
 
@@ -46,8 +46,8 @@ public class ScheduleBuilder
 
     public ScheduleResult Build()
     {
-        Rooms = InitializeScheduleRoomList(RoomField.GetOrderedValues()).ToList();
-        TimeSlots = InitializeTimeSlotList(TimeSlotField.GetOrderedValues()).ToList();
+        Rooms = InitializeScheduleRoomList(RoomField.SortedVariants).ToList();
+        TimeSlots = InitializeTimeSlotList(TimeSlotField.SortedVariants.Cast<TimeSlotFieldVariant>()).ToList();
         Slots = InitializeSlots(TimeSlots, Rooms);
 
         var allItems = new List<ProgramItemPlaced>();
@@ -104,12 +104,10 @@ public class ScheduleBuilder
     {
         var fields = character.GetFields(projectInfo);
 
-        List<int> GetSlotIndexes(ProjectField field, IEnumerable<ScheduleItemAttribute> items)
+        List<int> GetSlotIndexes(ProjectFieldInfo field, IEnumerable<ScheduleItemAttribute> items)
         {
-            var variantIds = fields
-                .Single(f => f.Field.ProjectFieldId == field.ProjectFieldId)
-                .GetDropdownValues()
-                .Select(variant => variant.ProjectFieldDropdownValueId)
+            var variantIds = field.SortedVariants
+                .Select(variant => variant.Id)
                 .ToList();
             var indexes = (from item in items where variantIds.Contains(item.Id) select item.SeqId).ToList();
             if (indexes.Count < variantIds.Count) // Some variants not found, probably deleted
@@ -130,7 +128,7 @@ public class ScheduleBuilder
     private static List<List<ProgramItemSlot>> InitializeSlots(List<TimeSlot> timeSlots, List<ScheduleRoom> rooms)
         => timeSlots.Select(time => rooms.Select(room => new ProgramItemSlot(time, room)).ToList()).ToList();
 
-    private static IEnumerable<ScheduleRoom> InitializeScheduleRoomList(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
+    private static IEnumerable<ScheduleRoom> InitializeScheduleRoomList(IReadOnlyList<ProjectFieldVariant> readOnlyList)
     {
         var seqId = 0;
         foreach (var variant in readOnlyList.Where(x => x.IsActive))
@@ -141,7 +139,7 @@ public class ScheduleBuilder
         }
     }
 
-    private static IEnumerable<TimeSlot> InitializeTimeSlotList(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
+    private static IEnumerable<TimeSlot> InitializeTimeSlotList(IEnumerable<TimeSlotFieldVariant> readOnlyList)
     {
         var seqId = 0;
         foreach (var variant in readOnlyList.Where(x => x.IsActive))

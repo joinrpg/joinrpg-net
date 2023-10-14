@@ -33,6 +33,8 @@ public record class ProjectFieldInfo(
 
     public IReadOnlyList<ProjectFieldVariant> SortedVariants => container.Value.OrderedItems;
 
+    public ProjectFieldVariant? LastVariant => SortedVariants.LastOrDefault(x => x.IsActive);
+
     public string GetDisplayValue(string? value, IReadOnlyList<int>? selectedIDs)
     {
         if (Type == ProjectFieldType.Checkbox)

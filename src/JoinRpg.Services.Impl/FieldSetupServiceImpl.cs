@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Text.Json;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -8,8 +8,6 @@ using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-
-#nullable enable
 
 namespace JoinRpg.Services.Impl;
 
@@ -172,7 +170,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         variant.PlayerSelectable = request.PlayerSelectable;
         if (variant.ProjectField.IsTimeSlot())
         {
-            variant.SetTimeSlotOptions(request.TimeSlotOptions);
+            SetTimeSlotOptions(variant, request.TimeSlotOptions);
         }
 
         else
@@ -182,6 +180,16 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 
 
         CreateOrUpdateSpecialGroup(variant);
+    }
+
+    private static void SetTimeSlotOptions(ProjectFieldDropdownValue self, TimeSlotOptions? timeSlotOptions)
+    {
+        if (!self.ProjectField.IsTimeSlot())
+        {
+            throw new Exception("That's not time slot'");
+        }
+
+        self.ProgrammaticValue = JsonSerializer.Serialize(timeSlotOptions);
     }
 
     private void CreateFieldValueVariantImpl(CreateFieldValueVariantRequest request, ProjectField field)
