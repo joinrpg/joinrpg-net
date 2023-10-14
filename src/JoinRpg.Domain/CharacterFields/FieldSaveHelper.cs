@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Domain.CharacterFields;
 
@@ -9,10 +10,12 @@ namespace JoinRpg.Domain.CharacterFields;
 public class FieldSaveHelper
 {
     private readonly IFieldDefaultValueGenerator generator;
+    private readonly ILogger<FieldSaveHelper> logger;
 
-    public FieldSaveHelper(IFieldDefaultValueGenerator generator)
+    public FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<FieldSaveHelper> logger)
     {
         this.generator = generator;
+        this.logger = logger;
     }
 
     /// <summary>
@@ -65,6 +68,8 @@ public class FieldSaveHelper
         ProjectInfo projectInfo)
     {
         var strategy = CreateStrategy(currentUserId, character, claim, projectInfo);
+
+        logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
         var fields = strategy.GetFields().ToDictionary(f => f.Field.ProjectFieldId);
 

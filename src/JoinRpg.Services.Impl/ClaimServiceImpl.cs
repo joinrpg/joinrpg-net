@@ -347,13 +347,14 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         MarkCharacterChangedIfApproved(claim);
         Debug.Assert(claim.Character != null, "claim.Character != null");
         claim.Character.ApprovedClaimId = claim.ClaimId;
+        claim.Character.ApprovedClaim = claim; // Used in SaveCharacterFields
         claim.Character.IsHot = false;
 
         //We need to re-save fields here. Reasons:
         // 1. If we created character during approving, we need to set name for character
         // 2. M.b. we need to move some field values from Claim to Characters
         // 3. (2) Could activate changing of special groups
-        // ReSharper disable once MustUseReturnValue we don't need send email here
+        // we don't need send to show updated fields in email here, so ignore return result. 
         _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();

@@ -2,18 +2,26 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.TestHelpers;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace JoinRpg.Domain.Test;
 
 public class FieldSaveHelperTest
 {
     private MockedProject _original = null!; // Should be initialized per fact
+    private readonly ITestOutputHelper testOutputHelper;
 
-    private static FieldSaveHelper InitFieldSaveHelper()
+    public FieldSaveHelperTest(ITestOutputHelper testOutputHelper)
     {
-        return new FieldSaveHelper(new MockedFieldDefaultValueGenerator());
+        this.testOutputHelper = testOutputHelper;
+    }
+
+    private FieldSaveHelper InitFieldSaveHelper()
+    {
+        return new FieldSaveHelper(new MockedFieldDefaultValueGenerator(), new XUnitLogger<FieldSaveHelper>(testOutputHelper));
     }
 
     [Fact]
