@@ -1,34 +1,9 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Domain.Schedules;
-
-/// <summary>
-/// Additional time slot info.
-/// </summary>
-public class TimeSlotOptions
-{
-    //Beware of field names - serialized to JSON
-
-    /// <summary>
-    /// Start of program item time (with TZ)
-    /// </summary>
-    public DateTimeOffset StartTime { get; set; }
-    /// <summary>
-    /// Length of time slot (for edit and serialization)
-    /// </summary>
-    public int TimeSlotInMinutes { get; set; }
-    /// <summary>
-    /// Length of time slot
-    /// </summary>
-    public TimeSpan TimeSlotLength => TimeSpan.FromMinutes(TimeSlotInMinutes);
-
-    /// <summary>
-    /// End of program item (with TZ)
-    /// </summary>
-    public DateTimeOffset EndTime => StartTime.Add(TimeSlotLength);
-}
 
 /// <summary>
 /// Extension methods for TimeSlot options extract/serializer

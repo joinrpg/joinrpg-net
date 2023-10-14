@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 

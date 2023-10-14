@@ -1,6 +1,5 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain.Schedules;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
