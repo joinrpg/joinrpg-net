@@ -72,7 +72,7 @@ public class CharacterListController : ControllerGameBase
             return View("Index", list);
         }
 
-        return Export(list, exportType.Value);
+        return Export(list, exportType.Value, projectInfo);
     }
 
     public CharacterListController(
@@ -126,7 +126,7 @@ public class CharacterListController : ControllerGameBase
             return View("ByGroup", list);
         }
 
-        return Export(list, exportType.Value);
+        return Export(list, exportType.Value, projectInfo);
     }
 
     [HttpGet]
@@ -151,12 +151,12 @@ public class CharacterListController : ControllerGameBase
     public Task<ActionResult> WithPlayers(int projectid, string export)
       => MasterCharacterList(projectid, (character, projectInfo) => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
 
-    private FileContentResult Export(CharacterListViewModel list, ExportType exportType)
+    private FileContentResult Export(CharacterListViewModel list, ExportType exportType, ProjectInfo projectInfo)
     {
         var generator = ExportDataService.GetGenerator(
             exportType,
             list.Items,
-          new CharacterListItemViewModelExporter(list.Fields, UriService));
+          new CharacterListItemViewModelExporter(projectInfo, UriService));
 
         return GeneratorResultHelper.Result(list.ProjectName + ": " + list.Title, generator);
     }

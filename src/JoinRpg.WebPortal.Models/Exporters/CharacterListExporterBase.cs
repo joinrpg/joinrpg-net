@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
 
@@ -6,11 +6,14 @@ namespace JoinRpg.Web.Models.Exporters;
 
 public abstract class CharacterListExporterBase : CustomExporter<CharacterListItemViewModel>
 {
-    protected CharacterListExporterBase(IReadOnlyCollection<ProjectField> fields,
+    protected CharacterListExporterBase(ProjectInfo projectInfo,
         IUriService uriService)
-        : base(uriService) => Fields = fields;
+        : base(uriService)
+    {
+        ProjectInfo = projectInfo;
+    }
 
-    protected IReadOnlyCollection<ProjectField> Fields { get; }
+    protected ProjectInfo ProjectInfo { get; }
 
     protected IEnumerable<ITableColumn> BasicColumns()
     {

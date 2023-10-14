@@ -75,7 +75,7 @@ public class ClaimListController : Common.ControllerGameBase
 
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
-                        new ClaimListItemViewModelExporter(project, UriService), project.ProjectName);
+                        new ClaimListItemViewModelExporter(UriService, projectInfo), project.ProjectName);
         }
     }
 
@@ -135,7 +135,7 @@ public class ClaimListController : Common.ControllerGameBase
             var view = new ClaimListForExportViewModel(CurrentUserId, claims, projectInfo);
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
-                        new ClaimListItemViewModelExporter(characterGroup.Project, UriService),
+                        new ClaimListItemViewModelExporter(UriService, projectInfo),
                         characterGroup.Project.ProjectName);
         }
     }

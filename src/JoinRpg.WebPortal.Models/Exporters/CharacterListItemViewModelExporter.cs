@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters;
@@ -6,8 +6,8 @@ namespace JoinRpg.Web.Models.Exporters;
 public class CharacterListItemViewModelExporter : CharacterListExporterBase
 {
 
-    public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields, IUriService uriService) :
-      base(fields, uriService)
+    public CharacterListItemViewModelExporter(ProjectInfo projectInfo, IUriService uriService) :
+      base(projectInfo, uriService)
     {
     }
 
@@ -18,10 +18,9 @@ public class CharacterListItemViewModelExporter : CharacterListExporterBase
             yield return tableColumn;
         }
 
-        foreach (var projectField in Fields)
+        foreach (var projectField in ProjectInfo.SortedFields.Where(f => f.CanHaveValue))
         {
-            yield return
-              FieldColumn(projectField, x => x.Fields);
+            yield return FieldColumn(projectField, x => x.Fields);
         }
 
 

@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters;
@@ -165,12 +166,12 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
     }
 
     [Pure]
-    protected ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc) => FieldColumn(projectField, fieldsFunc, projectField.FieldName);
+    protected ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc) => FieldColumn(projectField, fieldsFunc, projectField.Name);
 
     [Pure]
-    protected static ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
+    protected static ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
     {
         return new TableColumn<string>(name,
-          x => fieldsFunc(x).SingleOrDefault(f => f.Field.ProjectFieldId == projectField.ProjectFieldId)?.DisplayString);
+          x => fieldsFunc(x).SingleOrDefault(f => f.Field.ProjectFieldId == projectField.Id.ProjectFieldId)?.DisplayString);
     }
 }
