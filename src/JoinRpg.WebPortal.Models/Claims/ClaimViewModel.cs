@@ -156,8 +156,9 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
-            .Where(x => x.IsAvailable)
+            .Where(x => x.IsAvailable && x.IsActive)
             .Where(x => !claim.IsApproved || x.CharacterType != CharacterType.Slot)
+            .OrderBy(x => x.CharacterName)
             .Select(ToJoinSelectListItem)
             .ToList();
         OtherClaimsFromThisPlayerCount =
