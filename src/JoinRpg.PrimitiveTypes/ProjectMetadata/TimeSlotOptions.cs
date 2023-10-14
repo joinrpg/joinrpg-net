@@ -24,4 +24,24 @@ public class TimeSlotOptions
     /// End of program item (with TZ)
     /// </summary>
     public DateTimeOffset EndTime => StartTime.Add(TimeSlotLength);
+
+    public static TimeSlotOptions CreateDefault()
+    {
+        DateTimeOffset startTime;
+        try
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+            startTime = new DateTimeOffset(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz), tz.BaseUtcOffset);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            startTime = DateTimeOffset.UtcNow;
+        }
+
+        return new TimeSlotOptions()
+        {
+            StartTime = startTime,
+            TimeSlotInMinutes = 50,
+        };
+    }
 }

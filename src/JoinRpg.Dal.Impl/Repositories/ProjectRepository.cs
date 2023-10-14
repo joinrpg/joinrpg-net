@@ -358,19 +358,39 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
 
         IEnumerable<ProjectFieldVariant> CreateVariants(ProjectField field, ProjectFieldIdentification fieldId)
         {
-            foreach (var variant in field.DropdownValues)
+            if (field.FieldType == ProjectFieldType.ScheduleTimeSlotField)
             {
-                yield return new ProjectFieldVariant(
-                        new(fieldId, variant.ProjectFieldDropdownValueId),
-                        variant.Label,
-                        variant.Price,
-                        variant.PlayerSelectable,
-                        variant.IsActive,
-                        variant.CharacterGroup?.CharacterGroupId,
-                        variant.Description,
-                        variant.MasterDescription,
-                        variant.ProgrammaticValue
-                    );
+                foreach (var variant in field.DropdownValues)
+                {
+                    yield return new TimeSlotFieldVariant(
+                            new(fieldId, variant.ProjectFieldDropdownValueId),
+                            variant.Label,
+                            variant.Price,
+                            variant.PlayerSelectable,
+                            variant.IsActive,
+                            variant.CharacterGroup?.CharacterGroupId,
+                            variant.Description,
+                            variant.MasterDescription,
+                            variant.ProgrammaticValue
+                        );
+                }
+            }
+            else
+            {
+                foreach (var variant in field.DropdownValues)
+                {
+                    yield return new ProjectFieldVariant(
+                            new(fieldId, variant.ProjectFieldDropdownValueId),
+                            variant.Label,
+                            variant.Price,
+                            variant.PlayerSelectable,
+                            variant.IsActive,
+                            variant.CharacterGroup?.CharacterGroupId,
+                            variant.Description,
+                            variant.MasterDescription,
+                            variant.ProgrammaticValue
+                        );
+                }
             }
         }
     }

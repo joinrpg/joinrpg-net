@@ -37,29 +37,11 @@ public static class TimeSlotOptionsEncoder
     private static TimeSlotOptions GetDefaultTimeSlotOptions(ProjectField field,
         ProjectFieldDropdownValue? variant)
     {
-        static DateTimeOffset GetDefaultStartTime()
-        {
-            try
-            {
-                var tz = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-                var startTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-                return startTime;
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return DateTimeOffset.UtcNow;
-            }
-        }
-
         var prev = field.GetPreviousVariant(variant);
 
         if (prev?.ProgrammaticValue is null)
         {
-            return new TimeSlotOptions()
-            {
-                StartTime = GetDefaultStartTime(),
-                TimeSlotInMinutes = 50,
-            };
+            return TimeSlotOptions.CreateDefault();
         }
 
         var prevOptions = prev.GetTimeSlotOptions();
