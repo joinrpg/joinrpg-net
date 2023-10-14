@@ -70,10 +70,19 @@ public record class ProjectFieldInfo(
 
     public bool IsDescription { get; } = FieldSettings.DescriptionField == Id;
 
+    /// <summary>
+    /// Special field - schedule time slot
+    /// </summary>
+    public bool IsTimeSlot => Type == ProjectFieldType.ScheduleTimeSlotField;
+    /// <summary>
+    /// Special field - schedule room slot
+    /// </summary>
+    public bool IsRoomSlot => Type == ProjectFieldType.ScheduleRoomField;
+
     public IEnumerable<ProjectFieldVariant> GetPossibleVariants(
         AccessArguments accessArguments,
         IReadOnlyCollection<int> selectedIds)
-        => Variants.Where(v =>
+        => SortedVariants.Where(v =>
             selectedIds.Contains(v.Id.ProjectFieldVariantId) ||
             (v.IsActive && (v.IsPlayerSelectable || accessArguments.MasterAccess))
             );

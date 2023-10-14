@@ -13,6 +13,9 @@ public record class ProjectInfo
     public ProjectFieldInfo? CharacterNameField { get; }
     public ProjectFieldInfo? CharacterDescriptionField { get; }
 
+    public ProjectFieldInfo? TimeSlotField { get; }
+    public ProjectFieldInfo? RoomField { get; }
+
     public ProjectFieldSettings ProjectFieldSettings { get; }
     public ProjectFinanceSettings ProjectFinanceSettings { get; }
     public bool AccomodationEnabled { get; }
@@ -43,6 +46,9 @@ public record class ProjectInfo
         {
             CharacterDescriptionField = GetFieldById(descriptionField);
         }
+
+        TimeSlotField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleTimeSlotField && f.IsActive);
+        RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
