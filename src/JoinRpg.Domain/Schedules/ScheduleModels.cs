@@ -1,5 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -52,12 +54,12 @@ public record class ScheduleItemAttribute
 {
     public MarkdownString Description { get; }
     public string Name { get; }
-    public int Id { get; }
+    public ProjectFieldVariantIdentification Id { get; }
     public int SeqId { get; }
 
-    public ScheduleItemAttribute(ProjectFieldDropdownValue variant, int seqId)
+    public ScheduleItemAttribute(ProjectFieldVariant variant, int seqId)
     {
-        Id = variant.ProjectFieldDropdownValueId;
+        Id = variant.Id;
         Name = variant.Label;
         Description = variant.Description;
         SeqId = seqId;
@@ -66,16 +68,16 @@ public record class ScheduleItemAttribute
 
 public record class ScheduleRoom : ScheduleItemAttribute
 {
-    public ScheduleRoom(ProjectFieldDropdownValue variant, int seqId) : base(variant, seqId)
+    public ScheduleRoom(ProjectFieldVariant variant, int seqId) : base(variant, seqId)
     {
     }
 }
 
 public record class TimeSlot : ScheduleItemAttribute
 {
-    public TimeSlot(ProjectFieldDropdownValue variant, int seqId) : base(variant, seqId)
+    public TimeSlot(TimeSlotFieldVariant variant, int seqId) : base(variant, seqId)
     {
-        Options = variant.GetTimeSlotOptions();
+        Options = variant.TimeSlotOptions;
     }
 
     public TimeSlotOptions Options { get; }

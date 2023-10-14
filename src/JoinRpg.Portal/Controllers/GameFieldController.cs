@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -20,6 +21,8 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{ProjectId}/fields/[action]")]
 public class GameFieldController : ControllerGameBase
 {
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
     private IFieldSetupService FieldSetupService { get; }
     public FieldSetupManager Manager { get; }
     private ICurrentProjectAccessor CurrentProjectAccessor { get; }
@@ -30,13 +33,15 @@ public class GameFieldController : ControllerGameBase
         IFieldSetupService fieldSetupService,
         IUserRepository userRepository,
         FieldSetupManager manager,
-        ICurrentProjectAccessor currentProjectAccessor
+        ICurrentProjectAccessor currentProjectAccessor,
+        IProjectMetadataRepository projectMetadataRepository
         )
       : base(projectRepository, projectService, userRepository)
     {
         FieldSetupService = fieldSetupService;
         Manager = manager;
         CurrentProjectAccessor = currentProjectAccessor;
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     private ActionResult ReturnToIndex()
@@ -217,7 +222,9 @@ public class GameFieldController : ControllerGameBase
     [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> CreateValue(int projectId, int projectFieldId)
     {
-        var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+        var id = new ProjectFieldIdentification(new(projectId), projectFieldId);
+        var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
+        var field = metadata.GetFieldById(id);
         return View(new GameFieldDropdownValueCreateViewModel(field));
     }
 
@@ -257,13 +264,16 @@ public class GameFieldController : ControllerGameBase
     [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> EditValue(int projectId, int projectFieldId, int valueId)
     {
-        var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-        var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-        if (value == null)
+        var id = new ProjectFieldIdentification(new(projectId), projectFieldId);
+        var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
+
+        var field = metadata.GetFieldById(id);
+        var variant = field.Variants.SingleOrDefault(v => v.Id.ProjectFieldVariantId == valueId);
+        if (variant == null)
         {
             return NotFound();
         }
-        return View(new GameFieldDropdownValueEditViewModel(field, value));
+        return View(new GameFieldDropdownValueEditViewModel(field, variant));
     }
 
     [HttpPost, ValidateAntiForgeryToken]

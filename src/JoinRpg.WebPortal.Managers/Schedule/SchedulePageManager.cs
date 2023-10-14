@@ -83,7 +83,7 @@ public class SchedulePageManager
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
 
         var characters = await Project.GetCharacters(CurrentProject.ProjectId);
-        var scheduleBuilder = new ScheduleBuilder(project, characters, projectInfo);
+        var scheduleBuilder = new ScheduleBuilder(characters, projectInfo);
         return (project, scheduleBuilder.Build());
     }
 
@@ -301,7 +301,7 @@ public class SchedulePageManager
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
 
-        return new ScheduleBuilder(project!, characters, projectInfo);
+        return new ScheduleBuilder(characters, projectInfo);
     }
 
     private IProjectRepository Project { get; }

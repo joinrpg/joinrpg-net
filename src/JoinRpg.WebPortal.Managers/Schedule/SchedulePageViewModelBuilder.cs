@@ -35,7 +35,7 @@ internal static class SchedulePageViewModelBuilder
         {
             return new TableHeaderViewModel()
             {
-                Id = slot.Id,
+                Id = slot.Id.ProjectFieldVariantId,
                 Name = slot.Name,
                 Description =
                     $"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br />"
@@ -46,7 +46,7 @@ internal static class SchedulePageViewModelBuilder
         {
             return new TableHeaderViewModel()
             {
-                Id = room.Id,
+                Id = room.Id.ProjectFieldVariantId,
                 Name = room.Name,
                 Description = room.Description.ToHtmlString()
             };

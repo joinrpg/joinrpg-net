@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 
@@ -49,13 +49,13 @@ public abstract class GameFieldDropdownValueViewModelBase
     public bool IsTimeField { get; set; }
 
 
-    public GameFieldDropdownValueViewModelBase(ProjectField field)
+    public GameFieldDropdownValueViewModelBase(ProjectFieldInfo field)
     {
-        FieldName = field.FieldName;
-        ProjectId = field.ProjectId;
-        ProjectFieldId = field.ProjectFieldId;
+        FieldName = field.Name;
+        ProjectId = field.Id.ProjectId;
+        ProjectFieldId = field.Id.ProjectFieldId;
         PlayerSelectable = CanPlayerEditField = field.CanPlayerEdit;
-        IsTimeField = field.IsTimeSlot();
+        IsTimeField = field.IsTimeSlot;
     }
 
     public GameFieldDropdownValueViewModelBase() { }
