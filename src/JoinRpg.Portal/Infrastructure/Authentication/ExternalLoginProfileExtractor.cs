@@ -3,11 +3,11 @@ using AspNet.Security.OAuth.Vkontakte;
 using Joinrpg.Web.Identity;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication;
 
-#nullable enable 
 /// <summary>
 /// Task of this class is to extract useful data from social logins
 /// </summary>
@@ -24,7 +24,7 @@ public class ExternalLoginProfileExtractor
 
         if (TryGetVkId(loginInfo) is VkId vkId)
         {
-            var vkAvatar = TryGetClaim(loginInfo, VkontakteAuthenticationConstants.Claims.PhotoUrl);
+            var vkAvatar = loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl);
 
             if (vkAvatar is not null)
             {
@@ -32,34 +32,21 @@ public class ExternalLoginProfileExtractor
                   new AvatarInfo(new Uri(vkAvatar), 50, 50));
             }
         }
-
-        if (TryGetClaim(loginInfo, "urn:google:photo") is string googleAvatar)
-        {
-            await userService.SetGoogleIfNotSetWithoutAccessChecks(user.Id,
-                 new AvatarInfo(new Uri(googleAvatar), 96, 96));
-        }
-        //var googleProfileLink = loginInfo.Principal.FindFirstValue("urn:google:profile");
     }
-
-    /// <summary>
-    /// This method is required, because FindFirstValue is not properly null-annotated
-    /// </summary>
-    private static string? TryGetClaim(ExternalLoginInfo loginInfo, string claimType)
-        => loginInfo.Principal.FindFirstValue(claimType);
 
     private static UserFullName TryGetUserName(ExternalLoginInfo loginInfo)
     {
         var bornName = BornName.FromOptional(loginInfo.Principal.FindFirstValue(ClaimTypes.GivenName));
         var surName = SurName.FromOptional(loginInfo.Principal.FindFirstValue(ClaimTypes.Surname));
-        var prefferedName = new PrefferedName(loginInfo.Principal.FindFirstValue(ClaimTypes.Name));
+        var prefferedName = new PrefferedName(loginInfo.Principal.FindFirstValue(ClaimTypes.Name)!);
 
         return new UserFullName(prefferedName, bornName, surName, FatherName: null);
     }
 
     private static VkId? TryGetVkId(ExternalLoginInfo loginInfo)
     {
-        return loginInfo.LoginProvider == "Vkontakte"
-            && TryGetClaim(loginInfo, ClaimTypes.NameIdentifier) is string id
+        return loginInfo.LoginProvider == ProviderDescViewModel.Vk.ProviderId
+            && loginInfo.Principal.FindFirstValue(ClaimTypes.NameIdentifier) is string id
             ? new VkId(id)
             : null;
     }

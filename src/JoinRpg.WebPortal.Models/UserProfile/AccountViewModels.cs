@@ -19,9 +19,11 @@ public class ExternalLoginConfirmationViewModel
 
 public class ExternalLoginListViewModel
 {
-    public string ReturnUrl { get; set; }
-    public List<AuthenticationDescriptionViewModel> ExternalLogins { get; set; }
+    public required string ReturnUrl { get; set; }
+    public required List<AuthenticationDescriptionViewModel> ExternalLogins { get; set; }
 }
+
+public record GoogleDeprecatedViewModel(bool HasPassword, string RedirectUrl, UserLoginInfoViewModel VkLogin, string Email);
 
 public class AuthenticationDescriptionViewModel
 {
