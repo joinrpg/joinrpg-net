@@ -1,5 +1,4 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.ClaimList;
 
@@ -7,10 +6,12 @@ namespace JoinRpg.Web.Models.Exporters;
 
 public class ClaimListItemViewModelExporter : CustomExporter<ClaimListItemForExportViewModel>
 {
-    public ClaimListItemViewModelExporter(Project project, IUriService uriService) : base(
-        uriService) => Project = project;
+    private readonly ProjectInfo projectInfo;
 
-    private Project Project { get; }
+    public ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo projectInfo) : base(uriService)
+    {
+        this.projectInfo = projectInfo;
+    }
 
     public override IEnumerable<ITableColumn> ParseColumns()
     {
@@ -23,11 +24,11 @@ public class ClaimListItemViewModelExporter : CustomExporter<ClaimListItemForExp
         yield return IntColumn(x => x.TotalFee);
         yield return IntColumn(x => x.FeeDue);
         yield return IntColumn(x => x.FeePaid);
-        if (Project.Details.PreferentialFeeEnabled)
+        if (projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled)
         {
             yield return BoolColumn(x => x.PreferentialFeeUser);
         }
-        if (Project.Details.EnableAccommodation)
+        if (projectInfo.AccomodationEnabled)
         {
             yield return StringColumn(x => x.AccomodationType);
             yield return StringColumn(x => x.RoomName);
@@ -40,10 +41,9 @@ public class ClaimListItemViewModelExporter : CustomExporter<ClaimListItemForExp
             yield return c;
         }
 
-        foreach (var projectField in Project.GetOrderedFields().Where(f => f.CanHaveValue()))
+        foreach (var projectField in projectInfo.SortedFields.Where(f => f.CanHaveValue))
         {
-            yield return
-                FieldColumn(projectField, x => x.Fields);
+            yield return FieldColumn(projectField, x => x.Fields);
         }
     }
 }
