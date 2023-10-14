@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Newtonsoft.Json;
 
@@ -70,6 +71,11 @@ public static class CustomFieldsExtensions
         var publicFields = claim.Project.ProjectFields.Where(f => f.IsPublic).Select(x => x.ProjectFieldId).ToList();
         return GetFieldsForContainers(claim.Project, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
             claim.DeserializeFieldValues());
+    }
+
+    public static FieldWithValue? GetSingleField(this Claim claim, ProjectInfo projectInfo, ProjectFieldIdentification id)
+    {
+        return claim.GetFields(projectInfo).SingleOrDefault(f => f.Field.ProjectFieldId == id.ProjectFieldId);
     }
 
     public static IReadOnlyCollection<FieldWithValue> GetFieldsForClaimSource(this IClaimSource claimSource, ProjectInfo projectInfo)

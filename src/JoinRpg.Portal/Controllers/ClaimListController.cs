@@ -353,11 +353,12 @@ public class ClaimListController : Common.ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
     {
-        var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
         var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+        var fieldId = new ProjectFieldIdentification(new(projectid), projectfieldid);
+        var field = projectInfo.GetFieldById(fieldId);
 
-        return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, claims.Where(c => c.GetFields(projectInfo).Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
+        return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.Name, claims.Where(c => c.GetSingleField(projectInfo, fieldId)!.HasEditableValue)
                 .ToList(),
                 ClaimStatusSpec.Active
         );
@@ -366,10 +367,12 @@ public class ClaimListController : Common.ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
-        var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
         var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.FieldName, claims.Where(c => !c.GetFields(projectInfo).Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
+        var fieldId = new ProjectFieldIdentification(new(projectid), projectfieldid);
+        var field = projectInfo.GetFieldById(fieldId);
+
+        return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.Name, claims.Where(c => !c.GetSingleField(projectInfo, fieldId)!.HasEditableValue)
                 .ToList(),
                 ClaimStatusSpec.Active
         );
