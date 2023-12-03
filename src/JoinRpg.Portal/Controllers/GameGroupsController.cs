@@ -199,7 +199,7 @@ public class GameGroupsController : ControllerGameBase
 
     private JsonResult ReturnJson(object data)
     {
-        Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        Response.Headers.Append("Access-Control-Allow-Origin", "*");
 
         return Json(data, new JsonSerializerOptions()
         {
@@ -470,7 +470,7 @@ public class GameGroupsController : ControllerGameBase
 
     private bool IsClientCached(DateTime contentModified)
     {
-        string? header = Request.Headers["If-Modified-Since"];
+        string? header = Request.Headers.IfModifiedSince;
 
         if (header == null)
         {
@@ -488,7 +488,7 @@ public class GameGroupsController : ControllerGameBase
             return true;
         }
 
-        Response.Headers.Add("Last-Modified", characterTreeModifiedAt.ToString("R"));
+        Response.Headers.Append("Last-Modified", characterTreeModifiedAt.ToString("R"));
         return false;
     }
 
