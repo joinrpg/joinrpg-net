@@ -34,7 +34,9 @@ public class GameSubscribeController : Controller
         this.currentUserAccessor = currentUserAccessor;
     }
 
+#pragma warning disable ASP0023 // Route conflict detected between controller actions There is no one because of [action]
     [HttpGet("{masterId}")]
+#pragma warning restore ASP0023 // Route conflict detected between controller actions
     public async Task<ActionResult> ByMaster(int projectId, int masterId)
     {
         var subscribeViewModel = await subscribeClient.GetSubscribeForMaster(projectId, masterId);
@@ -58,7 +60,9 @@ public class GameSubscribeController : Controller
         return Redirect(uriService.GetUri(link).AbsoluteUri);
     }
 
+#pragma warning disable ASP0023 // Route conflict detected between controller actions. There is no one because of [action]
     [HttpGet("{characterGroupId}")]
+#pragma warning restore ASP0023 // Route conflict detected between controller actions
     public ActionResult EditForGroup(int projectId, int characterGroupId)
     {
         return RedirectToAction(actionName: "ByMaster", routeValues: new { MasterId = currentUserAccessor.UserId, ProjectId = projectId });
