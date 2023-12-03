@@ -147,16 +147,6 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.SetGoogleIfNotSetWithoutAccessChecks(int userId, AvatarInfo avatarInfo)
-    {
-        logger.LogInformation("About to link user: {userId} to google", userId);
-        var user = await UserRepository.WithProfile(userId);
-
-        await AddSocialAvatarImplAsync(avatarInfo, user, "Google");
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
     private async Task AddSocialAvatarImplAsync(AvatarInfo avatarInfo, User user, string providerId)
     {
         if (

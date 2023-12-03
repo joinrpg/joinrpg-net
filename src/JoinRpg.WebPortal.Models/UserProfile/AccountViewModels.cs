@@ -23,8 +23,6 @@ public class ExternalLoginListViewModel
     public required List<AuthenticationDescriptionViewModel> ExternalLogins { get; set; }
 }
 
-public record GoogleDeprecatedViewModel(bool HasPassword, string RedirectUrl, UserLoginInfoViewModel VkLogin, string Email);
-
 public class AuthenticationDescriptionViewModel
 {
     public string AuthenticationType { get; set; }
