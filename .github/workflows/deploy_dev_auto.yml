@@ -5,6 +5,10 @@ on:
     types: [completed]
     branches: [master]
 
+concurrency:
+  group: development
+  cancel-in-progress: true
+
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master' }}
