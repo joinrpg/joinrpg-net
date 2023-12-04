@@ -1,0 +1,17 @@
+name: Deploy to dev automatically after build
+on:
+  workflow_run:
+    workflows: [Build and publish]
+    types: [completed]
+    branches: [master]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    permissions: read-all
+    uses: ./.github/workflows/deploy_reusable_workflow.yml
+    with:
+      deployVersion: latest 
+      environment: dev
+      environment_url: https://dev.joinrpg.ru
+    secrets: inherit
