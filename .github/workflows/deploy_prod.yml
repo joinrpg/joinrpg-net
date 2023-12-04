@@ -7,6 +7,10 @@ on:
         required: true
         default: latest
 
+concurrency:
+  group: development
+  cancel-in-progress: true
+
 jobs:
   deploy:
     permissions: read-all
