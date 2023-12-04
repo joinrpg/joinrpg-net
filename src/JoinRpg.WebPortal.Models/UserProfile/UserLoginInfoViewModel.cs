@@ -5,7 +5,6 @@ namespace JoinRpg.Web.Models;
 
 public record ProviderDescViewModel(string ProviderId, string FriendlyName)
 {
-    public static readonly ProviderDescViewModel Google = new("Google", "Google");
     public static readonly ProviderDescViewModel Vk = new("Vkontakte", "ВК");
 }
 
@@ -28,7 +27,6 @@ public static class UserLoginInfoViewModelBuilder
     public static IEnumerable<UserLoginInfoViewModel> GetSocialLogins(this User user)
     {
         var canRemoveLogins = user.PasswordHash != null || user.ExternalLogins.Count > 1;
-        yield return GetModel(ProviderDescViewModel.Google);
         var vk = GetModel(ProviderDescViewModel.Vk);
         if (vk.ProviderKey is not null)
         {
@@ -47,7 +45,7 @@ public static class UserLoginInfoViewModelBuilder
         UserLoginInfoViewModel GetModel(ProviderDescViewModel provider)
         {
             if (user.ExternalLogins.SingleOrDefault(l =>
-                l.Provider.ToLowerInvariant() == provider.ProviderId.ToLowerInvariant()
+                l.Provider.Equals(provider.ProviderId, StringComparison.InvariantCultureIgnoreCase)
                 ) is UserExternalLogin login)
             {
                 return new UserLoginInfoViewModel()

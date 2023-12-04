@@ -22,10 +22,6 @@
                     @foreach (var p in loginProviders)
                     {
                         var style = "btn-default";
-                        if (p.AuthenticationType == "Google")
-                        {
-                            style = "btn-danger";
-                        }
                         if (p.AuthenticationType == "Vkontakte")
                         {
                             style = "btn-primary";
@@ -35,6 +31,11 @@
                         <button type="submit" class="btn @style" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">@p.AuthenticationType</button>
                     }
                 </p>
+
+                <a asp-controller="Account" asp-action="googleDeprecated" class="btn btn-danger">
+                  <del>Google</del>
+                </a>
+
             </div>
         }
     }

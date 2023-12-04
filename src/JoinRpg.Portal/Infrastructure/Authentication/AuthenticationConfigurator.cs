@@ -53,21 +53,9 @@ internal static class AuthenticationConfigurator
 
     public static AuthenticationBuilder ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
     {
-        var googleConfig = configSection.GetSection("Google").Get<OAuthAuthenticationOptions>();
-
-        if (googleConfig is object)
-        {
-            _ = authBuilder.AddGoogle(options =>
-              {
-                  options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
-
-                  SetCommonProperties(options, googleConfig);
-              });
-        }
-
         var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
 
-        if (vkConfig is object)
+        if (vkConfig is not null)
         {
             _ = authBuilder.AddVkontakte(options =>
               {

@@ -21,10 +21,5 @@ public interface IUserService
     /// </summary>
     Task SetVkIfNotSetWithoutAccessChecks(int id, VkId vkId, AvatarInfo avatarInfo);
 
-    /// <summary>
-    /// Set google Link if not set already.
-    /// All access check fortfeit (cause is method typically called during login, so ICurrentUserAccessor could be old).
-    /// </summary>
-    Task SetGoogleIfNotSetWithoutAccessChecks(int id, AvatarInfo avatarInfo);
     Task RemoveVkFromProfile(int id);
 }
