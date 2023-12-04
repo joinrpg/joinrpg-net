@@ -271,6 +271,23 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
         return await allQuery.ToListAsync();
     }
 
+    public async Task<int[]> GetInactiveProjectsWithSlots()
+    {
+        var allQuery =
+            from project in Ctx.Set<Project>()
+            where !project.Active
+            select new
+            {
+                project.ProjectId,
+                GroupsCount = project.CharacterGroups.Count(g => g.HaveDirectSlots),
+            }
+            into beforeFilter
+            where beforeFilter.GroupsCount > 0
+            select beforeFilter.ProjectId;
+
+        return await allQuery.ToArrayAsync();
+    }
+
     private IQueryable<ProjectWithUpdateDateDto> GetLastUpdateQuery<T>(
         Expression<Func<T, DateTime>> lastUpdateExpression) where T : class, IProjectEntity
     {
