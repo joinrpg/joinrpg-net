@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Web.ProjectCommon;
 
 public interface IMasterClient

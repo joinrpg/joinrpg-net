@@ -3,7 +3,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.Interfaces;

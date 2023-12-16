@@ -1,4 +1,3 @@
-using DocumentFormat.OpenXml.ExtendedProperties;
 using JetBrains.Annotations;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
@@ -14,7 +13,6 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;

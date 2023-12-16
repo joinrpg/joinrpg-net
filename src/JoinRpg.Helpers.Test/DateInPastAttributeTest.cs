@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.Helpers.Validation;
 using Shouldly;
 using Xunit;

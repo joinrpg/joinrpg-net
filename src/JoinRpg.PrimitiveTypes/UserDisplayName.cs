@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace JoinRpg.PrimitiveTypes;
 
 // How to put attr on primary ctor??? [method:System.Text.Json.Serialization.JsonConstructor]
