@@ -1,0 +1,57 @@
+﻿@namespace JoinRpg.WebComponents
+
+<button href="#"
+        class="@style"
+        @onclick="OnClickHappened"
+        type="@buttonType"
+        disabled="@disabled"
+        title="@Title">
+    @label
+</button>
+@code {
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.Success;
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+    [Parameter] [EditorRequired] public RenderFragment Label { get; set; } = @<text>ЖМИ!</text>;
+    [Parameter] public RenderFragment ProgressLabel { get; set; } = @<text>Загрузка...</text>;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public bool Submit { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public string? Title { get; set; } = null;
+
+    private string buttonType => Submit ? "submit" : "button";
+    private string style => BootstrapStyle.Build("btn", Variation, Size);
+    private bool operationInProgress = false;
+    private bool disabled => Disabled || operationInProgress;
+    private RenderFragment label => operationInProgress ? ProgressLabel : Label;
+
+    private async Task OnClickHappened(MouseEventArgs e)
+    {
+        if (disabled) { return; }
+        operationInProgress = true;
+        await OnClick.InvokeAsync(e);
+        operationInProgress = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Disabled)
+        {
+            OnClick = EventCallback<MouseEventArgs>.Empty;
+        }
+    }
+
+    internal static RenderFragment FormatLabel(string label, string icon) => @<text><span class="glyphicon @icon"></span>@label</text>;
+
+    internal static RenderFragment SelectLabel(string? strParam, RenderFragment? fragmentParam, string defaultStr, string defaultIcon)
+    {
+        return (strParam, fragmentParam) switch
+        {
+            (null, RenderFragment fragment) => fragment,
+            (string str, null) => FormatLabel(str, defaultIcon),
+            (null, null) => FormatLabel(defaultStr, defaultIcon),
+            _ => throw new InvalidOperationException("Do not set both Label and LabelFragment")
+        };
+    }
+
+}
