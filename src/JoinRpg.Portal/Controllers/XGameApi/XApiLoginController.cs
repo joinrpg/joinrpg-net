@@ -4,7 +4,7 @@ using System.Text;
 using Joinrpg.Web.Identity;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Web.XGameApi.Contract;
+using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

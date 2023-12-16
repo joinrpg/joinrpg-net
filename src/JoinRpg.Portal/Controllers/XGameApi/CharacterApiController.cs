@@ -5,10 +5,10 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.XGameApi.Contract;
+using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
-using CharacterHeader = JoinRpg.Web.XGameApi.Contract.CharacterHeader;
-using GroupHeader = JoinRpg.Web.XGameApi.Contract.GroupHeader;
+using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
+using GroupHeader = JoinRpg.XGameApi.Contract.GroupHeader;
 
 namespace JoinRpg.Web.Controllers.XGameApi;
 

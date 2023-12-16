@@ -1,7 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Web.XGameApi.Contract;
+using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi;

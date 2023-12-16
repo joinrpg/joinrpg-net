@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.XGameApi.Contract;
+namespace JoinRpg.XGameApi.Contract;
 
 /// <summary>
 /// Player info
