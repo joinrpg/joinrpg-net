@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.XGameApi.Contract.Schedule;
+namespace JoinRpg.XGameApi.Contract.Schedule;
 
 /// <summary>
 /// Information about program item author

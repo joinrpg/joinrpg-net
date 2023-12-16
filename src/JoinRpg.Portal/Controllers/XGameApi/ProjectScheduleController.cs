@@ -4,8 +4,8 @@ using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
-using JoinRpg.Web.XGameApi.Contract.Schedule;
 using JoinRpg.WebPortal.Managers.Schedule;
+using JoinRpg.XGameApi.Contract.Schedule;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi;

@@ -37,7 +37,7 @@ internal static class Swagger
             Version = "v1"
         });
         c.IncludeXmlCommentsForAssembly(Assembly.GetExecutingAssembly());
-        c.IncludeXmlCommentsForAssembly(typeof(Web.XGameApi.Contract.AuthenticationResponse).Assembly);
+        c.IncludeXmlCommentsForAssembly(typeof(XGameApi.Contract.AuthenticationResponse).Assembly);
 
         c.DocumentFilter<SwaggerXGameApiFilter>();
     }

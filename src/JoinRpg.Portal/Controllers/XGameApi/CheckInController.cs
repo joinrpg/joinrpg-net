@@ -5,7 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.XGameApi.Contract;
+using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi;

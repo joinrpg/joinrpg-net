@@ -1,9 +1,9 @@
-namespace JoinRpg.Web.XGameApi.Contract;
+namespace JoinRpg.XGameApi.Contract;
 
 /// <summary>
-/// Project fields
+/// Project
 /// </summary>
-public class ProjectFieldsMetadata
+public class ProjectHeader
 {
     /// <summary>
     /// Id
@@ -13,8 +13,4 @@ public class ProjectFieldsMetadata
     /// Name
     /// </summary>
     public string ProjectName { get; set; }
-    /// <summary>
-    /// Fields
-    /// </summary>
-    public IEnumerable<ProjectFieldInfo> Fields { get; set; }
 }
