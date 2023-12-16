@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
@@ -10,10 +8,10 @@ internal class WorldObjectProviderBase
 {
     protected static List<SearchResultImpl> GetWorldObjectsResult(
       int? currentUserId,
-      [InstantHandle] IEnumerable<IWorldObject> results,
+      IEnumerable<IWorldObject> results,
       LinkType linkType,
-      [InstantHandle] Predicate<IWorldObject> wasFoundByIdPredicate,
-      [InstantHandle] Predicate<IWorldObject> perfectMatchPredicte)
+      Predicate<IWorldObject> wasFoundByIdPredicate,
+      Predicate<IWorldObject> perfectMatchPredicte)
     {
         return results.Where(cg => cg.IsVisible(currentUserId))
           .Select(result =>

@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces.Notification;
