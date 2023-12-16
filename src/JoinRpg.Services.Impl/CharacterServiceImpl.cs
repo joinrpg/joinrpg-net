@@ -7,6 +7,7 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
@@ -57,7 +58,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             Project = project,
         };
 
-        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
+        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
 
         Create(character);
         MarkTreeModified(project);
@@ -71,7 +72,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void SetCharacterSettings(Character character, CharacterTypeInfo characterTypeInfo)
+    private static void SetCharacterSettings(Character character, CharacterTypeInfo characterTypeInfo, ProjectInfo projectInfo)
     {
         if (character.Claims.Any(claim => claim.ClaimStatus.IsActive())
             && characterTypeInfo.CharacterType != character.CharacterType)
@@ -88,7 +89,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             character.HidePlayerForCharacter) = characterTypeInfo;
 
         if (characterTypeInfo.CharacterType == CharacterType.Slot
-            && character.Project.Details.CharacterNameField is null)
+            && projectInfo.CharacterNameField is null)
         {
             character.CharacterName = Required(characterTypeInfo.SlotName);
         }
@@ -102,7 +103,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(editCharacterRequest.Id.ProjectId));
 
-        SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo);
+        SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo, projectInfo);
 
         character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
             Required(editCharacterRequest.ParentCharacterGroupIds),
@@ -271,7 +272,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
                 Project = group.Project,
             };
 
-            SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo);
+            SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
 
             Create(character);
 

@@ -40,6 +40,6 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
     {
         Fields = new CustomFieldsViewModel(currentUserId, field, projectInfo);
-        CharactersHaveNameField = field.Project.Details.CharacterNameField is not null;
+        CharactersHaveNameField = projectInfo.CharacterNameField is not null;
     }
 }
