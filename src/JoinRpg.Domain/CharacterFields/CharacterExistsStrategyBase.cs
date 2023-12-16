@@ -22,26 +22,27 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
 
     protected void SetCharacterDescription(Dictionary<int, FieldWithValue> fields)
     {
-        if (Project.Details.CharacterDescription != null)
+        if (ProjectInfo.CharacterDescriptionField != null)
         {
             Character.Description = new MarkdownString(
-                fields[Project.Details.CharacterDescription.ProjectFieldId].Value);
+                GetFieldValue(ProjectInfo.CharacterDescriptionField));
         }
 
 
-        if (Project.Details.CharacterNameField == null)
+        if (ProjectInfo.CharacterNameField == null)
         {
             SetCharacterNameFromPlayer();
         }
         else
         {
-            var name = fields[Project.Details.CharacterNameField.ProjectFieldId].Value;
+            var name = GetFieldValue(ProjectInfo.CharacterNameField);
 
             Character.CharacterName = string.IsNullOrWhiteSpace(name) ?
                 Character.CharacterName = "CHAR" + Character.CharacterId
                 : name;
         }
 
+        string? GetFieldValue(ProjectFieldInfo field) => fields[field.Id.ProjectFieldId].Value;
     }
 
     public override void Save(Dictionary<int, FieldWithValue> fields)
