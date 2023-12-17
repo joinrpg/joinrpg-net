@@ -6,17 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu;
 
-public class MainMenuViewComponent : ViewComponent
+public class MainMenuViewComponent(ICurrentUserAccessor currentUserAccessor, IProjectRepository projectRepository) : ViewComponent
 {
-    public MainMenuViewComponent(ICurrentUserAccessor currentUserAccessor, IProjectRepository projectRepository)
-    {
-        CurrentUserAccessor = currentUserAccessor;
-        ProjectRepository = projectRepository;
-    }
-
-    private ICurrentUserAccessor CurrentUserAccessor { get; }
-    private IProjectRepository ProjectRepository { get; }
-
     public async Task<IViewComponentResult> InvokeAsync()
     {
         var viewModel = new MainMenuViewModel()
@@ -28,12 +19,12 @@ public class MainMenuViewComponent : ViewComponent
 
     private async Task<List<MainMenuProjectLinkViewModel>> GetProjectLinks()
     {
-        var user = CurrentUserAccessor.UserIdOrDefault;
+        var user = currentUserAccessor.UserIdOrDefault;
         if (user == null)
         {
-            return new List<MainMenuProjectLinkViewModel>();
+            return [];
         }
-        var projects = await ProjectRepository.GetAllMyProjectsAsync(user.Value);
+        var projects = await projectRepository.GetAllMyProjectsAsync(user.Value);
         return projects.ToMainMenuLinkViewModels().ToList();
     }
 }

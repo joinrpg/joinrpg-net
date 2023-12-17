@@ -16,7 +16,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new { area = "" }, null)</li>
                     }
