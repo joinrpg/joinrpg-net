@@ -11,14 +11,11 @@ using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 
 namespace JoinRpg.Portal;
@@ -79,32 +76,7 @@ public class Startup
             options.Conventions.ConfigureFilter(new RedirectAntiforgeryValidationFailedResultFilter());
         });
 
-
-        var dataProtection = services.AddDataProtection();
-
-        if (!environment.IsDevelopment())
-        {
-            var dataProtectionConnectionString = Configuration.GetConnectionString("DataProtection");
-            if (!string.IsNullOrWhiteSpace(dataProtectionConnectionString))
-            {
-                services.AddDbContext<DataProtectionDbContext>(
-                    options =>
-                    {
-                        options.UseNpgsql(dataProtectionConnectionString);
-                        options.EnableSensitiveDataLogging(environment.IsDevelopment());
-                        options.EnableDetailedErrors(environment.IsDevelopment());
-                    });
-
-                services.AddDatabaseDeveloperPageExceptionFilter();
-                services
-                    .AddHealthChecks()
-                    .AddNpgSql(
-                        Configuration["ConnectionStrings:DataProtection"],
-                        name: "dataprotection-db",
-                        failureStatus: HealthStatus.Degraded);
-                dataProtection.PersistKeysToDbContext<DataProtectionDbContext>();
-            }
-        }
+        services.AddJoinDataProtection(Configuration, environment);
 
         if (environment.IsDevelopment())
         {
