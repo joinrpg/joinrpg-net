@@ -6,18 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Joinrpg.Dal.Migrate;
 
-internal class MigrateHostService : OneTimeOperationHostedServiceBase
+internal class MigrateHostService(
+    IHostApplicationLifetime applicationLifetime,
+    ILogger<MigrateHostService> logger,
+    IConfiguration configuration)
+    : OneTimeOperationHostedServiceBase(applicationLifetime, logger)
 {
-    private readonly IConfiguration configuration;
-
-    public MigrateHostService(IHostApplicationLifetime applicationLifetime, ILogger<MigrateHostService> logger, IConfiguration configuration)
-        : base(applicationLifetime, logger) => this.configuration = configuration;
-
     internal override void DoWork()
     {
         logger.LogInformation("Create migration");
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("There is no connection string");
 
         //TODO mask connection string from logs;
         //logger.LogInformation("Discovered connection string {connectionString}", connectionString);
@@ -32,7 +31,7 @@ internal class MigrateHostService : OneTimeOperationHostedServiceBase
 
         var pending = migrator.GetPendingMigrations();
         logger.LogInformation("Pending migrations {pending}", string.Join("\n", pending));
-        migrator.Update();
+        migrator.Update(); // TODO pass migration name from command line to allow reverts
         logger.LogInformation("Migration completed");
     }
 }
