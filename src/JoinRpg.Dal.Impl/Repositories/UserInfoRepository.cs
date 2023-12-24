@@ -1,6 +1,5 @@
 using System.Data.Entity;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
@@ -9,17 +8,12 @@ using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
+internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubscribeRepository
 {
-    private readonly MyDbContext _ctx;
-
-    public UserInfoRepository(MyDbContext ctx) => _ctx = ctx;
-
-    public Task<User> GetById(int id) => _ctx.UserSet.FindAsync(id);
+    public Task<User> GetById(int id) => ctx.UserSet.FindAsync(id);
     public Task<User> WithProfile(int userId)
     {
-        return _ctx.Set<User>()
+        return ctx.Set<User>()
           .Include(u => u.Auth)
           .Include(u => u.Allrpg)
           .Include(u => u.Extra)
@@ -29,7 +23,7 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
     }
 
     public Task<User> GetWithSubscribe(int currentUserId)
-        => _ctx
+        => ctx
             .Set<User>()
             .Include(u => u.Subscriptions)
             .SingleOrDefaultAsync(u => u.UserId == currentUserId);
@@ -38,7 +32,7 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
         LoadSubscriptionsForProject(int userId, int projectId)
     {
         var user = await WithProfile(userId);
-        var subscribe = await _ctx.Set<UserSubscription>()
+        var subscribe = await ctx.Set<UserSubscription>()
             .Where(x => x.ProjectId == projectId && x.UserId == userId)
             .Select(SubscriptionDtoBuilder())
             .ToArrayAsync();
@@ -72,16 +66,16 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
 
     public async Task<UserSubscriptionDto> LoadSubscriptionById(int projectId, int subscriptionId)
     {
-        var subscribe = await _ctx.Set<UserSubscription>()
+        var subscribe = await ctx.Set<UserSubscription>()
             .Where(x => x.ProjectId == projectId && x.UserSubscriptionId == subscriptionId)
             .Select(SubscriptionDtoBuilder())
             .FirstOrDefaultAsync();
         return subscribe;
     }
 
-    public Task<User> GetByEmail(string email)
+    public async Task<User?> GetByEmail(string email)
     {
-        return _ctx.Set<User>()
+        return await ctx.Set<User>()
           .Include(u => u.Auth)
           .Include(u => u.Allrpg)
           .Include(u => u.Extra)
@@ -89,7 +83,7 @@ internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
     }
 
     Task<UserAvatar> IUserRepository.LoadAvatar(AvatarIdentification userAvatarId)
-        => _ctx.Set<User>()
+        => ctx.Set<User>()
             .SelectMany(user => user.Avatars)
             .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
 }

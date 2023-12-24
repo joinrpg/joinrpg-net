@@ -1,18 +1,12 @@
 using System.Data.Entity;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly(ImplicitUseTargetFlags.Itself)]
-internal class ForumRepositoryImpl : GameRepositoryImplBase, IForumRepository
+internal class ForumRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IForumRepository
 {
-    public ForumRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     public Task<ForumThread> GetThread(int projectId, int? forumThreadId)
     {
         return
@@ -65,13 +59,13 @@ internal class ForumRepositoryImpl : GameRepositoryImplBase, IForumRepository
               ProjectId = thread.ProjectId,
               Header = thread.Header,
               LastMessageAuthor =
-              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().Author,
+              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault()!.Author,
               LastMessageText =
-              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().CommentText.Text,
+              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault()!.CommentText.Text,
               LastMessageAuthorForPlayer =
-              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault(c => c.IsVisibleToPlayer).Author,
+              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault(c => c.IsVisibleToPlayer)!.Author,
               LastMessageTextForPlayer =
-              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault(c => c.IsVisibleToPlayer).CommentText.Text,
+              thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault(c => c.IsVisibleToPlayer)!.CommentText.Text,
               Topicstarter = thread.AuthorUser,
               UpdatedAt = thread.ModifiedAt,
               Comments = thread.CommentDiscussion.Comments.Select(c => new CommentHeaderImpl
@@ -95,30 +89,30 @@ internal class ForumRepositoryImpl : GameRepositoryImplBase, IForumRepository
 public class CommentHeaderImpl : ICommentHeader
 {
     public int Id { get; set; }
-    public Project Project { get; set; }
+    public required Project Project { get; set; }
     public int ProjectId { get; set; }
     public int AuthorUserId { get; set; }
     public bool IsVisibleToPlayer { get; set; }
 }
 
-public class ForumThreadListImpl : IForumThreadListItem
+internal class ForumThreadListImpl : IForumThreadListItem
 {
-    public int ProjectId { get; set; }
-    public string Header { get; set; }
-    public User Topicstarter { get; set; }
-    public MarkdownString LastMessageText { get; set; }
-    public User LastMessageAuthor { get; set; }
+    public required int ProjectId { get; set; }
+    public required string Header { get; set; }
+    public required User Topicstarter { get; set; }
+    public required MarkdownString LastMessageText { get; set; }
+    public required User LastMessageAuthor { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public int Id { get; set; }
-    public Project Project { get; set; }
+    public required int Id { get; set; }
+    public required Project Project { get; set; }
     IEnumerable<ReadCommentWatermark> ICommentDiscussionHeader.Watermarks => Watermarks;
 
     IEnumerable<ICommentHeader> ICommentDiscussionHeader.Comments => Comments;
 
-    internal List<CommentHeaderImpl> Comments { private get; set; }
-    internal List<ReadCommentWatermark> Watermarks { private get; set; }
-    public bool IsVisibleToPlayer { get; set; }
-    public int CharacterGroupId { get; set; }
-    public User LastMessageAuthorForPlayer { get; set; }
-    public MarkdownString LastMessageTextForPlayer { get; set; }
+    internal required List<CommentHeaderImpl> Comments { private get; set; }
+    internal required List<ReadCommentWatermark> Watermarks { private get; set; }
+    public required bool IsVisibleToPlayer { get; set; }
+    public required int CharacterGroupId { get; set; }
+    public required User LastMessageAuthorForPlayer { get; set; }
+    public required MarkdownString LastMessageTextForPlayer { get; set; }
 }

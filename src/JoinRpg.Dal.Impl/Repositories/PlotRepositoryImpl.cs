@@ -1,15 +1,13 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-internal class PlotRepositoryImpl : GameRepositoryImplBase, IPlotRepository
+internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IPlotRepository
 {
-    public async Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
+    public async Task<PlotFolder?> GetPlotFolderAsync(int projectId, int plotFolderId)
     {
         await LoadProjectCharactersAndGroups(projectId);
         await LoadMasters(projectId);
@@ -66,11 +64,6 @@ internal class PlotRepositoryImpl : GameRepositoryImplBase, IPlotRepository
           .Include(pf => pf.Elements.Select(e => e.TargetGroups))
           .Where(pf => pf.ProjectId == projectId)
           .ToListAsync();
-
-
-    public PlotRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
-    }
 
     public async Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid)
     {

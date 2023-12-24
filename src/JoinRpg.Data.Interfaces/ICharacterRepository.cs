@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 
@@ -12,10 +11,8 @@ public class CharacterHeader
 }
 public interface ICharacterRepository : IDisposable
 {
-    [ItemNotNull]
     Task<IReadOnlyCollection<CharacterHeader>> GetCharacterHeaders(int projectId, DateTime? modifiedSince);
-    [ItemNotNull]
-    Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
+    Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds);
 
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
@@ -26,17 +23,17 @@ public interface ICharacterRepository : IDisposable
 
 public class CharacterView : IFieldContainter
 {
-    public int CharacterId { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public bool IsActive { get; set; }
-    public bool InGame { get; set; }
-    public CharacterTypeInfo CharacterTypeInfo { get; set; }
+    public required int CharacterId { get; set; }
+    public required DateTime UpdatedAt { get; set; }
+    public required bool IsActive { get; set; }
+    public required bool InGame { get; set; }
+    public required CharacterTypeInfo CharacterTypeInfo { get; set; }
     public Claim? ApprovedClaim { get; set; }
-    public IReadOnlyCollection<ClaimHeader> Claims { get; set; }
-    public IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
-    public IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
-    public string JsonData { get; set; }
-    public string Name { get; set; }
+    public required IReadOnlyCollection<ClaimHeader> Claims { get; set; }
+    public required IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
+    public required IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
+    public required string JsonData { get; set; }
+    public required string Name { get; set; }
     public string? Description { get; set; }
 }
 

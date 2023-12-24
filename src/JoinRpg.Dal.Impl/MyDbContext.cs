@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
@@ -9,7 +8,6 @@ using JoinRpg.DataModel.Finances;
 
 namespace JoinRpg.Dal.Impl;
 
-[UsedImplicitly]
 public class MyDbContext : DbContext, IUnitOfWork
 {
     /// <summary>
@@ -98,7 +96,7 @@ public class MyDbContext : DbContext, IUnitOfWork
             .HasForeignKey(fo => fo.ClaimId);
 
         _ = modelBuilder.Entity<AccommodationRequest>().HasMany(c => c.Subjects)
-            .WithOptional(c => c.AccommodationRequest);
+            .WithOptional(c => c.AccommodationRequest!);
 
 
         modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany()

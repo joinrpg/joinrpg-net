@@ -1,6 +1,5 @@
 using System.Data.Entity;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -10,8 +9,7 @@ using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepository
+internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), ICharacterRepository
 {
     public async Task<IReadOnlyCollection<CharacterHeader>> GetCharacterHeaders(int projectId, DateTime? modifiedSince)
     {
@@ -128,9 +126,5 @@ internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepos
           await Ctx.Set<Character>()
             .Include(c => c.Project)
             .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
-    public CharacterRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
     }
 }
