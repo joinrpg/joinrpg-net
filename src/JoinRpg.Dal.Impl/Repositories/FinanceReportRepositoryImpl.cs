@@ -1,18 +1,12 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-internal class FinanceReportRepositoryImpl : GameRepositoryImplBase, IFinanceReportRepository
+internal class FinanceReportRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IFinanceReportRepository
 {
-    public FinanceReportRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     public Task<List<MoneyTransfer>> GetMoneyTransfersForMaster(int projectId, int masterId)
         => Ctx.Set<MoneyTransfer>()
             .Include(mt => mt.TransferText)

@@ -1,20 +1,14 @@
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-internal class ClaimsRepositoryImpl : GameRepositoryImplBase, IClaimsRepository
+internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IClaimsRepository
 {
-    public ClaimsRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, claim => true);
 
     public async Task<IReadOnlyCollection<Claim>> GetClaimsForMoneyTransfersListAsync(int projectId, ClaimStatusSpec claimStatusSpec)
@@ -77,6 +71,8 @@ internal class ClaimsRepositoryImpl : GameRepositoryImplBase, IClaimsRepository
         return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
           .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
           .Include(c => c.Player.Extra)
+          //TODO We actually use this method only for ClaimStatusSpeces that ensures that Character won't be null
+          //This assumption is not checked.
           .Select(
             claim => new ClaimWithPlayer()
             {
@@ -94,7 +90,7 @@ internal class ClaimsRepositoryImpl : GameRepositoryImplBase, IClaimsRepository
         {
             return GetClaimsImpl(projectId,
                 claimStatusSpec,
-                claim => claim.AccommodationRequest.AccommodationTypeId == roomTypeId);
+                claim => claim.AccommodationRequest!.AccommodationTypeId == roomTypeId);
         }
         else
         {

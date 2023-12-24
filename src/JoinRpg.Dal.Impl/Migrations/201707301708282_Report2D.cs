@@ -1,9 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations;
 
 using System.Data.Entity.Migrations;
-using JetBrains.Annotations;
 
-[UsedImplicitly]
 public partial class Report2D : DbMigration
 {
     public override void Up()

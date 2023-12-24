@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces;
@@ -24,8 +23,7 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
 
-    [NotNull, ItemCanBeNull]
-    Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId);
+    Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId);
 
     Task<CharacterGroup> GetRootGroupAsync(int projectId);
 
@@ -35,7 +33,7 @@ public interface IProjectRepository : IDisposable
     Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);
 
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId,
-        [NotNull] IReadOnlyCollection<int> characterIds);
+         IReadOnlyCollection<int> characterIds);
 
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
 
@@ -47,16 +45,14 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectForFinanceSetup(int projectid);
     Task<ICollection<Character>> GetCharacters(int projectId);
     Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
-    Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
+    Task<IClaimSource?> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
 
-    [NotNull, ItemNotNull]
     Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId);
 
     /// <summary>
     /// Get projects not active since
     /// </summary>
     /// <returns></returns>
-    [NotNull, ItemNotNull]
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
     Task<int[]> GetInactiveProjectsWithSlots();

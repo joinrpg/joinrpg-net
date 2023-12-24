@@ -1,7 +1,6 @@
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -11,13 +10,8 @@ using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, IProjectMetadataRepository
+internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx), IProjectRepository, IProjectMetadataRepository
 {
-    public ProjectRepository(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     private Expression<Func<Project, ProjectWithClaimCount>> GetProjectWithClaimCountBuilder(
         int? userId)
     {
@@ -89,10 +83,10 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
         .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId)
+    public async Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId)
     {
         return
-          Ctx.Set<CharacterGroup>()
+          await Ctx.Set<CharacterGroup>()
             .Include(cg => cg.Project)
             .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
     }
@@ -214,7 +208,7 @@ internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository, I
         return project1.RootGroup;
     }
 
-    public async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
+    public async Task<IClaimSource?> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
     {
         if (characterGroupId != null)
         {

@@ -1,18 +1,12 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-[UsedImplicitly]
-public class AccommodationInviteRepositoryImpl : RepositoryImplBase,
+public class AccommodationInviteRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(ctx),
     IAccommodationInviteRepository
 {
-    public AccommodationInviteRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     public async Task<IEnumerable<AccommodationInvite>>
         GetIncomingInviteForClaim(Claim claim) =>
         await GetIncomingInviteForClaim(claim.ClaimId).ConfigureAwait(false);
