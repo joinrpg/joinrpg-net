@@ -83,7 +83,7 @@ public class PaymentMessage : IValidatableObject
     [MaxLength(32)]
     [Phone]
     [JsonProperty("customerPhone", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string CustomerPhone { get; set; }
+    public string? CustomerPhone { get; set; }
 
     /// <summary>
     /// Url to redirect after successful payment

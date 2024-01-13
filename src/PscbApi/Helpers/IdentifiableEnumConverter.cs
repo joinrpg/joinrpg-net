@@ -1,6 +1,3 @@
-// ReSharper disable IdentifierTypo
-// ReSharper disable InconsistentNaming
-// ReSharper disable CheckNamespace
 using Newtonsoft.Json;
 
 namespace PscbApi;
@@ -11,11 +8,11 @@ namespace PscbApi;
 internal class IdentifiableEnumConverter : JsonConverter
 {
     /// <inheritdoc />
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
         if (value != null)
         {
-            writer.WriteValue(value.GetType().IsEnum ? (value as Enum).GetIdentifier() : value);
+            writer.WriteValue(value.GetType().IsEnum ? ((Enum)value).GetIdentifier() : value);
         }
         else
         {
@@ -24,10 +21,10 @@ internal class IdentifiableEnumConverter : JsonConverter
     }
 
     /// <inheritdoc />
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
         var nullable = false;
-        Type actualType = objectType;
+        Type? actualType = objectType;
         if (!objectType.IsEnum)
         {
             actualType = Nullable.GetUnderlyingType(objectType);
@@ -46,7 +43,7 @@ internal class IdentifiableEnumConverter : JsonConverter
             {
                 if (value is string sValue)
                 {
-                    object result = Enum.GetValues(actualType)
+                    object? result = Enum.GetValues(actualType)
                         .Cast<Enum>()
                         .FirstOrDefault(v => v.GetIdentifier().Equals(sValue, StringComparison.InvariantCultureIgnoreCase));
                     if (result != null)
