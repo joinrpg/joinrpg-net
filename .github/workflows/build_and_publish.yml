@@ -50,7 +50,7 @@ jobs:
         global-json-file: global.json
 
     - name: Restore nuget dependencies cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
         # Look to see if there is a cache hit for the corresponding requirements file
