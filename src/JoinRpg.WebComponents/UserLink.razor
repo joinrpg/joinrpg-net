@@ -3,6 +3,7 @@
 
 @code {
     [Parameter]
+    [EditorRequired]
     public UserLinkViewModel Model { get; set; } = null!;
 
     public Uri ProfileUri => userLinkLocator.GetUri(Model);
