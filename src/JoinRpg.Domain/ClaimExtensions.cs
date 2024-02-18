@@ -49,10 +49,10 @@ public static class ClaimExtensions
 
     public static bool IsPartOfGroup(this Claim cl, int characterGroupId) => cl.GetTarget().IsPartOfGroup(characterGroupId);
 
-    public static bool IsPartOfAnyOfGroups(this IClaimSource? claimSource, IEnumerable<CharacterGroup> groups)
+    public static bool IsPartOfAnyOfGroups(this IClaimSource? claimSource, IEnumerable<int> groups)
     {
         //TODO we can do faster than this
-        return claimSource.GetGroupsPartOf().Intersect(groups).Any();
+        return claimSource.GetGroupsPartOf().Select(x => x.CharacterGroupId).Intersect(groups).Any();
     }
 
     public static bool IsPartOfGroup(this IClaimSource claimSource, int characterGroupId)

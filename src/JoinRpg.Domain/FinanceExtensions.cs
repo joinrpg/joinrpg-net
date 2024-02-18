@@ -118,11 +118,11 @@ public static class FinanceExtensions
     /// </summary>
     public static int GetCurrentFee(this FieldWithValue self)
     {
-        if (!self.Field.FieldType.SupportsPricing())
+        if (!self.Field.SupportsPricing)
         {
             return 0;
         }
-        return self.Field.FieldType
+        return self.Field.Type
         switch
         {
             ProjectFieldType.Checkbox => self.HasEditableValue ? self.Field.Price : 0,

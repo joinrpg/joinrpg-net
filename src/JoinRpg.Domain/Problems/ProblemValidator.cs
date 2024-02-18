@@ -30,9 +30,7 @@ internal class ProblemValidator<TObject> : IProblemValidator<TObject> where TObj
     {
         ArgumentNullException.ThrowIfNull(fields);
 
-        var fieldsIds = fields.Select(f => f.ProjectFieldId).ToList();
-
-        return ValidateFieldsOnly(claim, projectInfo).Where(fp => fieldsIds.Contains(fp.Field.ProjectFieldId));
+        return ValidateFieldsOnly(claim, projectInfo).Where(fp => fields.Contains(fp.Field.Id));
     }
 
     public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(TObject claim, ProjectInfo projectInfo)

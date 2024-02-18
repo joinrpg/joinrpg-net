@@ -884,7 +884,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, ExtraAccessReason.Player);
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue, projectInfo);
-        if (updatedFields.Any(f => f.Field.FieldBoundTo == FieldBoundTo.Character) && claim.Character != null)
+        if (updatedFields.Any(f => f.Field.BoundTo == FieldBoundTo.Character) && claim.Character != null)
         {
             MarkChanged(claim.Character);
         }

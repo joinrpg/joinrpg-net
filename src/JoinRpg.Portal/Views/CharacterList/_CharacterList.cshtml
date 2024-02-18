@@ -120,7 +120,7 @@
 
             @foreach (var field in Model.Fields)
             {
-                var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.ProjectFieldId == field.ProjectFieldId);
+                var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.Id.ProjectFieldId == field.ProjectFieldId);
                 switch (field.FieldType)
                 {
                     case ProjectFieldType.Text:

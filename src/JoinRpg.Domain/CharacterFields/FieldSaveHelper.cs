@@ -71,7 +71,7 @@ public class FieldSaveHelper
 
         logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
-        var fields = strategy.GetFields().ToDictionary(f => f.Field.ProjectFieldId);
+        var fields = strategy.GetFields().ToDictionary(f => f.Field.Id.ProjectFieldId);
 
         AssignValues(newFieldValue, fields, strategy);
 
@@ -106,7 +106,7 @@ public class FieldSaveHelper
 
             if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required)
             {
-                throw new FieldRequiredException(field.Field.FieldName);
+                throw new FieldRequiredException(field.Field.Name);
             }
 
             _ = strategy.AssignFieldValue(field, normalizedValue);
@@ -117,7 +117,7 @@ public class FieldSaveHelper
         FieldSaveStrategyBase strategy)
     {
         foreach (var field in fields.Values.Where(
-            f => !f.HasEditableValue && f.Field.CanHaveValue() &&
+            f => !f.HasEditableValue && f.Field.CanHaveValue &&
                  f.Field.IsAvailableForTarget(character)))
         {
             var newValue = strategy.GenerateDefaultValue(field);
@@ -130,14 +130,12 @@ public class FieldSaveHelper
 
     private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
     {
-        switch (field.Field.FieldType)
+        return field.Field.Type switch
         {
-            case ProjectFieldType.Checkbox:
-                return toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
-                    ? FieldWithValue.CheckboxValueOn
-                    : "";
-            default:
-                return string.IsNullOrEmpty(toAssign) ? null : toAssign;
-        }
+            ProjectFieldType.Checkbox => toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
+                                ? FieldWithValue.CheckboxValueOn
+                                : "",
+            _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
+        };
     }
 }

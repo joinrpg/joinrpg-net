@@ -9,26 +9,17 @@ namespace JoinRpg.Domain.Test;
 public class CustomFieldsExtensionsTest
 {
     private MockedProject projectMock = new();
-    private ProjectField[] allFieldsExceptMasterOnly;
-    private ProjectField[] allFields;
+    private ProjectFieldInfo[] allFieldsExceptMasterOnly;
+    private ProjectFieldInfo[] allFields;
 
     public CustomFieldsExtensionsTest()
     {
         var conditionalHeader = projectMock.CreateConditionalHeader();
         var conditionalField = projectMock.CreateConditionalField();
 
-        allFieldsExceptMasterOnly = new[]
-        {
-          projectMock.CharacterField,
-          projectMock.PublicField,
-          projectMock.HideForUnApprovedClaim,
-          conditionalField,
-          conditionalHeader,
-      };
+        allFieldsExceptMasterOnly = projectMock.ProjectInfo.UnsortedFields.Except(new[] { projectMock.MasterOnlyFieldInfo }).ToArray();
 
-        allFields = allFieldsExceptMasterOnly
-            .Union(new[] { projectMock.MasterOnlyField })
-            .ToArray();
+        allFields = projectMock.ProjectInfo.UnsortedFields.ToArray();
     }
 
     [Fact]
@@ -36,7 +27,7 @@ public class CustomFieldsExtensionsTest
     {
         VerifyCharacter( //Assert that
           projectMock.Player, //a player user can see only public fields of a character
-          projectMock.PublicField);
+          projectMock.PublicFieldInfo);
     }
 
     [Fact]
@@ -65,7 +56,7 @@ public class CustomFieldsExtensionsTest
           projectMock.CreateClaim(projectMock.Character, projectMock.Player), //when claim is not yet approved
           projectMock.Player, //then the user who created the claim can see only the fields below
           projectMock.ProjectInfo,
-          projectMock.PublicField);
+          projectMock.PublicFieldInfo);
     }
 
     [Fact]
@@ -92,7 +83,7 @@ public class CustomFieldsExtensionsTest
           projectMock.CreateApprovedClaim(projectMock.Character, projectMock.Player), //when claim is approved
           anotherPlayer, //then other users see ony public info
           projectMock.ProjectInfo,
-          projectMock.PublicField);
+          projectMock.PublicFieldInfo);
     }
 
     [Fact]
@@ -105,24 +96,24 @@ public class CustomFieldsExtensionsTest
           allFields);
     }
 
-    private void VerifyClaim(Claim claim, User viewerUser, ProjectInfo projectInfo, params ProjectField[] expectedFields)
+    private void VerifyClaim(Claim claim, User viewerUser, ProjectInfo projectInfo, params ProjectFieldInfo[] expectedFields)
     {
         var accessPredicate = claim.GetAccessArguments(viewerUser.UserId);
 
-        IList<FieldWithValue> userVisibleFields = claim.GetFields(projectInfo).Where(f => f.HasViewAccess(accessPredicate)).ToList();
+        IList<FieldWithValue> userVisibleFields = claim.GetFields(projectInfo).Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();
 
         AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
     }
 
-    private void VerifyCharacter(User viewerUser, params ProjectField[] expectedFields)
+    private void VerifyCharacter(User viewerUser, params ProjectFieldInfo[] expectedFields)
     {
         var accessPredicate = projectMock.Character.GetAccessArguments(viewerUser.UserId);
 
         IList<FieldWithValue> userVisibleFields = projectMock.Character.GetFields(projectMock.ProjectInfo)
-            .Where(f => f.HasViewAccess(accessPredicate)).ToList();
+            .Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();
 
         AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
     }
 
-    private void AssertCorrectFieldsArePresent(IList<FieldWithValue> actualFields, params ProjectField[] expectedFields) => actualFields.Select(actual => actual.Field).ShouldBe(expectedFields, ignoreOrder: true);
+    private void AssertCorrectFieldsArePresent(IList<FieldWithValue> actualFields, params ProjectFieldInfo[] expectedFields) => actualFields.Select(actual => actual.Field).ShouldBe(expectedFields, ignoreOrder: true);
 }

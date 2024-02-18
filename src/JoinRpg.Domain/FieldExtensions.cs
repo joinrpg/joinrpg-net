@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -6,13 +5,9 @@ namespace JoinRpg.Domain;
 
 public static class FieldExtensions
 {
-    public static bool HasValueList(this ProjectField field)
-            => field.FieldType.HasValuesList();
+    public static bool HasValueList(this ProjectField field) => field.FieldType.HasValuesList();
 
-    public static bool SupportsMassAdding(this ProjectField field)
-    => field.FieldType.SupportsMassAdding();
-
-    public static bool SupportsMarkdown([NotNull] this ProjectField field) => field.FieldType == ProjectFieldType.Text;
+    public static bool SupportsMassAdding(this ProjectField field) => field.FieldType.SupportsMassAdding();
 
     public static bool HasSpecialGroup(this ProjectField field) => field.HasValueList() && field.FieldBoundTo == FieldBoundTo.Character;
 
@@ -20,7 +15,7 @@ public static class FieldExtensions
 
     public static string GetSpecialGroupName(this ProjectField field) => $"{field.FieldName}";
 
-    public static bool IsAvailableForTarget([NotNull] this ProjectField field, IClaimSource? target)
+    public static bool IsAvailableForTarget(this ProjectFieldInfo field, IClaimSource? target)
     {
         if (field == null)
         {
@@ -28,8 +23,8 @@ public static class FieldExtensions
         }
 
         return field.IsActive
-          && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || !(target is Character character && character.IsNpc()))
-          && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
+          && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !(target is Character character && character.IsNpc()))
+          && (!field.GroupsAvailableForIds.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableForIds));
     }
 
     public static bool CanHaveValue(this ProjectField projectField) => projectField.FieldType != ProjectFieldType.Header;

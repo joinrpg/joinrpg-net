@@ -12,7 +12,7 @@ internal class FieldNotSetFilterCharacter : FieldNotSetFilterBase, IProblemFilte
         return
           CheckFields(
             character.GetFields(projectInfo)
-              .Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Character || character.ApprovedClaim != null)
+              .Where(pf => pf.Field.BoundTo == FieldBoundTo.Character || character.ApprovedClaim != null)
               .ToList(), character);
     }
 

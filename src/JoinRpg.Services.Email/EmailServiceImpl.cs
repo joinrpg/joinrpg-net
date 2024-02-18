@@ -330,10 +330,10 @@ public partial class EmailServiceImpl : IEmailService
 
         IEnumerable<MarkdownString> fieldString = mailWithFields
           .UpdatedFields
-          .Where(f => f.HasViewAccess(accessArguments))
+          .Where(f => f.Field.HasViewAccess(accessArguments))
           .Select(updatedField =>
             new MarkdownString(
-              $@"__**{updatedField.Field.FieldName}:**__
+              $@"__**{updatedField.Field.Name}:**__
 {MarkdownTransformations.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
         //Add info about other changed atttributes (no access rights validation)

@@ -24,7 +24,8 @@ public class ProjectFieldTypeTests
     [ClassData(typeof(EnumTheoryDataGenerator<ProjectFieldType>))]
     public void ShouldBeAbleToCalculatePricing(ProjectFieldType projectFieldType)
     {
-        var fieldWithValue = new FieldWithValue(new ProjectField { FieldType = projectFieldType }, null);
-        _ = Should.NotThrow(() => fieldWithValue.GetCurrentFee());
+        var field = new ProjectFieldInfo(new PrimitiveTypes.ProjectFieldIdentification(new PrimitiveTypes.ProjectIdentification(-1), -1), "", projectFieldType, FieldBoundTo.Character, new ProjectFieldVariant[] { }, null, 1, true, true, true, true, MandatoryStatus.Optional, false, true, null, null, null, false, new ProjectFieldSettings(null, null), null);
+        var fieldWithValue = new FieldWithValue(field, null);
+        _ = Should.NotThrow(fieldWithValue.GetCurrentFee);
     }
 }

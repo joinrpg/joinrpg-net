@@ -22,7 +22,7 @@ else if (Model.CanCheckInInPrinciple)
       <ul>
         @foreach (var field in Model.NotFilledFields.Where(f => f.Field.CanPlayerEdit))
         {
-          <li>@field.Field.FieldName</li>
+          <li>@field.Field.Name</li>
         }
       </ul>
     }

@@ -10,7 +10,7 @@ internal class FieldNotSetFilterBase
 
     private static IEnumerable<ClaimProblem> CheckField(IClaimSource target, FieldWithValue fieldWithValue)
     {
-        if (!fieldWithValue.Field.CanHaveValue())
+        if (!fieldWithValue.Field.CanHaveValue)
         {
             yield break;
         }

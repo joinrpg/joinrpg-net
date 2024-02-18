@@ -20,24 +20,23 @@ public static class CustomFieldsExtensions
           JsonConvert.SerializeObject(
             fieldWithValues
               .Where(v => v.HasEditableValue)
-              .ToDictionary(pair => pair.Field.ProjectFieldId, pair => pair.Value));
+              .ToDictionary(pair => pair.Field.Id.ProjectFieldId, pair => pair.Value));
     }
 
     private static Dictionary<int, string> DeserializeFieldValues(this IFieldContainter containter)
     {
-        return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter.JsonData ?? "") ??
-               new Dictionary<int, string>();
+        return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter.JsonData ?? "") ?? [];
     }
 
-    private static IReadOnlyCollection<FieldWithValue> GetFieldsForContainers(Project project, params Dictionary<int, string>?[] containers)
+    private static IReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params Dictionary<int, string>?[] containers)
     {
-        var fields = project.GetOrderedFields().Select(pf => new FieldWithValue(pf, value: null)).ToList();
+        var fields = project.SortedFields.Select(pf => new FieldWithValue(pf, value: null)).ToList();
 
         foreach (var characterFieldValue in fields)
         {
             foreach (var data in containers.WhereNotNull())
             {
-                var value = data.GetValueOrDefault(characterFieldValue.Field.ProjectFieldId);
+                var value = data.GetValueOrDefault(characterFieldValue.Field.Id.ProjectFieldId);
                 if (value != null)
                 {
                     try
@@ -46,7 +45,7 @@ public static class CustomFieldsExtensions
                     }
                     catch (Exception e)
                     {
-                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.ProjectFieldId}, Value = {value}", e);
+                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.Id}, Value = {value}", e);
                     }
 
                 }
@@ -57,10 +56,10 @@ public static class CustomFieldsExtensions
     }
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character, ProjectInfo projectInfo)
-        => GetFieldsForContainers(character.Project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
+        => GetFieldsForContainers(projectInfo, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
-    public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, ProjectInfo projectInfo, Project project)
-    => GetFieldsForContainers(project, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
+    public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, ProjectInfo projectInfo)
+    => GetFieldsForContainers(projectInfo, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim, ProjectInfo projectInfo)
     {
@@ -68,14 +67,14 @@ public static class CustomFieldsExtensions
         {
             return claim.Character!.GetFields(projectInfo);
         }
-        var publicFields = claim.Project.ProjectFields.Where(f => f.IsPublic).Select(x => x.ProjectFieldId).ToList();
-        return GetFieldsForContainers(claim.Project, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
+        var publicFields = projectInfo.UnsortedFields.Where(f => f.IsPublic).Select(x => x.Id.ProjectFieldId).ToList();
+        return GetFieldsForContainers(projectInfo, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
             claim.DeserializeFieldValues());
     }
 
     public static FieldWithValue? GetSingleField(this Claim claim, ProjectInfo projectInfo, ProjectFieldIdentification id)
     {
-        return claim.GetFields(projectInfo).SingleOrDefault(f => f.Field.ProjectFieldId == id.ProjectFieldId);
+        return claim.GetFields(projectInfo).SingleOrDefault(f => f.Field.Id == id);
     }
 
     public static IReadOnlyCollection<FieldWithValue> GetFieldsForClaimSource(this IClaimSource claimSource, ProjectInfo projectInfo)
@@ -86,7 +85,7 @@ public static class CustomFieldsExtensions
         }
         else
         {
-            return GetFieldsForContainers(claimSource.Project);
+            return GetFieldsForContainers(projectInfo);
         }
     }
 

@@ -3,25 +3,20 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.CharacterFields;
 
-internal class SaveToCharacterOnlyStrategy : CharacterExistsStrategyBase
+internal class SaveToCharacterOnlyStrategy(
+    Character character,
+    int currentUserId,
+    IFieldDefaultValueGenerator generator,
+    ProjectInfo projectInfo) : CharacterExistsStrategyBase(claim: null,
+    character,
+    currentUserId,
+    generator,
+    projectInfo)
 {
-    public SaveToCharacterOnlyStrategy(
-        Character character,
-        int currentUserId,
-        IFieldDefaultValueGenerator generator,
-        ProjectInfo projectInfo)
-        : base(claim: null,
-        character,
-        currentUserId,
-        generator,
-        projectInfo)
-    {
-    }
-
     public override void Save(Dictionary<int, FieldWithValue> fields)
     {
         Character.JsonData = fields.Values
-            .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character).SerializeFields();
+            .Where(v => v.Field.BoundTo == FieldBoundTo.Character).SerializeFields();
         SetCharacterDescription(fields);
 
         UpdateSpecialGroups(fields);
@@ -40,7 +35,7 @@ internal class SaveToCharacterOnlyStrategy : CharacterExistsStrategyBase
     {
         Character.JsonData = fields
             .Values
-            .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character)
+            .Where(v => v.Field.BoundTo == FieldBoundTo.Character)
             .SerializeFields();
     }
 }

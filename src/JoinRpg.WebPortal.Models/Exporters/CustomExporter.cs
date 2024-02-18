@@ -172,6 +172,6 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
     protected static ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
     {
         return new TableColumn<string>(name,
-          x => fieldsFunc(x).SingleOrDefault(f => f.Field.ProjectFieldId == projectField.Id.ProjectFieldId)?.DisplayString);
+          x => fieldsFunc(x).SingleOrDefault(f => f.Field == projectField)?.DisplayString);
     }
 }

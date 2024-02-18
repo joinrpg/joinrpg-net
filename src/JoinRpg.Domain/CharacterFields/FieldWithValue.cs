@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -10,16 +9,13 @@ public class FieldWithValue
 
     private IReadOnlyList<int> SelectedIds { get; set; } = new List<int>();
 
-    private Lazy<IReadOnlyList<ProjectFieldDropdownValue>> OrderedValueCache { get; }
-
-    public FieldWithValue(ProjectField field, string? value)
+    public FieldWithValue(ProjectFieldInfo field, string? value)
     {
         Field = field;
         Value = value;
-        OrderedValueCache = new Lazy<IReadOnlyList<ProjectFieldDropdownValue>>(() => Field.GetOrderedValues());
     }
 
-    public ProjectField Field { get; }
+    public ProjectFieldInfo Field { get; }
 
     public string? Value
     {
@@ -27,7 +23,7 @@ public class FieldWithValue
         set
         {
             _value = value;
-            if (Field.HasValueList())
+            if (Field.HasValueList)
             {
                 SelectedIds = Value.ToIntList();
             }
@@ -39,16 +35,16 @@ public class FieldWithValue
     //TODO: there is a bug here (note Value used instead of value)
     protected string GetDisplayValue(string? value, IReadOnlyList<int> selectedIDs)
     {
-        if (Field.FieldType == ProjectFieldType.Checkbox)
+        if (Field.Type == ProjectFieldType.Checkbox)
         {
             return Value?.StartsWith(CheckboxValueOn) == true ? "☑️" : "☐";
         }
 
-        if (Field.HasValueList())
+        if (Field.HasValueList)
         {
             return
-                Field.DropdownValues.Where(dv =>
-                        selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
+                Field.Variants.Where(dv =>
+                        selectedIDs.Contains(dv.Id.ProjectFieldVariantId))
                     .Select(dv => dv.Label)
                     .JoinStrings(", ");
         }
@@ -58,48 +54,20 @@ public class FieldWithValue
 
     public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
 
-    public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
+    public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue;
 
-    public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues(
-        AccessArguments modelAccessArguments)
-    {
-        return OrderedValueCache.Value.Where(v =>
-            SelectedIds.Contains(v.ProjectFieldDropdownValueId) ||
-            (v.IsActive && (v.PlayerSelectable || modelAccessArguments.MasterAccess))
-            );
-    }
+    public IEnumerable<ProjectFieldVariant> GetPossibleValues(AccessArguments modelAccessArguments)
+        => Field.GetPossibleVariants(modelAccessArguments, SelectedIds);
 
-    public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues() => OrderedValueCache.Value.Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
+    public IEnumerable<(ProjectFieldVariant variant, bool selected)> GetPossibleVariantsWithSelection(AccessArguments modelAccessArguments)
+        => Field.GetPossibleVariants(modelAccessArguments, SelectedIds)
+        .Select(variant => (variant, SelectedIds.Contains(variant.Id.ProjectFieldVariantId)));
 
-    public IEnumerable<int> GetSpecialGroupsToApply() =>
-        Field.HasSpecialGroup() ?
-            GetDropdownValues().Select(c => c.CharacterGroup?.CharacterGroupId).WhereNotNull()
-        : Enumerable.Empty<int>();
+    public IEnumerable<ProjectFieldVariant> GetDropdownValues() => Field.SortedVariants.Where(v => SelectedIds.Contains(v.Id.ProjectFieldVariantId));
 
-    public bool HasViewAccess(AccessArguments accessArguments)
-    {
-        return Field.IsPublic
-          || accessArguments.MasterAccess
-          ||
-          (accessArguments.PlayerAccessToCharacter && Field.CanPlayerView &&
-           Field.FieldBoundTo == FieldBoundTo.Character)
-          ||
-          (accessArguments.PlayerAccesToClaim && Field.CanPlayerView &&
-           Field.FieldBoundTo == FieldBoundTo.Claim);
-    }
+    public IEnumerable<int> GetSpecialGroupsToApply() => Field.HasSpecialGroup ? GetDropdownValues().Select(c => c.CharacterGroupId).WhereNotNull() : Enumerable.Empty<int>();
 
-    public bool HasEditAccess(AccessArguments accessArguments)
-    {
-        return accessArguments.MasterAccess
-               ||
-               (accessArguments.PlayerAccessToCharacter && Field.CanPlayerEdit &&
-                Field.FieldBoundTo == FieldBoundTo.Character)
-               ||
-               (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
-               (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter));
-    }
-
-    public override string ToString() => $"{Field.FieldName}={Value}";
+    public override string ToString() => $"{Field.Name}={Value}";
 
     /// <summary>
     /// Returns value as integer with respect to field type.
@@ -117,29 +85,4 @@ public class FieldWithValue
 
     public const string CheckboxValueOn = "on";
 
-    public bool SupportsPricing()
-    {
-        return Field.FieldType.SupportsPricing() &&
-               ((Field.FieldType.SupportsPricingOnField() && Field.Price != 0)
-                || (!Field.FieldType.SupportsPricingOnField() &&
-                    Field.DropdownValues.Any(v => v.Price != 0)));
-    }
-
-    /// <summary>
-    /// Special field - character name
-    /// </summary>
-    public bool IsName => Field.IsName();
-
-    /// <summary>
-    /// Special field - character description
-    /// </summary>
-    public bool IsDescription => Field.IsDescription();
-    /// <summary>
-    /// Special field - schedule time slot
-    /// </summary>
-    public bool IsTimeSlot => Field.FieldType == ProjectFieldType.ScheduleTimeSlotField;
-    /// <summary>
-    /// Special field - schedule room slot
-    /// </summary>
-    public bool IsRoomSlot => Field.FieldType == ProjectFieldType.ScheduleRoomField;
 }
