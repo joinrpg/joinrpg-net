@@ -46,7 +46,7 @@ internal abstract class FieldSaveStrategyBase
             ? AccessArgumentsFactory.Create(Character, CurrentUserId)
             : AccessArgumentsFactory.Create(Claim!, CurrentUserId); // Either character or claim should be not null
 
-        var editAccess = field.HasEditAccess(accessArguments);
+        var editAccess = field.Field.HasEditAccess(accessArguments);
         if (!editAccess)
         {
             throw new NoAccessToProjectException(Project, CurrentUserId);
@@ -80,25 +80,23 @@ internal abstract class FieldSaveStrategyBase
         return true;
     }
 
-    private static void MarkUsed(FieldWithValue field)
+    private void MarkUsed(FieldWithValue field)
     {
-        if (!field.Field.WasEverUsed)
-        {
-            field.Field.WasEverUsed = true;
-        }
+        var entityField = Project.ProjectFields.Single(f => f.ProjectFieldId == field.Field.Id.ProjectFieldId);
+        entityField.WasEverUsed = true;
 
-        if (field.Field.HasValueList())
+        if (field.Field.HasValueList)
         {
-            foreach (var val in field.GetDropdownValues().Where(v => !v.WasEverUsed))
+            foreach (var val in field.GetDropdownValues())
             {
-                val.WasEverUsed = true;
+                entityField.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == val.Id.ProjectFieldVariantId).WasEverUsed = true;
             }
         }
     }
 
     public string? GenerateDefaultValue(FieldWithValue field)
     {
-        return field.Field.FieldBoundTo switch
+        return field.Field.BoundTo switch
         {
             FieldBoundTo.Character => Generator.CreateDefaultValue(Character, field),
             FieldBoundTo.Claim => Generator.CreateDefaultValue(Claim, field),

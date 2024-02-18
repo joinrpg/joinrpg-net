@@ -10,7 +10,7 @@ internal class FieldNotSetFilterClaim : FieldNotSetFilterBase, IProblemFilter<Cl
     {
         var projectFields = claim.GetFields(projectInfo);
 
-        return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
+        return CheckFields(projectFields.Where(pf => pf.Field.BoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
     }
     #endregion
 }

@@ -11,14 +11,20 @@ public class MockedProject
     public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>() };
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
     public ProjectField MasterOnlyField { get; }
+
+    public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }
     public ProjectField CharacterField { get; }
     public ProjectField HideForUnApprovedClaim { get; }
+    public ProjectFieldInfo HideForUnApprovedClaimInfo { get; set; }
+
+    public ProjectFieldInfo CharacterFieldInfo { get; set; }
     public ProjectField PublicField { get; }
+    public ProjectFieldInfo PublicFieldInfo { get; set; }
 
     public Character Character { get; }
     public Character CharacterWithoutGroup { get; }
 
-    public ProjectInfo ProjectInfo { get; }
+    public ProjectInfo ProjectInfo { get; private set; }
 
     private static void FixProjectSubEntities(Project project1)
     {
@@ -129,8 +135,16 @@ public class MockedProject
 
         Character.ParentCharacterGroupIds = new[] { Group.CharacterGroupId };
 
-        ProjectInfo = ProjectRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
+        ReInitProjectInfo();
+    }
 
+    public void ReInitProjectInfo()
+    {
+        ProjectInfo = ProjectRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
+        PublicFieldInfo = ProjectInfo.GetFieldById(new(ProjectInfo.ProjectId, PublicField.ProjectFieldId));
+        HideForUnApprovedClaimInfo = ProjectInfo.GetFieldById(new(ProjectInfo.ProjectId, HideForUnApprovedClaim.ProjectFieldId));
+        CharacterFieldInfo = ProjectInfo.GetFieldById(new PrimitiveTypes.ProjectFieldIdentification(ProjectInfo.ProjectId, CharacterField.ProjectFieldId));
+        MasterOnlyFieldInfo = ProjectInfo.GetFieldById(new PrimitiveTypes.ProjectFieldIdentification(ProjectInfo.ProjectId, MasterOnlyField.ProjectFieldId));
     }
 
     public CharacterGroup CreateCharacterGroup(CharacterGroup? characterGroup = null)
@@ -147,24 +161,34 @@ public class MockedProject
         return characterGroup;
     }
 
-    public ProjectField CreateConditionalField(ProjectField field, CharacterGroup conditionGroup)
+    public ProjectFieldInfo CreateConditionalField(Action<ProjectField> setup, CharacterGroup conditionGroup)
     {
-        field = CreateField(field);
-        field.AvailableForCharacterGroupIds = new[] { conditionGroup.CharacterGroupId };
-        return field;
+        return AddField(f => { f.AvailableForCharacterGroupIds = new[] { conditionGroup.CharacterGroupId }; setup(f); });
     }
 
-    public ProjectField CreateField(ProjectField? field = null)
+    public ProjectFieldInfo CreateConditionalField(CharacterGroup conditionGroup)
     {
-        field ??= new ProjectField();
+        return AddField(f => f.AvailableForCharacterGroupIds = new[] { conditionGroup.CharacterGroupId });
+    }
+
+    public ProjectFieldInfo AddField(Action<ProjectField> setup)
+    {
+        var field = new ProjectField();
         field.Project = Project;
         field.ProjectId = Project.ProjectId;
         field.ProjectFieldId = Project.ProjectFields.GetNextId();
         field.FieldName ??= "test_" + field.ProjectFieldId;
         field.AvailableForCharacterGroupIds = Array.Empty<int>();
         field.IsActive = true;
+        setup(field);
         Project.ProjectFields.Add(field);
-        return field;
+        ReInitProjectInfo();
+        return ProjectInfo.GetFieldById(new PrimitiveTypes.ProjectFieldIdentification(new PrimitiveTypes.ProjectIdentification(Project.ProjectId), field.ProjectFieldId));
+    }
+
+    public ProjectFieldInfo AddField()
+    {
+        return AddField(f => { });
     }
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)
@@ -215,29 +239,30 @@ public class MockedProject
         return claim;
     }
 
-    public ProjectField CreateConditionalHeader()
+    public ProjectFieldInfo CreateConditionalHeader()
     {
-        return CreateConditionalField(new ProjectField()
+        return CreateConditionalField(f =>
         {
-            CanPlayerEdit = true,
-            CanPlayerView = true,
-            ShowOnUnApprovedClaims = true,
-            FieldBoundTo = FieldBoundTo.Character,
-            FieldType = ProjectFieldType.Header,
-            FieldName = "Conditional",
+            f.CanPlayerEdit = true;
+            f.CanPlayerView = true;
+            f.ShowOnUnApprovedClaims = true;
+            f.FieldBoundTo = FieldBoundTo.Character;
+            f.FieldType = ProjectFieldType.Header;
+            f.FieldName = "Conditional";
         },
             Group);
     }
 
-    public ProjectField CreateConditionalField()
+    public ProjectFieldInfo CreateConditionalField()
     {
-        return CreateConditionalField(new ProjectField()
+        return CreateConditionalField(f =>
         {
-            CanPlayerEdit = true,
-            CanPlayerView = true,
-            IsActive = true,
-            ShowOnUnApprovedClaims = true,
-            FieldBoundTo = FieldBoundTo.Character,
+
+            f.CanPlayerEdit = true;
+            f.CanPlayerView = true;
+            f.IsActive = true;
+            f.ShowOnUnApprovedClaims = true;
+            f.FieldBoundTo = FieldBoundTo.Character;
         },
             Group);
     }

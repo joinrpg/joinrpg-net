@@ -37,7 +37,7 @@ public class FieldSaveHelperTest
             claim,
             new Dictionary<int, string?>()
             {
-                {mock.CharacterField.ProjectFieldId, "test"},
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, "test"},
             },
             mock.ProjectInfo);
         mock.Character.JsonData
@@ -48,7 +48,7 @@ public class FieldSaveHelperTest
             mock.Character.Groups.Select(g => g.CharacterGroupId),
             "Adding claim should not modify any character groups");
 
-        claim.JsonData.ShouldBe($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}");
+        claim.JsonData.ShouldBe($"{{\"{mock.CharacterFieldInfo.Id.ProjectFieldId}\":\"test\"}}");
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class FieldSaveHelperTest
                   mock.CreateClaim(mock.Character, mock.Player),
                   new Dictionary<int, string?>()
                   {
-                    {mock.MasterOnlyField.ProjectFieldId, "test"},
+                    {mock.MasterOnlyFieldInfo.Id.ProjectFieldId, "test"},
                   },
                   mock.ProjectInfo));
     }
@@ -75,7 +75,7 @@ public class FieldSaveHelperTest
         var mock = new MockedProject();
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
-        var publicField = new FieldWithValue(mock.PublicField, "Public");
+        var publicField = new FieldWithValue(mock.PublicFieldInfo, "Public");
 
         MockedProject.AssignFieldValues(claim, publicField);
 
@@ -84,11 +84,11 @@ public class FieldSaveHelperTest
             claim,
             new Dictionary<int, string?>()
             {
-                {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-                {mock.CharacterField.ProjectFieldId, null},
+                {mock.HideForUnApprovedClaimInfo.Id.ProjectFieldId, "test"},
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, null},
             }, mock.ProjectInfo);
 
-        mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.HideForUnApprovedClaim, "test"), publicField);
+        mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.HideForUnApprovedClaimInfo, "test"), publicField);
         ShouldBeTestExtensions.ShouldBe(claim.JsonData, "{}");
     }
 
@@ -97,19 +97,19 @@ public class FieldSaveHelperTest
     {
         _original = new MockedProject();
         var mock = new MockedProject();
-        var publicField = new FieldWithValue(mock.PublicField, "Public");
+        var publicField = new FieldWithValue(mock.PublicFieldInfo, "Public");
         MockedProject.AssignFieldValues(mock.Character, publicField);
         _ = InitFieldSaveHelper().SaveCharacterFields(
             mock.Master.UserId,
             mock.Character,
             new Dictionary<int, string?>()
             {
-                {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-                {mock.CharacterField.ProjectFieldId, null},
+                {mock.HideForUnApprovedClaimInfo.Id.ProjectFieldId, "test"},
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, null},
             },
             mock.ProjectInfo);
 
-        mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.HideForUnApprovedClaim, "test"), publicField);
+        mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.HideForUnApprovedClaimInfo, "test"), publicField);
     }
 
     [Fact]
@@ -124,10 +124,10 @@ public class FieldSaveHelperTest
             claim,
             new Dictionary<int, string?>()
             {
-                {mock.CharacterField.ProjectFieldId, "test"},
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, "test"},
             }, mock.ProjectInfo);
 
-        mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.CharacterField, "test"));
+        mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.CharacterFieldInfo, "test"));
 
         ShouldBeTestExtensions.ShouldBe(claim.JsonData, "{}");
     }
@@ -145,11 +145,11 @@ public class FieldSaveHelperTest
             claim,
             new Dictionary<int, string?>()
             {
-                {conditionalField.ProjectFieldId, "test"},
+                {conditionalField.Id.ProjectFieldId, "test"},
             },
             mock.ProjectInfo);
         ShouldBeTestExtensions.ShouldBe(claim.JsonData,
-            $"{{\"{conditionalField.ProjectFieldId}\":\"test\"}}");
+            $"{{\"{conditionalField.Id.ProjectFieldId}\":\"test\"}}");
         ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
             _original.Character.JsonData,
             "Adding claim should not modify any character fields");
@@ -169,11 +169,11 @@ public class FieldSaveHelperTest
             claim,
             new Dictionary<int, string?>()
             {
-                {conditionalField.ProjectFieldId, "test"},
+                {conditionalField.Id.ProjectFieldId, "test"},
             },
             mock.ProjectInfo);
         ShouldBeTestExtensions.ShouldBe(claim.JsonData,
-            $"{{\"{conditionalField.ProjectFieldId}\":\"test\"}}");
+            $"{{\"{conditionalField.Id.ProjectFieldId}\":\"test\"}}");
         ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
             _original.Character.JsonData,
             "Adding claim should not modify any character fields");
@@ -193,7 +193,7 @@ public class FieldSaveHelperTest
                   claim,
                   new Dictionary<int, string?>()
                   {
-                    {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
+                    {mock.HideForUnApprovedClaimInfo.Id.ProjectFieldId, "test"},
                   }, mock.ProjectInfo));
     }
 
@@ -208,7 +208,7 @@ public class FieldSaveHelperTest
             claim,
             new Dictionary<int, string?>()
             {
-                {mock.CharacterField.ProjectFieldId, "test"},
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, "test"},
             }, mock.ProjectInfo);
         ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
             _original.Character.JsonData,
@@ -218,7 +218,7 @@ public class FieldSaveHelperTest
                 .ToList(),
             "Adding claim should not modify any character groups");
         ShouldBeTestExtensions.ShouldBe(claim.JsonData,
-            $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}");
+            $"{{\"{mock.CharacterFieldInfo.Id.ProjectFieldId}\":\"test\"}}");
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public class FieldSaveHelperTest
                   mock.Character,
                   new Dictionary<int, string?>()
                   {
-                    {mock.CharacterField.ProjectFieldId, "test"},
+                    {mock.CharacterFieldInfo.Id.ProjectFieldId, "test"},
                   }, mock.ProjectInfo));
     }
 
@@ -242,7 +242,8 @@ public class FieldSaveHelperTest
     {
         _original = new MockedProject();
         var mock = new MockedProject();
-        mock.CharacterField.MandatoryStatus = MandatoryStatus.Required;
+
+        var mandatoryField = mock.AddField(f => { f.MandatoryStatus = MandatoryStatus.Required; f.CanPlayerEdit = true; });
 
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
@@ -252,10 +253,10 @@ public class FieldSaveHelperTest
                 claim,
                 new Dictionary<int, string?>()
                 {
-                    {mock.CharacterField.ProjectFieldId, ""},
+                    {mandatoryField.Id.ProjectFieldId, ""},
                 }, mock.ProjectInfo));
 
-        exception.FieldName.ShouldBe(mock.CharacterField.FieldName);
+        exception.FieldName.ShouldBe(mandatoryField.Name);
     }
 
     [Fact]
@@ -263,7 +264,8 @@ public class FieldSaveHelperTest
     {
         _original = new MockedProject();
         var mock = new MockedProject();
-        mock.CharacterField.MandatoryStatus = MandatoryStatus.Required;
+
+        mock.CharacterFieldInfo = mock.CharacterFieldInfo with { MandatoryStatus = MandatoryStatus.Required };
 
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
@@ -273,11 +275,11 @@ public class FieldSaveHelperTest
                 claim,
                 new Dictionary<int, string?>()
                 {
-                    {mock.CharacterField.ProjectFieldId, "test"},
+                    {mock.CharacterFieldInfo.Id.ProjectFieldId, "test"},
                 },
                 mock.ProjectInfo));
 
-        mock.Character.JsonData.ShouldBe($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}");
+        mock.Character.JsonData.ShouldBe($"{{\"{mock.CharacterFieldInfo.Id.ProjectFieldId}\":\"test\"}}");
     }
 
     [Fact]
@@ -285,7 +287,7 @@ public class FieldSaveHelperTest
     {
         _original = new MockedProject();
         var mock = new MockedProject();
-        mock.CharacterField.MandatoryStatus = MandatoryStatus.Optional;
+        mock.CharacterFieldInfo = mock.CharacterFieldInfo with { MandatoryStatus = MandatoryStatus.Optional };
 
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
@@ -295,7 +297,7 @@ public class FieldSaveHelperTest
                 claim,
                 new Dictionary<int, string?>()
                 {
-                    {mock.CharacterField.ProjectFieldId, ""},
+                    {mock.CharacterFieldInfo.Id.ProjectFieldId, ""},
                 },
                 mock.ProjectInfo));
 

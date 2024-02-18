@@ -3,30 +3,26 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.CharacterFields;
 
-internal class SaveToCharacterAndClaimStrategy : CharacterExistsStrategyBase
+internal class SaveToCharacterAndClaimStrategy(Claim claim,
+    Character character,
+    int currentUserId,
+    IFieldDefaultValueGenerator generator,
+    ProjectInfo projectInfo) : CharacterExistsStrategyBase(claim,
+    character,
+    currentUserId,
+    generator,
+    projectInfo)
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
-
-    public SaveToCharacterAndClaimStrategy(Claim claim,
-        Character character,
-        int currentUserId,
-        IFieldDefaultValueGenerator generator,
-        ProjectInfo projectInfo) : base(claim,
-        character,
-        currentUserId,
-        generator,
-        projectInfo)
-    {
-    }
 
     protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
     {
         Character.JsonData = fields
             .Values
-            .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character).SerializeFields();
+            .Where(v => v.Field.BoundTo == FieldBoundTo.Character).SerializeFields();
 
         Claim.JsonData = fields.Values
-            .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Claim).SerializeFields();
+            .Where(v => v.Field.BoundTo == FieldBoundTo.Claim).SerializeFields();
     }
 
     protected override void SetCharacterNameFromPlayer() => Character.CharacterName = Claim.Player.GetDisplayName();

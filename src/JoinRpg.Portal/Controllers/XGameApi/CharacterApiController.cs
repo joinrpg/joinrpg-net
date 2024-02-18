@@ -62,7 +62,6 @@ public class CharacterApiController : XGameApiController
     public async Task<CharacterInfo> GetOne(int projectId, int characterId)
     {
         var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return
             new CharacterInfo
@@ -74,10 +73,10 @@ public class CharacterApiController : XGameApiController
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
                 Groups = ToGroupHeaders(character.DirectGroups),
                 AllGroups = ToGroupHeaders(character.AllGroups),
-                Fields = character.GetFields(projectInfo, project).Where(field => field.HasViewableValue)
+                Fields = character.GetFields(projectInfo).Where(field => field.HasViewableValue)
                     .Select(field => new FieldValue
                     {
-                        ProjectFieldId = field.Field.ProjectFieldId,
+                        ProjectFieldId = field.Field.Id.ProjectFieldId,
                         Value = field.Value,
                         DisplayString = field.DisplayString,
                     }),

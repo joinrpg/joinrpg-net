@@ -11,14 +11,14 @@ namespace JoinRpg.Web.Models;
 
 public class FieldPossibleValueViewModel
 {
-    public FieldPossibleValueViewModel(ProjectFieldDropdownValue value, bool hasPrice, bool selected = false)
+    public FieldPossibleValueViewModel(ProjectFieldVariant value, bool hasPrice, bool selected = false)
     {
-        ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+        ProjectFieldDropdownValueId = value.Id.ProjectFieldVariantId;
         DescriptionPlainText = value.Description.ToPlainText();
         Label = value.Label;
         DescriptionHtml = value.Description.ToHtmlString();
         MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
-        SpecialGroupId = value.CharacterGroup?.CharacterGroupId;
+        SpecialGroupId = value.CharacterGroupId;
         Price = value.Price;
         HasPrice = hasPrice;
         Selected = selected;
@@ -122,11 +122,11 @@ public class FieldValueViewModel
 
         Value = ch.Value;
 
-        DisplayString = ch.Field.SupportsMarkdown()
+        DisplayString = ch.Field.SupportsMarkdown
             ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
             : ch.DisplayString.SanitizeHtml();
-        FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
-        FieldName = ch.Field.FieldName;
+        FieldViewType = (ProjectFieldViewType)ch.Field.Type;
+        FieldName = ch.Field.Name;
 
         HasMasterAccess = model.AccessArguments.MasterAccess;
         Description = ch.Field.Description.ToHtmlString();
@@ -139,29 +139,27 @@ public class FieldValueViewModel
         HasValue = ch.HasViewableValue;
 
         CanView = ch.HasViewableValue
-                  && ch.HasViewAccess(model.AccessArguments)
+                  && ch.Field.HasViewAccess(model.AccessArguments)
                   && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
         CanEdit = model.EditAllowed
-                  && ch.HasEditAccess(model.AccessArguments)
+                  && ch.Field.HasEditAccess(model.AccessArguments)
                   && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
         // Detecting if field (or its values) has a price or not
-        HasPrice = ch.SupportsPricing();
+        HasPrice = ch.Field.SupportsPricing;
 
         //if not "HasValues" types, will be empty
         ValueList = ch.GetDropdownValues()
             .Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
-        PossibleValueList = ch.GetPossibleValues(model.AccessArguments).Select(v => new FieldPossibleValueViewModel(v,
-                HasPrice,
-                ValueList.Any(sv =>
-                    sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId)))
+        PossibleValueList = ch.GetPossibleVariantsWithSelection(model.AccessArguments)
+            .Select(pair => new FieldPossibleValueViewModel(pair.variant, HasPrice, pair.selected))
             .ToArray();
 
         if (HasPrice)
         {
-            if (FieldViewType.SupportsPricingOnField())
+            if (ch.Field.SupportsPricingOnField)
             {
                 Price = ch.Field.Price;
             }
@@ -171,14 +169,14 @@ public class FieldValueViewModel
 
         ShowPrice = HasPrice && model.AccessArguments.AnyAccessToClaim;
 
-        ProjectFieldId = ch.Field.ProjectFieldId;
+        ProjectFieldId = ch.Field.Id.ProjectFieldId;
 
-        FieldBound = (FieldBoundToViewModel)ch.Field.FieldBoundTo;
+        FieldBound = (FieldBoundToViewModel)ch.Field.BoundTo;
         MandatoryStatus = IsDeleted
             ? MandatoryStatusViewType.Optional
             : (MandatoryStatusViewType)ch.Field.MandatoryStatus;
 
-        ProjectId = ch.Field.ProjectId;
+        ProjectId = ch.Field.Id.ProjectId;
 
         SetFieldLabels(ch);
 
@@ -194,12 +192,12 @@ public class FieldValueViewModel
             }
         }
 
-        AddLabelIf(FieldSpecialLabelView.ForClaim, ch.Field.FieldBoundTo == FieldBoundTo.Claim);
+        AddLabelIf(FieldSpecialLabelView.ForClaim, ch.Field.BoundTo == FieldBoundTo.Claim);
 
-        AddLabelIf(FieldSpecialLabelView.Name, ch.IsName);
-        AddLabelIf(FieldSpecialLabelView.Description, ch.IsDescription);
-        AddLabelIf(FieldSpecialLabelView.ScheduleTime, ch.IsTimeSlot);
-        AddLabelIf(FieldSpecialLabelView.SchedulePlace, ch.IsRoomSlot);
+        AddLabelIf(FieldSpecialLabelView.Name, ch.Field.IsName);
+        AddLabelIf(FieldSpecialLabelView.Description, ch.Field.IsDescription);
+        AddLabelIf(FieldSpecialLabelView.ScheduleTime, ch.Field.IsTimeSlot);
+        AddLabelIf(FieldSpecialLabelView.SchedulePlace, ch.Field.IsRoomSlot);
     }
 
     public MandatoryStatusViewType MandatoryStatus { get; }
@@ -333,7 +331,7 @@ public class CustomFieldsViewModel
         var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
         Fields =
           character.GetFields(projectInfo)
-            .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character)
+            .Where(f => f.Field.BoundTo == FieldBoundTo.Character)
             .Where(f => !wherePrintEnabled || f.Field.IncludeInPrint)
             .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
             .ToArray();
@@ -375,8 +373,8 @@ public class CustomFieldsViewModel
 
     public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
 
-    [CanBeNull]
     public FieldValueViewModel? FieldById(int projectFieldId) => Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
-    [CanBeNull]
     public FieldValueViewModel? Field(ProjectField field) => FieldById(field.ProjectFieldId);
+
+    public FieldValueViewModel? Field(ProjectFieldInfo field) => FieldById(field.Id.ProjectFieldId);
 }

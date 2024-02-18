@@ -138,7 +138,7 @@ public class CharacterListController : ControllerGameBase
 
         return await MasterCharacterList(
           projectId,
-          (character, projectInfo) => character.IsActive && character.GetFields(projectInfo).Single(f => f.Field.ProjectFieldId == projectfieldId).HasEditableValue,
+          (character, projectInfo) => character.IsActive && character.GetFields(projectInfo).Single(f => f.Field.Id == field.Id).HasEditableValue,
           export,
           "Поле (проставлено): " + field.Name);
     }

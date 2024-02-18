@@ -1,13 +1,11 @@
-using JetBrains.Annotations;
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Problems;
 
 public class FieldRelatedProblem : ClaimProblem
 {
-    [NotNull]
-    public ProjectField Field { get; }
+    public ProjectFieldInfo Field { get; }
 
-    public FieldRelatedProblem(ClaimProblemType problemType, ProblemSeverity severity, [NotNull] ProjectField field)
-      : base(problemType, severity, field.FieldName) => Field = field ?? throw new ArgumentNullException(nameof(field));
+    public FieldRelatedProblem(ClaimProblemType problemType, ProblemSeverity severity, ProjectFieldInfo field)
+      : base(problemType, severity, field.Name) => Field = field ?? throw new ArgumentNullException(nameof(field));
 }

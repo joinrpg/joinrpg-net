@@ -48,7 +48,7 @@ public class CheckInClaimModel : IProjectIdAware
           .Select(frp => new NotFilledFieldViewModel(
             frp.Field.CanPlayerEdit
               ? NotFilledFieldViewModel.WhoWllFillEnum.Player
-              : NotFilledFieldViewModel.WhoWllFillEnum.Master, frp.Field.FieldName)).ToList();
+              : NotFilledFieldViewModel.WhoWllFillEnum.Master, frp.Field.Name)).ToList();
 
         CurrentUserFullName = currentUser.FullName;
 
