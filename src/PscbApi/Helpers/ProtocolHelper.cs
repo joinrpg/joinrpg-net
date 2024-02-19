@@ -1,4 +1,3 @@
-// ReSharper disable IdentifierTypo
 using System.Globalization;
 using PscbApi.Models;
 
@@ -31,7 +30,7 @@ public static class ProtocolHelper
     /// <returns>Parsed data</returns>
     public static BankResponseInfo ParseDescriptionString(string description)
     {
-        var items = description?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        var items = description?.Split(',', StringSplitOptions.RemoveEmptyEntries);
         var result = new BankResponseInfo();
         if (items?.Length > 0)
         {
@@ -41,7 +40,7 @@ public static class ProtocolHelper
             items.CheckItem(
                 BankResponseInfo.ProcessingCenterCodeJsonName,
                 value => result.ProcessingCode = (ProcessingCenterResponseCode?)(int.TryParse(value, out var parsed) ? parsed : (int?)null));
-            result.Description = items.LastOrDefault();
+            result.Description = items.Last();
         }
 
         return result;
@@ -54,7 +53,7 @@ public static class ProtocolHelper
         public static bool IsPurposeCharAllowed(char ch)
         {
             var code = (int)ch;
-            return code is >= 32 and <= 126 or >= 1040 and <= 1103 or 8470;
+            return code is (>= 32 and <= 126) or (>= 1040 and <= 1103) or 8470;
         }
     }
 
@@ -70,7 +69,7 @@ public static class ProtocolHelper
 
         s = new string(s.Where(FastPaymentsSystem.IsPurposeCharAllowed).ToArray());
         return s.Length > FastPaymentsSystem.MaxPurposeLength
-            ? s.Substring(0, FastPaymentsSystem.MaxPurposeLength)
+            ? s[..FastPaymentsSystem.MaxPurposeLength]
             : s;
     }
 }
