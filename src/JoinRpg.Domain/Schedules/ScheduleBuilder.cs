@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Schedules;
@@ -102,15 +103,14 @@ public class ScheduleBuilder
 
     private List<ProgramItemSlot> SelectSlots(ProgramItem programItem, Character character)
     {
-        var fields = character.GetFields(projectInfo);
+        var fields = character.GetFieldsDict(projectInfo);
 
-        List<int> GetSlotIndexes(ProjectFieldInfo field, IEnumerable<ScheduleItemAttribute> items)
+        int[] GetSlotIndexes(FieldWithValue field, IEnumerable<ScheduleItemAttribute> items)
         {
-            var variantIds = field.SortedVariants
-                .Select(variant => variant.Id)
-                .ToList();
-            var indexes = (from item in items where variantIds.Contains(item.Id) select item.SeqId).ToList();
-            if (indexes.Count < variantIds.Count) // Some variants not found, probably deleted
+            ProjectFieldVariantIdentification[] variantIds = [.. field.GetDropdownValues().Select(variant => variant.Id)];
+
+            int[] indexes = [.. (from item in items where variantIds.Contains(item.Id) select item.SeqId)];
+            if (indexes.Length < variantIds.Length) // Some variants not found, probably deleted
             {
                 _ = NotScheduled.Add(programItem);
             }
@@ -118,8 +118,8 @@ public class ScheduleBuilder
             return indexes;
         }
 
-        var slots = from timeSeqId in GetSlotIndexes(TimeSlotField, TimeSlots)
-                    from roomSeqId in GetSlotIndexes(RoomField, Rooms)
+        var slots = from timeSeqId in GetSlotIndexes(fields[TimeSlotField.Id], TimeSlots)
+                    from roomSeqId in GetSlotIndexes(fields[RoomField.Id], Rooms)
                     select Slots[timeSeqId][roomSeqId];
 
         return slots.ToList();
