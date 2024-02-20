@@ -21,10 +21,17 @@ public class ConvertInactiveProjectsToSlotsModel(
 
         foreach (var projectId in projects)
         {
-            var id = new PrimitiveTypes.ProjectIdentification(projectId);
-            logger.LogInformation("About to convert {projectId} to slots", id);
-            await slotMassConvertService.MassConvert(id);
-            logger.LogInformation("Converted {projectId} to slots", id);
+            try
+            {
+                var id = new PrimitiveTypes.ProjectIdentification(projectId);
+                logger.LogInformation("About to convert {projectId} to slots", id);
+                await slotMassConvertService.MassConvert(id);
+                logger.LogInformation("Converted {projectId} to slots", id);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Failing to convert {projectId} to slots, skipping", projectId);
+            }
         }
 
     }
