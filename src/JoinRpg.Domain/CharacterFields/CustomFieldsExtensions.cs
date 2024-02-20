@@ -58,6 +58,9 @@ public static class CustomFieldsExtensions
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character, ProjectInfo projectInfo)
         => GetFieldsForContainers(projectInfo, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
+    public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Character character, ProjectInfo projectInfo)
+        => character.GetFields(projectInfo).ToDictionary(f => f.Field.Id);
+
     public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, ProjectInfo projectInfo)
     => GetFieldsForContainers(projectInfo, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
 
@@ -71,6 +74,9 @@ public static class CustomFieldsExtensions
         return GetFieldsForContainers(projectInfo, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
             claim.DeserializeFieldValues());
     }
+
+    public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Claim claim, ProjectInfo projectInfo)
+        => claim.GetFields(projectInfo).ToDictionary(f => f.Field.Id);
 
     public static FieldWithValue? GetSingleField(this Claim claim, ProjectInfo projectInfo, ProjectFieldIdentification id)
     {
