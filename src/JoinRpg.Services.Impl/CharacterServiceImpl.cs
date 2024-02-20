@@ -219,100 +219,108 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
     public async Task<int?> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName, bool allowToChangeInactive)
     {
-        var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        if (!allowToChangeInactive)
+        try
         {
-            group.Project.EnsureProjectActive();
-        }
+            var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
 
-        if (!IsCurrentUserAdmin)
-        {
-            group.Project
-                .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-        }
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        var claims = group.Claims.ToList();
-
-        var needToSaveClaims = claims.Any();
-        var needToInitSlot = group.HaveDirectSlots && group.Project.Active;
-        var needToClearSlot = group.HaveDirectSlots;
-
-        logger.LogInformation("Group (Id={characterGroupId}, Name={characterGroupName}) is evaluated to convert to slot. Decision (SaveClaims: {needToSaveClaims}, InitSlot: {needToInitSlot}, ClearSlot: {needToClearSlot})",
-            characterGroupId,
-            group.CharacterGroupName,
-            needToSaveClaims,
-            needToInitSlot,
-            needToClearSlot);
-
-        if (!needToSaveClaims && !needToInitSlot && !needToClearSlot)
-        {
-            return null; // Do nothing
-        }
-
-        MarkTreeModified(group.Project);
-
-        Character? character;
-        if (needToSaveClaims || needToInitSlot)
-        {
-
-            var addCharacterRequest = new AddCharacterRequest(
-                projectId,
-                new[] { characterGroupId },
-                CharacterTypeInfo.DefaultSlot(slotName),
-                new Dictionary<int, string?>());
-
-            character = new Character
+            if (!allowToChangeInactive)
             {
-                ParentCharacterGroupIds =
-                    await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
-                ProjectId = addCharacterRequest.ProjectId,
-                Project = group.Project,
-            };
+                group.Project.EnsureProjectActive();
+            }
 
-            SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
-
-            Create(character);
-
-
-            //TODO we do not send message for creating character
-            _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
-                character,
-                addCharacterRequest.FieldValues, projectInfo);
-
-            if (needToInitSlot)
+            if (!IsCurrentUserAdmin)
             {
-                // Move limit to character
-                character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;
-                character.IsActive = true;
+                group.Project
+                    .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            }
+
+            var claims = group.Claims.ToList();
+
+            var needToSaveClaims = claims.Any();
+            var needToInitSlot = group.HaveDirectSlots && group.Project.Active;
+            var needToClearSlot = group.HaveDirectSlots;
+
+            logger.LogInformation("Group (Id={characterGroupId}, Name={characterGroupName}) is evaluated to convert to slot. Decision (SaveClaims: {needToSaveClaims}, InitSlot: {needToInitSlot}, ClearSlot: {needToClearSlot})",
+                characterGroupId,
+                group.CharacterGroupName,
+                needToSaveClaims,
+                needToInitSlot,
+                needToClearSlot);
+
+            if (!needToSaveClaims && !needToInitSlot && !needToClearSlot)
+            {
+                return null; // Do nothing
+            }
+
+            MarkTreeModified(group.Project);
+
+            Character? character;
+            if (needToSaveClaims || needToInitSlot)
+            {
+
+                var addCharacterRequest = new AddCharacterRequest(
+                    projectId,
+                    new[] { characterGroupId },
+                    CharacterTypeInfo.DefaultSlot(slotName),
+                    new Dictionary<int, string?>());
+
+                character = new Character
+                {
+                    ParentCharacterGroupIds =
+                        await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
+                    ProjectId = addCharacterRequest.ProjectId,
+                    Project = group.Project,
+                };
+
+                SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
+
+                Create(character);
+
+
+                //TODO we do not send message for creating character
+                _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
+                    character,
+                    addCharacterRequest.FieldValues, projectInfo);
+
+                if (needToInitSlot)
+                {
+                    // Move limit to character
+                    character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;
+                    character.IsActive = true;
+                }
+                else
+                {
+                    character.CharacterSlotLimit = 0;
+                    character.IsActive = claims.Any(c => c.IsPending); // if there is some alive claim
+                }
+
+                // Move claims from group to character
+
+                foreach (var claim in claims)
+                {
+                    claim.CharacterGroupId = null;
+                    claim.Character = character;
+                }
             }
             else
             {
-                character.CharacterSlotLimit = 0;
-                character.IsActive = claims.Any(c => c.IsPending); // if there is some alive claim
+                character = null;
             }
 
-            // Move claims from group to character
+            //Remove direct claim settings for group 
+            group.HaveDirectSlots = false;
+            group.AvaiableDirectSlots = 0;
 
-            foreach (var claim in claims)
-            {
-                claim.CharacterGroupId = null;
-                claim.Character = character;
-            }
+            await UnitOfWork.SaveChangesAsync();
+
+            return character?.CharacterId;
         }
-        else
+        catch (Exception exception)
         {
-            character = null;
+            logger.LogError(exception, "Error during converting CharacterGroup={characterGroupId}", characterGroupId);
+            throw;
         }
-
-        //Remove direct claim settings for group 
-        group.HaveDirectSlots = false;
-        group.AvaiableDirectSlots = 0;
-
-        await UnitOfWork.SaveChangesAsync();
-
-        return character?.CharacterId;
     }
 }
