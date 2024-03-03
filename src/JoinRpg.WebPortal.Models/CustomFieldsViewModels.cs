@@ -148,7 +148,7 @@ public class FieldValueViewModel
 
 
         // Detecting if field (or its values) has a price or not
-        HasPrice = ch.Field.SupportsPricing;
+        HasPrice = ch.Field.HasPrice;
 
         //if not "HasValues" types, will be empty
         ValueList = ch.GetDropdownValues()
