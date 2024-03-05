@@ -11,21 +11,23 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 {
     private Project Project { get; }
 
-    public IEnumerable<string> LinkTypesToMatch => _matches.Keys.OrderByDescending(c => c.Length);
+    public string[] LinkTypesToMatch { get; }
 
-    private readonly IReadOnlyDictionary<string, Func<string, int, string, string>> _matches;
+    private readonly Dictionary<string, Func<string, int, string, string>> matches;
 
     public JoinrpgMarkdownLinkRenderer(Project project)
     {
         Project = project;
-        _matches = new Dictionary
+        matches = new Dictionary
           <string, Func<string, int, string, string>>
-    {
-      {"персонаж", Charname},
-      {"контакты", CharacterFullFunc},
-      {"группа", GroupName},
-      {"список", GroupListFunc},
-    };
+        {
+          {"персонаж", Charname},
+          {"контакты", CharacterFullFunc},
+          {"группа", GroupName},
+          {"список", GroupListFunc},
+        };
+
+        LinkTypesToMatch = [.. matches.Keys.OrderByDescending(c => c.Length)];
     }
 
     private string GroupListFunc(string match, int index, string extra)
@@ -132,9 +134,9 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     public string Render(string match, int index, string extra)
     {
-        if (match.Length > 1 && match[0] == '%' && _matches.ContainsKey(match[1..]))
+        if (match.Length > 1 && match[0] == '%' && matches.ContainsKey(match[1..]))
         {
-            return _matches[match.Substring(1)](match, index, extra);
+            return matches[match[1..]](match, index, extra);
         }
         return Fail(match, index, extra);
     }

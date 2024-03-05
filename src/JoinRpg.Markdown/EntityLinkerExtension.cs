@@ -3,13 +3,11 @@ using Markdig.Renderers;
 
 namespace JoinRpg.Markdown;
 
-internal class EntityLinkerExtension : IMarkdownExtension
+internal class EntityLinkerExtension(string[] prefixes) : IMarkdownExtension
 {
-    private ILinkRenderer LinkRenderers { get; }
+    private readonly string[] prefixes = prefixes;
 
-    public EntityLinkerExtension(ILinkRenderer linkRenderers) => LinkRenderers = linkRenderers ?? throw new ArgumentNullException(nameof(linkRenderers));
+    public void Setup(MarkdownPipelineBuilder pipeline) => pipeline.InlineParsers.AddIfNotAlready(new LinkerParser(prefixes));
 
-    public void Setup(MarkdownPipelineBuilder pipeline) => pipeline.InlineParsers.AddIfNotAlready(new LinkerParser(LinkRenderers));
-
-    public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer) => renderer.ObjectRenderers.AddIfNotAlready(new LinkerRenderAdapter(LinkRenderers));
+    public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer) => renderer.ObjectRenderers.AddIfNotAlready(new LinkerRenderAdapter());
 }
