@@ -7,24 +7,15 @@ public static class ProjectFieldTypeHelper
     /// </summary>
     public static bool SupportsPricing(this ProjectFieldType self)
     {
-        switch (self)
+        return self switch
         {
-            case ProjectFieldType.Dropdown:
-            case ProjectFieldType.MultiSelect:
-            case ProjectFieldType.Checkbox:
-            case ProjectFieldType.Number:
-                return true;
-            case ProjectFieldType.String:
-            case ProjectFieldType.Text:
-            case ProjectFieldType.Header:
-            case ProjectFieldType.Login:
-            case ProjectFieldType.ScheduleRoomField:
-            case ProjectFieldType.ScheduleTimeSlotField:
-            case ProjectFieldType.PinCode:
-                return false;
-            default:
-                throw new ArgumentException(self.ToString(), nameof(self));
-        }
+            ProjectFieldType.Dropdown or ProjectFieldType.MultiSelect or ProjectFieldType.Checkbox or ProjectFieldType.Number => true,
+            ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
+                or ProjectFieldType.ScheduleRoomField or ProjectFieldType.ScheduleTimeSlotField or ProjectFieldType.PinCode
+                or ProjectFieldType.Uri
+                => false,
+            _ => throw new ArgumentException(self.ToString(), nameof(self)),
+        };
     }
 
     /// <summary>
@@ -32,24 +23,20 @@ public static class ProjectFieldTypeHelper
     /// </summary>
     public static bool SupportsPricingOnField(this ProjectFieldType self)
     {
-        switch (self)
+        if (self.HasValuesList())
         {
-            case ProjectFieldType.Checkbox:
-            case ProjectFieldType.Number:
-                return true;
-            case ProjectFieldType.String:
-            case ProjectFieldType.Text:
-            case ProjectFieldType.Dropdown:
-            case ProjectFieldType.MultiSelect:
-            case ProjectFieldType.Header:
-            case ProjectFieldType.Login:
-            case ProjectFieldType.ScheduleRoomField:
-            case ProjectFieldType.ScheduleTimeSlotField:
-            case ProjectFieldType.PinCode:
-                return false;
-            default:
-                throw new ArgumentException(self.ToString(), nameof(self));
+            return false;
         }
+
+        return self switch
+        {
+            ProjectFieldType.Checkbox or ProjectFieldType.Number => true,
+
+            ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
+            or ProjectFieldType.PinCode or ProjectFieldType.Uri
+                => false,
+            _ => throw new ArgumentException(self.ToString(), nameof(self)),
+        };
     }
 
     /// <summary>
@@ -57,37 +44,12 @@ public static class ProjectFieldTypeHelper
     /// </summary>
     public static bool HasValuesList(this ProjectFieldType self)
     {
-        switch (self)
-        {
-            case ProjectFieldType.Dropdown:
-            case ProjectFieldType.MultiSelect:
-            case ProjectFieldType.ScheduleRoomField:
-            case ProjectFieldType.ScheduleTimeSlotField:
-                return true;
-            case ProjectFieldType.String:
-            case ProjectFieldType.Text:
-            case ProjectFieldType.Checkbox:
-            case ProjectFieldType.Header:
-            case ProjectFieldType.Number:
-            case ProjectFieldType.Login:
-            case ProjectFieldType.PinCode:
-                return false;
-            default:
-                throw new ArgumentException(self.ToString(), nameof(self));
-        }
-    }
-
-    /// <summary>
-    /// Returns true if field values could be mass added and doesn't require special setup
-    /// </summary>
-    public static bool SupportsMassAdding(this ProjectFieldType self)
-    {
         return self switch
         {
             ProjectFieldType.Dropdown => true,
             ProjectFieldType.MultiSelect => true,
             ProjectFieldType.ScheduleRoomField => true,
-            ProjectFieldType.ScheduleTimeSlotField => false,
+            ProjectFieldType.ScheduleTimeSlotField => true,
             ProjectFieldType.String => false,
             ProjectFieldType.Text => false,
             ProjectFieldType.Checkbox => false,
@@ -95,6 +57,26 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.Number => false,
             ProjectFieldType.Login => false,
             ProjectFieldType.PinCode => false,
+            ProjectFieldType.Uri => false,
+            _ => throw new ArgumentException(self.ToString(), nameof(self)),
+        };
+    }
+
+    /// <summary>
+    /// Returns true if field values could be mass added and doesn't require special setup
+    /// </summary>
+    public static bool SupportsMassAdding(this ProjectFieldType self)
+    {
+        if (!self.HasValuesList())
+        {
+            return false;
+        }
+        return self switch
+        {
+            ProjectFieldType.Dropdown => true,
+            ProjectFieldType.MultiSelect => true,
+            ProjectFieldType.ScheduleRoomField => true,
+            ProjectFieldType.ScheduleTimeSlotField => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
     }

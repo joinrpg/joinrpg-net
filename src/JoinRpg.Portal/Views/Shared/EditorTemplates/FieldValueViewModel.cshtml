@@ -130,6 +130,10 @@
         case ProjectFieldViewType.String:
           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
           break;
+        case ProjectFieldViewType.Uri:
+           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
+           <a href="@Model.DisplayString">[link]</a>
+            break;
         case ProjectFieldViewType.Login:
           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value"
                  data-val-regex="Это поле должно состоять из латинских букв и цифр, и начинаться с латинской буквы"

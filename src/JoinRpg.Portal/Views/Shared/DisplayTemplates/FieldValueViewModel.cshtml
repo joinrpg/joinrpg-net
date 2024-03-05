@@ -91,6 +91,9 @@
                     }
                 </div>
                 break;
+            case ProjectFieldViewType.Uri:
+                <a href="@Model.DisplayString">@Model.DisplayString</a>
+                break;
             case ProjectFieldViewType.String:
             case ProjectFieldViewType.Text:
             case ProjectFieldViewType.Login:

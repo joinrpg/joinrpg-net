@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.TestHelpers;
 using Shouldly;
