@@ -13,6 +13,7 @@ public enum ProjectFieldType
     ScheduleRoomField,
     ScheduleTimeSlotField,
     PinCode,
+    Uri,
 }
 
 public enum FieldBoundTo
