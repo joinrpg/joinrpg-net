@@ -8,7 +8,7 @@ public interface ILinkRenderer
     /// <summary>
     /// List of types to match (like %link1, %link2)
     /// </summary>
-    IEnumerable<string> LinkTypesToMatch { get; }
+    string[] LinkTypesToMatch { get; }
 
     /// <summary>
     /// Function that do actual rendering 

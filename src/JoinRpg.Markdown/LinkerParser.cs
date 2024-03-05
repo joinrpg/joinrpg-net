@@ -4,19 +4,17 @@ using Markdig.Parsers;
 
 namespace JoinRpg.Markdown;
 
-internal class LinkerParser : InlineParser
+internal class LinkerParser(string[] prefixes) : InlineParser
 {
-    private ILinkRenderer LinkRenderer { get; }
-
-    public LinkerParser(ILinkRenderer linkRenderer) => LinkRenderer = linkRenderer ?? throw new ArgumentNullException(nameof(linkRenderer));
+    private readonly string[] prefixes = prefixes;
 
     private TextMatchHelper? _textMatchHelper;
 
     public override void Initialize()
     {
-        _textMatchHelper = new TextMatchHelper(new HashSet<string>(LinkRenderer.LinkTypesToMatch.Select(c => "%" + c)));
+        _textMatchHelper = new TextMatchHelper(new HashSet<string>(prefixes.Select(c => "%" + c)));
 
-        OpeningCharacters = new[] { '%' };
+        OpeningCharacters = ['%'];
     }
 
     public override bool Match(InlineProcessor processor, ref StringSlice slice)
@@ -25,6 +23,12 @@ internal class LinkerParser : InlineParser
         {
             throw new InvalidOperationException("Parser should be initialized before using");
         }
+
+        if (processor.Context is null)
+        {
+            return false;
+        }
+
         if (slice.Start != 0 && !slice.PeekCharExtra(-1).IsWhitespace())
         {
             return false;
@@ -78,8 +82,17 @@ internal class LinkerParser : InlineParser
         }
 
         var extra = builder.ToString();
-        processor.Inline = new EntityLinkInline(match, index, extra);
 
-        return true;
+        if (processor.Context.Properties.TryGetValue(nameof(ILinkRenderer), out var obj) && obj is ILinkRenderer renderer)
+        {
+            if (!renderer.LinkTypesToMatch.Contains(match[1..]))
+            {
+                return false;
+            }
+            processor.Inline = new EntityLinkInline(match, index, extra, renderer);
+            return true;
+        }
+
+        return false;
     }
 }

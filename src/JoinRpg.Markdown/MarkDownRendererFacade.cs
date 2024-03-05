@@ -10,6 +10,18 @@ namespace JoinRpg.Markdown;
 /// </summary>
 public static class MarkDownRendererFacade
 {
+    private static readonly MarkdownPipeline markdownPipeline = CreatePipeline();
+
+    private static MarkdownPipeline CreatePipeline()
+    {
+        return new MarkdownPipelineBuilder()
+            .UseSoftlineBreakAsHardlineBreak()
+            .UseMediaLinks()
+            .UseAutoLinks()
+            .UseEntityLinker(["персонаж", "контакты", "группа", "список"])
+            .Build();
+    }
+
     /// <summary>
     /// Converts markdown to HtmlString with all sanitization
     /// </summary>
@@ -36,7 +48,6 @@ public static class MarkDownRendererFacade
     private static JoinHtmlString PerformRender(MarkdownString? markdownString, ILinkRenderer? linkRenderer,
         Action<string, TextWriter, MarkdownPipeline, MarkdownParserContext> renderMethod, IHtmlSanitizer sanitizer)
     {
-        linkRenderer ??= DoNothingLinkRenderer.Instance;
         if (markdownString?.Contents == null)
         {
             return "".MarkAsHtmlString();
@@ -44,21 +55,13 @@ public static class MarkDownRendererFacade
 
         var context = new MarkdownParserContext();
 
-        context.Properties.Add(nameof(ILinkRenderer), linkRenderer);
+        context.Properties.Add(nameof(ILinkRenderer), linkRenderer ?? DoNothingLinkRenderer.Instance);
 
         var contents = sanitizer.Sanitize(markdownString.Contents);
 
-        //TODO - do we need to save re-use pipeline?
-        var pipeline = new MarkdownPipelineBuilder()
-            .UseSoftlineBreakAsHardlineBreak()
-            .UseMediaLinks()
-            .UseAutoLinks()
-            .UseEntityLinker(linkRenderer)
-            .Build();
-
         var writer = new StringWriter();
 
-        renderMethod(contents, writer, pipeline, context);
+        renderMethod(contents, writer, markdownPipeline, context);
 
         var rendered = writer.ToString();
 
