@@ -34,40 +34,28 @@ public class CharacterListByGroupViewModel : CharacterListViewModel, IOperations
     int? IOperationsAwareView.CharacterGroupId => GroupModel.CharacterGroupId;
 }
 
-public class CharacterListViewModel : IOperationsAwareView
+public class CharacterListViewModel(
+    int currentUserId,
+    string title,
+    IReadOnlyCollection<Character> characters,
+    Project project,
+    ProjectInfo projectInfo,
+    IProblemValidator<Character> problemValidator) : IOperationsAwareView
 {
-    public IEnumerable<CharacterListItemViewModel> Items { get; }
-    public int? ProjectId { get; }
-    public IReadOnlyCollection<int> ClaimIds { get; }
-    public IReadOnlyCollection<int> CharacterIds { get; }
-    public string ProjectName { get; }
-    public string Title { get; }
-
-    public bool HasEditAccess { get; }
-
-    public CharacterListViewModel(
-        int currentUserId,
-        string title,
-        IReadOnlyCollection<Character> characters,
-        Project project,
-        ProjectInfo projectInfo,
-        IProblemValidator<Character> problemValidator)
-    {
-        Items = characters.Select(
+    public IEnumerable<CharacterListItemViewModel> Items { get; } = characters.Select(
             character =>
                 new CharacterListItemViewModel(character,
                     currentUserId,
                     projectInfo, problemValidator)).ToArray();
-        ProjectName = project.ProjectName;
-        ProjectId = project.ProjectId;
-        Title = title;
-        Fields = project.GetOrderedFields().Where(f => f.IsActive).ToArray();
-        ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
-        CharacterIds = characters.Select(c => c.CharacterId).ToArray();
-        HasEditAccess = project.HasEditRolesAccess(currentUserId);
-    }
+    public int? ProjectId { get; } = project.ProjectId;
+    public IReadOnlyCollection<int> ClaimIds { get; } = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
+    public IReadOnlyCollection<int> CharacterIds { get; } = characters.Select(c => c.CharacterId).ToArray();
+    public string ProjectName { get; } = project.ProjectName;
+    public string Title { get; } = title;
 
-    public IReadOnlyCollection<ProjectField> Fields { get; }
+    public bool HasEditAccess { get; } = project.HasEditRolesAccess(currentUserId);
+
+    public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedFields;
 }
 
 public class CharacterListItemViewModel : ILinkable

@@ -30,27 +30,18 @@
         <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
         @foreach (var field in Model.Fields)
         {
-          switch (field.FieldType)
+          if (!field.CanHaveValue)
           {
-            case ProjectFieldType.Text:
+                <th>&nbsp;</th>
+          }
+          else if (field.IsMultiLine)
+          {
               continue;
-            case ProjectFieldType.String:
-            case ProjectFieldType.Number:
-            case ProjectFieldType.Dropdown:
-            case ProjectFieldType.Checkbox:
-            case ProjectFieldType.MultiSelect:
-            case ProjectFieldType.ScheduleRoomField:
-            case ProjectFieldType.ScheduleTimeSlotField:
-            case ProjectFieldType.PinCode:
-            case ProjectFieldType.Login:
-                    <th>@field.FieldName</th>
-                    break;
-                case ProjectFieldType.Header:
-                    <th>&nbsp;</th>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+          }
+          else
+          {
+              <th>@field.Name</th>
+          }
         }
 
     </tr>
@@ -120,32 +111,23 @@
 
             @foreach (var field in Model.Fields)
             {
-                var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.Id.ProjectFieldId == field.ProjectFieldId);
-                switch (field.FieldType)
+                var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.Id.ProjectFieldId == field.Id.ProjectFieldId);
+                if (!field.CanHaveValue)
                 {
-                    case ProjectFieldType.Text:
-                        continue;
-                    case ProjectFieldType.String:
-                    case ProjectFieldType.Number:
-                    case ProjectFieldType.Dropdown:
-                    case ProjectFieldType.Checkbox:
-                    case ProjectFieldType.MultiSelect:
-                    case ProjectFieldType.ScheduleRoomField:
-                    case ProjectFieldType.ScheduleTimeSlotField:
-                    case ProjectFieldType.PinCode:
-                    case ProjectFieldType.Login:
-                        <td>
-                            @if (fieldValueViewModel != null)
-                            {
-                                @fieldValueViewModel.DisplayString
-                            }
-                        </td>
-                        break;
-                    case ProjectFieldType.Header:
-                        <td>*</td>
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    <td>*</td>
+                }
+                else if (field.IsMultiLine)
+                {
+                    continue;
+                }
+                else
+                {
+                    <td>
+                        @if (fieldValueViewModel != null)
+                        {
+                            @fieldValueViewModel.DisplayString
+                        }
+                    </td>
                 }
             }
         </tr>

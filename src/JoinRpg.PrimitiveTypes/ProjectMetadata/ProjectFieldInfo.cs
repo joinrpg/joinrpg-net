@@ -57,7 +57,9 @@ public record class ProjectFieldInfo(
     public bool SupportsMarkdown => Type == ProjectFieldType.Text;
     public bool HasSpecialGroup => HasValueList && BoundTo == FieldBoundTo.Character;
 
-    public bool CanHaveValue => Type != ProjectFieldType.Header;
+    public bool CanHaveValue { get; } = Type != ProjectFieldType.Header;
+
+    public bool IsMultiLine { get; } = Type == ProjectFieldType.Text;
 
     public bool SupportsPricing => Type.SupportsPricing();
 
