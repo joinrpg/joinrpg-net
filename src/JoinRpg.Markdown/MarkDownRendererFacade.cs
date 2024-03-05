@@ -44,6 +44,8 @@ public static class MarkDownRendererFacade
 
         var context = new MarkdownParserContext();
 
+        context.Properties.Add(nameof(ILinkRenderer), linkRenderer);
+
         var contents = sanitizer.Sanitize(markdownString.Contents);
 
         //TODO - do we need to save re-use pipeline?

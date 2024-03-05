@@ -8,7 +8,7 @@ public class LinkRendererTest
 {
     private class LinkRendererMock : ILinkRenderer
     {
-        private const string Test = "test";
+        private const string Test = "персонаж";
 
         public IEnumerable<string> LinkTypesToMatch { get; } = new[] { Test };
 
@@ -30,20 +30,20 @@ public class LinkRendererTest
     private readonly LinkRendererMock _mock = new();
 
     [Fact]
-    public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%test12");
+    public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%персонаж12");
 
     [Fact]
-    public void TestNoMatchWithoutIndex() => NoMatch("%test");
+    public void TestNoMatchWithoutIndex() => NoMatch("%персонаж");
 
     [Fact]
-    public void TestNoMatchInMiddle() => NoMatch("test%test12");
+    public void TestNoMatchInMiddle() => NoMatch("test%персонаж12");
 
     [Fact]
-    public void TestMatchWithExtra() => Match("<p><strong>121</strong>extra</p>", "%test121(extra)");
+    public void TestMatchWithExtra() => Match("<p><strong>121</strong>extra</p>", "%персонаж121(extra)");
 
     [Fact]
-    public void TestNoMatchZero() => NoMatch("%test0(extra)");
+    public void TestNoMatchZero() => NoMatch("%персонаж0(extra)");
 
     [Fact]
-    public void TestMiddleOfSentence() => Match("<p>s <strong>12</strong></p>", "s %test12");
+    public void TestMiddleOfSentence() => Match("<p>s <strong>12</strong></p>", "s %персонаж12");
 }
