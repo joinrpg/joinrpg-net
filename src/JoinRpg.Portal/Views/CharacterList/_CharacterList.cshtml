@@ -63,7 +63,18 @@
                 }
                 else
                 {
-                   @Html.DisplayFor(modelItem => item.BusyStatus)
+                    @Html.DisplayFor(modelItem => item.BusyStatus)
+                    if (item.BusyStatus == CharacterBusyStatusView.Slot)
+                    {
+                        if (item.SlotCount is not null)
+                        {
+                            <text> (@item.SlotCount)</text>
+                        }
+                        else
+                        {
+                            <text> (∞)</text>
+                        }
+                    }
                 }
             </td>
             <td>

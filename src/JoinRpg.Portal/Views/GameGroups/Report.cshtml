@@ -1,8 +1,18 @@
 ﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.Characters
 @model GameRolesReportViewModel
 
 @{
-  ViewBag.Title = "Отчет по группе —" + Model.Details.Name;
+    ViewBag.Title = "Отчет по группе —" + Model.Details.Name;
+
+    void WriteLabel(CharacterGroupReportItemViewModel item)
+    {
+        @if (item.Unlimited)
+        {
+            <span title="Разрешены неограниченные заявки"> + ∞</span>
+        }
+    }
+
 }
 
 @Html.DisplayFor(model => model.Details)
@@ -13,7 +23,8 @@
     <th colspan="@(Model.CheckinModuleEnabled ? 4 : 3)">Заявок</th>
   </tr>
   <tr>
-    <th>Всего</th>
+    <th title="Считая шаблоны за 1 персонажа">Всего прописано</th>
+    <th title="Включая места в шаблонах">Размер ролевки</th>
     <th>NPC</th>
     <th>Занято</th>
     <th>Свободно</th>
@@ -49,17 +60,18 @@
       <td style="text-align: right">
         @Html.ActionLink(item.TotalCharacters.ToString(), "ByGroup", "CharacterList", new {Model.ProjectId, item.CharacterGroupId}, null)
       </td>
+      <td style="text-align: right">
+          @item.TotalSlots @{
+              WriteLabel(item);
+          }
+                
+              </td>
       <td style="text-align: right">@item.TotalNpcCharacters</td>
       <td style="text-align: right">@item.TotalCharactersWithPlayers</td>
-      <td style="text-align: right">@item.TotalSlots
-        @if (item.AvaiableDirectSlots == -1)
-        {
-          <span title="Разрешены неограниченные прямые заявки">∞</span>
-        }
-        else if (item.Unlimited)
-        {
-          <span title="В подгруппу разрешены неограниченные прямые заявки">+</span>
-        }
+      <td style="text-align: right">@item.TotalFreeSlots
+                @{
+                    WriteLabel(item);
+                }
       </td>
       @if (Model.CheckinModuleEnabled)
       {

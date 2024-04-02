@@ -63,6 +63,8 @@ public class CharacterListItemViewModel : ILinkable
     [Display(Name = "Занят?")]
     public CharacterBusyStatusView BusyStatus { get; }
 
+    public int? SlotCount { get; }
+
     [Display(Name = "Персонаж")]
     public string Name { get; set; }
 
@@ -99,6 +101,10 @@ public class CharacterListItemViewModel : ILinkable
         {
             ApprovedClaimId = character.ApprovedClaim.ClaimId;
             Player = character.ApprovedClaim.Player;
+        }
+        else if (character.CharacterType == CharacterType.Slot)
+        {
+            SlotCount = character.CharacterSlotLimit;
         }
 
         Name = character.CharacterName;

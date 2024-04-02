@@ -11,10 +11,8 @@ public class CharacterGroupReportItemViewModel : IEquatable<CharacterGroupReport
 
     public int DeepLevel { get; set; }
 
-    [DisplayName("Слотов для заявок в группу")]
-    public int AvaiableDirectSlots { get; set; }
-
     public int TotalSlots { get; set; }
+    public int TotalFreeSlots { get; set; }
     public int TotalCharacters { get; set; }
 
     public int TotalNpcCharacters { get; set; }
