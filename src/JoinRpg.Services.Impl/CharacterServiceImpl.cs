@@ -317,6 +317,18 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
             return character?.CharacterId;
         }
+        catch (DbEntityValidationException exception)
+        {
+            var message = "\nValidation Errors: ";
+            foreach (var error in exception.EntityValidationErrors.SelectMany(entity => entity.ValidationErrors))
+            {
+                message += $"\n * Field name: {error.PropertyName}, Error message: {error.ErrorMessage}";
+            }
+            logger.LogError(exception, "Error during converting CharacterGroup={characterGroupId}. Validation errors: {validationErrors}",
+                characterGroupId,
+                message);
+            throw;
+        }
         catch (Exception exception)
         {
             logger.LogError(exception, "Error during converting CharacterGroup={characterGroupId}", characterGroupId);
