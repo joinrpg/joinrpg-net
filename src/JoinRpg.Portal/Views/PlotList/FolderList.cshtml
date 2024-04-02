@@ -7,12 +7,12 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => firstItem.PlotFolderMasterTitle)
+            @Html.DisplayNameFor(model => firstItem!.PlotFolderMasterTitle)
         </th>
         @if (Model.HasMasterAccess)
         {
         <th>
-            @Html.DisplayNameFor(model => firstItem.Status)
+            @Html.DisplayNameFor(model => firstItem!.Status)
         </th>
         }
         <th>Вводные</th>

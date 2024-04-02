@@ -14,7 +14,7 @@ public class DumpConfigController : Controller
 
     public IActionResult Index()
     {
-        var config = (configuration as IConfigurationRoot).GetDebugView();
+        var config = ((IConfigurationRoot)configuration).GetDebugView();
         return Content(config);
     }
 }

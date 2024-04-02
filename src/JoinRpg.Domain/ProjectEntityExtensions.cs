@@ -38,20 +38,14 @@ public static class ProjectEntityExtensions
         return entity.HasMasterAccess(currentUserAccessor.UserIdOrDefault, acl => true);
     }
 
-    public static T RequestMasterAccess<T>([NotNull] this T field,
+    [return: NotNull]
+    public static T RequestMasterAccess<T>([NotNull] this T? field,
         int? currentUserId,
         Expression<Func<ProjectAcl, bool>>? accessType = null)
     where T : IProjectEntity
     {
-        if (field == null)
-        {
-            throw new ArgumentNullException(nameof(field));
-        }
-
-        if (field.Project == null)
-        {
-            throw new ArgumentNullException(nameof(field.Project));
-        }
+        ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(field.Project);
 
         if (accessType == null)
         {

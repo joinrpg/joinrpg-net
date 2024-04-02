@@ -63,16 +63,16 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                     <table class="table">
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => firstFee.Fee)
+                                @Html.DisplayNameFor(model => firstFee!.Fee)
                             </th>
                             @if (Model.GlobalSettings.PreferentialFeeEnabled)
                             {
                                 <th>
-                                    @Html.DisplayNameFor(model => firstFee.PreferentialFee)
+                                    @Html.DisplayNameFor(model => firstFee!.PreferentialFee)
                                 </th>
                             }
                             <th>
-                                @Html.DisplayNameFor(model => firstFee.StartDate)
+                                @Html.DisplayNameFor(model => firstFee!.StartDate)
                             </th>
                             <th></th>
                         </tr>

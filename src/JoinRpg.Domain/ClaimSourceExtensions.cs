@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
@@ -44,10 +45,18 @@ public static class ClaimSourceExtensions
 
     public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim) => ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
 
-    public static void EnsureCanAddClaim<T>(this T claimSource, int currentUserId)
-        where T : IClaimSource => ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
+    public static void EnsureCanAddClaim<T>([NotNull] this T? claimSource, int currentUserId)
+        where T : IClaimSource
+    {
+        ArgumentNullException.ThrowIfNull(claimSource);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
+    }
 
-    public static void EnsureCanMoveClaim(this IClaimSource claimSource, Claim claim) => ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
+    public static void EnsureCanMoveClaim([NotNull] this IClaimSource? claimSource, Claim claim)
+    {
+        ArgumentNullException.ThrowIfNull(claimSource);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
+    }
 
     private static void ThrowIfValidationFailed(
         IReadOnlyCollection<AddClaimForbideReason> validation,
