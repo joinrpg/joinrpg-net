@@ -81,6 +81,9 @@ public class ManageController : Common.ControllerBase
     // GET: /Manage/ChangePassword
     public ActionResult ChangePassword() => View();
 
+    [HttpGet("/.well-known/change-password")]
+    public ActionResult ChangePasswordWellKnown() => RedirectToAction("ChangePassword");
+
     //
     // POST: /Manage/ChangePassword
     [HttpPost]
