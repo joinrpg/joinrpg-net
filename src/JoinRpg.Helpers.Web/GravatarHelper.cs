@@ -11,12 +11,11 @@ public static class GravatarHelper
     public static Uri GetLink(string email, int size)
     {
         ArgumentNullException.ThrowIfNull(email);
-        static string GravatarHash(string email)
-        {
-            var bytes = Encoding.UTF8.GetBytes(email.ToLowerInvariant());
-            return Convert.ToHexString(MD5.HashData(bytes));
-        }
 
-        return new($"https://www.gravatar.com/avatar/{GravatarHash(email)}?d=identicon&s={size}");
+        var bytes = Encoding.UTF8.GetBytes(email.ToLowerInvariant());
+        var gravatarHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var defaultMode = "robohash";
+
+        return new($"https://www.gravatar.com/avatar/{gravatarHash}?d={defaultMode}&s={size}");
     }
 }
