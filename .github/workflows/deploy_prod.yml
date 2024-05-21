@@ -8,7 +8,7 @@ on:
         default: latest
 
 concurrency:
-  group: development
+  group: production
   cancel-in-progress: true
 
 jobs:
