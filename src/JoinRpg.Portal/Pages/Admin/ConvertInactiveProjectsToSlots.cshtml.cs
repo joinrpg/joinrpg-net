@@ -13,9 +13,19 @@ public class ConvertInactiveProjectsToSlotsModel(
     ILogger<ConvertInactiveProjectsToSlotsModel> logger
     ) : PageModel
 {
+
+    public int InactiveProjectsWithGroupCount { get; private set; }
+    public int ConvertedSuccessCount { get; private set; }
+    public int FailedCount { get; private set; }
+
     public async Task OnGet()
     {
         var projects = await projectRepository.GetInactiveProjectsWithSlots();
+
+        InactiveProjectsWithGroupCount = projects.Length;
+
+        ConvertedSuccessCount = FailedCount = 0;
+
 
         logger.LogInformation("Found {count} projects to convert", projects.Length);
 
@@ -27,10 +37,12 @@ public class ConvertInactiveProjectsToSlotsModel(
                 logger.LogInformation("About to convert {projectId} to slots", id);
                 await slotMassConvertService.MassConvert(id);
                 logger.LogInformation("Converted {projectId} to slots", id);
+                ConvertedSuccessCount++;
             }
             catch (Exception exception)
             {
                 logger.LogError(exception, "Failing to convert {projectId} to slots, skipping", projectId);
+                FailedCount++;
             }
         }
 
