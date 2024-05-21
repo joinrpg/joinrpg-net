@@ -1,4 +1,8 @@
 ﻿@page "/admin/inactive-projects-mass-convert-to-slot"
 @model JoinRpg.Portal.Pages.Admin.ConvertInactiveProjectsToSlotsModel
 @{
+    <h2>Массовое преобразование</h2>
+  <div>
+    Found @Model.InactiveProjectsWithGroupCount, converted @Model.ConvertedSuccessCount, failed to convert @Model.FailedCount.
+  </div>
 }
