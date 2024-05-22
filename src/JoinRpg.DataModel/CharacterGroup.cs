@@ -110,7 +110,7 @@ public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObj
             }
             if (ParentGroups.Any(pg => pg.CharacterGroupId == CharacterGroupId))
             {
-                yield return new ValidationResult("Character group can't be self-child");
+                yield return new ValidationResult($"Character group {CharacterGroupId} somehow is self-child. List of parents {string.Join(", ", ParentCharacterGroupIds)}");
             }
         }
     }
