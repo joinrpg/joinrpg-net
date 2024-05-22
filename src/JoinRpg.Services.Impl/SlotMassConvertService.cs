@@ -17,7 +17,7 @@ internal class SlotMassConvertService : DbServiceImplBase, ISlotMassConvertServi
         this.characterService = characterService;
     }
 
-    public async Task MassConvert(ProjectIdentification projectId)
+    public async Task MassConvert(ProjectIdentification projectId, bool considerClosed)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
         var groups = project.CharacterGroups
@@ -26,7 +26,7 @@ internal class SlotMassConvertService : DbServiceImplBase, ISlotMassConvertServi
                     .ToList();
         foreach (var group in groups)
         {
-            await characterService.CreateSlotFromGroup(projectId, group.CharacterGroupId, $"Заявки — {group.CharacterGroupName}", allowToChangeInactive: true);
+            await characterService.CreateSlotFromGroup(projectId, group.CharacterGroupId, $"Заявки — {group.CharacterGroupName}", allowToChangeInactive: true, considerClosed);
         }
     }
 }
