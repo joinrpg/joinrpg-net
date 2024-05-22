@@ -23,7 +23,7 @@ public class MassConvertToSlotModel : PageModel
 
     public async Task<IActionResult> OnPost([FromServices] ISlotMassConvertService massConvertService)
     {
-        await massConvertService.MassConvert(new(ProjectId));
+        await massConvertService.MassConvert(new(ProjectId), considerClosed: false);
         return RedirectToAction("Edit", "Game", new { ProjectId });
     }
 

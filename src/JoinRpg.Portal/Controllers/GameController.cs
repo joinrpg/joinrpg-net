@@ -147,7 +147,7 @@ public class GameController : Common.ControllerGameBase
 
         try
         {
-            await massConvertService.MassConvert(new(viewModel.ProjectId));
+            await massConvertService.MassConvert(new(viewModel.ProjectId), considerClosed: true);
             await ProjectService.CloseProject(viewModel.ProjectId,
                 CurrentUserId,
                 viewModel.PublishPlot);

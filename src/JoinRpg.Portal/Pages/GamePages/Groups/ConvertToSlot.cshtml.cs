@@ -20,7 +20,7 @@ public class ConvertToSlotModel : PageModel
             return Page();
         }
 
-        var characterId = await characterService.CreateSlotFromGroup(ProjectId, CharacterGroupId, SlotName, allowToChangeInactive: false);
+        var characterId = await characterService.CreateSlotFromGroup(ProjectId, CharacterGroupId, SlotName, allowToChangeInactive: false, considerClosed: false);
 
         return RedirectToAction("Details", "Character", new { ProjectId, characterId });
     }

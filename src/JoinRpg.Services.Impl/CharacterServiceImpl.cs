@@ -217,7 +217,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
         }
     }
 
-    public async Task<int?> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName, bool allowToChangeInactive)
+    public async Task<int?> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName, bool allowToChangeInactive, bool considerClosed)
     {
         try
         {
@@ -239,12 +239,14 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             var claims = group.Claims.ToList();
 
             var needToSaveClaims = claims.Any();
-            var needToInitSlot = group.HaveDirectSlots && group.Project.Active;
+            var needToInitSlot = group.HaveDirectSlots && group.Project.Active && !considerClosed;
             var needToClearSlot = group.HaveDirectSlots;
 
-            logger.LogInformation("Group (Id={characterGroupId}, Name={characterGroupName}) is evaluated to convert to slot. Decision (SaveClaims: {needToSaveClaims}, InitSlot: {needToInitSlot}, ClearSlot: {needToClearSlot})",
+            logger.LogInformation("Group (Id={characterGroupId}, Name={characterGroupName}, IsRoot={IsRoot}, Parents={GroupParentIds}) is evaluated to convert to slot. Decision (SaveClaims: {needToSaveClaims}, InitSlot: {needToInitSlot}, ClearSlot: {needToClearSlot})",
                 characterGroupId,
                 group.CharacterGroupName,
+                group.IsRoot,
+                string.Join(", ", group.ParentCharacterGroupIds),
                 needToSaveClaims,
                 needToInitSlot,
                 needToClearSlot);
