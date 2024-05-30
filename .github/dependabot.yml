@@ -16,3 +16,13 @@ updates:
     directory: "/" 
     schedule:
       interval: "daily"
+  groups:
+    aspnetcore:
+      applies-to: version-updates
+      patterns:
+        - "Microsoft.AspNetCore*"
+        - "dotnet/aspnet"
+    xunit:
+      applies-to: version-updates
+      patterns:
+        - "xunit*"
