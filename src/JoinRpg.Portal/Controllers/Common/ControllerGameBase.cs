@@ -2,18 +2,15 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.Common;
 
 [CaptureNoAccessExceptionHandler]
 [DiscoverProjectFilter]
-[AddFullUriFilter]
 public abstract class ControllerGameBase : LegacyJoinControllerBase
 {
     [ProvidesContext, NotNull]
@@ -32,9 +29,6 @@ public abstract class ControllerGameBase : LegacyJoinControllerBase
 
     protected ActionResult NoAccesToProjectView(Project project) => View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
 
-    //protected IReadOnlyDictionary<int, string> GetCustomFieldValuesFromPost() =>
-    //    GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
-
     [Obsolete]
     protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders) => folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);
 
@@ -48,14 +42,4 @@ public abstract class ControllerGameBase : LegacyJoinControllerBase
         var project = await ProjectRepository.GetProjectAsync(projectId);
         return project == null ? NotFound() : RedirectToIndex(project);
     }
-
-    [Obsolete]
-    protected static ExportType? GetExportTypeByName(string export) => ExportTypeNameParserHelper.ToExportType(export);
-
-
-    //protected async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)
-    //{
-    //    return File(await generator.Generate(), generator.ContentType,
-    //      Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
-    //}
 }
