@@ -61,6 +61,7 @@ public class Startup
                 options.Filters.Add<SerilogRazorPagesFilter>();
                 options.Filters.Add(new SetIsProductionFilterAttribute());
                 options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
+                options.Filters.Add(new AddFullUriFilter());
 
                 //TODO need to fix this
                 options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace JoinRpg.Portal.Infrastructure;
 
@@ -8,15 +10,22 @@ namespace JoinRpg.Portal.Infrastructure;
 /// </summary>
 public class SetIsProductionFilterAttribute : ResultFilterAttribute
 {
-    /// <inheritedoc />
-    public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+    public override void OnResultExecuting(ResultExecutingContext context)
     {
         if (context.Result is ViewResult viewResult)
         {
-            var hostHost = context.HttpContext.Request.Host.Host;
-            viewResult.ViewData["IsProduction"] = hostHost == "joinrpg.ru";
-            viewResult.ViewData["FullHostName"] = context.HttpContext.Request.Scheme + hostHost;
+            SetIsProductionToViewData(context, viewResult.ViewData);
         }
-        return base.OnResultExecutionAsync(context, next);
+        else if (context.Result is PageResult pageResult)
+        {
+            SetIsProductionToViewData(context, pageResult.ViewData);
+        }
+    }
+
+    private static void SetIsProductionToViewData(ResultExecutingContext context, ViewDataDictionary viewData)
+    {
+        var host = context.HttpContext.Request.Host.Host;
+        viewData["IsProduction"] = host == "joinrpg.ru";
+        viewData["FullHostName"] = context.HttpContext.Request.Scheme + host;
     }
 }
