@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using PscbApi.Models;
 
@@ -12,6 +12,7 @@ namespace PscbApi;
 /// </summary>
 public class BankApi
 {
+    private readonly IHttpClientFactory clientFactory;
     private readonly ApiConfiguration _configuration;
 
     private readonly byte[] _keyAsUtf8;
@@ -35,8 +36,9 @@ public class BankApi
     /// <summary>
     /// Creates new instance of PSCB API object
     /// </summary>
-    public BankApi(ApiConfiguration configuration)
+    public BankApi(IHttpClientFactory clientFactory, ApiConfiguration configuration)
     {
+        this.clientFactory = clientFactory;
         _configuration = configuration;
         _keyAsUtf8 = ActualApiKey.ToUtf8Bytes();
     }
@@ -59,23 +61,21 @@ public class BankApi
         var requestAsJson = JsonConvert.SerializeObject(request, Formatting.None);
         var requestAsJsonUtf8 = requestAsJson.ToUtf8Bytes();
         var requestWithKey = requestAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
-        var signature = requestWithKey.Sha256Encode().ToHexString();
+        var signature = Convert.ToHexString(SHA256.HashData(requestWithKey));
 
-        using (var httpClient = new HttpClient())
+        var httpClient = clientFactory.CreateClient();
+        httpClient.DefaultRequestHeaders.Add("Signature", signature);
+        HttpResponseMessage httpResponse = await httpClient.PostAsync(
+            url,
+            new StringContent(Encoding.UTF8.GetString(requestAsJsonUtf8), Encoding.UTF8));
+        if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
-            httpClient.DefaultRequestHeaders.Add("Signature", signature);
-            HttpResponseMessage httpResponse = await httpClient.PostAsync(
-                url,
-                new StringContent(Encoding.UTF8.GetString(requestAsJsonUtf8), Encoding.UTF8));
-            if (httpResponse.StatusCode == HttpStatusCode.OK)
-            {
-                var responseJson = await httpResponse.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLineIf(Debug, responseJson);
-                return JsonConvert.DeserializeObject<TResponse>(responseJson);
-            }
-
-            throw new PscbApiRequestException<TRequest>(url, request, signature, $"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
+            var responseJson = await httpResponse.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLineIf(Debug, responseJson);
+            return JsonConvert.DeserializeObject<TResponse>(responseJson);
         }
+
+        throw new PscbApiRequestException<TRequest>(url, request, signature, $"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
     }
 
     /// <summary>
@@ -87,8 +87,8 @@ public class BankApi
     /// <returns>Url to redirect to</returns>
     public async Task<PaymentRequestDescriptor> BuildPaymentRequestAsync(
         PaymentMessage message,
-        [NotNull] Func<Task<string>> getOrderId,
-        Func<string, string> getOrderIdDisplayValue = null)
+        Func<Task<string>> getOrderId,
+        Func<string, string>? getOrderIdDisplayValue = null)
     {
         if (Debug)
         {
@@ -140,7 +140,7 @@ public class BankApi
             {
                 marketPlace = _configuration.MerchantId,
                 message = Convert.ToBase64String(messageAsJsonUtf8),
-                signature = messageWithKey.Sha256Encode().ToHexString()
+                signature = Convert.ToHexString(SHA256.HashData(messageWithKey)),
             }
         };
         System.Diagnostics.Debug.WriteLineIf(Debug, result.Url);
@@ -152,7 +152,7 @@ public class BankApi
     /// Handles payment response and returns parsed response information
     /// </summary>
     /// <param name="description">Description string passed to <see cref="ApiConfiguration.DefaultSuccessUrl"/> or <see cref="ApiConfiguration.DefaultFailUrl"/></param>
-    public BankResponseInfo HandlePaymentResponse(string description)
+    public static BankResponseInfo HandlePaymentResponse(string description)
         => ProtocolHelper.ParseDescriptionString(description);
 
     /// <summary>

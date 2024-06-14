@@ -89,7 +89,7 @@ public static class StaticStringHelpers
     {
         if (claimIds is null)
         {
-            return Array.Empty<int>();
+            return [];
         }
 
         return claimIds.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse).ToArray();
