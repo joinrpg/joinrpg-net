@@ -15,7 +15,7 @@
     <ProjectReference Include="..\PscbApi\PscbApi.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.5.0" />
+    <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="LinqKit.EntityFramework" Version="1.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
