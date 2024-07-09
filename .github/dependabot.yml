@@ -26,3 +26,7 @@ updates:
           applies-to: version-updates
           patterns:
             - "xunit*"
+        serilog:
+          applies-to: version-updates
+          patterns:
+            - "Serilog*"
