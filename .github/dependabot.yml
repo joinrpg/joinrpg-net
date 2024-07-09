@@ -21,6 +21,9 @@ updates:
           applies-to: version-updates
           patterns:
             - "Microsoft.AspNetCore*"
+        aspnetcore2:
+          applies-to: version-updates
+          patterns:
             - "dotnet/aspnet"
         xunit:
           applies-to: version-updates
