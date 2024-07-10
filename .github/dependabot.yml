@@ -22,8 +22,8 @@ updates:
           - "Microsoft.Extensions.*"
           - "Microsoft.AspNetCore.*"
         update-types:
-        	- "minor"
-        	- "patch"
+          - "minor"
+          - "patch"
       aspnetcore2:
         applies-to: version-updates
         patterns:
