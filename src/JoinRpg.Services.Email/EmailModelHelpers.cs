@@ -10,17 +10,13 @@ internal static class EmailModelHelpers
 
     public static string GetInitiatorString(this ClaimEmailModel model)
     {
-        switch (model.InitiatorType)
+        return model.InitiatorType switch
         {
-            case ParcipantType.Nobody:
-                return "";
-            case ParcipantType.Master:
-                return $"мастером {model.Initiator.GetDisplayName()}";
-            case ParcipantType.Player:
-                return "игроком";
-            default:
-                throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null);
-        }
+            ParcipantType.Nobody => "",
+            ParcipantType.Master => $"мастером {model.Initiator.GetDisplayName()}",
+            ParcipantType.Player => "игроком",
+            _ => throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null),
+        };
     }
 
     public static bool GetEmailEnabled(this EmailModelBase model) => !model.ProjectName.Trim().StartsWith("NOEMAIL");
@@ -31,9 +27,9 @@ internal static class EmailModelHelpers
     {
         var players = claims.Select(c => c.Player.GetDisplayName()).ToArray();
 
-        if (!players.Any())
+        if (players.Length == 0)
         {
-            players = new[] { "n/a" };
+            players = ["n/a"];
         }
 
         return players.JoinStrings(" \n- ");

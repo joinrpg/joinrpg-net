@@ -15,41 +15,17 @@ using Microsoft.Extensions.Options;
 namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
-public class AccountController : Common.ControllerBase
+public class AccountController(
+    ApplicationUserManager userManager,
+    ApplicationSignInManager signInManager,
+    IAccountEmailService emailService,
+    IUserRepository userRepository,
+    IOptions<RecaptchaOptions> recaptchaOptions,
+    IRecaptchaVerificator recaptchaVerificator,
+    ExternalLoginProfileExtractor externalLoginProfileExtractor,
+    Lazy<IProjectRepository> projectRepository
+    ) : Common.ControllerBase
 {
-    private readonly IEmailService _emailService;
-    private readonly IOptions<RecaptchaOptions> recaptchaOptions;
-    private readonly IRecaptchaVerificator recaptchaVerificator;
-    private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
-    private readonly Lazy<IProjectRepository> projectRepository;
-
-    private ApplicationUserManager UserManager { get; }
-    private ApplicationSignInManager SignInManager { get; }
-    private IUserRepository UserRepository { get; }
-
-
-    public AccountController(
-        ApplicationUserManager userManager,
-        ApplicationSignInManager signInManager,
-        IEmailService emailService,
-        IUserRepository userRepository,
-        IOptions<RecaptchaOptions> recaptchaOptions,
-        IRecaptchaVerificator recaptchaVerificator,
-        ExternalLoginProfileExtractor externalLoginProfileExtractor,
-        Lazy<IProjectRepository> projectRepository
-    )
-    {
-        UserManager = userManager;
-        SignInManager = signInManager;
-        _emailService = emailService;
-        UserRepository = userRepository;
-        this.recaptchaOptions = recaptchaOptions;
-        this.recaptchaVerificator = recaptchaVerificator;
-        this.externalLoginProfileExtractor = externalLoginProfileExtractor;
-        this.projectRepository = projectRepository;
-    }
-
-
     [AllowAnonymous]
     public async Task<ActionResult> Login(string returnUrl) => View(await CreateLoginPageViewModelAsync(returnUrl));
 
@@ -60,7 +36,7 @@ public class AccountController : Common.ControllerBase
             External = new ExternalLoginListViewModel
             {
                 ReturnUrl = returnUrl,
-                ExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync())
+                ExternalLogins = (await signInManager.GetExternalAuthenticationSchemesAsync())
                     .Select(exLogin => new AuthenticationDescriptionViewModel
                     {
                         AuthenticationType = exLogin.Name,
@@ -90,11 +66,11 @@ public class AccountController : Common.ControllerBase
         }
 
         // Require the user to have a confirmed email before they can log on.
-        var user = await UserManager.FindByNameAsync(model.Email);
+        var user = await userManager.FindByNameAsync(model.Email);
 
         if (user != null)
         {
-            if (!await UserManager.IsEmailConfirmedAsync(user))
+            if (!await userManager.IsEmailConfirmedAsync(user))
             {
                 await SendConfirmationEmail(user);
                 return View("EmailUnconfirmed");
@@ -104,7 +80,7 @@ public class AccountController : Common.ControllerBase
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, change to shouldLockout: true
         var result =
-            await SignInManager.PasswordSignInAsync(model.Email,
+            await signInManager.PasswordSignInAsync(model.Email,
                 model.Password,
                 isPersistent: true,
                 lockoutOnFailure: false);
@@ -175,7 +151,7 @@ public class AccountController : Common.ControllerBase
             }
         }
 
-        var currentUser = await UserManager.FindByNameAsync(model.Email);
+        var currentUser = await userManager.FindByNameAsync(model.Email);
 
         if (currentUser != null)
         {
@@ -187,7 +163,7 @@ public class AccountController : Common.ControllerBase
         }
 
         var user = new JoinIdentityUser { UserName = model.Email };
-        var result = await UserManager.CreateAsync(user, model.Password);
+        var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
         {
             ModelState.AddErrors(result);
@@ -206,16 +182,16 @@ public class AccountController : Common.ControllerBase
 
     private async Task SendConfirmationEmail(JoinIdentityUser user)
     {
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var callbackUrl = Url.Action("ConfirmEmail",
             "Account",
             new { userId = user.UserId, code },
             protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
         //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
-        var dbUser = await UserRepository.GetById(user.UserId);
+        var dbUser = await userRepository.GetById(user.UserId);
 
-        await _emailService.Email(new ConfirmEmail()
+        await emailService.Email(new ConfirmEmail()
         { CallbackUrl = callbackUrl, Recipient = dbUser });
     }
 
@@ -228,8 +204,8 @@ public class AccountController : Common.ControllerBase
         {
             return View("Error");
         }
-        var user = await UserManager.FindByIdAsync(userId.Value.ToString()) ?? throw new InvalidOperationException();
-        var result = await UserManager.ConfirmEmailAsync(user, code);
+        var user = await userManager.FindByIdAsync(userId.Value.ToString()) ?? throw new InvalidOperationException();
+        var result = await userManager.ConfirmEmailAsync(user, code);
         if (result.Succeeded)
         {
             return View("ConfirmEmail");
@@ -254,7 +230,7 @@ public class AccountController : Common.ControllerBase
     {
         if (ModelState.IsValid)
         {
-            var user = await UserManager.FindByNameAsync(model.Email);
+            var user = await userManager.FindByNameAsync(model.Email);
             if (user == null /*|| !(await UserManager.IsEmailConfirmedAsync(user.Id))*/)
             {
                 // Don't reveal that the user does not exist or is not confirmed
@@ -262,17 +238,17 @@ public class AccountController : Common.ControllerBase
             }
 
             // Send an email with this link
-            var code = await UserManager.GeneratePasswordResetTokenAsync(user);
+            var code = await userManager.GeneratePasswordResetTokenAsync(user);
             var callbackUrl = Url.Action("ResetPassword",
                 "Account",
                 new { userId = user.UserId, code },
                 protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
             //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
-            var dbUser = await UserRepository.GetById(user.UserId);
+            var dbUser = await userRepository.GetById(user.UserId);
 
 
-            await _emailService.Email(new RemindPasswordEmail()
+            await emailService.Email(new RemindPasswordEmail()
             { CallbackUrl = callbackUrl, Recipient = dbUser });
 
             return RedirectToAction("ForgotPasswordConfirmation", "Account");
@@ -312,7 +288,7 @@ public class AccountController : Common.ControllerBase
             return View(model);
         }
 
-        var user = await UserManager.FindByNameAsync(model.Email);
+        var user = await userManager.FindByNameAsync(model.Email);
         if (user == null)
         {
             ModelState.AddModelError("", "Email не найден");
@@ -320,7 +296,7 @@ public class AccountController : Common.ControllerBase
         }
 
         var result =
-            await UserManager.ResetPasswordAsync(user, model.Code, model.Password);
+            await userManager.ResetPasswordAsync(user, model.Code, model.Password);
         if (result.Succeeded)
         {
             return RedirectToAction("ResetPasswordConfirmation", "Account");
@@ -351,7 +327,7 @@ public class AccountController : Common.ControllerBase
             protocol: Request.Scheme //Ensure that it will request HTTPS if required
             );
 
-        var authenticationProperties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+        var authenticationProperties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return Challenge(authenticationProperties, provider);
     }
 
@@ -365,25 +341,25 @@ public class AccountController : Common.ControllerBase
             return RedirectToAction("Login");
         }
 
-        var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
+        var loginInfo = await signInManager.GetExternalLoginInfoAsync();
         if (loginInfo == null)
         {
             return RedirectToAction("Login");
         }
 
         // Sign in the user with this external login provider if the user already has a login
-        var result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
+        var result = await signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
 
         var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
 
         // If sign in failed, may be we have user with same email. Let's bind.
         if (!result.Succeeded && !string.IsNullOrWhiteSpace(email))
         {
-            var user = await UserManager.FindByEmailAsync(email);
+            var user = await userManager.FindByEmailAsync(email);
             if (user != null)
             {
-                _ = await UserManager.AddLoginAsync(user, loginInfo);
-                result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
+                _ = await userManager.AddLoginAsync(user, loginInfo);
+                result = await signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
                 if (result.Succeeded)
                 {
                     await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
@@ -437,7 +413,7 @@ public class AccountController : Common.ControllerBase
         if (ModelState.IsValid)
         {
             // Get the information about the user from the external login provider
-            var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
+            var loginInfo = await signInManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
                 return View("ExternalLoginFailure");
@@ -452,16 +428,16 @@ public class AccountController : Common.ControllerBase
             }
 
             var user = new JoinIdentityUser() { UserName = email };
-            var result = await UserManager.CreateAsync(user);
+            var result = await userManager.CreateAsync(user);
             if (result.Succeeded)
             {
-                result = await UserManager.AddLoginAsync(user, loginInfo);
+                result = await userManager.AddLoginAsync(user, loginInfo);
                 if (result.Succeeded)
                 {
-                    var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-                    _ = await UserManager.ConfirmEmailAsync(user, token);
+                    var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                    _ = await userManager.ConfirmEmailAsync(user, token);
 
-                    await SignInManager.SignInAsync(user, isPersistent: true);
+                    await signInManager.SignInAsync(user, isPersistent: true);
 
                     await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
                     return RedirectToLocal(model.ReturnUrl);
@@ -478,7 +454,7 @@ public class AccountController : Common.ControllerBase
 
     public async Task<ActionResult> LogOff(string returnUrl)
     {
-        await SignInManager.SignOutAsync();
+        await signInManager.SignOutAsync();
         return RedirectToLocal(returnUrl);
     }
 

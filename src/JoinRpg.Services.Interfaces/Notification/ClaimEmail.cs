@@ -1,12 +1,8 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Notification;
-
-
-
 
 public class AddCommentEmail : ClaimEmailModel
 {
@@ -51,19 +47,16 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
     public IFieldContainter FieldsContainer { get; }
     public ILinkable Linkable { get; }
 
-    [NotNull]
     public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
 
     /// <summary>
     /// Имя связанной заявки
     /// </summary>
-    [CanBeNull]
     public Claim? Claim { get; }
 
     /// <summary>
     /// Имя персонажа/заявки
     /// </summary>
-    [NotNull]
     public string Name { get; }
 
     //Is character is null, Claim is not null and vice versa. (restricted by constructors).
@@ -94,9 +87,7 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Claim? claim,
         User initiator,
         ICollection<User> recipients,
-        [NotNull]
         IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        [CanBeNull]
         IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes)
     {
         if (character != null && claim != null)
@@ -163,7 +154,6 @@ public class ClaimEmailModel : EmailModelBase
     public Claim Claim { get; set; }
     public CommentExtraAction? CommentExtraAction { get; set; }
 }
-
 
 public enum ParcipantType
 {
