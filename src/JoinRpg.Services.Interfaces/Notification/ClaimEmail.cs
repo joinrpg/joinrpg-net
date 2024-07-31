@@ -66,9 +66,19 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Claim claim,
         User initiator,
         ICollection<User> recipients,
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
+        : this(null, claim, initiator, recipients, updatedFields, null)
+    {
+    }
+
+    [Obsolete("Уберите otherChangedAttributes, это все должно быть в полях")]
+    public FieldsChangedEmail(
+        Claim claim,
+        User initiator,
+        ICollection<User> recipients,
         IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
-        : this(null, claim, initiator, recipients, updatedFields, otherChangedAttributes)
+        IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
+    : this(null, claim, initiator, recipients, updatedFields, otherChangedAttributes)
     {
     }
 
@@ -76,9 +86,8 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Character character,
         User initiator,
         ICollection<User> recipients,
-        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes)
-        : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
+        : this(character, null, initiator, recipients, updatedFields, null)
     {
     }
 
