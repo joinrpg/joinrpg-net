@@ -1,7 +1,7 @@
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Interfaces.Email;
 using Newtonsoft.Json.Linq;
 using Shouldly;
 using Xunit;

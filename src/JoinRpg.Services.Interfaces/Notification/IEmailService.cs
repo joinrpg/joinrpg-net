@@ -26,8 +26,3 @@ public interface IEmailService
     Task Email(DeclineInviteEmail email);
     Task Email(PublishPlotElementEmail email);
 }
-
-public static class EmailTokens
-{
-    public const string Name = "%NAME%";
-}

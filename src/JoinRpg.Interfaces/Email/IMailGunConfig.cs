@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces;
+namespace JoinRpg.Interfaces.Email;
 
 public interface IMailGunConfig
 {

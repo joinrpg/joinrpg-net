@@ -5,8 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
+    <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
-    <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="mailgun_csharp" Version="0.8.0 " />

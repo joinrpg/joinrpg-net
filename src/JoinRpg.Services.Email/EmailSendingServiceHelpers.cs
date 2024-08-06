@@ -1,22 +1,11 @@
 using JoinRpg.DataModel;
-using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;
 
 internal static class EmailSendingServiceHelpers
 {
-    public static Task SendEmail(this IEmailSendingService emailSendingService,
-        string subject,
-        MarkdownString body,
-        RecepientData sender,
-        RecepientData recepient)
-        =>
-            emailSendingService.SendEmails(subject,
-                body,
-                sender,
-                new[] { recepient, });
-
     /// <summary>
     /// Use this method when no additional parameters are needed for users
     /// </summary>

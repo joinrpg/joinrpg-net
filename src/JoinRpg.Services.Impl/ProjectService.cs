@@ -1,25 +1,19 @@
 using System.Data.Entity.Validation;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
-internal class ProjectService : DbServiceImplBase, IProjectService
+internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IMasterEmailService masterEmailService) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
-
-
-    public ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
-    {
-    }
-
     public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName)
     {
         var rootGroup = new CharacterGroup()
@@ -46,16 +40,10 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             IsAcceptingClaims = false,
             CreatedDate = Now,
             ProjectName = projectName,
-            CharacterGroups = new List<CharacterGroup>()
-            {
-                rootGroup,
-            },
-            ProjectAcls = new List<ProjectAcl>()
-            {
-                ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),
-            },
+            CharacterGroups = [rootGroup,],
+            ProjectAcls = [ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),],
             Details = projectDetails,
-            ProjectFields = new List<ProjectField>(),
+            ProjectFields = [],
         };
         MarkTreeModified(project);
 
@@ -122,18 +110,24 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
 
 
-    public async Task CloseProject(int projectId, int currentUserId, bool publishPlot)
+    public async Task CloseProject(ProjectIdentification projectId, bool publishPlot)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-
-        var user = await UserRepository.GetById(currentUserId);
-        RequestProjectAdminAccess(project, user);
+        var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
 
         project.Active = false;
         project.IsAcceptingClaims = false;
         project.Details.PublishPlot = publishPlot;
 
         await UnitOfWork.SaveChangesAsync();
+
+        await masterEmailService.EmailProjectClosed(new ProjectClosedMail()
+        {
+            ProjectId = projectId,
+            Initiator = await GetCurrentUser(),
+            ProjectName = project.ProjectName,
+            Recipients = project.ProjectAcls.Select(x => x.User).ToList(),
+            Text = new MarkdownString(),
+        });
     }
 
     public async Task SetCheckInOptions(int projectId,
@@ -168,20 +162,16 @@ internal class ProjectService : DbServiceImplBase, IProjectService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void RequestProjectAdminAccess(Project project, User user)
+    private Project RequestProjectAdminAccess(Project project)
     {
-        if (project == null)
+        ArgumentNullException.ThrowIfNull(project);
+
+        if (IsCurrentUserAdmin)
         {
-            throw new ArgumentNullException(nameof(project));
+            return project;
         }
 
-        if (!project.HasMasterAccess(user.UserId, acl => acl.CanChangeProjectProperties) &&
-            !user.Auth.IsAdmin)
-        {
-            throw new NoAccessToProjectException(project,
-                user.UserId,
-                acl => acl.CanChangeProjectProperties);
-        }
+        return project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
     }
 
     public async Task EditCharacterGroup(int projectId,
@@ -220,12 +210,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
     public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
-        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-
-        if (characterGroup == null)
-        {
-            throw new DbEntityValidationException();
-        }
+        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId) ?? throw new DbEntityValidationException();
 
         if (characterGroup.HasActiveClaims())
         {
@@ -237,7 +222,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
         foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
         {
-            if (character.ParentCharacterGroupIds.Except(new[] { characterGroupId }).Any())
+            if (character.ParentCharacterGroupIds.Except([characterGroupId]).Any())
             {
                 continue;
             }
@@ -248,7 +233,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
         foreach (var character in characterGroup.ChildGroups.Where(ch => ch.IsActive))
         {
-            if (character.ParentCharacterGroupIds.Except(new[] { characterGroupId }).Any())
+            if (character.ParentCharacterGroupIds.Except([characterGroupId]).Any())
             {
                 continue;
             }
@@ -363,7 +348,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
                 acl.UserId,
                 ClaimStatusSpec.Any);
 
-        if (claims.Any())
+        if (claims.Count != 0)
         {
             if (newResponsibleMasterIdOrDefault is int newResponsible)
             {

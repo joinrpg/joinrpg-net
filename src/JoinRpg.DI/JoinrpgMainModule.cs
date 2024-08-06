@@ -1,12 +1,11 @@
 using Autofac;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
+using JoinRpg.Interfaces.Email;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.DI;
 
@@ -19,7 +18,9 @@ public class JoinrpgMainModule : Module
         _ = builder.RegisterTypes(WebPortal.Managers.Registration.GetTypes().ToArray()).AsSelf().AsImplementedInterfaces();
 
         _ = builder.RegisterType<ExportDataServiceImpl>().As<IExportDataService>();
-        _ = builder.RegisterType<EmailServiceImpl>().As<IEmailService>();
+
+        _ = builder.RegisterTypes(NotificationRegistration.GetTypes().ToArray()).AsImplementedInterfaces();
+
         _ = builder.RegisterType<EmailSendingServiceImpl>().As<IEmailSendingService>();
 
         _ = builder.RegisterType<MyDbContext>()

@@ -2,9 +2,9 @@ using System.Text.RegularExpressions;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces.Email;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;
@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Email;
 /// <summary>
 /// Service that send all email notifications
 /// </summary>
-public partial class EmailServiceImpl(IUriService uriService, IEmailSendingService messageService) : IEmailService
+internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingService messageService) : IEmailService
 {
     #region general stuff
     private const string ChangedFieldsKey = "changedFields";
@@ -233,10 +233,7 @@ public partial class EmailServiceImpl(IUriService uriService, IEmailSendingServi
 
     public async Task Email(MassEmailModel model)
     {
-        if (model.Text.Contents == null)
-        {
-            throw new ArgumentNullException(nameof(model.Text.Contents));
-        }
+        ArgumentNullException.ThrowIfNull(model.Text.Contents);
 
         var body = NamePlaceholderRegex().Replace(model.Text.Contents, messageService.GetRecepientPlaceholderName());
 
