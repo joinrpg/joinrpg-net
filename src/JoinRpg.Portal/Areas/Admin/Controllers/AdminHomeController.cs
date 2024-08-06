@@ -6,20 +6,15 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 
 [AdminAuthorize]
 [Area("Admin")]
-public class AdminHomeController : JoinRpg.Portal.Controllers.Common.ControllerBase
+public class AdminHomeController(IProjectRepository projectRepository) : Controller
 {
-    private IProjectRepository ProjectRepository { get; }
-
-
-    public AdminHomeController(
-        IProjectRepository projectRepository
-    ) => ProjectRepository = projectRepository;
-
     public IActionResult Index() => View();
 
     public async Task<IActionResult> StaleGames()
     {
-        var projects = await ProjectRepository.GetStaleProjects(DateTime.Now.AddMonths(-4));
+        var stale = await projectRepository.GetStaleProjects(DateTime.Now.AddMonths(-4));
+        var slots = await projectRepository.GetActiveProjectsWithGroupClaims();
+        var projects = stale.Union(slots).DistinctBy(p => p.ProjectId).ToArray();
         return View(projects);
     }
 }

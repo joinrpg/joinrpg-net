@@ -55,5 +55,5 @@ public interface IProjectRepository : IDisposable
     /// <returns></returns>
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
-    Task<int[]> GetInactiveProjectsWithSlots();
+    Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetActiveProjectsWithGroupClaims();
 }

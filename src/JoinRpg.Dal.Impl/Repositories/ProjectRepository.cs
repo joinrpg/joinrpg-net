@@ -233,6 +233,28 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
         DateTime inActiveSince)
     {
+        var allQuery =
+            from beforeFilter in GetProjectWithLastUpdateQuery()
+            where beforeFilter.LastUpdated < inActiveSince
+            orderby beforeFilter.LastUpdated ascending
+            select beforeFilter;
+
+        return await allQuery.ToListAsync();
+    }
+
+    public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetActiveProjectsWithGroupClaims()
+    {
+        var allQuery =
+            from beforeFilter in GetProjectWithLastUpdateQuery()
+            where beforeFilter.GroupsCount > 0
+            orderby beforeFilter.LastUpdated ascending
+            select beforeFilter;
+
+        return await allQuery.ToListAsync();
+    }
+
+    private IQueryable<ProjectWithUpdateDateDto> GetProjectWithLastUpdateQuery()
+    {
         var commentQuery = GetLastUpdateQuery<Comment>(comment => comment.LastEditTime);
         var characterQuery = GetLastUpdateQuery<Character>(character => character.UpdatedAt);
         var characterGroupQuery = GetLastUpdateQuery<CharacterGroup>(group => group.UpdatedAt);
@@ -240,7 +262,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         var plotElementQuery = GetLastUpdateQuery<PlotElement>(pe => pe.ModifiedDateTime);
         var claimQuery = GetLastUpdateQuery<Claim>(pfs => pfs.LastUpdateDateTime);
 
-        var allQuery =
+        return
             from updated in
                 commentQuery
                     .Union(characterQuery)
@@ -256,30 +278,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                 ProjectName = gr.Key.ProjectName,
                 LastUpdated = gr.Max(g => g.LastUpdated),
                 GroupsCount = gr.Key.GroupsCount,
-            }
-            into beforeFilter
-            where beforeFilter.LastUpdated < inActiveSince || beforeFilter.GroupsCount > 0
-            orderby beforeFilter.LastUpdated ascending
-            select beforeFilter;
-
-        return await allQuery.ToListAsync();
-    }
-
-    public async Task<int[]> GetInactiveProjectsWithSlots()
-    {
-        var allQuery =
-            from project in Ctx.Set<Project>()
-            where !project.Active
-            select new
-            {
-                project.ProjectId,
-                GroupsCount = project.CharacterGroups.Count(g => g.HaveDirectSlots),
-            }
-            into beforeFilter
-            where beforeFilter.GroupsCount > 0
-            select beforeFilter.ProjectId;
-
-        return await allQuery.ToArrayAsync();
+            };
     }
 
     private IQueryable<ProjectWithUpdateDateDto> GetLastUpdateQuery<T>(
