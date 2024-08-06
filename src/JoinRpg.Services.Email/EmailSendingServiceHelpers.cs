@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;

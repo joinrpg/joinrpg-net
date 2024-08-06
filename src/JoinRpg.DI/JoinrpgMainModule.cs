@@ -1,11 +1,11 @@
 using Autofac;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
+using JoinRpg.Interfaces.Email;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.DI;

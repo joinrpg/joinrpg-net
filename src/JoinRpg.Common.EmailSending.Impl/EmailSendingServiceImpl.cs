@@ -1,31 +1,19 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces.Email;
 using JoinRpg.Markdown;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using Mailgun.Messages;
 using Mailgun.Service;
 
 namespace JoinRpg.Common.EmailSending.Impl;
 
-[UsedImplicitly]
-public class EmailSendingServiceImpl : IEmailSendingService
+public class EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory httpClientFactory) : IEmailSendingService
 {
     private const int MaxRecipientsInChunk = 1000;
 
-    private bool EmailEnabled { get; }
-    private string ApiDomain { get; }
-    private string ServiceEmail { get; }
-    private MessageService MessageService { get; }
-
-    public EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory httpClientFactory)
-    {
-        EmailEnabled = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
-        ApiDomain = config.ApiDomain;
-        ServiceEmail = config.ServiceEmail;
-
-        MessageService = new MessageService(config.ApiKey, httpClientFactory);
-    }
+    private bool EmailEnabled { get; } = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
+    private string ApiDomain { get; } = config.ApiDomain;
+    private string ServiceEmail { get; } = config.ServiceEmail;
+    private MessageService MessageService { get; } = new MessageService(config.ApiKey, httpClientFactory);
 
     public string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";
 

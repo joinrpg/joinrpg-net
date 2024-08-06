@@ -1,5 +1,5 @@
 using JoinRpg.Dal.Impl;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Interfaces.Email;
 using PscbApi;
 
 namespace JoinRpg.Portal.Infrastructure;

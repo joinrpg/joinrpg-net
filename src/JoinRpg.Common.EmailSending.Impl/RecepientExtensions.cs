@@ -1,4 +1,4 @@
-using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Interfaces.Email;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
 using Newtonsoft.Json.Linq;

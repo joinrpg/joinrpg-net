@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Interfaces.Email;
 
 namespace JoinRpg.Services.Email;
 
