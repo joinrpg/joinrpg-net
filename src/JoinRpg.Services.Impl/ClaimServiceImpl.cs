@@ -579,18 +579,14 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
             return acr;
         }
 
-        var email = EmailHelpers.CreateFieldsEmail(
+        var email = EmailHelpers.CreateFieldsEmailWithExtraData(
             claim,
             s => s.AccommodationChange,
             await GetCurrentUser(),
-            Array.Empty<FieldWithPreviousAndNewValue>(),
-            new Dictionary<string, PreviousAndNewValue>()
-            {
-                {
-                    "Тип поселения", //TODO[Localize]
-                    new PreviousAndNewValue("без поселения", acr.AccommodationType.Name)
-                },
-            });
+            [],
+            "Тип поселения", //TODO[Localize]
+            new PreviousAndNewValue("без поселения", acr.AccommodationType.Name)
+            );
         var leaveEmail = await ConsiderLeavingRoom(claim);
 
         acr.Subjects.Remove(claim);
@@ -603,7 +599,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
                     ProjectId = projectId,
                     AccommodationTypeId = acr.AccommodationTypeId,
                     IsAccepted = AccommodationRequest.InviteState.Accepted,
-                    Subjects = new List<Claim> { claim }
+                    Subjects = [claim]
                 });
 
         await UnitOfWork.SaveChangesAsync();
@@ -646,17 +642,13 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
                 nameof(ProjectAccommodationType));
         }
 
-        var email = EmailHelpers.CreateFieldsEmail(claim,
+        var email = EmailHelpers.CreateFieldsEmailWithExtraData(claim,
             s => s.AccommodationChange,
             await GetCurrentUser(),
-            Array.Empty<FieldWithPreviousAndNewValue>(),
-            new Dictionary<string, PreviousAndNewValue>()
-            {
-              {
-                  "Тип поселения", //TODO[Localize]
-                  new PreviousAndNewValue(newType.Name, claim.AccommodationRequest?.AccommodationType.Name)
-              },
-            });
+            [],
+            "Тип поселения", //TODO[Localize]
+            new PreviousAndNewValue(newType.Name, claim.AccommodationRequest?.AccommodationType.Name)
+            );
 
 
         var leaveEmail = await ConsiderLeavingRoom(claim);
@@ -665,7 +657,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         var accommodationRequest = new AccommodationRequest
         {
             ProjectId = projectId,
-            Subjects = new List<Claim> { claim },
+            Subjects = [claim],
             AccommodationTypeId = roomTypeId,
             IsAccepted = AccommodationRequest.InviteState.Accepted,
         };

@@ -11,13 +11,30 @@ internal static class EmailHelpers
         Claim claim,
         Func<UserSubscription, bool> subscribePredicate,
         User initiator,
-        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
     {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
+
+        var subscriptions = claim
+            .GetSubscriptions(subscribePredicate)
+            .ToList();
+
+        return new FieldsChangedEmail(claim,
+            initiator,
+            subscriptions,
+            updatedFields);
+    }
+
+    [Obsolete("Все эти экстраданные должны быть полями персонажа/заявки")]
+    public static FieldsChangedEmail CreateFieldsEmailWithExtraData(
+        Claim claim,
+        Func<UserSubscription, bool> subscribePredicate,
+        User initiator,
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+        string extraDataName,
+        PreviousAndNewValue extraDataValue)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
 
         var subscriptions = claim
             .GetSubscriptions(subscribePredicate)
@@ -27,7 +44,13 @@ internal static class EmailHelpers
             initiator,
             subscriptions,
             updatedFields,
-            otherChangedAttributes);
+            new Dictionary<string, PreviousAndNewValue>()
+            {
+                {
+                    extraDataName,
+                    extraDataValue
+                },
+            });
     }
 
     public static FieldsChangedEmail CreateFieldsEmail(
@@ -36,10 +59,7 @@ internal static class EmailHelpers
         User initiator,
         IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
 
         var subscriptions = character
             .GetSubscriptions(subscribePredicate)
@@ -48,7 +68,6 @@ internal static class EmailHelpers
         return new FieldsChangedEmail(character,
             initiator,
             subscriptions,
-            updatedFields,
-            null);
+            updatedFields);
     }
 }

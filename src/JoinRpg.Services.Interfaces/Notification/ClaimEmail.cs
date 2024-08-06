@@ -1,12 +1,8 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Notification;
-
-
-
 
 public class AddCommentEmail : ClaimEmailModel
 {
@@ -51,19 +47,16 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
     public IFieldContainter FieldsContainer { get; }
     public ILinkable Linkable { get; }
 
-    [NotNull]
     public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
 
     /// <summary>
     /// Имя связанной заявки
     /// </summary>
-    [CanBeNull]
     public Claim? Claim { get; }
 
     /// <summary>
     /// Имя персонажа/заявки
     /// </summary>
-    [NotNull]
     public string Name { get; }
 
     //Is character is null, Claim is not null and vice versa. (restricted by constructors).
@@ -73,9 +66,19 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Claim claim,
         User initiator,
         ICollection<User> recipients,
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
+        : this(null, claim, initiator, recipients, updatedFields, null)
+    {
+    }
+
+    [Obsolete("Уберите otherChangedAttributes, это все должно быть в полях")]
+    public FieldsChangedEmail(
+        Claim claim,
+        User initiator,
+        ICollection<User> recipients,
         IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
-        : this(null, claim, initiator, recipients, updatedFields, otherChangedAttributes)
+        IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
+    : this(null, claim, initiator, recipients, updatedFields, otherChangedAttributes)
     {
     }
 
@@ -83,9 +86,8 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Character character,
         User initiator,
         ICollection<User> recipients,
-        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes)
-        : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
+        IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
+        : this(character, null, initiator, recipients, updatedFields, null)
     {
     }
 
@@ -94,9 +96,7 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Claim? claim,
         User initiator,
         ICollection<User> recipients,
-        [NotNull]
         IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-        [CanBeNull]
         IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes)
     {
         if (character != null && claim != null)
@@ -163,7 +163,6 @@ public class ClaimEmailModel : EmailModelBase
     public Claim Claim { get; set; }
     public CommentExtraAction? CommentExtraAction { get; set; }
 }
-
 
 public enum ParcipantType
 {

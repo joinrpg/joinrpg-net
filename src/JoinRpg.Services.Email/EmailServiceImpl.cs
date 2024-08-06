@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -13,73 +12,15 @@ namespace JoinRpg.Services.Email;
 /// <summary>
 /// Service that send all email notifications
 /// </summary>
-[UsedImplicitly]
-public partial class EmailServiceImpl : IEmailService
+public partial class EmailServiceImpl(IUriService uriService, IEmailSendingService messageService) : IEmailService
 {
     #region general stuff
-    private const string JoinRpgTeam = "Команда JoinRpg.Ru";
-
     private const string ChangedFieldsKey = "changedFields";
 
-    private string StandartGreeting() => $"Добрый день, {RecepientName},\n";
-
-    private readonly RecepientData _joinRpgSender;
-
-    private IEmailSendingService MessageService { get; }
-
-    private readonly IUriService _uriService;
-
-    private string RecepientName => MessageService.GetRecepientPlaceholderName();
-
-    public EmailServiceImpl(IUriService uriService, IMailGunConfig config, IEmailSendingService messageService)
-    {
-        _joinRpgSender = new RecepientData(JoinRpgTeam, config.ServiceEmail);
-        _uriService = uriService;
-        MessageService = messageService;
-    }
-
+    private string StandartGreeting() => $"Добрый день, {messageService.GetRecepientPlaceholderName()},\n";
     #endregion
 
     #region IEmailService implementation
-    #region Account emails
-    public Task Email(RemindPasswordEmail email)
-    {
-        var text = $@"Добрый день, %recipient.name%, 
-
-вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
-Если это вы, кликните <a href=""{email.CallbackUrl}"">вот по этой ссылке</a>, и мы восстановим вам пароль. 
-Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его.
-
---
-
-{JoinRpgTeam}";
-        User recipient = email.Recipient;
-        return MessageService.SendEmail("Восстановление пароля на JoinRpg.Ru",
-            new MarkdownString(text),
-            _joinRpgSender,
-            recipient.ToRecepientData());
-    }
-
-    public Task Email(ConfirmEmail email)
-    {
-        var text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
-
-Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{email.CallbackUrl}"">вот по этой ссылке</a>.
-
-Это необходимо для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
-
-Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его.
-
---
-
-{JoinRpgTeam}";
-        return MessageService.SendEmail("Регистрация на JoinRpg.Ru",
-            new MarkdownString(text),
-            _joinRpgSender,
-            email.Recipient.ToRecepientData());
-    }
-    #endregion
-
     public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
 
     public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model);
@@ -92,21 +33,20 @@ public partial class EmailServiceImpl : IEmailService
 
     public Task Email(RestoreByMasterEmail model) => SendClaimEmail(model, "восстановлена");
 
-    public Task Email(MoveByMasterEmail model)
-      =>
-        SendClaimEmail(model, "изменена",
-          $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.GetTarget().Name}».");
+    public Task Email(MoveByMasterEmail model) => SendClaimEmail(model, "изменена", $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.GetTarget().Name}».");
 
 
-    public Task Email(ChangeResponsibleMasterEmail model)
-     => SendClaimEmail(model, "изменена", "В заявке изменен ответственный мастер.");
+    public Task Email(ChangeResponsibleMasterEmail model) => SendClaimEmail(model, "изменена", "В заявке изменен ответственный мастер.");
 
-    public Task Email(OnHoldByMasterEmail createClaimEmail)
-      => SendClaimEmail(createClaimEmail, "изменена", "Заявка поставлена в лист ожидания");
+    public Task Email(OnHoldByMasterEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "Заявка поставлена в лист ожидания");
+
+    public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "Игрок прошел регистрацию на полигоне");
+
+    public Task Email(SecondRoleEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "Игрок выпущен новой ролью");
 
     public async Task Email(ForumEmail model)
     {
-        await MessageService.SendEmail(model, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
+        await messageService.SendEmail(model, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
             StandartGreeting() + $@"
 На форуме появилось новое сообщение: 
 
@@ -114,7 +54,7 @@ public partial class EmailServiceImpl : IEmailService
 
 {model.Initiator.GetDisplayName()}
 
-Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
+Чтобы ответить на комментарий, перейдите на страницу обсуждения: {uriService.Get(model.ForumThread.CommentDiscussion)}
 ");
     }
 
@@ -141,14 +81,14 @@ public partial class EmailServiceImpl : IEmailService
             : $"заявк{(forMessageBody ? "и" : "a")} {model.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
-        var linkString = _uriService.Get(model.Linkable);
+        var linkString = uriService.Get(model.Linkable);
 
-        if (recipients.Any())
+        if (recipients.Count != 0)
         {
             var text = $@"{StandartGreeting()},
 Данные {Target(true)} были изменены. Новые значения:
 
-{MessageService.GetUserDependentValue(ChangedFieldsKey)}
+{messageService.GetUserDependentValue(ChangedFieldsKey)}
 
 Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
 
@@ -162,7 +102,7 @@ public partial class EmailServiceImpl : IEmailService
                 ? model.GetClaimEmailTitle(claim)
                 : $"{model.ProjectName}: {Target(false)}";
 
-            await MessageService.SendEmails(subject,
+            await messageService.SendEmails(subject,
                 new MarkdownString(text),
                 model.Initiator.ToRecepientData(),
                 recipients);
@@ -200,7 +140,7 @@ public partial class EmailServiceImpl : IEmailService
     {
         var oldInhabitants = email.Room.GetAllInhabitants().Except(email.Changed).ToList();
         var body = $"Вселились в комнату:{email.Changed.GetPlayerList()}";
-        if (oldInhabitants.Any())
+        if (oldInhabitants.Count != 0)
         {
             body += $"\n\nУже были в комнате:{oldInhabitants.GetPlayerList()}";
         }
@@ -211,7 +151,7 @@ public partial class EmailServiceImpl : IEmailService
 
     private async Task SendRoomEmail(RoomEmailBase email, string body)
     {
-        await MessageService.SendEmail(email, $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
+        await messageService.SendEmail(email, $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
             $@"{StandartGreeting()}
 Изменен состав жителей комнаты {email.Room.ProjectAccommodationType.Name} {email.Room.Name} 
 
@@ -259,8 +199,8 @@ public partial class EmailServiceImpl : IEmailService
         var sendTasks = email.Recipients.Select(emailRecipient =>
         {
             Claim? claim = email.GetClaimByPerson(emailRecipient);
-            return MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-                                new MarkdownString(string.Format(messageTemplate, claim == null ? "" : _uriService.Get(claim))),
+            return messageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
+                                new MarkdownString(string.Format(messageTemplate, claim == null ? "" : uriService.Get(claim))),
                                 email.Initiator.ToRecepientData(),
                                 emailRecipient.ToRecepientData());
         })
@@ -268,12 +208,6 @@ public partial class EmailServiceImpl : IEmailService
 
         await Task.WhenAll(sendTasks).ConfigureAwait(false);
     }
-
-    public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",
-      "Игрок прошел регистрацию на полигоне");
-
-    public Task Email(SecondRoleEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",
-      "Игрок выпущен новой ролью");
 
     public Task Email(FinanceOperationEmail model)
     {
@@ -304,9 +238,9 @@ public partial class EmailServiceImpl : IEmailService
             throw new ArgumentNullException(nameof(model.Text.Contents));
         }
 
-        var body = NamePlaceholderRegex().Replace(model.Text.Contents, MessageService.GetRecepientPlaceholderName());
+        var body = NamePlaceholderRegex().Replace(model.Text.Contents, messageService.GetRecepientPlaceholderName());
 
-        await MessageService.SendEmail(model, $"{model.ProjectName}: {model.Subject}",
+        await messageService.SendEmail(model, $"{model.ProjectName}: {model.Subject}",
             $@"{body}
 
 {model.Initiator.GetDisplayName()}
@@ -318,10 +252,10 @@ public partial class EmailServiceImpl : IEmailService
     /// Gets info about changed fields and other attributes for particular user (if available).
     /// </summary>
     private string GetChangedFieldsInfoForUser(
-      [NotNull] EmailModelBase model,
-      [NotNull] User user)
+      EmailModelBase model,
+      User user)
     {
-        if (!(model is IEmailWithUpdatedFieldsInfo mailWithFields))
+        if (model is not IEmailWithUpdatedFieldsInfo mailWithFields)
         {
             return "";
         }
@@ -350,7 +284,7 @@ public partial class EmailServiceImpl : IEmailService
             .Select(x => x.ToHtmlString()));
     }
 
-    private async Task SendClaimEmail([NotNull] ClaimEmailModel model, string? actionName = null, string text = "")
+    private async Task SendClaimEmail(ClaimEmailModel model, string? actionName = null, string text = "")
     {
         var projectEmailEnabled = model.GetEmailEnabled();
         if (!projectEmailEnabled)
@@ -381,15 +315,15 @@ public partial class EmailServiceImpl : IEmailService
 Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
 {text}
 
-{MessageService.GetUserDependentValue(ChangedFieldsKey)}
+{messageService.GetUserDependentValue(ChangedFieldsKey)}
 {extraText}{model.Text.Contents}
 
 {model.Initiator.GetDisplayName()}
 
-Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
+Чтобы ответить на комментарий, перейдите на страницу заявки: {uriService.Get(model.Claim.CommentDiscussion)}
 ";
 
-        await MessageService.SendEmails(model.GetClaimEmailTitle(),
+        await messageService.SendEmails(model.GetClaimEmailTitle(),
             new MarkdownString(text1),
             model.Initiator.ToRecepientData(),
             recipients);
@@ -404,26 +338,26 @@ public partial class EmailServiceImpl : IEmailService
         public int GetHashCode(Claim obj) => obj.PlayerUserId.GetHashCode();
     }
 
-    public async Task Email([NotNull] PublishPlotElementEmail email)
+    public async Task Email(PublishPlotElementEmail email)
     {
         var plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
 
         var subject = $@"{email.ProjectName}: опубликована вводная";
         var body = $@"{StandartGreeting()}"
-            + $"<br />Прочитать вводную: <a href=\"{MessageService.GetUserDependentValue(ClaimUriKey)}\">{MessageService.GetUserDependentValue(ClaimUriKey)}</a>"
+            + $"<br />Прочитать вводную: <a href=\"{messageService.GetUserDependentValue(ClaimUriKey)}\">{messageService.GetUserDependentValue(ClaimUriKey)}</a>"
             + "<br /><br />"
             + email.Text.ToHtmlString().ToHtmlString();
         var text = $@"{StandartGreeting()}"
-            + $"\nПрочитать вводную: {MessageService.GetUserDependentValue(ClaimUriKey)}"
+            + $"\nПрочитать вводную: {messageService.GetUserDependentValue(ClaimUriKey)}"
             + $"\n\n{email.Text.ToPlainText()}";
 
         var recipients = email.Claims
             .Distinct(new ClaimsComparer())
             .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
-                { ClaimUriKey, _uriService.Get(c) + plotElementId } }))
+                { ClaimUriKey, uriService.Get(c) + plotElementId } }))
             .ToList();
 
-        await MessageService.SendEmails(subject, body, text,
+        await messageService.SendEmails(subject, body, text,
             email.Initiator.ToRecepientData(), recipients);
     }
 
