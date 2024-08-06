@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace JoinRpg.Services.Interfaces.Projects;
 
 public interface IProjectService
@@ -34,7 +36,7 @@ public interface IProjectService
         int parentCharacterGroupId,
         short direction);
 
-    Task CloseProject(int projectId, int currentUserId, bool publishPlot);
+    Task CloseProject(ProjectIdentification projectId, bool publishPlot);
 
     Task SetCheckInOptions(int projectId,
         bool checkInProgress,

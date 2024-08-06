@@ -5,12 +5,14 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl;
 
-internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
+internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IMasterEmailService masterEmailService) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
     public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName)
     {
@@ -108,18 +110,24 @@ internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor curre
 
 
 
-    public async Task CloseProject(int projectId, int currentUserId, bool publishPlot)
+    public async Task CloseProject(ProjectIdentification projectId, bool publishPlot)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-
-        var user = await UserRepository.GetById(currentUserId);
-        RequestProjectAdminAccess(project, user);
+        var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
 
         project.Active = false;
         project.IsAcceptingClaims = false;
         project.Details.PublishPlot = publishPlot;
 
         await UnitOfWork.SaveChangesAsync();
+
+        await masterEmailService.EmailProjectClosed(new ProjectClosedMail()
+        {
+            ProjectId = projectId,
+            Initiator = await GetCurrentUser(),
+            ProjectName = project.ProjectName,
+            Recipients = project.ProjectAcls.Select(x => x.User).ToList(),
+            Text = new MarkdownString(),
+        });
     }
 
     public async Task SetCheckInOptions(int projectId,
@@ -154,17 +162,16 @@ internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor curre
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void RequestProjectAdminAccess(Project project, User user)
+    private Project RequestProjectAdminAccess(Project project)
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        if (!project.HasMasterAccess(user.UserId, acl => acl.CanChangeProjectProperties) &&
-            !user.Auth.IsAdmin)
+        if (IsCurrentUserAdmin)
         {
-            throw new NoAccessToProjectException(project,
-                user.UserId,
-                acl => acl.CanChangeProjectProperties);
+            return project;
         }
+
+        return project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
     }
 
     public async Task EditCharacterGroup(int projectId,
