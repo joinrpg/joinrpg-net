@@ -1,5 +1,4 @@
 using System.Data.Entity.Validation;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -11,15 +10,8 @@ using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
-internal class ProjectService : DbServiceImplBase, IProjectService
+internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
-
-
-    public ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
-    {
-    }
-
     public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName)
     {
         var rootGroup = new CharacterGroup()
@@ -46,16 +38,10 @@ internal class ProjectService : DbServiceImplBase, IProjectService
             IsAcceptingClaims = false,
             CreatedDate = Now,
             ProjectName = projectName,
-            CharacterGroups = new List<CharacterGroup>()
-            {
-                rootGroup,
-            },
-            ProjectAcls = new List<ProjectAcl>()
-            {
-                ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),
-            },
+            CharacterGroups = [rootGroup,],
+            ProjectAcls = [ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),],
             Details = projectDetails,
-            ProjectFields = new List<ProjectField>(),
+            ProjectFields = [],
         };
         MarkTreeModified(project);
 
@@ -170,10 +156,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
     private static void RequestProjectAdminAccess(Project project, User user)
     {
-        if (project == null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
+        ArgumentNullException.ThrowIfNull(project);
 
         if (!project.HasMasterAccess(user.UserId, acl => acl.CanChangeProjectProperties) &&
             !user.Auth.IsAdmin)
@@ -220,12 +203,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
     public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
-        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-
-        if (characterGroup == null)
-        {
-            throw new DbEntityValidationException();
-        }
+        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId) ?? throw new DbEntityValidationException();
 
         if (characterGroup.HasActiveClaims())
         {
@@ -237,7 +215,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
         foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
         {
-            if (character.ParentCharacterGroupIds.Except(new[] { characterGroupId }).Any())
+            if (character.ParentCharacterGroupIds.Except([characterGroupId]).Any())
             {
                 continue;
             }
@@ -248,7 +226,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
 
         foreach (var character in characterGroup.ChildGroups.Where(ch => ch.IsActive))
         {
-            if (character.ParentCharacterGroupIds.Except(new[] { characterGroupId }).Any())
+            if (character.ParentCharacterGroupIds.Except([characterGroupId]).Any())
             {
                 continue;
             }
@@ -363,7 +341,7 @@ internal class ProjectService : DbServiceImplBase, IProjectService
                 acl.UserId,
                 ClaimStatusSpec.Any);
 
-        if (claims.Any())
+        if (claims.Count != 0)
         {
             if (newResponsibleMasterIdOrDefault is int newResponsible)
             {
