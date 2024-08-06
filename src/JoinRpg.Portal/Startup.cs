@@ -5,6 +5,7 @@ using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.DailyJobs;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
@@ -79,6 +80,8 @@ public class Startup
 
         services.AddJoinDataProtection(Configuration, environment);
 
+        services.AddJoinDailyJob(Configuration, environment);
+
         if (environment.IsDevelopment())
         {
             //That's make local debug more easy
@@ -96,9 +99,9 @@ public class Startup
             .AddSqlServer(
                 Configuration["ConnectionStrings:DefaultConnection"],
                 name: "main-sqldb",
-                tags: new[] { "ready" })
+                tags: ["ready"])
 
-            .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
+            .AddCheck<HealthCheckLoadProjects>("Project load", tags: ["ready"]);
 
         if (s3StorageOptions.Configured)
         {

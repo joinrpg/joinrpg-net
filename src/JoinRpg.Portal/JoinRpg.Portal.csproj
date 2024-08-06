@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -48,6 +48,7 @@
     <ProjectReference Include="..\JoinRpg.Blazor.Client\JoinRpg.Blazor.Client.csproj" />
     <ProjectReference Include="..\JoinRpg.BlobStorage\JoinRpg.BlobStorage.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj" />
+    <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
     <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
