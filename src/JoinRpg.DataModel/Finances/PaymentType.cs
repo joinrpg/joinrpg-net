@@ -24,7 +24,6 @@ public enum PaymentTypeKind
     Online = 2,
 }
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
 public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEntity
 {
     public int PaymentTypeId { get; set; }

@@ -10,4 +10,6 @@ public interface IWorldObject : IProjectEntity, ILinkable
 
     bool IsActive { get; }
     MarkdownString Description { get; }
+
+    new int ProjectId => ((IProjectEntity)this).ProjectId;
 }
