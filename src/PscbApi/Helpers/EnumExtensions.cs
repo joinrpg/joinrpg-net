@@ -1,4 +1,5 @@
-// ReSharper disable once CheckNamespace
+using System.Reflection;
+
 namespace PscbApi;
 
 /// <summary>
@@ -7,26 +8,17 @@ namespace PscbApi;
 public static class EnumExtensions
 {
     /// <summary>
-    /// Returns list of attributes of type <typeparamref name="T"/> associated with enum value
+    /// Returns first attribute of specified type <typeparamref name="TAttribute"/>
     /// </summary>
-    public static IEnumerable<T> GetCustomAttributes<T>(this Enum self)
-        where T : Attribute
+    public static TAttribute? GetCustomAttribute<TAttribute>(this Enum self)
+        where TAttribute : Attribute
         => self.GetType()
-            .GetField(self.ToString())
-            .GetCustomAttributes(typeof(T), true)
-            .Cast<T>();
-
-    /// <summary>
-    /// Returns first attribute of specified type <typeparamref name="T"/>
-    /// </summary>
-    public static T GetCustomAttribute<T>(this Enum self)
-        where T : Attribute
-        => self.GetCustomAttributes<T>()
-            .FirstOrDefault();
+            .GetField(self.ToString())?
+            .GetCustomAttribute<TAttribute>(inherit: true);
 
     /// <summary>
     /// Returns identifier associated using <see cref="IdentifierAttribute"/> to enumeration value
     /// </summary>
     public static string GetIdentifier(this Enum self)
-        => self.GetCustomAttribute<IdentifierAttribute>()?.Identifier ?? Enum.GetName(self.GetType(), self);
+        => self.GetCustomAttribute<IdentifierAttribute>()?.Identifier ?? Enum.GetName(self.GetType(), self) ?? throw new InvalidOperationException("Enum value {self} unexpected");
 }

@@ -13,14 +13,14 @@ public class PaymentInfoQueryParams
     /// </summary>
     [Required]
     [JsonProperty("orderId")]
-    public string OrderId { get; set; }
+    public required string OrderId { get; set; }
 
     /// <summary>
     /// Merchant Id (issued by the bank)
     /// </summary>
     [Required]
     [JsonProperty("marketPlace")]
-    public string MerchantId { get; set; }
+    public required string MerchantId { get; set; }
 
     /// <summary>
     /// If true, additional card data will be returned

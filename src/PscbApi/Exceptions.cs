@@ -21,36 +21,29 @@ public class PscbApiExceptionBase : Exception
 /// Request exception
 /// </summary>
 /// <typeparam name="TRequest">Type of request data</typeparam>
-public class PscbApiRequestException<TRequest> : PscbApiExceptionBase
+/// <remarks>
+/// Constructor
+/// </remarks>
+/// <param name="url"></param>
+/// <param name="request"></param>
+/// <param name="signature"></param>
+/// <param name="message"></param>
+public class PscbApiRequestException<TRequest>(string url, TRequest request, string signature, string? message = null)
+    : PscbApiExceptionBase($"Invalid request to {url}: {message}")
     where TRequest : class
 {
     /// <summary>
     /// Api method url
     /// </summary>
-    public string Url { get; }
+    public string Url { get; } = url;
 
     /// <summary>
     /// Request data
     /// </summary>
-    public TRequest Request { get; }
+    public TRequest Request { get; } = request;
 
     /// <summary>
     /// Request signature
     /// </summary>
-    public string Signature { get; }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="url"></param>
-    /// <param name="request"></param>
-    /// <param name="signature"></param>
-    /// <param name="message"></param>
-    public PscbApiRequestException(string url, TRequest request, string signature, string message = null)
-        : base($"Invalid request to {url}: {message}")
-    {
-        Url = url;
-        Request = request;
-        Signature = signature;
-    }
+    public string Signature { get; } = signature;
 }

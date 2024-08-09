@@ -14,62 +14,40 @@ using PscbApi.Models;
 namespace JoinRpg.Services.Impl;
 
 /// <inheritdoc cref="IPaymentsService" />
-public class PaymentsService : DbServiceImplBase, IPaymentsService
+/// <inheritdoc />
+public class PaymentsService(
+    IUnitOfWork unitOfWork,
+    IUriService uriService,
+    IBankSecretsProvider bankSecrets,
+    ICurrentUserAccessor currentUserAccessor,
+    Lazy<IEmailService> emailService,
+    ILogger<PaymentsService> logger,
+    IProjectMetadataRepository projectMetadataRepository,
+    IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
 {
-
-    private readonly IBankSecretsProvider _bankSecrets;
-    private readonly ILogger<PaymentsService> logger;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-    private readonly Lazy<IEmailService> emailService;
-    private readonly IUriService _uriService;
-
-    /// <inheritdoc />
-    public PaymentsService(
-        IUnitOfWork unitOfWork,
-        IUriService uriService,
-        IBankSecretsProvider bankSecrets,
-        ICurrentUserAccessor currentUserAccessor,
-        Lazy<IEmailService> emailService,
-        ILogger<PaymentsService> logger,
-        IProjectMetadataRepository projectMetadataRepository)
-        : base(unitOfWork, currentUserAccessor)
-    {
-        _bankSecrets = bankSecrets;
-        this.logger = logger;
-        this.projectMetadataRepository = projectMetadataRepository;
-        this.emailService = emailService;
-        _uriService = uriService;
-    }
-
-
     private ApiConfiguration GetApiConfiguration(int projectId, int claimId)
     {
         return new ApiConfiguration
         {
-            Debug = _bankSecrets.Debug,
-            ApiEndpoint = _bankSecrets.ApiEndpoint,
-            ApiDebugEndpoint = _bankSecrets.ApiDebugEndpoint,
-            MerchantId = _bankSecrets.MerchantId,
-            ApiKey = _bankSecrets.ApiKey,
-            ApiDebugKey = _bankSecrets.ApiDebugKey,
-            DefaultSuccessUrl = _uriService.Get(new PaymentSuccessUrl(projectId, claimId)),
-            DefaultFailUrl = _uriService.Get(new PaymentFailUrl(projectId, claimId)),
+            Debug = bankSecrets.Debug,
+            ApiEndpoint = bankSecrets.ApiEndpoint,
+            ApiDebugEndpoint = bankSecrets.ApiDebugEndpoint,
+            MerchantId = bankSecrets.MerchantId,
+            ApiKey = bankSecrets.ApiKey,
+            ApiDebugKey = bankSecrets.ApiDebugKey,
+            DefaultSuccessUrl = uriService.Get(new PaymentSuccessUrl(projectId, claimId)),
+            DefaultFailUrl = uriService.Get(new PaymentFailUrl(projectId, claimId)),
         };
     }
 
     private BankApi GetApi(int projectId, int claimId)
-        => new BankApi(GetApiConfiguration(projectId, claimId));
+        => new(clientFactory, GetApiConfiguration(projectId, claimId));
 
     private async Task<Claim> GetClaimAsync(int projectId, int claimId)
     {
-        Claim claim = await UnitOfWork.GetClaimsRepository()
+        var claim = await UnitOfWork.GetClaimsRepository()
             .GetClaim(projectId, claimId);
-        if (claim == null)
-        {
-            throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
-        }
-
-        return claim;
+        return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
     }
 
     /// <inheritdoc />
@@ -113,8 +91,8 @@ public class PaymentsService : DbServiceImplBase, IPaymentsService
                 PaymentMethod.FastPaymentsSystem => PscbPaymentMethod.FastPaymentsSystem,
                 _ => throw new NotSupportedException($"Payment method {request.Method} is not supported"),
             },
-            SuccessUrl = _uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
-            FailUrl = _uriService.Get(new PaymentFailUrl(request.ProjectId, request.ClaimId)),
+            SuccessUrl = uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
+            FailUrl = uriService.Get(new PaymentFailUrl(request.ProjectId, request.ClaimId)),
             Data = new PaymentMessageData
             {
                 Receipt = new Receipt
