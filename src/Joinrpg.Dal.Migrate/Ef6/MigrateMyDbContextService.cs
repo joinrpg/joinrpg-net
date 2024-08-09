@@ -1,18 +1,16 @@
 using System.Data.Entity.Migrations;
 using System.Data.Entity.Migrations.Infrastructure;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Joinrpg.Dal.Migrate;
+namespace Joinrpg.Dal.Migrate.Ef6;
 
-internal class MigrateHostService(
-    IHostApplicationLifetime applicationLifetime,
-    ILogger<MigrateHostService> logger,
+internal class MigrateMyDbContextService(
+    ILogger<MigrateMyDbContextService> logger,
     IConfiguration configuration)
-    : OneTimeOperationHostedServiceBase(applicationLifetime, logger)
+    : IMigratorService
 {
-    internal override void DoWork()
+    public Task MigrateAsync(CancellationToken ct)
     {
         logger.LogInformation("Create migration");
 
@@ -33,5 +31,7 @@ internal class MigrateHostService(
         logger.LogInformation("Pending migrations {pending}", string.Join("\n", pending));
         migrator.Update(); // TODO pass migration name from command line to allow reverts
         logger.LogInformation("Migration completed");
+
+        return Task.CompletedTask;
     }
 }

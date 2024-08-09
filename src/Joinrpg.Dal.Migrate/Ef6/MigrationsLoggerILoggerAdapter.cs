@@ -1,7 +1,7 @@
 using System.Data.Entity.Migrations.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Joinrpg.Dal.Migrate;
+namespace Joinrpg.Dal.Migrate.Ef6;
 
 internal class MigrationsLoggerILoggerAdapter : MigrationsLogger
 {

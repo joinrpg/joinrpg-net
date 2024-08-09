@@ -1,35 +1,42 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Joinrpg.Dal.Migrate;
 
 internal class MigrateEfCoreHostService<TContext>(
-    IServiceProvider services,
-    ILogger<MigrateEfCoreHostService<TContext>> logger,
-    IHostApplicationLifetime applicationLifetime) : BackgroundService
+    TContext dbContext,
+    ILogger<MigrateEfCoreHostService<TContext>> logger) : IMigratorService
     where TContext : DbContext
 {
-    private async Task MigrateAsync(DbContext dbContext, CancellationToken stoppingToken)
+    private static readonly string contextName = typeof(TContext).Name!;
+    public async Task MigrateAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Start migration of {contextName}", typeof(TContext).FullName);
+        using var logScope = logger.BeginScope("Migration of {dbContext}", contextName);
+
+        logger.LogInformation("Start migration of {dbContext}", contextName);
 
         var lastAppliedMigration = (await dbContext.Database.GetAppliedMigrationsAsync(stoppingToken)).LastOrDefault();
         if (!string.IsNullOrEmpty(lastAppliedMigration))
         {
-            logger.LogInformation("Last applied migration: {LastAppliedMigration}", lastAppliedMigration);
+            logger.LogInformation("Last applied migration for {dbContext}: {LastAppliedMigration}", contextName, lastAppliedMigration);
         }
 
         if (stoppingToken.IsCancellationRequested)
         {
             return;
+        }
+
+        if (dbContext.Database.HasPendingModelChanges())
+        {
+            logger.LogError("There is pending changes in model!");
+            throw new InvalidOperationException("Pending changes in model");
         }
 
         var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(stoppingToken);
+
         foreach (var pm in pendingMigrations)
         {
-            logger.LogInformation("Pending migration: {PendingMigration}", pm);
+            logger.LogInformation("Pending migration for {dbContext}: {PendingMigration}", contextName, pm);
         }
 
         if (stoppingToken.IsCancellationRequested)
@@ -37,35 +44,8 @@ internal class MigrateEfCoreHostService<TContext>(
             return;
         }
 
-        logger.LogInformation("Applying migrations...");
+        logger.LogInformation("Applying migrations for {dbContext} ...", contextName);
         await dbContext.Database.MigrateAsync(stoppingToken);
-        logger.LogInformation("Database has been successfully migrated");
-    }
-
-    /// <inheritdoc />
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        logger.LogInformation("Starting migrator...");
-        await using var scope = services.CreateAsyncScope();
-        try
-        {
-            await MigrateAsync(
-                scope.ServiceProvider.GetRequiredService<TContext>(),
-                stoppingToken);
-
-            if (stoppingToken.IsCancellationRequested)
-            {
-                logger.LogInformation("Terminating by cancellation token");
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error executing migrator");
-            Environment.ExitCode = 1;
-        }
-        finally
-        {
-            applicationLifetime.StopApplication();
-        }
+        logger.LogInformation("Database {dbContext} has been successfully migrated", contextName);
     }
 }

@@ -1,3 +1,4 @@
+using Joinrpg.Dal.Migrate.Ef6;
 using Joinrpg.Dal.Migrate.EfCore;
 using JoinRpg.Dal.JobService;
 using JoinRpg.Portal.Infrastructure;
@@ -19,7 +20,9 @@ internal class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
-                _ = services.AddHostedService<MigrateHostService>();
+                _ = services.AddHostedService<OneTimeOperationHostedServiceBase>();
+
+                services.AddScoped<IMigratorService, MigrateMyDbContextService>();
 
                 services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection")!);
                 services.RegisterMigrator<JobScheduleDataDbContext>(hostContext.Configuration.GetConnectionString("DailyJob")!);

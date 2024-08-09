@@ -1,7 +1,7 @@
 using System.Data.Entity.Migrations;
 using JoinRpg.Dal.Impl;
 
-namespace Joinrpg.Dal.Migrate;
+namespace Joinrpg.Dal.Migrate.Ef6;
 
 internal class JoinMigrationsConfig : DbMigrationsConfiguration<MyDbContext>
 {
