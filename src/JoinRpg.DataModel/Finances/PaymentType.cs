@@ -12,7 +12,6 @@ public static class PaymentTypeKindExtensions
     public static bool IsOnline(this PaymentTypeKind ptk) => Online.Contains(ptk);
 }
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
 public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEntity
 {
     public int PaymentTypeId { get; set; }
