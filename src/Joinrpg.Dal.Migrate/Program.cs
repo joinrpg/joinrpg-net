@@ -1,4 +1,5 @@
 using Joinrpg.Dal.Migrate.EfCore;
+using JoinRpg.Dal.JobService;
 using JoinRpg.Portal.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ internal class Program
             {
                 _ = services.AddHostedService<MigrateHostService>();
 
-                services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection"));
+                services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection")!);
+                services.RegisterMigrator<JobScheduleDataDbContext>(hostContext.Configuration.GetConnectionString("DailyJob")!);
             });
 }
