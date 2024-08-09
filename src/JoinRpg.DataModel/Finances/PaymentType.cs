@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers;
 
@@ -22,6 +23,19 @@ public enum PaymentTypeKind
     /// Online payment type through online payment gate
     /// </summary>
     Online = 2,
+
+    /// <summary>
+    /// Online subscription payment
+    /// </summary>
+    OnlineSubscription = 3,
+}
+
+public static class PaymentTypeKindExtensions
+{
+    public static readonly FrozenSet<PaymentTypeKind> Online =
+        FrozenSet.ToFrozenSet([PaymentTypeKind.Online, PaymentTypeKind.OnlineSubscription]);
+
+    public static bool IsOnline(this PaymentTypeKind ptk) => Online.Contains(ptk);
 }
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ

@@ -49,17 +49,18 @@ public class FinanceSetupViewModel
 
         var existedPaymentTypes =
             project.PaymentTypes
-                .Where(pt => pt.TypeKind != PaymentTypeKind.Online)
+                .Where(pt => !pt.TypeKind.IsOnline())
                 .Select(pt => new PaymentTypeListItemViewModel(pt));
 
         var onlinePaymentTypes = new[]
         {
-          project.PaymentTypes
-              .Where(pt => pt.TypeKind == PaymentTypeKind.Online)
-              .Select(pt => new PaymentTypeListItemViewModel(pt))
-              .DefaultIfEmpty(new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUser, project.ProjectId))
-              .Single()
-      };
+            project.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.Online)
+                .Select(pt => new PaymentTypeListItemViewModel(pt))
+                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUser, project.ProjectId),
+            project.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
+                .Select(pt => new PaymentTypeListItemViewModel(pt))
+                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.OnlineSubscription, virtualPaymentsUser, project.ProjectId),
+        };
 
         PaymentTypes =
             onlinePaymentTypes.Union(

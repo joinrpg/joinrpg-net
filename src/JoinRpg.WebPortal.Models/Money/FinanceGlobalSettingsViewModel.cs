@@ -19,5 +19,5 @@ public class FinanceGlobalSettingsViewModel
     [Display(Name = "Условия льготного взноса",
          Description = " Будет показываться игрокам, претендующим на льготный взнос."),
      UIHint("MarkdownString")]
-    public string PreferentialFeeConditions { get; set; }
+    public string? PreferentialFeeConditions { get; set; }
 }
