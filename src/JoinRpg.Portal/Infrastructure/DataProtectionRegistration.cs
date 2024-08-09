@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace JoinRpg.Portal.Infrastructure;
 
@@ -13,21 +12,7 @@ public static class DataProtectionRegistration
 
         if (!environment.IsDevelopment() && !string.IsNullOrWhiteSpace(dataProtectionConnectionString))
         {
-            services.AddDbContext<DataProtectionDbContext>(
-            options =>
-            {
-                options.UseNpgsql(dataProtectionConnectionString);
-                options.EnableSensitiveDataLogging(environment.IsDevelopment());
-                options.EnableDetailedErrors(environment.IsDevelopment());
-            });
-
-            services.AddDatabaseDeveloperPageExceptionFilter();
-            services
-                .AddHealthChecks()
-                .AddNpgSql(
-                    dataProtectionConnectionString,
-                    name: "dataprotection-db",
-                    failureStatus: HealthStatus.Degraded);
+            services.AddJoinEfCoreDbContext<DataProtectionDbContext>(configuration, environment, "DataProtection");
             dataProtection.PersistKeysToDbContext<DataProtectionDbContext>();
         }
     }
