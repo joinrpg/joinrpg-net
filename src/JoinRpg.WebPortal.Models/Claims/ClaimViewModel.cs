@@ -529,6 +529,9 @@ public class ClaimFeeViewModel
 
         // Determining payment status
         PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
+
+        HasSubscription = projectInfo.ProjectFinanceSettings.PaymentTypes
+            .Any(static pt => pt is { Enabled: true, TypeKind: PaymentTypeKind.OnlineSubscription });
     }
 
     /// <summary>
@@ -653,6 +656,8 @@ public class ClaimFeeViewModel
     /// true if a user can request preferential fee
     /// </summary>
     public bool PreferentialFeeRequestEnabled { get; }
+
+    public bool HasSubscription { get; }
 
     public int ClaimId { get; }
     public int ProjectId { get; }
