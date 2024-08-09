@@ -1,4 +1,3 @@
-using JoinRpg.Dal.JobService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -7,12 +6,13 @@ namespace JoinRpg.Portal.Infrastructure;
 public static class DbContextRegisterHelper
 {
     public static void AddJoinEfCoreDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment, string connectionStringName)
+        where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName);
 
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            services.AddDbContext<JobScheduleDataDbContext>(
+            services.AddDbContext<TContext>(
             options =>
             {
                 options.UseNpgsql(connectionString);
