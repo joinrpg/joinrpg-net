@@ -3,28 +3,27 @@ using Microsoft.Extensions.Logging;
 
 namespace Joinrpg.Dal.Migrate;
 
-internal abstract class OneTimeOperationHostedServiceBase : IHostedService
+internal class OneTimeOperationHostedServiceBase(
+    IHostApplicationLifetime applicationLifetime,
+    ILogger<OneTimeOperationHostedServiceBase> logger,
+    IEnumerable<IMigratorService> migrators) : IHostedService
 {
     private CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
 
     private Task? task;
-    private readonly IHostApplicationLifetime applicationLifetime;
-    protected readonly ILogger logger;
-
-    public OneTimeOperationHostedServiceBase(IHostApplicationLifetime applicationLifetime, ILogger<MigrateHostService> logger)
-    {
-        this.applicationLifetime = applicationLifetime;
-        this.logger = logger;
-    }
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Starting task");
-        task = Task.Run(() =>
+        task = Task.Run(async () =>
         {
             try
             {
-                DoWork();
+                foreach (var migrator in migrators)
+                {
+                    using var scope = logger.BeginScope("Migration of {migrator}", migrator.GetType().Name);
+                    await migrator.MigrateAsync(cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -35,11 +34,9 @@ internal abstract class OneTimeOperationHostedServiceBase : IHostedService
             {
                 applicationLifetime.StopApplication();
             }
-        }, CancellationToken.None);
+        }, cancellationToken);
         return Task.CompletedTask;
     }
-
-    internal abstract void DoWork();
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken)
     {
