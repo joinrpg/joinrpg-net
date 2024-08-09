@@ -1,7 +1,8 @@
-namespace JoinRpg.Dal.Impl.Migrations
+﻿namespace JoinRpg.Dal.Impl.Migrations
 {
+    using System;
     using System.Data.Entity.Migrations;
-
+    
     public partial class Recurrent : DbMigration
     {
         public override void Up()
@@ -9,19 +10,20 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.RecurrentPayments",
                 c => new
-                {
-                    RecurrentPaymentId = c.Int(nullable: false, identity: true),
-                    ProjectId = c.Int(nullable: false),
-                    ClaimId = c.Int(nullable: false),
-                    PaymentTypeId = c.Int(nullable: false),
-                    CreateDate = c.DateTimeOffset(nullable: false, precision: 7),
-                    CloseDate = c.DateTimeOffset(precision: 7),
-                    PaymentId = c.Int(nullable: false),
-                    BankRecurrencyToken = c.String(),
-                    BankParentPayment = c.String(),
-                    BankAdditional = c.String(),
-                    PaymentAmount = c.Int(nullable: false),
-                })
+                    {
+                        RecurrentPaymentId = c.Int(nullable: false, identity: true),
+                        ProjectId = c.Int(nullable: false),
+                        ClaimId = c.Int(nullable: false),
+                        PaymentTypeId = c.Int(nullable: false),
+                        CreateDate = c.DateTimeOffset(nullable: false, precision: 7),
+                        CloseDate = c.DateTimeOffset(precision: 7),
+                        PaymentId = c.Int(nullable: false),
+                        BankRecurrencyToken = c.String(),
+                        BankParentPayment = c.String(),
+                        BankAdditional = c.String(),
+                        PaymentAmount = c.Int(nullable: false),
+                        Status = c.Int(nullable: false),
+                    })
                 .PrimaryKey(t => t.RecurrentPaymentId)
                 .ForeignKey("dbo.Claims", t => t.ClaimId)
                 .ForeignKey("dbo.PaymentTypes", t => t.PaymentTypeId)
@@ -29,23 +31,13 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ProjectId)
                 .Index(t => t.ClaimId)
                 .Index(t => t.PaymentTypeId);
-
+            
             AddColumn("dbo.FinanceOperations", "RecurrentPaymentId", c => c.Int());
             AddColumn("dbo.FinanceOperations", "ReccurrentPaymentInstanceToken", c => c.String());
             CreateIndex("dbo.FinanceOperations", "RecurrentPaymentId");
             AddForeignKey("dbo.FinanceOperations", "RecurrentPaymentId", "dbo.RecurrentPayments", "RecurrentPaymentId");
-
-            Sql(@"
-CREATE UNIQUE NONCLUSTERED INDEX
-             [IX_FinanceOperationRecurrentPaymentId] ON [dbo].[FinanceOperations]
-             (
-                [RecurrentPaymentId] ASC,
-                [ReccurrentPaymentInstanceToken] ASC
-             )
-             WHERE ([RecurrentPaymentId] IS NOT NULL)
-")
         }
-
+        
         public override void Down()
         {
             DropForeignKey("dbo.FinanceOperations", "RecurrentPaymentId", "dbo.RecurrentPayments");

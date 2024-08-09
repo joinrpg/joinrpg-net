@@ -24,5 +24,7 @@ public class RecurrentPayment : IProjectEntity
 
     public int PaymentAmount { get; set; }
 
+    public RecurrentPaymentStatus Status { get; set; } = RecurrentPaymentStatus.Created;
+
     int IOrderableEntity.Id => RecurrentPaymentId;
 }
