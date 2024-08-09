@@ -7,6 +7,11 @@ public class DailyJobRepository(JobScheduleDataDbContext dbContext) : IDailyJobR
 {
     async Task<bool> IDailyJobRepository.TryInsertJobRecord(JobId jobId)
     {
+        if (await dbContext.DailyJobRuns.ByJobId(jobId).AnyAsync())
+        {
+            // Давайте проверим, нет ли такой записи уже, чтобы не засирать лог ошибками
+            return false;
+        }
         _ = dbContext.DailyJobRuns.Add(new DailyJobRun()
         {
             DayOfRun = jobId.DayOfRun,
@@ -24,14 +29,15 @@ public class DailyJobRepository(JobScheduleDataDbContext dbContext) : IDailyJobR
         }
         return true; // Выиграли, запускайте джоб
     }
+
     async Task<bool> IDailyJobRepository.TrySetJobCompleted(JobId jobId) => await TrySetJobStatus(dbContext, jobId, DailyJobStatus.Completed);
     async Task<bool> IDailyJobRepository.TrySetJobFailed(JobId jobId) => await TrySetJobStatus(dbContext, jobId, DailyJobStatus.Error);
 
     private static async Task<bool> TrySetJobStatus(JobScheduleDataDbContext dbContext, JobId jobId, DailyJobStatus targetStatus)
     {
-        // Всегда трогаем только джобы, запущенные нами и в состоянии started
         var totalRows = await dbContext.DailyJobRuns
-            .Where(d => d.JobName == jobId.JobName && d.DayOfRun == jobId.DayOfRun && d.MachineName == Environment.MachineName && d.JobStatus == DailyJobStatus.Started)
+            .ByJobId(jobId)
+            .Where(d => d.MachineName == Environment.MachineName && d.JobStatus == DailyJobStatus.Started) // Всегда трогаем только джобы, запущенные нами и в состоянии started
             .ExecuteUpdateAsync(setters => setters.SetProperty(d => d.JobStatus, targetStatus));
 
         return
@@ -42,6 +48,4 @@ public class DailyJobRepository(JobScheduleDataDbContext dbContext) : IDailyJobR
                 _ => throw new InvalidOperationException("Unexpected — too many rows updated")
             };
     }
-
-
 }

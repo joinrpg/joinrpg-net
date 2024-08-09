@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
+    <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

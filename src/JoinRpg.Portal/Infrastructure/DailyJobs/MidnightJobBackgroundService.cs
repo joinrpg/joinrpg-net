@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
 public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepository, IServiceProvider serviceProvider, ILogger<MidnightJobBackgroundService<TJob>> logger) : BackgroundService
+    where TJob : class, IDailyJob
 {
     private static readonly string JobName = typeof(TJob).FullName!;
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -19,13 +20,14 @@ public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepo
                 try
                 {
                     using var scope = serviceProvider.CreateScope();
-                    var job = (IDailyJob)serviceProvider.GetRequiredService(typeof(TJob));
+                    var job = serviceProvider.GetRequiredService<TJob>();
                     await job.RunOnce(stoppingToken);
+                    _ = await dailyJobRepository.TrySetJobCompleted(jobId);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Error running {jobName}", JobName);
-                    await dailyJobRepository.TrySetJobFailed(jobId);
+                    _ = await dailyJobRepository.TrySetJobFailed(jobId);
                 }
             }
             else
