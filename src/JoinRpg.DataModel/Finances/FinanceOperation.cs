@@ -230,4 +230,9 @@ public enum FinanceOperationType
     /// Money transfer from another claim
     /// </summary>
     TransferFrom,
+
+    /// <summary>
+    /// Online subscription
+    /// </summary>
+    OnlineSubscription,
 }

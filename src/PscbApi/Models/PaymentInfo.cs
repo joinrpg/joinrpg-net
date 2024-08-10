@@ -23,13 +23,13 @@ public class PaymentInfoBase
     /// Error description
     /// </summary>
     [JsonProperty("errorDescription")]
-    public string ErrorDescription { get; set; }
+    public string? ErrorDescription { get; set; }
 
     /// <summary>
     /// Request (query) Id
     /// </summary>
     [JsonProperty("requestId")]
-    public string RequestId { get; set; }
+    public string? RequestId { get; set; }
 }
 
 /// <summary>

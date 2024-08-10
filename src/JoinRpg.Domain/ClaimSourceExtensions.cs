@@ -73,7 +73,7 @@ public static class ClaimSourceExtensions
         switch (reason)
         {
             case AddClaimForbideReason.ProjectNotActive:
-                throw new ProjectDeactivedException();
+                throw new ProjectDeactivatedException();
             case AddClaimForbideReason.ProjectClaimsClosed:
             case AddClaimForbideReason.SlotsExhausted:
             case AddClaimForbideReason.NotForDirectClaims:

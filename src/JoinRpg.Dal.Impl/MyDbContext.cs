@@ -167,7 +167,7 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         modelBuilder.Entity<RecurrentPayment>()
             .HasRequired(rp => rp.Claim)
-            .WithMany()
+            .WithMany(e => e.RecurrentPayments)
             .HasForeignKey(rp => rp.ClaimId)
             .WillCascadeOnDelete(false);
 

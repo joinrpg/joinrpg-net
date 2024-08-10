@@ -24,7 +24,7 @@ public class PaymentMessageData
     /// </summary>
     [Required]
     [JsonProperty("fdReceipt")]
-    public Receipt Receipt { get; set; }
+    public required Receipt Receipt { get; set; }
 
     /// <summary>
     /// Payment page design template identifier
@@ -33,8 +33,9 @@ public class PaymentMessageData
     /// See https://docs.pscb.ru/oos/advanced.html#dopolnitelnye-opcii-dizajn-i-kastomizaciya-dizajn-stranicy-oplaty for details
     /// </remarks>
     [JsonProperty("template", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string TemplateName { get; set; }
+    public string? TemplateName { get; set; }
 
+    /*
     /// <summary>
     /// Qiwi Wallet login (phone number in international format). Used only for <see cref="PscbPaymentMethod.Qiwi"/> payments
     /// </summary>
@@ -54,6 +55,7 @@ public class PaymentMessageData
     /// </summary>
     [JsonProperty("userAccount", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string AlfaClickLogin { get; set; }
+    */
 
     /// <summary>
     /// true to enable debug information in Payer' browser
@@ -63,4 +65,13 @@ public class PaymentMessageData
     /// </remarks>
     [JsonProperty("debug", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public bool EnableDebugOutput { get; set; }
+
+    /// <summary>
+    /// Additional Id
+    /// </summary>
+    /// <remarks>
+    /// Field is automatically set inside <see cref="BankApi"/>
+    /// </remarks>
+    [JsonProperty("qrcId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string? AdditionalToken { get; set; }
 }

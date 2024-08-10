@@ -1,0 +1,13 @@
+﻿@model JoinRpg.Web.Models.RecurrentPaymentFunctionsViewModel
+@if (Model.CanSubscribe)
+{
+  <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Оформить…</button>
+}
+@if (Model.CanChange)
+{
+  <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Изменить&hellip;</button>
+}
+@if (Model.CanCancel)
+{
+  <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#cancelRecurrentOnlineDialog">Отменить&hellip;</button>
+}

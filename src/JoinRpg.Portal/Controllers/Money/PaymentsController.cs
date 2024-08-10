@@ -40,14 +40,10 @@ public class PaymentsController : Common.ControllerBase
         return View("Error", model);
     }
 
-    /// <summary>
-    /// Handles claim payment request
-    /// </summary>
-    /// <param name="data">Payment data</param>
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> ClaimPayment(PaymentViewModel data)
+    public async Task<ActionResult> ClaimRecurrentPayment(StartRecurrentPaymentViewModel data)
     {
         // Checking contract
         if (!data.AcceptContract)
@@ -68,7 +64,58 @@ public class PaymentsController : Common.ControllerBase
                 {
                     ProjectId = data.ProjectId,
                     ClaimId = data.ClaimId,
-                    CommentText = data.CommentText,
+                    CommentText = data.CommentText ?? "Оформлена подписка",
+                    PayerId = CurrentUserAccessor.UserId,
+                    Money = data.Money,
+                    Method = (PaymentMethod)data.Method,
+                    OperationDate = data.OperationDate,
+                    Recurrent = true,
+                });
+
+            return View("RedirectToBank", paymentContext);
+        }
+        catch (Exception e)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Ошибка создания подписки: " + e.Message,
+                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    ReturnText = "Вернуться к заявке",
+                    Data = e,
+                });
+        }
+    }
+
+    /// <summary>
+    /// Handles claim payment request
+    /// </summary>
+    /// <param name="data">Payment data</param>
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> ClaimPayment(StartOnlinePaymentViewModel data)
+    {
+        // Checking contract
+        if (!data.AcceptContract)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Необходимо принять оферту",
+                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+
+        try
+        {
+            ClaimPaymentContext paymentContext = await _payments.InitiateClaimPaymentAsync(
+                new ClaimPaymentRequest
+                {
+                    ProjectId = data.ProjectId,
+                    ClaimId = data.ClaimId,
+                    CommentText = data.CommentText ?? "Сдан взнос",
                     PayerId = CurrentUserAccessor.UserId,
                     Money = data.Money,
                     Method = (PaymentMethod)data.Method,

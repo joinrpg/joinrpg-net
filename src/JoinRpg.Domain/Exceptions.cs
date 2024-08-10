@@ -142,25 +142,31 @@ public class OnlinePaymentUnexpectedStateException : PaymentException
     }
 }
 
-public class OnlinePaymentsNotAvailable : PaymentException
+public class OnlinePaymentsNotAvailableException : PaymentException
 {
-    public OnlinePaymentsNotAvailable(Project project)
+    public OnlinePaymentsNotAvailableException(Project project)
         : base(project, $"Online payments are not available for project {project.ProjectName}")
     { }
 }
 
-
-public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
+public class PaymentMethodNotAllowedForRecurrentPaymentsException : PaymentException
 {
-    public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity")
+    public PaymentMethodNotAllowedForRecurrentPaymentsException(Project project, object paymentMethod)
+        : base(project, $"It is not possible to use payment method {paymentMethod} to start recurrent payments for project {project.ProjectName}")
+    { }
+}
+
+public class ProjectEntityDeactivatedException : JoinRpgProjectEntityException
+{
+    public ProjectEntityDeactivatedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity")
     {
 
     }
 }
 
-public class ProjectDeactivedException : JoinRpgBaseException
+public class ProjectDeactivatedException : JoinRpgBaseException
 {
-    public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
+    public ProjectDeactivatedException() : base("This operation can\'t be performed on deactivated project.")
     {
 
     }

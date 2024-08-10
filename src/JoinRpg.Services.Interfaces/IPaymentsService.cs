@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using PscbApi.Models;
 
 namespace JoinRpg.Services.Interfaces;
@@ -63,6 +64,11 @@ public class ClaimPaymentRequest : PaymentRequest
     /// Database Id of a claim
     /// </summary>
     public int ClaimId { get; set; }
+
+    /// <summary>
+    /// true to initiate recurrent payment
+    /// </summary>
+    public bool Recurrent { get; set; }
 }
 
 /// <summary>
@@ -134,4 +140,27 @@ public interface IPaymentsService
     /// <param name="projectId">Database Id of a project</param>
     /// <param name="claimId">Database Id of a claim</param>
     Task UpdateLastClaimPaymentAsync(int projectId, int claimId);
+
+    /// <summary>
+    /// Sets recurrent payment to cancelled internally and tries to cancel on the bank side.
+    /// </summary>
+    /// <param name="projectId">Id of a project</param>
+    /// <param name="claimId">Id of a claim</param>
+    /// <param name="paymentId">Id of a recurrent payment</param>
+    /// <returns>true when payment was successfully cancelled, false otherwise, null when it was not even possible to start</returns>
+    Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int paymentId);
+
+    /// <summary>
+    /// Tries to charge <paramref name="amount"/> money using payment method assigned with a specified recurrent payment.
+    /// </summary>
+    /// <param name="projectId">Id of a project</param>
+    /// <param name="claimId">Id of a claim</param>
+    /// <param name="paymentId">Id of a recurrent payment</param>
+    /// <param name="amount">How much money to charge</param>
+    /// <returns>An instance of the <see cref="FinanceOperation"/> or null when it was even not possible to initiate operation.</returns>
+    /// <remarks>
+    /// Payments are typically asynchronous operations. It is necessary to update its state
+    /// a little bit later using <see cref="UpdateClaimPaymentAsync"/>.
+    /// </remarks>
+    Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int paymentId, int amount);
 }

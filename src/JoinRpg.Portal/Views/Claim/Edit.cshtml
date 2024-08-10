@@ -355,7 +355,7 @@ new { Model.CharacterId, Model.ProjectId }, null)
                   </div>
                 }
                 @Html.HiddenFor(model => model.CharacterId)
-              }       
+              }
               @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
               {
               ActionName = "Восстановить заявку"
@@ -374,7 +374,12 @@ new { Model.CharacterId, Model.ProjectId }, null)
 
     @if (Model.ClaimFee.ShowOnlinePaymentControls)
     {
-      @await Html.PartialAsync("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
+      @await Html.PartialAsync("..\\Finances\\_PayOnlineDialog", new StartOnlinePaymentViewModel(Model))
+    }
+
+    @if (Model.ClaimFee.ShowRecurrentPaymentControls)
+    {
+      @await Html.PartialAsync("..\\Finances\\_SubscribeOnlineDialog", new StartRecurrentPaymentViewModel(Model))
     }
 
     @if (Model.ClaimFee.PreferentialFeeRequestEnabled)

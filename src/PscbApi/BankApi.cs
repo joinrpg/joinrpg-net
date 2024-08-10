@@ -158,7 +158,6 @@ public class BankApi
     /// <summary>
     /// Returns payment information
     /// </summary>
-    /// <param name="paymentMethod">Payment method was used for this payment</param>
     /// <param name="orderId">Order to return info for</param>
     /// <param name="getCardData">true to read card data</param>
     /// <param name="getFiscalData">true to read fiscal data</param>
@@ -166,7 +165,7 @@ public class BankApi
     /// <remarks>
     /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-zapros-parametrov-platezha for details
     /// </remarks>
-    public async Task<PaymentInfo> GetPaymentInfoAsync(PscbPaymentMethod paymentMethod, string orderId, bool getCardData = false, bool getFiscalData = false)
+    public async Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
     {
         if (string.IsNullOrWhiteSpace(orderId))
         {
@@ -184,5 +183,88 @@ public class BankApi
         return await ApiRequestAsync<PaymentInfoQueryParams, PaymentInfo>(
             $"{ActualApiEndpoint}/merchantApi/checkPayment",
             queryParams);
+    }
+
+    /// <summary>
+    /// Configures recurrent payments with the Fast Payments System
+    /// </summary>
+    /// <param name="orderId">Order to use as the parent payment</param>
+    /// <param name="token">Token that was returned after the successful FPS payment, identified by the <paramref name="orderId"/></param>
+    /// <param name="amount">How much money to pay</param>
+    /// <param name="purpose">The purpose of payment</param>
+    /// <returns>Recurrent payment information object</returns>
+    /// <remarks>
+    /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-rekurrentnye-platezhi-sozdanie-rekurrentnogo-platezha-sbp for details
+    /// </remarks>
+    public async Task<FastPaymentsSystemRecurrentPaymentInfo> SetupFastPaymentSystemRecurrentPayments(string orderId, string token, int amount, string purpose)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(orderId, nameof(orderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
+        ArgumentException.ThrowIfNullOrWhiteSpace(purpose, nameof(purpose));
+
+        var queryParams = new SetupFastPaymentsSystemRecurrentPaymentQueryParams
+        {
+            Amount = amount,
+            Purpose = purpose,
+            OrderId = orderId,
+            RecurrencyToken = token,
+            MarketplaceId = _configuration.MerchantId,
+        };
+
+        return await ApiRequestAsync<SetupFastPaymentsSystemRecurrentPaymentQueryParams, FastPaymentsSystemRecurrentPaymentInfo>(
+            $"{ActualApiEndpoint}/merchantApi/createQrCode",
+            queryParams);
+    }
+
+    public async Task<FastPaymentsSystemRecurrentPaymentInfo> CancelFastPaymentSystemRecurrentPayments(string orderId, string token)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(orderId, nameof(orderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
+
+        var queryParams = new CancelFastPaymentsSystemRecurrentPaymentQueryParams
+        {
+            OrderId = orderId,
+            RecurrencyToken = token,
+            MarketplaceId = _configuration.MerchantId,
+        };
+
+        return await ApiRequestAsync<CancelFastPaymentsSystemRecurrentPaymentQueryParams, FastPaymentsSystemRecurrentPaymentInfo>(
+            $"{ActualApiEndpoint}/merchantApi/cancelRecurrent",
+            queryParams);
+    }
+
+    /// <summary>
+    /// Initiates new recurrent payment.
+    /// </summary>
+    /// <param name="parentOrderId">Order used as a parent payment</param>
+    /// <param name="paymentId">Identifier of a payment to perform</param>
+    /// <param name="token">Recurrency token</param>
+    /// <param name="additionalToken">Additional token (like Fast Payment System QR-code identifier)</param>
+    /// <param name="receipt">Receipt data</param>
+    public async Task<PaymentInfoBase> PayRecurrent(string parentOrderId, string paymentId, string token, string additionalToken, Receipt receipt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(parentOrderId, nameof(parentOrderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(paymentId, nameof(paymentId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
+        ArgumentException.ThrowIfNullOrWhiteSpace(additionalToken, nameof(additionalToken));
+        ArgumentNullException.ThrowIfNull(receipt, nameof(receipt));
+
+        var message = new RecurrentPaymentMessage
+        {
+            MerchantId = _configuration.MerchantId,
+            ParentOrderId = parentOrderId,
+            OrderId = paymentId,
+            RecurrencyToken = token,
+            Amount = receipt.Items.Aggregate(0.0M, static (v, item) => v + item.TotalPrice),
+            Data = new PaymentMessageData
+            {
+                AdditionalToken = token,
+                Receipt = receipt
+            }
+        };
+
+        return await ApiRequestAsync<RecurrentPaymentMessage, PaymentInfoBase>(
+            $"{ActualApiEndpoint}/merchantApi/payRecurrent",
+            message);
     }
 }

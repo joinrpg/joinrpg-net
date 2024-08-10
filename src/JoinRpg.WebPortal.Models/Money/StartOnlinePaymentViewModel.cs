@@ -1,29 +1,19 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers;
-using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models;
 
-public enum PaymentMethodViewModel
-{
-    [Display(Name = "Оплатить картой", Description = "Оплата банковской картой или при помощи систем Apply Pay, Google Pay, Samsung Pay")]
-    BankCard = PaymentMethod.BankCard,
-
-    [Display(Name = "Оплатить по QR-коду", Description = "Оплата через Систему Быстрых Платежей при помощи QR-кода. У вас должно быть установлено мобильное приложение вашего банка и оно должно поддерживать оплату по QR-коду.")]
-    FastPaymentsSystem = PaymentMethod.FastPaymentsSystem,
-}
-
-public class PaymentViewModel : PaymentViewModelBase
+public class StartOnlinePaymentViewModel : PaymentViewModelBase
 {
     /// <summary>
     /// For online payments, comment text is not actually required
     /// </summary>
     [DisplayName("Комментарий к платежу")]
-    public new string CommentText
+    public new string? CommentText
     {
         get => base.CommentText;
-        set => base.CommentText = value;
+        set => base.CommentText = value!;
     }
 
     [Range(1, 100000, ErrorMessage = "Сумма оплаты должна быть от 1 до 100000")]
@@ -39,9 +29,9 @@ public class PaymentViewModel : PaymentViewModelBase
 
     public PaymentMethodViewModel Method { get; set; }
 
-    public PaymentViewModel() { }
+    public StartOnlinePaymentViewModel() { }
 
-    public PaymentViewModel(ClaimViewModel claim) : base(claim) => ActionName = "Оплатить";
+    public StartOnlinePaymentViewModel(ClaimViewModel claim) : base(claim) => ActionName = "Оплатить";
 
     /// <inheritdoc />
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -25,6 +25,10 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
+    @if (Model.ShowRecurrentPaymentControls)
+    {
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Оформить подписку…</button>
+    }
     @if (Model.HasSubmittablePaymentTypes)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
@@ -51,6 +55,31 @@
             Fee = Model.BaseFee,
             AdminFunctions = new FinanceOperationAdminFunctionsViewModel(Model)
         })
+        @foreach (var rec in Model.RecurrentPayments)
+        {
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+            {
+                HtmlId = "rowRecurrent" + rec.RecurrentPaymentId.ToString(),
+                Visible = true,
+                Title = "Подписка (" + rec.StatusText + ")",
+                Fee = rec.Amount,
+                Disabled = rec.Status == RecurrentPaymentStatusViewModel.Cancelled,
+                Payment = rec.TotalPaid > 0 ? rec.TotalPaid : null,
+                AdminFunctions = new RecurrentPaymentFunctionsViewModel(Model, rec),
+            })
+        }
+        @if (Model.ShowRecurrentPaymentControls && Model.RecurrentPayments.Count == 0)
+        {
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+            {
+                HtmlId = "rowRecurrentNew",
+                Visible = true,
+                Title = "Подписка (не оформлена)",
+                Date = "Ежемесячно",
+                Fee = Model.BaseFee,
+                AdminFunctions = new RecurrentPaymentFunctionsViewModel(Model, null),
+            })
+        }
         @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowAccommodationFee",

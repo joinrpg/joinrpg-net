@@ -32,7 +32,7 @@ public static class FinanceViewModelsExtensions
     /// </summary>
     public static IEnumerable<PaymentTypeViewModel> GetUserSelectablePaymentTypes(
         this IEnumerable<PaymentTypeViewModel> source)
-        => source.Where(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
+        => source.Where(pt => pt.TypeKind is PaymentTypeKindViewModel.Custom or PaymentTypeKindViewModel.Cash);
 
     /// <summary>
     /// Converts payment types to select box items
@@ -47,9 +47,14 @@ public static class FinanceViewModelsExtensions
             });
 
     /// <summary>
-    /// Returns true if online payment is enabled
+    /// Returns true when online payment is enabled
     /// </summary>
-    public static bool OnlinePaymentsEnabled(
-        this IEnumerable<PaymentTypeViewModel> paymentTypes)
-        => paymentTypes.FirstOrDefault(pt => pt.TypeKind == PaymentTypeKindViewModel.Online) != null;
+    public static bool OnlinePaymentsEnabled(this IEnumerable<PaymentTypeViewModel> paymentTypes)
+        => paymentTypes.Any(static pt => pt.TypeKind == PaymentTypeKindViewModel.Online);
+
+    /// <summary>
+    /// Returns true when online subscription is enabled
+    /// </summary>
+    public static bool RecurrentPaymentsEnabled(this IEnumerable<PaymentTypeViewModel> paymentTypes)
+        => paymentTypes.Any(static pt => pt.TypeKind == PaymentTypeKindViewModel.OnlineSubscription);
 }

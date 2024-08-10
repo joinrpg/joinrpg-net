@@ -1,7 +1,9 @@
 using System.Data.Entity;
+using System.Runtime.CompilerServices;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
@@ -13,8 +15,30 @@ using PscbApi.Models;
 
 namespace JoinRpg.Services.Impl;
 
+public static class FinanceOperationExtensions
+{
+    /// <summary>
+    /// Creates the order id that is used to identify our payments on the bank side
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetOrderId(this FinanceOperation fo) => GetOrderId(fo.CommentId);
+
+    /// <summary>
+    /// Creates the order id that is used to identify our payments on the bank side
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetOrderId(this Comment comment) => GetOrderId(comment.CommentId);
+
+    /// <summary>
+    /// Creates the order id that is used to identify our payments on the bank side
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string GetOrderId(int id) => id.ToString().PadLeft(10, '0');
+}
+
 /// <inheritdoc cref="IPaymentsService" />
-/// <inheritdoc />
 public class PaymentsService(
     IUnitOfWork unitOfWork,
     IUriService uriService,
@@ -50,6 +74,17 @@ public class PaymentsService(
         return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
     }
 
+    private (string GoodName, string Details) GetPurpose(bool recurrent, string projectName)
+    {
+        var goodName = recurrent
+            ? "Сервисы JoinRpg"
+            : projectName;
+        var details = recurrent
+            ? $"Подписка пользователя на {goodName}"
+            : $"Билет (организационный взнос) участника на {goodName}";
+        return (goodName, details);
+    }
+
     /// <inheritdoc />
     public async Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request)
     {
@@ -62,12 +97,18 @@ public class PaymentsService(
             throw new NoAccessToProjectException(claim.Project, CurrentUserId);
         }
 
-        var onlinePaymentType =
-            claim.Project.ActivePaymentTypes.SingleOrDefault(
-                pt => pt.TypeKind == PaymentTypeKind.Online);
-        if (onlinePaymentType == null)
+        var onlinePaymentType = request.Recurrent
+            ? claim.Project.ActivePaymentTypes.SingleOrDefault(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
+            : claim.Project.ActivePaymentTypes.SingleOrDefault(pt => pt.TypeKind == PaymentTypeKind.Online);
+
+        if (onlinePaymentType is null)
         {
-            throw new OnlinePaymentsNotAvailable(claim.Project);
+            throw new OnlinePaymentsNotAvailableException(claim.Project);
+        }
+
+        if (request.Recurrent && request.Method != PaymentMethod.FastPaymentsSystem)
+        {
+            throw new PaymentMethodNotAllowedForRecurrentPaymentsException(claim.Project, request.Method);
         }
 
         if (request.Money <= 0)
@@ -77,10 +118,13 @@ public class PaymentsService(
 
         User user = await GetCurrentUser();
 
+        var purpose = GetPurpose(request.Recurrent, claim.Project.ProjectName);
+
         var message = new PaymentMessage
         {
+            RecurrentPayment = request.Recurrent,
             Amount = request.Money,
-            Details = $"Билет (организационный взнос) участника на {claim.Project.ProjectName}",
+            Details = purpose.Details,
             CustomerAccount = CurrentUserId.ToString(),
             CustomerEmail = user.Email,
             CustomerPhone = user.Extra?.PhoneNumber,
@@ -109,7 +153,7 @@ public class PaymentsService(
                             Quantity = 1,
                             TotalPrice = request.Money,
                             VatType = VatSystemType.None,
-                            Name = claim.Project.ProjectName,
+                            Name = purpose.Details,
                         }
                     }
                 }
@@ -120,10 +164,7 @@ public class PaymentsService(
         PaymentRequestDescriptor result = await GetApi(request.ProjectId, request.ClaimId)
             .BuildPaymentRequestAsync(
                 message,
-                async () => (await AddPaymentCommentAsync(claim, onlinePaymentType, request))
-                    .CommentId
-                    .ToString()
-                    .PadLeft(10, '0')
+                async () => (await AddPaymentCommentAsync(claim, onlinePaymentType, request)).GetOrderId()
             );
 
         return new ClaimPaymentContext
@@ -138,6 +179,22 @@ public class PaymentsService(
         PaymentType paymentType,
         ClaimPaymentRequest request)
     {
+        RecurrentPayment? recurrentPayment = null;
+        if (request.Recurrent)
+        {
+            recurrentPayment = new RecurrentPayment
+            {
+                ClaimId = claim.ClaimId,
+                ProjectId = claim.ProjectId,
+                Status = RecurrentPaymentStatus.Created,
+                CreateDate = Now,
+                PaymentAmount = request.Money,
+                PaymentTypeId = paymentType.PaymentTypeId,
+            };
+            UnitOfWork.GetDbSet<RecurrentPayment>().Add(recurrentPayment);
+            await UnitOfWork.SaveChangesAsync();
+        }
+
         Comment comment = CommentHelper.CreateCommentForClaim(
             claim,
             CurrentUserId,
@@ -158,6 +215,7 @@ public class PaymentsService(
             Created = Now,
             Changed = Now,
             State = FinanceOperationState.Proposed,
+            RecurrentPaymentId = recurrentPayment?.RecurrentPaymentId,
         };
         _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
         await UnitOfWork.SaveChangesAsync();
@@ -168,7 +226,10 @@ public class PaymentsService(
     private async Task<FinanceOperation> LoadFinanceOperationAsync(int projectId, int claimId, int operationId)
     {
         // Loading finance operation
-        FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>().FindAsync(operationId);
+        FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>()
+            .Include(e => e.RecurrentPayment)
+            .Include(e => e.PaymentType)
+            .FirstOrDefaultAsync(e => e.CommentId == operationId);
 
         if (fo == null)
         {
@@ -185,7 +246,7 @@ public class PaymentsService(
             throw new JoinRpgEntityNotFoundException(projectId, nameof(Project));
         }
 
-        if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind != PaymentTypeKind.Online)
+        if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind.IsOnline() != true)
         {
             throw new PaymentException(fo.Project, "Finance operation is not online payment");
         }
@@ -195,18 +256,40 @@ public class PaymentsService(
 
     private async Task<FinanceOperation?> LoadLastUnapprovedFinanceOperationAsync(int projectId, int claimId)
     {
-        return await (from fo in UnitOfWork.GetDbSet<FinanceOperation>()
-                      join pt in UnitOfWork.GetDbSet<PaymentType>()
-                          on fo.PaymentTypeId equals pt.PaymentTypeId
-                      where fo.ProjectId == projectId
-                          && fo.ClaimId == claimId
-                          && fo.OperationType == FinanceOperationType.Online
-                          && pt.TypeKind == PaymentTypeKind.Online
-                          && fo.State == FinanceOperationState.Proposed
-                      select fo)
-            .Include(fo => fo.PaymentType)
-            .OrderByDescending(fo => fo.Created)
-            .FirstOrDefaultAsync();
+        const int pageSize = 5;
+
+        // Грязный чит
+        var skip = 0;
+        while (true)
+        {
+            // Берем по пять штук
+            var operations = await UnitOfWork.GetDbSet<FinanceOperation>()
+                .Include(e => e.RecurrentPayment)
+                .Include(e => e.PaymentType)
+                .Where(e => e.ProjectId == projectId
+                            && e.ClaimId == claimId
+                            && e.OperationType == FinanceOperationType.Online
+                            && e.State == FinanceOperationState.Proposed)
+                .OrderByDescending(e => e.Created)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToArrayAsync();
+            if (operations.Length == 0)
+            {
+                return null;
+            }
+
+            // Ищем первую подходящую
+            var result = operations.FirstOrDefault(e => e.PaymentType?.TypeKind.IsOnline() is true);
+
+            // Если нашли, или загружено меньше страницы — выходим
+            if (result is not null || operations.Length < pageSize)
+            {
+                return result;
+            }
+
+            skip += pageSize;
+        }
     }
 
     private void UpdateFinanceOperationStatus(FinanceOperation fo, PaymentData paymentData)
@@ -253,22 +336,18 @@ public class PaymentsService(
             return;
         }
 
-        logger.LogInformation("Updating online payment for ClaimId: {claimId}, ProjectId: {projectId}", fo.ClaimId, fo.ProjectId);
+        logger.LogInformation("Updating online payment {paymentId} for claim {claimId} to project {projectId}", fo.CommentId, fo.ClaimId, fo.ProjectId);
 
         var api = GetApi(fo.ProjectId, fo.ClaimId);
-        string orderIdStr = fo.CommentId.ToString().PadLeft(10, '0');
+        var orderIdStr = fo.GetOrderId();
 
         // Asking bank
-        PaymentInfo paymentInfo = await api.GetPaymentInfoAsync(
-            PscbPaymentMethod.BankCards,
-            orderIdStr);
+        PaymentInfo paymentInfo = await api.GetPaymentInfoAsync(orderIdStr);
 
-        if (paymentInfo.Status == PaymentInfoQueryStatus.Failure
-            && paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+        RecurrentPayment? recurrentPayment = fo.RecurrentPayment;
+        if (recurrentPayment is null && fo.RecurrentPaymentId.HasValue)
         {
-            paymentInfo = await api.GetPaymentInfoAsync(
-                PscbPaymentMethod.FastPaymentsSystem,
-                orderIdStr);
+            recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>().FindAsync(fo.RecurrentPaymentId.Value);
         }
 
         // Updating status
@@ -276,23 +355,50 @@ public class PaymentsService(
         {
             if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
             {
-                logger.LogInformation("Online payment for ClaimId: {claimId}, ProjectId: {projectId} is declined", fo.ClaimId, fo.ProjectId);
+                logger.LogInformation("Online payment {paymentId} for claim {claimId} to project {projectId} has failed", fo.CommentId, fo.ClaimId, fo.ProjectId);
                 fo.State = FinanceOperationState.Declined;
                 fo.Changed = Now;
+
+                if (recurrentPayment?.Status is RecurrentPaymentStatus.Created)
+                {
+                    recurrentPayment.CloseDate = Now;
+                    recurrentPayment.Status = RecurrentPaymentStatus.Failed;
+                }
             }
             else if (paymentInfo.ErrorCode == null)
             {
                 UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
                 if (fo.State == FinanceOperationState.Approved)
                 {
-                    logger.LogInformation("Online payment for ClaimId: {claimId}, ProjectId: {projectId} is accepted", fo.ClaimId, fo.ProjectId);
+                    logger.LogInformation("Online payment {paymentId} for claim {claimId} to project {projectId} has been successfully performed", fo.CommentId, fo.ClaimId, fo.ProjectId);
 
                     Claim claim = await GetClaimAsync(fo.ProjectId, fo.ClaimId);
                     var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(fo.ProjectId));
 
+                    if (recurrentPayment?.Status is RecurrentPaymentStatus.Created)
+                    {
+                        recurrentPayment.BankRecurrencyToken = paymentInfo.Payment.RecurrentPaymentToken;
+                        if (string.IsNullOrEmpty(recurrentPayment.BankRecurrencyToken))
+                        {
+                            recurrentPayment.BankRecurrencyToken = null;
+                            recurrentPayment.CloseDate = Now;
+                            recurrentPayment.Status = RecurrentPaymentStatus.Failed;
+                        }
+                        else
+                        {
+                            recurrentPayment.BankParentPayment = orderIdStr;
+                            recurrentPayment.Status = RecurrentPaymentStatus.Initialization;
+                        }
+                    }
+
                     claim.UpdateClaimFeeIfRequired(Now, projectInfo);
 
-                    await SendPaymentNotification(claim, fo.MoneyAmount);
+                    await SendPaymentNotification(claim, fo.MoneyAmount, fo.RecurrentPaymentId.HasValue);
+                }
+                else if (recurrentPayment?.Status is RecurrentPaymentStatus.Created)
+                {
+                    recurrentPayment.CloseDate = Now;
+                    recurrentPayment.Status = RecurrentPaymentStatus.Failed;
                 }
             }
         }
@@ -300,6 +406,12 @@ public class PaymentsService(
         {
             fo.State = FinanceOperationState.Invalid;
             fo.Changed = Now;
+
+            if (recurrentPayment?.Status is RecurrentPaymentStatus.Created)
+            {
+                recurrentPayment.CloseDate = Now;
+                recurrentPayment.Status = RecurrentPaymentStatus.Failed;
+            }
         }
         else if (IsCurrentUserAdmin)
         {
@@ -308,20 +420,51 @@ public class PaymentsService(
                 $"Payment status check failed: {paymentInfo.ErrorDescription}");
         }
 
+        if (recurrentPayment?.Status == RecurrentPaymentStatus.Failed)
+        {
+            logger.LogInformation("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
+        }
+
         // Saving if status was updated
         if (fo.State != FinanceOperationState.Proposed)
         {
             await UnitOfWork.SaveChangesAsync();
         }
 
-        // TODO: Probably need to send some notifications?
+        // Let's continue with recurrent payments initialization when needed
+        if (recurrentPayment?.Status is RecurrentPaymentStatus.Initialization)
+        {
+            logger.LogInformation("Configuring recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
+
+            var purpose = GetPurpose(true, string.Empty);
+            var result = await api.SetupFastPaymentSystemRecurrentPayments(
+                orderIdStr,
+                recurrentPayment.BankRecurrencyToken!,
+                fo.MoneyAmount,
+                purpose.Details);
+
+            if (result.Status == PaymentInfoQueryStatus.Success)
+            {
+                logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been configured", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
+                recurrentPayment.Status = RecurrentPaymentStatus.Active;
+                recurrentPayment.BankAdditional = result.FastPaymentSystemRecurrencyId;
+            }
+            else
+            {
+                logger.LogInformation("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
+                recurrentPayment.Status = RecurrentPaymentStatus.Failed;
+                recurrentPayment.CloseDate = Now;
+            }
+
+            await UnitOfWork.SaveChangesAsync();
+        }
     }
 
-    private async Task SendPaymentNotification(Claim claim, int sum)
+    private async Task SendPaymentNotification(Claim claim, int sum, bool recurrent)
     {
         try
         {
-            var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, Enumerable.Empty<User>(), mastersOnly: true).ToList();
+            var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, [], mastersOnly: true).ToList();
             var email = new FinanceOperationEmail()
             {
                 Claim = claim,
@@ -330,15 +473,17 @@ public class PaymentsService(
                 InitiatorType = ParcipantType.Player,
                 Recipients = subscriptions,
                 //TODO[Localize]
-                Text = new MarkdownString(string.Format("Онлайн-оплата на сумму {0} подтверждена", sum)),
+                Text = new MarkdownString(recurrent
+                    ? $"Списание по подписке на сумму {sum} подтверждено"
+                    : $"Онлайн-оплата на сумму {sum} подтверждена"),
                 CommentExtraAction = null,
             };
 
             await emailService.Value.Email(email);
         }
-        catch (Exception exc)
+        catch (Exception ex)
         {
-            logger.LogError(exc, "Error during payment notification send");
+            logger.LogError(ex, "Error while sending payment notification of claim {claimId}", claim.ClaimId);
         }
     }
 
@@ -354,6 +499,125 @@ public class PaymentsService(
         {
             await UpdateClaimPaymentAsync(fo);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int paymentId)
+    {
+        logger.LogInformation("Trying to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
+
+        var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
+            .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.PaymentId == paymentId)
+            .FirstOrDefaultAsync();
+
+        if (recurrentPayment is null)
+        {
+            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
+            return null; // TODO: Do we need to throw something here?
+        }
+
+        if (recurrentPayment.Status is not (RecurrentPaymentStatus.Active or RecurrentPaymentStatus.Cancelling))
+        {
+            logger.LogError("It is not possible to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because its state {recurrentPaymentState} is not appropriate", recurrentPayment.RecurrentPaymentId, claimId, projectId, recurrentPayment.Status);
+            return null; // TODO: Do we need to throw something here?
+        }
+
+        recurrentPayment.Status = RecurrentPaymentStatus.Cancelling;
+        await UnitOfWork.SaveChangesAsync();
+
+        var api = GetApi(projectId, claimId);
+        var result = await api.CancelFastPaymentSystemRecurrentPayments(recurrentPayment.BankParentPayment, recurrentPayment.BankRecurrencyToken);
+        if (result.Status == PaymentInfoQueryStatus.Success)
+        {
+            recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;
+            await UnitOfWork.SaveChangesAsync();
+
+            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully cancelled", paymentId, claimId, projectId);
+
+            return true;
+        }
+
+        logger.LogError("Failed to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because {bankError}", recurrentPayment.RecurrentPaymentId, claimId, projectId, result.ErrorDescription);
+        return false;
+    }
+
+    /// <inheritdoc />
+    public async Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int paymentId, int amount)
+    {
+        logger.LogInformation("Trying to perform recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
+
+        var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
+            .Include(rp => rp.Claim)
+            .Include(rp => rp.Project)
+            .Include(rp => rp.PaymentType)
+            .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.PaymentId == paymentId)
+            .FirstOrDefaultAsync();
+
+        if (recurrentPayment is null)
+        {
+            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
+            return null; // TODO: Do we need to throw something here?
+        }
+
+        if (recurrentPayment.Status is not (RecurrentPaymentStatus.Active or RecurrentPaymentStatus.Cancelling))
+        {
+            logger.LogError("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} state {recurrentPaymentState} is not active", recurrentPayment.RecurrentPaymentId, claimId, projectId, recurrentPayment.Status);
+            return null; // TODO: Do we need to throw something here?
+        }
+
+        var purpose = GetPurpose(true, string.Empty);
+
+        var receipt = new Receipt
+        {
+            CompanyEmail = User.OnlinePaymentVirtualUser,
+            TaxSystem = TaxSystemType.SimplifiedIncomeOutcome,
+            Items = new List<ReceiptItem>
+            {
+                new ReceiptItem
+                {
+                    ObjectType = PaymentObjectType.Service,
+                    PaymentType = ItemPaymentType.FullPayment,
+                    Price = amount,
+                    Quantity = 1,
+                    TotalPrice = amount,
+                    VatType = VatSystemType.None,
+                    Name = purpose.Details,
+                }
+            }
+        };
+
+        var comment = await AddPaymentCommentAsync(
+            recurrentPayment.Claim,
+            recurrentPayment.PaymentType,
+            new ClaimPaymentRequest
+            {
+                Method = PaymentMethod.FastPaymentsSystem,
+                Money = amount,
+                ClaimId = claimId,
+                ProjectId = projectId,
+                PayerId = recurrentPayment.Claim.PlayerUserId,
+                OperationDate = Now,
+                CommentText = $"Списание средств по подписке от {recurrentPayment.CreateDate:d}",
+            });
+
+        var api = GetApi(projectId, claimId);
+        var result = await api.PayRecurrent(
+            recurrentPayment.BankParentPayment!,
+            comment.Finance.GetOrderId(),
+            recurrentPayment.BankRecurrencyToken!,
+            recurrentPayment.BankAdditional!,
+            receipt);
+
+        if (result.Status == PaymentInfoQueryStatus.Success)
+        {
+            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated as operation {financeOperationId}", paymentId, claimId, projectId, comment.CommentId);
+        }
+        else
+        {
+            logger.LogError("Failed to initiate recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because {bankError}", recurrentPayment.RecurrentPaymentId, claimId, projectId, result.ErrorDescription);
+        }
+
+        return comment.Finance;
     }
 
     private abstract class PaymentRedirectUrl : ILinkable
@@ -383,6 +647,4 @@ public class PaymentsService(
     {
         public PaymentFailUrl(int projectId, int claimId) : base(projectId, claimId) => LinkType = LinkType.PaymentFail;
     }
-
 }
-
