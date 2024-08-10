@@ -47,6 +47,20 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     public Claim? LinkedClaim { get; set; }
 
 
+    /// <summary>
+    /// Identifier of a refund operation received from bank.
+    /// </summary>
+    [MaxLength(256)]
+    public string? BankRefundId { get; set; }
+
+    /// <summary>
+    /// Id of a finance operation that was refunded.
+    /// </summary>
+    public int? RefundedOperationId { get; set; }
+
+    /// <summary>
+    /// Id of recurrent payment this operation belongs to
+    /// </summary>
     public int? RecurrentPaymentId { get; set; }
     public virtual RecurrentPayment? RecurrentPayment { get; set; }
 
@@ -230,9 +244,4 @@ public enum FinanceOperationType
     /// Money transfer from another claim
     /// </summary>
     TransferFrom,
-
-    /// <summary>
-    /// Online subscription
-    /// </summary>
-    OnlineSubscription,
 }

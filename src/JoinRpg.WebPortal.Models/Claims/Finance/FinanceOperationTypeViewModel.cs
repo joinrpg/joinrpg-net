@@ -34,7 +34,4 @@ public enum FinanceOperationTypeViewModel
 
     [Display(Name = "Входящий перевод", Description = "{0} от ")]
     TransferFrom = FinanceOperationType.TransferFrom,
-
-    [Display(Name = "Подписка", Description = "{0}")]
-    OnlineSubscription = FinanceOperationType.OnlineSubscription,
 }

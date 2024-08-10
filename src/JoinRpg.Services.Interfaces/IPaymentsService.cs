@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Finances;
 using PscbApi.Models;
 
 namespace JoinRpg.Services.Interfaces;
@@ -66,9 +67,24 @@ public class ClaimPaymentRequest : PaymentRequest
     public int ClaimId { get; set; }
 
     /// <summary>
-    /// true to initiate recurrent payment
+    /// true to initiate an original recurrent payment and create a new instance of the <see cref="RecurrentPayment"/> class
     /// </summary>
     public bool Recurrent { get; set; }
+
+    /// <summary>
+    /// Id of a <see cref="RecurrentPayment"/> when new payment must be derived from an exited recurrent payment.
+    /// </summary>
+    public int? FromRecurrentPaymentId { get; set; }
+
+    /// <summary>
+    /// true to initiate a refund. Not compatible with <see cref="Recurrent"/>
+    /// </summary>
+    public bool Refund { get; set; }
+
+    /// <summary>
+    /// When <see cref="Refund"/> is true, must contain Id of a <see cref="FinanceOperation"/> to refund.
+    /// </summary>
+    public int? FinanceOperationToRefundId { get; set; }
 }
 
 /// <summary>
@@ -163,5 +179,14 @@ public interface IPaymentsService
     /// Payments are typically asynchronous operations. It is necessary to update its state
     /// a little bit later using <see cref="UpdateClaimPaymentAsync"/>.
     /// </remarks>
-    Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false);
+    Task<FinanceOperation?> PerformRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false);
+
+    /// <summary>
+    /// Tries to make a refund of a specified payment.
+    /// </summary>
+    /// <param name="projectId">Id of a project</param>
+    /// <param name="claimId">Id of a claim</param>
+    /// <param name="operationId">Id of a payment to refund.</param>
+    /// <returns>An instance of the <see cref="FinanceOperation"/> that represents the refund.</returns>
+    Task<FinanceOperation> RefundAsync(int projectId, int claimId, int operationId);
 }

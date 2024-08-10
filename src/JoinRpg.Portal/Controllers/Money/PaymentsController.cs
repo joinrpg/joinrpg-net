@@ -240,7 +240,7 @@ public class PaymentsController : Common.ControllerBase
     {
         try
         {
-            await _payments.PerformRecurrentPayment(projectId, claimId, recurrentPaymentId, null);
+            await _payments.PerformRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId, null);
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
         catch (Exception e)

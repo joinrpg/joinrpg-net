@@ -267,4 +267,41 @@ public class BankApi
             $"{ActualApiEndpoint}/merchantApi/payRecurrent",
             message);
     }
+
+    /// <summary>
+    /// Initiates new refund.
+    /// </summary>
+    /// <param name="paymentId">Payment to refund</param>
+    /// <param name="partial">true when partial refund is required</param>
+    /// <param name="amount">Money to refund in partial refund</param>
+    /// <param name="receipt">Receipt data for partial refunds</param>
+    /// <returns>Refund information</returns>
+    /// <remarks>
+    /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-vozvrat-platezha for details.
+    /// </remarks>
+    public async Task<RefundInfo> Refund(string paymentId, bool partial, int? amount, Receipt? receipt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(paymentId, nameof(paymentId));
+        if (partial)
+        {
+            ArgumentNullException.ThrowIfNull(amount, nameof(amount));
+            ArgumentNullException.ThrowIfNull(receipt, nameof(receipt));
+        }
+
+        var message = new RefundMessage
+        {
+            MerchantId = _configuration.MerchantId,
+            OrderId = paymentId,
+            PartialRefund = partial,
+            Amount = partial ? amount : null,
+            Data = new RefundMessageData
+            {
+                Receipt = partial ? receipt : null,
+            }
+        };
+
+        return await ApiRequestAsync<RefundMessage, RefundInfo>(
+            $"{ActualApiEndpoint}/merchantApi/payRecurrent",
+            message);
+    }
 }
