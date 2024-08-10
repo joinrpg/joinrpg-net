@@ -21,8 +21,7 @@
     <td></td>
     <td class="price-table">@await Html.PartialAsync("Money", new Money(Model.Money))</td>
     <td>
-        @if (Model.OperationType == FinanceOperationTypeViewModel.Online
-             && Model.OperationState == FinanceOperationStateViewModel.Proposed)
+        @if (Model is { OperationType: FinanceOperationTypeViewModel.Online, OperationState: FinanceOperationStateViewModel.Proposed })
         {
             @Html.ActionLink("Обновить статус", "UpdateClaimPayment", "Payments", new {projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.Id}, new {@class = "btn btn-default btn-xs "})
         }

@@ -139,6 +139,10 @@ public class PaymentsService(
             FailUrl = uriService.Get(new PaymentFailUrl(request.ProjectId, request.ClaimId)),
             Data = new PaymentMessageData
             {
+                FastPaymentsSystemSubscriptionPurpose = request.Recurrent ? purpose.Details : null,
+                // FastPaymentsSystemRedirectUrl = request.Method == PaymentMethod.FastPaymentsSystem
+                //     ? uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId))
+                //     : null,
                 Receipt = new Receipt
                 {
                     CompanyEmail = User.OnlinePaymentVirtualUser,
@@ -355,7 +359,7 @@ public class PaymentsService(
         {
             if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
             {
-                logger.LogInformation("Online payment {paymentId} for claim {claimId} to project {projectId} has failed", fo.CommentId, fo.ClaimId, fo.ProjectId);
+                logger.LogError("Online payment {paymentId} for claim {claimId} to project {projectId} has failed", fo.CommentId, fo.ClaimId, fo.ProjectId);
                 fo.State = FinanceOperationState.Declined;
                 fo.Changed = Now;
 
@@ -422,7 +426,7 @@ public class PaymentsService(
 
         if (recurrentPayment?.Status == RecurrentPaymentStatus.Failed)
         {
-            logger.LogInformation("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
+            logger.LogError("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
         }
 
         // Saving if status was updated
@@ -451,7 +455,7 @@ public class PaymentsService(
             }
             else
             {
-                logger.LogInformation("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
+                logger.LogError("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
                 recurrentPayment.Status = RecurrentPaymentStatus.Failed;
                 recurrentPayment.CloseDate = Now;
             }
@@ -502,28 +506,42 @@ public class PaymentsService(
     }
 
     /// <inheritdoc />
-    public async Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int paymentId)
+    public async Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId)
     {
-        logger.LogInformation("Trying to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
+        logger.LogInformation("Trying to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
 
         var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
-            .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.PaymentId == paymentId)
+            .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.RecurrentPaymentId == recurrentPaymentId)
             .FirstOrDefaultAsync();
 
         if (recurrentPayment is null)
         {
-            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
-            return null; // TODO: Do we need to throw something here?
+            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
+            throw new JoinRpgEntityNotFoundException(recurrentPaymentId, nameof(RecurrentPayment));
         }
 
-        if (recurrentPayment.Status is not (RecurrentPaymentStatus.Active or RecurrentPaymentStatus.Cancelling))
+        if (!recurrentPayment.Claim.HasPlayerAccesToClaim(CurrentUserId)
+              && !recurrentPayment.HasMasterAccess(CurrentUserId, a => a.CanManageMoney))
+        {
+            throw new JoinRpgInvalidUserException();
+        }
+
+        if (recurrentPayment.Status is not (RecurrentPaymentStatus.Created or RecurrentPaymentStatus.Active or RecurrentPaymentStatus.Cancelling))
         {
             logger.LogError("It is not possible to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because its state {recurrentPaymentState} is not appropriate", recurrentPayment.RecurrentPaymentId, claimId, projectId, recurrentPayment.Status);
             return null; // TODO: Do we need to throw something here?
         }
 
-        recurrentPayment.Status = RecurrentPaymentStatus.Cancelling;
+        recurrentPayment.Status = recurrentPayment.Status == RecurrentPaymentStatus.Created
+            ? RecurrentPaymentStatus.Cancelled
+            : RecurrentPaymentStatus.Cancelling;
         await UnitOfWork.SaveChangesAsync();
+
+        if (recurrentPayment.Status == RecurrentPaymentStatus.Cancelled)
+        {
+            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully cancelled", recurrentPaymentId, claimId, projectId);
+            return true;
+        }
 
         var api = GetApi(projectId, claimId);
         var result = await api.CancelFastPaymentSystemRecurrentPayments(recurrentPayment.BankParentPayment, recurrentPayment.BankRecurrencyToken);
@@ -532,8 +550,7 @@ public class PaymentsService(
             recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;
             await UnitOfWork.SaveChangesAsync();
 
-            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully cancelled", paymentId, claimId, projectId);
-
+            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully cancelled", recurrentPaymentId, claimId, projectId);
             return true;
         }
 
@@ -542,24 +559,32 @@ public class PaymentsService(
     }
 
     /// <inheritdoc />
-    public async Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int paymentId, int amount)
+    public async Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false)
     {
-        logger.LogInformation("Trying to perform recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
+        logger.LogInformation("Trying to perform recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
 
         var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
             .Include(rp => rp.Claim)
             .Include(rp => rp.Project)
             .Include(rp => rp.PaymentType)
-            .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.PaymentId == paymentId)
+            .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.RecurrentPaymentId == recurrentPaymentId)
             .FirstOrDefaultAsync();
 
         if (recurrentPayment is null)
         {
-            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", paymentId, claimId, projectId);
-            return null; // TODO: Do we need to throw something here?
+            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
+            throw new JoinRpgEntityNotFoundException(recurrentPaymentId, nameof(RecurrentPayment));
         }
 
-        if (recurrentPayment.Status is not (RecurrentPaymentStatus.Active or RecurrentPaymentStatus.Cancelling))
+        if (!internalCall)
+        {
+            if (!recurrentPayment.Claim.HasAccess(CurrentUserId, e => e.CanManageMoney))
+            {
+                throw new JoinRpgInvalidUserException();
+            }
+        }
+
+        if (recurrentPayment.Status is not RecurrentPaymentStatus.Active)
         {
             logger.LogError("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} state {recurrentPaymentState} is not active", recurrentPayment.RecurrentPaymentId, claimId, projectId, recurrentPayment.Status);
             return null; // TODO: Do we need to throw something here?
@@ -577,9 +602,9 @@ public class PaymentsService(
                 {
                     ObjectType = PaymentObjectType.Service,
                     PaymentType = ItemPaymentType.FullPayment,
-                    Price = amount,
+                    Price = amount ?? recurrentPayment.PaymentAmount,
                     Quantity = 1,
-                    TotalPrice = amount,
+                    TotalPrice = amount ?? recurrentPayment.PaymentAmount,
                     VatType = VatSystemType.None,
                     Name = purpose.Details,
                 }
@@ -592,7 +617,7 @@ public class PaymentsService(
             new ClaimPaymentRequest
             {
                 Method = PaymentMethod.FastPaymentsSystem,
-                Money = amount,
+                Money = amount ?? recurrentPayment.PaymentAmount,
                 ClaimId = claimId,
                 ProjectId = projectId,
                 PayerId = recurrentPayment.Claim.PlayerUserId,
@@ -610,7 +635,7 @@ public class PaymentsService(
 
         if (result.Status == PaymentInfoQueryStatus.Success)
         {
-            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated as operation {financeOperationId}", paymentId, claimId, projectId, comment.CommentId);
+            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated as operation {financeOperationId}", recurrentPaymentId, claimId, projectId, comment.CommentId);
         }
         else
         {

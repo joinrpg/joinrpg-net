@@ -74,4 +74,16 @@ public class PaymentMessageData
     /// </remarks>
     [JsonProperty("qrcId", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string? AdditionalToken { get; set; }
+
+    /// <summary>
+    /// Fast Payments System recurrent payment purpose
+    /// </summary>
+    [JsonProperty("sbpSubscriptionPurpose", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string? FastPaymentsSystemSubscriptionPurpose { get; set; }
+
+    /// <summary>
+    /// Url to return user from the Fast Payments System back here
+    /// </summary>
+    [JsonProperty("sbpRedirectUrl", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string? FastPaymentsSystemRedirectUrl { get; set; }
 }

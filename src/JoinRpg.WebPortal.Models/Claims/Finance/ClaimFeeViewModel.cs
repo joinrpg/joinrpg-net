@@ -73,6 +73,10 @@ public class ClaimFeeViewModel
             .Select(e => new RecurrentPaymentViewModel(this, e))
             .OrderBy(static e => e.CreatedAt)
             .ToArray();
+        CanMakeNewSubscription = ShowOnlinePaymentControls
+            && RecurrentPayments.All(rp => rp.Status is not RecurrentPaymentStatusViewModel.Active);
+        CanCancelSubscription = ShowOnlinePaymentControls
+            && RecurrentPayments.Any(rp => rp.Status is RecurrentPaymentStatusViewModel.Active || (HasFeeAdminAccess && rp.Status is RecurrentPaymentStatusViewModel.Created or RecurrentPaymentStatusViewModel.Cancelling));
     }
 
     /// <summary>
@@ -194,11 +198,21 @@ public class ClaimFeeViewModel
     public JoinHtmlString PreferentialFeeConditions { get; }
 
     /// <summary>
-    /// true if a user can request preferential fee
+    /// true when a user can request preferential fee
     /// </summary>
     public bool PreferentialFeeRequestEnabled { get; }
 
     public bool ShowRecurrentPaymentControls { get; }
+
+    /// <summary>
+    /// true when a user can make new subscription (no active subscriptions)
+    /// </summary>
+    public bool CanMakeNewSubscription { get; }
+
+    /// <summary>
+    /// true when a user can cancel at least one subscription
+    /// </summary>
+    public bool CanCancelSubscription { get; }
 
     public IReadOnlyCollection<RecurrentPaymentViewModel> RecurrentPayments { get; }
 

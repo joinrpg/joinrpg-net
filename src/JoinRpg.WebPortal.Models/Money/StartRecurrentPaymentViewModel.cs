@@ -31,6 +31,9 @@ public class StartRecurrentPaymentViewModel : PaymentViewModelBase
 
     public PaymentMethodViewModel Method { get; set; } = PaymentMethodViewModel.FastPaymentsSystem;
 
+    public StartRecurrentPaymentViewModel()
+    { }
+
     public StartRecurrentPaymentViewModel(ClaimViewModel claim) : base(claim)
     {
         Update = claim.ClaimFee.RecurrentPayments.Any(rp => rp.Status == RecurrentPaymentStatusViewModel.Active);

@@ -2,16 +2,28 @@
 
 public class RecurrentPaymentFunctionsViewModel
 {
-    public bool CanCancel { get; set; }
+    public int ClaimId { get; }
+    public int ProjectId { get; }
+    public int? RecurrentPaymentId { get; }
 
-    public bool CanChange { get; set; }
+    public bool CanCancel { get; }
 
-    public bool CanSubscribe { get; set; }
+    public bool CanChange { get; }
+
+    public bool CanSubscribe { get; }
+
+    public bool CanForcePayment { get; }
 
     public RecurrentPaymentFunctionsViewModel(ClaimFeeViewModel claim, RecurrentPaymentViewModel? rp)
     {
-        CanCancel = rp?.Status is RecurrentPaymentStatusViewModel.Active or RecurrentPaymentStatusViewModel.Cancelling;
+        ClaimId = claim.ClaimId;
+        ProjectId = claim.ProjectId;
+        RecurrentPaymentId = rp?.RecurrentPaymentId;
+
+        CanCancel = rp?.Status is RecurrentPaymentStatusViewModel.Active
+            || (claim.HasFeeAdminAccess && rp?.Status is RecurrentPaymentStatusViewModel.Created or RecurrentPaymentStatusViewModel.Cancelling);
         CanChange = rp?.Status is RecurrentPaymentStatusViewModel.Active && claim.ShowRecurrentPaymentControls;
         CanSubscribe = rp is null && claim.ShowRecurrentPaymentControls;
+        CanForcePayment = rp?.Status is RecurrentPaymentStatusViewModel.Active && claim.HasFeeAdminAccess;
     }
 }

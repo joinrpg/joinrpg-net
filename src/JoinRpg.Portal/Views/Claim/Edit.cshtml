@@ -377,9 +377,19 @@ new { Model.CharacterId, Model.ProjectId }, null)
       @await Html.PartialAsync("..\\Finances\\_PayOnlineDialog", new StartOnlinePaymentViewModel(Model))
     }
 
-    @if (Model.ClaimFee.ShowRecurrentPaymentControls)
+    @if (Model.ClaimFee.CanMakeNewSubscription && Model.IsMyClaim)
     {
       @await Html.PartialAsync("..\\Finances\\_SubscribeOnlineDialog", new StartRecurrentPaymentViewModel(Model))
+    }
+
+    @if (Model.ClaimFee.ShowRecurrentPaymentControls && Model.ClaimFee.HasFeeAdminAccess && Model.ClaimFee.RecurrentPayments.Any())
+    {
+      @await Html.PartialAsync("..\\Finances\\_ForceRecurrentPaymentDialog", new RecurrentPaymentViewModel { ClaimId = Model.ClaimId, ProjectId = Model.ProjectId})
+    }
+
+    @if (Model.ClaimFee.CanCancelSubscription && (Model.ClaimFee.HasFeeAdminAccess || Model.IsMyClaim))
+    {
+      @await Html.PartialAsync("..\\Finances\\_CancelRecurrentPaymentDialog", new RecurrentPaymentViewModel { ClaimId = Model.ClaimId, ProjectId = Model.ProjectId})
     }
 
     @if (Model.ClaimFee.PreferentialFeeRequestEnabled)

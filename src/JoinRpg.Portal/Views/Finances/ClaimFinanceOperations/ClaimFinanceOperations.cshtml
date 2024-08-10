@@ -63,18 +63,18 @@
                 Visible = true,
                 Title = "Подписка (" + rec.StatusText + ")",
                 Fee = rec.Amount,
-                Disabled = rec.Status == RecurrentPaymentStatusViewModel.Cancelled,
+                Disabled = rec.Status is RecurrentPaymentStatusViewModel.Cancelled or RecurrentPaymentStatusViewModel.Failed,
                 Payment = rec.TotalPaid > 0 ? rec.TotalPaid : null,
                 AdminFunctions = new RecurrentPaymentFunctionsViewModel(Model, rec),
             })
         }
-        @if (Model.ShowRecurrentPaymentControls && Model.RecurrentPayments.Count == 0)
+        @if (Model.CanMakeNewSubscription)
         {
             @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
             {
                 HtmlId = "rowRecurrentNew",
                 Visible = true,
-                Title = "Подписка (не оформлена)",
+                Title = "Новая подписка",
                 Date = "Ежемесячно",
                 Fee = Model.BaseFee,
                 AdminFunctions = new RecurrentPaymentFunctionsViewModel(Model, null),

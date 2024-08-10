@@ -3,11 +3,27 @@
 {
   <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Оформить…</button>
 }
+@if (Model.CanForcePayment)
+{
+  <button type="button" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#forceRecurrentPaymentDialog" onclick="setForceRecPaymentId@(Model.RecurrentPaymentId.GetValueOrDefault())()">Инициировать платёж…</button>
+  <script type="text/javascript">
+    function setForceRecPaymentId@(Model.RecurrentPaymentId.GetValueOrDefault())() {
+      const hidden = document.getElementById('forcePaymentId');
+      hidden.value = @(Model.RecurrentPaymentId.GetValueOrDefault());
+    }
+  </script>
+}
 @if (Model.CanChange)
 {
   <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Изменить&hellip;</button>
 }
 @if (Model.CanCancel)
 {
-  <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#cancelRecurrentOnlineDialog">Отменить&hellip;</button>
+  <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#cancelRecurrentOnlineDialog" onclick="setCancelRecPaymentId@(Model.RecurrentPaymentId.GetValueOrDefault())()">Отменить&hellip;</button>
+  <script type="text/javascript">
+    function setCancelRecPaymentId@(Model.RecurrentPaymentId.GetValueOrDefault())() {
+      const hidden = document.getElementById('cancelPaymentId');
+      hidden.value = @(Model.RecurrentPaymentId.GetValueOrDefault());
+    }
+  </script>
 }

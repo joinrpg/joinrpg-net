@@ -146,21 +146,22 @@ public interface IPaymentsService
     /// </summary>
     /// <param name="projectId">Id of a project</param>
     /// <param name="claimId">Id of a claim</param>
-    /// <param name="paymentId">Id of a recurrent payment</param>
+    /// <param name="recurrentPaymentId">Id of a recurrent payment</param>
     /// <returns>true when payment was successfully cancelled, false otherwise, null when it was not even possible to start</returns>
-    Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int paymentId);
+    Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId);
 
     /// <summary>
     /// Tries to charge <paramref name="amount"/> money using payment method assigned with a specified recurrent payment.
     /// </summary>
     /// <param name="projectId">Id of a project</param>
     /// <param name="claimId">Id of a claim</param>
-    /// <param name="paymentId">Id of a recurrent payment</param>
-    /// <param name="amount">How much money to charge</param>
+    /// <param name="recurrentPaymentId">Id of a recurrent payment</param>
+    /// <param name="amount">How much money to charge. If null, will be taken as much as was charged in the first payment.</param>
+    /// <param name="internalCall">When true, access will not be verified.</param>
     /// <returns>An instance of the <see cref="FinanceOperation"/> or null when it was even not possible to initiate operation.</returns>
     /// <remarks>
     /// Payments are typically asynchronous operations. It is necessary to update its state
     /// a little bit later using <see cref="UpdateClaimPaymentAsync"/>.
     /// </remarks>
-    Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int paymentId, int amount);
+    Task<FinanceOperation?> PerformRecurrentPayment(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false);
 }

@@ -205,7 +205,7 @@ public class BankApi
         var queryParams = new SetupFastPaymentsSystemRecurrentPaymentQueryParams
         {
             Amount = amount,
-            Purpose = purpose,
+            PaymentPurpose = purpose,
             OrderId = orderId,
             RecurrencyToken = token,
             MarketplaceId = _configuration.MerchantId,

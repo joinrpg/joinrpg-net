@@ -232,4 +232,52 @@ public class PaymentsController : Common.ControllerBase
                 });
         }
     }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> ForceRecurrentPayment(int projectId, int claimId, int recurrentPaymentId)
+    {
+        try
+        {
+            await _payments.PerformRecurrentPayment(projectId, claimId, recurrentPaymentId, null);
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+        }
+        catch (Exception e)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Ошибка принудительного проведения рекуррентного платежа ({recurrentPaymentId})",
+                    Description = e.Message,
+                    Data = e,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> CancelRecurrentPayment(int projectId, int claimId, int recurrentPaymentId)
+    {
+        try
+        {
+            await _payments.CancelRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId);
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+        }
+        catch (Exception e)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Ошибка отмены рекуррентного платежа ({recurrentPaymentId})",
+                    Description = e.Message,
+                    Data = e,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
 }

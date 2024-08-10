@@ -17,5 +17,5 @@ public class SetupFastPaymentsSystemRecurrentPaymentQueryParams
     public required int Amount { get; set; }
 
     [JsonProperty("purpose")]
-    public required string Purpose { get; set; }
+    public required string PaymentPurpose { get; set; }
 }
