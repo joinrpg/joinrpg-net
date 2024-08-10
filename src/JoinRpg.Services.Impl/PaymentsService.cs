@@ -128,7 +128,7 @@ public class PaymentsService(
             CustomerAccount = CurrentUserId.ToString(),
             CustomerEmail = user.Email,
             CustomerPhone = user.Extra?.PhoneNumber,
-            CustomerComment = request.CommentText,
+            CustomerComment = request.CommentText ?? purpose.Details,
             PaymentMethod = request.Method switch
             {
                 PaymentMethod.BankCard => PscbPaymentMethod.BankCards,

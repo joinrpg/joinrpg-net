@@ -42,7 +42,7 @@ public class PaymentRequest
     /// <summary>
     /// Comment added by payer
     /// </summary>
-    public string CommentText { get; set; }
+    public string? CommentText { get; set; }
 
     /// <summary>
     /// Date and time of the operation

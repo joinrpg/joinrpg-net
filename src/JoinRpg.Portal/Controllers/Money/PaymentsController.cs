@@ -64,7 +64,7 @@ public class PaymentsController : Common.ControllerBase
                 {
                     ProjectId = data.ProjectId,
                     ClaimId = data.ClaimId,
-                    CommentText = data.CommentText ?? "Оформлена подписка",
+                    CommentText = data.CommentText,
                     PayerId = CurrentUserAccessor.UserId,
                     Money = data.Money,
                     Method = (PaymentMethod)data.Method,
@@ -115,7 +115,7 @@ public class PaymentsController : Common.ControllerBase
                 {
                     ProjectId = data.ProjectId,
                     ClaimId = data.ClaimId,
-                    CommentText = data.CommentText ?? "Сдан взнос",
+                    CommentText = data.CommentText,
                     PayerId = CurrentUserAccessor.UserId,
                     Money = data.Money,
                     Method = (PaymentMethod)data.Method,
