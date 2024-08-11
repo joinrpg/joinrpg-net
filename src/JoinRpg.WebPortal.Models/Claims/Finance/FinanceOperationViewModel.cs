@@ -33,8 +33,6 @@ public class FinanceOperationViewModel
 
     public int? RecurrentPaymentId { get; }
 
-    public bool CheckPaymentState { get; }
-
     public User LinkedClaimUser { get; }
 
     public bool ShowLinkedClaimLinkIfTransfer { get; }
@@ -81,6 +79,11 @@ public class FinanceOperationViewModel
                 source.PaymentType?.GetDisplayName());
         }
 
+        if (source.RecurrentPayment is not null)
+        {
+            Title = $"{Title} (подписка от {source.RecurrentPayment.CreateDate:d})";
+        }
+
         switch (OperationType)
         {
             case FinanceOperationTypeViewModel.Submit when source.Approved:
@@ -92,9 +95,6 @@ public class FinanceOperationViewModel
                 break;
             case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Invalid:
                 Description = OperationState.GetDisplayName();
-                break;
-            case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Proposed:
-                CheckPaymentState = true;
                 break;
             case FinanceOperationTypeViewModel.Refund when source.State == FinanceOperationState.Approved:
                 Description = OperationState.GetShortName() ?? "";

@@ -258,7 +258,7 @@ public class BankApi
             Amount = receipt.Items.Aggregate(0.0M, static (v, item) => v + item.TotalPrice),
             Data = new PaymentMessageData
             {
-                AdditionalToken = token,
+                AdditionalToken = additionalToken,
                 Receipt = receipt
             }
         };

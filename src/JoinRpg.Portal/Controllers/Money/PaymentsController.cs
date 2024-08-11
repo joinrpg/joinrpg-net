@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -221,6 +222,7 @@ public class PaymentsController : Common.ControllerBase
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Error while updating payment");
             return Error(
                 new ErrorViewModel
                 {
@@ -238,13 +240,14 @@ public class PaymentsController : Common.ControllerBase
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> ForceRecurrentPayment(int projectId, int claimId, int recurrentPaymentId)
     {
+        FinanceOperation? fo;
         try
         {
-            await _payments.PerformRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId, null);
-            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+            fo = await _payments.PerformRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId, null);
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Error while performing recurrent payment");
             return Error(
                 new ErrorViewModel
                 {
@@ -255,6 +258,20 @@ public class PaymentsController : Common.ControllerBase
                     ReturnText = "Вернуться к заявке"
                 });
         }
+
+        if (fo is not null)
+        {
+            try
+            {
+                await _payments.UpdateClaimPaymentAsync(projectId, claimId, fo.CommentId);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error while updating recurrent payment state");
+            }
+        }
+
+        return RedirectToAction("Edit", "Claim", new { projectId, claimId });
     }
 
     [HttpPost]
@@ -269,6 +286,7 @@ public class PaymentsController : Common.ControllerBase
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Error while canceling recurrent payment");
             return Error(
                 new ErrorViewModel
                 {
@@ -293,6 +311,7 @@ public class PaymentsController : Common.ControllerBase
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Error while refunding payment");
             return Error(
                 new ErrorViewModel
                 {

@@ -196,22 +196,6 @@ public class PaymentsService(
             throw new ArgumentException($"{nameof(ClaimPaymentRequest.FinanceOperationToRefundId)} is required when {nameof(ClaimPaymentRequest.Refund)} is true", nameof(request));
         }
 
-        RecurrentPayment? recurrentPayment = null;
-        if (request.Recurrent)
-        {
-            recurrentPayment = new RecurrentPayment
-            {
-                ClaimId = claim.ClaimId,
-                ProjectId = claim.ProjectId,
-                Status = RecurrentPaymentStatus.Created,
-                CreateDate = Now,
-                PaymentAmount = request.Money,
-                PaymentTypeId = paymentType.PaymentTypeId,
-            };
-            UnitOfWork.GetDbSet<RecurrentPayment>().Add(recurrentPayment);
-            await UnitOfWork.SaveChangesAsync();
-        }
-
         Comment comment = CommentHelper.CreateCommentForClaim(
             claim,
             CurrentUserId,
@@ -233,10 +217,26 @@ public class PaymentsService(
             Created = Now,
             Changed = Now,
             State = FinanceOperationState.Proposed,
-            RecurrentPaymentId = recurrentPayment?.RecurrentPaymentId ?? request.FromRecurrentPaymentId,
+            RecurrentPaymentId = request.Recurrent ? null : request.FromRecurrentPaymentId,
         };
         _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
         await UnitOfWork.SaveChangesAsync();
+
+        if (request.Recurrent)
+        {
+            comment.Finance.RecurrentPayment = new RecurrentPayment
+            {
+                ClaimId = claim.ClaimId,
+                ProjectId = claim.ProjectId,
+                Status = RecurrentPaymentStatus.Created,
+                CreateDate = Now,
+                PaymentAmount = request.Money,
+                PaymentTypeId = paymentType.PaymentTypeId,
+                BankParentPayment = comment.Finance.GetOrderId(),
+            };
+            UnitOfWork.GetDbSet<RecurrentPayment>().Add(comment.Finance.RecurrentPayment);
+            await UnitOfWork.SaveChangesAsync();
+        }
 
         return comment;
     }
@@ -449,15 +449,8 @@ public class PaymentsService(
                     if (recurrentPayment is not null)
                     {
                         recurrentPayment.BankRecurrencyToken = paymentInfo.Payment.RecurrentPaymentToken;
-                        if (string.IsNullOrEmpty(recurrentPayment.BankRecurrencyToken))
-                        {
-                            recurrentPayment.BankRecurrencyToken = null;
-                        }
-                        else
-                        {
-                            recurrentPayment.BankParentPayment = orderIdStr;
-                            recurrentPayment.Status = RecurrentPaymentStatus.Initialization;
-                        }
+                        recurrentPayment.BankParentPayment = orderIdStr;
+                        recurrentPayment.Status = RecurrentPaymentStatus.Active;
                     }
 
                     claim.UpdateClaimFeeIfRequired(Now, projectInfo);
@@ -497,38 +490,6 @@ public class PaymentsService(
             await UnitOfWork.SaveChangesAsync();
         }
 
-        // Let's continue with recurrent payments initialization when needed
-        if (recurrentPayment?.Status is RecurrentPaymentStatus.Initialization)
-        {
-            logger.LogInformation("Configuring recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
-
-            var purpose = GetPurpose(true, string.Empty);
-            var result = await api.SetupFastPaymentSystemRecurrentPayments(
-                orderIdStr,
-                recurrentPayment.BankRecurrencyToken!,
-                fo.MoneyAmount,
-                purpose.Details);
-
-            if (result.Status == PaymentInfoQueryStatus.Success)
-            {
-                logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been configured", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
-                recurrentPayment.Status = RecurrentPaymentStatus.Active;
-                recurrentPayment.BankAdditional = result.FastPaymentSystemRecurrencyId;
-
-                paymentNotification = PaymentNotification.RecurrentSetupAndCharge;
-            }
-            else
-            {
-                logger.LogError("Recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed", recurrentPayment.RecurrentPaymentId, fo.ClaimId, fo.ProjectId);
-                recurrentPayment.Status = RecurrentPaymentStatus.Failed;
-                recurrentPayment.CloseDate = Now;
-
-                paymentNotification = fo.Approved ? PaymentNotification.Payment : PaymentNotification.None;
-            }
-
-            await UnitOfWork.SaveChangesAsync();
-        }
-
         // Sending payment notification when needed
         if (paymentNotification != PaymentNotification.None)
         {
@@ -542,7 +503,6 @@ public class PaymentsService(
         None,
         Payment,
         RecurrentSetup,
-        RecurrentSetupAndCharge,
         RecurrentCharge,
         Refund,
     }
@@ -566,12 +526,6 @@ public class PaymentsService(
                 case PaymentNotification.RecurrentSetup:
                     sb.AppendLine($"Оформлена ежемесячная подписка на сумму {sum:F2}₽.");
                     sb.AppendLine("Списания будут проводиться автоматически.");
-                    sb.AppendLine();
-                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку: {uriService.Get(claim)}");
-                    break;
-                case PaymentNotification.RecurrentSetupAndCharge:
-                    sb.AppendLine($"Оформлена ежемесячная подписка на сумму {sum:F2}₽.");
-                    sb.AppendLine($"Первичное списание средств по подписке на сумму {sum:F2}₽ подтверждено.");
                     sb.AppendLine();
                     sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку: {uriService.Get(claim)}");
                     break;
@@ -650,9 +604,15 @@ public class PaymentsService(
             return null; // TODO: Do we need to throw something here?
         }
 
-        recurrentPayment.Status = recurrentPayment.Status == RecurrentPaymentStatus.Created
-            ? RecurrentPaymentStatus.Cancelled
-            : RecurrentPaymentStatus.Cancelling;
+        if (recurrentPayment.Status == RecurrentPaymentStatus.Created)
+        {
+            recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;
+            recurrentPayment.CloseDate = Now;
+        }
+        else
+        {
+            recurrentPayment.Status = RecurrentPaymentStatus.Cancelling;
+        }
         await UnitOfWork.SaveChangesAsync();
 
         if (recurrentPayment.Status == RecurrentPaymentStatus.Cancelled)
@@ -666,6 +626,7 @@ public class PaymentsService(
         if (result.Status == PaymentInfoQueryStatus.Success)
         {
             recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;
+            recurrentPayment.CloseDate = Now;
             await UnitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully cancelled", recurrentPaymentId, claimId, projectId);
@@ -742,24 +703,52 @@ public class PaymentsService(
                 FromRecurrentPaymentId = recurrentPaymentId,
                 CommentText = $"Списание средств по подписке от {recurrentPayment.CreateDate:d}",
             });
+        var fo = comment.Finance;
+
+        await UnitOfWork.SaveChangesAsync();
+
+        logger.LogInformation("Acquiring payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", fo.CommentId, recurrentPayment.RecurrentPaymentId, claimId, projectId);
 
         var api = GetApi(projectId, claimId);
+
+        // First, we have to acquire QR-code token
+        var initResult = await api.SetupFastPaymentSystemRecurrentPayments(
+            recurrentPayment.BankParentPayment!,
+            recurrentPayment.BankRecurrencyToken!,
+            recurrentPayment.PaymentAmount,
+            purpose.Details);
+
+        if (initResult.Status == PaymentInfoQueryStatus.Success)
+        {
+            logger.LogInformation("Successfully acquired payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been configured", fo.CommentId, recurrentPaymentId, claimId, projectId);
+            recurrentPayment.Status = RecurrentPaymentStatus.Active;
+        }
+        else
+        {
+            logger.LogError("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed because {bankError}", fo.CommentId, recurrentPaymentId, claimId, projectId, initResult.ErrorDescription);
+            fo.State = FinanceOperationState.Declined;
+            fo.Changed = Now;
+            await UnitOfWork.SaveChangesAsync();
+            return fo;
+        }
+
+        // Then, we have to initiate a payment with that QR-code token
         var result = await api.PayRecurrent(
             recurrentPayment.BankParentPayment!,
             comment.Finance.GetOrderId(),
             recurrentPayment.BankRecurrencyToken!,
-            recurrentPayment.BankAdditional!,
+            initResult.FastPaymentSystemRecurrencyId!,
             receipt);
 
         if (result.Status == PaymentInfoQueryStatus.Success)
         {
-            logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated as operation {financeOperationId}", recurrentPaymentId, claimId, projectId, comment.CommentId);
+            logger.LogInformation("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated", fo.CommentId, recurrentPaymentId, claimId, projectId);
         }
         else
         {
-            logger.LogError("Failed to initiate recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because {bankError}", recurrentPayment.RecurrentPaymentId, claimId, projectId, result.ErrorDescription);
-
-            comment.Finance.State = FinanceOperationState.Declined;
+            logger.LogError("Failed to initiate payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because {bankError}", fo.CommentId, recurrentPaymentId, claimId, projectId, result.ErrorDescription);
+            fo.State = FinanceOperationState.Declined;
+            fo.Changed = Now;
             await UnitOfWork.SaveChangesAsync();
         }
 

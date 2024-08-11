@@ -13,10 +13,6 @@
     }
   </script>
 }
-@if (Model.CanChange)
-{
-  <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Изменить&hellip;</button>
-}
 @if (Model.CanCancel)
 {
   <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#cancelRecurrentOnlineDialog" onclick="setCancelRecPaymentId@(Model.RecurrentPaymentId.GetValueOrDefault())()">Отменить&hellip;</button>

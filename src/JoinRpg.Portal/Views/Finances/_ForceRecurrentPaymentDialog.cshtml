@@ -1,6 +1,6 @@
 ﻿@model JoinRpg.Web.Models.RecurrentPaymentViewModel
 
-<div class="modal fade" id="payRecurrentOnlineDialog" tabindex="-1" role="dialog">
+<div class="modal fade" id="forceRecurrentPaymentDialog" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
       @using (Html.BeginForm("ForceRecurrentPayment", "Payments", FormMethod.Post, new { enctype = "multipart/form-data" }))
@@ -15,11 +15,13 @@
           <h4 class="modal-title" id="deleteTitle">Принудительный платеж</h4>
         </div>
         <div class="modal-body">
-          <div class="join alert alert-info">
-            После нажатия «Провести платеж» он будет совершен по выбранной подписке принудительно,
-              даже если уже было проведено автоматическое списание средств.
-            <br/><br/>
-            Если вы <b>не</b> уверены в том, что делаете, АСТАНАВИТЕС!!!111
+          <div class="join alert alert-warning">
+            <i class="glyphicon glyphicon-alert"></i>
+            <div>
+              <p>После нажатия «Провести платеж» он будет совершен по выбранной подписке принудительно,
+                даже если уже было проведено автоматическое списание средств.</p>
+              <p>Если вы <b>не</b> уверены в том, что делаете, АСТАНАВИТЕС!!!111</p>
+            </div>
           </div>
         </div>
         <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">

@@ -68,6 +68,9 @@ public enum PaymentStatus
     /// </summary>
     [Identifier("undef")]
     Undefined,
+
+    [Identifier("done")]
+    Done,
 }
 
 /// <summary>
