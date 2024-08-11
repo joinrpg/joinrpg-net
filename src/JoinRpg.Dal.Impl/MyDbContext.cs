@@ -201,6 +201,11 @@ public class MyDbContext : DbContext, IUnitOfWork
             .HasOptional(fo => fo.RecurrentPayment)
             .WithMany()
             .HasForeignKey(fo => fo.RecurrentPaymentId);
+
+        _ = modelBuilder.Entity<FinanceOperation>()
+            .HasOptional(fo => fo.RefundedOperation)
+            .WithMany()
+            .HasForeignKey(fo => fo.RefundedOperationId);
     }
 
     private static void ConfigureUser(DbModelBuilder modelBuilder)

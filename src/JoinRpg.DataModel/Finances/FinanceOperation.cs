@@ -51,12 +51,14 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     /// Identifier of a refund operation received from bank.
     /// </summary>
     [MaxLength(256)]
-    public string? BankRefundId { get; set; }
+    public string? BankRefundToken { get; set; }
 
     /// <summary>
     /// Id of a finance operation that was refunded.
     /// </summary>
     public int? RefundedOperationId { get; set; }
+
+    public virtual FinanceOperation RefundedOperation { get; set; }
 
     /// <summary>
     /// Id of recurrent payment this operation belongs to
