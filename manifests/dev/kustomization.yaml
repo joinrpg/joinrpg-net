@@ -6,6 +6,11 @@ namespace: dev
 commonLabels:
   managed-by-kustomize-dev: "true" #Careful. Contains name of the environment, used for kubectl apply --prune
 
+configMapGenerator:
+  - name: joinrpg-configmap
+    envs: # now using envs to create a configmap with envvars as keys inside
+      - .env
+
 patchesJson6902:
   - target:
       kind: Ingress
