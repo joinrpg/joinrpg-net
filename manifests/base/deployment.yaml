@@ -39,7 +39,7 @@ spec:
             optional: false
         - configMapRef:
             name: joinrpg-configmap
-            optiona: false
+            optional: false
         image: joinrpg-portal
         livenessProbe:
           failureThreshold: 5
