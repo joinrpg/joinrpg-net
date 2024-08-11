@@ -70,8 +70,6 @@ public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClien
             .SetHtmlBody(html)
             .GetMessage();
 
-        message.Dkim = true;
-
         message.RecipientVariables = recipients.ToRecipientVariables();
         if (EmailEnabled)
         {
