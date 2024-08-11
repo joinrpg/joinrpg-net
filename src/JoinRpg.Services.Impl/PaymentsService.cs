@@ -265,7 +265,7 @@ public class PaymentsService(
             throw new JoinRpgEntityNotFoundException(projectId, nameof(Project));
         }
 
-        if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind.IsOnline() != true)
+        if (fo.PaymentType?.TypeKind.IsOnline() != true || fo.OperationType is not (FinanceOperationType.Online or FinanceOperationType.Refund))
         {
             throw new PaymentException(fo.Project, "Finance operation is not online payment");
         }
@@ -420,7 +420,7 @@ public class PaymentsService(
             else if (fo.RefundOperation && paymentInfo.ErrorCode is null)
             {
                 // Trying to get specific refund by its id
-                var refund = paymentInfo.Refunds?.FirstOrDefault(rf => string.Equals(rf.Id, fo.BankRefundToken, StringComparison.OrdinalIgnoreCase));
+                var refund = paymentInfo.Payment.Refunds?.FirstOrDefault(rf => string.Equals(rf.Id, fo.BankRefundToken, StringComparison.OrdinalIgnoreCase));
 
                 // Updating operation status. If no refund -- no problem, it makes operation invalid
                 UpdateFinanceOperationStatus(fo, refund);
@@ -807,6 +807,7 @@ public class PaymentsService(
             sourceFo.PaymentType!,
             new ClaimPaymentRequest
             {
+                Refund = true,
                 Money = sourceFo.MoneyAmount,
                 ClaimId = claimId,
                 ProjectId = projectId,
@@ -820,11 +821,11 @@ public class PaymentsService(
         var api = GetApi(projectId, claimId);
         var result = await api.Refund(sourceFo.GetOrderId(), false, null, null);
 
-        if (result.Status == PaymentInfoQueryStatus.Success && result.Payment.CreatedRefund.Status != RefundStatus.Error)
+        if (result.Status == PaymentInfoQueryStatus.Success && result.CreatedRefund?.Status is not (null or RefundStatus.Error))
         {
             logger.LogInformation("Refund of payment {financeOperationId} for claim {claimId} to project {projectId} has been successfully initiated", sourceFo.CommentId, claimId, projectId);
-            comment.Finance.BankRefundToken = result.Payment.CreatedRefund.Id;
-            if (result.Payment.CreatedRefund.Status == RefundStatus.Completed)
+            comment.Finance.BankRefundToken = result.CreatedRefund.Id;
+            if (result.CreatedRefund.Status == RefundStatus.Completed)
             {
                 comment.Finance.State = FinanceOperationState.Approved;
             }
@@ -832,7 +833,7 @@ public class PaymentsService(
         else
         {
             logger.LogError("Failed to initiate refund of payment {financeOperationId} for claim {claimId} to project {projectId} because {bankError}", sourceFo.CommentId, claimId, projectId, result.ErrorDescription ?? "unknown problem");
-            comment.Finance.BankRefundToken = result.Payment?.CreatedRefund?.Id;
+            comment.Finance.BankRefundToken = result.CreatedRefund?.Id;
             comment.Finance.State = FinanceOperationState.Declined;
         }
         await UnitOfWork.SaveChangesAsync();

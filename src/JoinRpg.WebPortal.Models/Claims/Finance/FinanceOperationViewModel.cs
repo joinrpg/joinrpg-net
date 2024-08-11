@@ -41,15 +41,21 @@ public class FinanceOperationViewModel
 
     public bool IsVisible { get; }
 
-    public FinanceOperationViewModel(FinanceOperation source, bool isMaster)
+    public bool CanRefund { get; }
+
+    public bool CanUpdate { get; }
+
+    public bool IsTransfer => OperationType is FinanceOperationTypeViewModel.TransferFrom or FinanceOperationTypeViewModel.TransferTo;
+
+    public FinanceOperationViewModel(Claim claim, FinanceOperation source, bool isMaster)
     {
         Id = source.CommentId;
         ClaimId = source.ClaimId;
         ProjectId = source.ProjectId;
         Money = source.MoneyAmount;
         LinkedClaimId = source.LinkedClaimId;
-        LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : "";
-        LinkedClaimUser = source.LinkedClaim?.Player;
+        LinkedClaimName = source.LinkedClaim?.Name ?? "";
+        LinkedClaimUser = source.LinkedClaim?.Player!;
         OperationType = (FinanceOperationTypeViewModel)source.OperationType;
         OperationState = (FinanceOperationStateViewModel)source.State;
         RowCssClass = source.State.ToRowClass();
@@ -90,6 +96,13 @@ public class FinanceOperationViewModel
             case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Proposed:
                 CheckPaymentState = true;
                 break;
+            case FinanceOperationTypeViewModel.Refund when source.State == FinanceOperationState.Approved:
+                Description = OperationState.GetShortName() ?? "";
+                break;
         }
+
+        CanUpdate = source is { State: FinanceOperationState.Proposed, OperationType: FinanceOperationType.Online or FinanceOperationType.Refund };
+        CanRefund = source is { State: FinanceOperationState.Approved, OperationType: FinanceOperationType.Online }
+            && claim.FinanceOperations.All(fo => fo.RefundedOperationId != source.CommentId || fo.State is not (FinanceOperationState.Approved or FinanceOperationState.Proposed));
     }
 }

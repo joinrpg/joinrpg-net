@@ -57,8 +57,7 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     /// Id of a finance operation that was refunded.
     /// </summary>
     public int? RefundedOperationId { get; set; }
-
-    public virtual FinanceOperation RefundedOperation { get; set; }
+    public virtual FinanceOperation? RefundedOperation { get; set; }
 
     /// <summary>
     /// Id of recurrent payment this operation belongs to

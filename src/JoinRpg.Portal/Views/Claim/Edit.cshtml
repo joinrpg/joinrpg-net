@@ -392,6 +392,11 @@ new { Model.CharacterId, Model.ProjectId }, null)
       @await Html.PartialAsync("..\\Finances\\_CancelRecurrentPaymentDialog", new RecurrentPaymentViewModel { ClaimId = Model.ClaimId, ProjectId = Model.ProjectId})
     }
 
+    @if (Model.ClaimFee.HasFeeAdminAccess)
+    {
+      @await Html.PartialAsync("..\\Finances\\_RefundPaymentDialog", new RefundPaymentViewModel { ClaimId = Model.ClaimId, ProjectId = Model.ProjectId, ShowTransfersNotification = Model.ClaimFee.FinanceOperations.Any(e => e.IsTransfer) })
+    }
+
     @if (Model.ClaimFee.PreferentialFeeRequestEnabled)
     {
       @await Html.PartialAsync("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel(Model))

@@ -301,7 +301,7 @@ public class BankApi
         };
 
         return await ApiRequestAsync<RefundMessage, RefundInfo>(
-            $"{ActualApiEndpoint}/merchantApi/payRecurrent",
+            $"{ActualApiEndpoint}/merchantApi/refundPayment",
             message);
     }
 }

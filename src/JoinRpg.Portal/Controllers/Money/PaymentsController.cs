@@ -267,14 +267,38 @@ public class PaymentsController : Common.ControllerBase
             await _payments.CancelRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId);
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             return Error(
                 new ErrorViewModel
                 {
                     Message = $"Ошибка отмены рекуррентного платежа ({recurrentPaymentId})",
-                    Description = e.Message,
-                    Data = e,
+                    Description = ex.Message,
+                    Data = ex,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> RefundPayment(int projectId, int claimId, int operationId)
+    {
+        try
+        {
+            await _payments.RefundAsync(projectId, claimId, operationId);
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+        }
+        catch (Exception ex)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Ошибка оформления возврата платежа ({operationId})",
+                    Description = ex.Message,
+                    Data = ex,
                     ReturnLink = GetClaimUrl(projectId, claimId),
                     ReturnText = "Вернуться к заявке"
                 });

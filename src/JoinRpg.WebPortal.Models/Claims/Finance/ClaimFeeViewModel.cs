@@ -58,7 +58,7 @@ public class ClaimFeeViewModel
             .OrderBy(x => x)
             .ToList();
         FinanceOperations = claim.FinanceOperations
-            .Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
+            .Select(fo => new FinanceOperationViewModel(claim, fo, model.HasMasterAccess));
         VisibleFinanceOperations = FinanceOperations
             .Where(fo => fo.IsVisible);
 
@@ -74,7 +74,7 @@ public class ClaimFeeViewModel
             .OrderBy(static e => e.CreatedAt)
             .ToArray();
         CanMakeNewSubscription = ShowOnlinePaymentControls
-            && RecurrentPayments.All(rp => rp.Status is not RecurrentPaymentStatusViewModel.Active);
+            && RecurrentPayments.All(rp => rp.Status is RecurrentPaymentStatusViewModel.Cancelled or RecurrentPaymentStatusViewModel.Failed);
         CanCancelSubscription = ShowOnlinePaymentControls
             && RecurrentPayments.Any(rp => rp.Status is RecurrentPaymentStatusViewModel.Active || (HasFeeAdminAccess && rp.Status is RecurrentPaymentStatusViewModel.Created or RecurrentPaymentStatusViewModel.Cancelling));
     }

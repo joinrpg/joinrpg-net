@@ -23,7 +23,7 @@ public class PaymentData
     /// Order Id as to be displayed to Payer
     /// </summary>
     [JsonProperty("showOrderId")]
-    public string OrderIdDisplayValue { get; set; }
+    public string? OrderIdDisplayValue { get; set; }
 
     /// <summary>
     /// Payment sum in RUR
@@ -60,35 +60,53 @@ public class PaymentData
     /// Identifier of a Payer issued by store
     /// </summary>
     [JsonProperty("account")]
-    public string CustomerAccount { get; set; }
+    public string? CustomerAccount { get; set; }
 
     /// <summary>
     /// Comment created by a Payer to hist payment
     /// </summary>
     [JsonProperty("comment")]
-    public string CustomerComment { get; set; }
+    public string? CustomerComment { get; set; }
 
     /// <summary>
     /// Payer email
     /// </summary>
     [JsonProperty("email")]
-    public string CustomerEmail { get; set; }
+    public string? CustomerEmail { get; set; }
 
     /// <summary>
     /// Payer phone number in international format
     /// </summary>
     [JsonProperty("phone")]
-    public string CustomerPhone { get; set; }
+    public string? CustomerPhone { get; set; }
 
     /// <summary>
     /// Payment details
     /// </summary>
     [JsonProperty("details")]
-    public string Details { get; set; }
+    public string? Details { get; set; }
 
     /// <summary>
     /// Token for subsequent payments
     /// </summary>
     [JsonProperty("recurrencyToken")]
-    public string RecurrentPaymentToken { get; set; }
+    public string? RecurrentPaymentToken { get; set; }
+
+    /// <summary>
+    /// List of refunds (if any)
+    /// </summary>
+    [JsonProperty("refunds")]
+    public ICollection<RefundData>? Refunds { get; set; }
+
+    /// <summary>
+    /// List of receipts (if any)
+    /// </summary>
+    [JsonProperty("receipts")]
+    public ICollection<ReceiptData>? Receipts { get; set; }
+
+    /// <summary>
+    /// Extended bank card information
+    /// </summary>
+    [JsonProperty("paymentParams")]
+    public BankCardData? Card { get; set; } // TODO: Implement object structure
 }

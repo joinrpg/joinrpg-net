@@ -61,4 +61,10 @@ public enum ApiErrorCode
     /// </summary>
     [Identifier("SERVER_ERROR")]
     ServerError,
+
+    /// <summary>
+    /// Undocumented code, returned when it is not possible to refund payment.
+    /// </summary>
+    [Identifier("FAILED")]
+    Failed,
 }

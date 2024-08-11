@@ -18,19 +18,7 @@ public class RefundData
     /// </summary>
     [JsonProperty("state")]
     public RefundStatus Status { get; set; }
-}
 
-public class RefundInfo : PaymentInfoBase
-{
-    [JsonProperty("payment")]
-    public RefundPaymentInfo Payment { get; set; }
-}
-
-public class RefundPaymentInfo
-{
-    /// <summary>
-    /// The refund that was just created
-    /// </summary>
-    [JsonProperty("createdRefund")]
-    public RefundData CreatedRefund { get; set; }
+    [JsonProperty("amount")]
+    public decimal Amount { get; set; }
 }
