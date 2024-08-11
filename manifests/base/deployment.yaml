@@ -37,6 +37,9 @@ spec:
         - secretRef:
             name: joinrpg-main
             optional: false
+        - configMapRef:
+            name: joinrpg-configmap
+            optiona: false
         image: joinrpg-portal
         livenessProbe:
           failureThreshold: 5
