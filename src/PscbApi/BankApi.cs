@@ -22,6 +22,8 @@ public class BankApi
     /// </summary>
     public bool Debug => _configuration.Debug;
 
+    public bool DebugOutput => _configuration.DebugOutput;
+
     /// <summary>
     /// Returns actual API endpoint
     /// </summary>
@@ -55,8 +57,12 @@ public class BankApi
         where TRequest : class
         where TResponse : class, new()
     {
-        System.Diagnostics.Debug.WriteLineIf(Debug, url);
-        System.Diagnostics.Debug.WriteLineIf(Debug, JsonConvert.SerializeObject(request, Formatting.Indented));
+        if (DebugOutput)
+        {
+            System.Diagnostics.Debug.WriteLine("Request to bank:");
+            System.Diagnostics.Debug.WriteLine(url);
+            System.Diagnostics.Debug.WriteLine(JsonConvert.SerializeObject(request, Formatting.Indented));
+        }
 
         var requestAsJson = JsonConvert.SerializeObject(request, Formatting.None);
         var requestAsJsonUtf8 = requestAsJson.ToUtf8Bytes();
@@ -71,8 +77,24 @@ public class BankApi
         if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
             var responseJson = await httpResponse.Content.ReadAsStringAsync();
-            System.Diagnostics.Debug.WriteLineIf(Debug, responseJson);
-            return JsonConvert.DeserializeObject<TResponse>(responseJson);
+            var result = JsonConvert.DeserializeObject<TResponse>(responseJson);
+
+            if (DebugOutput)
+            {
+                System.Diagnostics.Debug.WriteLine("Response from bank:");
+                System.Diagnostics.Debug.WriteLine(
+                    result is null
+                        ? "empty"
+                        : JsonConvert.SerializeObject(result, Formatting.Indented));
+            }
+
+            return result ?? throw new PscbApiRequestException<TRequest>(url, request, signature, "Response was empty");
+        }
+
+        if (DebugOutput)
+        {
+            System.Diagnostics.Debug.WriteLine("Response from bank:");
+            System.Diagnostics.Debug.WriteLine($"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
         }
 
         throw new PscbApiRequestException<TRequest>(url, request, signature, $"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
@@ -130,9 +152,7 @@ public class BankApi
         message.OrderIdDisplayValue = getOrderIdDisplayValue?.Invoke(message.OrderId) ?? message.OrderIdDisplayValue;
         message.ValidateProperty(m => m.OrderIdDisplayValue);
 
-        System.Diagnostics.Debug.WriteLineIf(
-            Debug,
-            JsonConvert.SerializeObject(message, Formatting.Indented));
+        System.Diagnostics.Debug.WriteLineIf(DebugOutput, JsonConvert.SerializeObject(message, Formatting.Indented));
 
         var messageAsJson = JsonConvert.SerializeObject(message, Formatting.None);
         var messageAsJsonUtf8 = messageAsJson.ToUtf8Bytes();
@@ -171,7 +191,8 @@ public class BankApi
     /// <remarks>
     /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-zapros-parametrov-platezha for details
     /// </remarks>
-    public async Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
+    public async Task<T> GetPaymentInfoAsync<T>(string orderId, bool getCardData = false, bool getFiscalData = false)
+        where T : PaymentInfoBase, new()
     {
         if (string.IsNullOrWhiteSpace(orderId))
         {
@@ -186,10 +207,14 @@ public class BankApi
             GetFiscalData = getFiscalData,
         };
 
-        return await ApiRequestAsync<PaymentInfoQueryParams, PaymentInfo>(
+        return await ApiRequestAsync<PaymentInfoQueryParams, T>(
             $"{ActualApiEndpoint}/merchantApi/checkPayment",
             queryParams);
     }
+
+    public Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
+        => GetPaymentInfoAsync<PaymentInfo>(orderId, getCardData, getFiscalData);
+
 
     /// <summary>
     /// Configures recurrent payments with the Fast Payments System
@@ -313,21 +338,26 @@ public class BankApi
 
     public async Task<FastPaymentsSystemInvoicingInfo> GetFastPaymentSystemInvoice(
         FastPaymentsSystemInvoicingMessage message, Func<Task<string>> getOrderId,
-        Func<string, string>? getOrderIdDisplayValue = null)
+        Func<string, ValueTask<string>>? getOrderIdDisplayValue = null,
+        Func<ValueTask<string>>? getRedirectUrl = null)
     {
         ArgumentNullException.ThrowIfNull(message, nameof(message));
+        ArgumentNullException.ThrowIfNull(getOrderId, nameof(getOrderId));
 
         PrepareMessage(message);
+        message.MerchantId = _configuration.MerchantId;
 
         message.OrderId = await getOrderId() ?? message.OrderId;
         message.ValidateProperty(m => m.OrderId);
 
-        message.OrderIdDisplayValue = getOrderIdDisplayValue?.Invoke(message.OrderId) ?? message.OrderIdDisplayValue;
+        message.OrderIdDisplayValue = getOrderIdDisplayValue is not null
+            ? await getOrderIdDisplayValue(message.OrderId)
+            : message.OrderIdDisplayValue;
         message.ValidateProperty(m => m.OrderIdDisplayValue);
 
-        System.Diagnostics.Debug.WriteLineIf(
-            Debug,
-            JsonConvert.SerializeObject(message, Formatting.Indented));
+        message.Data.FastPaymentsSystemRedirectUrl = getRedirectUrl is not null
+            ? await getRedirectUrl()
+            : message.SuccessUrl;
 
         return await ApiRequestAsync<FastPaymentsSystemInvoicingMessage, FastPaymentsSystemInvoicingInfo>(
             $"{ActualApiEndpoint}/merchantApi/pay",

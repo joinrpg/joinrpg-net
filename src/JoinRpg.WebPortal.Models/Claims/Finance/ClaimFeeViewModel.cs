@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Models;
 
 public class ClaimFeeViewModel
 {
-    public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId, ProjectInfo projectInfo)
+    public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId, ProjectInfo projectInfo, Func<string?, string?> externalPaymentUrlFactory)
     {
         Status = model.Status;
 
@@ -58,7 +58,11 @@ public class ClaimFeeViewModel
             .OrderBy(x => x)
             .ToList();
         FinanceOperations = claim.FinanceOperations
-            .Select(fo => new FinanceOperationViewModel(claim, fo, model.HasMasterAccess));
+            .Select(
+                fo => new FinanceOperationViewModel(claim, fo, model.HasMasterAccess)
+                {
+                    ExternalUrl = HasFeeAdminAccess ? externalPaymentUrlFactory(fo.BankOperationKey) : null
+                });
         VisibleFinanceOperations = FinanceOperations
             .Where(fo => fo.IsVisible);
 

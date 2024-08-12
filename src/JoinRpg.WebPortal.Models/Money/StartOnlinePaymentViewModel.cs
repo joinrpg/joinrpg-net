@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers;
-using PscbApi;
 
 namespace JoinRpg.Web.Models;
 
@@ -28,6 +27,8 @@ public class StartOnlinePaymentViewModel : PaymentViewModelBase
 
     public bool AcceptContract { get; set; }
 
+    public string? Platform { get; set; }
+
     public PaymentMethodViewModel Method { get; set; }
 
     public StartOnlinePaymentViewModel() { }
@@ -42,9 +43,4 @@ public class StartOnlinePaymentViewModel : PaymentViewModelBase
                 () => new ValidationResult(
                     "Необходимо принять соглашение для проведения оплаты",
                     new[] { nameof(AcceptContract) }));
-}
-
-public class StartFastPaymentsSystemMobilePaymentViewModel : StartOnlinePaymentViewModel
-{
-    public FpsPlatform Platform { get; set; }
 }

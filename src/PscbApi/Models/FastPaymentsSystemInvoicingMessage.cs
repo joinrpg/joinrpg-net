@@ -10,6 +10,9 @@ namespace PscbApi.Models;
 /// </remarks>
 public class FastPaymentsSystemInvoicingMessage : PaymentMessage
 {
+    [JsonProperty("marketPlace")]
+    public string MerchantId { get; set; }
+
     [JsonProperty("expirationFromNow", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public int? ExpirationMinutes { get; set; }
 

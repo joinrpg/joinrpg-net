@@ -117,9 +117,12 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
       IUriService uriService,
       ProjectInfo projectInfo,
       IProblemValidator<Claim> problemValidator,
+      Func<string?, string?> externalPaymentUrlFactory,
       IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
       IEnumerable<AccommodationRequest>? accommodationRequests = null,
-      IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null, IEnumerable<AccommodationInvite>? incomingInvite = null, IEnumerable<AccommodationInvite>? outgoingInvite = null)
+      IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
+      IEnumerable<AccommodationInvite>? incomingInvite = null,
+      IEnumerable<AccommodationInvite>? outgoingInvite = null)
     {
         ClaimId = claim.ClaimId;
         CommentDiscussionId = claim.CommentDiscussionId;
@@ -194,7 +197,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
                 .Where(pt => pt.UserId == currentUser.UserId)
                 .Select(pt => new PaymentTypeViewModel(pt));
         }
-        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo);
+        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
 
         if (claim.Character != null)
         {

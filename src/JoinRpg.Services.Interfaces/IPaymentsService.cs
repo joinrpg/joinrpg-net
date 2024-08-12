@@ -134,15 +134,21 @@ public class PaymentResultContext
 
 public class FastPaymentsSystemMobilePaymentContext
 {
-    public ICollection<FpsBank> Banks { get; set; }
+    public ICollection<FpsBank>? Banks { get; set; }
 
     public string QrCodeUrl { get; set; }
+
+    public int Amount { get; set; }
+
+    public string Details { get; set; }
 
     public int ProjectId { get; set; }
 
     public int ClaimId { get; set; }
 
     public int OperationId { get; set; }
+
+    public FpsPlatform ExpectedPlatform { get; set; }
 }
 
 /// <summary>
@@ -155,6 +161,19 @@ public interface IPaymentsService
     /// </summary>
     /// <param name="request">Payment request</param>
     Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request);
+
+    /// <summary>
+    /// Creates finance operation and returns payment context for the Fast Payments System mobile payment.
+    /// </summary>
+    /// <param name="request">Payment request</param>
+    /// <param name="platform">Desired platform</param>
+    Task<FastPaymentsSystemMobilePaymentContext> InitiateFastPaymentsSystemMobilePaymentAsync(ClaimPaymentRequest request, FpsPlatform platform);
+
+    Task<FastPaymentsSystemMobilePaymentContext> GetFastPaymentsSystemMobilePaymentContextAsync(
+        int projectId,
+        int claimId,
+        int operationId,
+        FpsPlatform platform);
 
     /// <summary>
     /// Updates status of a proposed payment
@@ -203,4 +222,11 @@ public interface IPaymentsService
     /// <param name="operationId">Id of a payment to refund.</param>
     /// <returns>An instance of the <see cref="FinanceOperation"/> that represents the refund.</returns>
     Task<FinanceOperation> RefundAsync(int projectId, int claimId, int operationId);
+
+    /// <summary>
+    /// Tries to create an url to open payment details in external system using the external payment key of a payment.
+    /// </summary>
+    /// <param name="externalPaymentKey">A key returned from an external payment system.</param>
+    /// <returns></returns>
+    string? GetExternalPaymentUrl(string? externalPaymentKey);
 }

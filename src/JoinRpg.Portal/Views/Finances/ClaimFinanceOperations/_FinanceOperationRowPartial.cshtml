@@ -36,5 +36,9 @@
               }
             </script>
         }
+        @if (Model.ExternalUrl is not null)
+        {
+          <a href="@Model.ExternalUrl" target="_blank" class="btn btn-default btn-xs" style="margin-left: auto;" title="Открыть в банке…">•••</a>
+        }
     </td>
 </tr>

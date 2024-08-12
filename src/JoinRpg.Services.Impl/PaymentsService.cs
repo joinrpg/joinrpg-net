@@ -47,11 +47,17 @@ public class PaymentsService(
     IBankSecretsProvider bankSecrets,
     ICurrentUserAccessor currentUserAccessor,
     Lazy<IEmailService> emailService,
-    Lazy<FastPaymentsSystemApi> fpsApi,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
 {
+    private readonly Lazy<FastPaymentsSystemApi> _lazyFpsApi = new(() => new FastPaymentsSystemApi(clientFactory));
+
+    private readonly Lazy<string?> _lazyExternalPaymentsSystemPaymentUrlTemplate
+        = new(() => bankSecrets.Debug
+            ? bankSecrets.BankSystemDebugPaymentUrl
+            : bankSecrets.BankSystemPaymentUrl);
+
     private ApiConfiguration GetApiConfiguration(int projectId, int claimId)
     {
         return new ApiConfiguration
@@ -89,7 +95,48 @@ public class PaymentsService(
         return (goodName, details);
     }
 
-    public async Task<ICollection<FpsBank>?> InitiateFastPaymentsSystemMobilePaymentAsync(ClaimPaymentRequest request, FpsPlatform platform)
+    public async Task<FastPaymentsSystemMobilePaymentContext> GetFastPaymentsSystemMobilePaymentContextAsync(int projectId, int claimId, int operationId, FpsPlatform platform)
+    {
+        var fo = await LoadFinanceOperationAsync(projectId, claimId, operationId);
+
+        // Checking access rights
+        if (fo.Claim.PlayerUserId != CurrentUserId)
+        {
+            throw new NoAccessToProjectException(fo.Project, CurrentUserId);
+        }
+
+        var api = GetApi(projectId, claimId);
+
+        var pi = await api.GetPaymentInfoAsync(fo.GetOrderId());
+
+        if (pi.Status != PaymentInfoQueryStatus.Success)
+        {
+            logger.LogError("Failed to get payment {financeOperationId} for claim {claimId} to project {projectId} because {bankError}", fo.CommentId, claimId, projectId, pi.ErrorDescription);
+            throw new PaymentException(fo.Project, $"Failed to initiate Fast Payments System mobile payment");
+        }
+
+        var result = new FastPaymentsSystemMobilePaymentContext
+        {
+            Amount = (int) pi.Payment.Amount,
+            Details = pi.Payment.Details ?? "",
+            ClaimId = claimId,
+            ProjectId = projectId,
+            OperationId = operationId,
+            QrCodeUrl = fo.QrCodeUrl, // TODO: Cached QR code url
+            ExpectedPlatform = platform,
+            Banks = null,
+        };
+
+        if (platform == FpsPlatform.Desktop)
+        {
+            return result;
+        }
+
+        result.Banks = await _lazyFpsApi.Value.GetFastPaymentsSystemBanks(platform, fo.QrCodeMeta);
+        return result;
+    }
+
+    public async Task<FastPaymentsSystemMobilePaymentContext> InitiateFastPaymentsSystemMobilePaymentAsync(ClaimPaymentRequest request, FpsPlatform platform)
     {
         // Loading claim
         var claim = await GetClaimAsync(request.ProjectId, request.ClaimId);
@@ -139,9 +186,9 @@ public class PaymentsService(
             Data = new FastPaymentSystemInvoicingMessageData
             {
                 GetQrCode = false,
-                GetQrCodeUrl = false,
+                GetQrCodeUrl = true,
                 FastPaymentsSystemSubscriptionPurpose = request.Recurrent ? purpose.Details : null,
-                FastPaymentsSystemRedirectUrl = uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
+                FastPaymentsSystemRedirectUrl = null,
                 Receipt = new Receipt
                 {
                     CompanyEmail = User.OnlinePaymentVirtualUser,
@@ -165,10 +212,13 @@ public class PaymentsService(
 
         var api = GetApi(request.ProjectId, request.ClaimId);
 
+        Task<Comment> comment = AddPaymentCommentAsync(claim, onlinePaymentType, request);
+
         // Creating request to bank
         var invoice = await api.GetFastPaymentSystemInvoice(
             message,
-            async () => (await AddPaymentCommentAsync(claim, onlinePaymentType, request)).GetOrderId()
+            getOrderId: async () => (await comment).Finance.GetOrderId(),
+            getRedirectUrl: async () => uriService.Get(new PaymentUpdateUrl(request.ProjectId, request.ClaimId, (await comment).CommentId))
         );
 
         if (invoice.Status != PaymentInfoQueryStatus.Success)
@@ -177,7 +227,27 @@ public class PaymentsService(
             throw new PaymentException(claim.Project, $"Failed to initiate Fast Payments System mobile payment");
         }
 
-        return await fpsApi.Value.GetFastPaymentsSystemBanks(platform, invoice.Payment.QrCodeUrl);
+        var result = new FastPaymentsSystemMobilePaymentContext
+        {
+            Amount = request.Money,
+            Details = message.Details,
+            ClaimId = request.ClaimId,
+            ProjectId = request.ProjectId,
+            OperationId = int.Parse(message.OrderId),
+            QrCodeUrl = invoice.Payment.QrCodeImageUrl!,
+            ExpectedPlatform = platform,
+            Banks = null,
+        };
+
+        /*
+        if (platform == FpsPlatform.Desktop)
+        {
+            return result;
+        }
+
+        result.Banks = await fpsApi.Value.GetFastPaymentsSystemBanks(platform, invoice.Payment.QrCodeUrl);
+        */
+        return result;
     }
 
     /// <inheritdoc />
@@ -511,6 +581,8 @@ public class PaymentsService(
             // We have refund operation that was successfully loaded
             else if (fo.RefundOperation && paymentInfo.ErrorCode is null)
             {
+                fo.BankOperationKey = paymentInfo.Payment.Id;
+
                 // Trying to get specific refund by its id
                 var refund = paymentInfo.Payment.Refunds?.FirstOrDefault(rf => string.Equals(rf.Id, fo.BankRefundKey, StringComparison.OrdinalIgnoreCase));
 
@@ -530,6 +602,8 @@ public class PaymentsService(
             // We have regular operation that was successfully loaded
             else if (!fo.RefundOperation && paymentInfo.ErrorCode is null)
             {
+                fo.BankOperationKey = paymentInfo.Payment.Id;
+
                 UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
                 if (fo.State == FinanceOperationState.Approved)
                 {
@@ -927,31 +1001,56 @@ public class PaymentsService(
         return comment.Finance;
     }
 
-    private abstract class PaymentRedirectUrl : ILinkable
+    /// <inheritdoc />
+    public string? GetExternalPaymentUrl(string? externalPaymentKey)
+        => string.IsNullOrWhiteSpace(externalPaymentKey) || string.IsNullOrWhiteSpace(_lazyExternalPaymentsSystemPaymentUrlTemplate.Value)
+            ? null
+            : string.Format(_lazyExternalPaymentsSystemPaymentUrlTemplate.Value, externalPaymentKey);
+
+    private abstract class PaymentRedirectUrl : ILinkableClaim
     {
         /// <inheritdoc />
-        public LinkType LinkType { get; protected set; }
+        public LinkType LinkType { get; }
 
         /// <inheritdoc />
-        public string Identification { get; }
+        public string Identification => string.Empty;
 
         /// <inheritdoc />
         public int? ProjectId { get; }
 
-        protected PaymentRedirectUrl(int projectId, int claimId)
+        /// <inheritdoc />
+        public int ClaimId { get; }
+
+        protected PaymentRedirectUrl(LinkType linkType, int projectId, int claimId)
         {
+            LinkType = linkType;
             ProjectId = projectId;
-            Identification = claimId.ToString();
+            ClaimId = claimId;
         }
     }
 
     private class PaymentSuccessUrl : PaymentRedirectUrl
     {
-        public PaymentSuccessUrl(int projectId, int claimId) : base(projectId, claimId) => LinkType = LinkType.PaymentSuccess;
+        public PaymentSuccessUrl(int projectId, int claimId)
+            : base(LinkType.PaymentSuccess, projectId, claimId)
+        { }
     }
 
     private class PaymentFailUrl : PaymentRedirectUrl
     {
-        public PaymentFailUrl(int projectId, int claimId) : base(projectId, claimId) => LinkType = LinkType.PaymentFail;
+        public PaymentFailUrl(int projectId, int claimId)
+            : base(LinkType.PaymentFail, projectId, claimId)
+        { }
+    }
+
+    private class PaymentUpdateUrl : PaymentRedirectUrl, ILinkablePayment
+    {
+        public int OperationId { get; }
+
+        public PaymentUpdateUrl(int projectId, int claimId, int operationId)
+            : base(LinkType.PaymentUpdate, projectId, claimId)
+        {
+            OperationId = operationId;
+        }
     }
 }

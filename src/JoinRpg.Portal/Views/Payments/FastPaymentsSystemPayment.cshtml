@@ -1,11 +1,13 @@
 ﻿@{ Layout = null; }
-@model JoinRpg.Services.Interfaces.ClaimPaymentContext
+@model JoinRpg.Services.Interfaces.FastPaymentsSystemMobilePaymentContext
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Перенаправление на страницу оплаты</title>
-    <style type="text/css">
+  <title>Оплата через Систему Быстрых Переводов</title>
+  <script src="~/Scripts/ua-parser.min.js"></script>
+  <script src="~/Scripts/platform.js"></script>
+  <meta name="viewport" content="width=device-width"/>
+  <style type="text/css">
         html, body {
             display: block;
             width: 100%;
@@ -24,12 +26,27 @@
     </style>
 </head>
 <body>
-    <div class="content">
-        <div class="form">
-            <h4>Идет перенаправление на страницу оплаты...</h4>
-            <h4>Если ничего не произошло, нажмите на кнопку «Перейти к оплате»</h4>
-            @await Html.PartialAsync("_RedirectFormPartial", Model.RequestDescriptor)
-        </div>
+<div class="content">
+  <img id="qrcode" style="display: none;" src="@Model.QrCodeUrl" alt="QR код" />
+  @if (Model.Banks?.Count > 0)
+  {
+    <div id="banks" style="display: none;">
+      @foreach (var bank in Model.Banks)
+      {
+        <div><a href="@bank.PaymentUrl"><img src="@bank.LogoUrl" alt="@bank.Name" /></a></div>
+      }
     </div>
+  }
+</div>
+<script type="text/javascript">
+const expectedPlatform = '@Model.ExpectedPlatform.ToString().ToLowerInvariant()';
+const blockQr = document.getElementById('qrcode');
+const blockBanks = document.getElementById('banks');
+if (platform.name === 'desktop' || platform.name !== expectedPlatform) {
+  blockQr.style.display = 'block';
+} else {
+  blockBanks.style.display = 'block';
+}
+</script>
 </body>
 </html>

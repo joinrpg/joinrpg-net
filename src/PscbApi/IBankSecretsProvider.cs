@@ -10,6 +10,8 @@ public interface IBankSecretsProvider
     /// </summary>
     bool Debug { get; }
 
+    bool DebugOutput { get; }
+
     /// <summary>
     /// Api Endpoint
     /// </summary>
@@ -34,4 +36,16 @@ public interface IBankSecretsProvider
     /// Api key for sandbox access
     /// </summary>
     string ApiDebugKey { get; }
+
+    /// <summary>
+    /// Url template in the bank payments system to the page with payment details.
+    /// Formatted using the string.Format, bank's payment Id is at position {0}
+    /// </summary>
+    string BankSystemPaymentUrl { get; }
+
+    /// <summary>
+    /// Url template in the bank payments system sandbox to the page with payment details.
+    /// Formatted using the string.Format, bank's payment Id is at position {0}
+    /// </summary>
+    string BankSystemDebugPaymentUrl { get; }
 }

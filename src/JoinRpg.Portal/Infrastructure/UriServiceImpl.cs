@@ -12,8 +12,14 @@ internal class UriServiceImpl(
     LinkGenerator linkGenerator,
     IOptions<NotificationsOptions> notificationOptions) : IUriService, IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
 {
-    private Uri? CreateLink(LinkType linkType, string identification, int? projectId)
+    public Uri GetUri(ILinkable linkable)
     {
+        ArgumentNullException.ThrowIfNull(linkable);
+
+        var linkType = linkable.LinkType;
+        var projectId = linkable.ProjectId;
+        var identification = linkable.Identification;
+
         var link = linkType switch
         {
             LinkType.ResultUser => linkGenerator.GetPathByAction("Details",
@@ -38,16 +44,22 @@ internal class UriServiceImpl(
                                 "DiscussionRedirect",
                                 new { ProjectId = projectId, CommentDiscussionId = identification }),
             LinkType.Project => linkGenerator.GetPathByAction("Details", "Game", new { ProjectId = projectId }),
-            LinkType.PaymentSuccess => linkGenerator.GetPathByAction(
-                                "ClaimPaymentSuccess",
-                                "Payments",
-                                new { projectId = projectId, claimId = identification }),
-            LinkType.PaymentFail => linkGenerator.GetPathByAction(
-                                "ClaimPaymentFail",
-                                "Payments",
-                                new { projectId = projectId, claimId = identification }),
+
+            LinkType.PaymentSuccess when linkable is ILinkableClaim lc =>
+                                linkGenerator.GetPathByAction("ClaimPaymentSuccess", "Payments", new { projectId = projectId, claimId = lc.ClaimId }),
+
+            LinkType.PaymentFail when linkable is ILinkableClaim lc
+                                => linkGenerator.GetPathByAction("ClaimPaymentFail", "Payments", new { projectId = projectId, claimId = lc.ClaimId }),
+
+            LinkType.PaymentUpdate when linkable is ILinkablePayment lp
+                                => linkGenerator.GetPathByAction("UpdateClaimPayment", "Payments", new { projectId = lp.ProjectId, claimId = lp.ClaimId, orderId = lp.OperationId }),
             _ => throw new ArgumentOutOfRangeException(nameof(linkType)),
         };
+
+        if (link is null)
+        {
+            throw new InvalidOperationException($"Failed to create link to {linkable}");
+        }
         Uri baseDomain;
         if (httpContextAccessor.HttpContext?.Request is HttpRequest request)
         {
@@ -60,19 +72,15 @@ internal class UriServiceImpl(
             baseDomain = notificationOptions.Value.BaseDomain;
         }
 
-        return link is null ? null : new Uri(baseDomain, link);
+        return new Uri(baseDomain, link);
     }
 
     public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
 
-    public Uri GetUri(ILinkable link)
-    {
-        ArgumentNullException.ThrowIfNull(link);
-
-        return CreateLink(link.LinkType, link.Identification, link.ProjectId) ?? throw new InvalidOperationException($"Failed to create link to {link}");
-    }
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
-        CreateLink(LinkType.ResultUser, target.UserId.ToString(), projectId: null) ?? throw new InvalidOperationException($"Failed to create link {target}");
+        GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.ToString()));
     Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target) =>
-         CreateLink(LinkType.ResultCharacterGroup, target.CharacterGroupId.ToString(), projectId: target.ProjectId.Value) ?? throw new InvalidOperationException($"Failed to create link {target}");
+         GetUri(new Linkable(LinkType.ResultCharacterGroup, ProjectId: target.ProjectId.Value, Identification: target.CharacterGroupId.ToString()));
+
+    private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable;
 }

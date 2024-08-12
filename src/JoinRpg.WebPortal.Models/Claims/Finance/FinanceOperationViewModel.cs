@@ -43,6 +43,13 @@ public class FinanceOperationViewModel
 
     public bool CanUpdate { get; }
 
+    public bool CanPay { get; }
+
+    /// <summary>
+    /// External url (like bank payments system) to check this payment details
+    /// </summary>
+    public string? ExternalUrl { get; init; }
+
     public bool IsTransfer => OperationType is FinanceOperationTypeViewModel.TransferFrom or FinanceOperationTypeViewModel.TransferTo;
 
     public FinanceOperationViewModel(Claim claim, FinanceOperation source, bool isMaster)
@@ -104,5 +111,6 @@ public class FinanceOperationViewModel
         CanUpdate = source is { State: FinanceOperationState.Proposed, OperationType: FinanceOperationType.Online or FinanceOperationType.Refund };
         CanRefund = source is { State: FinanceOperationState.Approved, OperationType: FinanceOperationType.Online }
             && claim.FinanceOperations.All(fo => fo.RefundedOperationId != source.CommentId || fo.State is not (FinanceOperationState.Approved or FinanceOperationState.Proposed));
+        CanPay =
     }
 }

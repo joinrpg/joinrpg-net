@@ -6,6 +6,11 @@ namespace PscbApi;
 public struct ApiConfiguration
 {
     /// <summary>
+    /// Set to true to write messages to debug output.
+    /// </summary>
+    public bool DebugOutput;
+
+    /// <summary>
     /// Set to true to use debug api endpoint. <see cref="ApiKey"/> must contain debug key
     /// </summary>
     public bool Debug;

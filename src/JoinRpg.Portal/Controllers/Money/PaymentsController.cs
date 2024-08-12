@@ -4,6 +4,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PscbApi;
 
 namespace JoinRpg.Portal.Controllers.Money;
 
@@ -111,19 +112,48 @@ public class PaymentsController : Common.ControllerBase
 
         try
         {
-            ClaimPaymentContext paymentContext = await _payments.InitiateClaimPaymentAsync(
-                new ClaimPaymentRequest
-                {
-                    ProjectId = data.ProjectId,
-                    ClaimId = data.ClaimId,
-                    CommentText = data.CommentText,
-                    PayerId = CurrentUserAccessor.UserId,
-                    Money = data.Money,
-                    Method = (PaymentMethod)data.Method,
-                    OperationDate = data.OperationDate,
-                });
+            if (data.Platform is not null
+                && Enum.TryParse<FpsPlatform>(data.Platform, true, out var platform)
+                && platform != FpsPlatform.Desktop)
+            {
+                var paymentContext = await _payments.InitiateFastPaymentsSystemMobilePaymentAsync(
+                    new ClaimPaymentRequest
+                    {
+                        ProjectId = data.ProjectId,
+                        ClaimId = data.ClaimId,
+                        CommentText = data.CommentText,
+                        PayerId = CurrentUserAccessor.UserId,
+                        Money = data.Money,
+                        Method = (PaymentMethod)data.Method,
+                        OperationDate = data.OperationDate,
+                    },
+                    platform);
 
-            return View("RedirectToBank", paymentContext);
+                return RedirectToAction("FastPaymentsSystemPayment",
+                    new
+                    {
+                        projectId = paymentContext.ProjectId,
+                        claimId = paymentContext.ClaimId,
+                        operationId = paymentContext.OperationId,
+                        platform,
+                    });
+            }
+            else
+            {
+                ClaimPaymentContext paymentContext = await _payments.InitiateClaimPaymentAsync(
+                    new ClaimPaymentRequest
+                    {
+                        ProjectId = data.ProjectId,
+                        ClaimId = data.ClaimId,
+                        CommentText = data.CommentText,
+                        PayerId = CurrentUserAccessor.UserId,
+                        Money = data.Money,
+                        Method = (PaymentMethod)data.Method,
+                        OperationDate = data.OperationDate,
+                    });
+
+                return View("RedirectToBank", paymentContext);
+            }
         }
         catch (Exception e)
         {
@@ -324,50 +354,31 @@ public class PaymentsController : Common.ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpGet]
     [Authorize]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> InitiateFastPaymentsSystemMobilePayment(StartFastPaymentsSystemMobilePaymentViewModel data)
+    public async Task<ActionResult> FastPaymentsSystemPayment(int projectId, int claimId, int operationId, FpsPlatform platform)
     {
-        // Checking contract
-        if (!data.AcceptContract)
-        {
-            return Error(
-                new ErrorViewModel
-                {
-                    Message = "Необходимо принять оферту",
-                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
-                    ReturnText = "Вернуться к заявке"
-                });
-        }
-
         try
         {
-            var paymentContext = await _payments.(
-                new ClaimPaymentRequest
-                {
-                    ProjectId = data.ProjectId,
-                    ClaimId = data.ClaimId,
-                    CommentText = data.CommentText,
-                    PayerId = CurrentUserAccessor.UserId,
-                    Money = data.Money,
-                    Method = (PaymentMethod)data.Method,
-                    OperationDate = data.OperationDate,
-                });
+            var paymentContext =
+                await _payments.GetFastPaymentsSystemMobilePaymentContextAsync(
+                    projectId,
+                    claimId,
+                    operationId,
+                    platform);
 
-            return View("RedirectToBank", paymentContext);
+            return View("FastPaymentsSystemPayment", paymentContext);
         }
         catch (Exception e)
         {
             return Error(
                 new ErrorViewModel
                 {
-                    Message = "Ошибка создания платежа: " + e.Message,
-                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    Message = "Ошибка обработки платежа: " + e.Message,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
                     ReturnText = "Вернуться к заявке",
                     Data = e,
                 });
         }
-
     }
 }
