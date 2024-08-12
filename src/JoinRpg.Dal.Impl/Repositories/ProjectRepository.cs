@@ -404,5 +404,14 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             }
         }
     }
+
+    async Task<ProjectMastersListInfo> IProjectMetadataRepository.GetMastersList(ProjectIdentification projectId)
+    {
+        var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
+
+        var masters = project.ProjectAcls.Select(acl => new ProjectMasterInfo(new UserIdentification(acl.User.UserId), acl.User.ExtractDisplayName(), new Email(acl.User.Email)));
+
+        return new ProjectMastersListInfo(projectId, project.ProjectName, masters.ToArray());
+    }
 }
 

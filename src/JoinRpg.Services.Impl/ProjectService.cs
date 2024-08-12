@@ -123,10 +123,7 @@ internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor curre
         await masterEmailService.EmailProjectClosed(new ProjectClosedMail()
         {
             ProjectId = projectId,
-            Initiator = await GetCurrentUser(),
-            ProjectName = project.ProjectName,
-            Recipients = project.ProjectAcls.Select(x => x.User).ToList(),
-            Text = new MarkdownString(),
+            Initiator = new UserIdentification(CurrentUserId),
         });
     }
 
