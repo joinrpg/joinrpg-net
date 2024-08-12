@@ -29,11 +29,6 @@ public class RecurrentPayment : IProjectEntity
     public string? BankParentPayment { get; set; }
 
     /// <summary>
-    /// Дополнительный айдишник от банка. Нужен для СБП.
-    /// </summary>
-    public string? BankAdditional { get; set; }
-
-    /// <summary>
     /// Сколько денег засунули в самом первом платеже.
     /// </summary>
     public int PaymentAmount { get; set; }

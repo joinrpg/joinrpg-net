@@ -51,7 +51,13 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     /// Identifier of a refund operation received from bank.
     /// </summary>
     [MaxLength(256)]
-    public string? BankRefundToken { get; set; }
+    public string? BankRefundKey { get; set; }
+
+    /// <summary>
+    /// Identifier of a ?????? TODO[shiko] operation received from bank.
+    /// </summary>
+    [MaxLength(256)]
+    public string? BankOperationKey { get; set; }
 
     /// <summary>
     /// Id of a finance operation that was refunded.

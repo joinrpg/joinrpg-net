@@ -512,7 +512,7 @@ public class PaymentsService(
             else if (fo.RefundOperation && paymentInfo.ErrorCode is null)
             {
                 // Trying to get specific refund by its id
-                var refund = paymentInfo.Payment.Refunds?.FirstOrDefault(rf => string.Equals(rf.Id, fo.BankRefundToken, StringComparison.OrdinalIgnoreCase));
+                var refund = paymentInfo.Payment.Refunds?.FirstOrDefault(rf => string.Equals(rf.Id, fo.BankRefundKey, StringComparison.OrdinalIgnoreCase));
 
                 // Updating operation status. If no refund -- no problem, it makes operation invalid
                 UpdateFinanceOperationStatus(fo, refund);
@@ -905,7 +905,7 @@ public class PaymentsService(
         if (result.Status == PaymentInfoQueryStatus.Success && result.CreatedRefund?.Status is not (null or RefundStatus.Error))
         {
             logger.LogInformation("Refund of payment {financeOperationId} for claim {claimId} to project {projectId} has been successfully initiated", sourceFo.CommentId, claimId, projectId);
-            comment.Finance.BankRefundToken = result.CreatedRefund.Id;
+            comment.Finance.BankRefundKey = result.CreatedRefund.Id;
             if (result.CreatedRefund.Status == RefundStatus.Completed)
             {
                 comment.Finance.State = FinanceOperationState.Approved;
@@ -914,7 +914,7 @@ public class PaymentsService(
         else
         {
             logger.LogError("Failed to initiate refund of payment {financeOperationId} for claim {claimId} to project {projectId} because {bankError}", sourceFo.CommentId, claimId, projectId, result.ErrorDescription ?? "unknown problem");
-            comment.Finance.BankRefundToken = result.CreatedRefund?.Id;
+            comment.Finance.BankRefundKey = result.CreatedRefund?.Id;
             comment.Finance.State = FinanceOperationState.Declined;
         }
         await UnitOfWork.SaveChangesAsync();
