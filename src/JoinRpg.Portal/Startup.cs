@@ -112,6 +112,8 @@ public class Startup
             healthChecks.AddCheck<HealthCheckS3Storage>("S3 storage");
         }
 
+        services.AddJoinEmailSendingService();
+
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
