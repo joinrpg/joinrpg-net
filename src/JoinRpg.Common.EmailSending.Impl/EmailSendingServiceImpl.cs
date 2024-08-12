@@ -10,8 +10,6 @@ namespace JoinRpg.Common.EmailSending.Impl;
 
 public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClientFactory httpClientFactory, IOptions<NotificationsOptions> notificationsOptions) : IEmailSendingService
 {
-    private const int MaxRecipientsInChunk = 1000;
-
     private bool EmailEnabled { get; } = !string.IsNullOrWhiteSpace(config.Value.ApiDomain) && !string.IsNullOrWhiteSpace(config.Value.ApiKey);
     private MessageService MessageService { get; } = new MessageService(config.Value.ApiKey, httpClientFactory);
 
@@ -32,7 +30,7 @@ public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClien
             return;
         }
 
-        foreach (var recepientChunk in to.Chunk(MaxRecipientsInChunk))
+        foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
             await SendEmailChunkImpl(recepientChunk, subject, text, sender, body);
         }
@@ -48,7 +46,7 @@ public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClien
         var html = body.ToHtmlString().ToHtmlString();
         var text = body.ToPlainText().ToString();
 
-        foreach (var recepientChunk in to.Chunk(MaxRecipientsInChunk))
+        foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
             await SendEmailChunkImpl(recepientChunk, subject, text, sender, html);
         }
