@@ -24,6 +24,7 @@ public static class DailyJobRegistration
     {
         return services
             .AddScoped<TJob>()
+            .AddScoped<IDailyJob, TJob>()
             .AddHostedService<MidnightJobBackgroundService<TJob>>();
     }
 }
