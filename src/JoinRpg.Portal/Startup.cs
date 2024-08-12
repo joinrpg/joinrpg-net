@@ -17,8 +17,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 
 namespace JoinRpg.Portal;
@@ -50,7 +48,6 @@ public class Startup
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
         _ = services.AddHttpContextAccessor();
-        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
         _ = services.AddHttpClient();
 
