@@ -21,13 +21,16 @@ public class MidnightJobBackgroundService<TJob>(
             await WaitUntilMidnight(stoppingToken);
             logger.LogInformation("We are at midnight (special one)");
             stoppingToken.ThrowIfCancellationRequested();
+
+            using var scope = serviceProvider.CreateScope();
+            var dailyJobRepository = scope.ServiceProvider.GetRequiredService<IDailyJobRepository>();
+
             var jobId = new JobId(JobName, DateOnly.FromDateTime(DateTime.Now));
             if (await dailyJobRepository.TryInsertJobRecord(jobId))
             {
                 try
                 {
-                    using var scope = serviceProvider.CreateScope();
-                    var job = serviceProvider.GetRequiredService<TJob>();
+                    var job = scope.ServiceProvider.GetRequiredService<TJob>();
                     await job.RunOnce(stoppingToken);
                     _ = await dailyJobRepository.TrySetJobCompleted(jobId);
                 }
