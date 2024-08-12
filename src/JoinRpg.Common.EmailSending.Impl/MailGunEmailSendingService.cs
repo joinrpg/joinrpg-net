@@ -8,13 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Common.EmailSending.Impl;
 
-public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClientFactory httpClientFactory, IOptions<NotificationsOptions> notificationsOptions) : IEmailSendingService
+internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttpClientFactory httpClientFactory, IOptions<NotificationsOptions> notificationsOptions) : IEmailSendingService
 {
-    private bool EmailEnabled { get; } = !string.IsNullOrWhiteSpace(config.Value.ApiDomain) && !string.IsNullOrWhiteSpace(config.Value.ApiKey);
     private MessageService MessageService { get; } = new MessageService(config.Value.ApiKey, httpClientFactory);
 
     public string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";
-
 
     public string GetRecepientPlaceholderName() => GetUserDependentValue(Constants.MailGunName);
 
@@ -25,7 +23,7 @@ public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClien
         RecepientData sender,
         IReadOnlyCollection<RecepientData> to)
     {
-        if (!to.Any())
+        if (to.Count == 0)
         {
             return;
         }
@@ -38,7 +36,7 @@ public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClien
 
     public async Task SendEmails(string subject, MarkdownString body, RecepientData sender, IReadOnlyCollection<RecepientData> to)
     {
-        if (!to.Any())
+        if (to.Count == 0)
         {
             return;
         }
@@ -71,14 +69,11 @@ public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClien
             .GetMessage();
 
         message.RecipientVariables = recipients.ToRecipientVariables();
-        if (EmailEnabled)
+        var response = await MessageService.SendMessageAsync(config.Value.ApiDomain, message);
+        if (!response.IsSuccessStatusCode)
         {
-            var response = await MessageService.SendMessageAsync(config.Value.ApiDomain, message);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new EmailSendFailedException(
-                    $"Failed to send email. Response is {response.StatusCode} {response.ReasonPhrase}");
-            }
+            throw new EmailSendFailedException(
+                $"Failed to send email. Response is {response.StatusCode} {response.ReasonPhrase}");
         }
     }
 }
