@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using PscbApi;
 using PscbApi.Models;
 
 namespace JoinRpg.Services.Interfaces;
@@ -129,6 +130,19 @@ public class PaymentResultContext
     /// Bank response info
     /// </summary>
     public BankResponseInfo BankResponse { get; set; }
+}
+
+public class FastPaymentsSystemMobilePaymentContext
+{
+    public ICollection<FpsBank> Banks { get; set; }
+
+    public string QrCodeUrl { get; set; }
+
+    public int ProjectId { get; set; }
+
+    public int ClaimId { get; set; }
+
+    public int OperationId { get; set; }
 }
 
 /// <summary>

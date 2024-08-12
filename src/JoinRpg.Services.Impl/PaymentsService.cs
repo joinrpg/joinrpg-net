@@ -47,6 +47,7 @@ public class PaymentsService(
     IBankSecretsProvider bankSecrets,
     ICurrentUserAccessor currentUserAccessor,
     Lazy<IEmailService> emailService,
+    Lazy<FastPaymentsSystemApi> fpsApi,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
@@ -86,6 +87,97 @@ public class PaymentsService(
             ? $"Подписка пользователя на {goodName}"
             : $"Билет (организационный взнос) участника на {goodName}";
         return (goodName, details);
+    }
+
+    public async Task<ICollection<FpsBank>?> InitiateFastPaymentsSystemMobilePaymentAsync(ClaimPaymentRequest request, FpsPlatform platform)
+    {
+        // Loading claim
+        var claim = await GetClaimAsync(request.ProjectId, request.ClaimId);
+
+        // Checking access rights
+        if (claim.PlayerUserId != CurrentUserId)
+        {
+            throw new NoAccessToProjectException(claim.Project, CurrentUserId);
+        }
+
+        var onlinePaymentType = request.Recurrent
+            ? claim.Project.ActivePaymentTypes.SingleOrDefault(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
+            : claim.Project.ActivePaymentTypes.SingleOrDefault(pt => pt.TypeKind == PaymentTypeKind.Online);
+
+        if (onlinePaymentType is null)
+        {
+            throw new OnlinePaymentsNotAvailableException(claim.Project);
+        }
+
+        if (request.Recurrent && request.Method != PaymentMethod.FastPaymentsSystem)
+        {
+            throw new PaymentMethodNotAllowedForRecurrentPaymentsException(claim.Project, request.Method);
+        }
+
+        if (request.Money <= 0)
+        {
+            throw new PaymentException(claim.Project, $"Money amount must be positive integer");
+        }
+
+        User user = await GetCurrentUser();
+
+        var purpose = GetPurpose(request.Recurrent, claim.Project.ProjectName);
+
+        var message = new FastPaymentsSystemInvoicingMessage
+        {
+            RecurrentPayment = request.Recurrent,
+            Amount = request.Money,
+            Details = purpose.Details,
+            CustomerAccount = CurrentUserId.ToString(),
+            CustomerEmail = user.Email,
+            CustomerPhone = user.Extra?.PhoneNumber,
+            CustomerComment = request.CommentText ?? purpose.Details,
+            PaymentMethod = PscbPaymentMethod.FastPaymentsSystem,
+            SuccessUrl = uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
+            FailUrl = uriService.Get(new PaymentFailUrl(request.ProjectId, request.ClaimId)),
+            ExpirationMinutes = 120, // TODO: Make configurable
+            Data = new FastPaymentSystemInvoicingMessageData
+            {
+                GetQrCode = false,
+                GetQrCodeUrl = false,
+                FastPaymentsSystemSubscriptionPurpose = request.Recurrent ? purpose.Details : null,
+                FastPaymentsSystemRedirectUrl = uriService.Get(new PaymentSuccessUrl(request.ProjectId, request.ClaimId)),
+                Receipt = new Receipt
+                {
+                    CompanyEmail = User.OnlinePaymentVirtualUser,
+                    TaxSystem = TaxSystemType.SimplifiedIncomeOutcome,
+                    Items = new List<ReceiptItem>
+                    {
+                        new ReceiptItem
+                        {
+                            ObjectType = PaymentObjectType.Service,
+                            PaymentType = ItemPaymentType.FullPayment,
+                            Price = request.Money,
+                            Quantity = 1,
+                            TotalPrice = request.Money,
+                            VatType = VatSystemType.None,
+                            Name = purpose.Details,
+                        }
+                    }
+                }
+            }
+        };
+
+        var api = GetApi(request.ProjectId, request.ClaimId);
+
+        // Creating request to bank
+        var invoice = await api.GetFastPaymentSystemInvoice(
+            message,
+            async () => (await AddPaymentCommentAsync(claim, onlinePaymentType, request)).GetOrderId()
+        );
+
+        if (invoice.Status != PaymentInfoQueryStatus.Success)
+        {
+            logger.LogError("Failed to initiate payment {financeOperationId} for claim {claimId} to project {projectId} because {bankError}", message.OrderId, request.ClaimId, request.ProjectId, invoice.ErrorDescription);
+            throw new PaymentException(claim.Project, $"Failed to initiate Fast Payments System mobile payment");
+        }
+
+        return await fpsApi.Value.GetFastPaymentsSystemBanks(platform, invoice.Payment.QrCodeUrl);
     }
 
     /// <inheritdoc />

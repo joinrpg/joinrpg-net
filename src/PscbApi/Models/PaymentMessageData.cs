@@ -87,3 +87,36 @@ public class PaymentMessageData
     [JsonProperty("sbpRedirectUrl", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string? FastPaymentsSystemRedirectUrl { get; set; }
 }
+
+/// <summary>
+/// Provides additional properties to support Fast Payments System invoicing
+/// </summary>
+/// <remarks>
+/// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-invojsing
+/// </remarks>
+public class FastPaymentSystemInvoicingMessageData : PaymentMessageData
+{
+    /// <summary>
+    /// Width of QR-code image. Only for FPS invoicing
+    /// </summary>
+    [JsonProperty("qrCodeImageWidth", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public int? QrCodeWidth { get; set; }
+
+    /// <summary>
+    /// Height of QR-code image. Only for FPS invoicing
+    /// </summary>
+    [JsonProperty("qrCodeImageHeight", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public int? QrCodeHeight { get; set; }
+
+    /// <summary>
+    /// true to return QR code image. Only for FPS invoicing
+    /// </summary>
+    [JsonProperty("requestQrCodeImage", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool? GetQrCode { get; set; }
+
+    /// <summary>
+    /// true to return QR code url. Only for FPS invoicing
+    /// </summary>
+    [JsonProperty("requestQrCodeImageUrl", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool? GetQrCodeUrl { get; set; }
+}

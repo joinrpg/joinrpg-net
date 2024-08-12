@@ -78,21 +78,12 @@ public class BankApi
         throw new PscbApiRequestException<TRequest>(url, request, signature, $"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
     }
 
-    /// <summary>
-    /// Creates url with encoded payment data to redirect to perform payment
-    /// </summary>
-    /// <param name="message">Payment data</param>
-    /// <param name="getOrderId">Callback to retrieve order Id after verifying entire message</param>
-    /// <param name="getOrderIdDisplayValue">Callback to retrieve order Id display value</param>
-    /// <returns>Url to redirect to</returns>
-    public async Task<PaymentRequestDescriptor> BuildPaymentRequestAsync(
-        PaymentMessage message,
-        Func<Task<string>> getOrderId,
-        Func<string, string>? getOrderIdDisplayValue = null)
+    private void PrepareMessage(PaymentMessage message)
     {
         if (Debug)
         {
             message.Details = "[Debug mode] " + message.Details;
+            message.Data.EnableDebugOutput = true;
         }
 
         if (message.PaymentMethod.HasValue)
@@ -117,6 +108,21 @@ public class BankApi
         message.SuccessUrl ??= _configuration.DefaultSuccessUrl;
         message.FailUrl ??= _configuration.DefaultFailUrl;
         Validator.ValidateObject(message, new ValidationContext(message) { MemberName = nameof(message) });
+    }
+
+    /// <summary>
+    /// Creates url with encoded payment data to redirect to perform payment
+    /// </summary>
+    /// <param name="message">Payment data</param>
+    /// <param name="getOrderId">Callback to retrieve order Id after verifying entire message</param>
+    /// <param name="getOrderIdDisplayValue">Callback to retrieve order Id display value</param>
+    /// <returns>Url to redirect to</returns>
+    public async Task<PaymentRequestDescriptor> BuildPaymentRequestAsync(
+        PaymentMessage message,
+        Func<Task<string>> getOrderId,
+        Func<string, string>? getOrderIdDisplayValue = null)
+    {
+        PrepareMessage(message);
 
         message.OrderId = await getOrderId() ?? message.OrderId;
         message.ValidateProperty(m => m.OrderId);
@@ -302,6 +308,29 @@ public class BankApi
 
         return await ApiRequestAsync<RefundMessage, RefundInfo>(
             $"{ActualApiEndpoint}/merchantApi/refundPayment",
+            message);
+    }
+
+    public async Task<FastPaymentsSystemInvoicingInfo> GetFastPaymentSystemInvoice(
+        FastPaymentsSystemInvoicingMessage message, Func<Task<string>> getOrderId,
+        Func<string, string>? getOrderIdDisplayValue = null)
+    {
+        ArgumentNullException.ThrowIfNull(message, nameof(message));
+
+        PrepareMessage(message);
+
+        message.OrderId = await getOrderId() ?? message.OrderId;
+        message.ValidateProperty(m => m.OrderId);
+
+        message.OrderIdDisplayValue = getOrderIdDisplayValue?.Invoke(message.OrderId) ?? message.OrderIdDisplayValue;
+        message.ValidateProperty(m => m.OrderIdDisplayValue);
+
+        System.Diagnostics.Debug.WriteLineIf(
+            Debug,
+            JsonConvert.SerializeObject(message, Formatting.Indented));
+
+        return await ApiRequestAsync<FastPaymentsSystemInvoicingMessage, FastPaymentsSystemInvoicingInfo>(
+            $"{ActualApiEndpoint}/merchantApi/pay",
             message);
     }
 }

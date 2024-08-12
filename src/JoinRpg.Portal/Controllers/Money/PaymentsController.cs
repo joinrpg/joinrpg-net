@@ -323,4 +323,51 @@ public class PaymentsController : Common.ControllerBase
                 });
         }
     }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> InitiateFastPaymentsSystemMobilePayment(StartFastPaymentsSystemMobilePaymentViewModel data)
+    {
+        // Checking contract
+        if (!data.AcceptContract)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Необходимо принять оферту",
+                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+
+        try
+        {
+            var paymentContext = await _payments.(
+                new ClaimPaymentRequest
+                {
+                    ProjectId = data.ProjectId,
+                    ClaimId = data.ClaimId,
+                    CommentText = data.CommentText,
+                    PayerId = CurrentUserAccessor.UserId,
+                    Money = data.Money,
+                    Method = (PaymentMethod)data.Method,
+                    OperationDate = data.OperationDate,
+                });
+
+            return View("RedirectToBank", paymentContext);
+        }
+        catch (Exception e)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Ошибка создания платежа: " + e.Message,
+                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    ReturnText = "Вернуться к заявке",
+                    Data = e,
+                });
+        }
+
+    }
 }
