@@ -1,19 +1,17 @@
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Email;
 using JoinRpg.Markdown;
 using Mailgun.Messages;
 using Mailgun.Service;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Common.EmailSending.Impl;
 
-public class EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory httpClientFactory) : IEmailSendingService
+public class EmailSendingServiceImpl(IOptions<MailGunOptions> config, IHttpClientFactory httpClientFactory, IOptions<NotificationsOptions> notificationsOptions) : IEmailSendingService
 {
-    private const int MaxRecipientsInChunk = 1000;
-
-    private bool EmailEnabled { get; } = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
-    private string ApiDomain { get; } = config.ApiDomain;
-    private string ServiceEmail { get; } = config.ServiceEmail;
-    private MessageService MessageService { get; } = new MessageService(config.ApiKey, httpClientFactory);
+    private bool EmailEnabled { get; } = !string.IsNullOrWhiteSpace(config.Value.ApiDomain) && !string.IsNullOrWhiteSpace(config.Value.ApiKey);
+    private MessageService MessageService { get; } = new MessageService(config.Value.ApiKey, httpClientFactory);
 
     public string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";
 
@@ -32,7 +30,7 @@ public class EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory h
             return;
         }
 
-        foreach (var recepientChunk in to.Chunk(MaxRecipientsInChunk))
+        foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
             await SendEmailChunkImpl(recepientChunk, subject, text, sender, body);
         }
@@ -48,7 +46,7 @@ public class EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory h
         var html = body.ToHtmlString().ToHtmlString();
         var text = body.ToPlainText().ToString();
 
-        foreach (var recepientChunk in to.Chunk(MaxRecipientsInChunk))
+        foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
             await SendEmailChunkImpl(recepientChunk, subject, text, sender, html);
         }
@@ -65,7 +63,7 @@ public class EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory h
             .SetFromAddress(new Recipient()
             {
                 DisplayName = sender.DisplayName,
-                Email = ServiceEmail,
+                Email = notificationsOptions.Value.ServiceAccountEmail,
             })
             .SetReplyToAddress(sender.ToMailGunRecepient())
             .SetTextBody(text)
@@ -77,7 +75,7 @@ public class EmailSendingServiceImpl(IMailGunConfig config, IHttpClientFactory h
         message.RecipientVariables = recipients.ToRecipientVariables();
         if (EmailEnabled)
         {
-            var response = await MessageService.SendMessageAsync(ApiDomain, message);
+            var response = await MessageService.SendMessageAsync(config.Value.ApiDomain, message);
             if (!response.IsSuccessStatusCode)
             {
                 throw new EmailSendFailedException(

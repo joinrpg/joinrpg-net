@@ -1,11 +1,13 @@
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Email;
-internal class AccountServiceEmailImpl(IMailGunConfig config, IEmailSendingService messageService) : IAccountEmailService
+internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, IEmailSendingService messageService) : IAccountEmailService
 {
-    private readonly RecepientData _joinRpgSender = new(JoinRpgTeam, config.ServiceEmail);
+    private readonly RecepientData _joinRpgSender = new(JoinRpgTeam, options.Value.ServiceAccountEmail);
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
 
     #region Account emails

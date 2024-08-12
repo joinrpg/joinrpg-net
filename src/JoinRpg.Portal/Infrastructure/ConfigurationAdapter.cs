@@ -1,5 +1,4 @@
 using JoinRpg.Dal.Impl;
-using JoinRpg.Interfaces.Email;
 using PscbApi;
 
 namespace JoinRpg.Portal.Infrastructure;
@@ -7,21 +6,8 @@ namespace JoinRpg.Portal.Infrastructure;
 /// <summary>
 /// Read configuration
 /// </summary>
-public class ConfigurationAdapter : IMailGunConfig, IJoinDbContextConfiguration, IBankSecretsProvider
+public class ConfigurationAdapter(IConfiguration configuration) : IJoinDbContextConfiguration, IBankSecretsProvider
 {
-    private readonly IConfiguration configuration;
-
-    /// <summary>
-    /// ctor
-    /// </summary>
-    public ConfigurationAdapter(IConfiguration configuration) => this.configuration = configuration;
-
-    string IMailGunConfig.ApiDomain => configuration.GetValue<string>("MailGunApiDomain");
-
-    string IMailGunConfig.ApiKey => configuration.GetValue<string>("MailGunApiKey");
-
-    string IMailGunConfig.ServiceEmail => "support@" + configuration.GetValue<string>("MailGunApiDomain");
-
     string IJoinDbContextConfiguration.ConnectionString
     {
         get
