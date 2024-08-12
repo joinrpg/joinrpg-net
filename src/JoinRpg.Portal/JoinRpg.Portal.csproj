@@ -57,7 +57,6 @@
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Pages\Admin\" />
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
   <ItemGroup>

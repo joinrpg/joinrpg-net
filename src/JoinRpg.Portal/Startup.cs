@@ -17,8 +17,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Serilog;
 
 namespace JoinRpg.Portal;
@@ -44,12 +42,12 @@ public class Startup
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
-            .Configure<MailGunOptions>(Configuration.GetSection("MailGun"));
+            .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
+            .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"));
 
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
         _ = services.AddHttpContextAccessor();
-        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
         _ = services.AddHttpClient();
 

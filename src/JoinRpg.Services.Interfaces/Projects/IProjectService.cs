@@ -38,6 +38,8 @@ public interface IProjectService
 
     Task CloseProject(ProjectIdentification projectId, bool publishPlot);
 
+    Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate);
+
     Task SetCheckInOptions(int projectId,
         bool checkInProgress,
         bool enableCheckInModule,

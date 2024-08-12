@@ -1,0 +1,17 @@
+﻿@page
+@model JoinRpg.Portal.Pages.Admin.JobsModel
+<h3>Джобы</h3>
+@foreach (var job in Model.Jobs)
+{
+    <div class="panel panel-default">
+    <div class="panel-heading">@job.Name</div>
+    <div class="panel-body">
+            <form method="post">
+                    @Html.Hidden("name", job.Name)
+                    @Html.AntiForgeryToken()
+
+                            <input type="submit" value="Запустить джобу" class="btn btn-success" />
+            </form>
+    </div>
+    </div>
+}

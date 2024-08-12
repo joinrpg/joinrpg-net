@@ -4,25 +4,20 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.WebPortal.Managers;
-public class ProjectMetadataRepositoryCacheDecorator : IProjectMetadataRepository
+public class ProjectMetadataRepositoryCacheDecorator(
+    IProjectMetadataRepository repository,
+    PerRequestCache<ProjectIdentification, ProjectInfo> projectMetadataCache) : IProjectMetadataRepository
 {
-    private readonly IProjectMetadataRepository repository;
-    private readonly PerRequestCache<ProjectIdentification, ProjectInfo> cache;
-
-    public ProjectMetadataRepositoryCacheDecorator(IProjectMetadataRepository repository, PerRequestCache<ProjectIdentification, ProjectInfo> cache)
-    {
-        this.repository = repository;
-        this.cache = cache;
-    }
-
     public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId)
     {
-        var projectInfo = cache.TryGet(projectId);
+        var projectInfo = projectMetadataCache.TryGet(projectId);
         if (projectInfo == null)
         {
             projectInfo = await repository.GetProjectMetadata(projectId);
-            cache.Set(projectId, projectInfo);
+            projectMetadataCache.Set(projectId, projectInfo);
         }
         return projectInfo;
     }
+
+    Task<ProjectMastersListInfo> IProjectMetadataRepository.GetMastersList(ProjectIdentification projectId) => repository.GetMastersList(projectId);
 }

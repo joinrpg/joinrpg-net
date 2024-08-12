@@ -119,7 +119,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.ProjectMasterTo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.ProjectCommon", "src\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj", "{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Dal.JobService", "src\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj", "{340E5B6E-2C23-43B6-869D-D9BF807E69D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.JobService", "src\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj", "{340E5B6E-2C23-43B6-869D-D9BF807E69D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,8 +7,8 @@ using Microsoft.Extensions.Options;
 namespace JoinRpg.Services.Email;
 internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, IEmailSendingService messageService) : IAccountEmailService
 {
-    private readonly RecepientData _joinRpgSender = new(JoinRpgTeam, options.Value.ServiceAccountEmail);
-    private const string JoinRpgTeam = "Команда JoinRpg.Ru";
+    private readonly RecepientData joinRpgSender = options.Value.ServiceRecepient;
+    private readonly string joinRpgTeam = options.Value.JoinRpgTeamName;
 
     #region Account emails
     public Task Email(RemindPasswordEmail email)
@@ -21,11 +21,11 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
 
 --
 
-{JoinRpgTeam}";
+{joinRpgTeam}";
         User recipient = email.Recipient;
         return messageService.SendEmail("Восстановление пароля на JoinRpg.Ru",
             new MarkdownString(text),
-            _joinRpgSender,
+            joinRpgSender,
             recipient.ToRecepientData());
     }
 
@@ -41,10 +41,10 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
 
 --
 
-{JoinRpgTeam}";
+{joinRpgTeam}";
         return messageService.SendEmail("Регистрация на JoinRpg.Ru",
             new MarkdownString(text),
-            _joinRpgSender,
+            joinRpgSender,
             email.Recipient.ToRecepientData());
     }
     #endregion

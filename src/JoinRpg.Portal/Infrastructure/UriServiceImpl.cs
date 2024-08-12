@@ -1,78 +1,78 @@
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Web.Helpers;
 
-internal class UriServiceImpl(IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor) : IUriService, IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
+internal class UriServiceImpl(
+    IHttpContextAccessor httpContextAccessor,
+    LinkGenerator linkGenerator,
+    IOptions<NotificationsOptions> notificationOptions) : IUriService, IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
 {
-    private readonly Lazy<IUrlHelper> urlHelper = CreateUrlHelper(urlHelperFactory, actionContextAccessor);
-
-    private string? CreateLink(LinkType linkType, string identification, int? projectId)
+    private Uri? CreateLink(LinkType linkType, string identification, int? projectId)
     {
-        var urlHelper = this.urlHelper.Value;
-        var urlScheme = urlHelper.ActionContext.HttpContext.Request.Scheme ?? "http";
-        return linkType switch
+        var link = linkType switch
         {
-            LinkType.ResultUser => urlHelper.Action("Details",
+            LinkType.ResultUser => linkGenerator.GetPathByAction("Details",
                                 "User",
-                                new { UserId = identification },
-                                urlScheme),
-            LinkType.ResultCharacterGroup => urlHelper.Action("Details",
+                                new { UserId = identification }),
+            LinkType.ResultCharacterGroup => linkGenerator.GetPathByAction("Details",
                                 "GameGroups",
-                                new { CharacterGroupId = identification, ProjectId = projectId },
-                                urlScheme),
-            LinkType.ResultCharacter => urlHelper.Action("Details",
+                                new { CharacterGroupId = identification, ProjectId = projectId }),
+            LinkType.ResultCharacter => linkGenerator.GetPathByAction("Details",
                                 "Character",
-                                new { CharacterId = identification, ProjectId = projectId },
-                                urlScheme),
-            LinkType.Claim => urlHelper.Action("Edit",
+                                new { CharacterId = identification, ProjectId = projectId }),
+            LinkType.Claim => linkGenerator.GetPathByAction("Edit",
                                 "Claim",
-                                new { ProjectId = projectId, ClaimId = identification },
-                                urlScheme),
-            LinkType.Plot => urlHelper.Action("Edit",
+                                new { ProjectId = projectId, ClaimId = identification }),
+            LinkType.Plot => linkGenerator.GetPathByAction("Edit",
                                 "Plot",
-                                new { PlotFolderId = identification, ProjectId = projectId },
-                                urlScheme),
-            LinkType.Comment => urlHelper.Action("ToComment",
+                                new { PlotFolderId = identification, ProjectId = projectId }),
+            LinkType.Comment => linkGenerator.GetPathByAction("ToComment",
                                 "DiscussionRedirect",
-                                new { ProjectId = projectId, CommentId = identification },
-                                urlScheme),
-            LinkType.CommentDiscussion => urlHelper.Action("ToDiscussion",
+                                new { ProjectId = projectId, CommentId = identification }),
+            LinkType.CommentDiscussion => linkGenerator.GetPathByAction("ToDiscussion",
                                 "DiscussionRedirect",
-                                new { ProjectId = projectId, CommentDiscussionId = identification },
-                                urlScheme),
-            LinkType.Project => urlHelper.Action("Details", "Game", new { ProjectId = projectId }, urlScheme),
-            LinkType.PaymentSuccess => urlHelper.Action(
+                                new { ProjectId = projectId, CommentDiscussionId = identification }),
+            LinkType.Project => linkGenerator.GetPathByAction("Details", "Game", new { ProjectId = projectId }),
+            LinkType.PaymentSuccess => linkGenerator.GetPathByAction(
                                 "ClaimPaymentSuccess",
                                 "Payments",
-                                new { projectId = projectId, claimId = identification },
-                                urlScheme),
-            LinkType.PaymentFail => urlHelper.Action(
+                                new { projectId = projectId, claimId = identification }),
+            LinkType.PaymentFail => linkGenerator.GetPathByAction(
                                 "ClaimPaymentFail",
                                 "Payments",
-                                new { projectId = projectId, claimId = identification },
-                                urlScheme),
+                                new { projectId = projectId, claimId = identification }),
             _ => throw new ArgumentOutOfRangeException(nameof(linkType)),
         };
+        Uri baseDomain;
+        if (httpContextAccessor.HttpContext?.Request is HttpRequest request)
+        {
+            // внутри веб реквеста, берем схему и хост из него
+            baseDomain = new Uri($"{request.Scheme}://{request.Host}");
+        }
+        else
+        {
+            // Берем из настроек
+            baseDomain = notificationOptions.Value.BaseDomain;
+        }
+
+        return link is null ? null : new Uri(baseDomain, link);
     }
 
-    private static Lazy<IUrlHelper> CreateUrlHelper(IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor) => new Lazy<IUrlHelper>(() => urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext ?? throw new InvalidOperationException("Action context is null. Possible reason: trying to construct UriService outside of web request")));
-
-    public string Get(ILinkable link) => GetUri(link).ToString();
+    public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
 
     public Uri GetUri(ILinkable link)
     {
         ArgumentNullException.ThrowIfNull(link);
 
-        return new Uri(CreateLink(link.LinkType, link.Identification, link.ProjectId) ?? throw new InvalidOperationException($"Failed to create link to {link}"));
+        return CreateLink(link.LinkType, link.Identification, link.ProjectId) ?? throw new InvalidOperationException($"Failed to create link to {link}");
     }
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
-        new(CreateLink(LinkType.ResultUser, target.UserId.ToString(), projectId: null)!);
+        CreateLink(LinkType.ResultUser, target.UserId.ToString(), projectId: null) ?? throw new InvalidOperationException($"Failed to create link {target}");
     Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target) =>
-         new(CreateLink(LinkType.ResultCharacterGroup, target.CharacterGroupId.ToString(), projectId: target.ProjectId.Value)!);
+         CreateLink(LinkType.ResultCharacterGroup, target.CharacterGroupId.ToString(), projectId: target.ProjectId.Value) ?? throw new InvalidOperationException($"Failed to create link {target}");
 }

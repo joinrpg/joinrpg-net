@@ -1,12 +1,19 @@
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
-public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepository, IServiceProvider serviceProvider, ILogger<MidnightJobBackgroundService<TJob>> logger) : BackgroundService
+public class MidnightJobBackgroundService<TJob>(
+    IServiceProvider serviceProvider,
+    ILogger<MidnightJobBackgroundService<TJob>> logger,
+    IOptions<DailyJobOptions> options
+    ) : BackgroundService
     where TJob : class, IDailyJob
 {
     private static readonly string JobName = typeof(TJob).FullName!;
+    private bool skipWait = options.Value.DebugDailyJobMode;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -14,13 +21,16 @@ public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepo
             await WaitUntilMidnight(stoppingToken);
             logger.LogInformation("We are at midnight (special one)");
             stoppingToken.ThrowIfCancellationRequested();
+
+            using var scope = serviceProvider.CreateScope();
+            var dailyJobRepository = scope.ServiceProvider.GetRequiredService<IDailyJobRepository>();
+
             var jobId = new JobId(JobName, DateOnly.FromDateTime(DateTime.Now));
             if (await dailyJobRepository.TryInsertJobRecord(jobId))
             {
                 try
                 {
-                    using var scope = serviceProvider.CreateScope();
-                    var job = serviceProvider.GetRequiredService<TJob>();
+                    var job = scope.ServiceProvider.GetRequiredService<TJob>();
                     await job.RunOnce(stoppingToken);
                     _ = await dailyJobRepository.TrySetJobCompleted(jobId);
                 }
@@ -38,6 +48,11 @@ public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepo
     }
     private async Task WaitUntilMidnight(CancellationToken stoppingToken)
     {
+        if (skipWait)
+        {
+            skipWait = false;
+            return;
+        }
         var now = DateTime.Now;
         var midnight = now
             .Date.AddDays(1) // next midnight
