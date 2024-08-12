@@ -1,6 +1,7 @@
 using JoinRpg.Dal.JobService;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
+using JoinRpg.Services.Impl.Projects;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
@@ -13,6 +14,10 @@ public static class DailyJobRegistration
         services.AddTransient<IDailyJobRepository, DailyJobRepository>();
         //TODO invent way to construct every implementation of IDailyJob
         services.AddDailyJob<DoNothingMidnightJob>();
+
+        services
+            .AddDailyJob<ProjectWarnCloseJob>()
+            .AddDailyJob<ProjectPerformCloseJob>();
     }
 
     public static IServiceCollection AddDailyJob<TJob>(this IServiceCollection services) where TJob : class, IDailyJob

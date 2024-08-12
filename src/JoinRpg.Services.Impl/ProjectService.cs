@@ -9,10 +9,15 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl;
 
-internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IMasterEmailService masterEmailService) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
+internal class ProjectService(
+    IUnitOfWork unitOfWork,
+    ICurrentUserAccessor currentUserAccessor,
+    IMasterEmailService masterEmailService,
+    ILogger<ProjectService> logger) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
     public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName)
     {
@@ -114,17 +119,39 @@ internal class ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor curre
     {
         var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
 
-        project.Active = false;
-        project.IsAcceptingClaims = false;
-        project.Details.PublishPlot = publishPlot;
-
-        await UnitOfWork.SaveChangesAsync();
+        await CloseProjectImpl(project, publishPlot);
 
         await masterEmailService.EmailProjectClosed(new ProjectClosedMail()
         {
             ProjectId = projectId,
             Initiator = new UserIdentification(CurrentUserId),
         });
+    }
+
+    public async Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectId);
+
+        await CloseProjectImpl(project, false);
+
+        await UnitOfWork.SaveChangesAsync();
+
+        await masterEmailService.EmailProjectClosedStale(new ProjectClosedStaleMail()
+        {
+            ProjectId = projectId,
+            LastActiveDate = lastActiveDate,
+        });
+
+        logger.LogInformation("Project {project} is closed as stale project.", projectId);
+    }
+
+    private async Task CloseProjectImpl(Project project, bool publishPlot)
+    {
+        project.Active = false;
+        project.IsAcceptingClaims = false;
+        project.Details.PublishPlot = publishPlot;
+
+        await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task SetCheckInOptions(int projectId,
