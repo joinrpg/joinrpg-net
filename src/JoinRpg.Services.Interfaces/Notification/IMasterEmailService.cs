@@ -10,6 +10,7 @@ public interface IMasterEmailService
     Task EmailProjectClosed(ProjectClosedMail email);
     Task EmailProjectClosedStale(ProjectClosedStaleMail email);
     Task EmailProjectStale(ProjectStaleMail email);
+    Task EmalProjectNotUsingSlots(ProjectNotUsingSlots email);
 }
 
 public class ProjectEmailModelBase
@@ -31,4 +32,9 @@ public class ProjectStaleMail : ProjectEmailModelBase
 {
     public required DateOnly LastActiveDate { get; set; }
     public required DateOnly WillCloseDate { get; set; }
+}
+
+public class ProjectNotUsingSlots : ProjectEmailModelBase
+{
+
 }

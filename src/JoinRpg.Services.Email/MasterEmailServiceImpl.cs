@@ -83,4 +83,27 @@ internal class MasterEmailServiceImpl(
         var subject = $"{metadata.ProjectName}: проект закрыт";
         await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
     }
+
+    async Task IMasterEmailService.EmalProjectNotUsingSlots(ProjectNotUsingSlots email)
+    {
+        var metadata = await projectMetadataRepository.GetMastersList(email.ProjectId);
+
+        var subject = $"{metadata.ProjectName}: проект использует устаревший функционал";
+
+        var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
+
+Проект [{metadata.ProjectName}]({uriService.GetUri(email.ProjectId)}) использует устаревший функционал — заявки в группу. Он будет отключен в октябре 2024 года. Вместо них сейчас используются шаблоны персонажей.
+Больше об этом можно почитать по ссылке https://docs.joinrpg.ru/ru/latest/characters/slots.html
+
+Вы можете автоматически сконвертировать все заявки в группу в шаблоны персонажей в Настройках проекта, или сконвертировать группы по одной в настройках. Никакие данные не потеряются.
+
+Если проект вам не нужен, закройте его, и эти сообщения перестанут приходить.
+
+--
+{joinRpgSender.DisplayName}
+
+";
+        await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
+    }
+
 }
