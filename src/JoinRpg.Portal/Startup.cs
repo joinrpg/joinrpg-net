@@ -1,8 +1,10 @@
 using System.Globalization;
 using Autofac;
 using JoinRpg.BlobStorage;
+using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
@@ -40,9 +42,11 @@ public class Startup
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
             .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
-            .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"));
+            .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
+            .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
+            .Configure<MailGunOptions>(Configuration.GetSection("MailGun"));
 
-        s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>();
+        s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
         _ = services.AddHttpContextAccessor();
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
