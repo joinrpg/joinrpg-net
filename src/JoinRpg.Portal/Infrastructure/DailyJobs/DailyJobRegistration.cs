@@ -8,6 +8,7 @@ public static class DailyJobRegistration
 {
     public static void AddJoinDailyJob(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
+        services.AddOptions<DailyJobOptions>();
         services.AddJoinEfCoreDbContext<JobScheduleDataDbContext>(configuration, environment, "DailyJob");
         services.AddTransient<IDailyJobRepository, DailyJobRepository>();
         //TODO invent way to construct every implementation of IDailyJob

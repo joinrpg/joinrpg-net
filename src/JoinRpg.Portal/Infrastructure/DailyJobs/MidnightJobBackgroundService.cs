@@ -1,12 +1,19 @@
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
-public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepository, IServiceProvider serviceProvider, ILogger<MidnightJobBackgroundService<TJob>> logger) : BackgroundService
+public class MidnightJobBackgroundService<TJob>(
+    IServiceProvider serviceProvider,
+    ILogger<MidnightJobBackgroundService<TJob>> logger,
+    IOptions<DailyJobOptions> options
+    ) : BackgroundService
     where TJob : class, IDailyJob
 {
     private static readonly string JobName = typeof(TJob).FullName!;
+    private bool skipWait = options.Value.DebugDailyJobMode;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -38,6 +45,11 @@ public class MidnightJobBackgroundService<TJob>(IDailyJobRepository dailyJobRepo
     }
     private async Task WaitUntilMidnight(CancellationToken stoppingToken)
     {
+        if (skipWait)
+        {
+            skipWait = false;
+            return;
+        }
         var now = DateTime.Now;
         var midnight = now
             .Date.AddDays(1) // next midnight

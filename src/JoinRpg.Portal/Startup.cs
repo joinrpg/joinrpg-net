@@ -44,7 +44,8 @@ public class Startup
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
-            .Configure<MailGunOptions>(Configuration.GetSection("MailGun"));
+            .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
+            .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"));
 
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
