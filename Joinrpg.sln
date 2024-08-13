@@ -121,6 +121,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.ProjectCommon",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.JobService", "src\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj", "{340E5B6E-2C23-43B6-869D-D9BF807E69D3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.Bot.Extensions.LoginWidget", "src\Telegram.Bot.Extensions.LoginWidget\Telegram.Bot.Extensions.LoginWidget.csproj", "{A9052F7B-0016-4F47-9088-8A47B24A8188}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -315,6 +317,10 @@ Global
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
