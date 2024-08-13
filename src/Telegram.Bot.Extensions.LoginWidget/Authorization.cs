@@ -1,11 +1,10 @@
-﻿namespace Telegram.Bot.Extensions.LoginWidget
+namespace Telegram.Bot.Extensions.LoginWidget;
+
+public enum Authorization
 {
-    public enum Authorization
-    {
-        InvalidHash,
-        MissingFields,
-        InvalidAuthDateFormat,
-        TooOld,
-        Valid
-    }
+    InvalidHash,
+    MissingFields,
+    InvalidAuthDateFormat,
+    TooOld,
+    Valid
 }

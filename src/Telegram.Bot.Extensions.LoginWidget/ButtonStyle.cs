@@ -1,9 +1,8 @@
-﻿namespace Telegram.Bot.Extensions.LoginWidget
+﻿namespace Telegram.Bot.Extensions.LoginWidget;
+
+public enum ButtonStyle
 {
-    public enum ButtonStyle
-    {
-        Large,
-        Medium,
-        Small
-    }
+    Large,
+    Medium,
+    Small
 }
