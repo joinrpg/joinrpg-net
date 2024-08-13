@@ -380,6 +380,7 @@ public class PaymentsService(
             Changed = Now,
             State = FinanceOperationState.Proposed,
             RecurrentPaymentId = request.Recurrent ? null : request.FromRecurrentPaymentId,
+            BankDetails = new FinanceOperationBankDetails { }
         };
         _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
         await UnitOfWork.SaveChangesAsync();
@@ -979,7 +980,7 @@ public class PaymentsService(
         if (result.Status == PaymentInfoQueryStatus.Success && result.CreatedRefund?.Status is not (null or RefundStatus.Error))
         {
             logger.LogInformation("Refund of payment {financeOperationId} for claim {claimId} to project {projectId} has been successfully initiated", sourceFo.CommentId, claimId, projectId);
-            comment.Finance.BankRefundKey = result.CreatedRefund.Id;
+            comment.Finance.BankDetails.BankRefundKey = result.CreatedRefund.Id;
             if (result.CreatedRefund.Status == RefundStatus.Completed)
             {
                 comment.Finance.State = FinanceOperationState.Approved;
@@ -988,7 +989,7 @@ public class PaymentsService(
         else
         {
             logger.LogError("Failed to initiate refund of payment {financeOperationId} for claim {claimId} to project {projectId} because {bankError}", sourceFo.CommentId, claimId, projectId, result.ErrorDescription ?? "unknown problem");
-            comment.Finance.BankRefundKey = result.CreatedRefund?.Id;
+            comment.Finance.BankDetails.BankRefundKey = result.CreatedRefund?.Id;
             comment.Finance.State = FinanceOperationState.Declined;
         }
         await UnitOfWork.SaveChangesAsync();

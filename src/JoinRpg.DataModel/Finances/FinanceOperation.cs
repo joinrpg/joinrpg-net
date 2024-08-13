@@ -46,24 +46,13 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     /// </summary>
     public Claim? LinkedClaim { get; set; }
 
-
-    /// <summary>
-    /// Identifier of a refund operation received from bank.
-    /// </summary>
-    [MaxLength(256)]
-    public string? BankRefundKey { get; set; }
-
-    /// <summary>
-    /// Identifier of a ?????? TODO[shiko] operation received from bank.
-    /// </summary>
-    [MaxLength(256)]
-    public string? BankOperationKey { get; set; }
-
     /// <summary>
     /// Id of a finance operation that was refunded.
     /// </summary>
     public int? RefundedOperationId { get; set; }
     public virtual FinanceOperation? RefundedOperation { get; set; }
+
+    public virtual FinanceOperationBankDetails? BankDetails { get; set; }
 
     /// <summary>
     /// Id of recurrent payment this operation belongs to

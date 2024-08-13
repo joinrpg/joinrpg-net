@@ -206,6 +206,13 @@ public class MyDbContext : DbContext, IUnitOfWork
             .HasOptional(fo => fo.RefundedOperation)
             .WithMany()
             .HasForeignKey(fo => fo.RefundedOperationId);
+
+        _ = modelBuilder.Entity<FinanceOperationBankDetails>()
+            .HasKey(fobd => fobd.CommentId);
+
+        _ = modelBuilder.Entity<FinanceOperation>()
+            .HasOptional(fo => fo.BankDetails)
+            .WithRequired();
     }
 
     private static void ConfigureUser(DbModelBuilder modelBuilder)
