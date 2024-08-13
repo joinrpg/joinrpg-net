@@ -7,6 +7,7 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
@@ -43,7 +44,8 @@ public class Startup
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
             .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
-            .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"));
+            .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"))
+            .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"));
 
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 

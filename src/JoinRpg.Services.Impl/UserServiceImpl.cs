@@ -43,7 +43,6 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         string groupNames,
         string skype,
         string livejournal,
-        string telegram,
         ContactsAccessType socialAccessType)
     {
         if (CurrentUserId != userId)
@@ -70,10 +69,8 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         user.Extra.Nicknames = nicknames;
         user.Extra.GroupNames = groupNames;
         user.Extra.Skype = skype;
-        var tokensToRemove = new[]
-          {"http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",};
+        string[] tokensToRemove = ["http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",];
         user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
-        user.Extra.Telegram = telegram?.RemoveFromString(tokensToRemove).TrimStart('@');
 
         user.Extra.SocialNetworksAccess = socialAccessType;
 
@@ -147,6 +144,19 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         await UnitOfWork.SaveChangesAsync();
     }
 
+    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramId telegramId, AvatarInfo avatarInfo)
+    {
+        logger.LogInformation("About to link user: {userId} to {telegramId}", userId, telegramId);
+        var user = await UserRepository.WithProfile(userId);
+
+        user.Extra ??= new UserExtra();
+        user.Extra.Telegram = string.IsNullOrWhiteSpace(telegramId.UserName?.Value) ? user.Extra.Telegram : telegramId.UserName;
+
+        await AddSocialAvatarImplAsync(avatarInfo, user, "telegram");
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
     private async Task AddSocialAvatarImplAsync(AvatarInfo avatarInfo, User user, string providerId)
     {
         if (
@@ -198,6 +208,20 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         user.Extra ??= new UserExtra();
         user.Extra.Vk = null;
         user.Extra.VkVerified = false;
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RemoveTelegramFromProfile(int userId)
+    {
+        logger.LogInformation("About to remove Telegram link from  user: {userId}", userId);
+        if (CurrentUserId != userId)
+        {
+            throw new JoinRpgInvalidUserException();
+        }
+        var user = await UserRepository.WithProfile(userId);
+        user.Extra ??= new UserExtra();
+        user.Extra.Telegram = null;
 
         await UnitOfWork.SaveChangesAsync();
     }
