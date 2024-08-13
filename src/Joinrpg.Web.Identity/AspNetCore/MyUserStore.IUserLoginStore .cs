@@ -5,8 +5,15 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>
+public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomLoginStore
 {
+    async Task ICustomLoginStore.AddCustomLoginAsync(JoinIdentityUser user, string key, string provider, CancellationToken ct)
+    {
+        var dbUser = await LoadUser(user, ct);
+        dbUser.ExternalLogins.Add(new UserExternalLogin() { Key = key, Provider = provider });
+        _ = await _ctx.SaveChangesAsync(ct);
+    }
+
     async Task IUserLoginStore<JoinIdentityUser>.AddLoginAsync(JoinIdentityUser user, UserLoginInfo login, CancellationToken cancellationToken)
     {
         var dbUser = await LoadUser(user, cancellationToken);
@@ -14,7 +21,7 @@ public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>
         _ = await _ctx.SaveChangesAsync(cancellationToken);
     }
 
-    async Task<JoinIdentityUser?> IUserLoginStore<JoinIdentityUser>.FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+    public async Task<JoinIdentityUser?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
     {
         var uel = await _ctx.Set<UserExternalLogin>().SingleOrDefaultAsync(u => u.Key == providerKey && u.Provider == loginProvider);
 
@@ -37,4 +44,10 @@ public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>
         _ = _ctx.Set<UserExternalLogin>().Remove(el);
         _ = await _ctx.SaveChangesAsync(cancellationToken);
     }
+}
+
+public interface ICustomLoginStore
+{
+    Task AddCustomLoginAsync(JoinIdentityUser user, string key, string provider, CancellationToken ct);
+    Task<JoinIdentityUser?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
 }

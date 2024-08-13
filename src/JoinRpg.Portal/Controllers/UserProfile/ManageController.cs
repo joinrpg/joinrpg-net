@@ -1,3 +1,4 @@
+using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -5,6 +6,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
@@ -12,6 +14,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Controllers;
 
@@ -174,8 +177,35 @@ public class ManageController : Common.ControllerBase
         return RedirectToAction("SetupProfile");
     }
 
+    public async Task<ActionResult> LinkTelegramLoginCallback([FromServices] ICustomLoginStore loginStore, [FromServices] TelegramLoginValidator loginValidator)
+    {
+
+        var dictionary = Request.Query.Select(x => x).ToDictionary(x => x.Key, x => x.Value.First() ?? "");
+        var value = loginValidator.CheckAuthorization(dictionary);
+
+        var principal = new System.Security.Claims.ClaimsPrincipal();
+
+
+        var userId = CurrentUserAccessor.UserId;
+        var user = (await UserManager.FindByIdAsync(userId.ToString()))!;
+
+
+        var telegramUserId = dictionary["id"];
+
+        var u = await loginStore.FindByLoginAsync("telegram", telegramUserId, CancellationToken.None);
+
+        if (u is not null)
+        {
+            return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
+        }
+        await loginStore.AddCustomLoginAsync(user, telegramUserId, "telegram", CancellationToken.None);
+
+        await externalLoginProfileExtractor.TryExtractTelegramProfile(user, dictionary);
+        return RedirectToAction("SetupProfile");
+    }
+
     [HttpGet]
-    public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false, ManageMessageId? message = null)
+    public async Task<ActionResult> SetupProfile([FromServices] IOptions<TelegramLoginOptions> options, bool checkContactsMessage = false, ManageMessageId? message = null)
     {
         await avatarService.AddGrAvatarIfRequired(CurrentUserAccessor.UserId);
 
@@ -200,20 +230,18 @@ public class ManageController : Common.ControllerBase
             PhoneNumber = user.Extra?.PhoneNumber ?? "",
             Nicknames = user.Extra?.Nicknames ?? "",
             GroupNames = user.Extra?.GroupNames ?? "",
-            Vk = user.Extra?.Vk,
             Livejournal = user.Extra?.Livejournal ?? "",
-            Telegram = user.Extra?.Telegram ?? "",
             Skype = user.Extra?.Skype ?? "",
             LastClaimId = lastClaim?.ClaimId,
             LastClaimProjectId = lastClaim?.ProjectId,
             IsVerifiedFlag = user.VerifiedProfileFlag,
-            IsVkVerifiedFlag = user.Extra?.VkVerified ?? false,
             SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess(),
             SocialLoginStatus = user.GetSocialLogins().ToList(),
             Email = user.Email,
             HasPassword = user.PasswordHash != null,
             Avatars = new UserAvatarListViewModel(user),
             Message = message,
+            TelegramBotName = options.Value.BotName,
         };
 
         return base.View(model);
@@ -233,7 +261,6 @@ public class ManageController : Common.ControllerBase
                     new FatherName(viewModel.FatherName)),
                 viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
                 viewModel.GroupNames, viewModel.Skype, viewModel.Livejournal,
-                viewModel.Telegram,
                 (ContactsAccessType)viewModel.SocialNetworkAccess
               );
             var userId = CurrentUserAccessor.UserId;

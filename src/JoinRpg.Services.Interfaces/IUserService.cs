@@ -5,7 +5,7 @@ namespace JoinRpg.Services.Interfaces;
 
 public interface IUserService
 {
-    Task UpdateProfile(int userId, UserFullName userFullName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string livejournal, string telegram, ContactsAccessType socialNetworkAccess);
+    Task UpdateProfile(int userId, UserFullName userFullName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string livejournal, ContactsAccessType socialNetworkAccess);
     Task SetAdminFlag(int userId, bool administratorFlag);
     Task SetVerificationFlag(int userId, bool verificationFlag);
     /// <summary>
@@ -21,5 +21,8 @@ public interface IUserService
     /// </summary>
     Task SetVkIfNotSetWithoutAccessChecks(int id, VkId vkId, AvatarInfo avatarInfo);
 
+
+    Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramId telegramId, AvatarInfo avatarInfo);
     Task RemoveVkFromProfile(int id);
+    Task RemoveTelegramFromProfile(int id);
 }

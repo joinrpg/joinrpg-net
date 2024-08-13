@@ -1,6 +1,7 @@
 using System.Text;
 using Joinrpg.Web.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -25,6 +26,10 @@ internal static class AuthenticationConfigurator
             .AddDefaultTokenProviders()
             .AddUserStore<MyUserStore>()
             .AddRoleStore<MyUserStore>();
+
+        _ = services
+            .AddTransient<ICustomLoginStore, MyUserStore>()
+            .AddTransient<TelegramLoginValidator>();
 
         _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
 

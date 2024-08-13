@@ -36,14 +36,6 @@ public class EditUserProfileViewModel
     [Display(Name = "ЖЖ")]
     public string Livejournal { get; set; }
 
-    [Display(Name = "VK")]
-    [UIHint("Vkontakte")]
-    [ReadOnly(true)]
-    public string Vk { get; set; }
-
-    [Display(Name = "Telegram")]
-    public string Telegram { get; set; }
-
     [Display(Name = "Все ник(и)",
         Description =
             "Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по другому написанный ник")]
@@ -60,9 +52,6 @@ public class EditUserProfileViewModel
     [ReadOnly(true)]
     public bool IsVerifiedFlag { get; set; }
 
-    [ReadOnly(true)]
-    public bool IsVkVerifiedFlag { get; set; }
-
     [Display(Name = "Публичность соцсетей")]
     public ContactsAccessTypeView SocialNetworkAccess { get; set; }
 
@@ -76,4 +65,7 @@ public class EditUserProfileViewModel
 
     public UserAvatarListViewModel Avatars { get; set; }
     public ManageMessageId? Message { get; set; }
+
+    [ReadOnly(true)]
+    public string TelegramBotName { get; set; } = null!;
 }

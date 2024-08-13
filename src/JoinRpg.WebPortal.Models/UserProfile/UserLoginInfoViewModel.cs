@@ -1,18 +1,36 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models;
 
 
-public record ProviderDescViewModel(string ProviderId, string FriendlyName)
+public abstract record ProviderDescViewModel(string ProviderId, string FriendlyName)
 {
-    public static readonly ProviderDescViewModel Vk = new("Vkontakte", "ВК");
+    public static readonly ProviderDescViewModel Vk = new VkDescViewModel();
+
+    public static readonly ProviderDescViewModel Telegram = new TelegramDescViewModel();
+
+    [return: NotNullIfNotNull(nameof(providerKey))]
+    public abstract Uri? GetProfileUri(string? providerKey);
+}
+
+public record VkDescViewModel() : ProviderDescViewModel("Vkontakte", "ВК")
+{
+    [return: NotNullIfNotNull(nameof(providerKey))]
+    public override Uri? GetProfileUri(string? providerKey) => providerKey is null ? null : new Uri($"https://vk.com/id{providerKey}");
+}
+
+public record TelegramDescViewModel() : ProviderDescViewModel(ProviderId: "telegram", "Телеграм")
+{
+    [return: NotNullIfNotNull(nameof(providerKey))]
+    public override Uri? GetProfileUri(string? providerKey) => providerKey is null ? null : new Uri($"https://t.me/{providerKey}");
 }
 
 public record UserLoginInfoViewModel
 {
-    public ProviderDescViewModel LoginProvider { get; init; } = null!;
+    public required ProviderDescViewModel LoginProvider { get; init; }
 
-    public string? ProviderLink { get; set; }
+    public Uri? ProviderLink { get; set; }
 
     public string? ProviderKey { get; set; }
 
@@ -26,23 +44,11 @@ public static class UserLoginInfoViewModelBuilder
 {
     public static IEnumerable<UserLoginInfoViewModel> GetSocialLogins(this User user)
     {
-        var canRemoveLogins = user.PasswordHash != null || user.ExternalLogins.Count > 1;
-        var vk = GetModel(ProviderDescViewModel.Vk);
-        if (vk.ProviderKey is not null)
-        {
-            vk.ProviderLink = $"https://vk.com/id{vk.ProviderKey}";
-        }
+        yield return GetModel(ProviderDescViewModel.Vk, user.Extra?.Vk);
 
-        if (vk.ProviderKey is null && user.Extra?.Vk is not null)
-        {
-            vk.NeedToReLink = true;
-            vk.AllowLink = false;
-            vk.ProviderLink = $"https://vk.com/id{user.Extra?.Vk}";
-        }
+        yield return GetModel(ProviderDescViewModel.Telegram, user.Extra?.Telegram);
 
-        yield return vk;
-
-        UserLoginInfoViewModel GetModel(ProviderDescViewModel provider)
+        UserLoginInfoViewModel GetModel(ProviderDescViewModel provider, string? idFromProfile)
         {
             if (user.ExternalLogins.SingleOrDefault(l =>
                 l.Provider.Equals(provider.ProviderId, StringComparison.InvariantCultureIgnoreCase)
@@ -51,23 +57,23 @@ public static class UserLoginInfoViewModelBuilder
                 return new UserLoginInfoViewModel()
                 {
                     AllowLink = false,
-                    AllowUnlink = canRemoveLogins,
+                    AllowUnlink = user.PasswordHash != null || user.ExternalLogins.Count > 1,
                     LoginProvider = provider,
                     ProviderKey = login.Key,
                     NeedToReLink = false,
-                    ProviderLink = null,
+                    ProviderLink = provider.GetProfileUri(idFromProfile),
                 };
             }
             else
             {
                 return new UserLoginInfoViewModel()
                 {
-                    AllowLink = true,
+                    AllowLink = idFromProfile is null,
                     AllowUnlink = false,
                     LoginProvider = provider,
                     ProviderKey = null,
-                    NeedToReLink = false,
-                    ProviderLink = null,
+                    NeedToReLink = idFromProfile is not null,
+                    ProviderLink = provider.GetProfileUri(idFromProfile),
                 };
             }
         }

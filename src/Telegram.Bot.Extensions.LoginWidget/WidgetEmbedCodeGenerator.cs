@@ -3,14 +3,9 @@ namespace Telegram.Bot.Extensions.LoginWidget;
 /// <summary>
 /// Generates JavaScript embed code matching the one found on https://core.telegram.org/widgets/login
 /// </summary>
-public class WidgetEmbedCodeGenerator
+public static class WidgetEmbedCodeGenerator
 {
-    /// <summary>
-    /// Defaults to 5
-    /// </summary>
-    public static int LoginWidgetJsVersion = 5;
-
-    private WidgetEmbedCodeGenerator() { }
+    public static int LoginWidgetJsVersion = 22;
 
     /// <summary>
     /// Generate the embed code that uses a callback function to signal user login

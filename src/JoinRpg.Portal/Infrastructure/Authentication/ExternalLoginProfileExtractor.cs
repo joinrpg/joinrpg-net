@@ -34,6 +34,22 @@ public class ExternalLoginProfileExtractor
         }
     }
 
+    public async Task TryExtractTelegramProfile(JoinIdentityUser user, Dictionary<string, string> loginInfo)
+    {
+        var bornName = BornName.FromOptional(loginInfo.GetValueOrDefault("first_name"));
+        var surName = SurName.FromOptional(loginInfo.GetValueOrDefault("last_name"));
+        var prefferedName = PrefferedName.FromOptional(loginInfo.GetValueOrDefault("username"));
+
+        var userFullName = new UserFullName(prefferedName, bornName, surName, FatherName: null);
+
+
+        await userService.SetNameIfNotSetWithoutAccessChecks(user.Id, userFullName);
+
+        var avatar = loginInfo["photo_url"];
+
+        await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, new TelegramId(int.Parse(loginInfo["id"]), prefferedName), new AvatarInfo(new Uri(avatar), 50, 50));
+    }
+
     private static UserFullName TryGetUserName(ExternalLoginInfo loginInfo)
     {
         var bornName = BornName.FromOptional(loginInfo.Principal.FindFirstValue(ClaimTypes.GivenName));
@@ -56,6 +72,10 @@ public class ExternalLoginProfileExtractor
         if (loginProvider == "Vkontakte")
         {
             await userService.RemoveVkFromProfile(user.Id);
+        }
+        else if (loginProvider == "telegram")
+        {
+            await userService.RemoveTelegramFromProfile(user.Id);
         }
     }
 }

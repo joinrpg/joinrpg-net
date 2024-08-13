@@ -30,6 +30,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18541948-5966-481B-B755-833AF5A7BC17}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		manifests\dev\.env = manifests\dev\.env
+		manifests\prod\.env = manifests\prod\.env
 		code_placement.txt = code_placement.txt
 		CONTRIBUTING.MD = CONTRIBUTING.MD
 		.github\dependabot.yml = .github\dependabot.yml
@@ -120,8 +122,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.ProjectCommon", "src\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj", "{0C7DEE5D-37AE-4C44-8215-EA8D373032CB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.JobService", "src\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj", "{340E5B6E-2C23-43B6-869D-D9BF807E69D3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.Bot.Extensions.LoginWidget", "src\Telegram.Bot.Extensions.LoginWidget\Telegram.Bot.Extensions.LoginWidget.csproj", "{A9052F7B-0016-4F47-9088-8A47B24A8188}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -317,10 +317,6 @@ Global
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9052F7B-0016-4F47-9088-8A47B24A8188}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
