@@ -34,7 +34,7 @@ public class Program
             .UseSerilog((context, _, configuration) =>
             {
                 var loggerOptions = context.Configuration.GetSection("Logging").Get<SerilogOptions>();
-                configuration.ConfigureLogger(loggerOptions);
+                configuration.ConfigureLogger(loggerOptions!);
             })
             .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
 }

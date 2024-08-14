@@ -10,15 +10,12 @@
     Обратитесь в техподдержку!
 </p>
 
-@if (Model.ShowRequestId)
+@if (Model.ActivityId is not null)
 {
-    <p> RequestId: @Model.RequestId </p>
+    <p> Activity: @Model.ActivityId </p>
 }
 
-@if (Model.AspNetTrace is not null)
-{
-        <p>TraceIdentifier: @Model.AspNetTrace</p>
-}
+<p>RequestId: @Model.RequestId</p>
 
 @if (!string.IsNullOrWhiteSpace(Model.Path))
 {
