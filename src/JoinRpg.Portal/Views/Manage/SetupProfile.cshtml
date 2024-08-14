@@ -195,6 +195,7 @@
         }
         @if (social.AllowLink)
         {
+                <p>Нажмите кнопку, чтобы привязать аккаунт:</p>
           @if (social.LoginProvider == ProviderDescViewModel.Telegram)
           {
             <partial name="TelegramLoginButton" for="@Model.TelegramBotName" />
@@ -209,7 +210,7 @@
         @if (social.NeedToReLink)
         {
           <div class="alert-danger">
-            Необходимо подтвердить аккаунт!
+            Нажмите кнопку ниже, чтобы подтвердить аккаунт!
           </div>
           @if (social.LoginProvider == ProviderDescViewModel.Telegram)
           {
