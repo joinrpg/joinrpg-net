@@ -17,7 +17,7 @@ public abstract record ProviderDescViewModel(string ProviderId, string FriendlyN
 public record VkDescViewModel() : ProviderDescViewModel("Vkontakte", "ВК")
 {
     [return: NotNullIfNotNull(nameof(providerKey))]
-    public override Uri? GetProfileUri(string? providerKey) => providerKey is null ? null : new Uri($"https://vk.com/id{providerKey}");
+    public override Uri? GetProfileUri(string? providerKey) => providerKey is null ? null : new Uri($"https://vk.com/{providerKey}");
 }
 
 public record TelegramDescViewModel() : ProviderDescViewModel(ProviderId: "telegram", "Телеграм")
