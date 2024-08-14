@@ -1,10 +1,9 @@
-using System.Security.Claims;
 using Serilog;
 using Serilog.Events;
 
 namespace JoinRpg.Portal.Infrastructure.Logging;
 
-public static class SerilogHelper
+public static class SerilogWebRequestHelper
 {
     public static void EnrichFromRequest(IDiagnosticContext diagnosticContext, HttpContext httpContext)
     {
@@ -29,15 +28,6 @@ public static class SerilogHelper
         if (endpoint is not null)
         {
             diagnosticContext.Set("EndpointName", endpoint.DisplayName);
-        }
-
-        if (httpContext.User.Identity?.IsAuthenticated == true)
-        {
-            diagnosticContext.Set("LoggedUser", httpContext.User.FindFirst(ClaimTypes.Email)!.Value);
-        }
-        else
-        {
-            diagnosticContext.Set("LoggedUser", "null");
         }
     }
     private static bool IsHealthCheckEndpoint(HttpContext ctx)

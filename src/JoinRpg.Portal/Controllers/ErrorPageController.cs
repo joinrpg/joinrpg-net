@@ -49,8 +49,8 @@ public class ErrorPageController : ControllerBase
         return View(
             new ErrorViewModel
             {
-                RequestId = Activity.Current?.Id ?? "",
-                AspNetTrace = HttpContext.TraceIdentifier,
+                ActivityId = Activity.Current?.Id,
+                RequestId = HttpContext.TraceIdentifier,
                 Path = feature?.RawTarget ?? "NO PATH",
             }
             );

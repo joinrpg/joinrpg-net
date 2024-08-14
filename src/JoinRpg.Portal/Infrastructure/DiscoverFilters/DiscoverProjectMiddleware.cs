@@ -1,3 +1,5 @@
+using Serilog.Context;
+
 namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
 
 /// <summary>
@@ -12,15 +14,12 @@ public class DiscoverProjectMiddleware
     /// <inheritedoc />
     public async Task InvokeAsync(HttpContext context)
     {
-        var httpContextItems = context.Items;
+        HttpRequest request = context.Request;
 
-        if (context.Request.Path.TryExtractFromPath() is int projectIdFromPath)
+        if ((request.Path.TryExtractFromPath() ?? request.Query.TryExtractFromQuery()) is int projectId)
         {
-            httpContextItems[Constants.ProjectIdName] = projectIdFromPath;
-        }
-        else if (context.Request.Query.TryExtractFromQuery() is int projectIdFromQuery)
-        {
-            httpContextItems[Constants.ProjectIdName] = projectIdFromQuery;
+            context.Items[Constants.ProjectIdName] = projectId;
+            _ = LogContext.PushProperty(Constants.ProjectIdName, projectId);
         }
 
         await nextDelegate(context);
