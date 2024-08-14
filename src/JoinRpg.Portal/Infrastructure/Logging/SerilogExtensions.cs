@@ -22,6 +22,7 @@ public static class SerilogExtensions
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.With<YcLevelEnricher>()
+            .Enrich.With<LoggedUserEnricher>()
             .Enrich.WithProperty("AppName", "JoinRpg.Portal");
 
         foreach (var (@namespace, logLevel) in serilogOptions.LogLevel)
