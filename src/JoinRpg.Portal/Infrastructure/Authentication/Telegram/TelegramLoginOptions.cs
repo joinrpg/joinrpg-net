@@ -2,7 +2,7 @@ namespace JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 public class TelegramLoginOptions
 {
     public required string BotName { get; set; }
-    public int BotId { get; set; }
+    public long BotId { get; set; }
     public required string BotSecret { get; set; }
 
     /// <summary>
