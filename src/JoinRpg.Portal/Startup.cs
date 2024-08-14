@@ -180,8 +180,8 @@ public class Startup
 
         _ = app.UseSerilogRequestLogging(opts =>
         {
-            opts.EnrichDiagnosticContext = SerilogHelper.EnrichFromRequest;
-            opts.GetLevel = SerilogHelper.ExcludeHealthChecks;
+            opts.EnrichDiagnosticContext = SerilogWebRequestHelper.EnrichFromRequest;
+            opts.GetLevel = SerilogWebRequestHelper.ExcludeHealthChecks;
         });
 
         _ = app

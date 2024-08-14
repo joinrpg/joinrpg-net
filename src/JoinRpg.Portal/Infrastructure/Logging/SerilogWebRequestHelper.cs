@@ -4,7 +4,7 @@ using Serilog.Events;
 
 namespace JoinRpg.Portal.Infrastructure.Logging;
 
-public static class SerilogHelper
+public static class SerilogWebRequestHelper
 {
     public static void EnrichFromRequest(IDiagnosticContext diagnosticContext, HttpContext httpContext)
     {
