@@ -16,13 +16,20 @@ public class FastPaymentsSystemApi
         this.clientFactory = clientFactory;
     }
 
-
-    public async Task<ICollection<FpsBank>> GetFastPaymentsSystemBanks(FpsPlatform platform, string paymentUrl)
+    /// <summary>
+    /// Retrieves a list of banks that are connected with the fast payments system.
+    /// </summary>
+    /// <param name="platform">Platform</param>
+    /// <param name="client">Client identification (phone number)</param>
+    /// <param name="paymentUrl">QR code url</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<ICollection<FpsBank>> GetFastPaymentsSystemBanks(FpsPlatform platform, string client, string paymentUrl)
     {
         var httpClient = clientFactory.CreateClient();
 
         var request = new HttpRequestMessage(HttpMethod.Get, "https://widget.cbrpay.ru/v1/members");
-        request.Headers.Add("X-CLIENT", "JOIN REGISTRATION LLC");
+        request.Headers.Add("X-CLIENT", client);
         request.Headers.Add("X-PLATFORM", platform.GetIdentifier());
         request.Headers.Add("X-PAYLOAD", paymentUrl);
 

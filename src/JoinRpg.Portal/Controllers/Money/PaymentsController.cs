@@ -112,10 +112,13 @@ public class PaymentsController : Common.ControllerBase
 
         try
         {
-            if (data.Platform is not null
-                && Enum.TryParse<FpsPlatform>(data.Platform, true, out var platform)
-                && platform != FpsPlatform.Desktop)
+            if (data.Method == PaymentMethodViewModel.FastPaymentsSystem)
             {
+                if (!Enum.TryParse<FpsPlatform>(data.Platform, true, out var platform))
+                {
+                    platform = FpsPlatform.Desktop;
+                }
+
                 var paymentContext = await _payments.InitiateFastPaymentsSystemMobilePaymentAsync(
                     new ClaimPaymentRequest
                     {
@@ -356,7 +359,7 @@ public class PaymentsController : Common.ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> FastPaymentsSystemPayment(int projectId, int claimId, int operationId, FpsPlatform platform)
+    public async Task<ActionResult> FastPaymentsSystemPayment(int projectId, int claimId, int orderId, FpsPlatform? platform)
     {
         try
         {
@@ -364,13 +367,22 @@ public class PaymentsController : Common.ControllerBase
                 await _payments.GetFastPaymentsSystemMobilePaymentContextAsync(
                     projectId,
                     claimId,
-                    operationId,
-                    platform);
+                    orderId,
+                    platform ?? FpsPlatform.Desktop);
 
             return View("FastPaymentsSystemPayment", paymentContext);
         }
         catch (Exception e)
         {
+            try
+            {
+                await _payments.UpdateClaimPaymentAsync(projectId, claimId, orderId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error updating payment {financeOperationId} while handling FPS payment startup", orderId);
+            }
+
             return Error(
                 new ErrorViewModel
                 {

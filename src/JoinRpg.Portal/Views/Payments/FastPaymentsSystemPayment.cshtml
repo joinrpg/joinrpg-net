@@ -1,4 +1,5 @@
 ﻿@{ Layout = null; }
+@using PscbApi
 @model JoinRpg.Services.Interfaces.FastPaymentsSystemMobilePaymentContext
 <!DOCTYPE html>
 <html>
@@ -9,43 +10,312 @@
   <meta name="viewport" content="width=device-width"/>
   <style type="text/css">
         html, body {
-            display: block;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
+          display: block;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          font-family: sans-serif;
         }
+
         div.content {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          padding: 0.5em;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          justify-content: stretch;
+        }
+
+        div.details {
+          text-align: center;
+          flex-shrink: 0;
+          padding: 0.5em;
+          font-weight: bold;
+        }
+
+        div.header {
+          flex-shrink: 0;
+          padding: 0.5em;
+          text-align: center;
+        }
+
+        div.footer {
+          flex-shrink: 0;
+          padding: 0.5em 0;
+          margin-top: 0.5em;
+          border-top: 1px solid silver;
+          display: flex;
+          flex-direction: row;
+        }
+
+        div.footer button,
+        div.footer a {
+          border: 1px solid lightgray;
+          padding: 0.3em;
+          font-size: 0.9em;
+          border-radius: 0.2em;
+          color: black;
+          text-decoration: none;
+        }
+
+        #payment-qrcode {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: stretch;
+        }
+
+        #qrcontainer {
+          flex-grow: 1;
+          overflow: hidden;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+
+        #qrcode {
+          display: block;
+          max-width: 100%;
+          max-height: 100%;
+        }
+
+        #payment-app {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          justify-content: stretch;
+          overflow: hidden;
+        }
+
+        div.section {
+          margin-top: 0.5em;
+          padding-top: 0.5em;
+          border-top: 1px solid silver;
+          font-size: 0.9em;
+          text-align: center;
+        }
+
+        ul.banks {
+          list-style-type: none;
+          width: 100%;
+          margin: 0;
+          padding: 0;
+        }
+
+        ul#banks-top {
+          flex-shrink: 0;
+        }
+
+        ul#banks-top img {
+          width: 3em;
+          height: 3em;
+        }
+
+        #banks-editor {
+          border: 1px solid lightgray;
+          border-radius: 0.2em;
+          padding: 0.5em;
+          text-align: center;
+        }
+
+        ul#banks-other {
+          flex-grow: 1;
+          overflow-y: auto;
+        }
+
+        ul#banks-other img {
+          width: 2em;
+          height: 2em;
+        }
+
+        ul#banks-other span {
+          font-size: 0.9em;
+        }
+
+        ul.banks li {
+          padding: 0;
+          margin: 0;
+        }
+
+        ul.banks li a {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          padding: 0.2em;
+          margin: 0.1em 0;
+          color: black;
+          text-decoration: none;
+          border: 1px solid lightgray;
+        }
+
+        ul.banks li a img {
+          flex-grow: 0;
+          flex-shrink: 0;
+        }
+
+        ul.banks li a span {
+          padding-left: 0.5em;
+          flex-grow: 1;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          font-family: sans-serif;
         }
     </style>
 </head>
 <body>
 <div class="content">
-  <img id="qrcode" style="display: none;" src="@Model.QrCodeUrl" alt="QR код" />
-  @if (Model.Banks?.Count > 0)
+  @if (!string.IsNullOrWhiteSpace(Model.Details))
   {
-    <div id="banks" style="display: none;">
-      @foreach (var bank in Model.Banks)
-      {
-        <div><a href="@bank.PaymentUrl"><img src="@bank.LogoUrl" alt="@bank.Name" /></a></div>
-      }
+    <div class="details">@Model.Details</div>
+  }
+  <div id="payment-qrcode" style="display: none;">
+    <div class="header">Отсканируйте QR-код, чтобы оплатить <b>@(Model.Amount)&nbsp;₽</b></div>
+    <div id="qrcontainer">
+      <img id="qrcode" src="@Model.QrCodeUrl" alt="QR код"/>
+    </div>
+  </div>
+
+  @if (Model.AllBanks.Count > 0)
+  {
+    <div id="payment-app" style="display: none;">
+      <div class="header">Выберите банк, чтобы оплатить <b>@(Model.Amount)&nbsp;₽</b> в&nbsp;приложении&nbsp;банка</div>
+      <ul id="banks-top" class="banks">
+        @foreach (var bank in Model.TopBanks)
+        {
+          @await Html.PartialAsync("_FpsBank", bank)
+        }
+      </ul>
+      <div class="section">Все банки</div>
+      <input id="banks-editor" type="text" placeholder="Начните вводить название банка" maxlength="64" oninput="banksEditorChange()" />
+      <ul id="banks-other" class="banks">
+        @foreach (var bank in Model.AllBanks)
+        {
+          @await Html.PartialAsync("_FpsBank", bank)
+        }
+      </ul>
     </div>
   }
+
+  <div class="footer">
+    @Html.ActionLink("Вернуться без оплаты", "Edit", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId }, new { id = "btn-cancel" })
+    <button id="btn-showqr" style="margin-left: auto; display: none;" type="button" onclick="toggleQrCode()">Показать QR-код</button>
+  </div>
 </div>
 <script type="text/javascript">
 const expectedPlatform = '@Model.ExpectedPlatform.ToString().ToLowerInvariant()';
-const blockQr = document.getElementById('qrcode');
-const blockBanks = document.getElementById('banks');
-if (platform.name === 'desktop' || platform.name !== expectedPlatform) {
-  blockQr.style.display = 'block';
+const blockQr = document.getElementById('payment-qrcode');
+const blockBanks = document.getElementById('payment-app');
+const btnShowQr = document.getElementById('btn-showqr');
+let banksMode = false;
+if (document.platform.type === 'desktop' || document.platform.type !== expectedPlatform || !blockBanks) {
+  blockQr.style.display = 'flex';
 } else {
-  blockBanks.style.display = 'block';
+  blockBanks.style.display = 'flex';
+  btnShowQr.style.display = 'block';
+  banksMode = true;
+}
+
+const banks =
+@if (Model.AllBanks.Count > 0 && Model.ExpectedPlatform != FpsPlatform.Desktop)
+{
+  @Html.Raw("[\n")
+  foreach (var bank in Model.AllBanks)
+  {
+    @Html.Raw($"[document.getElementById('{bank.Id}'), '{bank.First1}', '{bank.First2}', '{bank.First3}', '{bank.First4}', '{bank.ClearName}'],\n")
+  }
+  @Html.Raw("]")
+}
+else
+{
+  @Html.Raw("null")
+}
+;
+
+const banksEditor = document.getElementById('banks-editor');
+
+function toggleQrCode() {
+  if (banksMode) {
+    btnShowQr.innerHTML = 'Показать банки';
+    blockBanks.style.display = 'none';
+    blockQr.style.display = 'flex';
+    banksMode = false;
+  } else {
+    btnShowQr.innerHTML = 'Показать QR-код';
+    blockQr.style.display = 'none';
+    blockBanks.style.display = 'flex';
+    banksMode = true;
+  }
+}
+
+let lastFirstIndex = 0;
+let lastValue = '';
+let allBanksVisible = true;
+function banksEditorChange() {
+  let value = banksEditor.value;
+
+  if (!value) {
+    showAllBanks();
+    return;
+  }
+
+  value = value.toLowerCase();
+
+  let firstIndex = 0;
+  if (value.startsWith(lastValue)) {
+    firstIndex = lastFirstIndex;
+  } else {
+    firstIndex = 0;
+  }
+
+  lastValue = value;
+
+  let comparePos = 1;
+  if (value.length <= 4) {
+    comparePos = value.length;
+  } else {
+    comparePos = 5;
+  }
+
+  let i = firstIndex;
+  let wasFound = false;
+  for (; i < banks.length; i++) {
+    const bank = banks[i];
+    if (bank[comparePos] === value) {
+      bank[0].style.display = 'list-item';
+      if (!wasFound) {
+        wasFound = true;
+        lastFirstIndex = i;
+      }
+    } else {
+      if (wasFound) {
+        break;
+      }
+      bank[0].style.display = 'none';
+    }
+  }
+
+  for (; i < banks.length; i++) {
+    banks[i][0].style.display = 'none';
+  }
+
+  allBanksVisible = false;
+}
+
+function showAllBanks() {
+  if (!allBanksVisible) {
+    for (const bank of banks) {
+      bank[0].style.display = 'list-item';
+    }
+  }
+  allBanksVisible = true;
 }
 </script>
 </body>

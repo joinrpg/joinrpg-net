@@ -1,5 +1,7 @@
+using System.Collections.Immutable;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.Helpers;
 using PscbApi;
 using PscbApi.Models;
 
@@ -132,10 +134,39 @@ public class PaymentResultContext
     public BankResponseInfo BankResponse { get; set; }
 }
 
+public class FastPaymentsSystemBank : FpsBank
+{
+    public static readonly ImmutableArray<string> ParasitePrefixes = ["Банк ", "АК ", "АБ ", "АКБ ", "ПНКО ", "КБ ", "НКО ", "СКБ ", "УКБ ", "РНКО ", "ИКБР "];
+
+    public string Id { get; }
+
+    public string ClearName { get; }
+
+    public string First1 { get; }
+
+    public string First2 { get; }
+
+    public string First3 { get; }
+
+    public string First4 { get; }
+
+    public FastPaymentsSystemBank(FpsBank source, int index)
+    {
+        Id = $"bank{index}";
+        Name = source.Name;
+        LogoUrl = source.LogoUrl;
+        PaymentUrl = source.PaymentUrl;
+
+        ClearName = Name.RemoveFromString(ParasitePrefixes, StringComparison.InvariantCultureIgnoreCase).Trim().ToLowerInvariant();
+        First1 = ClearName.Substring(0, 1);
+        First2 = ClearName.Substring(0, 2);
+        First3 = ClearName.Substring(0, 3);
+        First4 = ClearName.Length >= 4 ? ClearName.Substring(0, 4) : First3;
+    }
+}
+
 public class FastPaymentsSystemMobilePaymentContext
 {
-    public ICollection<FpsBank>? Banks { get; set; }
-
     public string QrCodeUrl { get; set; }
 
     public int Amount { get; set; }
@@ -149,6 +180,31 @@ public class FastPaymentsSystemMobilePaymentContext
     public int OperationId { get; set; }
 
     public FpsPlatform ExpectedPlatform { get; set; }
+
+    public IReadOnlyCollection<FastPaymentsSystemBank> TopBanks { get; }
+
+    public IReadOnlyCollection<FastPaymentsSystemBank> AllBanks { get; }
+
+    public FastPaymentsSystemMobilePaymentContext(ICollection<FpsBank>? banks, int top = 5)
+    {
+        if (banks?.Count > 0)
+        {
+            TopBanks = banks
+                .Take(top)
+                .Select(static (bank, index) => new FastPaymentsSystemBank(bank, index + 100000))
+                .ToArray();
+
+            AllBanks = banks
+                .Select(static (bank, index) => new FastPaymentsSystemBank(bank, index))
+                .OrderBy(static bank => bank.ClearName)
+                .ToArray();
+        }
+        else
+        {
+            TopBanks = [];
+            AllBanks = [];
+        }
+    }
 }
 
 /// <summary>

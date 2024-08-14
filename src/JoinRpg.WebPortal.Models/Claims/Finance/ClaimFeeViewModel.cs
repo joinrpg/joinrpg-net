@@ -59,9 +59,9 @@ public class ClaimFeeViewModel
             .ToList();
         FinanceOperations = claim.FinanceOperations
             .Select(
-                fo => new FinanceOperationViewModel(claim, fo, model.HasMasterAccess)
+                fo => new FinanceOperationViewModel(claim, fo, model.HasMasterAccess, model.IsMyClaim)
                 {
-                    ExternalUrl = HasFeeAdminAccess ? externalPaymentUrlFactory(fo.BankOperationKey) : null
+                    ExternalUrl = HasFeeAdminAccess ? externalPaymentUrlFactory(fo.BankDetails?.BankOperationKey) : null
                 });
         VisibleFinanceOperations = FinanceOperations
             .Where(fo => fo.IsVisible);

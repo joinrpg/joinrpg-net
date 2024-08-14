@@ -272,7 +272,7 @@ public class BankApi
     /// <param name="token">Recurrency token</param>
     /// <param name="additionalToken">Additional token (like Fast Payment System QR-code identifier)</param>
     /// <param name="receipt">Receipt data</param>
-    public async Task<PaymentInfoBase> PayRecurrent(string parentOrderId, string paymentId, string token, string additionalToken, Receipt receipt)
+    public async Task<RecurrentPaymentInfo> PayRecurrent(string parentOrderId, string paymentId, string token, string additionalToken, Receipt receipt)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(parentOrderId, nameof(parentOrderId));
         ArgumentException.ThrowIfNullOrWhiteSpace(paymentId, nameof(paymentId));
@@ -294,7 +294,7 @@ public class BankApi
             }
         };
 
-        return await ApiRequestAsync<RecurrentPaymentMessage, PaymentInfoBase>(
+        return await ApiRequestAsync<RecurrentPaymentMessage, RecurrentPaymentInfo>(
             $"{ActualApiEndpoint}/merchantApi/payRecurrent",
             message);
     }

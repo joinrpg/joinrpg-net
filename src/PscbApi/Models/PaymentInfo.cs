@@ -11,7 +11,7 @@ public class PaymentInfo : PaymentInfoBase
     /// Payment data
     /// </summary>
     [JsonProperty("payment")]
-    public PaymentData Payment { get; set; }
+    public PaymentData? Payment { get; set; }
 
     /// <summary>
     /// List of errors (if any)

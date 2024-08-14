@@ -21,24 +21,31 @@
     <td></td>
     <td class="price-table">@await Html.PartialAsync("Money", new Money(Model.Money))</td>
     <td>
-        @if (Model.CanUpdate)
-        {
-            @Html.ActionLink("Обновить статус", "UpdateClaimPayment", "Payments", new {projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.Id}, new {@class = "btn btn-default btn-xs "})
-        }
-        <span>@Model.Description</span>
-        @if (Model.CanRefund)
-        {
-            <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#refundOnlinePaymentDialog" onclick="setRefunded@(Model.Id)()">Возврат&hellip;</button>
-            <script type="text/javascript">
+      @if (Model.CanPay)
+      {
+        @Html.ActionLink("Продолжить оплату", "FastPaymentsSystemPayment", "Payments", new { projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.Id }, new { id = $"btn-pay{Model.Id}", @class = "btn btn-default btn-xs" })
+        <script type="text/javascript">document.getElementById('@Html.Raw($"btn-pay{Model.Id}")').href += '&platform=' + document.platform.type;</script>
+      }
+      @if (Model.CanUpdate && !Model.CanPay)
+      {
+        @Html.ActionLink("Обновить статус", "UpdateClaimPayment", "Payments", new { projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.Id }, new { @class = "btn btn-default btn-xs " })
+      }
+      <span>@Model.Description</span>
+      @if (Model.CanRefund)
+      {
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#refundOnlinePaymentDialog" onclick="setRefunded@(Model.Id)()">Возврат&hellip;</button>
+        <script type="text/javascript">
               function setRefunded@(Model.Id)() {
                 const hidden = document.getElementById('refundPaymentId');
                 hidden.value = @(Model.Id);
               }
             </script>
-        }
-        @if (Model.ExternalUrl is not null)
-        {
-          <a href="@Model.ExternalUrl" target="_blank" class="btn btn-default btn-xs" style="margin-left: auto;" title="Открыть в банке…">•••</a>
-        }
+      }
+    </td>
+    <td>
+      @if (Model.ExternalUrl is not null)
+      {
+      <a href="@Model.ExternalUrl" target="_blank" class="btn btn-default btn-xs" title="Открыть в банке…">•••</a>
+      }
     </td>
 </tr>

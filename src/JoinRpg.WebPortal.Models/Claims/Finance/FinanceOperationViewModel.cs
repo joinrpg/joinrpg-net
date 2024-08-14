@@ -1,4 +1,5 @@
 ﻿using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models.Money;
 
@@ -52,7 +53,7 @@ public class FinanceOperationViewModel
 
     public bool IsTransfer => OperationType is FinanceOperationTypeViewModel.TransferFrom or FinanceOperationTypeViewModel.TransferTo;
 
-    public FinanceOperationViewModel(Claim claim, FinanceOperation source, bool isMaster)
+    public FinanceOperationViewModel(Claim claim, FinanceOperation source, bool isMaster, bool isPlayer)
     {
         Id = source.CommentId;
         ClaimId = source.ClaimId;
@@ -109,8 +110,10 @@ public class FinanceOperationViewModel
         }
 
         CanUpdate = source is { State: FinanceOperationState.Proposed, OperationType: FinanceOperationType.Online or FinanceOperationType.Refund };
-        CanRefund = source is { State: FinanceOperationState.Approved, OperationType: FinanceOperationType.Online }
+        CanRefund = isMaster
+            && source is { State: FinanceOperationState.Approved, OperationType: FinanceOperationType.Online }
             && claim.FinanceOperations.All(fo => fo.RefundedOperationId != source.CommentId || fo.State is not (FinanceOperationState.Approved or FinanceOperationState.Proposed));
-        CanPay =
+        CanPay = isPlayer
+            && source is { State: FinanceOperationState.Proposed, BankDetails.QrCodeLink: not null };
     }
 }

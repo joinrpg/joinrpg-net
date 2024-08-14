@@ -96,6 +96,9 @@ public class PaymentMessageData
 /// </remarks>
 public class FastPaymentSystemInvoicingMessageData : PaymentMessageData
 {
+    [JsonProperty("userPhone")]
+    public string? CustomerPhone { get; set; }
+
     /// <summary>
     /// Width of QR-code image. Only for FPS invoicing
     /// </summary>
