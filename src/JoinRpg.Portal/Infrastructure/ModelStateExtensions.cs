@@ -36,7 +36,7 @@ internal static class ModelStateExtensions
                 dict.AddModelError(required.FieldName, " required");
                 return;
             case ClaimWrongStatusException _:
-            case ProjectDeactivedException _:
+            case ProjectDeactivatedException _:
             case ClaimAlreadyPresentException _:
             case ClaimTargetIsNotAcceptingClaims _:
             case MasterHasResponsibleException _:

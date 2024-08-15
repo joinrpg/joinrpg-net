@@ -15,4 +15,7 @@ public enum PaymentTypeKindViewModel
 
     [Display(Name = "Онлайн")]
     Online = PaymentTypeKind.Online,
+
+    [Display(Name = "Подписка")]
+    OnlineSubscription = PaymentTypeKind.OnlineSubscription,
 }

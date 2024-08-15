@@ -1,0 +1,113 @@
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Models
+@model StartRecurrentPaymentViewModel
+
+<div class="modal fade" id="payRecurrentOnlineDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("ClaimRecurrentPayment", "Payments", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.ClaimId)
+                @Html.HiddenFor(model => model.OperationDate)
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">@(Model.ActionName)</h4>
+                </div>
+                <div class="modal-body">
+                    @if (!Model.ClaimApproved)
+                    {
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                            Заявка не принята. Вы точно хотите оформить подписку?
+                        </div>
+                    }
+
+                    <div class="join alert alert-info">
+                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <div style="font-size: smaller;">
+                            @await Html.PartialAsync("..\\Finances\\_PaymentLegalInfoPartial")
+                        </div>
+                    </div>
+
+                    <div class="form-horizontal">
+                      <div class="form-group">
+                        <label for="orp_money" class="col-md-4 control-label">@Html.DisplayNameFor(m => m.Money):</label>
+                        <div class="col-md-8">
+                          <div>
+                            @Html.EditorFor(
+                              m => m.Money,
+                              new
+                              {
+                                htmlAttributes = new
+                                {
+                                  id = "orp_money",
+                                  @class = "form-control",
+                                  onchange = "onlineRecurrentPaymentChangeHandler()",
+                                  style = "display: inline-block; max-width: 150px",
+                                  min="100",
+                                  max="10000"
+                                }
+                              })
+                            ₽
+                          </div>
+                          @Html.ValidationMessageFor(m => m.Money, "", new {@class = "text-danger"})
+                        </div>
+                      </div>
+
+                      @if (Model.Update)
+                      {
+                        <div class="form-group">
+                          <div class="col-md-12">
+                            <div class="join alert alert-info">
+                              <i class="glyphicon glyphicon-info-sign"></i>
+                              <div style="font-size: smaller;">
+                                Ваша текущая подписка будет заменена новой подпиской с новой суммой и будет действовать со следующего периода.
+                                Если сумма останется прежней, то ничего не произойдет.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      }
+
+                      <div class="form-group">
+                            <div class="col-md-12">
+                                <label for="orp_comment" class="control-label">@Html.DisplayNameFor(m => m.CommentText):</label>
+                                <textarea id="orp_comment" name="@Html.NameFor(m => m.CommentText)" class="form-control" rows="1">@Model.CommentText</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                @Html.CheckBoxFor(m => m.AcceptContract, new { id = "orp_contract", onchange = "onlineRecurrentPaymentChangeHandler()" })
+                                <label for="orp_contract">Я прочитал(а), понял(а) и принимаю условия @Html.ActionLink("оферты", "user-agreement", "OnlinePayments")</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">
+                  <button type="button" class="btn btn-default" style="margin-right: auto;" data-dismiss="modal">Отмена</button>
+                  <div>
+                    <button type="submit" id="orp_dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-success" style="font-size: larger; margin-left: 0.5em;" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
+                  </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" defer>
+function onlineRecurrentPaymentChangeHandler()
+{
+  const edMoney = document.getElementById('orp_money');
+  const checkBox = document.getElementById('orp_contract');
+  const submitBtn2 = document.getElementById('orp_dlgPayOnline2Submit');
+  const money = parseInt(edMoney.value);
+  if (money >= 100 && money <= 10000 && checkBox.checked) {
+      submitBtn2.removeAttribute('disabled');
+  } else {
+      submitBtn2.setAttribute('disabled', '');
+  }
+}
+</script>

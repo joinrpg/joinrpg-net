@@ -1,7 +1,3 @@
 namespace JoinRpg.WebComponents;
 
-public record UserLinkViewModel(
-    int UserId,
-    string DisplayName)
-{
-}
+public record UserLinkViewModel(int UserId, string DisplayName);

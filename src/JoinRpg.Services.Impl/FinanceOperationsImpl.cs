@@ -61,7 +61,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         // Preparing master Id and checking if the same payment type already created
         int masterId;
-        if (request.TypeKind != PaymentTypeKind.Online)
+        if (!request.TypeKind.IsOnline())
         {
             if (request.TargetMasterId == null)
             {
@@ -80,9 +80,9 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         }
         else
         {
-            if (project.PaymentTypes.Any(pt => pt.TypeKind == PaymentTypeKind.Online))
+            if (project.PaymentTypes.Any(pt => pt.TypeKind == request.TypeKind))
             {
-                throw new DataException("Can't create more than one online payment type");
+                throw new DataException($"Can't create more than one {request.TypeKind} payment type");
             }
 
             masterId = _vpu.PaymentsUser.UserId;
@@ -125,6 +125,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
                 break;
             case PaymentTypeKind.Online:
+            case PaymentTypeKind.OnlineSubscription:
                 if (!IsCurrentUserAdmin)
                 {
                     // Regular master with finance management permissions can disable online payments

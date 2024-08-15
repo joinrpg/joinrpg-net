@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 
@@ -119,6 +120,11 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     /// </summary>
     public IEnumerable<FinanceOperation> ApprovedFinanceOperations
           => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
+
+    /// <summary>
+    /// List of all linked recurrent payments.
+    /// </summary>
+    public virtual ICollection<RecurrentPayment> RecurrentPayments { get; set; }
 
     public bool PreferentialFeeUser { get; set; }
 

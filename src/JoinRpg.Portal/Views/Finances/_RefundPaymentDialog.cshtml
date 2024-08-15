@@ -1,0 +1,56 @@
+﻿@model JoinRpg.Web.Models.RefundPaymentViewModel
+
+<div class="modal fade" id="refundOnlinePaymentDialog" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      @using (Html.BeginForm("RefundPayment", "Payments", FormMethod.Post, new { enctype = "multipart/form-data" }))
+      {
+      @Html.AntiForgeryToken()
+      @Html.HiddenFor(model => model.ProjectId)
+      @Html.HiddenFor(model => model.ClaimId)
+      @Html.HiddenFor(model => model.OperationId, new { id = "refundPaymentId" })
+
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="deleteTitle">Возврат платежа</h4>
+      </div>
+      <div class="modal-body">
+        <p>Пожалуйста, подтвердите возврат платежа.</p>
+
+        <div class="join alert alert-info">
+          <i class="glyphicon glyphicon-info-sign"></i>
+          <div style="font-size: smaller;">
+            Платеж будет возвращен в полном объеме.
+          </div>
+        </div>
+
+        <div class="join alert alert-warning">
+          <i class="glyphicon glyphicon-alert"></i>
+          <div style="font-size: smaller;">
+            Для успешного возврата платежа на транзитном счете в банке должны быть необходимые средства.
+            Если за сегодня не было других входящих платежей на чуть большую сумму, чем требуется вернуть,
+            то перед оформлением возврата необходимо пополнить транзитный счет.
+          </div>
+        </div>
+
+        @if (Model.ShowTransfersNotification)
+        {
+          <div class="join alert alert-warning">
+            <i class="glyphicon glyphicon-sort"></i>
+            <div style="font-size: smaller;">
+              У текущей заявки имеются переводы средств между заявками. Обратите внимание, что автоматической
+              отмены перевода средств не предусмотрено. Вам может потребоваться вручную скомпенсировать
+              избыток или недостаток средств путем обратных переводов.
+            </div>
+          </div>
+        }
+
+      </div>
+      <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">
+        <button type="button" class="btn btn-default" style="margin-right: auto;" data-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn btn-default">Вернуть платеж</button>
+      </div>
+      }
+    </div>
+  </div>
+</div>

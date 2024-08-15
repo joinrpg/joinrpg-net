@@ -69,12 +69,12 @@ public static class ProjectEntityExtensions
     {
         if (!entity.IsActive)
         {
-            throw new ProjectEntityDeactivedException(entity);
+            throw new ProjectEntityDeactivatedException(entity);
         }
 
         if (!entity.Project.Active)
         {
-            throw new ProjectEntityDeactivedException(entity);
+            throw new ProjectEntityDeactivatedException(entity);
         }
 
         return entity;
@@ -119,7 +119,7 @@ public static class ProjectEntityExtensions
     public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
 
     public static T EnsureProjectActive<T>(this T entity)
-  where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
+  where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException() : entity;
 
     public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
     {

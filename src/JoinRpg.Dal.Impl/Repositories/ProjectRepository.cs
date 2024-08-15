@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq.Expressions;
@@ -6,6 +7,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -326,7 +328,9 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             DescriptionField: ProjectFieldIdentification.FromOptional(projectId, project.Details.CharacterDescription?.ProjectFieldId)
             );
 
-        var financeSettings = new ProjectFinanceSettings(project.Details.PreferentialFeeEnabled);
+        var financeSettings = new ProjectFinanceSettings(
+            project.Details.PreferentialFeeEnabled,
+            project.PaymentTypes.Select(pt => new PaymentTypeInfo(pt.TypeKind, pt.IsActive, pt.UserId)).ToArray());
 
         return new ProjectInfo(
             projectId,

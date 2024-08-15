@@ -2,15 +2,20 @@
 @using JoinRpg.Web.Models.Money
 @model FinanceOperationsRowViewModel
 @{ var style = Model.Visible ? "" : "display: none;"; }
-<tr id="@Model.HtmlId" style="@style">
+@{ var classes = Model.Disabled ? "unapprovedPayment" : ""; }
+<tr id="@Model.HtmlId" style="@style" class="@classes">
     <td>@Model.Title</td>
-    <td></td>
-    <td class="price-table">@if (Model.Fee.HasValue) { @await Html.PartialAsync("Money", new Money(Model.Fee.Value, Model.FeeHtmlId))}</td>
-    <td class="price-table">@if (Model.Payment.HasValue) { @await Html.PartialAsync("Money", new Money(Model.Payment.Value))}</td>
+    <td>@if (Model.Date is not null) { <span>@Model.Date</span> }</td>
+    <td class="price-table">@if (Model.Fee.HasValue) { @await Html.PartialAsync("Money", new Money(Model.Fee.Value, Model.FeeHtmlId)) }</td>
+    <td class="price-table">@if (Model.Payment.HasValue) { @await Html.PartialAsync("Money", new Money(Model.Payment.Value)) }</td>
     <td>
         @if (Model.AdminFunctions is FinanceOperationAdminFunctionsViewModel)
         {
             @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_AdminFunctionsPartial", Model.AdminFunctions)
+        }
+        @if (Model.AdminFunctions is RecurrentPaymentFunctionsViewModel)
+        {
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RecurrentFunctionsPartial", Model.AdminFunctions)
         }
     </td>
 </tr>

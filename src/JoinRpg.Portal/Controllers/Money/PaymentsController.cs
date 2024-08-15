@@ -1,8 +1,10 @@
+using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PscbApi;
 
 namespace JoinRpg.Portal.Controllers.Money;
 
@@ -40,14 +42,10 @@ public class PaymentsController : Common.ControllerBase
         return View("Error", model);
     }
 
-    /// <summary>
-    /// Handles claim payment request
-    /// </summary>
-    /// <param name="data">Payment data</param>
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> ClaimPayment(PaymentViewModel data)
+    public async Task<ActionResult> ClaimRecurrentPayment(StartRecurrentPaymentViewModel data)
     {
         // Checking contract
         if (!data.AcceptContract)
@@ -73,9 +71,92 @@ public class PaymentsController : Common.ControllerBase
                     Money = data.Money,
                     Method = (PaymentMethod)data.Method,
                     OperationDate = data.OperationDate,
+                    Recurrent = true,
                 });
 
             return View("RedirectToBank", paymentContext);
+        }
+        catch (Exception e)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Ошибка создания подписки: " + e.Message,
+                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    ReturnText = "Вернуться к заявке",
+                    Data = e,
+                });
+        }
+    }
+
+    /// <summary>
+    /// Handles claim payment request
+    /// </summary>
+    /// <param name="data">Payment data</param>
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> ClaimPayment(StartOnlinePaymentViewModel data)
+    {
+        // Checking contract
+        if (!data.AcceptContract)
+        {
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Необходимо принять оферту",
+                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+
+        try
+        {
+            if (data.Method == PaymentMethodViewModel.FastPaymentsSystem)
+            {
+                if (!Enum.TryParse<FpsPlatform>(data.Platform, true, out var platform))
+                {
+                    platform = FpsPlatform.Desktop;
+                }
+
+                var paymentContext = await _payments.InitiateFastPaymentsSystemMobilePaymentAsync(
+                    new ClaimPaymentRequest
+                    {
+                        ProjectId = data.ProjectId,
+                        ClaimId = data.ClaimId,
+                        CommentText = data.CommentText,
+                        PayerId = CurrentUserAccessor.UserId,
+                        Money = data.Money,
+                        Method = (PaymentMethod)data.Method,
+                        OperationDate = data.OperationDate,
+                    },
+                    platform);
+
+                return RedirectToAction("FastPaymentsSystemPayment",
+                    new
+                    {
+                        projectId = paymentContext.ProjectId,
+                        claimId = paymentContext.ClaimId,
+                        orderId = paymentContext.OperationId,
+                        platform,
+                    });
+            }
+            else
+            {
+                ClaimPaymentContext paymentContext = await _payments.InitiateClaimPaymentAsync(
+                    new ClaimPaymentRequest
+                    {
+                        ProjectId = data.ProjectId,
+                        ClaimId = data.ClaimId,
+                        CommentText = data.CommentText,
+                        PayerId = CurrentUserAccessor.UserId,
+                        Money = data.Money,
+                        Method = (PaymentMethod)data.Method,
+                        OperationDate = data.OperationDate,
+                    });
+
+                return View("RedirectToBank", paymentContext);
+            }
         }
         catch (Exception e)
         {
@@ -174,6 +255,7 @@ public class PaymentsController : Common.ControllerBase
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Error while updating payment");
             return Error(
                 new ErrorViewModel
                 {
@@ -182,6 +264,132 @@ public class PaymentsController : Common.ControllerBase
                     Data = e,
                     ReturnLink = GetClaimUrl(projectId, claimId),
                     ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> ForceRecurrentPayment(int projectId, int claimId, int recurrentPaymentId)
+    {
+        FinanceOperation? fo;
+        try
+        {
+            fo = await _payments.PerformRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId, null);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error while performing recurrent payment");
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Ошибка принудительного проведения рекуррентного платежа ({recurrentPaymentId})",
+                    Description = e.Message,
+                    Data = e,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+
+        if (fo is not null)
+        {
+            try
+            {
+                await _payments.UpdateClaimPaymentAsync(projectId, claimId, fo.CommentId);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error while updating recurrent payment state");
+            }
+        }
+
+        return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> CancelRecurrentPayment(int projectId, int claimId, int recurrentPaymentId)
+    {
+        try
+        {
+            await _payments.CancelRecurrentPaymentAsync(projectId, claimId, recurrentPaymentId);
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while canceling recurrent payment");
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Ошибка отмены рекуррентного платежа ({recurrentPaymentId})",
+                    Description = ex.Message,
+                    Data = ex,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> RefundPayment(int projectId, int claimId, int operationId)
+    {
+        try
+        {
+            await _payments.RefundAsync(projectId, claimId, operationId);
+            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while refunding payment");
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Ошибка оформления возврата платежа ({operationId})",
+                    Description = ex.Message,
+                    Data = ex,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult> FastPaymentsSystemPayment(int projectId, int claimId, int orderId, FpsPlatform? platform)
+    {
+        try
+        {
+            var paymentContext =
+                await _payments.GetFastPaymentsSystemMobilePaymentContextAsync(
+                    projectId,
+                    claimId,
+                    orderId,
+                    platform ?? FpsPlatform.Desktop);
+
+            return View("FastPaymentsSystemPayment", paymentContext);
+        }
+        catch (Exception e)
+        {
+            try
+            {
+                await _payments.UpdateClaimPaymentAsync(projectId, claimId, orderId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error updating payment {financeOperationId} while handling FPS payment startup", orderId);
+            }
+
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = "Ошибка обработки платежа: " + e.Message,
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке",
+                    Data = e,
                 });
         }
     }

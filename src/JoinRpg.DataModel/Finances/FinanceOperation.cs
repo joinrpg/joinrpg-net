@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -43,7 +44,27 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     /// is <see cref="FinanceOperationType.TransferTo"/>
     /// or <see cref="FinanceOperationType.TransferFrom"/>
     /// </summary>
-    public Claim LinkedClaim { get; set; }
+    public Claim? LinkedClaim { get; set; }
+
+    /// <summary>
+    /// Id of a finance operation that was refunded.
+    /// </summary>
+    public int? RefundedOperationId { get; set; }
+    public virtual FinanceOperation? RefundedOperation { get; set; }
+
+    public virtual FinanceOperationBankDetails? BankDetails { get; set; }
+
+    /// <summary>
+    /// Id of recurrent payment this operation belongs to
+    /// </summary>
+    public int? RecurrentPaymentId { get; set; }
+    public virtual RecurrentPayment? RecurrentPayment { get; set; }
+
+    /// <summary>
+    /// Имеет вид YYYY-MM.
+    /// Контроль уникальности списания на уровне БД
+    /// </summary>
+    public string? ReccurrentPaymentInstanceToken { get; set; }
 
     int IOrderableEntity.Id => ProjectId;
 

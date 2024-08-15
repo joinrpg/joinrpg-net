@@ -25,6 +25,10 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
+    @if (Model.CanMakeNewSubscription)
+    {
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payRecurrentOnlineDialog">Оформить подписку…</button>
+    }
     @if (Model.HasSubmittablePaymentTypes)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
@@ -38,7 +42,7 @@
     <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
     <table class="table table-condensed">
         <thead>
-            <tr><th>Операция</th><th>Дата</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th></tr>
+          <tr><th>Операция</th><th>Дата</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th><th></th></tr>
         </thead>
         <tbody>
         @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
@@ -51,6 +55,31 @@
             Fee = Model.BaseFee,
             AdminFunctions = new FinanceOperationAdminFunctionsViewModel(Model)
         })
+        @foreach (var rec in Model.RecurrentPayments)
+        {
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+            {
+                HtmlId = "rowRecurrent" + rec.RecurrentPaymentId.ToString(),
+                Visible = true,
+                Title = "Подписка (" + rec.StatusText + ")",
+                Fee = rec.Amount,
+                Disabled = rec.Status is RecurrentPaymentStatusViewModel.Cancelled or RecurrentPaymentStatusViewModel.Failed,
+                Payment = rec.TotalPaid > 0 ? rec.TotalPaid : null,
+                AdminFunctions = new RecurrentPaymentFunctionsViewModel(Model, rec),
+            })
+        }
+        @if (Model.CanMakeNewSubscription)
+        {
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+            {
+                HtmlId = "rowRecurrentNew",
+                Visible = true,
+                Title = "Новая подписка",
+                Date = "Ежемесячно",
+                Fee = Model.BaseFee,
+                AdminFunctions = new RecurrentPaymentFunctionsViewModel(Model, null),
+            })
+        }
         @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowAccommodationFee",
@@ -87,6 +116,7 @@
                 <th class="price-table">@await Html.PartialAsync("Money", new Money(Model.CurrentFee, "feeTotalDisp"))</th>
                 <th class="price-table">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance, "feeBalance"))</th>
                 <th></th>
+                <th></th>
             </tr>
             <tr id="rowPaymentStatus">
                 <th>
@@ -101,25 +131,26 @@
                 <th>
                     @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
                     {
-                        <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
+                      <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
                     }
                     @if (Model.ShowOnlinePaymentControls)
                     {
-                        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+                      <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }
                     @if (Model.HasSubmittablePaymentTypes)
                     {
-                        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+                      <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
                     }
                 </th>
+                <th></th>
             </tr>
             @if (Model.Balance[FinanceOperationState.Proposed] > 0)
             {
-                <tr><th>@FinanceOperationStateViewModel.Proposed.GetDisplayName()</th><th></th><th></th><th class="price-table">@await Html.PartialAsync("Money", new Money(Model.Balance[FinanceOperationState.Proposed]))</th><th></th></tr>
+                <tr><th>@FinanceOperationStateViewModel.Proposed.GetDisplayName()</th><th></th><th></th><th class="price-table">@await Html.PartialAsync("Money", new Money(Model.Balance[FinanceOperationState.Proposed]))</th><th></th><th></th></tr>
             }
             @if (Model.Balance[FinanceOperationState.Declined] > 0)
             {
-                <tr><th>@FinanceOperationStateViewModel.Declined.GetDisplayName()</th><th></th><th></th><th class="price-table">@await Html.PartialAsync("Money", new Money(Model.Balance[FinanceOperationState.Declined]))</th><th></th></tr>
+                <tr><th>@FinanceOperationStateViewModel.Declined.GetDisplayName()</th><th></th><th></th><th class="price-table">@await Html.PartialAsync("Money", new Money(Model.Balance[FinanceOperationState.Declined]))</th><th></th><th></th></tr>
             }
         </tfoot>
     </table>

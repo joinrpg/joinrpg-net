@@ -13,4 +13,5 @@ public enum LinkType
     CommentDiscussion,
     PaymentSuccess,
     PaymentFail,
+    PaymentUpdate,
 }

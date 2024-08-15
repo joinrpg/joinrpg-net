@@ -29,6 +29,7 @@ public class ClaimController : ControllerGameBase
     private readonly IAccommodationRepository _accommodationRepository;
     private readonly IProjectMetadataRepository projectMetadataRepository;
     private readonly IProblemValidator<Claim> claimValidator;
+    private readonly IPaymentsService _paymentsService;
 
     private IAccommodationInviteService AccommodationInviteService { get; }
     private IFinanceService FinanceService { get; }
@@ -102,10 +103,12 @@ public class ClaimController : ControllerGameBase
         IAccommodationInviteService accommodationInviteService,
         IAccommodationInviteRepository accommodationInviteRepository,
         IUserRepository userRepository,
+        IPaymentsService paymentsService,
         IProjectMetadataRepository projectMetadataRepository,
         IProblemValidator<Claim> claimValidator)
         : base(projectRepository, projectService, userRepository)
     {
+        _paymentsService = paymentsService;
         _claimService = claimService;
         _plotRepository = plotRepository;
         _claimsRepository = claimsRepository;
@@ -206,7 +209,18 @@ public class ClaimController : ControllerGameBase
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
-        var claimViewModel = new ClaimViewModel(currentUser, claim, plots, UriService, projectInfo, claimValidator, availableAccommodation, requestForAccommodation, potentialNeighbors, incomingInvite, outgoingInvite);
+        var claimViewModel = new ClaimViewModel(currentUser,
+            claim,
+            plots,
+            UriService,
+            projectInfo,
+            claimValidator,
+            _paymentsService.GetExternalPaymentUrl,
+            availableAccommodation,
+            requestForAccommodation,
+            potentialNeighbors,
+            incomingInvite,
+            outgoingInvite);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
         {
@@ -524,7 +538,8 @@ public class ClaimController : ControllerGameBase
         }
         catch (Exception e)
         {
-            return View("Error",
+            return View(
+                "~/Views/Payments/Error.cshtml",
                 new ErrorViewModel
                 {
                     Title = "Перевод между заявками",
@@ -572,7 +587,7 @@ public class ClaimController : ControllerGameBase
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator);
+        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator, _paymentsService.GetExternalPaymentUrl);
 
         await _claimService.SubscribeClaimToUser(projectid, claimid);
         var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -595,7 +610,7 @@ public class ClaimController : ControllerGameBase
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator);
+        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator, _paymentsService.GetExternalPaymentUrl);
 
 
         await _claimService.UnsubscribeClaimToUser(projectid, claimid);
@@ -845,18 +860,20 @@ public class ClaimController : ControllerGameBase
         }
 
 
-        IReadOnlyCollection<Claim> claims = await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
+        var claims = await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
             claim.ProjectId,
             ClaimStatusSpec.ActiveOrOnHold);
         if (claims.Count == 0 || (claims.Count == 1 && claims.First().ClaimId == claimId))
         {
-            return View("Error", new ErrorViewModel
-            {
-                Title = "Ошибка",
-                Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
-                ReturnLink = Url.Action("Edit", "Claim", new { projectId, claimId }),
-                ReturnText = "Вернуться к заявке"
-            });
+            return View(
+                "~/Views/Payments/Error.cshtml",
+                new ErrorViewModel
+                {
+                    Title = "Ошибка",
+                    Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
+                    ReturnLink = Url.Action("Edit", "Claim", new { projectId, claimId }),
+                    ReturnText = "Вернуться к заявке"
+                });
         }
 
         return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));

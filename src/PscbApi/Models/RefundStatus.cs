@@ -26,4 +26,7 @@ public enum RefundStatus
     /// </summary>
     [Identifier("ERR")]
     Error,
+
+    [Identifier("DELAY")]
+    Delay,
 }

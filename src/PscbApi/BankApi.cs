@@ -22,6 +22,8 @@ public class BankApi
     /// </summary>
     public bool Debug => _configuration.Debug;
 
+    public bool DebugOutput => _configuration.DebugOutput;
+
     /// <summary>
     /// Returns actual API endpoint
     /// </summary>
@@ -55,8 +57,12 @@ public class BankApi
         where TRequest : class
         where TResponse : class, new()
     {
-        System.Diagnostics.Debug.WriteLineIf(Debug, url);
-        System.Diagnostics.Debug.WriteLineIf(Debug, JsonConvert.SerializeObject(request, Formatting.Indented));
+        if (DebugOutput)
+        {
+            System.Diagnostics.Debug.WriteLine("Request to bank:");
+            System.Diagnostics.Debug.WriteLine(url);
+            System.Diagnostics.Debug.WriteLine(JsonConvert.SerializeObject(request, Formatting.Indented));
+        }
 
         var requestAsJson = JsonConvert.SerializeObject(request, Formatting.None);
         var requestAsJsonUtf8 = requestAsJson.ToUtf8Bytes();
@@ -71,28 +77,35 @@ public class BankApi
         if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
             var responseJson = await httpResponse.Content.ReadAsStringAsync();
-            System.Diagnostics.Debug.WriteLineIf(Debug, responseJson);
-            return JsonConvert.DeserializeObject<TResponse>(responseJson);
+            var result = JsonConvert.DeserializeObject<TResponse>(responseJson);
+
+            if (DebugOutput)
+            {
+                System.Diagnostics.Debug.WriteLine("Response from bank:");
+                System.Diagnostics.Debug.WriteLine(
+                    result is null
+                        ? "empty"
+                        : JsonConvert.SerializeObject(result, Formatting.Indented));
+            }
+
+            return result ?? throw new PscbApiRequestException<TRequest>(url, request, signature, "Response was empty");
+        }
+
+        if (DebugOutput)
+        {
+            System.Diagnostics.Debug.WriteLine("Response from bank:");
+            System.Diagnostics.Debug.WriteLine($"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
         }
 
         throw new PscbApiRequestException<TRequest>(url, request, signature, $"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
     }
 
-    /// <summary>
-    /// Creates url with encoded payment data to redirect to perform payment
-    /// </summary>
-    /// <param name="message">Payment data</param>
-    /// <param name="getOrderId">Callback to retrieve order Id after verifying entire message</param>
-    /// <param name="getOrderIdDisplayValue">Callback to retrieve order Id display value</param>
-    /// <returns>Url to redirect to</returns>
-    public async Task<PaymentRequestDescriptor> BuildPaymentRequestAsync(
-        PaymentMessage message,
-        Func<Task<string>> getOrderId,
-        Func<string, string>? getOrderIdDisplayValue = null)
+    private void PrepareMessage(PaymentMessage message)
     {
         if (Debug)
         {
             message.Details = "[Debug mode] " + message.Details;
+            message.Data.EnableDebugOutput = true;
         }
 
         if (message.PaymentMethod.HasValue)
@@ -117,6 +130,21 @@ public class BankApi
         message.SuccessUrl ??= _configuration.DefaultSuccessUrl;
         message.FailUrl ??= _configuration.DefaultFailUrl;
         Validator.ValidateObject(message, new ValidationContext(message) { MemberName = nameof(message) });
+    }
+
+    /// <summary>
+    /// Creates url with encoded payment data to redirect to perform payment
+    /// </summary>
+    /// <param name="message">Payment data</param>
+    /// <param name="getOrderId">Callback to retrieve order Id after verifying entire message</param>
+    /// <param name="getOrderIdDisplayValue">Callback to retrieve order Id display value</param>
+    /// <returns>Url to redirect to</returns>
+    public async Task<PaymentRequestDescriptor> BuildPaymentRequestAsync(
+        PaymentMessage message,
+        Func<Task<string>> getOrderId,
+        Func<string, string>? getOrderIdDisplayValue = null)
+    {
+        PrepareMessage(message);
 
         message.OrderId = await getOrderId() ?? message.OrderId;
         message.ValidateProperty(m => m.OrderId);
@@ -124,9 +152,7 @@ public class BankApi
         message.OrderIdDisplayValue = getOrderIdDisplayValue?.Invoke(message.OrderId) ?? message.OrderIdDisplayValue;
         message.ValidateProperty(m => m.OrderIdDisplayValue);
 
-        System.Diagnostics.Debug.WriteLineIf(
-            Debug,
-            JsonConvert.SerializeObject(message, Formatting.Indented));
+        System.Diagnostics.Debug.WriteLineIf(DebugOutput, JsonConvert.SerializeObject(message, Formatting.Indented));
 
         var messageAsJson = JsonConvert.SerializeObject(message, Formatting.None);
         var messageAsJsonUtf8 = messageAsJson.ToUtf8Bytes();
@@ -158,7 +184,6 @@ public class BankApi
     /// <summary>
     /// Returns payment information
     /// </summary>
-    /// <param name="paymentMethod">Payment method was used for this payment</param>
     /// <param name="orderId">Order to return info for</param>
     /// <param name="getCardData">true to read card data</param>
     /// <param name="getFiscalData">true to read fiscal data</param>
@@ -166,7 +191,8 @@ public class BankApi
     /// <remarks>
     /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-zapros-parametrov-platezha for details
     /// </remarks>
-    public async Task<PaymentInfo> GetPaymentInfoAsync(PscbPaymentMethod paymentMethod, string orderId, bool getCardData = false, bool getFiscalData = false)
+    public async Task<T> GetPaymentInfoAsync<T>(string orderId, bool getCardData = false, bool getFiscalData = false)
+        where T : PaymentInfoBase, new()
     {
         if (string.IsNullOrWhiteSpace(orderId))
         {
@@ -181,8 +207,160 @@ public class BankApi
             GetFiscalData = getFiscalData,
         };
 
-        return await ApiRequestAsync<PaymentInfoQueryParams, PaymentInfo>(
+        return await ApiRequestAsync<PaymentInfoQueryParams, T>(
             $"{ActualApiEndpoint}/merchantApi/checkPayment",
             queryParams);
+    }
+
+    public Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
+        => GetPaymentInfoAsync<PaymentInfo>(orderId, getCardData, getFiscalData);
+
+
+    /// <summary>
+    /// Configures recurrent payments with the Fast Payments System
+    /// </summary>
+    /// <param name="orderId">Order to use as the parent payment</param>
+    /// <param name="token">Token that was returned after the successful FPS payment, identified by the <paramref name="orderId"/></param>
+    /// <param name="amount">How much money to pay</param>
+    /// <param name="purpose">The purpose of payment</param>
+    /// <returns>Recurrent payment information object</returns>
+    /// <remarks>
+    /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-rekurrentnye-platezhi-sozdanie-rekurrentnogo-platezha-sbp for details
+    /// </remarks>
+    public async Task<FastPaymentsSystemRecurrentPaymentInfo> SetupFastPaymentSystemRecurrentPayments(string orderId, string token, int amount, string purpose)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(orderId, nameof(orderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
+        ArgumentException.ThrowIfNullOrWhiteSpace(purpose, nameof(purpose));
+
+        var queryParams = new SetupFastPaymentsSystemRecurrentPaymentQueryParams
+        {
+            Amount = amount,
+            PaymentPurpose = purpose,
+            OrderId = orderId,
+            RecurrencyToken = token,
+            MarketplaceId = _configuration.MerchantId,
+        };
+
+        return await ApiRequestAsync<SetupFastPaymentsSystemRecurrentPaymentQueryParams, FastPaymentsSystemRecurrentPaymentInfo>(
+            $"{ActualApiEndpoint}/merchantApi/createQrCode",
+            queryParams);
+    }
+
+    public async Task<FastPaymentsSystemRecurrentPaymentInfo> CancelFastPaymentSystemRecurrentPayments(string orderId, string token)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(orderId, nameof(orderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
+
+        var queryParams = new CancelFastPaymentsSystemRecurrentPaymentQueryParams
+        {
+            OrderId = orderId,
+            RecurrencyToken = token,
+            MarketplaceId = _configuration.MerchantId,
+        };
+
+        return await ApiRequestAsync<CancelFastPaymentsSystemRecurrentPaymentQueryParams, FastPaymentsSystemRecurrentPaymentInfo>(
+            $"{ActualApiEndpoint}/merchantApi/cancelRecurrent",
+            queryParams);
+    }
+
+    /// <summary>
+    /// Initiates new recurrent payment.
+    /// </summary>
+    /// <param name="parentOrderId">Order used as a parent payment</param>
+    /// <param name="paymentId">Identifier of a payment to perform</param>
+    /// <param name="token">Recurrency token</param>
+    /// <param name="additionalToken">Additional token (like Fast Payment System QR-code identifier)</param>
+    /// <param name="receipt">Receipt data</param>
+    public async Task<RecurrentPaymentInfo> PayRecurrent(string parentOrderId, string paymentId, string token, string additionalToken, Receipt receipt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(parentOrderId, nameof(parentOrderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(paymentId, nameof(paymentId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
+        ArgumentException.ThrowIfNullOrWhiteSpace(additionalToken, nameof(additionalToken));
+        ArgumentNullException.ThrowIfNull(receipt, nameof(receipt));
+
+        var message = new RecurrentPaymentMessage
+        {
+            MerchantId = _configuration.MerchantId,
+            ParentOrderId = parentOrderId,
+            OrderId = paymentId,
+            RecurrencyToken = token,
+            Amount = receipt.Items.Aggregate(0.0M, static (v, item) => v + item.TotalPrice),
+            Data = new PaymentMessageData
+            {
+                AdditionalToken = additionalToken,
+                Receipt = receipt
+            }
+        };
+
+        return await ApiRequestAsync<RecurrentPaymentMessage, RecurrentPaymentInfo>(
+            $"{ActualApiEndpoint}/merchantApi/payRecurrent",
+            message);
+    }
+
+    /// <summary>
+    /// Initiates new refund.
+    /// </summary>
+    /// <param name="paymentId">Payment to refund</param>
+    /// <param name="partial">true when partial refund is required</param>
+    /// <param name="amount">Money to refund in partial refund</param>
+    /// <param name="receipt">Receipt data for partial refunds</param>
+    /// <returns>Refund information</returns>
+    /// <remarks>
+    /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-vozvrat-platezha for details.
+    /// </remarks>
+    public async Task<RefundInfo> Refund(string paymentId, bool partial, int? amount, Receipt? receipt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(paymentId, nameof(paymentId));
+        if (partial)
+        {
+            ArgumentNullException.ThrowIfNull(amount, nameof(amount));
+            ArgumentNullException.ThrowIfNull(receipt, nameof(receipt));
+        }
+
+        var message = new RefundMessage
+        {
+            MerchantId = _configuration.MerchantId,
+            OrderId = paymentId,
+            PartialRefund = partial,
+            Amount = partial ? amount : null,
+            Data = new RefundMessageData
+            {
+                Receipt = partial ? receipt : null,
+            }
+        };
+
+        return await ApiRequestAsync<RefundMessage, RefundInfo>(
+            $"{ActualApiEndpoint}/merchantApi/refundPayment",
+            message);
+    }
+
+    public async Task<FastPaymentsSystemInvoicingInfo> GetFastPaymentSystemInvoice(
+        FastPaymentsSystemInvoicingMessage message, Func<Task<string>> getOrderId,
+        Func<string, ValueTask<string>>? getOrderIdDisplayValue = null,
+        Func<ValueTask<string>>? getRedirectUrl = null)
+    {
+        ArgumentNullException.ThrowIfNull(message, nameof(message));
+        ArgumentNullException.ThrowIfNull(getOrderId, nameof(getOrderId));
+
+        PrepareMessage(message);
+        message.MerchantId = _configuration.MerchantId;
+
+        message.OrderId = await getOrderId() ?? message.OrderId;
+        message.ValidateProperty(m => m.OrderId);
+
+        message.OrderIdDisplayValue = getOrderIdDisplayValue is not null
+            ? await getOrderIdDisplayValue(message.OrderId)
+            : message.OrderIdDisplayValue;
+        message.ValidateProperty(m => m.OrderIdDisplayValue);
+
+        message.Data.FastPaymentsSystemRedirectUrl = getRedirectUrl is not null
+            ? await getRedirectUrl()
+            : message.SuccessUrl;
+
+        return await ApiRequestAsync<FastPaymentsSystemInvoicingMessage, FastPaymentsSystemInvoicingInfo>(
+            $"{ActualApiEndpoint}/merchantApi/pay",
+            message);
     }
 }

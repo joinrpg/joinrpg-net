@@ -1,30 +1,17 @@
+using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
 
-/// <summary>
-/// Payment type kinds
-/// </summary>
-public enum PaymentTypeKind
+public static class PaymentTypeKindExtensions
 {
-    /// <summary>
-    /// Custom, non-specific user-defined payment type
-    /// </summary>
-    Custom = 0,
+    public static readonly FrozenSet<PaymentTypeKind> Online =
+        FrozenSet.ToFrozenSet([PaymentTypeKind.Online, PaymentTypeKind.OnlineSubscription]);
 
-    /// <summary>
-    /// Cash payment to a master
-    /// </summary>
-    Cash = 1,
-
-    /// <summary>
-    /// Online payment type through online payment gate
-    /// </summary>
-    Online = 2,
+    public static bool IsOnline(this PaymentTypeKind ptk) => Online.Contains(ptk);
 }
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
 public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEntity
 {
     public int PaymentTypeId { get; set; }

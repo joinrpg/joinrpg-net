@@ -111,12 +111,8 @@ public class MyDbContext : DbContext, IUnitOfWork
         _ = modelBuilder.Entity<Comment>().HasRequired(c => c.Finance)
             .WithRequiredPrincipal(fo => fo.Comment);
 
-        _ = modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
-
-        _ = modelBuilder.Entity<FinanceOperation>()
-            .HasOptional(fo => fo.LinkedClaim)
-            .WithMany()
-            .HasForeignKey(fo => fo.LinkedClaimId);
+        ConfigureFinanceOperation(modelBuilder);
+        ConfigureRecurrentPayments(modelBuilder);
 
         _ = modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups)
             .WithMany(cg => cg.DirectlyRelatedPlotFolders);
@@ -163,6 +159,60 @@ public class MyDbContext : DbContext, IUnitOfWork
         ConfigureMoneyTransfer(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    private void ConfigureRecurrentPayments(DbModelBuilder modelBuilder)
+    {
+        ConfigureProjectSubEntity<RecurrentPayment>(modelBuilder);
+
+        modelBuilder.Entity<RecurrentPayment>()
+            .HasRequired(rp => rp.Claim)
+            .WithMany(e => e.RecurrentPayments)
+            .HasForeignKey(rp => rp.ClaimId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<RecurrentPayment>()
+            .HasRequired(rp => rp.PaymentType)
+            .WithMany()
+            .HasForeignKey(rp => rp.PaymentTypeId)
+            .WillCascadeOnDelete(false);
+    }
+
+    private static void ConfigureProjectSubEntity<TEntity>(DbModelBuilder modelBuilder)
+        where TEntity : class, IProjectEntity
+    {
+        modelBuilder.Entity<TEntity>()
+                    .HasRequired(rp => rp.Project)
+                    .WithMany()
+                    .HasForeignKey(rp => rp.ProjectId)
+                    .WillCascadeOnDelete(false);
+    }
+
+    private static void ConfigureFinanceOperation(DbModelBuilder modelBuilder)
+    {
+        _ = modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
+
+        _ = modelBuilder.Entity<FinanceOperation>()
+            .HasOptional(fo => fo.LinkedClaim)
+            .WithMany()
+            .HasForeignKey(fo => fo.LinkedClaimId);
+
+        _ = modelBuilder.Entity<FinanceOperation>()
+            .HasOptional(fo => fo.RecurrentPayment)
+            .WithMany()
+            .HasForeignKey(fo => fo.RecurrentPaymentId);
+
+        _ = modelBuilder.Entity<FinanceOperation>()
+            .HasOptional(fo => fo.RefundedOperation)
+            .WithMany()
+            .HasForeignKey(fo => fo.RefundedOperationId);
+
+        _ = modelBuilder.Entity<FinanceOperationBankDetails>()
+            .HasKey(fobd => fobd.CommentId);
+
+        _ = modelBuilder.Entity<FinanceOperation>()
+            .HasOptional(fo => fo.BankDetails)
+            .WithRequired();
     }
 
     private static void ConfigureUser(DbModelBuilder modelBuilder)

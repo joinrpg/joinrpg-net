@@ -17,6 +17,7 @@ public static class FinanceDisplayExtensions
             PaymentTypeKindViewModel.Custom => defaultName ?? kind.GetDisplayName(),
             PaymentTypeKindViewModel.Cash => user != null ? $@"{kind.GetDisplayName()} — {user.GetDisplayName()}" : kind.GetDisplayName(),
             PaymentTypeKindViewModel.Online => kind.GetDisplayName(),
+            PaymentTypeKindViewModel.OnlineSubscription => kind.GetDisplayName(),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
     }

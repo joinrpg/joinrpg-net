@@ -25,7 +25,7 @@ public class Receipt : IValidatableObject
     [Required]
     [EmailAddress]
     [JsonProperty("companyEmail")]
-    public string CompanyEmail { get; set; }
+    public required string CompanyEmail { get; set; }
 
     /// <summary>
     /// Receipt items
