@@ -8,7 +8,6 @@ namespace JoinRpg.Interfaces;
 public interface ICurrentUserAccessor
 {
     int? UserIdOrDefault { get; }
-    int UserId { get; }
     string DisplayName { get; }
     string Email { get; }
     bool IsAdmin { get; }
@@ -16,4 +15,8 @@ public interface ICurrentUserAccessor
     /// Avatar of current user
     /// </summary>
     AvatarIdentification? Avatar { get; }
+
+    UserIdentification UserIdentification => new UserIdentification(UserId);
+
+    int UserId => User.GetUserIdOrDefault() ?? throw new Exception("Authorization required here");
 }

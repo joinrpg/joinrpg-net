@@ -22,7 +22,6 @@ internal class JoinRpgPortalModule : Module
         _ = builder.RegisterType<UriServiceImpl>().AsImplementedInterfaces();
         _ = builder.RegisterType<ConfigurationAdapter>().AsSelf().AsImplementedInterfaces();
 
-        _ = builder.RegisterType<CurrentUserAccessor>().AsImplementedInterfaces();
         _ = builder.RegisterType<CurrentProjectAccessor>().AsImplementedInterfaces();
 
         _ = builder.RegisterType<ReCaptchaService>().SingleInstance();
