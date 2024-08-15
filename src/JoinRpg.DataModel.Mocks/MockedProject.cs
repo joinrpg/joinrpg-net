@@ -123,6 +123,7 @@ public class MockedProject
             CharacterGroups = new List<CharacterGroup>(),
             Claims = new List<Claim>(),
             Details = new ProjectDetails(),
+            PaymentTypes = [],
         };
 
         FixProjectSubEntities(Project);
