@@ -18,5 +18,5 @@ public interface ICurrentUserAccessor
 
     UserIdentification UserIdentification => new UserIdentification(UserId);
 
-    int UserId => User.GetUserIdOrDefault() ?? throw new Exception("Authorization required here");
+    int UserId => UserIdOrDefault ?? throw new Exception("Authorization required here");
 }
