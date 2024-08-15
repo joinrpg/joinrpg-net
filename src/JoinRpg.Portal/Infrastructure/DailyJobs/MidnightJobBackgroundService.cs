@@ -30,8 +30,8 @@ public class MidnightJobBackgroundService<TJob>(
             {
                 try
                 {
-                    var job = scope.ServiceProvider.GetRequiredService<TJob>();
-                    await job.RunOnce(stoppingToken);
+                    var job = scope.ServiceProvider.GetRequiredService<JobRunner<TJob>>();
+                    await job.RunJob(stoppingToken);
                     _ = await dailyJobRepository.TrySetJobCompleted(jobId);
                 }
                 catch (Exception ex)
@@ -50,6 +50,7 @@ public class MidnightJobBackgroundService<TJob>(
     {
         if (skipWait)
         {
+            await Task.Delay(0, stoppingToken);
             skipWait = false;
             return;
         }

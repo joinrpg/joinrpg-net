@@ -19,6 +19,8 @@ public static class DailyJobRegistration
             .AddDailyJob<ProjectWarnCloseJob>()
             .AddDailyJob<ProjectPerformCloseJob>();
         services.AddDailyJob<PerformRecurrentPaymentMidnightJob>();
+
+        services.AddDailyJob<ReCacheAvatarsJob>();
     }
 
     public static IServiceCollection AddDailyJob<TJob>(this IServiceCollection services) where TJob : class, IDailyJob
@@ -26,6 +28,7 @@ public static class DailyJobRegistration
         return services
             .AddScoped<TJob>()
             .AddScoped<IDailyJob, TJob>()
+            .AddScoped<JobRunner<TJob>>()
             .AddHostedService<MidnightJobBackgroundService<TJob>>();
     }
 }
