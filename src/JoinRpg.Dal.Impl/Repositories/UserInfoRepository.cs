@@ -86,4 +86,14 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         => ctx.Set<User>()
             .SelectMany(user => user.Avatars)
             .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
+
+    public async Task<(UserIdentification, AvatarIdentification)[]> GetLegacyAvatarsList()
+    {
+        var res = await ctx.Set<User>().SelectMany(user => user.Avatars)
+            .Where(a => a.CachedUri != null && a.CachedUri.Contains("windows")).
+            Select(a => new { a.UserId, a.UserAvatarId })
+            .ToListAsync();
+
+        return res.Select(a => (new UserIdentification(a.UserId), new AvatarIdentification(a.UserAvatarId))).ToArray();
+    }
 }

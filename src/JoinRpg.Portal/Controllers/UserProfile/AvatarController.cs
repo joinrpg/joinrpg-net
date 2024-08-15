@@ -57,7 +57,7 @@ public class AvatarController : Controller
     public async Task<IActionResult> RecacheAvatar(int userAvatarId)
     {
         await avatarService.RecacheAvatar(
-            currentUserAccessor.UserId,
+            currentUserAccessor.UserIdentification,
             new AvatarIdentification(userAvatarId)
             );
         avatarCacheDecoractor.Value.PurgeCache(new AvatarIdentification(userAvatarId));

@@ -309,7 +309,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IAvatarService.RecacheAvatar(int userId, AvatarIdentification avatarIdentification)
+    async Task IAvatarService.RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification)
     {
         logger.LogInformation("Starting recache of {avatarId} for user({userId})", avatarIdentification, userId);
 
