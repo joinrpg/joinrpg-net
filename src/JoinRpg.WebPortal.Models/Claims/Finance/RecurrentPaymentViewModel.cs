@@ -1,4 +1,4 @@
-﻿using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models.Money;
 
@@ -24,7 +24,7 @@ public class RecurrentPaymentViewModel
 
     public string StatusText { get; set; }
 
-    public RecurrentPaymentViewModel() {}
+    public RecurrentPaymentViewModel() { }
 
     public RecurrentPaymentViewModel(ClaimFeeViewModel claim, RecurrentPayment source)
     {

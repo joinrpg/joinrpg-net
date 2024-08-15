@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.Web.Models;
+namespace JoinRpg.Web.Models;
 
 public class FinanceOperationsRowViewModel
 {

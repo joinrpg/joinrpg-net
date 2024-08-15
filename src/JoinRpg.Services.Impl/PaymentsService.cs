@@ -146,7 +146,7 @@ public class PaymentsService(
 
         var result = new FastPaymentsSystemMobilePaymentContext(banks)
         {
-            Amount = (int) pi.Payment.Amount,
+            Amount = (int)pi.Payment.Amount,
             Details = pi.Payment.Details ?? "",
             ClaimId = claimId,
             ProjectId = projectId,

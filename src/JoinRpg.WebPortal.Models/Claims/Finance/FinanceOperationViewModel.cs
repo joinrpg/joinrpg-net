@@ -1,4 +1,4 @@
-﻿using JoinRpg.DataModel;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models.Money;

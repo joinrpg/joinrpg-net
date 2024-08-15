@@ -868,12 +868,12 @@ public class ClaimController : ControllerGameBase
             return View(
                 "~/Views/Payments/Error.cshtml",
                 new ErrorViewModel
-            {
-                Title = "Ошибка",
-                Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
-                ReturnLink = Url.Action("Edit", "Claim", new { projectId, claimId }),
-                ReturnText = "Вернуться к заявке"
-            });
+                {
+                    Title = "Ошибка",
+                    Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
+                    ReturnLink = Url.Action("Edit", "Claim", new { projectId, claimId }),
+                    ReturnText = "Вернуться к заявке"
+                });
         }
 
         return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));

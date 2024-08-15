@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.DataModel;
+namespace JoinRpg.DataModel;
 
 /// <summary>
 /// Payment type kinds
