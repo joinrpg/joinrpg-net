@@ -23,12 +23,6 @@ public class ProjectDetails : IValidatableObject
     public bool EnableAccommodation { get; set; } = false;
 
     /// <summary>
-    /// If true, character name is separate property of character, not bound to any field
-    /// and could be edited only by master
-    /// </summary>
-    [Obsolete("Not used any more, will be deleted soon")]
-    public bool CharacterNameLegacyMode { get; set; } = true;
-    /// <summary>
     ///   Null = bound to player name
     ///   Other value = bound to that field
     /// </summary>
