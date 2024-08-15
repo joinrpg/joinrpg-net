@@ -137,7 +137,7 @@ public class PaymentsController : Common.ControllerBase
                     {
                         projectId = paymentContext.ProjectId,
                         claimId = paymentContext.ClaimId,
-                        operationId = paymentContext.OperationId,
+                        orderId = paymentContext.OperationId,
                         platform,
                     });
             }
