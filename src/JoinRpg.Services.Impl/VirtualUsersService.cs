@@ -6,20 +6,17 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl;
 
-/// <inheritdoc />
-public class VirtualUsersService : IVirtualUsersService
+public class VirtualUsersService(Func<IUnitOfWork> uowResolver) : IVirtualUsersService
 {
-    private readonly Lazy<User> _paymentsUser;
+    private readonly Lazy<User> _paymentsUser = new Lazy<User>(() => LoadUserByName(uowResolver(), User.OnlinePaymentVirtualUser), true);
 
-    /// <inheritdoc />
     public User PaymentsUser => _paymentsUser.Value;
 
-    /// <summary>
-    /// Default constructor
-    /// </summary>
-    public VirtualUsersService(Func<IUnitOfWork> uowResolver) => _paymentsUser = new Lazy<User>(() => LoadPaymentsUser(uowResolver()), true);
+    private readonly Lazy<User> _robotUser = new Lazy<User>(() => LoadUserByName(uowResolver(), User.RobotVirtualUser), true);
 
-    private User LoadPaymentsUser(IUnitOfWork uow)
+    public User RobotUser => _robotUser.Value;
+
+    private static User LoadUserByName(IUnitOfWork uow, string userName)
     {
         var result = uow
             .GetDbSet<User>()
@@ -27,7 +24,7 @@ public class VirtualUsersService : IVirtualUsersService
             .Include(u => u.Auth)
             .Include(u => u.Allrpg)
             .Include(u => u.Extra)
-            .SingleOrDefault(u => u.Email == User.OnlinePaymentVirtualUser);
+            .SingleOrDefault(u => u.Email == userName);
         if (result == null)
         {
             throw new DataException("Virtual payments manager user was not found");

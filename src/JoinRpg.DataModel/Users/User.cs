@@ -46,6 +46,7 @@ public class User
     public virtual ICollection<UserExternalLogin> ExternalLogins { get; set; } = new List<UserExternalLogin>();
 
     public const string OnlinePaymentVirtualUser = "payments@joinrpg.ru";
+    public const string RobotVirtualUser = "robot@joinrpg.ru";
 
     public virtual UserAvatar SelectedAvatar { get; set; }
 

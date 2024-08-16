@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ public class MidnightJobBackgroundService<TJob>(
 {
     private static readonly string JobName = typeof(TJob).FullName!;
     private bool skipWait = options.Value.DebugDailyJobMode;
+    private static ActivitySource activitySource = new ActivitySource(nameof(JoinRpg.Portal.Infrastructure.DailyJobs.MidnightJobBackgroundService<TJob>));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -23,16 +25,19 @@ public class MidnightJobBackgroundService<TJob>(
             stoppingToken.ThrowIfCancellationRequested();
 
             using var scope = serviceProvider.CreateScope();
+            using var activity = activitySource.StartActivity($"Run of {JobName}");
             var dailyJobRepository = scope.ServiceProvider.GetRequiredService<IDailyJobRepository>();
 
             var jobId = new JobId(JobName, DateOnly.FromDateTime(DateTime.Now));
             if (await dailyJobRepository.TryInsertJobRecord(jobId))
             {
+                logger.LogInformation("Will start {jobName} on this instance", JobName);
                 try
                 {
-                    var job = scope.ServiceProvider.GetRequiredService<TJob>();
-                    await job.RunOnce(stoppingToken);
+                    var job = scope.ServiceProvider.GetRequiredService<JobRunner<TJob>>();
+                    await job.RunJob(stoppingToken);
                     _ = await dailyJobRepository.TrySetJobCompleted(jobId);
+                    logger.LogInformation("Successfully complete {jobName} on this instance", JobName);
                 }
                 catch (Exception ex)
                 {
@@ -50,6 +55,7 @@ public class MidnightJobBackgroundService<TJob>(
     {
         if (skipWait)
         {
+            await Task.Delay(0, stoppingToken);
             skipWait = false;
             return;
         }

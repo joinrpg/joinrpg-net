@@ -11,4 +11,6 @@ public interface IVirtualUsersService
     /// Data object of virtual payments manager user
     /// </summary>
     User PaymentsUser { get; }
+
+    User RobotUser { get; }
 }

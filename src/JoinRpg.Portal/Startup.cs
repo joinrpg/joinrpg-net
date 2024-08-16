@@ -14,6 +14,7 @@ using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -49,7 +50,9 @@ public class Startup
 
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
-        _ = services.AddHttpContextAccessor();
+        _ = services.AddHttpContextAccessor()
+            .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
+            .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>();
 
         _ = services.AddHttpClient();
 

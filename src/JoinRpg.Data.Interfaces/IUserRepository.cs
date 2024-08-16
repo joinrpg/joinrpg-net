@@ -12,4 +12,6 @@ public interface IUserRepository
     Task<User> GetWithSubscribe(int currentUserId);
     Task<User?> GetByEmail(string email);
     Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId);
+
+    Task<(UserIdentification, AvatarIdentification)[]> GetLegacyAvatarsList();
 }

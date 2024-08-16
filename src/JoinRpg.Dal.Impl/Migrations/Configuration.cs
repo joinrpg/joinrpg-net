@@ -13,23 +13,30 @@ public sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
 
     protected override void Seed(MyDbContext context)
     {
-        if (!context.Set<User>().Any(u => u.UserName == User.OnlinePaymentVirtualUser))
+        EnsureUserExists(context, User.OnlinePaymentVirtualUser, "Online payments");
+        EnsureUserExists(context, User.RobotVirtualUser, "Robot", isAdmin: true);
+        base.Seed(context);
+    }
+
+    private static void EnsureUserExists(MyDbContext context, string userName, string prefferedName, bool isAdmin = false)
+    {
+        if (!context.Set<User>().Any(u => u.UserName == userName))
         {
             var user = new User()
             {
-                UserName = User.OnlinePaymentVirtualUser,
-                Email = User.OnlinePaymentVirtualUser,
-                PrefferedName = "Online payments",
+                UserName = userName,
+                Email = userName,
+                PrefferedName = prefferedName,
                 VerifiedProfileFlag = true,
                 Auth = new UserAuthDetails()
                 {
                     EmailConfirmed = true,
                     RegisterDate = DateTime.UtcNow,
                     AspNetSecurityStamp = Guid.NewGuid().ToString(),
+                    IsAdmin = isAdmin,
                 }
             };
             context.Set<User>().Add(user);
         }
-        base.Seed(context);
     }
 }

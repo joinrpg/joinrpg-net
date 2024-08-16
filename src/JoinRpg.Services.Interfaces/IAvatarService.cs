@@ -19,7 +19,7 @@ public interface IAvatarService
     /// <summary>
     /// Recache avatar
     /// </summary>
-    Task RecacheAvatar(int userId, AvatarIdentification avatarIdentification);
+    Task RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification);
 
     /// <summary>
     /// Select avatar for user
