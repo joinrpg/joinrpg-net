@@ -1,4 +1,4 @@
-﻿using JoinRpg.Interfaces;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 
