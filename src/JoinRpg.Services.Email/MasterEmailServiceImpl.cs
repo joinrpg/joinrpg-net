@@ -27,9 +27,9 @@ internal class MasterEmailServiceImpl(
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
-Проект {metadata.ProjectName} был в последний раз активен {email.LastActiveDate:YYY-MM-DD}. Если до {email.WillCloseDate:YYY-MM-DD} активность в нем не появится, он автоматически будет закрыт.
+Проект {metadata.ProjectName} был в последний раз активен {email.LastActiveDate:YYYY-MM-dd}. Если до {email.WillCloseDate:YYYY-MM-dd} активность в нем не появится, он автоматически будет закрыт.
 
-Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект вам больше не нужен, вы можете закрыть его сами.
+Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.
 
 Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
 
@@ -74,7 +74,7 @@ internal class MasterEmailServiceImpl(
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
-Проект {metadata.ProjectName} был закрыт, т.к. он не был активен с {email.LastActiveDate:YYY-MM-DD}. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
+Проект {metadata.ProjectName} был закрыт, т.к. он не был активен с {email.LastActiveDate:YYYY-MM-dd}. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
 
 --
 {joinRpgSender.DisplayName}
@@ -97,7 +97,7 @@ internal class MasterEmailServiceImpl(
 
 Вы можете автоматически сконвертировать все заявки в группу в шаблоны персонажей в Настройках проекта, или сконвертировать группы по одной в настройках. Никакие данные не потеряются.
 
-Если проект вам не нужен, закройте его, и эти сообщения перестанут приходить.
+Если проект завершен или больше не нужен — вы можете закрыть его, и эти сообщения перестанут приходить.
 
 --
 {joinRpgSender.DisplayName}
