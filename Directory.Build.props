@@ -31,4 +31,10 @@
             <_Parameter1>$(AssemblyName).Test</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ReferenceTrimmer" Version="3.3.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>

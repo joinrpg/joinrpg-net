@@ -7,7 +7,6 @@
     <PackageReference Include="Autofac" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
