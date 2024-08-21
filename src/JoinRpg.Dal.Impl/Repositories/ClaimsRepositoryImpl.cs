@@ -78,7 +78,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             {
                 Player = claim.Player,
                 ClaimId = claim.ClaimId,
-                CharacterName = claim.Character.CharacterName,
+                CharacterName = claim.Character!.CharacterName,
                 Extra = claim.Player.Extra,
             })
           .ToListAsync();
