@@ -74,7 +74,7 @@ public class PaymentsService(
     }
 
     private BankApi GetApi(int projectId, int claimId)
-        => new(clientFactory, GetApiConfiguration(projectId, claimId));
+        => new(clientFactory, GetApiConfiguration(projectId, claimId), logger);
 
     private async Task<Claim> GetClaimAsync(int projectId, int claimId)
     {

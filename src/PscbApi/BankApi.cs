@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PscbApi.Models;
 
@@ -14,7 +15,7 @@ public class BankApi
 {
     private readonly IHttpClientFactory clientFactory;
     private readonly ApiConfiguration _configuration;
-
+    private readonly ILogger logger;
     private readonly byte[] _keyAsUtf8;
 
     /// <summary>
@@ -38,10 +39,11 @@ public class BankApi
     /// <summary>
     /// Creates new instance of PSCB API object
     /// </summary>
-    public BankApi(IHttpClientFactory clientFactory, ApiConfiguration configuration)
+    public BankApi(IHttpClientFactory clientFactory, ApiConfiguration configuration, ILogger logger)
     {
         this.clientFactory = clientFactory;
         _configuration = configuration;
+        this.logger = logger;
         _keyAsUtf8 = ActualApiKey.ToUtf8Bytes();
     }
 
@@ -59,9 +61,8 @@ public class BankApi
     {
         if (DebugOutput)
         {
-            System.Diagnostics.Debug.WriteLine("Request to bank:");
-            System.Diagnostics.Debug.WriteLine(url);
-            System.Diagnostics.Debug.WriteLine(JsonConvert.SerializeObject(request, Formatting.Indented));
+            // This could contain senstive information, so it will work only with DebugOutput=true
+            logger.LogDebug("Request to bank to {url} {bankRequest}", url, JsonConvert.SerializeObject(request, Formatting.Indented));
         }
 
         var requestAsJson = JsonConvert.SerializeObject(request, Formatting.None);
@@ -81,20 +82,14 @@ public class BankApi
 
             if (DebugOutput)
             {
-                System.Diagnostics.Debug.WriteLine("Response from bank:");
-                System.Diagnostics.Debug.WriteLine(
+                // This could contain senstive information, so it will work only with DebugOutput=true
+                logger.LogDebug("Response from bank: {bankResponse}",
                     result is null
                         ? "empty"
                         : JsonConvert.SerializeObject(result, Formatting.Indented));
             }
 
             return result ?? throw new PscbApiRequestException<TRequest>(url, request, signature, "Response was empty");
-        }
-
-        if (DebugOutput)
-        {
-            System.Diagnostics.Debug.WriteLine("Response from bank:");
-            System.Diagnostics.Debug.WriteLine($"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
         }
 
         throw new PscbApiRequestException<TRequest>(url, request, signature, $"{httpResponse.StatusCode} {httpResponse.ReasonPhrase}");
@@ -194,10 +189,7 @@ public class BankApi
     public async Task<T> GetPaymentInfoAsync<T>(string orderId, bool getCardData = false, bool getFiscalData = false)
         where T : PaymentInfoBase, new()
     {
-        if (string.IsNullOrWhiteSpace(orderId))
-        {
-            throw new ArgumentNullException(nameof(orderId));
-        }
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(orderId);
 
         var queryParams = new PaymentInfoQueryParams
         {
@@ -212,8 +204,13 @@ public class BankApi
             queryParams);
     }
 
-    public Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
-        => GetPaymentInfoAsync<PaymentInfo>(orderId, getCardData, getFiscalData);
+    public async Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
+    {
+        logger.LogDebug("Getting payment info by {orderId}. GetCardData={getCardData}, GetFiscalData={getFiscalData}", orderId, getCardData, getFiscalData);
+        var result = await GetPaymentInfoAsync<PaymentInfo>(orderId, getCardData, getFiscalData);
+        logger.LogInformation("Received payment info for {orderId} from bank, status={paymentStatus} ({paymentSubStatus})", orderId, result.Payment?.Status, result.Payment?.SubStatus);
+        return result;
+    }
 
 
     /// <summary>
