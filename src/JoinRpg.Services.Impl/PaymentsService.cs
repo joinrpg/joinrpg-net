@@ -567,11 +567,11 @@ public class PaymentsService(
         }
     }
 
-    private async Task UpdateClaimPaymentAsync(FinanceOperation fo, PaymentInfo? paymentInfo = null)
+    private async Task<FinanceOperationState> UpdateClaimPaymentAsync(FinanceOperation fo, PaymentInfo? paymentInfo = null)
     {
         if (fo.State != FinanceOperationState.Proposed)
         {
-            return;
+            return fo.State;
         }
 
         logger.LogInformation("Updating online payment {financeOperationId} for claim {claimId} to project {projectId}", fo.CommentId, fo.ClaimId, fo.ProjectId);
@@ -701,6 +701,8 @@ public class PaymentsService(
             Debug.Assert(claim is not null);
             await SendPaymentNotification(claim, fo.MoneyAmount, paymentNotification);
         }
+
+        return fo.State;
     }
 
     private enum PaymentNotification
@@ -769,7 +771,7 @@ public class PaymentsService(
     }
 
     /// <inheritdoc />
-    public async Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
+    public async Task<FinanceOperationState> UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
         => await UpdateClaimPaymentAsync(await LoadFinanceOperationAsync(projectId, claimId, orderId));
 
     /// <inheritdoc />
