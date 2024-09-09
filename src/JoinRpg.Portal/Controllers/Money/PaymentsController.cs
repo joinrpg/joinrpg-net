@@ -1,3 +1,4 @@
+using System.Net;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -265,6 +266,27 @@ public class PaymentsController : Common.ControllerBase
                     ReturnLink = GetClaimUrl(projectId, claimId),
                     ReturnText = "Вернуться к заявке"
                 });
+        }
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult> CheckClaimPayment(int projectId, int claimId, int orderId)
+    {
+        try
+        {
+            var result = await _payments.UpdateClaimPaymentAsync(projectId, claimId, orderId);
+            return result switch
+            {
+                FinanceOperationState.Approved => Ok(),
+                FinanceOperationState.Proposed => StatusCode((int)HttpStatusCode.Accepted),
+                FinanceOperationState.Declined or FinanceOperationState.Invalid => StatusCode((int)HttpStatusCode.UnprocessableEntity),
+                _ => BadRequest(),
+            };
+        }
+        catch (Exception)
+        {
+            return BadRequest();
         }
     }
 

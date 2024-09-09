@@ -22,10 +22,9 @@
           width: 100%;
           height: 100%;
           overflow: hidden;
-          padding: 0.5em;
           display: flex;
           flex-direction: column;
-          align-items: stretch;
+          align-items: center;
           justify-content: stretch;
         }
 
@@ -34,6 +33,7 @@
           flex-shrink: 0;
           padding: 0.5em;
           font-weight: bold;
+          max-width: 1000px;
         }
 
         div.header {
@@ -47,12 +47,21 @@
           padding: 0.5em 0;
           margin-top: 0.5em;
           border-top: 1px solid silver;
+          width:  100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        div.footer-content {
+          width: 100%;
+          max-width: 1000px;
           display: flex;
           flex-direction: row;
         }
 
-        div.footer button,
-        div.footer a {
+        div.footer-content button,
+        div.footer-content a {
           border: 1px solid lightgray;
           padding: 0.3em;
           font-size: 0.9em;
@@ -79,10 +88,39 @@
           justify-content: center;
         }
 
+        .qr-container-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        #qrbuttons {
+          margin-top: 1em;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+
+        #qrbuttons button {
+          border: 1px solid lightgray;
+          padding: 0.5em;
+          font-size: 1.2em;
+          border-radius: 0.3em;
+          color: black;
+          background-color: lightgreen;
+          text-decoration: none;
+          display: inline-block;
+        }
+
         #qrcode {
           display: block;
           max-width: 100%;
           max-height: 100%;
+        }
+
+        #qrdone {
+
         }
 
         #payment-app {
@@ -179,7 +217,13 @@
   <div id="payment-qrcode" style="display: none;">
     <div class="header">Отсканируйте QR-код, чтобы оплатить <b>@(Model.Amount)&nbsp;₽</b></div>
     <div id="qrcontainer">
-      <img id="qrcode" src="@Model.QrCodeUrl" alt="QR код"/>
+      <div class="qr-container-inner">
+        <div id="qrdone" style="display: none;">Переадресация обратно на @Html.ActionLink("заявку", "UpdateClaimPayment", "Payments", new { projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.OperationId })&hellip;</div>
+        <img id="qrcode" src="@Model.QrCodeUrl" alt="QR код"/>
+        <div id="qrbuttons">
+          <button type="button" id="btn-confirm" onclick="paid();">Я все оплатил, вернуться к заявке</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -205,8 +249,10 @@
   }
 
   <div class="footer">
-    @Html.ActionLink("Вернуться без оплаты", "Edit", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId }, new { id = "btn-cancel" })
-    <button id="btn-showqr" style="margin-left: auto; display: none;" type="button" onclick="toggleQrCode()">Показать QR-код</button>
+    <div class="footer-content">
+      @Html.ActionLink("Вернуться без оплаты", "Edit", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId }, new { id = "btn-cancel" })
+      <button id="btn-showqr" style="margin-left: auto; display: none;" type="button" onclick="toggleQrCode()">Показать QR-код</button>
+    </div>
   </div>
 </div>
 <script type="text/javascript">
@@ -215,8 +261,18 @@ const blockQr = document.getElementById('payment-qrcode');
 const blockBanks = document.getElementById('payment-app');
 const btnShowQr = document.getElementById('btn-showqr');
 let banksMode = false;
+const checkPaymentUrl = '@Html.Raw(Url.Action("CheckClaimPayment", "Payments", new { projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.OperationId }))';
+const returnUrl = '@Html.Raw(Url.Action("UpdateClaimPayment", "Payments", new { projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.OperationId }))';
+const btnConfirm = document.getElementById('btn-confirm');
+const blockQrImage = document.getElementById('qrcode');
+const blockQrButtons = document.getElementById('qrbuttons');
+const blockQrDone = document.getElementById('qrdone');
+let paymentValidationTaskInstaller = null;
+let paymentValidationTask = null;
+
 if (document.platform.type === 'desktop' || document.platform.type !== expectedPlatform || !blockBanks) {
   blockQr.style.display = 'flex';
+  startValidationTask();
 } else {
   blockBanks.style.display = 'flex';
   btnShowQr.style.display = 'block';
@@ -247,7 +303,9 @@ function toggleQrCode() {
     blockBanks.style.display = 'none';
     blockQr.style.display = 'flex';
     banksMode = false;
+    startValidationTask();
   } else {
+    stopValidationTask();
     btnShowQr.innerHTML = 'Показать QR-код';
     blockQr.style.display = 'none';
     blockBanks.style.display = 'flex';
@@ -317,6 +375,65 @@ function showAllBanks() {
   }
   allBanksVisible = true;
 }
+
+async function isPaid() {
+   const result = await fetch(checkPaymentUrl);
+   return result.status === 200;
+}
+
+async function validatePayment() {
+
+  if (await isPaid()) {
+    paid();
+  }
+}
+
+function startValidationTask() {
+  if (!paymentValidationTask) {
+    if (!paymentValidationTaskInstaller) {
+      paymentValidationTaskInstaller = setTimeout(
+        () => {
+          if (paymentValidationTaskInstaller && !paymentValidationTask) {
+            paymentValidationTask = setInterval(validatePayment, 1000);
+          }
+          paymentValidationTaskInstaller = null;
+        },
+        10000);
+    }
+  }
+}
+
+function stopValidationTask() {
+  if (paymentValidationTaskInstaller) {
+    try {
+      clearTimeout(paymentValidationTaskInstaller);
+    } finally {
+      paymentValidationTaskInstaller = null;
+    }
+  }
+  if (paymentValidationTask) {
+    try {
+      clearInterval(paymentValidationTask);
+    } finally {
+      paymentValidationTask = null;
+    }
+  }
+}
+
+let ispaid = false;
+
+function paid() {
+  if (ispaid) {
+    return;
+  }
+  ispaid = true;
+  stopValidationTask();
+  blockQrImage.style.display = 'none';
+  blockQrButtons.style.display = 'none';
+  blockQrDone.style.display = 'block';
+  document.location.href = returnUrl;
+}
+
 </script>
 </body>
 </html>

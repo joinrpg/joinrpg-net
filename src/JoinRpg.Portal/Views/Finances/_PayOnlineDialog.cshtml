@@ -33,7 +33,6 @@
                     }
 
                     <div class="join alert alert-info">
-                        <i class="glyphicon glyphicon-info-sign"></i>
                         <div style="font-size: smaller;">
                             @await Html.PartialAsync("..\\Finances\\_PaymentLegalInfoPartial")
                         </div>
@@ -72,9 +71,9 @@
                         </div>
 
                         <div class="form-group">
-                            <div class="col-md-12">
+                            <div class="col-md-12" style="display: flex; flex-direction: row; align-items: center;">
                                 @Html.CheckBoxFor(m => m.AcceptContract, new { id = "onp_contract", onchange = "onlinePaymentMoneyChangeHandler()" })
-                                <label for="onp_contract">Я прочитал(а), понял(а) и принимаю условия @Html.ActionLink("оферты", "user-agreement", "OnlinePayments")</label>
+                                <label for="onp_contract" style="margin-left: 1em;">Я прочитал(а), понял(а) и принимаю условия @Html.ActionLink("оферты", "user-agreement", "OnlinePayments")</label>
                             </div>
                         </div>
                     </div>
