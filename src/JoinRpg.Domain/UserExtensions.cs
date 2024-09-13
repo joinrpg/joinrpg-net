@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 
@@ -8,12 +7,9 @@ public static class UserExtensions
 {
     public static IEnumerable<Project> GetProjects(this User user, Func<ProjectAcl, bool> predicate) => user.ProjectAcls.Where(predicate).Select(acl => acl.Project);
 
-    public static AccessReason GetProfileAccess([NotNull] this User user, [CanBeNull] User? currentUser)
+    public static AccessReason GetProfileAccess(this User user, User? currentUser)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         if (currentUser == null)
         {
@@ -74,13 +70,9 @@ public static class UserExtensions
     /// <summary>
     /// Returns hint for a user
     /// </summary>
-    [NotNull]
-    public static string GetHint([NotNull] this User user)
+    public static string GetHint(this User user)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         var result = "";
         if (user.VerifiedProfileFlag)

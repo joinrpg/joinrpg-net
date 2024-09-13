@@ -1,32 +1,21 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain;
 
 public static class PlotExtensions
 {
-    public static IEnumerable<IWorldObject> GetTargets([NotNull] this PlotElement element)
+    public static IEnumerable<IWorldObject> GetTargets(this PlotElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullException.ThrowIfNull(element);
 
         return element.TargetCharacters.Cast<IWorldObject>().Union(element.TargetGroups);
     }
 
-    [NotNull, ItemNotNull]
-    public static PlotElement[] SelectPlots([NotNull] this Character character, [NotNull] IEnumerable<PlotElement> selectMany)
+    public static PlotElement[] SelectPlots(this Character character, IEnumerable<PlotElement> selectMany)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
 
-        if (selectMany == null)
-        {
-            throw new ArgumentNullException(nameof(selectMany));
-        }
+        ArgumentNullException.ThrowIfNull(selectMany);
 
         var groups = character.GetParentGroupsToTop().Select(g => g.CharacterGroupId);
         return selectMany
@@ -35,18 +24,11 @@ public static class PlotExtensions
                  p.TargetGroups.Any(g => groups.Contains(g.CharacterGroupId))).ToArray();
     }
 
-    public static int CountCharacters([NotNull] this PlotElement element,
-      [NotNull, ItemNotNull] IReadOnlyCollection<Character> characters)
+    public static int CountCharacters(this PlotElement element, IReadOnlyCollection<Character> characters)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullException.ThrowIfNull(element);
 
-        if (characters == null)
-        {
-            throw new ArgumentNullException(nameof(characters));
-        }
+        ArgumentNullException.ThrowIfNull(characters);
 
         return characters.Count(character =>
         {
@@ -63,13 +45,12 @@ public static class PlotExtensions
         });
     }
 
-    [NotNull]
-    public static PlotElementTexts LastVersion([NotNull] this PlotElement e) => e.Texts.OrderByDescending(text => text.Version).First();
+    public static PlotElementTexts LastVersion(this PlotElement e) => e.Texts.OrderByDescending(text => text.Version).First();
 
-    public static PlotElementTexts? SpecificVersion([NotNull] this PlotElement e, int version) => e.Texts.SingleOrDefault(text => text.Version == version);
+    public static PlotElementTexts? SpecificVersion(this PlotElement e, int version) => e.Texts.SingleOrDefault(text => text.Version == version);
 
     //TODO consider return NUll if deleted
-    public static PlotElementTexts? PublishedVersion([NotNull] this PlotElement e) => e.Published != null ? e.SpecificVersion((int)e.Published) : null;
+    public static PlotElementTexts? PublishedVersion(this PlotElement e) => e.Published != null ? e.SpecificVersion((int)e.Published) : null;
 
     public static PlotElementTexts? PrevVersion(this PlotElement e) => e.Texts.OrderByDescending(text => text.Version).Skip(1).FirstOrDefault();
 }

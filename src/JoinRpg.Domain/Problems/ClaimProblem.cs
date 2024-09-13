@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Domain.Problems;
 
 public class ClaimProblem
@@ -7,7 +5,6 @@ public class ClaimProblem
     public ClaimProblemType ProblemType { get; }
 
     public DateTime? ProblemTime { get; }
-    [CanBeNull]
     public string? ExtraInfo { get; }
 
     public ProblemSeverity Severity { get; }

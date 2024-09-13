@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using DbUser = JoinRpg.DataModel.User;
@@ -74,16 +73,13 @@ public partial class MyUserStore
         _ = await _ctx.SaveChangesAsync(ct);
     }
 
-    [ItemCanBeNull]
-    private async Task<DbUser> LoadUser(string userName, CancellationToken ct = default) =>
+    private async Task<DbUser?> LoadUser(string userName, CancellationToken ct = default) =>
         await _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == userName, ct);
 
-    [ItemCanBeNull]
-    private async Task<DbUser> LoadUser(int id, CancellationToken ct = default) =>
+    private async Task<DbUser?> LoadUser(int id, CancellationToken ct = default) =>
         await _ctx.UserSet.SingleOrDefaultAsync(user => user.UserId == id, ct);
 
-    [ItemCanBeNull]
-    private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default) =>
+    private async Task<DbUser?> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default) =>
        await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id, ct);
 
 }

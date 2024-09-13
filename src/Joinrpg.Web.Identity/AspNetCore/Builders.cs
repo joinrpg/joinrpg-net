@@ -1,5 +1,3 @@
-
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using Microsoft.AspNetCore.Identity;
 
@@ -7,13 +5,13 @@ namespace Joinrpg.Web.Identity.AspNetCore;
 
 internal static class Builders
 {
-    public static UserExternalLogin ToUserExternalLogin([NotNull] this UserLoginInfo login)
+    public static UserExternalLogin ToUserExternalLogin(this UserLoginInfo login)
         => new()
         {
             Key = login.ProviderKey,
             Provider = login.LoginProvider,
         };
 
-    public static UserLoginInfo ToUserLoginInfoCore([NotNull] this UserExternalLogin uel)
+    public static UserLoginInfo ToUserLoginInfoCore(this UserExternalLogin uel)
         => new(uel.Provider, uel.Key, uel.Key);
 }

@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -9,7 +8,6 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
 public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
 {
     private IEmailService EmailService { get; }

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
@@ -13,7 +12,6 @@ using Microsoft.Extensions.Logging;
 namespace JoinRpg.Services.Impl;
 
 /// <inheritdoc />
-[UsedImplicitly]
 public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
 {
     private readonly ILogger<UserServiceImpl> logger;

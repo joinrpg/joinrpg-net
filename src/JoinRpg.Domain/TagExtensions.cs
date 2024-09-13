@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -6,12 +5,9 @@ namespace JoinRpg.Domain;
 
 public static class TagExtensions
 {
-    public static IEnumerable<string> ExtractTagNames([NotNull] this string title)
+    public static IEnumerable<string> ExtractTagNames(this string title)
     {
-        if (title == null)
-        {
-            throw new ArgumentNullException(nameof(title));
-        }
+        ArgumentNullException.ThrowIfNull(title);
 
         return ExtractTagNamesImpl(title).Distinct();
     }
@@ -33,12 +29,9 @@ public static class TagExtensions
         }
     }
 
-    public static string RemoveTagNames([NotNull] this string title)
+    public static string RemoveTagNames(this string title)
     {
-        if (title == null)
-        {
-            throw new ArgumentNullException(nameof(title));
-        }
+        ArgumentNullException.ThrowIfNull(title);
 
         var extractTagNames = title.ExtractTagNames().ToList();
         return title

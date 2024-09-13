@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -30,7 +29,6 @@ public interface IFieldSetupService
 
     Task CreateFieldValueVariants(int projectId,
         int projectFieldId,
-        [NotNull]
         string valuesToAdd);
 
     Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);

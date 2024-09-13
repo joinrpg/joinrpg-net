@@ -1,5 +1,4 @@
 using System.Text.Json;
-using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -11,7 +10,6 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
 public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 {
 

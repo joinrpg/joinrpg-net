@@ -1,11 +1,10 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces;
 
 public interface IPlotService
 {
-    Task CreatePlotFolder(int projectId, [NotNull] string masterTitle, [NotNull] string todo);
+    Task CreatePlotFolder(int projectId, string masterTitle, string todo);
     Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField);
 
     Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
