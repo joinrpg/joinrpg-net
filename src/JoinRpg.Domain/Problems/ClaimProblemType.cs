@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Domain.Problems;
 
 public enum ClaimProblemType
@@ -17,7 +15,7 @@ public enum ClaimProblemType
     UnApprovedClaimPayment,
     ClaimWorkStopped,
     ClaimDontHaveTarget,
-    [Obsolete, UsedImplicitly]
+    [Obsolete]
     DeletedFieldHasValue,
     FieldIsEmpty,
     FieldShouldNotHaveValue,

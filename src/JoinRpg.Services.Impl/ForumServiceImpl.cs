@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -9,7 +8,6 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly(ImplicitUseTargetFlags.Itself)]
 internal class ForumServiceImpl : DbServiceImplBase, IForumService
 {
     private IEmailService EmailService { get; }

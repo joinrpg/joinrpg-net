@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Interfaces;
@@ -191,7 +190,7 @@ public class AclController : ControllerGameBase
 
     [AdminAuthorize]
     [HttpPost("force-admin-access")]
-    public async Task<ActionResult> ForceSet(int projectId, [UsedImplicitly] IFormCollection unused)
+    public async Task<ActionResult> ForceSet(int projectId, IFormCollection unused)
     {
         await ProjectService.GrantAccessAsAdmin(projectId);
         return RedirectToAction("Details", "Game", new { projectId });

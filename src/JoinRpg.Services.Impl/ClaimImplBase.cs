@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -143,8 +142,8 @@ public abstract class ClaimImplBase : DbServiceImplBase
     }
 
     protected async Task<TEmail> CreateClaimEmail<TEmail>(
-        [NotNull] Claim claim,
-        [NotNull] string commentText,
+        Claim claim,
+        string commentText,
         Func<UserSubscription, bool> subscribePredicate,
         CommentExtraAction? commentExtraAction,
         bool mastersOnly = false,

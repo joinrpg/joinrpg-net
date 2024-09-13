@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -28,7 +27,6 @@ public class MustBeAdminException : JoinRpgInvalidUserException
 
 public class JoinRpgProjectException : JoinRpgBaseException
 {
-    [PublicAPI]
     public Project Project { get; }
 
     public JoinRpgProjectException(Project project, string message) : base(message) => Project = project;
@@ -223,7 +221,6 @@ public class RoomIsOccupiedException : JoinRpgProjectEntityException
 
 public class NoAccessToProjectException : JoinRpgProjectEntityException
 {
-    [PublicAPI]
     public int? UserId { get; }
 
     public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)

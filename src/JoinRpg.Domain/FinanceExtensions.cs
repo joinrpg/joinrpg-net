@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -209,8 +208,7 @@ public static class FinanceExtensions
         }
     }
 
-    [CanBeNull]
-    public static PaymentType? GetCashPaymentType([NotNull]
+    public static PaymentType? GetCashPaymentType(
         this Project project,
         int userId)
     {
@@ -222,9 +220,8 @@ public static class FinanceExtensions
         return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.TypeKind == PaymentTypeKind.Cash);
     }
 
-    public static bool CanAcceptCash([NotNull]
+    public static bool CanAcceptCash(
         this Project project,
-        [NotNull]
         User user)
     {
         if (project == null)

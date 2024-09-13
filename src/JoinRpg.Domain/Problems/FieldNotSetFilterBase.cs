@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+using System.Diagnostics.Contracts;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -53,6 +53,6 @@ internal class FieldNotSetFilterBase
         }
     }
 
-    [MustUseReturnValue]
+    [Pure]
     private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue) => new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
 }

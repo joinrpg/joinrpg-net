@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -212,7 +211,6 @@ public class CharacterController : Common.ControllerGameBase
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     public async Task<ActionResult> Delete(int projectId,
         int characterId,
-        [UsedImplicitly]
         IFormCollection form)
     {
         var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);

@@ -1,11 +1,9 @@
-using JetBrains.Annotations;
 using JoinRpg.Services.Export.BackEnds;
 using JoinRpg.Services.Export.Internal;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export;
 
-[UsedImplicitly]
 public class ExportDataServiceImpl : IExportDataService
 {
     public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend<T> frontend)

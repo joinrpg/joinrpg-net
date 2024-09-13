@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+using System.Diagnostics.Contracts;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -25,8 +25,7 @@ public static class ClaimExtensions
         return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive())?.Any() ?? false;
     }
 
-    [NotNull]
-    public static IClaimSource GetTarget([NotNull] this Claim claim)
+    public static IClaimSource GetTarget(this Claim claim)
     {
         if (claim == null)
         {
@@ -38,7 +37,7 @@ public static class ClaimExtensions
             ?? throw new InvalidOperationException("Claim not bound neither to character nor character group. That shouldn't happen"); ;
     }
 
-    [NotNull, ItemNotNull, MustUseReturnValue]
+    [Pure]
     public static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource? claimSource)
     {
         return claimSource
@@ -125,13 +124,10 @@ public static class ClaimExtensions
         claim.ClaimStatus = targetStatus;
     }
 
-    [CanBeNull, MustUseReturnValue]
-    public static Claim? TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
+    [Pure]
+    public static Claim? TrySelectSingleClaim(this IReadOnlyCollection<Claim> claims)
     {
-        if (claims == null)
-        {
-            throw new ArgumentNullException(nameof(claims));
-        }
+        ArgumentNullException.ThrowIfNull(claims);
 
         if (claims.Count(c => c.IsApproved) == 1)
         {
@@ -148,9 +144,8 @@ public static class ClaimExtensions
         return null;
     }
 
-    [CanBeNull, MustUseReturnValue]
+    [Pure]
     public static Claim? TrySelectSingleClaim(
-        [NotNull, ItemNotNull]
       this IEnumerable<Claim> claims)
         => claims.ToList().TrySelectSingleClaim();
     //That's not optimal way to do it, but in practice, claims.Length will be 1 or 2.

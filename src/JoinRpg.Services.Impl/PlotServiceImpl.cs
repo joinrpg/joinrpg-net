@@ -1,6 +1,5 @@
 using System.Data.Entity;
 using System.Data.Entity.Validation;
-using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -11,7 +10,6 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
 public class PlotServiceImpl : DbServiceImplBase, IPlotService
 {
 

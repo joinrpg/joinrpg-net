@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain;
@@ -16,8 +15,7 @@ public enum ExtraAccessReason
 
 public static class ClaimAcccessExtensions
 {
-    [NotNull]
-    public static Claim RequestAccess([CanBeNull]
+    public static Claim RequestAccess(
         this Claim claim,
         int currentUserId,
         Expression<Func<ProjectAcl, bool>> access,
@@ -36,27 +34,19 @@ public static class ClaimAcccessExtensions
         return claim;
     }
 
-    [NotNull]
-    public static Claim RequestAccess([CanBeNull]
+    public static Claim RequestAccess(
         this Claim claim,
         int currentUserId,
         ExtraAccessReason reasons = ExtraAccessReason.None) => claim.RequestAccess(currentUserId, acl => true, reasons);
 
-    public static bool HasAccess([NotNull] this Claim claim,
+    public static bool HasAccess(this Claim claim,
         int? userId,
-        [NotNull]
         Expression<Func<ProjectAcl, bool>> permission,
         ExtraAccessReason reasons = ExtraAccessReason.None)
     {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
 
-        if (permission == null)
-        {
-            throw new ArgumentNullException(nameof(permission));
-        }
+        ArgumentNullException.ThrowIfNull(permission);
 
         if (userId == null)
         {
@@ -76,7 +66,7 @@ public static class ClaimAcccessExtensions
         return claim.HasMasterAccess(userId, permission);
     }
 
-    public static bool HasAccess([NotNull] this Claim claim,
+    public static bool HasAccess(this Claim claim,
         int? userId,
         ExtraAccessReason reasons = ExtraAccessReason.None) => claim.HasAccess(userId, acl => true, reasons);
 }

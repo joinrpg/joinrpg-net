@@ -1,12 +1,10 @@
 using System.Net;
 using BitArmory.ReCaptcha;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
 
 namespace JoinRpg.Portal.Infrastructure.Authentication;
 
-[UsedImplicitly]
 public class RecaptchaVerificator : IRecaptchaVerificator
 {
     private readonly ReCaptchaService reCaptchaService;

@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
@@ -10,7 +9,6 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-[UsedImplicitly]
 public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
 {
     public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) :

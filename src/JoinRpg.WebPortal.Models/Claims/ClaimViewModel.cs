@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
@@ -76,7 +75,6 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
     public CharacterNavigationViewModel Navigation { get; }
 
     [Display(Name = "Взнос")]
-    [NotNull]
     public ClaimFeeViewModel ClaimFee { get; set; }
 
     [ReadOnly(true)]

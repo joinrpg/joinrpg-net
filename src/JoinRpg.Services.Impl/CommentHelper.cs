@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -42,11 +41,10 @@ internal static class CommentHelper
 
         return comment;
     }
-    public static Comment CreateCommentForDiscussion([NotNull]
+    public static Comment CreateCommentForDiscussion(
         CommentDiscussion commentDiscussion,
         int currentUserId,
         DateTime createdAt,
-        [NotNull]
         string commentText,
         bool isVisibleToPlayer,
         Comment? parentComment,

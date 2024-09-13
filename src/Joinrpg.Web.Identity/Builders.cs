@@ -1,12 +1,10 @@
-
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace Joinrpg.Web.Identity;
 
 internal static class Builders
 {
-    public static JoinIdentityUser ToIdentityUser([NotNull] this User dbUser)
+    public static JoinIdentityUser ToIdentityUser(this User dbUser)
         => new()
         {
             UserName = dbUser.UserName,
