@@ -1,3 +1,4 @@
+using System.Reflection;
 using JoinRpg.Services.Impl.Search;
 
 namespace JoinRpg.Services.Impl;
@@ -22,12 +23,10 @@ public static class Services
         yield return typeof(GameSubscribeService);
         yield return typeof(RespMasterRuleService);
 
-        yield return typeof(CharacterGroupsProvider);
-        yield return typeof(CharacterProvider);
-        yield return typeof(ClaimsByIdProvider);
-        yield return typeof(PlotSearchProvider);
-        yield return typeof(PlotSearchProvider);
-        yield return typeof(UserSearchProvider);
+        foreach (var provider in Assembly.GetExecutingAssembly().DefinedTypes.Where(t => t.IsAssignableTo(typeof(ISearchProvider))).Select(t => t.AsType()))
+        {
+            yield return provider;
+        }
 
         yield return typeof(SlotMassConvertService);
     }
