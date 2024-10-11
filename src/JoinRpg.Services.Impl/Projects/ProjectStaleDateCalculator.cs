@@ -7,7 +7,7 @@ internal class ProjectStaleDateCalculator
     {
         DateOnly[] dates = [
             lastUpdated.AddMonths(7),
-            new DateOnly(2024, 8, 15).AddMonths(2)];
+            new DateOnly(2024, 10, 20)];
 
         return MoveUntilDayOfMonth(dates.Max(), lastUpdated.Day);
     }

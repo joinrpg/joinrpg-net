@@ -92,7 +92,7 @@ internal class MasterEmailServiceImpl(
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
-Проект [{metadata.ProjectName}]({uriService.GetUri(email.ProjectId)}) использует устаревший функционал — заявки в группу. Он будет отключен в октябре 2024 года. Вместо них сейчас используются шаблоны персонажей.
+Проект [{metadata.ProjectName}]({uriService.GetUri(email.ProjectId)}) использует устаревший функционал — заявки в группу. Он будет отключен в ноябре 2024 года. Вместо них сейчас используются шаблоны персонажей.
 Больше об этом можно почитать по ссылке https://docs.joinrpg.ru/ru/latest/characters/slots.html
 
 Вы можете автоматически сконвертировать все заявки в группу в шаблоны персонажей в Настройках проекта, или сконвертировать группы по одной в настройках. Никакие данные не потеряются.
