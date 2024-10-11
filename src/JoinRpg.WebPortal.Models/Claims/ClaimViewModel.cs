@@ -154,7 +154,8 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
         HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
             .Where(x => x.IsAvailable && x.IsActive)
-            .Where(x => !claim.IsApproved || x.CharacterType != CharacterType.Slot)
+            .Where(x => !claim.IsApproved || x.CharacterType != CharacterType.Slot) // Принятые заявки не могут быть перемещены в слот
+            .Where(x => x.CharacterSlotLimit != 0) // Если слот кончился, в него нельзя перемещать
             .OrderBy(x => x.CharacterName)
             .Select(ToJoinSelectListItem)
             .ToList();

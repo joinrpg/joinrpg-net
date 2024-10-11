@@ -43,7 +43,8 @@ public static class ClaimSourceExtensions
         where T : IClaimSource => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
 
 
-    public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim) => ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
+    public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim)
+        => ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
 
     public static void EnsureCanAddClaim<T>([NotNull] this T? claimSource, int currentUserId)
         where T : IClaimSource
