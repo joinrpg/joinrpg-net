@@ -103,25 +103,24 @@ public class MockedProject
             ParentCharacterGroupIds = Array.Empty<int>(),
         };
 
-
         Project = new Project()
         {
             Active = true,
             IsAcceptingClaims = true,
-            ProjectAcls = new List<ProjectAcl>
-          {
+            ProjectAcls =
+          [
               ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true),
-          },
-            ProjectFields = new List<ProjectField>()
-          {
+          ],
+            ProjectFields =
+          [
               MasterOnlyField,
               CharacterField,
               HideForUnApprovedClaim,
               PublicField,
-          },
-            Characters = new List<Character>() { Character, CharacterWithoutGroup },
-            CharacterGroups = new List<CharacterGroup>(),
-            Claims = new List<Claim>(),
+          ],
+            Characters = [Character, CharacterWithoutGroup],
+            CharacterGroups = [],
+            Claims = [],
             Details = new ProjectDetails(),
             PaymentTypes = [],
         };
@@ -160,6 +159,22 @@ public class MockedProject
         Project.CharacterGroups.Add(characterGroup);
 
         return characterGroup;
+    }
+
+    public Character CreateCharacter(string name)
+    {
+        var character = new Character
+        {
+            IsActive = true,
+            IsAcceptingClaims = true,
+            ParentCharacterGroupIds = [],
+            CharacterId = Project.Characters.GetNextId(),
+            Project = Project,
+        };
+
+        Project.Characters.Add(character);
+
+        return character;
     }
 
     public ProjectFieldInfo CreateConditionalField(Action<ProjectField> setup, CharacterGroup conditionGroup)

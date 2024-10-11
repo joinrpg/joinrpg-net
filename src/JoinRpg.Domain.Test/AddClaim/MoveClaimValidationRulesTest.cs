@@ -17,6 +17,16 @@ public class MoveClaimValidationRulesTest
     }
 
     [Fact]
+    public void DisallowMoveClaimFromCharacterToEmptySlot()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        var slot = Mock.CreateCharacter("slot");
+        slot.CharacterType = PrimitiveTypes.CharacterType.Slot;
+        slot.CharacterSlotLimit = 0;
+        ShouldDisAllowMove(claim, slot, AddClaimForbideReason.SlotsExhausted);
+    }
+
+    [Fact]
     public void AllowMoveClaimFromCharacterToCharacter()
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
@@ -55,5 +65,6 @@ public class MoveClaimValidationRulesTest
 
     private void ShouldAllowMove(Claim claim, IClaimSource characterGroup) => characterGroup.ValidateIfCanMoveClaim(claim).ShouldBeEmpty();
 
-    private void ShouldDisAllowMove(Claim claim, IClaimSource characterGroup, AddClaimForbideReason reason) => characterGroup.ValidateIfCanMoveClaim(claim).ShouldBe(new[] { reason });
+    private static void ShouldDisAllowMove(Claim claim, IClaimSource characterGroup, AddClaimForbideReason reason)
+        => characterGroup.ValidateIfCanMoveClaim(claim).ShouldBe([reason]);
 }
