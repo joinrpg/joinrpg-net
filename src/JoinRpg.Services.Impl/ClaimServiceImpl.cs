@@ -14,7 +14,15 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-internal class ClaimServiceImpl : ClaimImplBase, IClaimService
+internal class ClaimServiceImpl(
+    IUnitOfWork unitOfWork,
+    IEmailService emailService,
+    FieldSaveHelper fieldSaveHelper,
+    IAccommodationInviteService accommodationInviteService,
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository,
+    IProblemValidator<Claim> claimValidator)
+    : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IClaimService
 {
 
     public async Task SubscribeClaimToUser(int projectId, int claimId)
@@ -485,7 +493,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
             DeleteCharacter(claim.Character, CurrentUserId);
         }
 
-        await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
         var email =
           await
@@ -687,7 +695,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
 
-        await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
         var roomEmail = await CommonClaimDecline(claim);
 
@@ -911,25 +919,6 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         {
             MarkChanged(claim.Character);
         }
-    }
-
-    private readonly FieldSaveHelper fieldSaveHelper;
-    private readonly IAccommodationInviteService _accommodationInviteService;
-    private readonly IPlotService plotService;
-    private readonly IProblemValidator<Claim> claimValidator;
-
-    public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
-      FieldSaveHelper fieldSaveHelper,
-        IAccommodationInviteService accommodationInviteService,
-        ICurrentUserAccessor currentUserAccessor,
-        IPlotService plotService,
-        IProjectMetadataRepository projectMetadataRepository,
-        IProblemValidator<Claim> claimValidator) : base(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository)
-    {
-        this.fieldSaveHelper = fieldSaveHelper;
-        _accommodationInviteService = accommodationInviteService;
-        this.plotService = plotService;
-        this.claimValidator = claimValidator;
     }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
