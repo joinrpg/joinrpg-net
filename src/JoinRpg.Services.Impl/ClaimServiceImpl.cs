@@ -11,6 +11,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl;
 
@@ -21,7 +22,8 @@ internal class ClaimServiceImpl(
     IAccommodationInviteService accommodationInviteService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Claim> claimValidator)
+    IProblemValidator<Claim> claimValidator,
+    ILogger<CharacterServiceImpl> logger)
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IClaimService
 {
 
@@ -178,6 +180,14 @@ internal class ClaimServiceImpl(
         string claimText,
         IReadOnlyDictionary<int, string?> fields)
     {
+        if (characterId is not null)
+        {
+            logger.LogDebug("About to add claim to character {characterId}", characterId);
+        }
+        if (characterGroupId is not null)
+        {
+            logger.LogDebug("About to add claim to character {characterGroupId}", characterGroupId);
+        }
         var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(projectId));
 
@@ -231,14 +241,15 @@ internal class ClaimServiceImpl(
 
         if (claim.Project.Details.AutoAcceptClaims)
         {
-            var userId = claim.ResponsibleMasterUserId;
-            StartImpersonate(userId);
+            StartImpersonate(claim.ResponsibleMasterUserId);
             //TODO[Localize]
             await ApproveByMaster(projectId,
                 claim.ClaimId,
                 "Ваша заявка была принята автоматически");
             ResetImpersonation();
         }
+
+        logger.LogInformation("Claim ({claimId}) was successfully send", claim.ClaimId);
     }
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
