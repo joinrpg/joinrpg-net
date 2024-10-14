@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain;
 
@@ -233,11 +234,14 @@ public class NoAccessToProjectException : JoinRpgProjectEntityException
   : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}") => UserId = userId;
 }
 
-public class FieldRequiredException : JoinRpgBaseException
+public class FieldRequiredException(string fieldName) : JoinRpgBaseException($"Field {fieldName} is required")
 {
-    public string FieldName { get; }
+    public string FieldName { get; } = fieldName;
+}
 
-    public FieldRequiredException(string fieldName) : base($"{fieldName}") => FieldName = fieldName;
+public class CharacterFieldRequiredException(string fieldName, ProjectFieldIdentification fieldId) : FieldRequiredException(fieldName)
+{
+    public ProjectFieldIdentification FieldId { get; } = fieldId;
 }
 
 public class ValueAlreadySetException : JoinRpgBaseException

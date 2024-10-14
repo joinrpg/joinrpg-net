@@ -15,7 +15,7 @@ internal static class ModelStateExtensions
             case DbEntityValidationException validation:
                 var dbValidationErrors = validation.EntityValidationErrors
                     .SelectMany(eve => eve.ValidationErrors).ToList();
-                if (dbValidationErrors.Any())
+                if (dbValidationErrors.Count != 0)
                 {
                     foreach (var error in dbValidationErrors)
                     {
@@ -30,10 +30,15 @@ internal static class ModelStateExtensions
 
                 dict.AddModelError("", exception.ToString());
                 return;
-
+            case CharacterFieldRequiredException required:
+                var errorMessage = GetErrorMessage(required);
+                dict.AddModelError("", errorMessage);
+                dict.AddModelError(Web.Models.FieldValueViewModel.HtmlIdPrefix + required.FieldId.ProjectFieldId, errorMessage);
+                return;
             case FieldRequiredException required:
-                dict.AddModelError("", required.FieldName + " is required");
-                dict.AddModelError(required.FieldName, " required");
+                var errorMessage1 = GetErrorMessage(required);
+                dict.AddModelError("", errorMessage1);
+                dict.AddModelError(required.FieldName, errorMessage1);
                 return;
             case ClaimWrongStatusException _:
             case ProjectDeactivatedException _:
@@ -54,4 +59,6 @@ internal static class ModelStateExtensions
                 break;
         }
     }
+
+    private static string GetErrorMessage(FieldRequiredException required) => $"{required.FieldName} — обязательное поле";
 }

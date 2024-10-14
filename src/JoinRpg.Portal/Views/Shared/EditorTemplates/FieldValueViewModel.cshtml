@@ -194,6 +194,22 @@
         default:
           throw new InvalidEnumArgumentException("Unknown field type name");
       }
+        @{
+            var tryGetModelStateResult = ViewData.ModelState.TryGetValue(Model.FieldClientId, out var entry);
+            var modelErrors = tryGetModelStateResult ? entry?.Errors : null;
+            Microsoft.AspNetCore.Mvc.ModelBinding.ModelError modelError = null;
+            if (modelErrors != null && modelErrors.Count != 0)
+            {
+                modelError = modelErrors.FirstOrDefault(m => !string.IsNullOrEmpty(m.ErrorMessage)) ?? modelErrors[0];
+            }
+            if (modelError is not null)
+            {
+                <span class="text-danger field-validation-error" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true">
+                    <span id="@(Model.FieldClientId)-error" class="">@modelError.ErrorMessage</span>
+                </span>
+            }
+        }
+
       <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
       @if (Model.HasMasterAccess)
       {
@@ -221,7 +237,6 @@
           </div>
         }
       }
-      @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
     </div>
 
     <div class="col-md-2 price-table">
