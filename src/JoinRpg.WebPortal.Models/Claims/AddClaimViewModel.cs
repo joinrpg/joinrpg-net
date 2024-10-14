@@ -46,7 +46,7 @@ public class AddClaimViewModel : IProjectIdAware
     public static AddClaimViewModel Create(CharacterGroup group, int playerUserId, ProjectInfo projectInfo)
         => new AddClaimViewModel { CharacterGroupId = group.CharacterGroupId }.Fill(group, playerUserId, projectInfo);
 
-    public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId, ProjectInfo projectInfo)
+    public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
         var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId)
             .Select(x => x.ToViewModel()).ToList();
@@ -80,7 +80,7 @@ public class AddClaimViewModel : IProjectIdAware
         TargetName = claimSource.Name;
         Description = claimSource.Description.ToHtmlString();
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
-        Fields = new CustomFieldsViewModel(playerUserId, claimSource, projectInfo);
+        Fields = new CustomFieldsViewModel(playerUserId, claimSource, projectInfo, overrideValues);
         IsRoot = claimSource.IsRoot;
         return this;
     }

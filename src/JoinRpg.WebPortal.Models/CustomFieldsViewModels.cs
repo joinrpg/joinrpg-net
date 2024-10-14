@@ -61,7 +61,7 @@ public class FieldValueViewModel
 {
     public int ProjectFieldId { get; }
 
-    public List<FieldSpecialLabelView> Labels { get; } = new List<FieldSpecialLabelView>();
+    public List<FieldSpecialLabelView> Labels { get; } = [];
 
     public ProjectFieldViewType FieldViewType { get; }
     public bool CanView { get; }
@@ -226,12 +226,12 @@ public class CustomFieldsViewModel
     /// <summary>
     /// Sum of fields fees
     /// </summary>
-    public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new();
+    public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = [];
 
     /// <summary>
     /// Total number of fields with fee
     /// </summary>
-    public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new();
+    public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = [];
 
     /// <summary>
     /// Returns true if there is at least one field with fee
@@ -269,7 +269,7 @@ public class CustomFieldsViewModel
     /// <summary>
     /// Called from AddClaimViewModel
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, IClaimSource target, ProjectInfo projectInfo) : this()
+    public CustomFieldsViewModel(int? currentUserId, IClaimSource target, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null) : this()
     {
         AccessArguments = new AccessArguments(
           target.HasMasterAccess(currentUserId),
@@ -284,10 +284,18 @@ public class CustomFieldsViewModel
         var fieldsList = target.GetFieldsForClaimSource(projectInfo);
         Fields =
           fieldsList
-            .Select(ch => CreateFieldValueView(ch, renderer))
+            .Select(ch => CreateFieldValueView(TryOverrideValue(ch), renderer))
             .ToList();
 
-
+        FieldWithValue TryOverrideValue(FieldWithValue ch)
+        {
+            var overrideValue = overrideValues?.GetValueOrDefault(ch.Field.Id.ProjectFieldId);
+            if (overrideValue is not null)
+            {
+                ch.Value = overrideValue;
+            }
+            return ch;
+        }
     }
 
     /// <summary>
