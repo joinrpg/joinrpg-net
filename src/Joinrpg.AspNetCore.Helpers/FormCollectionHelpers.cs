@@ -12,7 +12,7 @@ public static class FormCollectionHelpers
         return value.ToString();
     }
 
-    public static IReadOnlyDictionary<int, string?> GetDynamicValuesFromPost(this HttpRequest request, string prefix)
+    public static Dictionary<int, string?> GetDynamicValuesFromPost(this HttpRequest request, string prefix)
     {
         var post = request.Form.ToDictionary();
         return post.Keys.UnprefixNumbers(prefix)

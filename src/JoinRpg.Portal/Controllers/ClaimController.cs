@@ -20,28 +20,29 @@ using Microsoft.CodeAnalysis;
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{ProjectId}/claim/{ClaimId}/[action]")]
-public class ClaimController : ControllerGameBase
+public class ClaimController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IClaimService claimService,
+    IPlotRepository plotRepository,
+    IClaimsRepository claimsRepository,
+    IFinanceService financeService,
+    ICharacterRepository characterRepository,
+    IUriService uriService,
+    IAccommodationRequestRepository accommodationRequestRepository,
+    IAccommodationRepository accommodationRepository,
+    IAccommodationInviteService accommodationInviteService,
+    IAccommodationInviteRepository accommodationInviteRepository,
+    IUserRepository userRepository,
+    IPaymentsService paymentsService,
+    IProjectMetadataRepository projectMetadataRepository,
+    IProblemValidator<Claim> claimValidator) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IClaimService _claimService;
-    private readonly IPlotRepository _plotRepository;
-    private readonly IClaimsRepository _claimsRepository;
-    private readonly IAccommodationRequestRepository _accommodationRequestRepository;
-    private readonly IAccommodationRepository _accommodationRepository;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-    private readonly IProblemValidator<Claim> claimValidator;
-    private readonly IPaymentsService _paymentsService;
-
-    private IAccommodationInviteService AccommodationInviteService { get; }
-    private IFinanceService FinanceService { get; }
-    private ICharacterRepository CharacterRepository { get; }
-    private IAccommodationInviteRepository AccommodationInviteRepository { get; }
-    private IUriService UriService { get; }
-
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
     public async Task<ActionResult> AddForCharacter(int projectId, int characterid)
     {
-        var field = await CharacterRepository.GetCharacterAsync(projectId, characterid);
+        var field = await characterRepository.GetCharacterAsync(projectId, characterid);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
         if (field == null)
@@ -89,40 +90,6 @@ public class ClaimController : ControllerGameBase
         return base.View("Add", viewModel);
     }
 
-    public ClaimController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IClaimService claimService,
-        IPlotRepository plotRepository,
-        IClaimsRepository claimsRepository,
-        IFinanceService financeService,
-        ICharacterRepository characterRepository,
-        IUriService uriService,
-        IAccommodationRequestRepository accommodationRequestRepository,
-        IAccommodationRepository accommodationRepository,
-        IAccommodationInviteService accommodationInviteService,
-        IAccommodationInviteRepository accommodationInviteRepository,
-        IUserRepository userRepository,
-        IPaymentsService paymentsService,
-        IProjectMetadataRepository projectMetadataRepository,
-        IProblemValidator<Claim> claimValidator)
-        : base(projectRepository, projectService, userRepository)
-    {
-        _paymentsService = paymentsService;
-        _claimService = claimService;
-        _plotRepository = plotRepository;
-        _claimsRepository = claimsRepository;
-        _accommodationRequestRepository = accommodationRequestRepository;
-        _accommodationRepository = accommodationRepository;
-        AccommodationInviteService = accommodationInviteService;
-        AccommodationInviteRepository = accommodationInviteRepository;
-        FinanceService = financeService;
-        CharacterRepository = characterRepository;
-        UriService = uriService;
-        this.projectMetadataRepository = projectMetadataRepository;
-        this.claimValidator = claimValidator;
-    }
-
     [HttpPost("~/{ProjectId}/claim/add")]
     [Authorize]
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
@@ -135,7 +102,7 @@ public class ClaimController : ControllerGameBase
 
         try
         {
-            await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText,
+            await claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText,
                 Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
 
             return RedirectToAction(
@@ -148,14 +115,15 @@ public class ClaimController : ControllerGameBase
             ModelState.AddException(exception);
             var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId).ConfigureAwait(false);
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
-            return View(viewModel.Fill(source, CurrentUserId, projectInfo));
+            viewModel.Fill(source, CurrentUserId, projectInfo, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+            return base.View(viewModel);
         }
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-        var claim = await _claimsRepository.GetClaimWithDetails(projectId, claimId).ConfigureAwait(false);
+        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId).ConfigureAwait(false);
         return await ShowClaim(claim).ConfigureAwait(false);
     }
 
@@ -170,8 +138,8 @@ public class ClaimController : ControllerGameBase
         var currentUser = await GetCurrentUserAsync().ConfigureAwait(false);
 
         var plots = claim.IsApproved && claim.Character != null
-          ? await _plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
-          : Array.Empty<PlotElement>();
+          ? await plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
+          : [];
 
         IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
         IEnumerable<AccommodationRequest>? requestForAccommodation = null;
@@ -183,8 +151,8 @@ public class ClaimController : ControllerGameBase
         if (claim.Project.Details.EnableAccommodation)
         {
             availableAccommodation = await
-                _accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
-            requestForAccommodation = await _accommodationRequestRepository
+                accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
+            requestForAccommodation = await accommodationRequestRepository
                 .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
             var acceptedRequest = requestForAccommodation
                 .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
@@ -192,19 +160,19 @@ public class ClaimController : ControllerGameBase
             if (acceptedRequest != null)
             {
                 var sameRequest = (await
-                    _accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
+                    accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
                         acceptedRequest.AccommodationTypeId).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
                     .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType)); ;
                 var noRequest = (await
-                    _accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
+                    accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
                 var currentNeighbors = (await
-                   _accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
+                   accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
                         acceptedRequest.Id).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
                 potentialNeighbors = sameRequest.Union(noRequest).Where(element => currentNeighbors.All(el => el.ClaimId != element.ClaimId));
             }
 
-            incomingInvite = await AccommodationInviteRepository.GetIncomingInviteForClaim(claim).ConfigureAwait(false);
-            outgoingInvite = await AccommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
+            incomingInvite = await accommodationInviteRepository.GetIncomingInviteForClaim(claim).ConfigureAwait(false);
+            outgoingInvite = await accommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
@@ -212,10 +180,10 @@ public class ClaimController : ControllerGameBase
         var claimViewModel = new ClaimViewModel(currentUser,
             claim,
             plots,
-            UriService,
+            uriService,
             projectInfo,
             claimValidator,
-            _paymentsService.GetExternalPaymentUrl,
+            paymentsService.GetExternalPaymentUrl,
             availableAccommodation,
             requestForAccommodation,
             potentialNeighbors,
@@ -225,7 +193,7 @@ public class ClaimController : ControllerGameBase
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
         {
             await
-              _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
+              claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
                 claim.CommentDiscussion.Comments.Max(c => c.CommentId)).ConfigureAwait(false);
         }
 
@@ -240,7 +208,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, [UsedImplicitly] string ignoreMe)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         var error = WithClaim(claim);
         if (error != null)
         {
@@ -249,7 +217,7 @@ public class ClaimController : ControllerGameBase
         try
         {
             await
-              _claimService.SaveFieldsFromClaim(projectId, claimId, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+              claimService.SaveFieldsFromClaim(projectId, claimId, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
         catch (Exception exception)
@@ -262,7 +230,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> ApproveByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -271,7 +239,7 @@ public class ClaimController : ControllerGameBase
         try
         {
             await
-              _claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+              claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -285,7 +253,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> OnHoldByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -294,7 +262,7 @@ public class ClaimController : ControllerGameBase
         try
         {
             await
-              _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+              claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -310,7 +278,7 @@ public class ClaimController : ControllerGameBase
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByMaster(int projectId, int claimId, MasterDenialOperationViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -324,7 +292,7 @@ public class ClaimController : ControllerGameBase
             }
 
             await
-                _claimService.DeclineByMaster(
+                claimService.DeclineByMaster(
                     claim.ProjectId,
                     claim.ClaimId,
                     (Claim.DenialStatus)viewModel.DenialStatus,
@@ -345,7 +313,7 @@ public class ClaimController : ControllerGameBase
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -358,7 +326,7 @@ public class ClaimController : ControllerGameBase
                 return await ShowClaim(claim);
             }
             await
-              _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
+              claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -374,7 +342,7 @@ public class ClaimController : ControllerGameBase
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(int projectId, int claimId, ClaimOperationViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -391,7 +359,7 @@ public class ClaimController : ControllerGameBase
                 return await ShowClaim(claim);
             }
             await
-              _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+              claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -407,14 +375,14 @@ public class ClaimController : ControllerGameBase
     [MasterAuthorize()]
     public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
         }
         try
         {
-            await _claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
+            await claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
             return ReturnToClaim(projectId, claimId);
         }
         catch (Exception exception)
@@ -429,7 +397,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost]
     public async Task<ActionResult> Move(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -442,7 +410,7 @@ public class ClaimController : ControllerGameBase
                 return await ShowClaim(claim);
             }
 
-            await _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
+            await claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -460,7 +428,7 @@ public class ClaimController : ControllerGameBase
     [Authorize, HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
     {
-        var claims = await _claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, CurrentUserId);
+        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, CurrentUserId);
 
         if (claims.Count == 0)
         {
@@ -476,7 +444,7 @@ public class ClaimController : ControllerGameBase
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(int projectId, int claimId, SubmitPaymentViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -495,7 +463,7 @@ public class ClaimController : ControllerGameBase
 
 
             await
-                FinanceService.FeeAcceptedOperation(new FeeAcceptedOperationRequest()
+                financeService.FeeAcceptedOperation(new FeeAcceptedOperationRequest()
                 {
                     ProjectId = claim.ProjectId,
                     ClaimId = claim.ClaimId,
@@ -521,7 +489,7 @@ public class ClaimController : ControllerGameBase
     {
         try
         {
-            await FinanceService.TransferPaymentAsync(
+            await financeService.TransferPaymentAsync(
                 new ClaimPaymentTransferRequest
                 {
                     ProjectId = data.ProjectId,
@@ -564,7 +532,7 @@ public class ClaimController : ControllerGameBase
             }
 
             await
-              FinanceService.ChangeFee(projectid, claimid, feeValue);
+              financeService.ChangeFee(projectid, claimid, feeValue);
 
             return RedirectToAction("Edit", "Claim", new { claimid, projectid });
         }
@@ -579,7 +547,7 @@ public class ClaimController : ControllerGameBase
     {
 
         var user = await GetCurrentUserAsync();
-        var claim = await _claimsRepository.GetClaim(projectid, claimid);
+        var claim = await claimsRepository.GetClaim(projectid, claimid);
         if (claim == null)
         {
             return NotFound();
@@ -587,9 +555,9 @@ public class ClaimController : ControllerGameBase
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator, _paymentsService.GetExternalPaymentUrl);
+        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
 
-        await _claimService.SubscribeClaimToUser(projectid, claimid);
+        await claimService.SubscribeClaimToUser(projectid, claimid);
         var parents = claim.GetTarget().GetParentGroupsToTop();
 
         var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
@@ -602,7 +570,7 @@ public class ClaimController : ControllerGameBase
     {
 
         var user = await GetCurrentUserAsync();
-        var claim = await _claimsRepository.GetClaim(projectid, claimid);
+        var claim = await claimsRepository.GetClaim(projectid, claimid);
 
         if (claim == null)
         {
@@ -610,10 +578,10 @@ public class ClaimController : ControllerGameBase
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService, projectInfo, claimValidator, _paymentsService.GetExternalPaymentUrl);
+        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
 
 
-        await _claimService.UnsubscribeClaimToUser(projectid, claimid);
+        await claimService.UnsubscribeClaimToUser(projectid, claimid);
         var parents = claim.GetTarget().GetParentGroupsToTop();
 
         var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
@@ -649,7 +617,7 @@ public class ClaimController : ControllerGameBase
             }
 
             await
-                FinanceService.MarkPreferential(new MarkPreferentialRequest
+                financeService.MarkPreferential(new MarkPreferentialRequest
                 {
                     ProjectId = projectid,
                     ClaimId = claimid,
@@ -669,7 +637,7 @@ public class ClaimController : ControllerGameBase
     public async Task<ActionResult> RequestPreferentialFee(int projectId, int claimId,
         MarkMeAsPreferentialViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -688,7 +656,7 @@ public class ClaimController : ControllerGameBase
 
 
             await
-                FinanceService.RequestPreferentialFee(new MarkMeAsPreferentialFeeOperationRequest()
+                financeService.RequestPreferentialFee(new MarkMeAsPreferentialFeeOperationRequest()
                 {
                     ProjectId = claim.ProjectId,
                     ClaimId = claim.ClaimId,
@@ -710,7 +678,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost]
     public async Task<ActionResult> SetAccommodationType(AccommodationRequestViewModel viewModel)
     {
-        var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+        var claim = await claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
         if (claim == null)
         {
             return NotFound();
@@ -727,7 +695,7 @@ public class ClaimController : ControllerGameBase
                 return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
             }
 
-            _ = await _claimService.SetAccommodationType(
+            _ = await claimService.SetAccommodationType(
                 viewModel.ProjectId,
                 viewModel.ClaimId,
                 viewModel.AccommodationTypeId)
@@ -745,7 +713,7 @@ public class ClaimController : ControllerGameBase
     [HttpPost]
     public async Task<IActionResult> LeaveGroupAsync(int projectId, int claimId)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim is null)
         {
             return NotFound();
@@ -762,7 +730,7 @@ public class ClaimController : ControllerGameBase
                 return await Edit(projectId, claimId);
             }
 
-            await _claimService.LeaveAccommodationGroupAsync(projectId, claimId);
+            await claimService.LeaveAccommodationGroupAsync(projectId, claimId);
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
         catch
@@ -786,7 +754,7 @@ public class ClaimController : ControllerGameBase
             return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
         }
 
-        _ = await AccommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
+        _ = await accommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
             viewModel.ClaimId,
             viewModel.ReceiverClaimOrAccommodationRequest,
             viewModel.RequestId,
@@ -801,7 +769,7 @@ public class ClaimController : ControllerGameBase
         int inviteId,
         AccommodationRequest.InviteState inviteState)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim is null)
         {
             return NotFound();
@@ -816,13 +784,13 @@ public class ClaimController : ControllerGameBase
         {
             case AccommodationRequest.InviteState.Canceled:
             case AccommodationRequest.InviteState.Declined:
-                await AccommodationInviteService.CancelOrDeclineAccommodationInvite(
+                await accommodationInviteService.CancelOrDeclineAccommodationInvite(
                     inviteId,
                     inviteState);
                 break;
 
             case AccommodationRequest.InviteState.Accepted:
-                await AccommodationInviteService.AcceptAccommodationInvite(projectId, inviteId);
+                await accommodationInviteService.AcceptAccommodationInvite(projectId, inviteId);
                 break;
         }
 
@@ -848,7 +816,7 @@ public class ClaimController : ControllerGameBase
     [Authorize]
     public async Task<ActionResult> TransferClaimPayment(int projectId, int claimId)
     {
-        var claim = await _claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -860,7 +828,7 @@ public class ClaimController : ControllerGameBase
         }
 
 
-        var claims = await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
+        var claims = await claimsRepository.GetClaimsForMoneyTransfersListAsync(
             claim.ProjectId,
             ClaimStatusSpec.ActiveOrOnHold);
         if (claims.Count == 0 || (claims.Count == 1 && claims.First().ClaimId == claimId))
