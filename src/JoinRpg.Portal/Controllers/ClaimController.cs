@@ -138,7 +138,7 @@ public class ClaimController(
 
         var plots = claim.IsApproved && claim.Character != null
           ? await plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
-          : Array.Empty<PlotElement>();
+          : [];
 
         IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
         IEnumerable<AccommodationRequest>? requestForAccommodation = null;
@@ -554,7 +554,7 @@ public class ClaimController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
+        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
 
         await claimService.SubscribeClaimToUser(projectid, claimid);
         var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -577,7 +577,7 @@ public class ClaimController(
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
-        var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
+        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
 
 
         await claimService.UnsubscribeClaimToUser(projectid, claimid);
