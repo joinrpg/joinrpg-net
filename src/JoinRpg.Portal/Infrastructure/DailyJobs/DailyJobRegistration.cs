@@ -19,8 +19,6 @@ public static class DailyJobRegistration
             .AddDailyJob<ProjectWarnCloseJob>()
             .AddDailyJob<ProjectPerformCloseJob>();
         services.AddDailyJob<PerformRecurrentPaymentMidnightJob>();
-
-        services.AddDailyJob<ReCacheAvatarsJob>();
     }
 
     public static IServiceCollection AddDailyJob<TJob>(this IServiceCollection services) where TJob : class, IDailyJob
