@@ -247,7 +247,7 @@ public class FieldSaveHelperTest
 
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
-        var exception = Should.Throw<FieldRequiredException>(() =>
+        var exception = Should.Throw<CharacterFieldRequiredException>(() =>
             InitFieldSaveHelper().SaveCharacterFields(
                 mock.Player.UserId,
                 claim,

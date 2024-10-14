@@ -106,7 +106,7 @@ public class FieldSaveHelper
 
             if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required)
             {
-                throw new FieldRequiredException(field.Field.Name);
+                throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id);
             }
 
             _ = strategy.AssignFieldValue(field, normalizedValue);

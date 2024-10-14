@@ -11,10 +11,20 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl;
 
-internal class ClaimServiceImpl : ClaimImplBase, IClaimService
+internal class ClaimServiceImpl(
+    IUnitOfWork unitOfWork,
+    IEmailService emailService,
+    FieldSaveHelper fieldSaveHelper,
+    IAccommodationInviteService accommodationInviteService,
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository,
+    IProblemValidator<Claim> claimValidator,
+    ILogger<CharacterServiceImpl> logger)
+    : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IClaimService
 {
 
     public async Task SubscribeClaimToUser(int projectId, int claimId)
@@ -170,6 +180,14 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         string claimText,
         IReadOnlyDictionary<int, string?> fields)
     {
+        if (characterId is not null)
+        {
+            logger.LogDebug("About to add claim to character {characterId}", characterId);
+        }
+        if (characterGroupId is not null)
+        {
+            logger.LogDebug("About to add claim to character {characterGroupId}", characterGroupId);
+        }
         var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(projectId));
 
@@ -223,14 +241,15 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
 
         if (claim.Project.Details.AutoAcceptClaims)
         {
-            var userId = claim.ResponsibleMasterUserId;
-            StartImpersonate(userId);
+            StartImpersonate(claim.ResponsibleMasterUserId);
             //TODO[Localize]
             await ApproveByMaster(projectId,
                 claim.ClaimId,
                 "Ваша заявка была принята автоматически");
             ResetImpersonation();
         }
+
+        logger.LogInformation("Claim ({claimId}) was successfully send", claim.ClaimId);
     }
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
@@ -485,7 +504,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
             DeleteCharacter(claim.Character, CurrentUserId);
         }
 
-        await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
         var email =
           await
@@ -687,7 +706,7 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
 
-        await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
         var roomEmail = await CommonClaimDecline(claim);
 
@@ -911,25 +930,6 @@ internal class ClaimServiceImpl : ClaimImplBase, IClaimService
         {
             MarkChanged(claim.Character);
         }
-    }
-
-    private readonly FieldSaveHelper fieldSaveHelper;
-    private readonly IAccommodationInviteService _accommodationInviteService;
-    private readonly IPlotService plotService;
-    private readonly IProblemValidator<Claim> claimValidator;
-
-    public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
-      FieldSaveHelper fieldSaveHelper,
-        IAccommodationInviteService accommodationInviteService,
-        ICurrentUserAccessor currentUserAccessor,
-        IPlotService plotService,
-        IProjectMetadataRepository projectMetadataRepository,
-        IProblemValidator<Claim> claimValidator) : base(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository)
-    {
-        this.fieldSaveHelper = fieldSaveHelper;
-        _accommodationInviteService = accommodationInviteService;
-        this.plotService = plotService;
-        this.claimValidator = claimValidator;
     }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)

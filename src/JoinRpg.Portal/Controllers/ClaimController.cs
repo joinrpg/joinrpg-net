@@ -113,7 +113,7 @@ public class ClaimController(
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId).ConfigureAwait(false);
+            var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId);
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
             viewModel.Fill(source, CurrentUserId, projectInfo, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
             return base.View(viewModel);
