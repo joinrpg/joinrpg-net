@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.DataModel;
@@ -39,6 +40,11 @@ public class ProjectDetails : IValidatableObject
     public bool ScheduleEnabled { get; set; }
 
     public string FieldsOrdering { get; set; }
+
+    [ForeignKey(nameof(DefaultTemplateCharacter))]
+    public int? DefaultTemplateCharacterId { get; set; }
+
+    public virtual Character? DefaultTemplateCharacter { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
