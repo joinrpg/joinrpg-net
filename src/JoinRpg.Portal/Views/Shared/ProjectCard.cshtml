@@ -13,15 +13,6 @@
                        role="button"
                        title="У меня есть права мастера на этой игре">Мой проект</a>
                 }
-                @if (Model.HasMyClaims)
-                {
-                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
-                       class="btn btn-success btn-sm"
-                       role="button"
-                       title="Моя заявка">
-                        Моя заявка
-                    </a>
-                }
 
                 <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId, area = ""}, null)"
                    class="btn btn-primary btn-sm"
