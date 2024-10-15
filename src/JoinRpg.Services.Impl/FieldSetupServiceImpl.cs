@@ -403,6 +403,18 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task SortFieldVariants(int projectId, int projectFieldId)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectId);
+
+        var field = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields).ProjectFields.Single(f => f.ProjectFieldId == projectFieldId);
+        var container = field.GetFieldValuesContainer();
+        container.SortBy(x => x.Label);
+        field.ValuesOrdering = container.GetStoredOrder();
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
     private static void SetScheduleStatusBasedOnFields(Project project)
     {
         project.Details.ScheduleEnabled =
