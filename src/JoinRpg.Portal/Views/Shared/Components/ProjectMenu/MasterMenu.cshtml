@@ -80,7 +80,7 @@
                         @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
                       </li>
                       <li>
-                        <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId">Добавить персонажа</a>
+                            <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить персонажа</a>
                       </li>
 
                       @if (Model.BigGroups.Any())
