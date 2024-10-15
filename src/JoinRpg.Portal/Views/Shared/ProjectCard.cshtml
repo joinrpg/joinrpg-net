@@ -38,7 +38,16 @@
                      Материалы
                 </a>
                 }
-                @if (!Model.IsMaster && !Model.HasMyClaims && Model.IsAcceptingClaims)
+                @if (Model.HasMyClaims)
+                {
+                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
+                       class="btn btn-success btn-sm"
+                       role="button"
+                       title="Моя заявка">
+                        Моя заявка
+                    </a>
+                }
+                else if (Model.IsAcceptingClaims)
                 {
                     <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"
                        class="btn btn-info btn-sm"

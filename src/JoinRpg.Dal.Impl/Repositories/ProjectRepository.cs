@@ -339,7 +339,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             CreateFields(project, fieldSettings).ToList(),
             fieldSettings,
             financeSettings,
-            project.Details.EnableAccommodation);
+            project.Details.EnableAccommodation,
+            CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId));
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
         {
