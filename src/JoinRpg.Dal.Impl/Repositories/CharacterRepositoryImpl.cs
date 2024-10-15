@@ -119,6 +119,23 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
           .OrderBy(c => c.CharacterName).ToListAsync();
     }
 
+    public async Task<IEnumerable<Character>> GetAllCharacters(int projectId)
+    {
+        return await Ctx.Set<Character>()
+          .Where(c => c.ProjectId == projectId)
+          .OrderBy(c => c.CharacterName)
+          .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Character>> GetTemplateCharacters(int projectId)
+    {
+        return await Ctx.Set<Character>()
+          .Where(c => c.ProjectId == projectId)
+          .Where(c => c.CharacterType == PrimitiveTypes.CharacterType.Slot)
+          .OrderBy(c => c.CharacterName)
+          .ToListAsync();
+    }
+
     public async Task<Character> GetCharacterAsync(int projectId, int characterId)
     {
         await LoadProjectFields(projectId);

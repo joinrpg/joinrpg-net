@@ -7,20 +7,12 @@ using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl;
 
-internal class CreateProjectService : ICreateProjectService
+internal class CreateProjectService
+    (ProjectService projectService,
+    IFieldSetupService fieldSetupService,
+    IAccommodationService accommodationService,
+    ICharacterService characterService) : ICreateProjectService
 {
-    private readonly ProjectService projectService;
-    private readonly IFieldSetupService fieldSetupService;
-    private readonly IAccommodationService accommodationService;
-    private readonly ICharacterService characterService;
-
-    public CreateProjectService(ProjectService projectService, IFieldSetupService fieldSetupService, IAccommodationService accommodationService, ICharacterService characterService)
-    {
-        this.projectService = projectService;
-        this.fieldSetupService = fieldSetupService;
-        this.accommodationService = accommodationService;
-        this.characterService = characterService;
-    }
 
     //TODO[Localize]
     async Task<ProjectIdentification> ICreateProjectService.CreateProject(CreateProjectRequest request)
@@ -34,10 +26,7 @@ internal class CreateProjectService : ICreateProjectService
         switch (request.ProjectType)
         {
             case ProjectTypeDto.Larp:
-                var name = await CreateField("Имя персонажа", ProjectFieldType.String, MandatoryStatus.Required);
-                var description = await CreateField("Описание персонажа", ProjectFieldType.Text);
-                await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
-                await CreateTopLevelCharacterSlot(project, "Хочу на игру", name);
+                await SetupLarp(request, project, projectId);
                 break;
             case ProjectTypeDto.Convention:
                 await SetupConventionParticipant(request, projectId);
@@ -69,7 +58,7 @@ internal class CreateProjectService : ICreateProjectService
                                         isPublic: true,
                                         FieldBoundTo.Character,
                                         mandatoryStatus,
-                                        Array.Empty<int>(),
+                                        [],
                                         validForNpc: true,
                                         includeInPrint: true,
                                         showForUnapprovedClaims: canPlayerEdit,
@@ -81,6 +70,9 @@ internal class CreateProjectService : ICreateProjectService
 
         async Task SetupConventionProgram(CreateProjectRequest request, ProjectIdentification projectId)
         {
+            var name = await CreateField("Название мероприятия", ProjectFieldType.String, MandatoryStatus.Required, canPlayerEdit: true);
+            var defaultChar = await CreateTopLevelCharacterSlot(project, "Хочу заявить мероприятие", name);
+
             await projectService.EditProject(
                 new EditProjectRequest()
                 {
@@ -92,14 +84,14 @@ internal class CreateProjectService : ICreateProjectService
                     ProjectAnnounce = "",
                     ProjectId = projectId,
                     ProjectName = request.ProjectName,
-                    PublishPlot = false
+                    PublishPlot = false,
+                    DefaultTemplateCharacterId = defaultChar,
                 });
-            var name = await CreateField("Название мероприятия", ProjectFieldType.String, MandatoryStatus.Required, canPlayerEdit: true);
+
             var description = await CreateField("Описание мероприятия", ProjectFieldType.Text, canPlayerEdit: true);
             await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
             _ = await CreateField("Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField, fieldHint: "Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
             _ = await CreateField("Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
-            await CreateTopLevelCharacterSlot(project, "Хочу заявить мероприятие", name);
         }
 
         async Task SetupConventionParticipant(CreateProjectRequest request, ProjectIdentification projectId)
@@ -111,6 +103,8 @@ internal class CreateProjectService : ICreateProjectService
                     DescriptionField = null,
                     NameField = null
                 });
+
+            var defaultChar = await CreateTopLevelCharacterSlot(project, "Участник конвента", null);
             await projectService.EditProject(
                 new EditProjectRequest()
                 {
@@ -122,7 +116,8 @@ internal class CreateProjectService : ICreateProjectService
                     ProjectAnnounce = "",
                     ProjectId = projectId,
                     ProjectName = request.ProjectName,
-                    PublishPlot = false
+                    PublishPlot = false,
+                    DefaultTemplateCharacterId = defaultChar,
                 });
             await accommodationService.SaveRoomTypeAsync(new ProjectAccommodationType()
             {
@@ -136,22 +131,45 @@ internal class CreateProjectService : ICreateProjectService
                 IsAutoFilledAccommodation = false,
             });
 
-            await CreateTopLevelCharacterSlot(project, "Участник конвента", null);
+
         }
 
-        async Task CreateTopLevelCharacterSlot(Project project, string slotName, ProjectFieldIdentification? name)
+        async Task<CharacterIdentification> CreateTopLevelCharacterSlot(Project project, string slotName, ProjectFieldIdentification? name)
         {
             var fields = new Dictionary<int, string?>();
             if (name is not null)
             {
                 fields.Add(name.ProjectFieldId, slotName);
             }
-            await characterService.AddCharacter(new AddCharacterRequest(
+            return await characterService.AddCharacter(new AddCharacterRequest(
                     project.ProjectId,
-                    ParentCharacterGroupIds: new[] { project.RootGroup.CharacterGroupId },
+                    ParentCharacterGroupIds: [project.RootGroup.CharacterGroupId],
                     CharacterTypeInfo: CharacterTypeInfo.DefaultSlot(slotName),
                     FieldValues: fields
                     ));
+        }
+
+        async Task SetupLarp(CreateProjectRequest request, Project project, ProjectIdentification projectId)
+        {
+            var name = await CreateField("Имя персонажа", ProjectFieldType.String, MandatoryStatus.Required);
+            var description = await CreateField("Описание персонажа", ProjectFieldType.Text);
+            await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
+            var defaultChar = await CreateTopLevelCharacterSlot(project, "Хочу на игру", name);
+
+            await projectService.EditProject(
+                new EditProjectRequest()
+                {
+                    AutoAcceptClaims = false,
+                    ClaimApplyRules = "",
+                    IsAcceptingClaims = false,
+                    IsAccommodationEnabled = false,
+                    MultipleCharacters = false,
+                    ProjectAnnounce = "",
+                    ProjectId = projectId,
+                    ProjectName = request.ProjectName,
+                    PublishPlot = false,
+                    DefaultTemplateCharacterId = defaultChar,
+                });
         }
     }
 }

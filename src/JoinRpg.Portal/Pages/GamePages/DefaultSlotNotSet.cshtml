@@ -1,0 +1,9 @@
+﻿@page "/{projectId:int}/default-slot-not-set"
+@model JoinRpg.Portal.Pages.GamePages.DefaultSlotNotSetModel
+@{
+    <div class="alert alert-warning">
+        Мастера проекта просят от игроков выбрать определенную роль
+        из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null), чтобы заявиться.
+        Заявиться «просто на игру», не указав роль, невозможно.
+    </div>
+}

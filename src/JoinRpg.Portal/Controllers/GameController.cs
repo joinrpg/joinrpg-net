@@ -86,6 +86,7 @@ public class GameController : Common.ControllerGameBase
             Active = project.Active,
             AutoAcceptClaims = project.Details.AutoAcceptClaims,
             EnableAccomodation = project.Details.EnableAccommodation,
+            DefaultTemplateCharacterId = project.Details.DefaultTemplateCharacterId,
             HasGroupClaims = project.Claims.Any(c => c.Group != null) || project.CharacterGroups.Any(cg => cg.HaveDirectSlots),
         });
     }
@@ -100,7 +101,7 @@ public class GameController : Common.ControllerGameBase
             await
                 ProjectService.EditProject(new EditProjectRequest
                 {
-                    ProjectId = viewModel.ProjectId,
+                    ProjectId = new(viewModel.ProjectId),
                     ClaimApplyRules = viewModel.ClaimApplyRules,
                     IsAcceptingClaims = viewModel.IsAcceptingClaims,
                     MultipleCharacters = !viewModel.StrictlyOneCharacter,
@@ -109,6 +110,7 @@ public class GameController : Common.ControllerGameBase
                     PublishPlot = viewModel.PublishPlot,
                     AutoAcceptClaims = viewModel.AutoAcceptClaims,
                     IsAccommodationEnabled = viewModel.EnableAccomodation,
+                    DefaultTemplateCharacterId = CharacterIdentification.FromOptional(viewModel.ProjectId, viewModel.DefaultTemplateCharacterId)
                 });
 
             return RedirectTo(new(project.ProjectId));

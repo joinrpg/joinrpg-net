@@ -36,7 +36,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
     private IEmailService EmailService { get; }
 
-    public async Task AddCharacter(AddCharacterRequest addCharacterRequest)
+    public async Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest)
     {
         var project = await ProjectRepository.GetProjectWithFieldsAsync(addCharacterRequest.ProjectId);
 
@@ -70,6 +70,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
+
+        return new CharacterIdentification(character.ProjectId, character.CharacterId);
     }
 
     private static void SetCharacterSettings(Character character, CharacterTypeInfo characterTypeInfo, ProjectInfo projectInfo)

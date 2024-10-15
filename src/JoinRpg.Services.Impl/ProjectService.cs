@@ -289,6 +289,7 @@ internal class ProjectService(
 
         project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
         project.Details.EnableAccommodation = request.IsAccommodationEnabled;
+        project.Details.DefaultTemplateCharacterId = request.DefaultTemplateCharacterId?.CharacterId;
 
         await UnitOfWork.SaveChangesAsync();
     }

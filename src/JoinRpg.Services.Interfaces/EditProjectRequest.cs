@@ -1,14 +1,18 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace JoinRpg.Services.Interfaces;
 
 public class EditProjectRequest
 {
-    public int ProjectId { get; set; }
-    public string ProjectName { get; set; }
-    public string ClaimApplyRules { get; set; }
-    public string ProjectAnnounce { get; set; }
+    public required ProjectIdentification ProjectId { get; set; }
+    public required string ProjectName { get; set; }
+    public required string ClaimApplyRules { get; set; }
+    public required string ProjectAnnounce { get; set; }
     public bool IsAcceptingClaims { get; set; }
-    public bool MultipleCharacters { get; set; }
-    public bool PublishPlot { get; set; }
-    public bool AutoAcceptClaims { get; set; }
-    public bool IsAccommodationEnabled { get; set; }
+    public required bool MultipleCharacters { get; set; }
+    public required bool PublishPlot { get; set; }
+    public required bool AutoAcceptClaims { get; set; }
+    public required bool IsAccommodationEnabled { get; set; }
+
+    public required CharacterIdentification? DefaultTemplateCharacterId { get; set; }
 }

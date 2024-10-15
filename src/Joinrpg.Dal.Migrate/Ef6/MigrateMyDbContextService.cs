@@ -32,6 +32,8 @@ internal class MigrateMyDbContextService(
         migrator.Update(); // TODO pass migration name from command line to allow reverts
         logger.LogInformation("Migration completed");
 
+        //TODO seed method not running here, need to fix
+
         return Task.CompletedTask;
     }
 }

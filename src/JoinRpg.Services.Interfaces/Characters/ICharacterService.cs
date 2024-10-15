@@ -1,8 +1,10 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace JoinRpg.Services.Interfaces.Characters;
 
 public interface ICharacterService
 {
-    Task AddCharacter(AddCharacterRequest addCharacterRequest);
+    Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest);
 
     Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest);
 

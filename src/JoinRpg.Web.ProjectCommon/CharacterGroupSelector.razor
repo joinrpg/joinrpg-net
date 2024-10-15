@@ -36,12 +36,12 @@ else
     private async Task SelectedValuesChanged(int[] values)
     {
         var selectedItems = groups.Where(item => values.Contains(item.CharacterGroupId)).ToArray();
-        RefreshSelectedGroupNames(selectedItems);
+        RefreshSelectedNames(selectedItems);
         await SelectedGroupIdsChanged.InvokeAsync(values);
         await SelectedGroupsChanged.InvokeAsync(selectedItems);
     }
 
-    private void RefreshSelectedGroupNames(CharacterGroupDto[] val)
+    private void RefreshSelectedNames(CharacterGroupDto[] val)
     {
         SelectedGroupNames = val.Select(item => item.Name);
     }
@@ -57,6 +57,6 @@ else
             Text: group.Name,
             Subtext: string.Join("→", group.FullPath),
             ExtraSearch: string.Join(" ", group.FullPath))).ToArray();
-        RefreshSelectedGroupNames(selectedItems);
+        RefreshSelectedNames(selectedItems);
     }
 }

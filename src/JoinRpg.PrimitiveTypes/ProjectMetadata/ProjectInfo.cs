@@ -20,6 +20,8 @@ public record class ProjectInfo
     public ProjectFinanceSettings ProjectFinanceSettings { get; }
     public bool AccomodationEnabled { get; }
 
+    public CharacterIdentification? DefaultTemplateCharacter { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         string projectName,
@@ -27,7 +29,8 @@ public record class ProjectInfo
         IReadOnlyCollection<ProjectFieldInfo> fields,
         ProjectFieldSettings projectFieldSettings,
         ProjectFinanceSettings projectFinanceSettings,
-        bool accomodationEnabled
+        bool accomodationEnabled,
+        CharacterIdentification? defaultTemplateCharacter
         )
     {
         UnsortedFields = fields;
@@ -49,6 +52,8 @@ public record class ProjectInfo
 
         TimeSlotField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleTimeSlotField && f.IsActive);
         RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);
+
+        DefaultTemplateCharacter = defaultTemplateCharacter;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)

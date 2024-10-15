@@ -57,10 +57,21 @@ public class ClaimController(
     [Authorize]
     public async Task<ActionResult> AddForGroup(int projectid)
     {
-        //TODO remove redirect here
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
+
+        if (projectInfo.DefaultTemplateCharacter is not null)
+        {
+            return RedirectToDefaultTemplateCharacter(projectInfo);
+        }
+
+        //TODO remove when groups claims will die
         var project = await ProjectRepository.GetProjectAsync(projectid);
-        return RedirectToAction("AddForGroup",
-            new { project.ProjectId, project.RootGroup.CharacterGroupId });
+
+        if (project.RootGroup.HaveDirectSlots)
+        {
+            return RedirectToAction("AddForGroup", new { project.ProjectId, project.RootGroup.CharacterGroupId });
+        }
+        return Redirect($"/{projectInfo.ProjectId}/default-slot-not-set");
     }
 
     [HttpGet("/{projectid}/roles/{characterGroupId}/apply")]
@@ -79,13 +90,21 @@ public class ClaimController(
 
         if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims))
         {
+            if (field.IsRoot && projectInfo.DefaultTemplateCharacter is not null)
+            {
+                return RedirectToDefaultTemplateCharacter(projectInfo);
+            }
+
             var childSlots = field.Characters.Where(c => c.CharacterType == CharacterType.Slot).ToList();
             if (childSlots.Count == 1)
             {
                 return RedirectToAction("AddForCharacter", new { field.ProjectId, childSlots.Single().CharacterId });
             }
 
-            //TODO: if we have two or more slots, offer selection from them
+            if (field.IsRoot)
+            {
+                return RedirectToPage("DefaultSlotNotSetModel");
+            }
         }
         return base.View("Add", viewModel);
     }
@@ -845,5 +864,11 @@ public class ClaimController(
         }
 
         return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));
+    }
+
+    private RedirectToActionResult RedirectToDefaultTemplateCharacter(PrimitiveTypes.ProjectMetadata.ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(projectInfo.DefaultTemplateCharacter);
+        return RedirectToAction("AddForCharacter", new { projectInfo.ProjectId, CharacterId = projectInfo.DefaultTemplateCharacter.CharacterId });
     }
 }

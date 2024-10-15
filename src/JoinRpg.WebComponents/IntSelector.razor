@@ -2,9 +2,10 @@
 @implements IAsyncDisposable
 
 <select class="selectpicker"
-        data-live-search="true"
+        data-live-search="@(PossibleValues.Length >10)"
         data-live-search-normalize="true"
         data-size="10"
+        data-none-selected-text="(нет)"
         name="@Name"
         multiple="@Multiple"
         @ref="selectRef"
@@ -13,7 +14,7 @@
 
   @foreach (var val in PossibleValues)
   {
-      var selected = SelectedValues.Contains(val.Value);
+      var selected = SelectedValues.Contains(val.Value) || (SelectedValues.Length == 0 && val.Value == -1);
     <option
             data-tokens="@($"{val.Text} {val.ExtraSearch}")"
             data-subtext="@(val.Subtext)"
@@ -42,7 +43,7 @@
     private async Task OnSelectionChangedAsync(ChangeEventArgs eventArgs)
     {
       var values = await module.InvokeAsync<List<string>>("getSelectedValues", selectRef);
-      await SelectedValuesChanged.InvokeAsync(values.Select(int.Parse).ToArray());
+      await SelectedValuesChanged.InvokeAsync(values.Select(int.Parse).Where(v => v!= -1).ToArray());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
