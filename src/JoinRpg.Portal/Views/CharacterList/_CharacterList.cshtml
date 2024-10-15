@@ -23,12 +23,15 @@
         <th>
             @Html.DisplayNameFor(model => firstItem!.Player)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem!.Groups)
-        </th>
+        @if (Model.Items.Any(x => x.Groups.HasAnyGroups))
+        {
+            <th>
+                @Html.DisplayNameFor(model => firstItem!.Groups)
+            </th>
+        }
 
         <th>@Html.DisplayNameFor(model => firstItem!.Problems)</th>
-        @foreach (var field in Model.Fields)
+        @foreach (var field in Model.Fields.Where(f => !f.IsName))
         {
           if (!field.CanHaveValue)
           {
@@ -77,9 +80,12 @@
                     }
                 }
             </td>
-            <td>
-                @Html.DisplayFor(model => item.Groups)
-            </td>
+            @if (Model.Items.Any(x => x.Groups.HasAnyGroups))
+            {
+                <td>
+                    @Html.DisplayFor(model => item.Groups)
+              </td>
+            }
             <td>
                 @foreach (var pr in item.Problems)
                 {
@@ -120,7 +126,7 @@
                 }
             </td>
 
-            @foreach (var field in Model.Fields)
+            @foreach (var field in Model.Fields.Where(f => !f.IsName))
             {
                 var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.Id.ProjectFieldId == field.Id.ProjectFieldId);
                 if (!field.CanHaveValue)

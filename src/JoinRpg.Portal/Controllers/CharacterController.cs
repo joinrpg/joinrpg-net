@@ -144,7 +144,7 @@ public class CharacterController : Common.ControllerGameBase
         {
             ProjectId = projectid,
             ProjectName = characterGroup.Project.ProjectName,
-            ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
+            ParentCharacterGroupIds = [characterGroup.CharacterGroupId],
             ContinueCreating = continueCreating,
             CharacterTypeInfo = CharacterTypeInfo.Default(),
         }.Fill(characterGroup, CurrentUserId, projectInfo));
@@ -170,7 +170,10 @@ public class CharacterController : Common.ControllerGameBase
                 return RedirectToAction("Create",
                     new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
             }
-
+            else if (characterGroupId == 0)
+            {
+                return RedirectToAction("Active", "CharacterList", new { viewModel.ProjectId });
+            }
 
             return RedirectToIndex(viewModel.ProjectId, characterGroupId);
         }
