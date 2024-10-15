@@ -21,6 +21,9 @@ public record class ProjectInfo
     public bool AccomodationEnabled { get; }
 
     public CharacterIdentification? DefaultTemplateCharacter { get; }
+    public bool AllowToSetGroups { get; }
+
+    public int RootCharacterGroupId { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -30,8 +33,9 @@ public record class ProjectInfo
         ProjectFieldSettings projectFieldSettings,
         ProjectFinanceSettings projectFinanceSettings,
         bool accomodationEnabled,
-        CharacterIdentification? defaultTemplateCharacter
-        )
+        CharacterIdentification? defaultTemplateCharacter,
+        bool allowToSetGroups,
+        int rootCharacterGroupId)
     {
         UnsortedFields = fields;
         ProjectId = projectId;
@@ -54,6 +58,8 @@ public record class ProjectInfo
         RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);
 
         DefaultTemplateCharacter = defaultTemplateCharacter;
+        AllowToSetGroups = allowToSetGroups;
+        RootCharacterGroupId = rootCharacterGroupId;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)

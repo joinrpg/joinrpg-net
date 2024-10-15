@@ -5,21 +5,26 @@
 </FormRow>
 
 <FormRow Label="Тип Персонажа">
-  @if (ActiveClaimsCount > 0)
+  @if (!EditTypeDisabled)
   {
-    <label>@characterType.GetDisplayName()</label>
-    <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
-    <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
-  }
-  else if (!CharactersHaveNameField)
-  {
-    <label>@characterType.GetDisplayName()</label>
-    <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только шаблоны персонажей (другие типы персонажей создавать нельзя)" />
-    <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
+      <EnumRadioButtonGroup @bind-SelectedValue="@characterType" Name="@(Name + ".CharacterType")" />
   }
   else
   {
-    <EnumRadioButtonGroup @bind-SelectedValue="@characterType" Name="@(Name + ".CharacterType")" />
+    <label>@characterType.GetDisplayName()</label>
+    <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
+    if (IsDefaultTemplate)
+    {      
+      <InfoIcon Title="Нельзя изменить тип персонажа, т.к. это шаблон по умолчанию для заявок. Это можно поменять в настройках" /> 
+    }
+    else if (!CharactersHaveNameField)
+    {
+      <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только шаблоны персонажей (другие типы персонажей создавать нельзя)" />
+    }
+    else if (ActiveClaimsCount > 0)
+    {
+      <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
+    }
   }
 </FormRow>
 
@@ -55,10 +60,15 @@
     [Parameter]
     public bool HasApprovedClaim { get; set; } = false;
 
+    [Parameter]
+    public bool IsDefaultTemplate { get; set; } = false;
+
     [Parameter] public bool CharactersHaveNameField { get; set; } = true;
 
     [Parameter]
     public string Name { get; set; } = "CharacterTypeInfo";
+
+    private bool EditTypeDisabled => ActiveClaimsCount > 0 || IsDefaultTemplate || !CharactersHaveNameField;
 
     private CharacterTypeView characterType;
     private CharacterVisibilityView characterVisibility;

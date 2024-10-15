@@ -72,7 +72,7 @@
         <dd>
           @Html.DisplayFor(model => model.Status)
         </dd>
-        @if (Model.ParentGroups != null)
+        @if (Model.ParentGroups != null && Model.AllowToSetGroups)
         {
           <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
           <dd>

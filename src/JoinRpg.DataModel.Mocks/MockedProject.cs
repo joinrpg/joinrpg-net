@@ -131,6 +131,7 @@ public class MockedProject
         {
             AvaiableDirectSlots = 1,
             HaveDirectSlots = true,
+            IsRoot = true,
         });
 
         Character.ParentCharacterGroupIds = new[] { Group.CharacterGroupId };

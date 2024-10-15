@@ -55,24 +55,7 @@ public class ClaimController(
 
     [HttpGet("/{projectid}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectid)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
-
-        if (projectInfo.DefaultTemplateCharacter is not null)
-        {
-            return RedirectToDefaultTemplateCharacter(projectInfo);
-        }
-
-        //TODO remove when groups claims will die
-        var project = await ProjectRepository.GetProjectAsync(projectid);
-
-        if (project.RootGroup.HaveDirectSlots)
-        {
-            return RedirectToAction("AddForGroup", new { project.ProjectId, project.RootGroup.CharacterGroupId });
-        }
-        return Redirect($"/{projectInfo.ProjectId}/default-slot-not-set");
-    }
+    public async Task<ActionResult> AddForGroup(int projectid) => await RedirectToDefaultTemplate(projectid);
 
     [HttpGet("/{projectid}/roles/{characterGroupId}/apply")]
     [Authorize]
@@ -88,24 +71,11 @@ public class ClaimController(
 
         var viewModel = AddClaimViewModel.Create(field, CurrentUserId, projectInfo);
 
-        if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims))
+        if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims) && field.IsRoot)
         {
-            if (field.IsRoot && projectInfo.DefaultTemplateCharacter is not null)
-            {
-                return RedirectToDefaultTemplateCharacter(projectInfo);
-            }
-
-            var childSlots = field.Characters.Where(c => c.CharacterType == CharacterType.Slot).ToList();
-            if (childSlots.Count == 1)
-            {
-                return RedirectToAction("AddForCharacter", new { field.ProjectId, childSlots.Single().CharacterId });
-            }
-
-            if (field.IsRoot)
-            {
-                return RedirectToPage("DefaultSlotNotSetModel");
-            }
+            return await RedirectToDefaultTemplate(projectId);
         }
+
         return base.View("Add", viewModel);
     }
 
@@ -440,9 +410,6 @@ public class ClaimController(
         }
     }
 
-    [MustUseReturnValue]
-    private ActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
-
     [HttpGet("/{projectId}/myclaim")]
     [Authorize, HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
@@ -451,8 +418,7 @@ public class ClaimController(
 
         if (claims.Count == 0)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            return RedirectToAction("AddForGroup", new { projectId, project.RootGroup.CharacterGroupId });
+            return await RedirectToDefaultTemplate(projectId);
         }
 
         var claimId = claims.TrySelectSingleClaim()?.ClaimId;
@@ -866,9 +832,34 @@ public class ClaimController(
         return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));
     }
 
-    private RedirectToActionResult RedirectToDefaultTemplateCharacter(PrimitiveTypes.ProjectMetadata.ProjectInfo projectInfo)
+    private async Task<ActionResult> RedirectToDefaultTemplate(int projectid)
     {
-        ArgumentNullException.ThrowIfNull(projectInfo.DefaultTemplateCharacter);
-        return RedirectToAction("AddForCharacter", new { projectInfo.ProjectId, CharacterId = projectInfo.DefaultTemplateCharacter.CharacterId });
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
+
+        if (projectInfo.DefaultTemplateCharacter is not null)
+        {
+            return RedirectToAction("AddForCharacter", new { projectid, CharacterId = projectInfo.DefaultTemplateCharacter.CharacterId });
+        }
+
+        //TODO Start of HACKS remove when groups claims will die
+        var project = await ProjectRepository.GetProjectAsync(projectid);
+
+        if (project.RootGroup.HaveDirectSlots)
+        {
+            return RedirectToAction("AddForGroup", new { projectid, project.RootGroup.CharacterGroupId });
+        }
+
+        var childSlots = project.RootGroup.Characters.Where(c => c.CharacterType == CharacterType.Slot).ToList();
+        if (childSlots.Count == 1)
+        {
+            return RedirectToAction("AddForCharacter", new { projectid, childSlots.Single().CharacterId });
+        }
+
+        //TODO end of hacks
+
+        return Redirect($"/{projectInfo.ProjectId}/default-slot-not-set");
     }
+
+    [MustUseReturnValue]
+    private ActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
 }

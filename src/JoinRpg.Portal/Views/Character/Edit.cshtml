@@ -42,11 +42,15 @@
                 <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
                   param-Name="@("CharacterTypeInfo")"
                   param-InitialModel="@(Model.CharacterTypeInfo)"
+                  param-IsDefaultTemplate="@Model.IsDefaultTemplate"
                   param-ActiveClaimsCount="@Model.ActiveClaimsCount"
                   param-HasApprovedClaim="@Model.HasApprovedClaim"
                   param-CharactersHaveNameField="@Model.CharactersHaveNameField"
                   render-mode="WebAssemblyPrerendered"
                  />
+
+              @if (Model.AllowToSetGroups)
+              {
 
               <div class="form-group">
                 @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -58,6 +62,7 @@
                              render-mode="WebAssembly" />
                 </div>
               </div>
+              }
 
                 @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
@@ -72,7 +77,7 @@
                                value="@(Model.IsActive ? "Сохранить персонажа" : "Восстановить персонажа")"
                                class="btn btn-success" />
 
-                        @if (Model.IsActive & Model.ActiveClaimsCount == 0)
+                        @if (Model.IsActive && Model.ActiveClaimsCount == 0 &&!Model.IsDefaultTemplate)
                         {
                             <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)" class="btn btn-danger">
                                 <span title="удалить" class="glyphicon glyphicon-trash"></span> Удалить персонажа

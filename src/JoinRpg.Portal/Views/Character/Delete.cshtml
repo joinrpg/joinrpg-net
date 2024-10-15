@@ -9,8 +9,11 @@
     {
         <p>Удалить персонажа, пока на него есть активные заявки, нельзя. Отклоните или перенаправьте заявки </p>
     }
-    else
+    else if (Model.Project.Details.DefaultTemplateCharacter == Model)
     {
+      <p>Удалить персонажа, пока он является шаблоном по умолчанию, нельзя. Это можно изменить в настройках </p>
+    }
+    else {
         using (Html.BeginForm())
          {
              @Html.AntiForgeryToken()

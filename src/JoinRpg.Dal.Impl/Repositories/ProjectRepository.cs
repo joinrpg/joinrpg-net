@@ -340,7 +340,9 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             fieldSettings,
             financeSettings,
             project.Details.EnableAccommodation,
-            CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId));
+            CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
+            allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
+            rootCharacterGroupId: project.RootGroup.CharacterGroupId);
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
         {

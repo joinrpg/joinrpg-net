@@ -35,11 +35,15 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     public CustomFieldsViewModel Fields { get; set; }
 
     [CannotBeEmpty, DisplayName("Является частью групп")]
-    public int[] ParentCharacterGroupIds { get; set; } = Array.Empty<int>();
+    public int[] ParentCharacterGroupIds { get; set; } = [];
+
+    [ReadOnly(true)]
+    public bool AllowToSetGroups { get; set; } = true;
 
     protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
     {
         Fields = new CustomFieldsViewModel(currentUserId, field, projectInfo);
         CharactersHaveNameField = projectInfo.CharacterNameField is not null;
+        AllowToSetGroups = projectInfo.AllowToSetGroups;
     }
 }
