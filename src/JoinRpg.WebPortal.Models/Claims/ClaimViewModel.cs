@@ -97,6 +97,9 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
     [ReadOnly(true)]
     public bool? CharacterActive { get; }
 
+    [ReadOnly(true)]
+    public bool AllowToSetGroups { get; }
+
     public IEnumerable<UserSubscription> Subscriptions { get; set; }
 
     public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
@@ -122,6 +125,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
       IEnumerable<AccommodationInvite>? incomingInvite = null,
       IEnumerable<AccommodationInvite>? outgoingInvite = null)
     {
+        AllowToSetGroups = projectInfo.AllowToSetGroups;
         ClaimId = claim.ClaimId;
         CommentDiscussionId = claim.CommentDiscussionId;
         RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);

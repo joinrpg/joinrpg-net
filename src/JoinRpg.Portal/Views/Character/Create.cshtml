@@ -18,7 +18,15 @@
 
   <div class="form-horizontal">
 
-    <div class="form-group">
+     <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
+                   param-Name="@("CharacterTypeInfo")"
+                   param-CharactersHaveNameField="@Model.CharactersHaveNameField"
+                   render-mode="WebAssemblyPrerendered"
+                   />
+     @if (Model.AllowToSetGroups)
+     {
+
+      <div class="form-group">
       @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
       <div class="col-md-10">
         <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
@@ -28,12 +36,7 @@
                    render-mode="WebAssemblyPrerendered" />
       </div>
     </div>
-
-     <component type="typeof(JoinRpg.Web.CharacterGroups.CharacterTypeSelector)"
-                   param-Name="@("CharacterTypeInfo")"
-                   param-CharactersHaveNameField="@Model.CharactersHaveNameField"
-                   render-mode="WebAssemblyPrerendered"
-                   />
+     }
 
     @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 

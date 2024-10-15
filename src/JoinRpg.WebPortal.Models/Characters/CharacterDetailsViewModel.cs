@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -13,21 +12,21 @@ namespace JoinRpg.Web.Models.Characters;
 public class CharacterParentGroupsViewModel
 {
     public bool HasMasterAccess { get; }
+    public bool HasAnyGroups { get; }
+
     [ReadOnly(true), DisplayName("Входит в группы")]
     public IReadOnlyCollection<CharacterGroupLinkViewModel> ParentGroups { get; }
 
-    public CharacterParentGroupsViewModel([NotNull] Character character, bool hasMasterAccess)
+    public CharacterParentGroupsViewModel(Character character, bool hasMasterAccess)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
 
         HasMasterAccess = hasMasterAccess;
         ParentGroups = character
           .GetParentGroupsToTop()
           .Where(group => !group.IsRoot && !group.IsSpecial)
           .Select(g => new CharacterGroupLinkViewModel(g)).ToList();
+        HasAnyGroups = ParentGroups.Count > 0;
     }
 }
 

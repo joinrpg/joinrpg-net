@@ -52,8 +52,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         var character = new Character
         {
-            ParentCharacterGroupIds =
-                await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
+            ParentCharacterGroupIds = await ValidateGroupListForCharacter(projectInfo, addCharacterRequest.ParentCharacterGroupIds),
             ProjectId = addCharacterRequest.ProjectId,
             Project = project,
         };
@@ -107,9 +106,8 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo, projectInfo);
 
-        character.ParentCharacterGroupIds = await ValidateCharacterGroupList(editCharacterRequest.Id.ProjectId,
-            Required(editCharacterRequest.ParentCharacterGroupIds),
-            ensureNotSpecial: true);
+        character.ParentCharacterGroupIds = await ValidateGroupListForCharacter(projectInfo, editCharacterRequest.ParentCharacterGroupIds);
+
         var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
             editCharacterRequest.FieldValues,
@@ -266,14 +264,13 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
                 var addCharacterRequest = new AddCharacterRequest(
                     projectId,
-                    new[] { characterGroupId },
+                    [characterGroupId],
                     CharacterTypeInfo.DefaultSlot(slotName),
                     new Dictionary<int, string?>());
 
                 character = new Character
                 {
-                    ParentCharacterGroupIds =
-                        await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
+                    ParentCharacterGroupIds = await ValidateGroupListForCharacter(projectInfo, addCharacterRequest.ParentCharacterGroupIds),
                     ProjectId = addCharacterRequest.ProjectId,
                     Project = group.Project,
                 };
@@ -338,5 +335,12 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
             logger.LogError(exception, "Error during converting CharacterGroup={characterGroupId}", characterGroupId);
             throw;
         }
+    }
+
+    private async Task<int[]> ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<int> groupIds)
+    {
+        return projectInfo.AllowToSetGroups ?
+                        await ValidateCharacterGroupList(projectInfo.ProjectId, Required(groupIds), ensureNotSpecial: true)
+                        : [projectInfo.RootCharacterGroupId];
     }
 }
