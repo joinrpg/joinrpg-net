@@ -45,13 +45,16 @@
                     asp-route-charactergroupid="@Model.CharacterGroupId">
                     Обсуждаемые
                 </nav-link>
-                <nav-link
-                    asp-controller="ClaimList"
-                    asp-action="ListForGroupDirect"
-                    asp-route-projectid="@Model.ProjectId"
-                    asp-route-charactergroupid="@Model.CharacterGroupId">
-                    Заявки в группу
-                </nav-link>
+                @if (Model.IsAcceptingClaims || Model.ActiveClaimsCount > 0)
+                {
+                    <nav-link
+                      asp-controller="ClaimList"
+                      asp-action="ListForGroupDirect"
+                      asp-route-projectid="@Model.ProjectId"
+                      asp-route-charactergroupid="@Model.CharacterGroupId">
+                      Заявки в группу
+                    </nav-link>
+                }
             }
             <nav-link
                 asp-controller="CharacterList"
@@ -78,13 +81,6 @@
                 </nav-link>
             }
         }
-        <nav-link
-            asp-controller="Forum"
-            asp-action="ListThreadsByGroup"
-            asp-route-projectid="@Model.ProjectId"
-            asp-route-charactergroupid="@Model.CharacterGroupId">
-            Форумы
-        </nav-link>
     </ul>
 
 </div>
