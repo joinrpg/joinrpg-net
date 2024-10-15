@@ -7,14 +7,8 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 
 [Route("/webapi/character-groups/[action]")]
 [RequireMaster]
-public class CharacterGroupsListController : ControllerBase
+public class CharacterGroupsListController(CharacteGroupListViewService viewService) : ControllerBase
 {
-    private readonly CharacteGroupListViewService viewService;
-
-    public CharacterGroupsListController(CharacteGroupListViewService viewService)
-    {
-        this.viewService = viewService;
-    }
 
     //TODO add caching here
     [HttpGet]

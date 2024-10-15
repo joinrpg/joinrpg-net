@@ -3,19 +3,8 @@ using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
-public class CharacterGroupsClient : ICharacterGroupsClient
+public class CharacterGroupsClient(HttpClient httpClient) : ICharacterGroupsClient
 {
-    private readonly HttpClient httpClient;
-    private readonly ILogger<CharacterGroupsClient> logger;
-    private readonly CsrfTokenProvider csrfTokenProvider;
-
-    public CharacterGroupsClient(HttpClient httpClient, ILogger<CharacterGroupsClient> logger, CsrfTokenProvider csrfTokenProvider)
-    {
-        this.httpClient = httpClient;
-        this.logger = logger;
-        this.csrfTokenProvider = csrfTokenProvider;
-    }
-
     public async Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId)
     {
         return await httpClient.GetFromJsonAsync<List<CharacterGroupDto>>(

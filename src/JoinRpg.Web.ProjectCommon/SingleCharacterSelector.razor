@@ -1,0 +1,43 @@
+﻿<CharacterSelector
+  Name="@Name"
+  ProjectId="@ProjectId"
+  SelectedCharacterIds="@selectedIds"
+  SelectedChanged="HandleSelectedChanged"
+  Multiple="false"
+  TemplateOnly="@TemplateOnly"
+  AllowEmpty="@AllowEmpty"
+  />
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public int? SelectedCharacterId { get; set; }
+    [Parameter] public EventCallback<int?> SelectedCharacterIdChanged { get; set; }
+    [Parameter] public CharacterDto? SelectedCharacter { get; set; }
+    [Parameter] public EventCallback<CharacterDto> SelectedCharacterChanged { get; set; }
+    [Parameter] public bool TemplateOnly { get; set; } = false;
+    [Parameter] public bool AllowEmpty { get; set; } = false;
+
+    private int[] selectedIds = [];
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (SelectedCharacterId is not null)
+        {
+            selectedIds = [ SelectedCharacterId.Value ];
+        }
+        else if (SelectedCharacter is not null)
+        {
+            selectedIds = new int[] { SelectedCharacter.CharacterId.CharacterId };
+        }
+    }
+
+    private async Task HandleSelectedChanged(CharacterDto[] values)
+    {
+        var selected = values.Length == 0 ? null : values.Single();
+        await SelectedCharacterIdChanged.InvokeAsync(selected?.CharacterId.CharacterId);
+        await SelectedCharacterChanged.InvokeAsync(selected);
+    }
+}

@@ -1,0 +1,82 @@
+﻿@inject ICharactersClient client
+
+@if (items is null)
+{
+   <JoinLoadingMessage />
+}
+else
+{
+  <IntSelector
+               Name="@Name"
+               SelectedValues="SelectedCharacterIds"
+               SelectedValuesChanged="SelectedValuesChanged"
+               PossibleValues="items"
+               Multiple="@Multiple"
+               />
+  <p>@SelectedCharactersText</p>
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] [EditorRequired] public int ProjectId { get; set; }
+    [Parameter] public int[] SelectedCharacterIds { get; set; } = [];
+    [Parameter] public EventCallback<int[]> SelectedIdsChanged { get; set; }
+    [Parameter] public EventCallback<CharacterDto[]> SelectedChanged { get; set; }
+    [Parameter] public bool Multiple { get; set; } = true;
+    [Parameter] public bool TemplateOnly { get; set; } = false;
+    [Parameter] public bool AllowEmpty { get; set; } = false;
+
+    public string SelectedCharactersText{ get; private set; } = "";
+
+    private IntSelectListItem[] items = null!;
+    private List<CharacterDto> chars = null!;
+
+    private async Task SelectedValuesChanged(int[] values)
+    {
+        values = [..values.Where(v => v != -1)];
+
+        var selectedItems = chars.Where(item => values.Contains(item.CharacterId.CharacterId)).ToArray();
+        RefreshSelectedNames(selectedItems);
+        await SelectedIdsChanged.InvokeAsync(values);
+        await SelectedChanged.InvokeAsync(selectedItems);
+    }
+
+    private void RefreshSelectedNames(CharacterDto[] val)
+    {
+        if (val.Length < 2)
+        {
+            SelectedCharactersText = "";
+        }
+        else
+        {
+            SelectedCharactersText = string.Join(" • ", val.Select(item => item.Name));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        chars = TemplateOnly
+          ? await client.GetTemplateCharacters(ProjectId) 
+          : await client.GetCharacters(ProjectId);
+        var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId.CharacterId)).ToArray();
+        if (AllowEmpty)
+        {
+            var empty = new IntSelectListItem(-1, "(нет)");
+            items = [empty, .. chars.Select(ToSelectListItem)];
+        }
+        else {
+            items = [.. chars.Select(ToSelectListItem)];
+        }
+        RefreshSelectedNames(selectedItems);
+    }
+
+    private static IntSelectListItem ToSelectListItem(CharacterDto item)
+    {
+        return new IntSelectListItem(
+          Value: item.CharacterId.CharacterId,
+          Text: item.Name,
+          Subtext: item.Description,
+          ExtraSearch: "");
+    }
+}
