@@ -80,7 +80,7 @@
                         @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
                       </li>
                       <li>
-                        <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId">Добавить персонажа</a>
+                            <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить персонажа</a>
                       </li>
 
                       @if (Model.BigGroups.Any())
@@ -126,13 +126,6 @@
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
-
-                    <ul class="dropdown-menu">
-                        <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
-                    </ul>
-                </li>
-                <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы/АХЧ<span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li>@Html.ActionLink("Взносы — все", "Operations", "Finances", new { Model.ProjectId }, null)</li>
@@ -162,7 +155,7 @@
                     <ul class="dropdown-menu">
                         <li>@Html.ActionLink("Встроить ролевку на сайт", "Apis", "GameTools", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Распечатки", "Index", "Print", new { Model.ProjectId }, null)</li>
-
+                        <li>@Html.ActionLink("Форумы", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Мастера", "Index", "Acl", new { Model.ProjectId }, null)</li>
                         <li><a asp-page="/GamePages/ResponsibleMasterRules" asp-route-projectId="@Model.ProjectId">
