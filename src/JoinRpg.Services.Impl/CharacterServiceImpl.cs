@@ -142,7 +142,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     {
         Character character = await LoadCharacter(deleteCharacterRequest.Id);
 
-        if (character.HasActiveClaims())
+        if (character.HasActiveClaims() || character.Project.Details.DefaultTemplateCharacter == character)
         {
             throw new DbEntityValidationException();
         }

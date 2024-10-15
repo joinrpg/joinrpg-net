@@ -20,6 +20,9 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
     [ReadOnly(true)]
     public bool HasApprovedClaim { get; private set; }
 
+    [ReadOnly(true)]
+    public bool IsDefaultTemplate { get; private set; }
+
     public EditCharacterViewModel Fill(Character field, int currentUserId, ProjectInfo projectInfo)
     {
         Navigation = CharacterNavigationViewModel.FromCharacter(field,
@@ -37,6 +40,8 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
         UpdatedAt = field.UpdatedAt;
         CreatedBy = field.CreatedBy;
         UpdatedBy = field.UpdatedBy;
+
+        IsDefaultTemplate = projectInfo.DefaultTemplateCharacter.CharacterId == field.CharacterId;
 
         return this;
     }
