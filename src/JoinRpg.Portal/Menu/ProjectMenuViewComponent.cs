@@ -10,24 +10,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu;
 
-public class ProjectMenuViewComponent : ViewComponent
+public class ProjectMenuViewComponent(
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectRepository projectRepository,
+    ICurrentProjectAccessor currentProjectAccessor) : ViewComponent
 {
-    public ProjectMenuViewComponent(ICurrentUserAccessor currentUserAccessor, IProjectRepository projectRepository, ICurrentProjectAccessor currentProjectAccessor)
-    {
-        CurrentUserAccessor = currentUserAccessor;
-        ProjectRepository = projectRepository;
-        CurrentProjectAccessor = currentProjectAccessor;
-    }
-
-    private ICurrentUserAccessor CurrentUserAccessor { get; }
-    private IProjectRepository ProjectRepository { get; }
-    private ICurrentProjectAccessor CurrentProjectAccessor { get; }
-
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var project = await ProjectRepository.GetProjectAsync(CurrentProjectAccessor.ProjectId);
+        var project = await projectRepository.GetProjectAsync(currentProjectAccessor.ProjectId);
 
-        var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserAccessor.UserIdOrDefault);
+        var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == currentUserAccessor.UserIdOrDefault);
 
         if (acl != null)
         {
@@ -43,7 +35,7 @@ public class ProjectMenuViewComponent : ViewComponent
         {
             var menuModel = new PlayerMenuViewModel()
             {
-                Claims = project.Claims.OfUserActive(CurrentUserAccessor.UserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+                Claims = project.Claims.OfUserActive(currentUserAccessor.UserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
                 PlotPublished = project.Details.PublishPlot,
             };
             SetCommonMenuParameters(menuModel, project);
@@ -57,13 +49,12 @@ public class ProjectMenuViewComponent : ViewComponent
         menuModel.ProjectName = project.ProjectName;
         //TODO[GroupsLoad]. If we not loaded groups already, that's slow
         menuModel.BigGroups = project.RootGroup.ChildGroups.Where(
-                cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(CurrentUserAccessor.UserIdOrDefault))
+                cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(currentUserAccessor.UserIdOrDefault))
             .Select(cg => new CharacterGroupLinkSlimViewModel(new(cg.ProjectId), cg.CharacterGroupId, cg.CharacterGroupName, cg.IsPublic, cg.IsActive)).ToList();
         menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
         menuModel.IsActive = project.Active;
-        menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
         menuModel.EnableAccommodation = project.Details.EnableAccommodation;
-        menuModel.IsAdmin = CurrentUserAccessor.IsAdmin;
+        menuModel.IsAdmin = currentUserAccessor.IsAdmin;
         menuModel.ShowSchedule = project.Details.ScheduleEnabled;
     }
 }

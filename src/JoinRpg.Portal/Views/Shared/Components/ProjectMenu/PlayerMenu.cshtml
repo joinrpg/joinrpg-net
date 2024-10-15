@@ -62,10 +62,10 @@
                         </ul>
                     </li>
                 }
-                else if (Model.RootGroupId != null)
+                else 
                 {
                     <li>
-                        @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new { Model.ProjectId, CharacterGroupId = Model.RootGroupId }, null)
+                        @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new { Model.ProjectId}, null)
                     </li>
                 }
 

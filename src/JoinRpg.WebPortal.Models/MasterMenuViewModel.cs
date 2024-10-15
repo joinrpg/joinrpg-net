@@ -12,7 +12,6 @@ public class MenuViewModelBase
     public bool IsActive { get; set; }
     public bool IsAcceptingClaims { get; set; }
     public bool EnableAccommodation { get; set; }
-    public int? RootGroupId { get; set; }
     public IEnumerable<CharacterGroupLinkSlimViewModel> BigGroups { get; set; } = null!;
     public bool IsAdmin { get; set; }
     public bool ShowSchedule { get; set; }
