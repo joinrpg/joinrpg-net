@@ -157,4 +157,24 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
 
         return this;
     }
+
+    public void SortBy<TField>(Func<TItem, TField> selector) where TField : IComparable<TField>
+    {
+        Items.Sort(new SortByFieldComparer<TField>(selector));
+    }
+
+    private class SortByFieldComparer<TField>(Func<TItem, TField> selector) : IComparer<TItem>
+        where TField : IComparable<TField>
+    {
+        int IComparer<TItem>.Compare(TItem? x, TItem? y)
+        {
+            return (x, y) switch
+            {
+                (null, null) => 0,
+                (null, _) => -1,
+                (_, null) => 1,
+                _ => selector(x).CompareTo(selector(y)),
+            };
+        }
+    }
 }

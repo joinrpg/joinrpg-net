@@ -19,36 +19,23 @@ namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
 [Route("{ProjectId}/fields/[action]")]
-public class GameFieldController : ControllerGameBase
+public class GameFieldController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IFieldSetupService fieldSetupService,
+    IUserRepository userRepository,
+    FieldSetupManager manager,
+    ICurrentProjectAccessor currentProjectAccessor,
+    IProjectMetadataRepository projectMetadataRepository
+        ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private IFieldSetupService FieldSetupService { get; }
-    public FieldSetupManager Manager { get; }
-    private ICurrentProjectAccessor CurrentProjectAccessor { get; }
-
-    public GameFieldController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IFieldSetupService fieldSetupService,
-        IUserRepository userRepository,
-        FieldSetupManager manager,
-        ICurrentProjectAccessor currentProjectAccessor,
-        IProjectMetadataRepository projectMetadataRepository
-        )
-      : base(projectRepository, projectService, userRepository)
-    {
-        FieldSetupService = fieldSetupService;
-        Manager = manager;
-        CurrentProjectAccessor = currentProjectAccessor;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
+    public FieldSetupManager Manager { get; } = manager;
 
     private ActionResult ReturnToIndex()
-        => RedirectToAction("Index", new { ProjectId = CurrentProjectAccessor.ProjectId.Value });
+        => RedirectToAction("Index", new { ProjectId = currentProjectAccessor.ProjectId.Value });
 
     private ActionResult ReturnToField(ProjectField value)
-        => RedirectToAction("Edit", new { ProjectId = CurrentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
+        => RedirectToAction("Edit", new { ProjectId = currentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
 
 
     [HttpGet("/{ProjectId}/fields/")]
@@ -133,7 +120,7 @@ public class GameFieldController : ControllerGameBase
                 viewModel.MasterDescriptionEditable,
                 programmaticValue: null);
 
-            await FieldSetupService.AddField(request);
+            await fieldSetupService.AddField(request);
 
             return ReturnToIndex();
         }
@@ -185,7 +172,7 @@ public class GameFieldController : ControllerGameBase
                 field.ProjectFieldId,
                 viewModel.ProgrammaticValue);
 
-            await FieldSetupService.UpdateFieldParams(request);
+            await fieldSetupService.UpdateFieldParams(request);
 
             return ReturnToIndex();
         }
@@ -207,7 +194,7 @@ public class GameFieldController : ControllerGameBase
 
         try
         {
-            await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
+            await fieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
             return ReturnToIndex();
         }
@@ -239,7 +226,7 @@ public class GameFieldController : ControllerGameBase
             var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault());
 
             await
-                FieldSetupService.CreateFieldValueVariant(
+                fieldSetupService.CreateFieldValueVariant(
                     new CreateFieldValueVariantRequest(
                         viewModel.ProjectId,
                         viewModel.Label,
@@ -283,7 +270,7 @@ public class GameFieldController : ControllerGameBase
         try
         {
             var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
-            await FieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
+            await fieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
                 viewModel.ProjectId,
                 viewModel.ProjectFieldDropdownValueId,
                 viewModel.Label,
@@ -331,7 +318,7 @@ public class GameFieldController : ControllerGameBase
                 return NotFound();
             }
 
-            _ = await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
+            _ = await fieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
             return value.IsActive
                 ? Ok()
                 : StatusCode(250);
@@ -357,7 +344,7 @@ public class GameFieldController : ControllerGameBase
 
         try
         {
-            await FieldSetupService.MoveField(projectId, listItemId, (short)direction);
+            await fieldSetupService.MoveField(projectId, listItemId, (short)direction);
 
             return ReturnToIndex();
         }
@@ -381,7 +368,7 @@ public class GameFieldController : ControllerGameBase
 
         try
         {
-            await FieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
+            await fieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
 
 
             return ReturnToField(value);
@@ -404,7 +391,7 @@ public class GameFieldController : ControllerGameBase
 
         try
         {
-            await FieldSetupService.CreateFieldValueVariants(projectId, projectFieldId, valuesToAdd);
+            await fieldSetupService.CreateFieldValueVariants(projectId, projectFieldId, valuesToAdd);
 
 
             return ReturnToField(value);
@@ -432,7 +419,31 @@ public class GameFieldController : ControllerGameBase
 
         try
         {
-            await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+            await fieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+
+
+            return ReturnToIndex();
+        }
+        catch
+        {
+            return ReturnToIndex();
+        }
+    }
+
+    [MasterAuthorize(Permission.CanChangeFields)]
+    [HttpPost("~/{projectId:int}/fields/{projectFieldId:int}/sortvariants")]
+    public async Task<ActionResult> SortVariants(int projectId, int projectFieldId)
+    {
+        var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+        if (value == null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            await fieldSetupService.SortFieldVariants(projectId, projectFieldId);
 
 
             return ReturnToIndex();

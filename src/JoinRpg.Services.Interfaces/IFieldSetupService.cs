@@ -34,6 +34,7 @@ public interface IFieldSetupService
     Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
 
     Task SetFieldSettingsAsync(FieldSettingsRequest request);
+    Task SortFieldVariants(int projectId, int projectFieldId);
 }
 
 public class FieldSettingsRequest
