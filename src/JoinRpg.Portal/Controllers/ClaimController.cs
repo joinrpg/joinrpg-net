@@ -857,7 +857,7 @@ public class ClaimController(
 
         //TODO end of hacks
 
-        return Redirect($"/{projectInfo.ProjectId}/default-slot-not-set");
+        return Redirect($"/{projectInfo.ProjectId.Value}/default-slot-not-set");
     }
 
     [MustUseReturnValue]
