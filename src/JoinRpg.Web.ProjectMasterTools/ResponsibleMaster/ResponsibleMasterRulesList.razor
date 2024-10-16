@@ -92,7 +92,7 @@
           new ResponsibleMasterRuleViewModel(
             model.Group.CharacterGroupId,
             model.Group.Name,
-            new UserLinkViewModel(model.Master.MasterId, model.Master.DisplayName.DisplayName)
+            model.Master.ToUserLinkViewModel()
           ));
 
         try
