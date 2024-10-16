@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers.Validation;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -25,7 +24,7 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (!ParentCharacterGroupIds.Any())
+        if (AllowToSetGroups && ParentCharacterGroupIds.Length == 0)
         {
             yield return new ValidationResult(
                 "Персонаж должен принадлежать хотя бы к одной группе");
@@ -34,11 +33,11 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
 
     public CustomFieldsViewModel Fields { get; set; }
 
-    [CannotBeEmpty, DisplayName("Является частью групп")]
+    [DisplayName("Является частью групп")]
     public int[] ParentCharacterGroupIds { get; set; } = [];
 
     [ReadOnly(true)]
-    public bool AllowToSetGroups { get; set; } = true;
+    public bool AllowToSetGroups { get; set; }
 
     protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
     {
