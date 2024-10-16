@@ -8,7 +8,14 @@ public static class UriLocatorExtensions
     private class UriLocator : IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
     {
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
-            => new($"/user/{target.UserId}");
+        {
+            if (target.ViewMode == ViewMode.Hide)
+            {
+                throw new InvalidOperationException("Should not have url of hidden");
+            }
+            return new($"/user/{target.UserId}");
+        }
+
         Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target)
             => throw new NotImplementedException();
         // TODO implement for Blazor. Added so we will have nice exception instead of bla-bla not resolved.

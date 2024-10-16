@@ -16,7 +16,7 @@ using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
 
-public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
+public class ClaimViewModel : IEntityWithCommentsViewModel
 {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
@@ -65,10 +65,6 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
 
     [ReadOnly(true)]
     public IList<JoinSelectListItem> PotentialCharactersToMove { get; }
-
-    public bool HidePlayer => false;
-
-    public bool HasAccess => true;
 
     public CustomFieldsViewModel Fields { get; }
 
@@ -138,7 +134,7 @@ public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithComments
             ExtraAccessReason.PlayerOrResponsible);
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
-        PlayerLink = UserLinks.Create(claim.Player);
+        PlayerLink = UserLinks.Create(claim.Player, ViewMode.Show);
         ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
         Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser.UserId));

@@ -18,10 +18,8 @@
 }
 <div class="@hideClassName">
     <strong>@Html.ActionLink(Model.CharacterName ?? Model.CharacterId.ToString(), "Details", "Character", new { Model.ProjectId, Model.CharacterId }, null) </strong>
-    @if (Model.PlayerLink != null)
-    {
-        @Html.DisplayFor(model => model, "IPlayerCharacter")
-    }
+    
+    @Html.DisplayFor(model => model.PlayerLink)
     else if (Model.ActiveClaimsCount > 0)
     {
         @Html.DisplayCount_OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
