@@ -22,8 +22,6 @@ public class ProjectWarnCloseJob(IProjectRepository projectRepository, IMasterEm
                 continue;
             }
 
-            var project = await projectRepository.GetProjectAsync(staleProject.ProjectId);
-
             var lastUpdateDate = DateOnly.FromDateTime(staleProject.LastUpdated);
             var email = new ProjectStaleMail()
             {
