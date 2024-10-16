@@ -5,9 +5,9 @@ namespace JoinRpg.Services.Interfaces.Notification;
 public class PlotElementEmail : EmailModelBase
 {
 
-    public PlotElement PlotElement { get; set; }
+    public required PlotElement PlotElement { get; set; }
 
-    public IEnumerable<Claim> Claims { get; set; }
+    public required IEnumerable<Claim> Claims { get; set; }
 
 }
 

@@ -93,25 +93,18 @@ public class CharacterListController : ControllerGameBase
         ExportDataService = exportDataService;
     }
 
-
-    private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
-    {
-        var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        return groups.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
-    }
-
     [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
     public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
     {
         var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
-        var characters =
-          (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
         if (characterGroup == null)
         {
             return NotFound();
         }
+
+        var groupIds = characterGroup.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
+        var characters = (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
         var plots = await PlotRepository.GetPlotsWithTargets(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));

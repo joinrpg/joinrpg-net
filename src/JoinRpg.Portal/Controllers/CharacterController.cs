@@ -123,7 +123,7 @@ public class CharacterController : Common.ControllerGameBase
     [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Create(int projectid, int? charactergroupid, bool continueCreating = false)
     {
-        CharacterGroup characterGroup;
+        CharacterGroup? characterGroup;
         if (charactergroupid is null)
         {
             characterGroup = await ProjectRepository.GetRootGroupAsync(projectid);
@@ -180,7 +180,7 @@ public class CharacterController : Common.ControllerGameBase
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            CharacterGroup characterGroup;
+            CharacterGroup? characterGroup;
             if (characterGroupId == 0)
             {
                 characterGroup = (await ProjectRepository.GetProjectAsync(viewModel.ProjectId))
@@ -188,9 +188,11 @@ public class CharacterController : Common.ControllerGameBase
             }
             else
             {
-                characterGroup =
-                    await ProjectRepository.GetGroupAsync(viewModel.ProjectId,
-                        characterGroupId);
+                characterGroup = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, characterGroupId);
+                if (characterGroup is null)
+                {
+                    return NotFound();
+                }
             }
 
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));

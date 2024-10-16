@@ -38,22 +38,22 @@ public class NavLinkTagHelper : AnchorTagHelper
 
     private bool ShouldBeActive()
     {
-        var currentController = ViewContext.RouteData.Values["Controller"].ToString();
-        var currentAction = ViewContext.RouteData.Values["Action"].ToString();
+        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 
-        if (!string.IsNullOrWhiteSpace(Controller) && Controller.ToLower() != currentController.ToLower())
+        if (!string.IsNullOrWhiteSpace(Controller) && Controller.ToLower() != currentController?.ToLower())
         {
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(Action) && Action.ToLower() != currentAction.ToLower())
+        if (!string.IsNullOrWhiteSpace(Action) && Action.ToLower() != currentAction?.ToLower())
         {
             return false;
         }
 
         foreach (KeyValuePair<string, string> routeValue in RouteValues)
         {
-            if (!ViewContext.RouteData.Values.ContainsKey(routeValue.Key) || ViewContext.RouteData.Values[routeValue.Key].ToString() != routeValue.Value)
+            if (!ViewContext.RouteData.Values.ContainsKey(routeValue.Key) || ViewContext.RouteData.Values[routeValue.Key]?.ToString() != routeValue.Value)
             {
                 return false;
             }
@@ -70,7 +70,7 @@ public class NavLinkTagHelper : AnchorTagHelper
             classAttr = new TagHelperAttribute("class", "active");
             output.Attributes.Add(classAttr);
         }
-        else if (classAttr.Value == null || classAttr.Value.ToString().IndexOf("active") < 0)
+        else if (classAttr.Value.ToString() == null || classAttr.Value.ToString().IndexOf("active") < 0)
         {
             output.Attributes.SetAttribute("class", classAttr.Value == null
                 ? "active"
