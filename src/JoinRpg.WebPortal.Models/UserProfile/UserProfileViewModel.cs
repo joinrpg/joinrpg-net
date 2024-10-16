@@ -75,7 +75,7 @@ public class UserProfileDetailsViewModel
     }
     public UserProfileDetailsViewModel(User user, AccessReason reason)
     {
-        User = UserLinks.Create(user);
+        User = UserLinks.Create(user, ViewMode.Show);
         Reason = reason;
         SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess();
         Avatar = AvatarIdentification.FromOptional(user.SelectedAvatarId);
