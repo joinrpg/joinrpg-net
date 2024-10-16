@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CommonTypes;
-using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -129,10 +128,8 @@ public static class CharacterGroupListViewModel
                 Description = arg.Description.ToHtmlString(),
                 IsPublic = arg.IsPublic,
                 IsActive = arg.IsActive,
-                HidePlayer = arg.HidePlayerForCharacter && !arg.Project.Details.PublishPlot,
                 ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
-                PlayerLink = UserLinks.Create(arg.ApprovedClaim?.Player),
-                HasMasterAccess = HasMasterAccess,
+                PlayerLink = arg.GetCharacterPlayerLinkViewModel(CurrentUserId),
                 HasEditRolesAccess = HasEditRolesAccess,
                 ProjectId = arg.ProjectId,
                 FirstInGroup = siblings[0] == arg,
