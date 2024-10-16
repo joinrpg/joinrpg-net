@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       deployVersion:
-        description: Docker image to deploy
+        description: Docker image to deploy (like 2024.7.0)
         required: true
         default: latest
 
