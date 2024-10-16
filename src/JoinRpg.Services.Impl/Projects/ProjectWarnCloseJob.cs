@@ -15,7 +15,10 @@ public class ProjectWarnCloseJob(IProjectRepository projectRepository, IMasterEm
         {
             if (staleProject.LastUpdated.Day != today.Day)
             {
-                logger.LogInformation("Project {project} is stale. It will be warned on {dayOfMonth} day of month", staleProject.ProjectId, staleProject.LastUpdated.Day);
+                logger.LogInformation("Project {project} is stale since {staleDate}. It will be warned on {dayOfMonth} day of month",
+                    staleProject.ProjectId,
+                    staleProject.LastUpdated,
+                    staleProject.LastUpdated.Day);
                 continue;
             }
 

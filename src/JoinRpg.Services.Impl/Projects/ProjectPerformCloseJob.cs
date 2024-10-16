@@ -23,7 +23,7 @@ public class ProjectPerformCloseJob(IProjectRepository projectRepository, ILogge
             }
             else
             {
-                logger.LogInformation("Project {project} is stale since {staleDate}. It will be closed now .", staleProject.ProjectId, lastUpdateDate);
+                logger.LogInformation("Project {project} is stale since {staleDate}. It will be closed now.", staleProject.ProjectId, lastUpdateDate);
             }
 
             await projectService.CloseProjectAsStale(new(staleProject.ProjectId), lastUpdateDate);
