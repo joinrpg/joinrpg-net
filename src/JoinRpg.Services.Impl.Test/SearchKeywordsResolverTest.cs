@@ -1,6 +1,4 @@
 using JoinRpg.Services.Impl.Search;
-using Shouldly;
-using Xunit;
 
 namespace JoinRpg.Services.Impl.Test;
 
