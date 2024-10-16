@@ -27,7 +27,9 @@ internal class MasterEmailServiceImpl(
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
-Проект {metadata.ProjectName} был в последний раз активен {email.LastActiveDate:YYYY-MM-dd}. Если до {email.WillCloseDate:YYYY-MM-dd} активность в нем не появится, он автоматически будет закрыт.
+Проект {metadata.ProjectName} был в последний раз активен {email.LastActiveDate:yyyy-MM-dd}. Если до {email.WillCloseDate:yyyy-MM-dd} активность в нем не появится, он автоматически будет закрыт.
+
+Подробности в справке https://docs.joinrpg.ru/ru/latest/project/after.html#id3
 
 Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.
 
@@ -74,7 +76,7 @@ internal class MasterEmailServiceImpl(
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
-Проект {metadata.ProjectName} был закрыт, т.к. он не был активен с {email.LastActiveDate:YYYY-MM-dd}. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
+Проект {metadata.ProjectName} был закрыт, т.к. он не был активен с {email.LastActiveDate:yyyy-MM-dd}. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
 
 --
 {joinRpgSender.DisplayName}
