@@ -15,8 +15,8 @@
 }
 <table class="table" style="margin-top: 1em;">
     <tr>
-        <th>@Html.DisplayNameFor(model => paymentType.Name)</th>
-        <th>@Html.DisplayNameFor(model => paymentType.Master)</th>
+        <th>@Html.DisplayNameFor(model => paymentType!.Name)</th>
+        <th>@Html.DisplayNameFor(model => paymentType!.Master)</th>
         @if (Model.HasEditAccess)
         {
             <th></th>
@@ -30,7 +30,7 @@
                 <span style="display: inline-flex; align-items: center;">
                     @if (item.IsDefault)
                     {
-                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => paymentType.IsDefault)</span>
+                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => paymentType!.IsDefault)</span>
                     }
                     <span class="@(item.IsActive ? "" : "deleted")">@(item.Name)</span>
                 </span>

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using JoinRpg.DataModel;
@@ -30,7 +31,7 @@ public static class ProjectEntityExtensions
         return entity.HasMasterAccess(currentUserAccessor.UserIdOrDefault, acl => true);
     }
 
-    public static T RequestMasterAccess<T>(this T field,
+    public static T RequestMasterAccess<T>([NotNull] this T? field,
         int? currentUserId,
         Expression<Func<ProjectAcl, bool>>? accessType = null)
     where T : IProjectEntity
@@ -56,8 +57,9 @@ public static class ProjectEntityExtensions
         return field;
     }
 
-    public static T EnsureActive<T>(this T entity) where T : IDeletableSubEntity, IProjectEntity
+    public static T EnsureActive<T>([NotNull] this T? entity) where T : IDeletableSubEntity, IProjectEntity
     {
+        ArgumentNullException.ThrowIfNull(entity);
         if (!entity.IsActive)
         {
             throw new ProjectEntityDeactivatedException(entity);
