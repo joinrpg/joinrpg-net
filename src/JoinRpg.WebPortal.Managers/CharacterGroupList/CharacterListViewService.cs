@@ -17,7 +17,7 @@ public class CharacterListViewService(ICharacterRepository characterRepository, 
 
     public async Task<List<CharacterDto>> GetTemplateCharacters(int projectId)
     {
-        var characters = await characterRepository.GetTemplateCharacters(projectId);
+        var characters = await characterRepository.GetActiveTemplateCharacters(projectId);
         return await ToFilteredList(characters, projectId);
     }
 

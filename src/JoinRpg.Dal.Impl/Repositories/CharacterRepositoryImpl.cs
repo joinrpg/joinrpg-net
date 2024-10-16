@@ -127,10 +127,11 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
           .ToListAsync();
     }
 
-    public async Task<IEnumerable<Character>> GetTemplateCharacters(int projectId)
+    public async Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId)
     {
         return await Ctx.Set<Character>()
           .Where(c => c.ProjectId == projectId)
+          .Where(c => c.IsActive)
           .Where(c => c.CharacterType == PrimitiveTypes.CharacterType.Slot)
           .OrderBy(c => c.CharacterName)
           .ToListAsync();

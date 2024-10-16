@@ -20,7 +20,7 @@ public interface ICharacterRepository : IDisposable
     Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId);
     Task<IEnumerable<Character>> GetAvailableCharacters(int projectId);
     Task<IEnumerable<Character>> GetAllCharacters(int projectId);
-    Task<IEnumerable<Character>> GetTemplateCharacters(int projectId);
+    Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId);
 }
 
 public class CharacterView : IFieldContainter
