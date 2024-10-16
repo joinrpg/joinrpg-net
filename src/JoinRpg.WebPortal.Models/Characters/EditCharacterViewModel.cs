@@ -9,7 +9,8 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
 {
     public int CharacterId { get; set; }
 
-    public CharacterNavigationViewModel Navigation { get; set; }
+    [ReadOnly(true)]
+    public CharacterNavigationViewModel Navigation { get; set; } = null!;
 
     [ReadOnly(true)]
     public bool IsActive { get; private set; }
@@ -41,13 +42,20 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
         CreatedBy = field.CreatedBy;
         UpdatedBy = field.UpdatedBy;
 
-        IsDefaultTemplate = projectInfo.DefaultTemplateCharacter.CharacterId == field.CharacterId;
+        IsDefaultTemplate = projectInfo.DefaultTemplateCharacter?.CharacterId == field.CharacterId;
 
         return this;
     }
 
+    [ReadOnly(true)]
     public DateTime CreatedAt { get; private set; }
-    public User CreatedBy { get; private set; }
+
+    [ReadOnly(true)]
+    public User CreatedBy { get; private set; } = null!;
+
+    [ReadOnly(true)]
     public DateTime UpdatedAt { get; private set; }
-    public User UpdatedBy { get; private set; }
+
+    [ReadOnly(true)]
+    public User UpdatedBy { get; private set; } = null!;
 }
