@@ -15,9 +15,9 @@ public class ProjectGroupClaimsWarnJob(IProjectRepository projectRepository, ILo
         {
             var proj = await projectRepository.GetProjectAsync(legacyProject.ProjectId);
 
-            if (proj.CreatedDate.Day != today.Day)
+            if (proj.CreatedDate.DayOfWeek != today.DayOfWeek)
             {
-                logger.LogInformation("Project {project} is using group claims. It will be warned on {dayOfMonth} day of month", legacyProject.ProjectId, proj.CreatedDate.Day);
+                logger.LogInformation("Project {project} is using group claims. It will be warned on {dayOfWeek} day of week", legacyProject.ProjectId, proj.CreatedDate.DayOfWeek);
                 continue;
             }
 
