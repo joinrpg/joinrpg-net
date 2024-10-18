@@ -68,9 +68,7 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
         var recipients = model
           .GetRecipients()
-          .Select(r => new RecepientData(
-            r.GetDisplayName(),
-            r.Email,
+          .Select(r => r.ToRecepientData(
             new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
           .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[ChangedFieldsKey]))
           //don't email if no changes are visible to user rights
@@ -291,10 +289,7 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
         var recipients = model
           .GetRecipients()
-          .Select(r => new RecepientData(
-            r.GetDisplayName(),
-            r.Email,
-            new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
+          .Select(r => r.ToRecepientData(new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
           .ToList();
 
         var commentExtraActionView = (CommonUI.Models.CommentExtraAction?)model.CommentExtraAction;
