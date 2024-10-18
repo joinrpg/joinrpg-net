@@ -15,13 +15,6 @@ public interface IEmailSendingService
         RecepientData recepient)
      => SendEmails(subject, body, sender, [recepient,]);
 
-    [Obsolete("Send markdown emails")]
-    Task SendEmails(string subject,
-        string body,
-        string text,
-        RecepientData sender,
-        IReadOnlyCollection<RecepientData> to);
-
     string GetRecepientPlaceholderName();
     string GetUserDependentValue(string valueKey);
 }

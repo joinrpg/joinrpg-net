@@ -323,34 +323,24 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
     private const string ClaimUriKey = "claimUri";
 
-    private class ClaimsComparer : IEqualityComparer<Claim>
-    {
-        public bool Equals(Claim? x, Claim? y) => x?.PlayerUserId == y?.PlayerUserId;
-
-        public int GetHashCode(Claim obj) => obj.PlayerUserId.GetHashCode();
-    }
-
     public async Task Email(PublishPlotElementEmail email)
     {
         var plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
 
         var subject = $@"{email.ProjectName}: опубликована вводная";
-        var body = $@"{StandartGreeting()}"
-            + $"<br />Прочитать вводную: <a href=\"{messageService.GetUserDependentValue(ClaimUriKey)}\">{messageService.GetUserDependentValue(ClaimUriKey)}</a>"
-            + "<br /><br />"
-            + email.Text.ToHtmlString().ToHtmlString();
-        var text = $@"{StandartGreeting()}"
-            + $"\nПрочитать вводную: {messageService.GetUserDependentValue(ClaimUriKey)}"
-            + $"\n\n{email.Text.ToPlainText()}";
+        var body = new MarkdownString($@"{StandartGreeting()}
+
+Для вас опубликована вводная. Прочитать ее: {messageService.GetUserDependentValue(ClaimUriKey)}
+
+{email.Text}");
 
         var recipients = email.Claims
-            .Distinct(new ClaimsComparer())
+            .DistinctBy(x => x.PlayerUserId)
             .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
                 { ClaimUriKey, uriService.Get(c) + plotElementId } }))
             .ToList();
 
-        await messageService.SendEmails(subject, body, text,
-            email.Initiator.ToRecepientData(), recipients);
+        await messageService.SendEmails(subject, body, email.Initiator.ToRecepientData(), recipients);
     }
 
     [GeneratedRegex("%NAME%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

@@ -16,24 +16,6 @@ internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttp
 
     public string GetRecepientPlaceholderName() => GetUserDependentValue(Constants.MailGunName);
 
-
-    public async Task SendEmails(string subject,
-        string body,
-        string text,
-        RecepientData sender,
-        IReadOnlyCollection<RecepientData> to)
-    {
-        if (to.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
-        {
-            await SendEmailChunkImpl(recepientChunk, subject, text, sender, body);
-        }
-    }
-
     public async Task SendEmails(string subject, MarkdownString body, RecepientData sender, IReadOnlyCollection<RecepientData> to)
     {
         if (to.Count == 0)
