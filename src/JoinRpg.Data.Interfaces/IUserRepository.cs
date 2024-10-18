@@ -8,6 +8,8 @@ public interface IUserRepository
 {
     Task<User> GetById(int id);
 
+    Task<UserNotificationInfoDto[]> GetUsersNotificationInfo(UserIdentification[] userIds);
+
     Task<User> WithProfile(int userId);
     Task<User> GetWithSubscribe(int currentUserId);
     Task<User?> GetByEmail(string email);

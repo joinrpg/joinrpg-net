@@ -95,4 +95,6 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
 
         return res.Select(a => (new UserIdentification(a.UserId), new AvatarIdentification(a.UserAvatarId))).ToArray();
     }
+
+    public Task<UserNotificationInfoDto[]> GetUsersNotificationInfo(UserIdentification[] userIds) => throw new NotImplementedException();
 }
