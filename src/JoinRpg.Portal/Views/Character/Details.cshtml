@@ -20,7 +20,7 @@
                     
                 }
                 <dt>Игрок</dt>
-                <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
+                <dd>@Html.DisplayFor(model => model.PlayerLink)</dd>
                 @if (Model.ParentGroups.HasAnyGroups)
                 {
                   <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>

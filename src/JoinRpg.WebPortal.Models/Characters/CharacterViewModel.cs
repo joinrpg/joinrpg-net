@@ -5,7 +5,6 @@ using JoinRpg.WebComponents;
 namespace JoinRpg.Web.Models.Characters;
 
 public class CharacterViewModel :
-    ICharacterWithPlayerViewModel,
     IEquatable<CharacterViewModel>,
     ILinkable
 {
@@ -26,11 +25,7 @@ public class CharacterViewModel :
     public bool IsActive { get; set; }
 
     public UserLinkViewModel? PlayerLink { get; set; }
-    public bool HidePlayer { get; set; }
-    public bool HasAccess => HasMasterAccess;
     public int ActiveClaimsCount { get; set; }
-
-    public bool HasMasterAccess { get; set; }
 
     public bool FirstInGroup { get; set; }
     public bool LastInGroup { get; set; }

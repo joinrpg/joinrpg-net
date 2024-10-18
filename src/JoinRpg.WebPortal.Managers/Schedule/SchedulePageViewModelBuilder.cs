@@ -2,18 +2,20 @@ using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
+using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.WebPortal.Managers.Schedule;
 
 internal static class SchedulePageViewModelBuilder
 {
-    public static IReadOnlyList<ProgramItemViewModel> ToViewModel(this IEnumerable<ProgramItem> items)
-        => items.Select(item => item.ToViewModel()).ToList();
+    public static IReadOnlyList<ProgramItemViewModel> ToViewModel(this IEnumerable<ProgramItem> items, bool hasMasterAccess)
+        => items.Select(item => item.ToViewModel(hasMasterAccess)).ToList();
 
     public static IReadOnlyList<TableHeaderViewModel> ToViewModel(this IEnumerable<ScheduleItemAttribute> items)
         => items.Select(item => item.ToViewModel()).ToList();
 
-    public static ProgramItemViewModel ToViewModel(this ProgramItem? item)
+    public static ProgramItemViewModel ToViewModel(this ProgramItem? item, bool hasMasterAccess)
     {
         if (item == null)
         {
@@ -25,8 +27,21 @@ internal static class SchedulePageViewModelBuilder
             Name = item.Name,
             Description = item.Description,
             ProjectId = item.ProjectId,
-            Users = item.Authors,
+            Users = GetAuthors(item, hasMasterAccess),
         };
+    }
+
+    public static UserLinkViewModel[] GetAuthors(ProgramItem item, bool hasMasterAccess)
+    {
+        if (item.Authors.Length == 0)
+        {
+            return [];
+        }
+        if (!item.ShowAuthors && !hasMasterAccess)
+        {
+            return [UserLinkViewModel.Hidden];
+        }
+        return [.. item.Authors.Select(x => UserLinks.Create(x, ViewMode.Show))];
     }
 
     public static TableHeaderViewModel ToViewModel(this ScheduleItemAttribute scheduleItem)

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Schedules;
 
@@ -25,7 +25,7 @@ public class AppointmentBaseViewModel
     public string DisplayName { get; set; }
     public int ProjectId { get; set; }
     public int CharacterId { get; set; }
-    public IReadOnlyCollection<User> Users { get; set; }
+    public required IReadOnlyCollection<UserLinkViewModel> Users { get; set; }
     public JoinHtmlString Description { get; set; }
 }
 
