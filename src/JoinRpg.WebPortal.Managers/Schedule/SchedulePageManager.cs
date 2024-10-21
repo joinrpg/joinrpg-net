@@ -34,15 +34,16 @@ public class SchedulePageManager
     public async Task<SchedulePageViewModel> GetSchedule()
     {
         (var project, var result) = await GetCompiledSchedule();
+        var hasMasterAccess = project.HasMasterAccess(CurrentUserAccessor);
         var viewModel = new SchedulePageViewModel()
         {
             ProjectId = CurrentProject.ProjectId,
             DisplayName = project.ProjectName,
-            NotScheduledProgramItems = result.NotScheduled.ToViewModel(),
+            NotScheduledProgramItems = result.NotScheduled.ToViewModel(hasMasterAccess),
             Columns = result.Rooms.ToViewModel(),
             Rows = result.TimeSlots.ToViewModel(),
-            ConflictedProgramItems = result.Conflicted.ToViewModel(),
-            Slots = result.Slots.Select2DList(x => x.ToViewModel())
+            ConflictedProgramItems = result.Conflicted.ToViewModel(hasMasterAccess),
+            Slots = result.Slots.Select2DList(x => x.ToViewModel(hasMasterAccess)),
         };
 
         MergeSlots(viewModel);

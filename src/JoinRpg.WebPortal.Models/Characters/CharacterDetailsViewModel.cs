@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
-using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -30,15 +29,7 @@ public class CharacterParentGroupsViewModel
     }
 }
 
-//TODO merge everything into UserLinkViewModel and remove this interface
-public interface ICharacterWithPlayerViewModel
-{
-    UserLinkViewModel? PlayerLink { get; }
-    bool HidePlayer { get; }
-    bool HasAccess { get; }
-}
-
-public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreatedUpdatedTracked
+public class CharacterDetailsViewModel : ICreatedUpdatedTracked
 {
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; }
@@ -46,9 +37,6 @@ public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreated
     public UserLinkViewModel? PlayerLink { get; }
 
     public PlotDisplayViewModel Plot { get; }
-
-    public bool HidePlayer { get; }
-    public bool HasAccess { get; }
 
     public CustomFieldsViewModel Fields { get; }
 
@@ -62,10 +50,9 @@ public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreated
         IUriService uriService,
         ProjectInfo projectInfo)
     {
-        PlayerLink = UserLinks.Create(character.ApprovedClaim?.Player);
-        HasAccess = character.HasAnyAccess(currentUserIdOrDefault);
+
+        PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserIdOrDefault);
         ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserIdOrDefault));
-        HidePlayer = character.HidePlayerForCharacter;
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
             currentUserIdOrDefault);

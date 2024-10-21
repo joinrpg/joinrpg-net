@@ -7,22 +7,15 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Schedules;
 
-public class ProgramItem
+public class ProgramItem(Character character)
 {
-    public int Id { get; internal set; }
-    public string Name { get; internal set; }
-    public MarkdownString Description { get; internal set; }
-    public User[] Authors { get; internal set; }
-    public int ProjectId { get; set; }
+    public int Id { get; } = character.CharacterId;
+    public string Name { get; } = character.CharacterName;
+    public MarkdownString Description { get; } = character.Description;
+    public User[] Authors { get; } = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
+    public int ProjectId { get; } = character.ProjectId;
 
-    public ProgramItem(Character character)
-    {
-        Id = character.CharacterId;
-        Name = character.CharacterName;
-        Description = character.Description;
-        Authors = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
-        ProjectId = character.ProjectId;
-    }
+    public bool ShowAuthors { get; } = !character.HidePlayerForCharacter;
 }
 
 public class ProgramItemPlaced

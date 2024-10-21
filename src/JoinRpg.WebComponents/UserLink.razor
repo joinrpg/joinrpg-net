@@ -1,4 +1,16 @@
 ﻿@inject IUriLocator<UserLinkViewModel> userLinkLocator
+    @switch (Model.ViewMode)
+    {
+        case JoinRpg.WebComponents.ViewMode.Show:
+            <a class="join-user" href="@ProfileUri"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
+            break;
+        case JoinRpg.WebComponents.ViewMode.ShowAsPrivate:
+            <a class="join-user world-object-hidden" href="@ProfileUri"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
+            break;
+        case JoinRpg.WebComponents.ViewMode.Hide:
+            <span class="glyphicon glyphicon-user"></span><i>занято</i>
+            break;
+    }
 <a class="join-user" href="@ProfileUri"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
 
 @code {

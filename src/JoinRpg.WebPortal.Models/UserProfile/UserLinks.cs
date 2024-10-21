@@ -8,9 +8,13 @@ namespace JoinRpg.Web.Models.UserProfile;
 public static class UserLinks
 {
     [return: NotNullIfNotNull("user")]
-    public static UserLinkViewModel? Create(User? user)
+    public static UserLinkViewModel? Create(User? user, ViewMode viewMode = ViewMode.Show)
     {
-        return user is null ?
-            null : new UserLinkViewModel(user.UserId, user.GetDisplayName().Trim());
+        return (user, viewMode) switch
+        {
+            (null, _) => null,
+            (_, ViewMode.Hide) => UserLinkViewModel.Hidden,
+            _ => new UserLinkViewModel(user.UserId, user.GetDisplayName().Trim(), viewMode),
+        };
     }
 }

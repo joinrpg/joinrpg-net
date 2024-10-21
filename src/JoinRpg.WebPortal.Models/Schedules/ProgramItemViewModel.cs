@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Schedules;
 
@@ -10,14 +11,15 @@ public class ProgramItemViewModel
         Name = "",
         Description = new MarkdownString(),
         ProjectId = -1,
-        Users = Array.Empty<User>(),
+        Users = [],
         IsEmpty = true,
     };
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public MarkdownString Description { get; set; }
-    public int ProjectId { get; set; }
-    public User[] Users { get; set; }
+    public required int Id { get; set; }
+    public required string Name { get; set; }
+    public required MarkdownString Description { get; set; }
+    public required int ProjectId { get; set; }
+    public required UserLinkViewModel[] Users { get; set; }
+
     public bool IsEmpty { get; private set; } = false;
 
     public int RowSpan { get; set; } = 1;

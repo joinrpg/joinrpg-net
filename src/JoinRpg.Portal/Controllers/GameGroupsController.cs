@@ -217,9 +217,9 @@ public class GameGroupsController : ControllerGameBase
             ch.IsFirstCopy,
             ch.CharacterName,
             Description = ch.Description?.ToHtmlString(),
-            PlayerName = ch.HidePlayer ? "скрыто" : ch.PlayerLink?.DisplayName,
-            PlayerId = ch.HidePlayer ? null : ch.PlayerLink?.UserId, //TODO Remove
-            PlayerLink = (ch.HidePlayer || ch.PlayerLink is null) ? null : userLinkLocator.GetUri(ch.PlayerLink).AbsoluteUri,
+            PlayerName = ch.PlayerLink?.DisplayName,
+            PlayerId = ch.PlayerLink?.UserId,
+            PlayerLink = (ch.PlayerLink is null || ch.PlayerLink.ViewMode == ViewMode.Hide) ? null : userLinkLocator.GetUri(ch.PlayerLink).AbsoluteUri,
             ch.ActiveClaimsCount,
             ClaimLink =
             ch.IsAvailable
