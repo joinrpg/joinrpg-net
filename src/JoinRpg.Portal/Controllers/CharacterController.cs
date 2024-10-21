@@ -124,7 +124,7 @@ public class CharacterController : Common.ControllerGameBase
     public async Task<ActionResult> Create(int projectid, int? charactergroupid, bool continueCreating = false)
     {
         CharacterGroup? characterGroup;
-        if (charactergroupid is null)
+        if (charactergroupid is null || charactergroupid == 0)
         {
             characterGroup = await ProjectRepository.GetRootGroupAsync(projectid);
         }
@@ -167,8 +167,15 @@ public class CharacterController : Common.ControllerGameBase
 
             if (viewModel.ContinueCreating)
             {
-                return RedirectToAction("Create",
-                    new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
+                if (characterGroupId != 0)
+                {
+                    return RedirectToAction("Create",
+                        new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
+                }
+                else
+                {
+                    return RedirectToAction("Create", new { viewModel.ProjectId, viewModel.ContinueCreating });
+                }
             }
             else if (characterGroupId == 0)
             {
