@@ -1,3 +1,4 @@
+using JoinRpg.Dal.CommonEfCore;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
