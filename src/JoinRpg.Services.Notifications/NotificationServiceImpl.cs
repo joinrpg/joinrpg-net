@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -17,9 +16,10 @@ public partial class NotificationServiceImpl(
 {
     private record class NotificationRow(
         UserIdentification UserIdentification, NotificationRecepient Recepient, Email? Email, TelegramId? TelegramId, UserDisplayName DisplayName);
+
     async Task INotifcationService.QueueNotification(NotificationMessage notificationMessage)
     {
-        MatchCollection matchCollection = FieldPlaceholderRegex().Matches(notificationMessage.Text.Contents!);
+        var templater = new NotifcationFieldsTemplater(notificationMessage.Text);
 
         var users = await GetNotificationsForUsers(notificationMessage.Recepients);
         var sender = await userRepository.GetRequiredUserInfo(notificationMessage.Initiator);
@@ -38,22 +38,24 @@ public partial class NotificationServiceImpl(
                 new RecepientData(sender.DisplayName, sender.Email),
                 users
                 .Where(u => u.Email is not null)
-                .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recepient.UserFields)).ToArray());
+                .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recepient.Fields)).ToArray());
         }
 
-        async Task SaveToQueue() => await notificationRepository.InsertNotifications([.. users.Select(user => CreateMessageDto(notificationMessage, user, sender))]);
+        async Task SaveToQueue() => await notificationRepository.InsertNotifications(
+            [..
+            users.Select(user => CreateMessageDto(notificationMessage, user, sender, templater.Substitute(user.Recepient.Fields, user.DisplayName)))]);
 
         void VerifyFieldsPresent()
         {
-            string[] fields = [.. matchCollection.Select(m => m.Value)];
+            string[] fields = templater.GetFields();
 
             foreach (var recepient in notificationMessage.Recepients)
             {
-                if (recepient.UserFields.Values.Except(fields).Any())
+                if (recepient.Fields.Values.Except(fields).Any())
                 {
                     throw new InvalidOperationException("Not enough fields");
                 }
-                if (fields.Except(recepient.UserFields.Values).Any())
+                if (fields.Except(recepient.Fields.Values).Any())
                 {
                     throw new InvalidOperationException("Too many fields");
                 }
@@ -65,7 +67,7 @@ public partial class NotificationServiceImpl(
     {
         return new NotificationMessageDto()
         {
-            Body = SubsititeUserValues(notificationMessage.Text, user.Recepient.UserFields, user.DisplayName),
+            Body = body,
             Header = notificationMessage.Header,
             Initiator = notificationMessage.Initiator,
             InitiatorAddress = sender.Email,
@@ -83,8 +85,6 @@ public partial class NotificationServiceImpl(
         }
     }
 
-    private MarkdownString SubsititeUserValues(MarkdownString text, IReadOnlyDictionary<string, string> userFields, UserDisplayName displayName) => throw new NotImplementedException();
-
     private async Task<NotificationRow[]> GetNotificationsForUsers(NotificationRecepient[] recepients)
     {
         var recDict = recepients.ToDictionary(r => r.UserId, r => r);
@@ -92,9 +92,4 @@ public partial class NotificationServiceImpl(
 
         return r.Select(user => new NotificationRow(user.UserId, recDict[user.UserId], user.Email, user.Social.TelegramId, user.DisplayName)).ToArray();
     }
-
-
-
-    [GeneratedRegex("%recepient.(\\w+?)%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex FieldPlaceholderRegex();
 }
