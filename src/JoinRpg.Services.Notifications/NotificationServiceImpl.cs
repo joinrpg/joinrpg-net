@@ -1,5 +1,5 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Write.Interfaces;
+using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces.Email;
 using JoinRpg.Interfaces.Notifications;

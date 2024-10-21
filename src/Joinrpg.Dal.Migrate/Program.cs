@@ -1,6 +1,7 @@
 using Joinrpg.Dal.Migrate.Ef6;
 using Joinrpg.Dal.Migrate.EfCore;
 using JoinRpg.Dal.JobService;
+using JoinRpg.Dal.Notifications;
 using JoinRpg.Portal.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,5 +27,6 @@ internal class Program
 
                 services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection")!);
                 services.RegisterMigrator<JobScheduleDataDbContext>(hostContext.Configuration.GetConnectionString("DailyJob")!);
+                services.RegisterMigrator<NotificationsDataDbContext>(hostContext.Configuration.GetConnectionString("Notifications")!);
             });
 }

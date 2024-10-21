@@ -2,6 +2,7 @@ using System.Globalization;
 using Autofac;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
+using JoinRpg.Dal.Notifications;
 using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
@@ -88,6 +89,7 @@ public class Startup
         services.AddJoinDataProtection(Configuration, environment);
 
         services.AddJoinDailyJob(Configuration, environment);
+        services.AddNotificationsDal(Configuration, environment);
 
         if (environment.IsDevelopment())
         {

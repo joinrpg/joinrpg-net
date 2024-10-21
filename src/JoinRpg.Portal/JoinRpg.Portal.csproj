@@ -52,6 +52,7 @@
     <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
+    <ProjectReference Include="..\JoinRpg.Dal.Notifications\JoinRpg.Dal.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
