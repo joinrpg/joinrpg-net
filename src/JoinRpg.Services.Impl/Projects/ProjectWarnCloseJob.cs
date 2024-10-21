@@ -23,11 +23,19 @@ public class ProjectWarnCloseJob(IProjectRepository projectRepository, IMasterEm
             }
 
             var lastUpdateDate = DateOnly.FromDateTime(staleProject.LastUpdated);
+            DateOnly closeDate = ProjectStaleDateCalculator.CalculateCloseDate(lastUpdateDate);
+
+            if (closeDate == DateOnly.FromDateTime(DateTime.Now.Date))
+            {
+                logger.LogInformation("Project {project} is stale since {staleDate}. Skipping warning, because it will be closed today.",
+                    staleProject.ProjectId,
+                    staleProject.LastUpdated);
+            }
             var email = new ProjectStaleMail()
             {
                 LastActiveDate = lastUpdateDate,
                 ProjectId = new(staleProject.ProjectId),
-                WillCloseDate = ProjectStaleDateCalculator.CalculateCloseDate(lastUpdateDate),
+                WillCloseDate = closeDate,
             };
 
             await masterEmailService.EmailProjectStale(email);
