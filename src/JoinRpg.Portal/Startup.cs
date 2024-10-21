@@ -7,6 +7,7 @@ using JoinRpg.Common.Telegram;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
+using JoinRpg.Dal.Notifications;
 using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
@@ -84,6 +85,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddJoinDataProtection(Configuration, environment);
 
         services.AddJoinDailyJob(Configuration, environment);
+        services.AddNotificationsDal(Configuration, environment);
 
         services.AddJoinDomainServices();
 
