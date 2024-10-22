@@ -21,18 +21,4 @@ body.ToPlainText().ToString()
 );
         return Task.CompletedTask;
     }
-
-    public Task SendEmails(string subject, string body, string text, RecepientData sender, IReadOnlyCollection<RecepientData> to)
-    {
-        logger.LogInformation(@"Sending email {subject} from {sender} to {to}
-BODY:
-{body}
-",
-subject,
-sender,
-string.Join(", ", to.Select(s => s.ToString())),
-body
-);
-        return Task.CompletedTask;
-    }
 }
