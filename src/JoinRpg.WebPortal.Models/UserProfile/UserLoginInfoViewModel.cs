@@ -30,18 +30,21 @@ public record UserLoginInfoViewModel
 {
     public required ProviderDescViewModel LoginProvider { get; init; }
 
-    public Uri? ProviderLink { get; set; }
+    public required Uri? ProviderLink { get; set; }
 
-    public string? ProviderKey { get; set; }
+    public required string? ProviderKey { get; set; }
 
-    public bool AllowLink { get; set; }
-    public bool AllowUnlink { get; set; }
-    public bool NeedToReLink { get; set; }
-    public bool Present => ProviderLink is not null && ProviderKey is not null;
+    public required bool AllowLink { get; set; }
+    public required bool AllowUnlink { get; set; }
+    public required bool NeedToReLink { get; set; }
 }
 
 public static class UserLoginInfoViewModelBuilder
 {
+    private static UserExternalLogin? TryGetExternalLoginByProviderId(User user, string providerId)
+    {
+        return user.ExternalLogins.SingleOrDefault(l => l.Provider.Equals(providerId, StringComparison.InvariantCultureIgnoreCase));
+    }
     public static IEnumerable<UserLoginInfoViewModel> GetSocialLogins(this User user)
     {
         yield return GetModel(ProviderDescViewModel.Vk, user.Extra?.Vk);
@@ -50,9 +53,7 @@ public static class UserLoginInfoViewModelBuilder
 
         UserLoginInfoViewModel GetModel(ProviderDescViewModel provider, string? idFromProfile)
         {
-            if (user.ExternalLogins.SingleOrDefault(l =>
-                l.Provider.Equals(provider.ProviderId, StringComparison.InvariantCultureIgnoreCase)
-                ) is UserExternalLogin login)
+            if (TryGetExternalLoginByProviderId(user, provider.ProviderId) is UserExternalLogin login)
             {
                 return new UserLoginInfoViewModel()
                 {
