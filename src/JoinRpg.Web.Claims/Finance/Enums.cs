@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Models.Money;
+namespace JoinRpg.Web.Claims.Finance;
 
 public enum FinanceOperationStateViewModel
 {
