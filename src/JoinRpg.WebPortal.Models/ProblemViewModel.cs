@@ -2,10 +2,10 @@ using JoinRpg.Domain.Problems;
 
 namespace JoinRpg.Web.Models;
 
-public class ProblemViewModel
+public class ProblemViewModel(ClaimProblem problem)
 {
     //Mass usage of Display(Name) turns out too slow...
-    private static readonly IDictionary<ClaimProblemType, string> Types = new Dictionary<ClaimProblemType, string>()
+    private static readonly Dictionary<ClaimProblemType, string> Types = new()
 {
   {ClaimProblemType.NoResponsibleMaster, "Не назначен мастер"},
   {ClaimProblemType.InvalidResponsibleMaster, "Неверный мастер"},
@@ -26,20 +26,12 @@ public class ProblemViewModel
   {ClaimProblemType.GroupIsBroken, "Группа сломана"},
 };
 
-    public ProblemViewModel(ClaimProblem problem)
-    {
-        ProblemType = Types[problem.ProblemType];
-        ProblemTime = problem.ProblemTime;
-        Severity = problem.Severity;
-        Extra = problem.ExtraInfo;
-    }
+    public string ProblemType { get; } = Types[problem.ProblemType];
 
-    public string ProblemType { get; }
+    public DateTime? ProblemTime { get; } = problem.ProblemTime;
 
-    public DateTime? ProblemTime { get; }
+    public ProblemSeverity Severity { get; } = problem.Severity;
 
-    public ProblemSeverity Severity { get; }
-
-    public string? Extra { get; }
+    public string? Extra { get; } = problem.ExtraInfo;
 }
 
