@@ -9,7 +9,7 @@ internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<Character>, I
         {
             if (!variant.IsActive)
             {
-                yield return new FieldRelatedProblem(ClaimProblemType.InActiveVariant, ProblemSeverity.Warning, fieldWithValue.Field);
+                yield return new FieldRelatedProblem(ClaimProblemType.InActiveVariant, ProblemSeverity.Warning, fieldWithValue.Field, "/" + variant.Label);
             }
         }
     }
