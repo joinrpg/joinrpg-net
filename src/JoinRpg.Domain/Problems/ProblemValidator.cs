@@ -3,18 +3,9 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Problems;
-internal class ProblemValidator<TObject> : IProblemValidator<TObject> where TObject : IFieldContainter
+internal class ProblemValidator<TObject>(IProblemFilter<TObject>[] filters) : IProblemValidator<TObject> where TObject : IFieldContainter
 {
-    private readonly IEnumerable<IProblemFilter<TObject>> filters;
-
-    public ProblemValidator(IEnumerable<IProblemFilter<TObject>> filters)
-    {
-        this.filters = filters;
-        if (!filters.Any())
-        {
-            throw new InvalidOperationException($"Filters for type {typeof(TObject).FullName} do not exists");
-        }
-    }
+    private readonly IProblemFilter<TObject>[] filters = ProblemValidator<TObject>.ShouldBeNotEmpty(filters);
 
     public IEnumerable<ClaimProblem> Validate(TObject claim, ProjectInfo projectInfo, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
     {
@@ -39,5 +30,11 @@ internal class ProblemValidator<TObject> : IProblemValidator<TObject> where TObj
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         return Validate(claim, projectInfo).OfType<FieldRelatedProblem>();
+    }
+
+    private static IProblemFilter<TObject>[] ShouldBeNotEmpty(IProblemFilter<TObject>[] filters)
+    {
+        return filters.Length > 0 ? filters :
+            throw new InvalidOperationException($"Filters for type {typeof(TObject).FullName} do not exists");
     }
 }
