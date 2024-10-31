@@ -1,8 +1,6 @@
 using System.Diagnostics;
-using JoinRpg.Web.Models;
-using Shouldly;
 
-namespace JoinRpg.Web.Test;
+namespace JoinRpg.WebPortal.Models.Test;
 
 internal static class ShouldlyFieldValueViewModelExtensions
 {

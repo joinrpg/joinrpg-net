@@ -6,14 +6,10 @@ using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.TestHelpers;
 using JoinRpg.Web.Claims.Finance;
-using JoinRpg.Web.Models;
 using MoreLinq;
-using Shouldly;
-using Xunit;
 
-namespace JoinRpg.Web.Test;
+namespace JoinRpg.WebPortal.Models.Test;
 
 public class EnumTests
 {
@@ -24,10 +20,10 @@ public class EnumTests
     public void ProjectFieldType() => EnumerationTestComparer.EnsureSame<ProjectFieldViewType, ProjectFieldType>();
 
     [Fact]
-    public void ClaimStatus() => EnumerationTestComparer.EnsureSame<ClaimStatusView, DataModel.Claim.Status>();
+    public void ClaimStatus() => EnumerationTestComparer.EnsureSame<ClaimStatusView, Claim.Status>();
 
     [Fact]
-    public void ClaimDenialStatus() => EnumerationTestComparer.EnsureSame<ClaimDenialStatusView, DataModel.Claim.DenialStatus>();
+    public void ClaimDenialStatus() => EnumerationTestComparer.EnsureSame<ClaimDenialStatusView, Claim.DenialStatus>();
 
     [Fact]
     public void FinanceOperation() => EnumerationTestComparer.EnsureSame<FinanceOperationActionView, FinanceOperationAction>();

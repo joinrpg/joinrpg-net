@@ -1,7 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Web.Models.Characters;
-using Shouldly;
-using Xunit;
 
 namespace JoinRpg.WebPortal.Models.Test;
 public class CharacterTreeBuilderTest
@@ -13,8 +11,8 @@ public class CharacterTreeBuilderTest
         {
             Project = new Project()
             {
-                Characters = new List<Character> { },
-                CharacterGroups = new List<CharacterGroup> { },
+                Characters = [],
+                CharacterGroups = [],
             }
         };
         var builder = new CharacterTreeBuilder(root, currentUserId: null);
