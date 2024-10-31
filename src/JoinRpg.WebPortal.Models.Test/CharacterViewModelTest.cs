@@ -1,10 +1,8 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Web.Models.Characters;
-using Shouldly;
-using Xunit;
 
-namespace JoinRpg.Web.Test;
+namespace JoinRpg.WebPortal.Models.Test;
 
 public class CharacterViewModelTest
 {

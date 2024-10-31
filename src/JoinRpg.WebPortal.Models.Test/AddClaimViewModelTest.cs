@@ -1,12 +1,8 @@
 using JoinRpg.CommonUI.Models;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
-using JoinRpg.Web.Models;
-using Shouldly;
-using Xunit;
 
-namespace JoinRpg.Web.Test;
+namespace JoinRpg.WebPortal.Models.Test;
 
 public class AddClaimViewModelTest
 {

@@ -14,5 +14,7 @@ public class JoinRpgDomainModule : Autofac.Module
         _ = builder.RegisterGeneric(typeof(ProblemValidator<>)).AsImplementedInterfaces().SingleInstance();
 
         _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IProblemFilter<>)).SingleInstance();
+
+        _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IFieldRelatedProblemFilter<>)).SingleInstance();
     }
 }

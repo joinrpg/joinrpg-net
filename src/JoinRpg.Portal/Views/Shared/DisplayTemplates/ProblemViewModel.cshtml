@@ -21,12 +21,11 @@
 <div class="label @style">
     @if (Model.Severity == ProblemSeverity.Fatal)
     {
-<span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
+      <span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
     }
-    @Html.DisplayFor(modelItem => Model.ProblemType)
-    @if (Model.ProblemTime != null)
+    @Model.ProblemType@if (Model.ProblemTime != null)
     {
-        @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")
+        <text> @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")</text>
     }
     @if (!string.IsNullOrWhiteSpace(Model.Extra))
     {<text>: @Model.Extra</text>
