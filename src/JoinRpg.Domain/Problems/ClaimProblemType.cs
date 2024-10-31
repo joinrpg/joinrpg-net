@@ -21,4 +21,5 @@ public enum ClaimProblemType
     FieldShouldNotHaveValue,
     NoParentGroup,
     GroupIsBroken,
+    InActiveVariant,
 }
