@@ -2,13 +2,11 @@ using System.Diagnostics.Contracts;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
-namespace JoinRpg.Domain.Problems;
+namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
-internal class FieldNotSetFilterBase
+internal class FieldNotSetFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
 {
-    protected static IEnumerable<ClaimProblem> CheckFields(IEnumerable<FieldWithValue> fieldsToCheck, IClaimSource target) => fieldsToCheck.SelectMany(fieldWithValue => CheckField(target, fieldWithValue));
-
-    private static IEnumerable<ClaimProblem> CheckField(IClaimSource target, FieldWithValue fieldWithValue)
+    public IEnumerable<FieldRelatedProblem> CheckField(IClaimSource target, FieldWithValue fieldWithValue)
     {
         if (!fieldWithValue.Field.CanHaveValue)
         {
@@ -54,5 +52,5 @@ internal class FieldNotSetFilterBase
     }
 
     [Pure]
-    private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue) => new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
+    private static FieldRelatedProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue) => new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
 }
