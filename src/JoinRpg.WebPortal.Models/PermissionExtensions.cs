@@ -1,5 +1,5 @@
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Models;
 

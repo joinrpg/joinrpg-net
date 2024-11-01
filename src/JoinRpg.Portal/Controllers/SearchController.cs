@@ -1,7 +1,5 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +11,11 @@ public class SearchController : Common.LegacyJoinControllerBase
     private readonly IProjectRepository _projectRepository;
     private IUriService UriService { get; }
 
-    public async Task<ActionResult> Index([CanBeNull] string searchString)
+    public async Task<ActionResult> Index(string? searchString)
     {
         var searchResults =
             string.IsNullOrEmpty(searchString)
-                ? System.Array.Empty<ISearchResult>()
+                ? []
                 : await _searchService.SearchAsync(CurrentUserIdOrDefault, searchString);
 
         if (searchResults.Count == 1)

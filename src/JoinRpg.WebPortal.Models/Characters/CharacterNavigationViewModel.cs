@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.ClaimList;
@@ -77,7 +76,7 @@ public class CharacterNavigationViewModel
             : Enumerable.Empty<ClaimShortListItemViewModel>();
     }
 
-    public static CharacterNavigationViewModel FromClaim([NotNull]
+    public static CharacterNavigationViewModel FromClaim(
         Claim claim,
         int currentUserId,
         CharacterNavigationPage characterNavigationPage)

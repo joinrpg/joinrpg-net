@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -7,28 +6,28 @@ namespace JoinRpg.Web.Models;
 
 public enum ClaimStatusView
 {
-    [Display(Name = "Подана"), UsedImplicitly]
+    [Display(Name = "Подана")]
     AddedByUser,
 
-    [Display(Name = "Предложена"), UsedImplicitly]
+    [Display(Name = "Предложена")]
     AddedByMaster,
 
-    [Display(Name = "Принята"), UsedImplicitly]
+    [Display(Name = "Принята")]
     Approved,
 
-    [Display(Name = "Отозвана"), UsedImplicitly]
+    [Display(Name = "Отозвана")]
     DeclinedByUser,
 
-    [Display(Name = "Отклонена"), UsedImplicitly]
+    [Display(Name = "Отклонена")]
     DeclinedByMaster,
 
-    [Display(Name = "Обсуждается"), UsedImplicitly]
+    [Display(Name = "Обсуждается")]
     Discussed,
 
-    [Display(Name = "В листе ожидания"), UsedImplicitly]
+    [Display(Name = "В листе ожидания")]
     OnHold,
 
-    [Display(Name = "Игрок заехал"), UsedImplicitly]
+    [Display(Name = "Игрок заехал")]
     CheckedIn,
 }
 

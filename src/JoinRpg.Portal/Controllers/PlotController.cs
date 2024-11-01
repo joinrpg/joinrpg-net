@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -134,7 +133,7 @@ public class PlotController : ControllerGameBase
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId, string content,
-      string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
+      string todoField, ICollection<string>? targets, PlotElementTypeView elementType)
     {
         try
         {
@@ -161,7 +160,7 @@ public class PlotController : ControllerGameBase
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, string content,
-      string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
+      string todoField, ICollection<string>? targets, PlotElementTypeView elementType)
     {
         try
         {
@@ -216,7 +215,7 @@ public class PlotController : ControllerGameBase
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
-    public async Task<ActionResult> Delete(int projectId, int plotFolderId, [UsedImplicitly] IFormCollection collection)
+    public async Task<ActionResult> Delete(int projectId, int plotFolderId, IFormCollection collection)
     {
         try
         {
@@ -261,7 +260,7 @@ public class PlotController : ControllerGameBase
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, string content, string todoField,
-      [CanBeNull] ICollection<string> targets)
+      ICollection<string>? targets)
     {
         try
         {

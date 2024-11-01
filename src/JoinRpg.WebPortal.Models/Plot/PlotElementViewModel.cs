@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -28,10 +27,10 @@ public class PlotElementViewModel : IMovableListItem
 
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
-    public PlotElementViewModel([CanBeNull] Character? character,
+    public PlotElementViewModel(Character? character,
         int? currentUserId,
-        [NotNull] ILinkRenderer linkRendrer,
-        [NotNull] PlotElementTexts plotElementVersion,
+        ILinkRenderer linkRendrer,
+        PlotElementTexts plotElementVersion,
         IUriService uriService)
     {
         if (linkRendrer == null)
@@ -70,7 +69,7 @@ public class PlotElementViewModel : IMovableListItem
 
 public class PlotDisplayViewModel
 {
-    public static PlotDisplayViewModel Published([NotNull] IReadOnlyCollection<PlotElement> plots,
+    public static PlotDisplayViewModel Published(IReadOnlyCollection<PlotElement> plots,
         int? currentUserId,
         Character character,
         IUriService uriService) =>
@@ -81,9 +80,9 @@ public class PlotDisplayViewModel
             PlotElementType.RegularPlot,
             uriService);
 
-    private PlotDisplayViewModel([NotNull] IReadOnlyCollection<PlotElement> plots,
+    private PlotDisplayViewModel(IReadOnlyCollection<PlotElement> plots,
         int? currentUserId,
-        [CanBeNull] Character character,
+        Character? character,
         bool publishedOnly,
         PlotElementType plotElementType,
         IUriService uriService)

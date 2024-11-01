@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models;
@@ -23,7 +22,6 @@ public class ProjectCreateViewModel
     public ProjectTypeViewModel ProjectType { get; set; }
 }
 
-[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public enum ProjectTypeViewModel
 {
     [Display(Name = "Ролевая игра",

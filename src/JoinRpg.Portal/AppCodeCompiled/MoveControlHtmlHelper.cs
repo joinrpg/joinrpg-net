@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 using Microsoft.AspNetCore.Html;
@@ -11,8 +10,8 @@ public static class MoveControlHtmlHelper
 {
 
     public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
-      Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName,
-      [AspMvcController] string? controllerName, int? parentObjectId = null)
+      Expression<Func<TModel, TValue>> expression, string actionName,
+      string? controllerName, int? parentObjectId = null)
         where TValue : IMovableListItem
     {
         var item = (IMovableListItem)self.GetValue(expression);
@@ -31,7 +30,7 @@ public static class MoveControlHtmlHelper
     }
 
     public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
-      [InstantHandle] Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName)
+      Expression<Func<TModel, TValue>> expression, string actionName)
         where TValue : IMovableListItem
     {
         var currentController = GetRequiredString(self.ViewContext.RouteData, "controller");

@@ -1,6 +1,6 @@
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Reflection;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -10,13 +10,11 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters;
 
-public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
+public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorFrontend<TRow>
 {
-    protected CustomExporter(IUriService uriService) => UriService = uriService;
-
     private class TableColumn<T> : ITableColumn
     {
-        public TableColumn(string? name, [NotNull] Func<TRow, T?> getter)
+        public TableColumn(string? name, Func<TRow, T?> getter)
         {
             Name = name;
             Getter = getter ?? throw new ArgumentNullException(nameof(getter));
@@ -34,22 +32,20 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
         private Func<TRow, T?> Getter { get; }
     }
 
-    private IUriService UriService { get; }
-
     public abstract IEnumerable<ITableColumn> ParseColumns();
 
-    [MustUseReturnValue]
+    [Pure]
     protected ITableColumn StringColumn(Expression<Func<TRow, string?>> func) => new TableColumn<string>(func.AsPropertyAccess(), func.Compile());
 
     [Pure]
-    protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string? name = null) => new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => UriService.GetUri(func.Compile()(row)));
+    protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string? name = null) => new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => uriService.GetUri(func.Compile()(row)));
 
     [Pure]
     protected ITableColumn UriListColumn(Expression<Func<TRow, IEnumerable<ILinkable>>> func)
     {
         var compiledFunc = func.Compile();
         return new TableColumn<string>(func.AsPropertyAccess(),
-          row => compiledFunc(row).Select(link => UriService.GetUri(link).ToString()).JoinStrings(" | "));
+          row => compiledFunc(row).Select(link => uriService.GetUri(link).ToString()).JoinStrings(" | "));
     }
 
     [Pure]
@@ -60,23 +56,23 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
           row => compiledFunc(row).JoinStrings(" | "));
     }
 
-    [MustUseReturnValue]
-    protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func)
+    [Pure]
+    protected ITableColumn IntColumn(Expression<Func<TRow, int>> func)
     {
         var member = func.AsPropertyAccess();
         var compiledFunc = func.Compile();
         return new TableColumn<int>(member, r => compiledFunc(r));
     }
 
-    [MustUseReturnValue]
-    protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func, string name)
+    [Pure]
+    protected ITableColumn IntColumn(Expression<Func<TRow, int>> func, string name)
     {
         var compiledFunc = func.Compile();
         return new TableColumn<int>(name, r => compiledFunc(r));
     }
 
-    [MustUseReturnValue]
-    protected ITableColumn BoolColumn([NotNull] Expression<Func<TRow, bool>> func)
+    [Pure]
+    protected ITableColumn BoolColumn(Expression<Func<TRow, bool>> func)
     {
         var memberName = func.AsPropertyAccess()?.GetDisplayName() ?? "1";
         return BoolColumn(func, memberName);
@@ -89,28 +85,28 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
         return new TableColumn<string>(func.AsPropertyAccess(), r => compiledFunc(r) ? name : "");
     }
 
-    [MustUseReturnValue]
+    [Pure]
     protected ITableColumn EnumColumn<TEnum>(Expression<Func<TRow, Nullable<TEnum>>> func) where TEnum : struct, Enum
     {
         var member = func.AsPropertyAccess();
         return new TableColumn<string>(member, r => func.Compile()(r)?.GetDisplayName());
     }
 
-    [MustUseReturnValue]
+    [Pure]
     protected ITableColumn EnumColumn<TEnum>(Expression<Func<TRow, TEnum>> func) where TEnum : struct, Enum
     {
         var member = func.AsPropertyAccess();
         return new TableColumn<string>(member, r => func.Compile()(r).GetDisplayName());
     }
 
-    [MustUseReturnValue]
+    [Pure]
     protected ITableColumn DateTimeColumn(Expression<Func<TRow, DateTime?>> func)
     {
         var member = func.AsPropertyAccess();
         return new TableColumn<DateTime?>(member, r => func.Compile()(r));
     }
 
-    [MustUseReturnValue]
+    [Pure]
     protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User?>> func)
     {
         return ComplexColumn(
@@ -130,13 +126,13 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
             });
     }
 
-    [MustUseReturnValue]
+    [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, User?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
 
-    [MustUseReturnValue]
+    [Pure]
     private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string?>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
 
-    [MustUseReturnValue]
+    [Pure]
     protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T?>> complexGetter, Expression<Func<T, TOut>> expr, string? name = null)
       where T : class
     {
@@ -148,7 +144,7 @@ public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
     [Pure]
     private static string CombineName(params PropertyInfo?[] propertyAccessors) => propertyAccessors.Select(prop => prop?.GetDisplayName()).JoinIfNotNullOrWhitespace(".");
 
-    [MustUseReturnValue]
+    [Pure]
     protected static ITableColumn ComplexElementMemberColumn<T1, T2, TOut>(Expression<Func<TRow, T1?>> complexGetter,
       Expression<Func<T1, T2?>> immed, Expression<Func<T2, TOut>> expr, string? name = null)
       where T2 : class

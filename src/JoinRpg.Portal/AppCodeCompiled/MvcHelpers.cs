@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Net;
-using JetBrains.Annotations;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models;
@@ -15,7 +15,7 @@ namespace JoinRpg.Portal;
 
 public static class DisplayCount
 {
-    [MustUseReturnValue]
+    [Pure]
     public static IHtmlContent OfX(int count, string single, string multi1, string multi2)
     {
         var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
@@ -64,7 +64,6 @@ public static class MvcHtmlHelpers
 
     public static IHtmlContent DescriptionFor<TModel, TValue>(
         this IHtmlHelper<TModel> self,
-        [InstantHandle]
         Expression<Func<TModel, TValue>> expression)
     {
         var description = self.TryGetDescription(expression);
@@ -153,7 +152,7 @@ public static class MvcHtmlHelpers
         this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
         => self.GetModelExplorer(expression).Model;
 
-    [MustUseReturnValue]
+    [Pure]
     public static string DisplayCount_OfX<TModel>(this IHtmlHelper<TModel> self, int count, string single, string multi1, string multi2)
     {
         var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));

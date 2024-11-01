@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Web.Models;
 
 public interface IOperationsAwareView
@@ -10,9 +8,7 @@ public interface IOperationsAwareView
 
     bool ShowCharacterCreateButton => ProjectId is not null;
 
-    [NotNull]
     IReadOnlyCollection<int> ClaimIds { get; }
 
-    [NotNull]
     IReadOnlyCollection<int> CharacterIds { get; }
 }

@@ -1,15 +1,14 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 
 namespace JoinRpg.Web.Models;
 
 public enum FinanceOperationActionView
 {
-    [Display(Name = "Ничего не делать"), UsedImplicitly]
+    [Display(Name = "Ничего не делать")]
     None,
-    [Display(Name = "Подтвердить операцию"), UsedImplicitly]
+    [Display(Name = "Подтвердить операцию")]
     Approve,
-    [Display(Name = "Отменить операцию"), UsedImplicitly]
+    [Display(Name = "Отменить операцию")]
     Decline,
 }
 

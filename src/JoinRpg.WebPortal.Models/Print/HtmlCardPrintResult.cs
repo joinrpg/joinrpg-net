@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace JoinRpg.Web.Models.Print;
 
 public class HtmlCardPrintResult
@@ -11,13 +9,10 @@ public class HtmlCardPrintResult
         BackgroundUrl = backgroundUrl;
     }
 
-    [PublicAPI]
     public string Html { get; }
 
-    [PublicAPI]
     public CardSize CardSize { get; }
 
-    [PublicAPI]
     public string? BackgroundUrl { get; }
 }
 
