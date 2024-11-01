@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
@@ -75,7 +74,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// </summary>
     public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
 
-    public RoomTypeViewModel([NotNull] ProjectAccommodationType entity, int userId, ProjectInfo projectInfo)
+    public RoomTypeViewModel(ProjectAccommodationType entity, int userId, ProjectInfo projectInfo)
         : this(entity.Project, userId)
     {
         if (entity.ProjectId == 0 || entity.Id == 0)

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -58,7 +57,7 @@ public class ForumController : ControllerGameBase
 
     [HttpPost("~/{projectId}/roles/{charactergroupid}/create-thread")]
     [MasterAuthorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateThread([NotNull] CreateForumThreadViewModel viewModel)
+    public async Task<ActionResult> CreateThread(CreateForumThreadViewModel viewModel)
     {
         var group = (await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId)).EnsureActive();
 

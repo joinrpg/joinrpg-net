@@ -1,5 +1,4 @@
 using System.Text.Json;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -451,9 +450,8 @@ public class GameGroupsController : ControllerGameBase
         return View(viewModel);
     }
 
-    protected string GetFullyQualifiedUri([AspMvcAction]
+    protected string GetFullyQualifiedUri(
     string actionName,
-        [AspMvcController]
     string controllerName,
         object routeValues)
     {

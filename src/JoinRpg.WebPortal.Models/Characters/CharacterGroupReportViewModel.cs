@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
@@ -7,7 +6,6 @@ namespace JoinRpg.Web.Models.Characters;
 
 public static class CharacterGroupReportViewModel
 {
-    [MustUseReturnValue]
     public static IEnumerable<CharacterGroupReportItemViewModel> GetGroups(CharacterGroup field) => new CharacterGroupHierarchyBuilder(field).Generate().WhereNotNull();
 
     //TODO: unit tests

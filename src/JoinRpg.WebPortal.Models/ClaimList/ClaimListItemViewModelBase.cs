@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
@@ -29,21 +28,17 @@ public abstract class ClaimListItemViewModelBase : ILinkable
     [Display(Name = "Ответственный")]
     public User Responsible { get; set; }
 
-    [CanBeNull]
-    public User LastModifiedBy { get; set; }
+    public User? LastModifiedBy { get; set; }
 
     public int ProjectId { get; }
 
     public int ClaimId { get; }
 
-    protected ClaimListItemViewModelBase([NotNull]
+    protected ClaimListItemViewModelBase(
         Claim claim,
         int currentUserId)
     {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
         var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
 
 

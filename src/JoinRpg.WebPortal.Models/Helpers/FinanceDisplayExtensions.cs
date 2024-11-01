@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -31,12 +30,9 @@ public static class FinanceDisplayExtensions
     /// <summary>
     /// Returns display name for the payment type
     /// </summary>
-    public static string GetDisplayName([NotNull] this PaymentType paymentType)
+    public static string GetDisplayName(this PaymentType paymentType)
     {
-        if (paymentType == null)
-        {
-            throw new ArgumentNullException(nameof(paymentType));
-        }
+        ArgumentNullException.ThrowIfNull(paymentType);
 
         return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
     }
@@ -44,7 +40,7 @@ public static class FinanceDisplayExtensions
     /// <summary>
     /// Returns display name for the payment type view model
     /// </summary>
-    public static string GetDisplayName([NotNull] this PaymentTypeViewModel paymentType)
+    public static string GetDisplayName(this PaymentTypeViewModel paymentType)
     {
         if (paymentType == null)
         {

@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Accommodation;
@@ -57,7 +56,7 @@ public class RoomViewModel
     {
     }
 
-    public RoomViewModel([NotNull] ProjectAccommodation entity, RoomTypeViewModel owner)
+    public RoomViewModel(ProjectAccommodation entity, RoomTypeViewModel owner)
     {
         if (entity.ProjectId == 0 || entity.Id == 0)
         {

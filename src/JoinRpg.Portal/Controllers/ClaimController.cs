@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
@@ -195,7 +194,7 @@ public class ClaimController(
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(int projectId, int claimId, [UsedImplicitly] string ignoreMe)
+    public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
     {
         var claim = await claimsRepository.GetClaim(projectId, claimId);
         var error = WithClaim(claim);
@@ -860,6 +859,5 @@ public class ClaimController(
         return Redirect($"/{projectInfo.ProjectId.Value}/default-slot-not-set");
     }
 
-    [MustUseReturnValue]
     private ActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
 }

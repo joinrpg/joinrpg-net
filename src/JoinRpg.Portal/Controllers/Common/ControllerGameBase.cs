@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
@@ -13,7 +12,6 @@ namespace JoinRpg.Portal.Controllers.Common;
 [DiscoverProjectFilter]
 public abstract class ControllerGameBase : LegacyJoinControllerBase
 {
-    [ProvidesContext, NotNull]
     protected IProjectService ProjectService { get; }
     public IProjectRepository ProjectRepository { get; }
 
@@ -35,7 +33,7 @@ public abstract class ControllerGameBase : LegacyJoinControllerBase
 
     protected ActionResult RedirectToIndex(Project project) => RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
 
-    protected ActionResult RedirectToIndex(int projectId, int characterGroupId, [AspMvcAction] string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
+    protected ActionResult RedirectToIndex(int projectId, int characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
 
     protected async Task<ActionResult> RedirectToProject(int projectId)
     {

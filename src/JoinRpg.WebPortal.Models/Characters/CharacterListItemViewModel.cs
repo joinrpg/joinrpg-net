@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
@@ -70,7 +69,7 @@ public class CharacterListItemViewModel : ILinkable
 
     public int CharacterId { get; }
 
-    [NotNull, ReadOnly(true)]
+    [ReadOnly(true)]
     public IReadOnlyCollection<FieldWithValue> Fields { get; }
 
     public int? ApprovedClaimId { get; }

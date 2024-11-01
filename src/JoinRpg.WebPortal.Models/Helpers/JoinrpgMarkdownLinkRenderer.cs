@@ -1,5 +1,4 @@
 using System.Text;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -98,19 +97,19 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         }
     }
 
-    private static string? GetEmailLinkImpl([NotNull] User player)
+    private static string? GetEmailLinkImpl(User player)
     {
         var email = player.Email;
         return string.IsNullOrEmpty(email) ? null : $"Email: <a href=\"mailto:{email}\">{email}</a>";
     }
 
-    private static string? GetVKLinkImpl([NotNull] User player)
+    private static string? GetVKLinkImpl(User player)
     {
         var vk = player.Extra?.Vk;
         return string.IsNullOrEmpty(vk) ? null : $"ВК: <a href=\"https://vk.com/{vk}\">vk.com/{vk}</a>";
     }
 
-    private static string? GetTelegramLinkImpl([NotNull] User player)
+    private static string? GetTelegramLinkImpl(User player)
     {
         var link = player.Extra?.Telegram?.TrimStart('@');
         return string.IsNullOrEmpty(link) ? null : $"Телеграм: <a href=\"https://t.me/{link}\">t.me/{link}</a>";

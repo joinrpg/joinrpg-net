@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -18,7 +17,7 @@ public static class CharacterAndGroupPrefixer
     private static IEnumerable<string> PrefixAsCharacters(this IEnumerable<int> characterId)
       => characterId.Select(id => $"'{CharFieldPrefix}{id}'");
 
-    public static List<int> GetUnprefixedChars([NotNull] this IEnumerable<string> targets)
+    public static List<int> GetUnprefixedChars(this IEnumerable<string> targets)
     {
         if (targets == null)
         {
@@ -28,7 +27,7 @@ public static class CharacterAndGroupPrefixer
         return targets.UnprefixNumbers(CharFieldPrefix).ToList();
     }
 
-    public static List<int> GetUnprefixedGroups([NotNull] this IEnumerable<string> targets)
+    public static List<int> GetUnprefixedGroups(this IEnumerable<string> targets)
     {
         if (targets == null)
         {

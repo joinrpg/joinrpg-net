@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -46,7 +45,6 @@ public class CreateForumThreadViewModel
         ProjectName = group.Project.ProjectName;
     }
 
-    [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     public CreateForumThreadViewModel() { }
 
     public int CharacterGroupId { get; set; }

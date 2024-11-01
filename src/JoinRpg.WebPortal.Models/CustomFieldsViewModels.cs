@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
@@ -105,20 +104,15 @@ public class FieldValueViewModel
     public int Fee { get; }
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
-    [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
-    [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
 
     public FieldValueViewModel(
         CustomFieldsViewModel model,
-        [NotNull] FieldWithValue ch,
+        FieldWithValue ch,
         ILinkRenderer renderer)
     {
-        if (ch == null)
-        {
-            throw new ArgumentNullException(nameof(ch));
-        }
+        ArgumentNullException.ThrowIfNull(ch);
 
         Value = ch.Value;
 

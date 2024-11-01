@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using JetBrains.Annotations;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
@@ -36,8 +35,8 @@ public class TargetedSearchResultViewModel
     }
 
     private static string TruncateString(
-        [NotNull] string stringToTruncate,
-        [NotNull] string targetText,
+        string stringToTruncate,
+        string targetText,
         int maxLength,
         StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
     {
@@ -78,8 +77,8 @@ public class TargetedSearchResultViewModel
         return truncatedString;
     }
 
-    public TargetedSearchResultViewModel([NotNull] ISearchResult searchResult,
-        [NotNull] string searchTarget,
+    public TargetedSearchResultViewModel(ISearchResult searchResult,
+        string searchTarget,
         IUriService uriService)
     {
         SearchResult = searchResult ?? throw new ArgumentNullException(nameof(searchResult));

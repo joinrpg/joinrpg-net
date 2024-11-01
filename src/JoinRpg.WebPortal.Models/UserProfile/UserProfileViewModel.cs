@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
@@ -105,12 +104,12 @@ public class UserProfileDetailsViewModel
 public enum AccessReason
 {
     NoAccess,
-    [Display(Name = "Это мой профиль"), UsedImplicitly]
+    [Display(Name = "Это мой профиль")]
     ItsMe,
-    [Display(Name = "Есть заявка на мою игру"), UsedImplicitly]
+    [Display(Name = "Есть заявка на мою игру")]
     Master,
-    [Display(Name = "Со-мастер"), UsedImplicitly]
+    [Display(Name = "Со-мастер")]
     CoMaster,
-    [Display(Name = "Я вижу все, т.к. администратор сайта"), UsedImplicitly]
+    [Display(Name = "Я вижу все, т.к. администратор сайта")]
     Administrator,
 }

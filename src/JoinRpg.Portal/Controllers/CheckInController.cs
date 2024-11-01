@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -21,16 +20,12 @@ public class CheckInController : ControllerGameBase
     private readonly IProblemValidator<Claim> claimValidator;
     private readonly IProjectMetadataRepository projectMetadataRepository;
 
-    [ProvidesContext]
     private IClaimsRepository ClaimsRepository { get; }
 
-    [ProvidesContext]
     private IPlotRepository PlotRepository { get; }
 
-    [ProvidesContext]
     private IClaimService ClaimService { get; }
 
-    [ProvidesContext]
     private ICharacterRepository CharacterRepository { get; }
 
     public CheckInController(
