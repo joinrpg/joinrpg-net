@@ -2,7 +2,7 @@
 @implements IAsyncDisposable
 
 <select class="selectpicker"
-        data-live-search="@(PossibleValues.Length >10)"
+        data-live-search="@(PossibleValues.Length >10 ? "true" : "false")"
         data-live-search-normalize="true"
         data-size="10"
         data-none-selected-text="(нет)"
@@ -11,7 +11,7 @@
         @ref="selectRef"
         @onchange="OnSelectionChangedAsync"
         >
-
+        
   @foreach (var val in PossibleValues)
   {
       var selected = SelectedValues.Contains(val.Value) || (SelectedValues.Length == 0 && val.Value == -1);
