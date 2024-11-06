@@ -132,6 +132,11 @@ public static class ClaimSourceExtensions
                     yield return AddClaimForbideReason.Busy;
                 }
 
+                if (!character.IsActive)
+                {
+                    yield return AddClaimForbideReason.CharacterInactive;
+                }
+
                 switch (character.CharacterType)
                 {
                     case CharacterType.Player:
@@ -192,4 +197,5 @@ public enum AddClaimForbideReason
     OnlyOneCharacter,
     ApprovedClaimMovedToGroupOrSlot,
     CheckedInClaimCantBeMoved,
+    CharacterInactive
 }

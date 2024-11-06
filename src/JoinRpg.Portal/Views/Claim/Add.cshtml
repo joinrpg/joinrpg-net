@@ -56,6 +56,7 @@
           </div>
           break;
         case AddClaimForbideReason.Npc:
+        case AddClaimForbideReason.CharacterInactive:
           <div class="alert alert-warning">
             Заявки на роль «@Model.TargetName» не принимаются.
             Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
