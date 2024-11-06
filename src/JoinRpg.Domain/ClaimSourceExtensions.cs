@@ -74,8 +74,9 @@ public static class ClaimSourceExtensions
         {
             AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(),
 
-            AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted or
-            AddClaimForbideReason.NotForDirectClaims or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc => new ClaimTargetIsNotAcceptingClaims(),
+            AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted or AddClaimForbideReason.NotForDirectClaims
+                or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive
+                    => new ClaimTargetIsNotAcceptingClaims(),
 
             AddClaimForbideReason.AlreadySent => new ClaimAlreadyPresentException(),
             AddClaimForbideReason.OnlyOneCharacter => new OnlyOneApprovedClaimException(),

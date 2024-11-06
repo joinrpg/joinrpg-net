@@ -146,7 +146,7 @@ public class AddClaimViewModelTest
         var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
-        vm.ValidationStatus.ShouldContain(AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace);
+        vm.WarnForAnotherClaim.ShouldBeTrue();
     }
 
     [Fact]

@@ -70,7 +70,7 @@ public class ClaimController(
 
         var viewModel = AddClaimViewModel.Create(field, CurrentUserId, projectInfo);
 
-        if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims) && field.IsRoot)
+        if (viewModel.ValidationStatus.Contains(AddClaimForbideReason.NotForDirectClaims) && field.IsRoot)
         {
             return await RedirectToDefaultTemplate(projectId);
         }
