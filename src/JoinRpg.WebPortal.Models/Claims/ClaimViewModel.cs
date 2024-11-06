@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -153,10 +152,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
-            .Where(x => x.IsAvailable && x.IsActive)
-            .Where(x => !claim.IsApproved || x.CharacterType != CharacterType.Slot) // Принятые заявки не могут быть перемещены в слот
-            .Where(x => x.CharacterSlotLimit != 0) // Если слот кончился, в него нельзя перемещать
-            .OrderBy(x => x.CharacterName)
+            .Where(x => x.CanMoveClaimTo(claim))
             .Select(ToJoinSelectListItem)
             .ToList();
         OtherClaimsFromThisPlayerCount =

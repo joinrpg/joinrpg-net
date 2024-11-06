@@ -35,7 +35,6 @@ public class CharacterViewModel :
 
     public bool IsHot { get; set; }
 
-    public bool IsAcceptingClaims { get; set; }
     public bool HasEditRolesAccess { get; set; }
 
     LinkType ILinkable.LinkType => LinkType.ResultCharacter;

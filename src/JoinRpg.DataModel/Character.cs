@@ -32,6 +32,10 @@ public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedF
 
     public bool IsPublic { get; set; }
 
+    /// <summary>
+    /// TODO удалить
+    /// </summary>
+    [Obsolete("Использовать CharacterType или ClaimSourceExtensions.IsAcceptingClaims()")]
     public bool IsAcceptingClaims { get; set; }
 
     /// <summary>
@@ -56,14 +60,9 @@ public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedF
     public int? ApprovedClaimId { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
-    public bool IsRoot => false; //Character is not "root group"
+    bool IClaimSource.IsRoot => false; //Character is not "root group"
 
-    /// <summary>
-    /// Is available for claims (IsAcceptingClaims + has no approved claim)
-    /// </summary>
-    public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null && Project.IsAcceptingClaims;
-
-    public User? ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
+    User? IClaimSource.ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
 
     public string PlotElementOrderData { get; set; }
 

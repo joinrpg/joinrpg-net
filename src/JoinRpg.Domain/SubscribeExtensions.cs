@@ -37,7 +37,6 @@ public static class SubscribeExtensions
           .Select(u => u.User) //Select users
           .Append(character.ApprovedClaim?.Player) //...and player who claimed for the character
           .Append(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
-          .Append(character.ResponsibleMasterUser) //...and the master who's responsible for the character
           .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
           .VerifySubscriptions(mastersOnly, character)
           .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
@@ -58,8 +57,7 @@ public static class SubscribeExtensions
             .Select(u => u.User) //Select users
             .Append(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
             .Append(claim.Player) //...and player himself also
-            .Append(claim.Character?.ResponsibleMasterUser)
-            .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
+            .Union(extraRecipients ?? []) //add extra recipients
             .VerifySubscriptions(mastersOnly, claim)
             .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }

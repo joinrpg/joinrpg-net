@@ -17,14 +17,13 @@ public static class FieldExtensions
 
     public static bool IsAvailableForTarget(this ProjectFieldInfo field, IClaimSource? target)
     {
-        if (field == null)
-        {
-            throw new ArgumentNullException(nameof(field));
-        }
+        ArgumentNullException.ThrowIfNull(field);
+
+        var isNpc = target is Character { CharacterType: PrimitiveTypes.CharacterType.NonPlayer };
 
         return field.IsActive
-          && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !(target is Character character && character.IsNpc()))
-          && (!field.GroupsAvailableForIds.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableForIds));
+          && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
+          && (field.GroupsAvailableForIds.Count == 0 || target.IsPartOfAnyOfGroups(field.GroupsAvailableForIds));
     }
 
     public static bool CanHaveValue(this ProjectField projectField) => projectField.FieldType != ProjectFieldType.Header;

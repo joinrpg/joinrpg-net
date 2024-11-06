@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Helpers;
 
@@ -81,17 +82,18 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
         string GetPlayerString()
         {
-            if (character.IsNpc())
+            return (character.CharacterType, character.ApprovedClaim?.Player) switch
             {
-                return "NPC";
-            }
-            var player = character.ApprovedClaim?.Player;
+                (CharacterType.NonPlayer, _) => "NPC",
+                (CharacterType.Slot, _) => "шаблон",
+                (CharacterType.Player, null) => "нет игрока",
+                (CharacterType.Player, User player) => GetPlayerContacts(player),
+                _ => throw new NotImplementedException(),
+            };
+        }
 
-            if (player == null)
-            {
-                return "нет игрока";
-            }
-
+        string GetPlayerContacts(User player)
+        {
             var contacts = new[] { GetEmailLinkImpl(player), GetVKLinkImpl(player), GetTelegramLinkImpl(player) };
             return $"{player.GetDisplayName()}: {contacts.JoinIfNotNullOrWhitespace(", ")}";
         }
