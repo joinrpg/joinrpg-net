@@ -46,7 +46,7 @@ public class CharacterNavigationViewModel
 
         var vm = new CharacterNavigationViewModel
         {
-            CanAddClaim = character.IsAvailable,
+            CanAddClaim = character.IsAcceptingClaims(),
             ClaimId = claimId,
             HasMasterAccess = character.HasMasterAccess(currentUserId),
             CanEditRoles = character.HasEditRolesAccess(currentUserId),

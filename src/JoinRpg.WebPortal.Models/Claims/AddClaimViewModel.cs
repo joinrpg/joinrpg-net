@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
@@ -26,7 +25,7 @@ public class AddClaimViewModel : IProjectIdAware
     [Display(Name = "Описание")]
     public JoinHtmlString Description { get; set; }
 
-    public IReadOnlyCollection<AddClaimForbideReasonViewModel> ValidationStatus
+    public IReadOnlyCollection<AddClaimForbideReason> ValidationStatus
     {
         get;
         private set;
@@ -40,6 +39,8 @@ public class AddClaimViewModel : IProjectIdAware
     [ReadOnly(true)]
     public CustomFieldsViewModel Fields { get; private set; }
 
+    public bool WarnForAnotherClaim { get; private set; }
+
     public static AddClaimViewModel Create(Character character, int playerUserId, ProjectInfo projectInfo)
         => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, playerUserId, projectInfo);
 
@@ -48,29 +49,18 @@ public class AddClaimViewModel : IProjectIdAware
 
     public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
-        var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId)
-            .Select(x => x.ToViewModel()).ToList();
+        var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId).ToList();
 
-        CanSendClaim = !disallowReasons.Any();
-
-        IsProjectRelatedReason = disallowReasons.Intersect(new[]
-            {
-                AddClaimForbideReasonViewModel.ProjectClaimsClosed,
-                AddClaimForbideReasonViewModel.ProjectNotActive,
-            })
+        IsProjectRelatedReason = disallowReasons.Intersect(
+            [
+                AddClaimForbideReason.ProjectClaimsClosed,
+                AddClaimForbideReason.ProjectNotActive,
+            ])
             .Any();
 
 
 
-        if (!disallowReasons.Any())
-        {
-            var myClaims = claimSource.Project.Claims.OfUserActive(playerUserId);
-            if (myClaims.Any())
-            {
-                disallowReasons.Add(AddClaimForbideReasonViewModel
-                    .AlredySentNotApprovedClaimToAnotherPlace);
-            }
-        }
+        WarnForAnotherClaim = claimSource.Project.Claims.OfUserActive(playerUserId).Any();
 
         ValidationStatus = disallowReasons;
         ProjectAllowsMultipleCharacters = claimSource.Project.Details.EnableManyCharacters;
@@ -87,7 +77,7 @@ public class AddClaimViewModel : IProjectIdAware
 
     public bool IsRoot { get; private set; }
 
-    public bool CanSendClaim { get; private set; }
+    public bool CanSendClaim => ValidationStatus.Count == 0;
 
     public bool IsProjectRelatedReason { get; private set; }
 

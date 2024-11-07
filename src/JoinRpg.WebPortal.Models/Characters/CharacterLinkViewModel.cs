@@ -1,13 +1,14 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public class CharacterLinkViewModel : IEquatable<CharacterLinkViewModel>
+public class CharacterLinkViewModel(Character arg) : IEquatable<CharacterLinkViewModel>
 {
-    public int CharacterId { get; }
-    public string CharacterName { get; }
+    public int CharacterId { get; } = arg.CharacterId;
+    public string CharacterName { get; } = arg.CharacterName;
 
-    public bool IsAvailable { get; }
+    public bool IsAvailable { get; } = arg.IsAcceptingClaims();
 
     public bool Equals(CharacterLinkViewModel? other) => other != null && CharacterId == other.CharacterId;
 
@@ -16,11 +17,4 @@ public class CharacterLinkViewModel : IEquatable<CharacterLinkViewModel>
     public override int GetHashCode() => CharacterId;
 
     public override string ToString() => $"Char(Name={CharacterName})";
-
-    public CharacterLinkViewModel(Character arg)
-    {
-        CharacterId = arg.CharacterId;
-        CharacterName = arg.CharacterName;
-        IsAvailable = arg.IsAvailable;
-    }
 }

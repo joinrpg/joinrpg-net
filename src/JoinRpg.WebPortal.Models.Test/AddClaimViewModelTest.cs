@@ -1,4 +1,3 @@
-using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 
@@ -13,6 +12,15 @@ public class AddClaimViewModelTest
     {
         var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CantSendClaimToInactiveCharacter()
+    {
+        var inactive = Mock.CreateCharacter("inactive");
+        inactive.IsActive = false;
+        var vm = AddClaimViewModel.Create(inactive, Mock.Player.UserId, Mock.ProjectInfo);
+        vm.CanSendClaim.ShouldBeFalse();
     }
 
     [Fact]
@@ -146,7 +154,7 @@ public class AddClaimViewModelTest
         var vm = AddClaimViewModel.Create(Mock.Group, Mock.Player.UserId, Mock.ProjectInfo);
         vm.CanSendClaim.ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
-        vm.ValidationStatus.ShouldContain(AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace);
+        vm.WarnForAnotherClaim.ShouldBeTrue();
     }
 
     [Fact]

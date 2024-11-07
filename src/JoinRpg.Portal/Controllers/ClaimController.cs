@@ -70,7 +70,7 @@ public class ClaimController(
 
         var viewModel = AddClaimViewModel.Create(field, CurrentUserId, projectInfo);
 
-        if (viewModel.ValidationStatus.Contains(CommonUI.Models.AddClaimForbideReasonViewModel.NotForDirectClaims) && field.IsRoot)
+        if (viewModel.ValidationStatus.Contains(AddClaimForbideReason.NotForDirectClaims) && field.IsRoot)
         {
             return await RedirectToDefaultTemplate(projectId);
         }
@@ -837,7 +837,7 @@ public class ClaimController(
 
         if (projectInfo.DefaultTemplateCharacter is not null)
         {
-            return RedirectToAction("AddForCharacter", new { projectid, CharacterId = projectInfo.DefaultTemplateCharacter.CharacterId });
+            return RedirectToAction("AddForCharacter", new { projectid, projectInfo.DefaultTemplateCharacter.CharacterId });
         }
 
         //TODO Start of HACKS remove when groups claims will die
@@ -848,8 +848,8 @@ public class ClaimController(
             return RedirectToAction("AddForGroup", new { projectid, project.RootGroup.CharacterGroupId });
         }
 
-        var childSlots = project.RootGroup.Characters.Where(c => c.CharacterType == CharacterType.Slot).ToList();
-        if (childSlots.Count == 1)
+        var childSlots = project.RootGroup.Characters.Where(c => c.CharacterType == CharacterType.Slot && c.IsActive).ToList();
+        if (childSlots.Count == 1 && childSlots.Single() is Character targetSlot && targetSlot.IsAcceptingClaims())
         {
             return RedirectToAction("AddForCharacter", new { projectid, childSlots.Single().CharacterId });
         }

@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.CommonUI.Models
+@using JoinRpg.Domain
 @model JoinRpg.Web.Models.AddClaimViewModel
 
 <script src="~/Scripts/claim.js" >
@@ -21,17 +22,17 @@
     {
       switch (validation)
       {
-        case AddClaimForbideReasonViewModel.ProjectNotActive:
+        case AddClaimForbideReason.ProjectNotActive:
           <div class="alert alert-warning">
             Проект находится в архиве, отослать новую заявку невозможно.
           </div>
           break;
-        case AddClaimForbideReasonViewModel.ProjectClaimsClosed:
+        case AddClaimForbideReason.ProjectClaimsClosed:
           <div class="alert alert-warning">
             Заявки на проект закрыты, отослать заявку невозможно.
           </div>
           break;
-        case AddClaimForbideReasonViewModel.NotForDirectClaims:
+        case AddClaimForbideReason.NotForDirectClaims:
           if (Model.IsRoot)
           {
             <div class="alert alert-warning">
@@ -48,49 +49,36 @@
             </div>
           }
           break;
-        case AddClaimForbideReasonViewModel.SlotsExhausted:
+        case AddClaimForbideReason.SlotsExhausted:
           <div class="alert alert-warning">
             Места в группе «@Model.TargetName» закончились.
             Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
           </div>
           break;
-        case AddClaimForbideReasonViewModel.Npc:
+        case AddClaimForbideReason.Npc:
+        case AddClaimForbideReason.CharacterInactive:
           <div class="alert alert-warning">
             Заявки на роль «@Model.TargetName» не принимаются.
             Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
           </div>
           break;
-        case AddClaimForbideReasonViewModel.Busy:
+        case AddClaimForbideReason.Busy:
           <div class="alert alert-warning">
             Роль «@Model.TargetName» уже занята.
             Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
           </div>
           break;
-        case AddClaimForbideReasonViewModel.AlreadySent:
+        case AddClaimForbideReason.AlreadySent:
           <div class="alert alert-danger">
             У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на эту роль.
             Невозможно отправить еще одну.
           </div>
           break;
-        case AddClaimForbideReasonViewModel.OnlyOneCharacter:
+        case AddClaimForbideReason.OnlyOneCharacter:
           <div class="alert alert-danger">
             У вас уже есть утвержденная <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект.
             Невозможно иметь более одной утвержденной заявки
           </div>
-          break;
-        case AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace:
-          if (Model.ProjectAllowsMultipleCharacters)
-          {
-            <div class="alert alert-warning">
-              У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
-            </div>
-          }
-          else
-          {
-            <div class="alert alert-warning">
-              У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
-            </div>
-          }
           break;
         default:
           throw new ArgumentOutOfRangeException();
@@ -100,6 +88,22 @@
     @if (Model.IsProjectRelatedReason)
     {
       return;
+    }
+
+    @if (Model.WarnForAnotherClaim)
+    {
+      if (Model.ProjectAllowsMultipleCharacters)
+      {
+        <div class="alert alert-warning">
+          У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
+        </div>
+      }
+      else
+      {
+        <div class="alert alert-warning">
+          У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
+        </div>
+      }
     }
 
     @if (Model.ClaimApplyRules != null)

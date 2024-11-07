@@ -13,6 +13,14 @@ public class AddClaimValidationRulesTest
     public void AddClaimAllowedCharacter() => ShouldBeAllowed(Mock.Character);
 
     [Fact]
+    public void CantSentClaimToInactiveCharacter()
+    {
+        var inactive = Mock.CreateCharacter("inactive");
+        inactive.IsActive = false;
+        ShouldBeNotAllowed(inactive, AddClaimForbideReason.CharacterInactive);
+    }
+
+    [Fact]
     public void AddClaimAllowedGroup() => ShouldBeAllowed(Mock.Group);
 
     [Fact]

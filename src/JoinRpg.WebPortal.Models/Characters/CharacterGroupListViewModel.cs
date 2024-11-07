@@ -116,12 +116,13 @@ public static class CharacterGroupListViewModel
 
         private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, IReadOnlyList<Character> siblings)
         {
+            var acceptingClaims = arg.IsAcceptingClaims();
             var vm = new CharacterViewModel
             {
                 CharacterId = arg.CharacterId,
                 CharacterName = arg.CharacterName,
                 IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-                IsAvailable = arg.IsAvailable && arg.CharacterSlotLimit != 0,
+                IsAvailable = acceptingClaims,
                 SlotLimit = arg.CharacterSlotLimit,
                 Description = arg.Description.ToHtmlString(),
                 IsPublic = arg.IsPublic,
@@ -134,8 +135,7 @@ public static class CharacterGroupListViewModel
                 LastInGroup = siblings[^1] == arg,
                 ParentCharacterGroupId = group.CharacterGroupId,
                 RootGroupId = Root.CharacterGroupId,
-                IsHot = arg.IsHot && arg.IsAvailable,
-                IsAcceptingClaims = arg.IsAcceptingClaims,
+                IsHot = arg.IsHot && acceptingClaims,
             };
             if (vm.IsFirstCopy)
             {
