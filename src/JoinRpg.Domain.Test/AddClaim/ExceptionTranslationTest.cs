@@ -15,6 +15,6 @@ public class ExceptionTranslationTest
     public void AllForbideReasonTranslatedToThrow(AddClaimForbideReason reason)
     {
         var claim = new Claim();
-        _ = Should.Throw<JoinRpgBaseException>(() => ClaimSourceExtensions.ThrowForReason(reason, claim));
+        _ = Should.Throw<JoinRpgBaseException>(() => ClaimAcceptOrMoveValidationExtensions.ThrowForReason(reason, claim));
     }
 }
