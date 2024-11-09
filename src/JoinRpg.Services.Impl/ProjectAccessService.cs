@@ -14,13 +14,9 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
     public async Task GrantAccess(GrantAccessRequest grantAccessRequest)
     {
         var project = await ProjectRepository.GetProjectAsync(grantAccessRequest.ProjectId);
-        if (!project.HasMasterAccess(CurrentUserId, a => a.CanGrantRights))
+        if (!IsCurrentUserAdmin)
         {
-            var user = await UserRepository.GetById(CurrentUserId);
-            if (!user.Auth.IsAdmin)
-            {
-                _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
-            }
+            _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
         }
 
         _ = project.EnsureProjectActive();
@@ -54,8 +50,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
             throw new DbEntityValidationException();
         }
 
-        var acl = project.ProjectAcls.Single(
-            a => a.ProjectId == projectId && a.UserId == userId);
+        var acl = project.ProjectAcls.Single(a => a.UserId == userId);
 
         var respFor = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
         if (respFor.Any(item => item.ResponsibleMasterUserId == userId))
