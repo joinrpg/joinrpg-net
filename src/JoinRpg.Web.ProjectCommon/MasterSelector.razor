@@ -19,9 +19,10 @@ else
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter] public int ProjectId { get; set; }
+    [Parameter] [EditorRequired] public int ProjectId { get; set; }
     [Parameter] public int? MasterId { get; set; }
     [Parameter] public EventCallback<int?> MasterIdChanged { get; set; }
+    [Parameter] public int[] IdsToRemove { get; set; } = [];
 
     [Parameter] public MasterViewModel? Master{ get; set; }
     [Parameter] public EventCallback<MasterViewModel?> MasterChanged { get; set; }
@@ -34,6 +35,7 @@ else
     {
         masters = await client.GetMasters(ProjectId);
         items = masters
+          .Where(master => !IdsToRemove.Contains(master.MasterId))
           .Select(master =>
             new IntSelectListItem(
               Value: master.MasterId,

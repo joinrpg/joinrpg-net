@@ -24,40 +24,24 @@
         @Html.HiddenFor(model => model.ProjectAclId)
         @Html.HiddenFor(model => model.UserId)
 
-        if (Model.ResponsibleFor.Any())
+        if (Model.ClaimsCount > 0 || Model.ResponsibleFor.Count > 0)
         {
-            <div class="alert alert-danger">Нельзя снять доступ мастеру, так как он настроен как ответственный мастер по умолчанию для:
-                <ul>
-                    @foreach (var respFor in Model.ResponsibleFor)
-                    {
-                        <li>@Html.DisplayFor(model => respFor)</li>
-                    }
-                </ul>
-                Перенастройте группы таким образом, чтобы по умолчанию этим заявкам назначался другой мастер и повторите попытку.
-            </div>
-            <div>
-                @Html.ActionLink("Назад к списку мастеров", "Index", new {Model.ProjectId})
-            </div>
-        }
-        else
-        {
-            if (Model.ClaimsCount > 0)
-            {
-                <div class="form-group">
-                    @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new {@class = "control-label col-md-2"})
-                    <div class="col-md-6">
-                        @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.ToSelectListItems(), new {@class = "form-control"})
-                        @Html.DescriptionFor(model => model.ResponsibleMasterId)
-                        @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-                    </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-6">
+                    <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
+                      param-Name="nameof(Model.ResponsibleMasterId)"
+                      param-ProjectId="@Model.ProjectId"
+                      param-IdsToRemove="@(new int[] {Model.UserId})"
+                      render-mode="Static" />
                 </div>
-            }
-
-            <div>
-                <input type="submit" value="@submitButtonText" class="btn btn-danger"/> |
-                @Html.ActionLink("Назад к списку мастеров", "Index", new {Model.ProjectId})
             </div>
         }
+
+        <div>
+            <input type="submit" value="@submitButtonText" class="btn btn-danger"/> |
+            @Html.ActionLink("Назад к списку мастеров", "Index", new {Model.ProjectId})
+        </div>
 
 
     }

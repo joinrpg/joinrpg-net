@@ -53,30 +53,29 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
         var acl = project.ProjectAcls.Single(a => a.UserId == userId);
 
         var respFor = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(CurrentUserId));
-        if (respFor.Any(item => item.ResponsibleMasterUserId == userId))
-        {
-            throw new MasterHasResponsibleException(acl);
-        }
 
         var claims =
             await ClaimsRepository.GetClaimsForMaster(projectId,
                 acl.UserId,
                 ClaimStatusSpec.Any);
 
-        if (claims.Count != 0)
+        if (claims.Count > 0 || respFor.Count > 0)
         {
-            if (newResponsibleMasterIdOrDefault is int newResponsible)
-            {
-                _ = project.RequestMasterAccess(newResponsible);
-
-                foreach (var claim in claims)
-                {
-                    claim.ResponsibleMasterUserId = newResponsible;
-                }
-            }
-            else
+            if (newResponsibleMasterIdOrDefault is not int newResponsible || newResponsible == userId)
             {
                 throw new MasterHasResponsibleException(acl);
+            }
+
+            _ = project.RequestMasterAccess(newResponsible);
+
+            foreach (var claim in claims)
+            {
+                claim.ResponsibleMasterUserId = newResponsible;
+            }
+
+            foreach (var respForItem in respFor)
+            {
+                respForItem.ResponsibleMasterUserId = newResponsible;
             }
         }
 
