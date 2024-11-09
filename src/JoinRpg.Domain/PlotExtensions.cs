@@ -1,14 +1,15 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain;
 
 public static class PlotExtensions
 {
-    public static IEnumerable<IWorldObject> GetTargets(this PlotElement element)
+    public static IEnumerable<ILinkableWithName> GetTargetLinks(this PlotElement element)
     {
         ArgumentNullException.ThrowIfNull(element);
 
-        return element.TargetCharacters.Cast<IWorldObject>().Union(element.TargetGroups);
+        return element.TargetCharacters.Cast<ILinkableWithName>().Union(element.TargetGroups);
     }
 
     public static PlotElement[] SelectPlots(this Character character, IEnumerable<PlotElement> selectMany)

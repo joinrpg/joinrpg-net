@@ -53,7 +53,7 @@ public class PlotElementViewModel : IMovableListItem
         PlotElementId = p.PlotElementId;
         ProjectId = p.ProjectId;
         Status = p.GetStatus();
-        TargetsForDisplay = p.GetTargets().AsObjectLinks(uriService).ToList();
+        TargetsForDisplay = p.GetTargetLinks().AsObjectLinks(uriService).ToList();
         CharacterId = character?.CharacterId;
         PublishMode = !HasMasterAccess && !(character?.HasPlayerAccess(currentUserId) ?? false);
     }

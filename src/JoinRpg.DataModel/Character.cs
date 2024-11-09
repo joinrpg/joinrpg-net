@@ -6,7 +6,7 @@ using JoinRpg.PrimitiveTypes;
 namespace JoinRpg.DataModel;
 
 
-public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity, ILinkable
+public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity, ILinkableWithName
 {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -29,6 +29,7 @@ public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedF
     public string CharacterName { get; set; }
 
     string IWorldObject.Name => CharacterName;
+    string ILinkableWithName.Name => CharacterName;
 
     public bool IsPublic { get; set; }
 
