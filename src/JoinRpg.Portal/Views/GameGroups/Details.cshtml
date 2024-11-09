@@ -47,7 +47,7 @@
                             var disabled = Model.ActiveClaimsCount != 0 ? "disabled" : "";
                             var uri = Model.ActiveClaimsCount != 0 ? "#" : Url.Action("Delete", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null);
                             <a href="@uri" type="button" class="btn btn-default @disabled">
-                                <span title="удалить" class="glyphicon glyphicon-trash"></span>удалить
+                                <span title="удалить" class="glyphicon glyphicon-trash"></span> удалить
                             </a>
                         }
 
