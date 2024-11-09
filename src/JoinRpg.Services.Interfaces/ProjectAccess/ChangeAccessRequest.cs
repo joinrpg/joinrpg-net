@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces;
+namespace JoinRpg.Services.Interfaces.ProjectAccess;
 
 public class ChangeAccessRequest : AccessRequestBase
 {

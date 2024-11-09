@@ -4,8 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models.CharacterGroups;
-using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
@@ -15,7 +13,7 @@ public class AclViewModelBase
     public UserProfileDetailsViewModel UserDetails { get; set; }
 
     [ReadOnly(true), Editable(false)]
-    public IEnumerable<GameObjectLinkViewModel> ResponsibleFor { get; protected set; }
+    public IReadOnlyCollection<GameObjectLinkViewModel> ResponsibleFor { get; protected set; }
 
     public int? ProjectAclId { get; set; }
 
@@ -94,7 +92,7 @@ public class AclViewModel : AclViewModelBase
             ClaimsCount = count,
             UserDetails = new UserProfileDetailsViewModel(acl.User,
                 (AccessReason)acl.User.GetProfileAccess(currentUser)),
-            ResponsibleFor = groups.AsObjectLinks(uriService),
+            ResponsibleFor = groups.AsObjectLinks(uriService).ToArray(),
         };
     }
 
@@ -104,17 +102,17 @@ public class AclViewModel : AclViewModelBase
         {
             ProjectId = acl.ProjectId,
             ProjectAclId = -1,
-            UserId = acl.UserId,
-            CanManageClaims = acl.CanManageClaims,
-            CanChangeFields = acl.CanChangeFields,
-            CanChangeProjectProperties = acl.CanChangeProjectProperties,
-            CanGrantRights = acl.CanGrantRights,
-            CanEditRoles = acl.CanEditRoles,
-            CanManageMoney = acl.CanManageMoney,
-            CanSendMassMails = acl.CanSendMassMails,
-            CanManagePlots = acl.CanManagePlots,
-            CanManageAccommodation = acl.CanManageAccommodation,
-            CanSetPlayersAccommodations = acl.CanSetPlayersAccommodations,
+            UserId = targetUser.UserId,
+            CanManageClaims = false,
+            CanChangeFields = false,
+            CanChangeProjectProperties = false,
+            CanGrantRights = false,
+            CanEditRoles = false,
+            CanManageMoney = false,
+            CanSendMassMails = false,
+            CanManagePlots = false,
+            CanManageAccommodation = false,
+            CanSetPlayersAccommodations = false,
             ProjectName = acl.Project.ProjectName,
 
             AccomodationEnabled = acl.Project.Details.EnableAccommodation,
@@ -176,9 +174,6 @@ public class DeleteAclViewModel : AclViewModelBase
 
     public bool SelfRemove { get; set; }
 
-    [ReadOnly(true)]
-    public IEnumerable<MasterViewModel> Masters { get; private set; }
-
     public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, IUriService uriService)
     {
         return new DeleteAclViewModel
@@ -189,8 +184,7 @@ public class DeleteAclViewModel : AclViewModelBase
             ProjectName = acl.Project.ProjectName,
             ClaimsCount = count,
             UserDetails = new UserProfileDetailsViewModel(acl.User, AccessReason.CoMaster),
-            ResponsibleFor = groups.AsObjectLinks(uriService),
-            Masters = acl.Project.GetMasterListViewModel().Where(master => master.MasterId != acl.UserId),
+            ResponsibleFor = groups.AsObjectLinks(uriService).ToArray(),
         };
     }
 }

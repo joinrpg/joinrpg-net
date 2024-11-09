@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
@@ -13,13 +14,17 @@ namespace JoinRpg.Portal.Controllers;
 
 [RequireMasterOrAdmin()]
 [Route("{projectId}/masters")]
-public class AclController : ControllerGameBase
+public class AclController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IClaimsRepository claimRepository,
+    IUriService uriService,
+    IUserRepository userRepository,
+    ICurrentUserAccessor currentUserAccessor,
+    IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
+    IProjectAccessService projectAccessService
+    ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly ICurrentUserAccessor currentUserAccessor;
-
-    private IClaimsRepository ClaimRepository { get; }
-    private IUriService UriService { get; }
-
     [HttpGet("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Add(int projectId, int userId)
@@ -38,7 +43,7 @@ public class AclController : ControllerGameBase
     {
         try
         {
-            await ProjectService.GrantAccess(new GrantAccessRequest()
+            await projectAccessService.GrantAccess(new GrantAccessRequest()
             {
                 ProjectId = viewModel.ProjectId,
                 UserId = viewModel.UserId,
@@ -64,30 +69,16 @@ public class AclController : ControllerGameBase
         return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
     }
 
-    public AclController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IClaimsRepository claimRepository,
-        IUriService uriService,
-        IUserRepository userRepository,
-        ICurrentUserAccessor currentUserAccessor)
-        : base(projectRepository, projectService, userRepository)
-    {
-        ClaimRepository = claimRepository;
-        UriService = uriService;
-        this.currentUserAccessor = currentUserAccessor;
-    }
-
     [RequireMasterOrAdmin()]
     [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
         var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-        var claims = await ClaimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
-        var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
+        var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
         var currentUser = await GetCurrentUserAsync();
 
-        return View(new MastersListViewModel(project, claims, groups, currentUser, UriService));
+        return View(new MastersListViewModel(project, claims, groups, currentUser, uriService));
     }
 
     [HttpGet("delete")]
@@ -96,12 +87,10 @@ public class AclController : ControllerGameBase
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
-        var claims = await ClaimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);
-        var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
+        var claims = await claimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
 
-        var viewModel = DeleteAclViewModel.FromAcl(projectAcl, claims.Count,
-          groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(),
-          UriService);
+        var viewModel = DeleteAclViewModel.FromAcl(projectAcl, claims.Count, groups, uriService);
         if (viewModel.UserId == CurrentUserId)
         {
             viewModel.SelfRemove = true;
@@ -116,7 +105,7 @@ public class AclController : ControllerGameBase
     {
         try
         {
-            await ProjectService.RemoveAccess(viewModel.ProjectId, viewModel.UserId, viewModel.ResponsibleMasterId);
+            await projectAccessService.RemoveAccess(viewModel.ProjectId, viewModel.UserId, viewModel.ResponsibleMasterId);
         }
         catch
         {
@@ -145,12 +134,12 @@ public class AclController : ControllerGameBase
     public async Task<ActionResult> Edit(int projectId, int? projectaclid)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
-        var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
+
         var currentUser = await GetCurrentUserAsync();
-        return View(AclViewModel.FromAcl(projectAcl, 0,
-          groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(), currentUser,
-            UriService));
+        return View(AclViewModel.FromAcl(projectAcl, 0, groups, currentUser, uriService));
     }
 
     [HttpPost("edit")]
@@ -159,7 +148,7 @@ public class AclController : ControllerGameBase
     {
         try
         {
-            await ProjectService.ChangeAccess(new ChangeAccessRequest()
+            await projectAccessService.ChangeAccess(new ChangeAccessRequest()
             {
                 ProjectId = viewModel.ProjectId,
                 UserId = viewModel.UserId,

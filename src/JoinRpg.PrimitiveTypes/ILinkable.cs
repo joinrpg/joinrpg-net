@@ -6,6 +6,13 @@ public interface ILinkable
 
     string? Identification { get; }
     int? ProjectId { get; }
+
+    bool IsActive => true;
+}
+
+public interface ILinkableWithName : ILinkable
+{
+    string Name { get; }
 }
 
 public interface ILinkableClaim : ILinkable

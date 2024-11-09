@@ -12,9 +12,6 @@ public interface IProjectRepository : IDisposable
 
     Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(int? userId);
 
-    [Obsolete("Use GetMyActiveProjectsAsync")]
-    IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
-
     Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId);
     Task<IEnumerable<Project>> GetAllMyProjectsAsync(int user);
 
@@ -46,8 +43,6 @@ public interface IProjectRepository : IDisposable
     Task<ICollection<Character>> GetCharacters(int projectId);
     Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
     Task<IClaimSource?> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
-
-    Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId);
 
     /// <summary>
     /// Get projects not active since

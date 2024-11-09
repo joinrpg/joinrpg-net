@@ -80,7 +80,7 @@ public class EditPlotElementViewModel : IProjectIdAware
         ElementType = (PlotElementTypeView)e.ElementType;
         HasManageAccess = hasManageAccess;
         HasPublishedVersion = e.Published != null;
-        TargetsForDisplay = e.GetTargets().AsObjectLinks(uriService).ToList();
+        TargetsForDisplay = e.GetTargetLinks().AsObjectLinks(uriService).ToList();
     }
 
     [ReadOnly(true)]
@@ -126,7 +126,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         var renderer = new JoinrpgMarkdownLinkRenderer(e.Project);
 
         PlotElementId = e.PlotElementId;
-        TargetsForDisplay = e.GetTargets().AsObjectLinks(uriService).ToList();
+        TargetsForDisplay = e.GetTargetLinks().AsObjectLinks(uriService).ToList();
         Content = currentVersionText.Content.ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
         ProjectId = e.PlotFolder.ProjectId;

@@ -1,30 +1,18 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models;
 
-public class GameObjectLinkViewModel
+public class GameObjectLinkViewModel(IUriService uriService, ILinkableWithName worldObject)
 {
-    public GameObjectLinkType Type { get; }
+    public GameObjectLinkType Type { get; } = worldObject.LinkType.AsViewModel();
 
-    public string DisplayName { get; }
+    public string DisplayName { get; } = worldObject.Name;
 
-    public bool IsActive { get; }
+    public bool IsActive { get; } = worldObject.IsActive;
 
-    public Uri Uri { get; }
-
-    public GameObjectLinkViewModel(IUriService uriService, IWorldObject worldObject)
-    {
-        Uri = uriService.GetUri(worldObject);
-        DisplayName = worldObject.Name;
-        //TODO ugly hack
-        Type = worldObject.GetType().IsSubclassOf(typeof(CharacterGroup))
-            ? GameObjectLinkType.CharacterGroup
-            : GameObjectLinkType.Character;
-        IsActive = worldObject.IsActive;
-    }
+    public Uri Uri { get; } = uriService.GetUri(worldObject);
 }
 
 public static class LinkTypeViewModelExtensions

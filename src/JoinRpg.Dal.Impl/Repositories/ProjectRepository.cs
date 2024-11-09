@@ -58,9 +58,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
-    public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
-      => userInfoId == null ? Enumerable.Empty<Project>() : ActiveProjects.Where(MyProjectPredicate(userInfoId));
-
     public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
       ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
 
@@ -224,12 +221,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
               .SingleOrDefaultAsync(e => e.CharacterId == (int)characterId && e.ProjectId == projectId);
         }
         throw new InvalidOperationException();
-    }
-
-    public async Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId)
-    {
-        return await Ctx.Set<CharacterGroup>()
-          .Where(group => group.ProjectId == projectId && group.ResponsibleMasterUserId != null).ToListAsync();
     }
 
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(

@@ -6,7 +6,7 @@ using JoinRpg.PrimitiveTypes;
 namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity, ILinkable
+public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity, ILinkableWithName
 {
 
 
@@ -38,6 +38,7 @@ public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObj
       => Project.CharacterGroups.Where(c => ParentCharacterGroupIds.Contains(c.CharacterGroupId));
 
     string IWorldObject.Name => CharacterGroupName;
+    string ILinkableWithName.Name => CharacterGroupName;
 
     /// <summary>
     /// 

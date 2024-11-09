@@ -10,4 +10,6 @@ public interface IResponsibleMasterRulesRepository
     /// <param name="projectId"></param>
     /// <returns></returns>
     Task<List<CharacterGroup>> GetResponsibleMasterRules(ProjectIdentification projectId);
+
+    Task<List<CharacterGroup>> GetResponsibleMasterRulesForMaster(ProjectIdentification projectId, UserIdentification userId);
 }

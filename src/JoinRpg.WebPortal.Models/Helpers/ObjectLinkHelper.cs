@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Helpers;
 public static class ObjectLinkHelper
 {
     public static IEnumerable<GameObjectLinkViewModel> AsObjectLinks(
-        this IEnumerable<IWorldObject> objects,
+        this IEnumerable<ILinkableWithName> objects,
         IUriService uriService)
     {
         ArgumentNullException.ThrowIfNull(objects);

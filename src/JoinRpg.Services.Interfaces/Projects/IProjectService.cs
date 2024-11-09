@@ -24,12 +24,6 @@ public interface IProjectService
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
 
-    Task GrantAccess(GrantAccessRequest grantAccessRequest);
-
-    Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId);
-
-    Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
-
     Task MoveCharacterGroup(int currentUserId,
         int projectId,
         int charactergroupId,
