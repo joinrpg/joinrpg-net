@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
@@ -20,14 +21,10 @@ public class AclController(
     IUriService uriService,
     IUserRepository userRepository,
     ICurrentUserAccessor currentUserAccessor,
-    IResponsibleMasterRulesRepository responsibleMasterRulesRepository
+    IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
+    IProjectAccessService projectAccessService
     ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly ICurrentUserAccessor currentUserAccessor;
-
-    private IClaimsRepository ClaimRepository { get; }
-    private IUriService UriService { get; }
-
     [HttpGet("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Add(int projectId, int userId)
@@ -46,7 +43,7 @@ public class AclController(
     {
         try
         {
-            await ProjectService.GrantAccess(new GrantAccessRequest()
+            await projectAccessService.GrantAccess(new GrantAccessRequest()
             {
                 ProjectId = viewModel.ProjectId,
                 UserId = viewModel.UserId,
@@ -81,7 +78,7 @@ public class AclController(
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
         var currentUser = await GetCurrentUserAsync();
 
-        return View(new MastersListViewModel(project, claims, groups, currentUser, UriService));
+        return View(new MastersListViewModel(project, claims, groups, currentUser, uriService));
     }
 
     [HttpGet("delete")]
@@ -110,7 +107,7 @@ public class AclController(
     {
         try
         {
-            await ProjectService.RemoveAccess(viewModel.ProjectId, viewModel.UserId, viewModel.ResponsibleMasterId);
+            await projectAccessService.RemoveAccess(viewModel.ProjectId, viewModel.UserId, viewModel.ResponsibleMasterId);
         }
         catch
         {
@@ -153,7 +150,7 @@ public class AclController(
     {
         try
         {
-            await ProjectService.ChangeAccess(new ChangeAccessRequest()
+            await projectAccessService.ChangeAccess(new ChangeAccessRequest()
             {
                 ProjectId = viewModel.ProjectId,
                 UserId = viewModel.UserId,

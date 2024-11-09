@@ -23,6 +23,8 @@ public static class Services
         yield return typeof(GameSubscribeService);
         yield return typeof(RespMasterRuleService);
 
+        yield return typeof(ProjectAccessService);
+
         foreach (var provider in Assembly.GetExecutingAssembly().DefinedTypes.Where(t => t.IsAssignableTo(typeof(ISearchProvider))).Select(t => t.AsType()))
         {
             yield return provider;
