@@ -1,30 +1,58 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Models;
-using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu;
 
-public class MainMenuViewComponent(ICurrentUserAccessor currentUserAccessor, IProjectRepository projectRepository) : ViewComponent
+public class MainMenuViewComponent(
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectRepository projectRepository,
+    IProjectMetadataRepository projectMetadataRepository) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
+        var projectLinks = await GetProjectLinks();
+        int? currentProjectId = ViewBag.ProjectId is int x ? x : null;
+        string? currentProjectName = null;
+        if (currentProjectId is not null)
+        {
+            var currentProject = projectLinks.SingleOrDefault(p => p.ProjectId == currentProjectId);
+            if (currentProject is null)
+            {
+                var info = await projectMetadataRepository.GetProjectMetadata(new(currentProjectId.Value));
+                currentProjectName = info.ProjectName;
+            }
+            else
+            {
+                currentProjectName = currentProject.ProjectName;
+            }
+
+
+            if (currentProjectName.Length > 30)
+            {
+                currentProjectName = currentProjectName.Take(30).AsString() + "...";
+            }
+
+        }
+
         var viewModel = new MainMenuViewModel()
         {
-            ProjectLinks = await GetProjectLinks(),
+            ProjectLinks = projectLinks,
+            CurrentProjectId = currentProjectId,
+            CurrentProjectName = currentProjectName,
         };
         return View("MainMenu", viewModel);
     }
 
-    private async Task<List<MainMenuProjectLinkViewModel>> GetProjectLinks()
+    private async Task<ProjectHeaderDto[]> GetProjectLinks()
     {
         var user = currentUserAccessor.UserIdOrDefault;
         if (user == null)
         {
             return [];
         }
-        var projects = await projectRepository.GetAllMyProjectsAsync(user.Value);
-        return projects.ToMainMenuLinkViewModels().ToList();
+        return await projectRepository.GetMyProjects(currentUserAccessor.UserIdentification);
     }
 }

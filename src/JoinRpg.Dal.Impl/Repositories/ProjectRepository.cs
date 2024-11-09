@@ -59,10 +59,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
     public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
-      ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
-
-    public async Task<IEnumerable<Project>> GetAllMyProjectsAsync(int userInfoId)
-        => await AllProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
+      ActiveProjects.Where(MyProjectPredicate(new(userInfoId))).ToListAsync();
 
     public async Task<IEnumerable<Project>> GetActiveProjectsWithSchedule()
         => await ActiveProjects.Where(project => project.Details.ScheduleEnabled)
@@ -128,13 +125,9 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
     }
 
-    private static Expression<Func<Project, bool>> MyProjectPredicate(int? userInfoId)
+    private static Expression<Func<Project, bool>> MyProjectPredicate(UserIdentification userInfoId)
     {
-        if (userInfoId == null)
-        {
-            return project => false;
-        }
-        return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
+        return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId.Value);
     }
 
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)
@@ -410,6 +403,26 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         var masters = project.ProjectAcls.Select(acl => new ProjectMasterInfo(new UserIdentification(acl.User.UserId), acl.User.ExtractDisplayName(), new Email(acl.User.Email)));
 
         return new ProjectMastersListInfo(projectId, project.ProjectName, masters.ToArray());
+    }
+
+    async Task<ProjectHeaderDto[]> IProjectRepository.GetMyProjects(UserIdentification userIdentification)
+    {
+        var predicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var query = from project in ActiveProjects.AsExpandable()
+                    let master = project.ProjectAcls.Any(a => a.UserId == userIdentification.Value)
+                    let claims = project.Claims.Where(c => c.PlayerUserId == userIdentification.Value).Any(predicate.Compile())
+                    where master || claims
+                    select new
+                    {
+                        project.ProjectId,
+                        project.ProjectName,
+                        IAmMaster = master,
+                        HasActiveClaims = claims,
+                    };
+
+        var result = await query.ToListAsync();
+
+        return result.Select(x => new ProjectHeaderDto(new(x.ProjectId), x.ProjectName, x.IAmMaster, x.HasActiveClaims)).ToArray();
     }
 }
 

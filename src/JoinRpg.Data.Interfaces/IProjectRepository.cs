@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Data.Interfaces;
 
@@ -13,7 +14,6 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(int? userId);
 
     Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId);
-    Task<IEnumerable<Project>> GetAllMyProjectsAsync(int user);
 
     Task<IEnumerable<Project>> GetActiveProjectsWithSchedule();
     Task<Project> GetProjectAsync(int project);
@@ -51,4 +51,17 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetActiveProjectsWithGroupClaims();
+
+    Task<ProjectHeaderDto[]> GetMyProjects(UserIdentification userIdentification);
+}
+
+public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims) : ILinkableWithName
+{
+    string ILinkableWithName.Name => ProjectName;
+
+    LinkType ILinkable.LinkType => LinkType.Project;
+
+    string? ILinkable.Identification => null;
+
+    int? ILinkable.ProjectId => ProjectId.Value;
 }
