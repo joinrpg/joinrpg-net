@@ -47,8 +47,6 @@ public interface IProjectRepository : IDisposable
     Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
     Task<IClaimSource?> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
 
-    Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId);
-
     /// <summary>
     /// Get projects not active since
     /// </summary>
