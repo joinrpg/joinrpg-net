@@ -12,9 +12,6 @@ public interface IProjectRepository : IDisposable
 
     Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(int? userId);
 
-    [Obsolete("Use GetMyActiveProjectsAsync")]
-    IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
-
     Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId);
     Task<IEnumerable<Project>> GetAllMyProjectsAsync(int user);
 

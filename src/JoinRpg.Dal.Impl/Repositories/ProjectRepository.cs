@@ -58,9 +58,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
-    public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
-      => userInfoId == null ? Enumerable.Empty<Project>() : ActiveProjects.Where(MyProjectPredicate(userInfoId));
-
     public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
       ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
 
