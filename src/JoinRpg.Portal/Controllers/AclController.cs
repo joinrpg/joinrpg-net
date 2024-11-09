@@ -88,11 +88,9 @@ public class AclController(
         var project = await ProjectRepository.GetProjectAsync(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
         var claims = await claimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);
-        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
 
-        var viewModel = DeleteAclViewModel.FromAcl(projectAcl, claims.Count,
-          groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(),
-          uriService);
+        var viewModel = DeleteAclViewModel.FromAcl(projectAcl, claims.Count, groups, uriService);
         if (viewModel.UserId == CurrentUserId)
         {
             viewModel.SelfRemove = true;
@@ -136,12 +134,12 @@ public class AclController(
     public async Task<ActionResult> Edit(int projectId, int? projectaclid)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
-        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
+
         var currentUser = await GetCurrentUserAsync();
-        return View(AclViewModel.FromAcl(projectAcl, 0,
-          groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(), currentUser,
-            uriService));
+        return View(AclViewModel.FromAcl(projectAcl, 0, groups, currentUser, uriService));
     }
 
     [HttpPost("edit")]

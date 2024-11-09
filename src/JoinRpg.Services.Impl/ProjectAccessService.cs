@@ -52,7 +52,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
 
         var acl = project.ProjectAcls.Single(a => a.UserId == userId);
 
-        var respFor = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
+        var respFor = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(CurrentUserId));
         if (respFor.Any(item => item.ResponsibleMasterUserId == userId))
         {
             throw new MasterHasResponsibleException(acl);
