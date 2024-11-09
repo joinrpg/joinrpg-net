@@ -86,30 +86,31 @@
                 Подписки
               </a>
               @if (Model.CanCurrentUserGrantRights)
+               {
+                 <a href="@Url.Action("Edit", new {item.ProjectId, item.ProjectAclId})" class="btn btn-default btn-sm">
+                            <span class="glyphicon glyphicon-pencil"></span> Изменить права
+                        </a>
+               }
+
+              @if (item.UserId == Model.CurrentUserId)
               {
 
-                <a href="@Url.Action("Edit", new {item.ProjectId, item.ProjectAclId})" class="btn btn-default btn-sm">
-                  <span class="glyphicon glyphicon-pencil"></span> Изменить права
-                </a>
-
-
-                if (item.UserId == Model.CurrentUserId && !Model.AnyoneElseCanGrantRights)
-                {
-
+                    if (Model.AnyoneElseCanGrantRights)
+                    {
+                        <a href="@Url.Action("RemoveYourself", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
+                            <span class="glyphicon glyphicon-trash"></span> Уйти из мастеров
+                        </a>
+                    }
+                    else
+                    {
+                     @* Нельзя удалять себя, если ты последний пользователь с правами*@   
+                    }
                 }
-                else
-                {
+              else if (Model.CanCurrentUserGrantRights)
+              {
                   <a href="@Url.Action("Delete", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
                     <span class="glyphicon glyphicon-trash"></span> Снять доступ
                   </a>
-                }
-
-              }
-              else if (item.UserId == Model.CurrentUserId && Model.AnyoneElseCanGrantRights)
-              {
-                <a href="@Url.Action("RemoveYourself", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
-                  <span class="glyphicon glyphicon-trash"></span> Уйти из мастеров
-                </a>
               }
             </td>
 

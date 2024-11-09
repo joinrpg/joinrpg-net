@@ -30,7 +30,7 @@ public class MastersListViewModel
 
         CanCurrentUserGrantRights = Masters.Single(acl => acl.UserId == currentUser.UserId).CanGrantRights;
 
-        AnyoneElseCanGrantRights = Masters.Any(x => x.CanChangeFields && x.UserId != currentUser.UserId);
+        AnyoneElseCanGrantRights = Masters.Any(x => x.CanGrantRights && x.UserId != currentUser.UserId);
 
         CurrentUserId = currentUser.UserId;
     }

@@ -110,6 +110,11 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
             a => a.ProjectId == changeAccessRequest.ProjectId && a.UserId == changeAccessRequest.UserId);
         SetRightsFromRequest(changeAccessRequest, acl);
 
+        if (project.ProjectAcls.All(a => !a.CanGrantRights))
+        {
+            acl.CanGrantRights = true; // Чтобы нельзя было снять с себя галочку, если оставался последний.
+        }
+
         await UnitOfWork.SaveChangesAsync();
     }
 
