@@ -30,15 +30,11 @@
         }
 
         <th>@Html.DisplayNameFor(model => firstItem!.Problems)</th>
-        @foreach (var field in Model.Fields.Where(f => !f.IsName))
+        @foreach (var field in Model.Fields)
         {
           if (!field.CanHaveValue)
           {
                 <th>&nbsp;</th>
-          }
-          else if (field.IsMultiLine)
-          {
-              continue;
           }
           else
           {
@@ -92,19 +88,15 @@
                 }
             </td>
 
-            @foreach (var field in Model.Fields.Where(f => !f.IsName))
+            @foreach (var field in Model.Fields)
             {
-                var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.Id.ProjectFieldId == field.Id.ProjectFieldId);
                 if (!field.CanHaveValue)
                 {
                     <td>*</td>
                 }
-                else if (field.IsMultiLine)
-                {
-                    continue;
-                }
                 else
                 {
+                  var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.Id.ProjectFieldId == field.Id.ProjectFieldId);
                     <td>
                         @if (fieldValueViewModel != null)
                         {

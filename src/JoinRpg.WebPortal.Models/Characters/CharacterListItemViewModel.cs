@@ -54,7 +54,7 @@ public class CharacterListViewModel(
 
     public bool HasEditAccess { get; } = project.HasEditRolesAccess(currentUserId);
 
-    public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedFields;
+    public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedActiveFields.Where(f => !f.IsName && !f.IsMultiLine).ToArray();
 }
 
 public class CharacterListItemViewModel : ILinkable
