@@ -9,7 +9,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <span class="navbar-brand">@Html.ActionLink(@Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</span>
+            <span class="navbar-brand">@Html.ActionLink("Анонс", "Details", "Game", new {Model.ProjectId}, null)</span>
         </div>
         <div class="navbar-collapse collapse" id="master-menu-collapse">
             <ul class="nav navbar-nav">
@@ -23,7 +23,10 @@
                         <li>
                             @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
                         </li>
-                        <li role="separator" class="dropdown-header">По группам:</li>
+                        @if (Model.BigGroups.Any())
+                        {
+                            <li role="separator" class="dropdown-header">По группам:</li>
+                        }
                         @foreach (var cg in Model.BigGroups)
                         {
                             <li>@(await Html.RenderComponentAsync<CharacterGroupLink>(RenderMode.Static, new { Model = cg })) </li>

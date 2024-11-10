@@ -1,8 +1,10 @@
-using JoinRpg.Web.Models;
+using JoinRpg.Data.Interfaces;
 
 namespace JoinRpg.Portal.Models;
 
 public class MainMenuViewModel
 {
-    public required List<MainMenuProjectLinkViewModel> ProjectLinks { get; set; }
+    public required ProjectHeaderDto[] ProjectLinks { get; set; }
+    public required int? CurrentProjectId { get; set; }
+    public required string? CurrentProjectName { get; set; }
 }

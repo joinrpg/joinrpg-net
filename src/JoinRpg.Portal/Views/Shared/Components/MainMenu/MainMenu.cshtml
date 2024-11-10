@@ -1,9 +1,5 @@
-﻿@model MainMenuViewModel
-@{
-    var activeProjects = Model.ProjectLinks.Where(p => p.IsActive).ToArray();
-    var archivedProjects = Model.ProjectLinks.Where(p => !p.IsActive).ToArray();
-}
-
+﻿@using JoinRpg.Helpers
+@model MainMenuViewModel
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -16,44 +12,45 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new { area = "" }, null)</li>
-                    }
+                      <li class="dropdown">
 
-                    @if (activeProjects.Length > 1)
-                    {
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои проекты <span class="caret"></span></a>
+                        @if (Model.CurrentProjectId is not null)
+                        {
 
-                            <ul class="dropdown-menu">
-                                @foreach (var project in activeProjects)
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">@Model.CurrentProjectName <span class="caret"></span></a>
+                        }
+                        else 
+                        {
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои проекты и заявки <span class="caret"></span></a>
+                        }
+
+                        <ul class="dropdown-menu">
+                            @foreach (var project in Model.ProjectLinks.OrderBy(p => p.ProjectName))
+                            {
+                            <li>
+                                @if (!project.IAmMaster)
                                 {
-                                    <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
-                                }
-                                
-                                @if (archivedProjects.Any())
-                                {
-                                    <li><hr class="list-divider"/></li>
-                                    <li>
-                                        <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
-                                    </li>
-                                }
-                            </ul>
-                        </li>
-                    }
-                    else if (activeProjects.Length == 1)
-                    {
-                        var project = activeProjects.Single();
-                        <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
-                    }
+                                    @Html.ActionLink(@project.ProjectName, "MyClaim", "Claim", new { ProjectId = project.ProjectId.Value, area = "" }, null)
 
-                    @if (archivedProjects.Any() && activeProjects.Length <= 1)
-                    {
-                        <li>
-                            <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
-                        </li>
-                    }
+                                }
+                                else
+                                {
+                                    @Html.ActionLink(@project.ProjectName, "Details", "Game", new { ProjectId = project.ProjectId.Value, area = "" }, null)
+                                }
+                              </li>
+                            }
+
+                            @if (Model.ProjectLinks.Length > 0)
+                            {
+                                <li><hr class="list-divider" /></li>
+                            }
+
+                            <li>
+                              @*TODO здесь нужен МОЙ архив игр, а не общий*@
+                                <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                            </li>
+                        </ul>
+                    </li>
 
                     @if (ViewBag.IsProduction != true)
                     {
