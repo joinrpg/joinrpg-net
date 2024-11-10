@@ -16,10 +16,10 @@
     <div class="form-group">
         @Html.LabelFor(model => model.UserId, htmlAttributes: new {@class = "control-label col-md-4"})
         <div class="col-md-8">
-            @Html.DropDownListFor(
-                model => model.UserId,
-                Model.Masters.ToSelectListItems(),
-                new {@class = "form-control"})
+            <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
+                       param-Name="nameof(Model.UserId)"
+                       param-ProjectId="@Model.ProjectId"
+                       render-mode="Static" />
             @Html.DescriptionFor(model => model.UserId)
             @Html.ValidationMessageFor(model => model.UserId, "", new {@class = "text-danger"})
         </div>

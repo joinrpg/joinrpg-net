@@ -2,8 +2,6 @@ using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Models.CharacterGroups;
-using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
@@ -21,9 +19,6 @@ public class FinanceSetupViewModel
     public bool HasEditAccess { get; }
 
     public int ProjectId { get; }
-
-    [ReadOnly(true)]
-    public IEnumerable<MasterViewModel> Masters { get; }
 
     public string CurrentUserToken { get; }
 
@@ -70,8 +65,6 @@ public class FinanceSetupViewModel
                     .ThenBy(li => li.TypeKind != PaymentTypeKindViewModel.Custom)
                     .ThenBy(li => li.Name))
                 .ToList();
-
-        Masters = project.GetMasterListViewModel();
 
         FeeSettings = project.ProjectFeeSettings
             .Select(fs => new ProjectFeeSettingListItemViewModel(fs))

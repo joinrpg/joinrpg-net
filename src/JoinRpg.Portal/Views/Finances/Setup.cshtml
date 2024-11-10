@@ -248,7 +248,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
     </div><!-- /.modal-dialog -->
 </div>
 
-@await Html.PartialAsync("..\\Finances\\_AddPaymentTypeDialog", new CreatePaymentTypeViewModel { ProjectId = Model.ProjectId, Masters = Model.Masters })
+@await Html.PartialAsync("..\\Finances\\_AddPaymentTypeDialog", new CreatePaymentTypeViewModel { ProjectId = Model.ProjectId})
 
 @await Html.PartialAsync("..\\Finances\\_TogglePaymentTypeDialog", new TogglePaymentTypeViewModel { ProjectId = Model.ProjectId })
 
