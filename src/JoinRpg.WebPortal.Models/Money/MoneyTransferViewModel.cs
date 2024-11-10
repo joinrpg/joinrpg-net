@@ -1,7 +1,5 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers.Validation;
-using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Money;
 
@@ -19,9 +17,6 @@ public abstract class MoneyTransferViewModelBase : IProjectIdAware
 
 public class CreateMoneyTransferViewModel : MoneyTransferViewModelBase, IValidatableObject
 {
-    [ReadOnly(true)]
-    public IEnumerable<MasterViewModel> Masters { get; set; }
-
     public bool HasAdminAccess { get; set; }
 
     [Display(Name = "От")]
