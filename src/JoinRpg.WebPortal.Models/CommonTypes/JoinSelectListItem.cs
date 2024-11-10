@@ -24,13 +24,3 @@ public static class JoinSelectListItemHelpers
         return collection;
     }
 }
-
-[Obsolete("JoinSelectListItem")]
-public class ImprovedSelectListItem
-{
-    public required string ExtraSearch { get; set; }
-    public required string Subtext { get; set; }
-
-    public required string Text { get; set; }
-    public required string Value { get; set; }
-}

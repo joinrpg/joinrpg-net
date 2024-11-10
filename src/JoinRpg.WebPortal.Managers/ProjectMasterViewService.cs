@@ -1,20 +1,22 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers;
-internal class ProjectMasterViewService : IMasterClient
+internal class ProjectMasterViewService(IProjectRepository projectRepository) : IMasterClient
 {
-    private readonly IProjectRepository projectRepository;
-
-    public ProjectMasterViewService(IProjectRepository projectRepository)
-    {
-        this.projectRepository = projectRepository;
-    }
-
     public async Task<List<MasterViewModel>> GetMasters(int projectId)
     {
         var project = await projectRepository.GetProjectAsync(projectId);
-        return project.GetMasterListViewModel().ToList();
+        return GetMasterListViewModel(project);
+    }
+
+    private static List<MasterViewModel> GetMasterListViewModel(Project project)
+    {
+        return project.ProjectAcls
+            .Select(acl => new MasterViewModel(acl.User.UserId, acl.User.ExtractDisplayName()))
+            .OrderBy(a => a.DisplayName.DisplayName)
+            .ToList();
     }
 }

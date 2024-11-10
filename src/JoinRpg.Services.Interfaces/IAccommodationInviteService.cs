@@ -11,9 +11,8 @@ public interface IAccommodationInviteService
         */
     Task<IEnumerable<AccommodationInvite?>?> CreateAccommodationInviteToGroupOrClaim(int projectId,
         int senderClaimId,
-        string receiverClaimOrAccommodationRequestId,
-        int accommodationRequestId,
-        string accommodationRequestPrefix);
+        int receiverClaimOrAccommodationRequestId,
+        int accommodationRequestId);
 
     Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
         AccommodationRequest.InviteState newState);

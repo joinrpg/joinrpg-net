@@ -5,7 +5,6 @@
 
 @{
     ViewBag.Title = "Перевод денег от мастера к мастеру";
-    var masterSelect = Model.Masters.ToImprovedSelectListItems().ToArray();
 }
 
 @using (Html.BeginForm()) 
@@ -25,7 +24,10 @@
         <div class="form-group">
             @Html.LabelFor(model => model.Sender, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.SearchableDropdownFor(model => model.Sender, masterSelect)
+                <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
+                           param-Name="nameof(Model.Sender)"
+                           param-ProjectId="@Model.ProjectId"
+                           render-mode="Static" />
                 @Html.ValidationMessageFor(model => model.Sender, "", new { @class = "text-danger" })
             </div>
         </div>
@@ -33,7 +35,10 @@
             <div class="form-group">
                 @Html.LabelFor(model => model.Receiver, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.SearchableDropdownFor(model => model.Receiver, masterSelect)
+                <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
+                           param-Name="nameof(Model.Receiver)"
+                           param-ProjectId="@Model.ProjectId"
+                           render-mode="Static" />
                     @Html.ValidationMessageFor(model => model.Receiver, "", new { @class = "text-danger" })
                 </div>
             </div>

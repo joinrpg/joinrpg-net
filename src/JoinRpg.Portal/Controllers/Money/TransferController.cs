@@ -6,7 +6,6 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Money;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,18 +13,14 @@ namespace JoinRpg.Portal.Controllers.Money;
 
 [MasterAuthorize()]
 [Route("{projectId}/money/transfer/[action]")]
-public class TransferController : ControllerGameBase
+public class TransferController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IFinanceService financeService,
+    IUserRepository userRepository) : ControllerGameBase(projectRepository,
+        projectService,
+        userRepository)
 {
-    private IFinanceService FinanceService { get; }
-
-    public TransferController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IFinanceService financeService,
-        IUserRepository userRepository) : base(projectRepository,
-            projectService,
-            userRepository) => FinanceService = financeService;
-
     [HttpGet]
     public async Task<IActionResult> Create(int projectId)
     {
@@ -74,7 +69,7 @@ public class TransferController : ControllerGameBase
 
         try
         {
-            await FinanceService.CreateTransfer(request);
+            await financeService.CreateTransfer(request);
         }
         catch (Exception e)
         {
@@ -88,7 +83,6 @@ public class TransferController : ControllerGameBase
 
     private void Fill(CreateMoneyTransferViewModel viewModel, Project project)
     {
-        viewModel.Masters = project.GetMasterListViewModel();
         viewModel.HasAdminAccess =
             project.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
     }
@@ -115,7 +109,7 @@ public class TransferController : ControllerGameBase
     {
         try
         {
-            await FinanceService.MarkTransfer(request);
+            await financeService.MarkTransfer(request);
         }
         catch
         {

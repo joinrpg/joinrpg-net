@@ -727,7 +727,7 @@ public class ClaimController(
     [HttpPost]
     public async Task<ActionResult> Invite(InviteRequestViewModel viewModel)
     {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
+        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
         if (project == null)
         {
             return NotFound();
@@ -735,14 +735,13 @@ public class ClaimController(
 
         if (!ModelState.IsValid)
         {
-            return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+            return await Edit(viewModel.ProjectId, viewModel.ClaimId);
         }
 
         _ = await accommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
             viewModel.ClaimId,
             viewModel.ReceiverClaimOrAccommodationRequest,
-            viewModel.RequestId,
-           InviteRequestViewModel.AccommodationRequestPrefix).ConfigureAwait(false);
+            viewModel.RequestId);
 
         return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
     }
