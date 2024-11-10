@@ -119,12 +119,12 @@
                   @{
                       var alreadyGroupedNeighbors = Model.PotentialNeighbors
                       .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
-                      .GroupBy(neighbor => neighbor.AccommodationRequestId)
+                      .GroupBy(neighbor => neighbor.AccommodationRequestId.Value)
                       .Where(group => group.Count() <= roomFreeSpace)
                       .Select(neighborGroup =>
-                      new ImprovedSelectListItem()
+                        new JoinSelectListItem()
                       {
-                        Value = InviteRequestViewModel.AccommodationRequestPrefix + neighborGroup.Key.ToString(),
+                        Value = -neighborGroup.Key,
                         Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
                         ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
                         Subtext = neighborGroup.Count() > 1 ? "<br/>(группа проживающих)" : ""
@@ -133,9 +133,9 @@
                       var unGroupedNeighbors = Model.PotentialNeighbors
                       .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId == null)
                       .Select(neighbor =>
-                      new ImprovedSelectListItem()
+                        new JoinSelectListItem()
                       {
-                        Value = neighbor.ClaimId.ToString(),
+                        Value = neighbor.ClaimId,
                         Text = neighbor.UserName,
                         ExtraSearch = neighbor.ClaimName,
                         Subtext = "<br/>еще не выбрал тип проживания"

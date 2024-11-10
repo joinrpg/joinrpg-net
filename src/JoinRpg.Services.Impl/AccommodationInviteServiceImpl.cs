@@ -182,27 +182,25 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
     public async Task<IEnumerable<AccommodationInvite?>?> CreateAccommodationInviteToGroupOrClaim(
         int projectId,
         int senderClaimId,
-        string receiverClaimOrAccommodationRequestId,
-        int accommodationRequestId,
-        string accommodationRequestPrefix)
+        int receiverClaimOrAccommodationRequestId,
+        int accommodationRequestId)
     {
         // TODO: Search for and reuse previously cancelled invitation(s) to the same person(s)
 
-        if (receiverClaimOrAccommodationRequestId.StartsWith(accommodationRequestPrefix))
+        if (receiverClaimOrAccommodationRequestId < 0)
         {
             return await CreateAccommodationInviteToAccommodationRequest(projectId,
                 senderClaimId,
-                int.Parse(receiverClaimOrAccommodationRequestId[2..]),
-                accommodationRequestId).ConfigureAwait(false);
+                -receiverClaimOrAccommodationRequestId,
+                accommodationRequestId);
         }
 
-        return new[]
-        {
+        return [
             await CreateAccommodationInvite(projectId,
                 senderClaimId,
-                int.Parse(receiverClaimOrAccommodationRequestId),
-                accommodationRequestId).ConfigureAwait(false),
-        };
+                receiverClaimOrAccommodationRequestId,
+                accommodationRequestId),
+        ];
     }
 
     /// <inheritdoc />

@@ -5,12 +5,10 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
-using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
@@ -55,9 +53,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     [Display(Name = "Ответственный мастер"), ReadOnly(true)]
     public User ResponsibleMaster { get; set; }
-
-    [ReadOnly(true)]
-    public List<MasterViewModel> Masters { get; }
 
     [ReadOnly(true)]
     public bool HasOtherApprovedClaim { get; }
@@ -160,7 +155,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 claim.IsApproved || claim.Project.Details.EnableManyCharacters
                     ? 0
                     : claim.OtherPendingClaimsForThisPlayer().Count();
-        Masters = claim.Project.GetMasterListViewModel().ToList();
 
         ResponsibleMasterId = claim.ResponsibleMasterUserId;
         ResponsibleMaster = claim.ResponsibleMasterUser;

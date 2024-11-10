@@ -96,20 +96,11 @@
           {
             <form asp-action="ChangeResponsible" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
               <div class="form-inline input-group-sm" style="margin-top: 0.5em">
-                @Html.DropDownListFor(
-                 model => model.ResponsibleMasterId,
-                 Model
-                 .Masters
-                 .ToSelectListItems()
-                 .Select(master =>
-                   {
-                     if (master.Value == "-1")
-                     {
-                       master.Disabled = true;
-                     }
-                     return master;
-                   }),
-                 htmlAttributes: new { @class = "form-control" })
+                  <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
+                   param-Name="nameof(Model.ResponsibleMasterId)"
+                    param-ProjectId="@Model.ProjectId"
+                    param-MasterId="@Model.ResponsibleMasterId"
+                    render-mode="Static" />
 
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
                 <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
