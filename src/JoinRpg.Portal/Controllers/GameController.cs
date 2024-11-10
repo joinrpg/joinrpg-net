@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -11,31 +12,25 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-public class GameController : Common.ControllerGameBase
+public class GameController(
+    IProjectService projectService,
+    IProjectRepository projectRepository,
+    IUserRepository userRepository) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly Lazy<ICreateProjectService> createProjectService;
-
-    public GameController(IProjectService projectService,
-        IProjectRepository projectRepository,
-        IUserRepository userRepository,
-        Lazy<ICreateProjectService> createProjectService)
-        : base(projectRepository, projectService, userRepository)
-    {
-        this.createProjectService = createProjectService;
-    }
-
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
-    public async Task<IActionResult> Details(int projectId)
+    public async Task<IActionResult> Details(int projectId, [FromServices] IClaimsRepository claimsRepository)
     {
         var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, CurrentUserId);
+
         if (project == null)
         {
             return NotFound();
         }
 
-        return View(new ProjectDetailsViewModel(project));
+        return View(new ProjectDetailsViewModel(project, claims));
     }
 
     [Authorize]
@@ -46,7 +41,7 @@ public class GameController : Common.ControllerGameBase
     [Authorize]
     [HttpPost("/game/create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ProjectCreateViewModel model)
+    public async Task<IActionResult> Create(ProjectCreateViewModel model, [FromServices] ICreateProjectService createProjectService)
     {
         if (!ModelState.IsValid)
         {
@@ -55,7 +50,7 @@ public class GameController : Common.ControllerGameBase
 
         try
         {
-            var project = await createProjectService.Value.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
+            var project = await createProjectService.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
 
             return RedirectTo(project);
         }

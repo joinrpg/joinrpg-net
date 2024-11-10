@@ -5,32 +5,49 @@
 
 <h2>@ViewBag.Title</h2>
 
-<hr />
-
 <div class="join alert alert-info"><i class="glyphicon glyphicon-calendar"></i><div>Дата создания: <strong>@Html.DisplayFor(model => model.CreatedDate)</strong></div></div>
 
 @if (Model.IsActive)
 {
     <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i><div>Проект <strong>активен</strong></div></div>
-    if (Model.IsAcceptingClaims)
-    {
-        <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i><div>Прием заявок <strong>открыт</strong></div></div>
-    }
-    else
-    {
-        <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i><div>Прием заявок <strong>закрыт</strong></div></div>
-    }
 }
 else
 {
     <div class="join alert alert-danger"><i class="glyphicon glyphicon-remove-sign"></i><div>Проект <strong>закрыт</strong></div></div>
 }
 
-<hr />
+@if (!Model.ProjectAnnounce.IsNullOrWhiteSpace())
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">Анонс</div>
+        <ul class="panel-body">
+            @Model.ProjectAnnounce
+        </ul>
+    </div>
+}
 
-@Model.ProjectAnnounce
-
-<hr />
+<div style="text-align:center; margin-bottom:1em">
+    @if (Model.HasMyClaims)
+    {
+        <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
+           class="btn btn-success btn-lg"
+           role="button"
+           title="Моя заявка">
+            Моя заявка
+        </a>
+    }
+    else if (Model.IsAcceptingClaims)
+    {
+        <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"
+           class="btn btn-info btn-lg"
+           role="button">
+            Заявиться
+        </a>
+    } else if (Model.IsActive)
+    {
+        <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i><div>Прием заявок <strong>закрыт</strong></div></div>
+    }
+</div>
 
 <div class="panel panel-default">
     <div class="panel-heading">Мастера</div>

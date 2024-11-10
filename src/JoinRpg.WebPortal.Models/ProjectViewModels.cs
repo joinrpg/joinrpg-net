@@ -4,48 +4,18 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
 
-public class ProjectLinkViewModel
-{
-    public int ProjectId { get; set; }
-    public string ProjectName { get; set; }
-}
-
-public sealed class MainMenuProjectLinkViewModel : ProjectLinkViewModel
-{
-    public bool IsActive { get; set; }
-}
+public record ProjectLinkViewModel(int ProjectId, string ProjectName);
 
 public static class ProjectLinkViewModelBuilder
 {
     public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
         this IEnumerable<Project> projects) =>
-        projects.Select(p => new ProjectLinkViewModel()
-        {
-            ProjectId = p.ProjectId,
-            ProjectName = p.ProjectName,
-        });
-
-    public static IEnumerable<MainMenuProjectLinkViewModel> ToMainMenuLinkViewModels(this IEnumerable<Project> projects) =>
-        projects.Select(p => new MainMenuProjectLinkViewModel
-        {
-            ProjectId = p.ProjectId,
-            ProjectName = p.ProjectName,
-            IsActive = p.Active
-        });
-}
-
-public abstract class ProjectViewModelBase
-{
-    public int ProjectId { get; set; }
-
-    [DisplayName("Название проекта"), Required]
-    public string ProjectName { get; set; }
-
-    [Display(Name = "Заявки открыты?")]
-    public bool IsAcceptingClaims { get; set; }
+        projects.Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName));
 }
 
 public class EditProjectViewModel
@@ -107,50 +77,45 @@ public class CloseProjectViewModel
     public bool IsMaster { get; set; }
 }
 
-public class ProjectDetailsViewModel : ProjectViewModelBase
+public class ProjectDetailsViewModel(Project project, IReadOnlyCollection<Claim> claims)
 {
+    public int ProjectId { get; } = project.ProjectId;
+
     [Display(Name = "Проект активен?")]
-    public bool IsActive { get; }
+    public bool IsActive { get; } = project.Active;
     [Display(Name = "Дата создания")]
-    public DateTime CreatedDate { get; }
-    public IEnumerable<User> Masters { get; }
+    public DateTime CreatedDate { get; } = project.CreatedDate;
+    public IEnumerable<UserLinkViewModel> Masters { get; } = project.ProjectAcls.Select(acl => UserLinks.Create(acl.User));
 
     [DisplayName("Анонс проекта")]
-    public JoinHtmlString ProjectAnnounce { get; }
+    public JoinHtmlString ProjectAnnounce { get; } = project.Details.ProjectAnnounce.ToHtmlString();
 
-    public ProjectDetailsViewModel(Project project)
-    {
-        ProjectAnnounce = project.Details.ProjectAnnounce.ToHtmlString();
-        ProjectId = project.ProjectId;
-        ProjectName = project.ProjectName;
-        IsActive = project.Active;
-        IsAcceptingClaims = project.IsAcceptingClaims;
-        CreatedDate = project.CreatedDate;
-        Masters = project.ProjectAcls.Select(acl => acl.User);
-    }
+    public bool HasMyClaims { get; } = claims.Count > 0;
+
+    [DisplayName("Название проекта")]
+    public string ProjectName { get; } = project.ProjectName;
+
+    [Display(Name = "Заявки открыты?")]
+    public bool IsAcceptingClaims { get; } = project.IsAcceptingClaims;
 }
 
-public class ProjectListItemViewModel : ProjectViewModelBase
+public class ProjectListItemViewModel(ProjectWithClaimCount p)
 {
-    public bool IsMaster { get; }
-    public bool IsActive { get; }
-    public int ClaimCount { get; }
+    public bool IsMaster { get; } = p.HasMasterAccess;
+    public bool IsActive { get; } = p.Active;
+    public int ClaimCount { get; } = p.ActiveClaimsCount;
 
-    public bool PublishPlot { get; }
+    public bool PublishPlot { get; } = p.PublishPlot;
 
-    public ProjectListItemViewModel(ProjectWithClaimCount p)
-    {
-        ProjectId = p.ProjectId;
-        IsMaster = p.HasMasterAccess;
-        IsActive = p.Active;
-        ProjectName = p.ProjectName;
-        HasMyClaims = p.HasMyClaims;
-        ClaimCount = p.ActiveClaimsCount;
-        IsAcceptingClaims = p.IsAcceptingClaims;
-        PublishPlot = p.PublishPlot;
-    }
+    public int ProjectId { get; set; } = p.ProjectId;
 
-    public bool HasMyClaims { get; }
+    [DisplayName("Название проекта"), Required]
+    public string ProjectName { get; set; } = p.ProjectName;
+
+    [Display(Name = "Заявки открыты?")]
+    public bool IsAcceptingClaims { get; } = p.IsAcceptingClaims;
+
+    public bool HasMyClaims { get; } = p.HasMyClaims;
 
     public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(
         IEnumerable<T> collectionToSort,
