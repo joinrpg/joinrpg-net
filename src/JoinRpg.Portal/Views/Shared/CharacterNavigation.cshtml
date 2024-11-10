@@ -7,11 +7,11 @@
   ViewBag.Title = Model.Name;
   string strikeStyleOfName = Model.IsActive ? "" : "text-decoration: line-through";
 }
-<div>
+<nav class="navbar navbar-default">
+  <div class="navbar-header">
+        <span class="h4 navbar-text" style="@strikeStyleOfName">@ViewBag.Title</span>
+  </div>
     <ul class="nav nav-pills">
-        <li class="disabled">
-            <a href="#" style="cursor: default; @strikeStyleOfName"><span class="h3">@ViewBag.Title</span></a>
-        </li>
         @if (Model.CharacterId != null)
         {
             <nav-link
@@ -52,12 +52,6 @@
                 asp-route-characterid="@Model.CharacterId">
                 Подать заявку
             </nav-link>
-        }
-        else
-        {
-            <li role="presentation" class="disabled">
-                <a href="#">Заявки не принимаются</a>
-            </li>
         }
         @if (Model.DiscussedClaims.Any())
         {
@@ -101,6 +95,10 @@
                 </ul>
             </li>
         }
+        @if (Model.ClaimId is null && !Model.CanAddClaim)
+        {
+            <p class="navbar-text">Заявки не принимаются</p>
+        }
     </ul>
 
-</div>
+</nav>
