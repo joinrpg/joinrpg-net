@@ -3,9 +3,13 @@ using JoinRpg.Helpers;
 namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
 public record class ProjectInfo
 {
-    private readonly Lazy<VirtualOrderContainer<ProjectFieldInfo>> container;
+    private readonly Lazy<VirtualOrderContainer<ProjectFieldInfo>> sortedFieldsContainer;
 
-    public IReadOnlyList<ProjectFieldInfo> SortedFields => container.Value.OrderedItems;
+    public IReadOnlyList<ProjectFieldInfo> SortedFields => sortedFieldsContainer.Value.OrderedItems;
+
+    private readonly Lazy<VirtualOrderContainer<ProjectFieldInfo>> sortedActiveFieldsContainer;
+
+    public IReadOnlyList<ProjectFieldInfo> SortedActiveFields => sortedActiveFieldsContainer.Value.OrderedItems;
 
     public ProjectIdentification ProjectId { get; }
     public string ProjectName { get; }
@@ -40,7 +44,8 @@ public record class ProjectInfo
         UnsortedFields = fields;
         ProjectId = projectId;
         ProjectName = projectName;
-        container = VirtualOrderContainerFacade.CreateLazy(fields, ordering);
+        sortedFieldsContainer = VirtualOrderContainerFacade.CreateLazy(fields, ordering);
+        sortedActiveFieldsContainer = VirtualOrderContainerFacade.CreateLazy(fields.Where(f => f.IsActive), ordering);
         ProjectFieldSettings = projectFieldSettings;
         ProjectFinanceSettings = projectFinanceSettings;
         AccomodationEnabled = accomodationEnabled;
