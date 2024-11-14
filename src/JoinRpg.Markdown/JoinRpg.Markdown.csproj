@@ -16,5 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.38.0" />
     <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.71" /> <!-- Pin, because Vereyon.Web.HtmlSanitizer using older version -->
   </ItemGroup>
 </Project>
