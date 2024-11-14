@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Common.EmailSending.Impl</AssemblyTitle>
@@ -9,7 +9,7 @@
     <ProjectReference Include="..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="mailgun_csharp" Version="0.8.0 " />
+    <PackageReference Include="mailgun_csharp" Version="0.9.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
