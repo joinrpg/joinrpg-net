@@ -51,8 +51,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                     CharacterId = x.CharacterId,
                     CharacterNames = x.Character.CharacterName,
                     ClaimId = x.ClaimId,
-                    ClaimName = (x.Claim.Character != null ? x.Claim.Character.CharacterName : null)
-                        ?? (x.Claim.Group != null ? x.Claim.Group.CharacterGroupName : null),
+                    ClaimName = x.Claim.Character.CharacterName,
                     Options = new SubscriptionOptions
                     {
                         AccommodationChange = x.AccommodationChange,

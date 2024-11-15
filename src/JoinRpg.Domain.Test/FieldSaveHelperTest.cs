@@ -161,7 +161,7 @@ public class FieldSaveHelperTest
     {
         _original = new MockedProject();
         var mock = new MockedProject();
-        var claim = mock.CreateClaim(mock.Group, mock.Player);
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
         var conditionalField = mock.CreateConditionalField();
 
         _ = InitFieldSaveHelper().SaveCharacterFields(
@@ -185,7 +185,7 @@ public class FieldSaveHelperTest
     {
         _original = new MockedProject();
         var mock = new MockedProject();
-        var claim = mock.CreateClaim(mock.Group, mock.Player);
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
 
         _ = Should.Throw<NoAccessToProjectException>(() =>
               InitFieldSaveHelper().SaveCharacterFields(

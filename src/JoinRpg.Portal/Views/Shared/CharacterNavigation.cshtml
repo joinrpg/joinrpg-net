@@ -67,7 +67,7 @@
                             asp-controller="Claim"
                             asp-route-projectid="@Model.ProjectId"
                             asp-route-claimId="@claim.ClaimId">
-                            @claim.Player.GetDisplayName()
+                            @claim.PlayerLink.DisplayName
                         </nav-link>
                     }
                 </ul>
@@ -89,7 +89,7 @@
                             asp-controller="Claim"
                             asp-route-projectid="@Model.ProjectId"
                             asp-route-claimId="@claim.ClaimId">
-                            @claim.Player.GetDisplayName()
+                            @claim.PlayerLink.DisplayName
                         </nav-link>
                     }
                 </ul>

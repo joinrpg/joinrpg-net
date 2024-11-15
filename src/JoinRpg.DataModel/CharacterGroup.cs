@@ -6,10 +6,8 @@ using JoinRpg.PrimitiveTypes;
 namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity, ILinkableWithName
+public class CharacterGroup : IWorldObject, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity, ILinkableWithName
 {
-
-
     public int CharacterGroupId { get; set; }
 
     public LinkType LinkType => LinkType.ResultCharacterGroup;
@@ -50,24 +48,11 @@ public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObj
     public bool IsPublic { get; set; }
     public bool IsSpecial { get; set; }
 
-    public int AvaiableDirectSlots { get; set; }
-
-    public bool HaveDirectSlots { get; set; }
-
-    public bool DirectSlotsUnlimited => AvaiableDirectSlots == -1;
-
     public IEnumerable<Character> Characters => Project.Characters.Where(cg => cg.ParentCharacterGroupIds.Contains(CharacterGroupId));
 
     public bool IsActive { get; set; }
 
     public MarkdownString Description { get; set; } = new MarkdownString();
-
-    /// <summary>
-    /// Can add claim directly to character group (not individual characters)
-    /// </summary>
-    public bool IsAvailable => HaveDirectSlots && AvaiableDirectSlots != 0 && Project.IsAcceptingClaims;
-
-    public IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterGroupId == CharacterGroupId);
 
     // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual User? ResponsibleMasterUser { get; set; }
@@ -87,7 +72,7 @@ public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObj
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
     public bool CanBePermanentlyDeleted
-      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any() && !Claims.Any();
+      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any();
 
     #region Implementation of IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

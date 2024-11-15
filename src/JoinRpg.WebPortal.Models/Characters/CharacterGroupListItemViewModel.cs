@@ -17,9 +17,6 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
 
     public bool FirstCopy { get; set; }
 
-    [DisplayName("Слотов для заявок в группу")]
-    public int AvaiableDirectSlots { get; set; }
-
     public ICollection<CharacterViewModel> ActiveCharacters { get; set; }
 
     public IEnumerable<CharacterViewModel> PublicCharacters => ActiveCharacters.Where(c => c.IsPublic);
@@ -40,14 +37,10 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
 
     public string BoundExpression { get; set; } = "";
 
-    public int ActiveClaimsCount { get; set; }
-
     public bool First { get; set; }
     public bool Last { get; set; }
 
     public int ProjectId { get; set; }
-
-    public bool IsAcceptingClaims { get; set; }
 
     public bool Equals(CharacterGroupListItemViewModel? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 

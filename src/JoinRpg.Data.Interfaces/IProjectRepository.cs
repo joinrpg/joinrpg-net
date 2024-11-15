@@ -42,15 +42,12 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectForFinanceSetup(int projectid);
     Task<ICollection<Character>> GetCharacters(int projectId);
     Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
-    Task<IClaimSource?> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
 
     /// <summary>
     /// Get projects not active since
     /// </summary>
     /// <returns></returns>
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
-
-    Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetActiveProjectsWithGroupClaims();
 
     Task<ProjectHeaderDto[]> GetMyProjects(UserIdentification userIdentification);
 }

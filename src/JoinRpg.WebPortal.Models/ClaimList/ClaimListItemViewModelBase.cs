@@ -47,7 +47,7 @@ public abstract class ClaimListItemViewModelBase : ILinkable
         ClaimId = claim.ClaimId;
 
         ClaimFullStatusView = new ClaimFullStatusView(claim, accessArguments);
-        Name = claim.Name;
+        Name = claim.Character.CharacterName;
         Player = claim.Player;
 
         UpdateDate = lastModifiedAt;

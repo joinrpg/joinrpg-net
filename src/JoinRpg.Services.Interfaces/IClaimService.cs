@@ -5,8 +5,7 @@ namespace JoinRpg.Services.Interfaces;
 public interface IClaimService
 {
     Task AddClaimFromUser(int projectId,
-        int? characterGroupId,
-        int? characterId,
+        int characterId,
         string claimText,
         IReadOnlyDictionary<int, string?> fields);
 

@@ -33,7 +33,7 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
     public Task Email(RestoreByMasterEmail model) => SendClaimEmail(model, "восстановлена");
 
-    public Task Email(MoveByMasterEmail model) => SendClaimEmail(model, "изменена", $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.GetTarget().Name}».");
+    public Task Email(MoveByMasterEmail model) => SendClaimEmail(model, "изменена", $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.Character.CharacterName}».");
 
 
     public Task Email(ChangeResponsibleMasterEmail model) => SendClaimEmail(model, "изменена", "В заявке изменен ответственный мастер.");
@@ -304,7 +304,7 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
         }
 
         var text1 = $@"{StandartGreeting()}
-Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
+Заявка {model.Claim.Character.CharacterName} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
 {text}
 
 {messageService.GetUserDependentValue(ChangedFieldsKey)}

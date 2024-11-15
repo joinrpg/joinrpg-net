@@ -71,14 +71,12 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
           .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
           .Include(c => c.Player.Extra)
-          //TODO We actually use this method only for ClaimStatusSpeces that ensures that Character won't be null
-          //This assumption is not checked.
           .Select(
             claim => new ClaimWithPlayer()
             {
                 Player = claim.Player,
                 ClaimId = claim.ClaimId,
-                CharacterName = claim.Character!.CharacterName,
+                CharacterName = claim.Character.CharacterName,
                 Extra = claim.Player.Extra,
             })
           .ToListAsync();
@@ -132,9 +130,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     {
         return GetClaimsImpl(projectId, active, ClaimPredicates.GetInGroupPredicate(characterGroupsIds));
     }
-
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId) => GetClaimsImpl(projectId, active, claim => claim.CharacterGroupId == characterGroupsId);
-
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
 
     public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)

@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models;
 
@@ -13,8 +14,8 @@ public class AccommodationPotentialNeighbors
     public AccommodationPotentialNeighbors(Claim claim, NeighborType type)
     {
         ClaimId = claim.ClaimId;
-        ClaimName = claim.Name;
-        UserName = claim.Player.PrefferedName;
+        ClaimName = claim.Character.CharacterName;
+        UserName = claim.Player.GetDisplayName();
         Type = type;
         AccommodationRequestId = claim.AccommodationRequest_Id;
     }

@@ -55,9 +55,6 @@ public class EditProjectViewModel
 
     public bool Active { get; set; }
 
-    [ReadOnly(true)]
-    public bool HasGroupClaims { get; set; }
-
     [Display(Name = "Шаблон персонажа по умолчанию", Description = "Кнопка «заявиться» будет идти именно на этот шаблон")]
     public int? DefaultTemplateCharacterId { get; set; }
 }

@@ -20,7 +20,7 @@ public class RecipientClaimViewModel : JoinSelectListItem
     public RecipientClaimViewModel(Claim source)
     {
         ClaimId = source.ClaimId;
-        Name = source.Name;
+        Name = source.Character.CharacterName;
         Player = source.Player;
         Status = ((ClaimStatusView)source.ClaimStatus).GetDisplayName();
 

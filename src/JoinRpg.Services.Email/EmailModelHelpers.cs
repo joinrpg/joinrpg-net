@@ -35,7 +35,7 @@ internal static class EmailModelHelpers
         return players.JoinStrings(" \n- ");
     }
 
-    public static string GetClaimEmailTitle(this EmailModelBase model, Claim claim) => $"{model.ProjectName}: {claim.Name}, игрок {claim.Player.GetDisplayName()}";
+    public static string GetClaimEmailTitle(this EmailModelBase model, Claim claim) => $"{model.ProjectName}: {claim.Character.CharacterName}, игрок {claim.Player.GetDisplayName()}";
 
     public static string GetClaimEmailTitle(this ClaimEmailModel model) => model.GetClaimEmailTitle(model.Claim);
 }

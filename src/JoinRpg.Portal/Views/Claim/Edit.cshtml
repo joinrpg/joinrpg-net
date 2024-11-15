@@ -56,16 +56,6 @@
             контакты
           </button>
         </dd>
-        @if (Model.CharacterGroupId != null)
-        {
-          <dt>
-            @Html.DisplayNameFor(model => model.GroupName)
-          </dt>
-
-          <dd>
-            @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
-          </dd>
-        }
         <dt>
           @Html.DisplayNameFor(model => model.Status)
         </dt>
@@ -281,7 +271,7 @@ new { Model.ProjectId, Model.Player.UserId }, null).
             @await Html.PartialAsync("MasterDenialOperationPartial", new MasterDenialOperationViewModel
             {
             ClaimStatus = Model.Status.ClaimStatus,
-            CharacterAutoCreated = Model.CharacterAutoCreated ?? false,
+            CharacterAutoCreated = Model.CharacterAutoCreated,
             ActionName = "Отклонить заявку"
             })
           </form>

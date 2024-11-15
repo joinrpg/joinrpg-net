@@ -9,15 +9,9 @@ namespace JoinRpg.DataModel;
 public class Claim : IProjectEntity, ILinkable, IFieldContainter
 {
     public int ClaimId { get; set; }
-    public int? CharacterId { get; set; }
+    public int CharacterId { get; set; }
 
-    public int? CharacterGroupId { get; set; }
-
-
-    public virtual CharacterGroup? Group { get; set; }
-
-
-    public virtual Character? Character { get; set; }
+    public virtual Character Character { get; set; }
 
     public int PlayerUserId { get; set; }
 
@@ -71,8 +65,8 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
             ClaimStatus == Status.Approved
             || ClaimStatus == Status.CheckedIn;
 
-    //TODO[Localize]
-    public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
+    [Obsolete("Use Character.CharacterName")]
+    public string Name => Character.CharacterName ?? "заявка";
 
     public DateTime LastUpdateDateTime { get; set; }
 

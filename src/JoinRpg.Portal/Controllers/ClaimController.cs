@@ -58,25 +58,7 @@ public class ClaimController(
 
     [HttpGet("/{projectid}/roles/{characterGroupId}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectId, int characterGroupId)
-    {
-        var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        if (field == null)
-        {
-            return NotFound();
-        }
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
-
-        var viewModel = AddClaimViewModel.Create(field, CurrentUserId, projectInfo);
-
-        if (viewModel.ValidationStatus.Contains(AddClaimForbideReason.NotForDirectClaims) && field.IsRoot)
-        {
-            return await RedirectToDefaultTemplate(projectId);
-        }
-
-        return base.View("Add", viewModel);
-    }
+    public async Task<ActionResult> AddForGroup(int projectId, int characterGroupId) => await RedirectToDefaultTemplate(projectId);
 
     [HttpPost("~/{ProjectId}/claim/add")]
     [Authorize]
@@ -90,8 +72,7 @@ public class ClaimController(
 
         try
         {
-            await claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText,
-                Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+            await claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterId, viewModel.ClaimText, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
 
             return RedirectToAction(
               "SetupProfile",
@@ -101,7 +82,7 @@ public class ClaimController(
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId);
+            var source = await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
             viewModel.Fill(source, CurrentUserId, projectInfo, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
             return base.View(viewModel);
@@ -150,7 +131,7 @@ public class ClaimController(
                 var sameRequest = (await
                     accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
                         acceptedRequest.AccommodationTypeId).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
-                    .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType)); ;
+                    .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType));
                 var noRequest = (await
                     accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
                 var currentNeighbors = (await
@@ -186,7 +167,7 @@ public class ClaimController(
         }
 
 
-        var parents = claim.GetTarget().GetParentGroupsToTop();
+        var parents = claim.Character.GetParentGroupsToTop();
         claimViewModel.SubscriptionTooltip =
           claimViewModel.GetFullSubscriptionTooltip(parents, currentUser.Subscriptions, claimViewModel.ClaimId);
 
@@ -542,7 +523,7 @@ public class ClaimController(
         var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
 
         await claimService.SubscribeClaimToUser(projectid, claimid);
-        var parents = claim.GetTarget().GetParentGroupsToTop();
+        var parents = claim.Character.GetParentGroupsToTop();
 
         var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
@@ -566,7 +547,7 @@ public class ClaimController(
 
 
         await claimService.UnsubscribeClaimToUser(projectid, claimid);
-        var parents = claim.GetTarget().GetParentGroupsToTop();
+        var parents = claim.Character.GetParentGroupsToTop();
 
         var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
@@ -838,22 +819,6 @@ public class ClaimController(
         {
             return RedirectToAction("AddForCharacter", new { projectid, projectInfo.DefaultTemplateCharacter.CharacterId });
         }
-
-        //TODO Start of HACKS remove when groups claims will die
-        var project = await ProjectRepository.GetProjectAsync(projectid);
-
-        if (project.RootGroup.HaveDirectSlots)
-        {
-            return RedirectToAction("AddForGroup", new { projectid, project.RootGroup.CharacterGroupId });
-        }
-
-        var childSlots = project.RootGroup.Characters.Where(c => c.CharacterType == CharacterType.Slot && c.IsActive).ToList();
-        if (childSlots.Count == 1 && childSlots.Single() is Character targetSlot && targetSlot.IsAcceptingClaims())
-        {
-            return RedirectToAction("AddForCharacter", new { projectid, childSlots.Single().CharacterId });
-        }
-
-        //TODO end of hacks
 
         return Redirect($"/{projectInfo.ProjectId.Value}/default-slot-not-set");
     }

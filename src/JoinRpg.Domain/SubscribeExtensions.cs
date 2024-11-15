@@ -26,18 +26,18 @@ public static class SubscribeExtensions
     {
         if (character == null)
         {
-            return Enumerable.Empty<User>();
+            return [];
         }
 
-        return character.GetGroupsPartOf() //Get all groups for the character
+        return character.GetParentGroupsToTop() //Get all groups for the character
           .SelectMany(g => g.Subscriptions) //get subscriptions on groups
           .Union(character.Subscriptions) //Subscriptions of the character itself.
-          .Union(character.ApprovedClaim?.Subscriptions ?? Enumerable.Empty<UserSubscription>()) //Subscriptions of the claim itself.
+          .Union(character.ApprovedClaim?.Subscriptions ?? []) //Subscriptions of the claim itself.
           .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
           .Select(u => u.User) //Select users
           .Append(character.ApprovedClaim?.Player) //...and player who claimed for the character
           .Append(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
-          .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
+          .Union(extraRecipients ?? []) //add extra recipients
           .VerifySubscriptions(mastersOnly, character)
           .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
@@ -49,10 +49,10 @@ public static class SubscribeExtensions
       IEnumerable<User?>? extraRecipients = null,
       bool mastersOnly = false)
     {
-        return claim.GetTarget().GetGroupsPartOf() //Get all groups for claim
+        return claim.Character.GetParentGroupsToTop() //Get all groups for claim
             .SelectMany(g => g.Subscriptions) //get subscriptions on groups
             .Union(claim.Subscriptions) //subscribtions on claim
-            .Union(claim.Character?.Subscriptions ?? Enumerable.Empty<UserSubscription>()) //and on characters
+            .Union(claim.Character.Subscriptions ?? []) //and on characters
             .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
             .Select(u => u.User) //Select users
             .Append(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything

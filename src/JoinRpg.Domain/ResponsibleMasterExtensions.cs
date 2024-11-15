@@ -5,18 +5,17 @@ namespace JoinRpg.Domain;
 
 public static class ResponsibleMasterExtensions
 {
-    private static User? SelectResponsibleMaster(this IClaimSource group, bool includeSelf = true)
+    //TODO модифицировать этот алгоритм на такой:
+    // - грузим список всех групп с отв. мастерами отсортированные в правильном порядке
+    // - берем первую группу персонажа, которая есть у персонажа
+    private static User? SelectResponsibleMaster(this Character character)
     {
-        ArgumentNullException.ThrowIfNull(group);
+        ArgumentNullException.ThrowIfNull(character);
 
-        if (group.ResponsibleMasterUser != null && includeSelf)
-        {
-            return group.ResponsibleMasterUser;
-        }
         var candidates = new HashSet<CharacterGroup>();
         var removedGroups = new HashSet<CharacterGroup>();
-        var lookupGroups = new HashSet<CharacterGroup>(group.ParentGroups);
-        while (lookupGroups.Any())
+        var lookupGroups = new HashSet<CharacterGroup>(character.Groups);
+        while (lookupGroups.Count != 0)
         {
             var currentGroup = lookupGroups.First();
             _ = lookupGroups.Remove(currentGroup); //Get next group
@@ -55,7 +54,7 @@ public static class ResponsibleMasterExtensions
             ?? character.SelectResponsibleMaster();
     }
 
-    public static User GetResponsibleMaster(this IClaimSource source)
+    public static User GetResponsibleMaster(this Character source)
     {
         return
             source.SelectResponsibleMaster()

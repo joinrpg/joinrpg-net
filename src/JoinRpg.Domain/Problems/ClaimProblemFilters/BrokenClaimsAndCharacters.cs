@@ -15,7 +15,7 @@ internal class BrokenClaimsAndCharacters : IProblemFilter<Claim>
         {
             yield return new ClaimProblem(ClaimProblemType.NoCharacterOnApprovedClaim, ProblemSeverity.Fatal);
         }
-        if (claim.Character == null && claim.Group == null)
+        if (claim.Character == null) //TODO may be remove this it will be foreign key
         {
             yield return new ClaimProblem(ClaimProblemType.ClaimDontHaveTarget, ProblemSeverity.Fatal);
         }

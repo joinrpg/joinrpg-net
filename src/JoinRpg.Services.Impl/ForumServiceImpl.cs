@@ -46,7 +46,7 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
         if (emailEverybody)
         {
             var groups = GetChildrenGroupIds(group);
-            var players = hideFromUser ? System.Array.Empty<User>() :
+            var players = hideFromUser ? [] :
               (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Approved, groups)).Select(
                 claim => claim.Player);
             var masters = forumThread.Project.ProjectAcls.Select(acl => acl.User);
@@ -71,7 +71,7 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
         var isMaster = forumThread.HasMasterAccess(CurrentUserId);
         var isPlayer = forumThread.IsVisibleToPlayer &&
                        (await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
-                         claim => claim.IsPartOfGroup(forumThread.CharacterGroupId));
+                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
 
         if (!isMaster && !isPlayer)
         {

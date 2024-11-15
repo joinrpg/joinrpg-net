@@ -4,11 +4,11 @@ using JoinRpg.Helpers;
 namespace JoinRpg.Domain;
 public static class ParentGroupCalculateExtensions
 {
-    public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IClaimSource? target)
+    public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IWorldObject? target)
     {
         return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups))
                    .OrderBy(g => g.CharacterGroupId)
-                   .Distinct() ?? Enumerable.Empty<CharacterGroup>();
+                   .Distinct() ?? [];
     }
 
     public static IEnumerable<CharacterGroup> GetChildrenGroupsRecursive(

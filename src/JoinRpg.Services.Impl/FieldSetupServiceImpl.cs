@@ -219,9 +219,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         {
             fieldValue.CharacterGroup = new CharacterGroup()
             {
-                AvaiableDirectSlots = 0,
-                HaveDirectSlots = false,
-                ParentCharacterGroupIds = new[] { field.CharacterGroup!.CharacterGroupId }, // CreateOrUpdateSpecialGroup (field) ensures this
+                ParentCharacterGroupIds = [field.CharacterGroup!.CharacterGroupId], // CreateOrUpdateSpecialGroup (field) ensures this
                 ProjectId = fieldValue.ProjectId,
                 IsRoot = false,
                 IsSpecial = true,
@@ -263,9 +261,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             field.CharacterGroup = new CharacterGroup()
             {
                 CharacterGroupId = -field.ProjectFieldId, // We will need this if create both field and variant special group at once.
-                AvaiableDirectSlots = 0,
-                HaveDirectSlots = false,
-                ParentCharacterGroupIds = new[] { field.Project.RootGroup.CharacterGroupId },
+                ParentCharacterGroupIds = [field.Project.RootGroup.CharacterGroupId],
                 ProjectId = field.ProjectId,
                 IsRoot = false,
                 IsSpecial = true,

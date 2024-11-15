@@ -15,15 +15,15 @@ public static class FieldExtensions
 
     public static string GetSpecialGroupName(this ProjectField field) => $"{field.FieldName}";
 
-    public static bool IsAvailableForTarget(this ProjectFieldInfo field, IClaimSource? target)
+    public static bool IsAvailableForTarget(this ProjectFieldInfo field, Character? target)
     {
         ArgumentNullException.ThrowIfNull(field);
 
-        var isNpc = target is Character { CharacterType: PrimitiveTypes.CharacterType.NonPlayer };
+        var isNpc = target?.CharacterType == PrimitiveTypes.CharacterType.NonPlayer;
 
         return field.IsActive
           && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
-          && (field.GroupsAvailableForIds.Count == 0 || target.IsPartOfAnyOfGroups(field.GroupsAvailableForIds));
+          && (field.GroupsAvailableForIds.Count == 0 || (target?.IsPartOfAnyOfGroups(field.GroupsAvailableForIds) ?? false));
     }
 
     public static bool CanHaveValue(this ProjectField projectField) => projectField.FieldType != ProjectFieldType.Header;

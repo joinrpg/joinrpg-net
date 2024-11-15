@@ -148,9 +148,9 @@ public class GameGroupsController : ControllerGameBase
                       Path = g.Path.Select(gr => gr.Name),
                       PathIds = g.Path.Select(gr => gr.CharacterGroupId),
                       Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
-                      CanAddDirectClaim = g.IsAcceptingClaims,
-                      DirectClaimsCount = g.AvaiableDirectSlots,
-                      DirectClaimLink = g.IsAcceptingClaims ? GetFullyQualifiedUri("AddForGroup", "Claim", new { field.ProjectId, g.CharacterGroupId }) : null,
+                      CanAddDirectClaim = false,
+                      DirectClaimsCount = (string?)null,
+                      DirectClaimLink = (string?)null,
                   }),
         });
     }
@@ -243,28 +243,21 @@ public class GameGroupsController : ControllerGameBase
             return Content("Can't edit special group");
         }
 
+        if (group.IsRoot)
+        {
+            return RedirectToActionPermanent("Index");
+        }
+
         return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
         {
             ParentCharacterGroupIds = group.GetParentGroupsForEdit(),
             Description = group.Description.Contents,
             IsPublic = group.IsPublic,
             Name = group.CharacterGroupName,
-            HaveDirectSlots = GetDirectClaimSettings(group),
-            DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
             CharacterGroupId = group.CharacterGroupId,
         }, group));
     }
 
-    private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
-
-    {
-        if (!group.HaveDirectSlots)
-        {
-            return DirectClaimSettings.NoDirectClaims;
-        }
-
-        return group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
-    }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
@@ -275,7 +268,12 @@ public class GameGroupsController : ControllerGameBase
             return NotFound();
         }
 
-        if (!ModelState.IsValid && !group.IsRoot) //TODO: We can't actually validate root group — too many errors.
+        if (group.IsRoot)
+        {
+            return RedirectToActionPermanent("Index");
+        }
+
+        if (!ModelState.IsValid)
         {
             return View(FillFromCharacterGroup(viewModel, group));
         }
@@ -291,8 +289,7 @@ public class GameGroupsController : ControllerGameBase
               group.ProjectId,
               CurrentUserId,
               group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-              viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
-              viewModel.DirectSlotsForSave());
+              viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description);
 
             return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
         }
@@ -392,7 +389,7 @@ public class GameGroupsController : ControllerGameBase
         }
     }
 
-    private static T FillFromCharacterGroup<T>(T viewModel, IClaimSource field)
+    private static T FillFromCharacterGroup<T>(T viewModel, CharacterGroup field)
       where T : CharacterGroupViewModelBase
     {
         viewModel.ProjectName = field.Project.ProjectName;
@@ -405,7 +402,6 @@ public class GameGroupsController : ControllerGameBase
         CharacterGroup group)
     {
         viewModel.IsRoot = group.IsRoot;
-        viewModel.HasOldStyleGroupClaims = group.Claims.Any() || group.HaveDirectSlots;
         viewModel.CreatedAt = group.CreatedAt;
         viewModel.UpdatedAt = group.UpdatedAt;
         viewModel.CreatedBy = group.CreatedBy;

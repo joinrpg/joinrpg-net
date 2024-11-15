@@ -1,6 +1,5 @@
 using System.Diagnostics.Contracts;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain;
 
@@ -18,46 +17,23 @@ public static class ClaimExtensions
         {
             return false;
         }
-        if (claim.Character?.CharacterType == PrimitiveTypes.CharacterType.Slot)
+        if (claim.Character.CharacterType == PrimitiveTypes.CharacterType.Slot)
         {
             return false;
         }
-        return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive())?.Any() ?? false;
+        return claim.Character.Claims.Any(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive());
     }
 
-    public static IClaimSource GetTarget(this Claim claim)
-    {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
-
-        return (IClaimSource?)claim.Character
-            ?? claim.Group
-            ?? throw new InvalidOperationException("Claim not bound neither to character nor character group. That shouldn't happen"); ;
-    }
-
-    [Pure]
-    public static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource? claimSource)
-    {
-        return claimSource
-          .GetParentGroupsToTop() //Get parents
-          .Append(claimSource as CharacterGroup) //Don't forget group himself
-          .WhereNotNull();
-    }
-
-    public static bool IsPartOfGroup(this Claim cl, int characterGroupId) => cl.GetTarget().IsPartOfGroup(characterGroupId);
-
-    public static bool IsPartOfAnyOfGroups(this IClaimSource? claimSource, IEnumerable<int> groups)
+    public static bool IsPartOfAnyOfGroups(this Character claimSource, IReadOnlyCollection<int> groups)
     {
         //TODO we can do faster than this
-        return claimSource.GetGroupsPartOf().Select(x => x.CharacterGroupId).Intersect(groups).Any();
+        return claimSource.GetParentGroupsToTop().Select(x => x.CharacterGroupId).Intersect(groups).Any();
     }
 
-    public static bool IsPartOfGroup(this IClaimSource claimSource, int characterGroupId)
+    public static bool IsPartOfGroup(this Character claimSource, int characterGroupId)
     {
         //TODO we can do faster than this
-        return claimSource.GetGroupsPartOf().Any(g => g.CharacterGroupId == characterGroupId);
+        return claimSource.GetParentGroupsToTop().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
     public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)
@@ -112,8 +88,6 @@ public static class ClaimExtensions
         }
     }
 
-    public static IEnumerable<Comment> GetMasterAnswers(this CommentDiscussion claim) => claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
-
     public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.ClaimStatus.IsActive());
 
     public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
@@ -143,10 +117,4 @@ public static class ClaimExtensions
         }
         return null;
     }
-
-    [Pure]
-    public static Claim? TrySelectSingleClaim(
-      this IEnumerable<Claim> claims)
-        => claims.ToList().TrySelectSingleClaim();
-    //That's not optimal way to do it, but in practice, claims.Length will be 1 or 2.
 }

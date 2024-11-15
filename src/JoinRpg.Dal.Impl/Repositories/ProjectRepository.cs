@@ -200,39 +200,12 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return project1.RootGroup;
     }
 
-    public async Task<IClaimSource?> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
-    {
-        if (characterGroupId != null)
-        {
-            return await GetGroupAsync(projectId, (int)characterGroupId);
-        }
-        if (characterId != null)
-        {
-            await LoadProjectFields(projectId);
-            return await Ctx.Set<Character>()
-              .Include(c => c.Project)
-              .SingleOrDefaultAsync(e => e.CharacterId == (int)characterId && e.ProjectId == projectId);
-        }
-        throw new InvalidOperationException();
-    }
-
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
         DateTime inActiveSince)
     {
         var allQuery =
             from beforeFilter in GetProjectWithLastUpdateQuery()
             where beforeFilter.LastUpdated < inActiveSince
-            orderby beforeFilter.LastUpdated ascending
-            select beforeFilter;
-
-        return await allQuery.ToListAsync();
-    }
-
-    public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetActiveProjectsWithGroupClaims()
-    {
-        var allQuery =
-            from beforeFilter in GetProjectWithLastUpdateQuery()
-            where beforeFilter.GroupsCount > 0
             orderby beforeFilter.LastUpdated ascending
             select beforeFilter;
 
@@ -256,14 +229,13 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     .Union(plotQuery)
                     .Union(plotElementQuery)
                     .Union(claimQuery)
-            group updated by new { updated.ProjectId, updated.ProjectName, updated.GroupsCount }
+            group updated by new { updated.ProjectId, updated.ProjectName }
             into gr
             select new ProjectWithUpdateDateDto()
             {
                 ProjectId = gr.Key.ProjectId,
                 ProjectName = gr.Key.ProjectName,
                 LastUpdated = gr.Max(g => g.LastUpdated),
-                GroupsCount = gr.Key.GroupsCount,
             };
     }
 
@@ -279,7 +251,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                    ProjectId = gr.Key.ProjectId,
                    ProjectName = gr.Key.ProjectName,
                    LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
-                   GroupsCount = gr.Key.CharacterGroups.Count(g => g.HaveDirectSlots)
                };
     }
 

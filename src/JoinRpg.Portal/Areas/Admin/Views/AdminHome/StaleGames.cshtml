@@ -7,20 +7,12 @@
 <h2>Список проблемных проектов</h2>
 
 <table class="table">
-    <tr><th>Проект</th><th>Последний раз обновлен</th><th>Разное</th><th>&nbsp;</th></tr>
+    <tr><th>Проект</th><th>Последний раз обновлен</th><th>&nbsp;</th></tr>
     @foreach (var project in Model)
     {
         <tr>
             <td>@Html.ActionLink(project.ProjectName, "Details", "Game", new {project.ProjectId, area =""}, null)</td>
             <td>@project.LastUpdated</td>
-            <td>
-              @if (project.GroupsCount > 0)
-                {
-                  <a  asp-page="/GamePages/MassConvertToSlot" asp-route-ProjectId="@project.ProjectId">
-                    <span class="label label-default">Группы с заявками: @project.GroupsCount</span>
-                  </a>
-                }
-              </td>
             <td><a asp-controller="Game" asp-action="Close" asp-area="" asp-route-projectId="@project.ProjectId">закрыть</a></td>
         </tr>
     }

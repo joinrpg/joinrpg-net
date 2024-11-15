@@ -16,29 +16,26 @@ public static class CharacterGroupListViewModel
     {
         private CharacterGroup Root { get; }
 
-        private IList<int> AlreadyOutputedChars { get; } = new List<int>();
+        private IList<int> AlreadyOutputedChars { get; } = [];
 
-        private IList<CharacterGroupListItemViewModel> Results { get; } = new List<CharacterGroupListItemViewModel>();
-
-        private bool HasMasterAccess { get; }
+        private IList<CharacterGroupListItemViewModel> Results { get; } = [];
 
         private int? CurrentUserId { get; }
 
         public CharacterGroupHierarchyBuilder(CharacterGroup root, int? currentUserId)
         {
             Root = root;
-            HasMasterAccess = root.HasMasterAccess(currentUserId);
             HasEditRolesAccess = root.HasEditRolesAccess(currentUserId);
             CurrentUserId = currentUserId;
         }
 
         public IList<CharacterGroupListItemViewModel> Generate()
         {
-            _ = GenerateFrom(Root, 0, new List<CharacterGroup>());
+            _ = GenerateFrom(Root, 0, []);
             return Results;
         }
 
-        private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
+        private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroup characterGroup, int deepLevel, List<CharacterGroup> pathToTop)
         {
             if (!characterGroup.IsVisible(CurrentUserId))
             {
@@ -52,14 +49,11 @@ public static class CharacterGroupListViewModel
                 DeepLevel = deepLevel,
                 Name = characterGroup.CharacterGroupName,
                 FirstCopy = prevCopy == null,
-                AvaiableDirectSlots = characterGroup.HaveDirectSlots ? characterGroup.AvaiableDirectSlots : 0,
-                IsAcceptingClaims = characterGroup.IsAcceptingClaims(),
                 ActiveCharacters =
                 prevCopy?.ActiveCharacters ??
                 GenerateCharacters(characterGroup)
                   .ToList(),
                 Description = characterGroup.Description.ToHtmlString(),
-                ActiveClaimsCount = characterGroup.Claims.Count(c => c.ClaimStatus.IsActive()),
                 Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
                 IsPublic = characterGroup.IsPublic,
                 IsSpecial = characterGroup.IsSpecial,
@@ -93,7 +87,7 @@ public static class CharacterGroupListViewModel
             }
 
             var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g => g.IsActive && g.IsVisible(CurrentUserId)).ToList();
-            var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
+            var pathForChildren = pathToTop.Union([characterGroup]).ToList();
 
             vm.ChildGroups = childGroups
                 .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))

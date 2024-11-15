@@ -34,12 +34,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public bool ProjectActive { get; }
     public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
-    public int? CharacterId { get; }
-
-    [DisplayName("Заявка в группу")]
-    public string? GroupName { get; set; }
-
-    public int? CharacterGroupId { get; }
+    public int CharacterId { get; }
     public bool HasBlockingOtherClaimsForThisCharacter { get; }
     public int OtherClaimsFromThisPlayerCount { get; }
 
@@ -82,10 +77,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public UserProfileDetailsViewModel PlayerDetails { get; set; }
 
     [ReadOnly(true)]
-    public bool? CharacterAutoCreated { get; }
+    public bool CharacterAutoCreated { get; }
 
     [ReadOnly(true)]
-    public bool? CharacterActive { get; }
+    public bool CharacterActive { get; }
 
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; }
@@ -132,11 +127,9 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
         Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser.UserId));
-        CharacterGroupId = claim.CharacterGroupId;
-        GroupName = claim.Group?.CharacterGroupName;
         CharacterId = claim.CharacterId;
-        CharacterActive = claim.Character?.IsActive;
-        CharacterAutoCreated = claim.Character?.AutoCreated;
+        CharacterActive = claim.Character.IsActive;
+        CharacterAutoCreated = claim.Character.AutoCreated;
         AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
           a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
           claim.HasMasterAccess(currentUser.UserId)).ToList();

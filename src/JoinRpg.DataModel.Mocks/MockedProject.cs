@@ -60,6 +60,7 @@ public class MockedProject
         };
         CharacterField = new ProjectField()
         {
+            FieldName = "Visible & Editorable field",
             CanPlayerEdit = true,
             CanPlayerView = true,
             IsActive = true,
@@ -129,8 +130,6 @@ public class MockedProject
 
         Group = CreateCharacterGroup(new CharacterGroup()
         {
-            AvaiableDirectSlots = 1,
-            HaveDirectSlots = true,
             IsRoot = true,
         });
 
@@ -215,21 +214,6 @@ public class MockedProject
             Project = Project,
             Character = mockCharacter,
             CharacterId = mockCharacter.CharacterId,
-            Player = mockUser,
-            PlayerUserId = mockUser.UserId,
-        };
-        Project.Claims.Add(claim);
-        mockUser.Claims.Add(claim);
-        return claim;
-    }
-
-    public Claim CreateClaim(CharacterGroup mockGroup, User mockUser)
-    {
-        var claim = new Claim
-        {
-            Project = Project,
-            CharacterGroupId = mockGroup.CharacterGroupId,
-            Group = mockGroup,
             Player = mockUser,
             PlayerUserId = mockUser.UserId,
         };

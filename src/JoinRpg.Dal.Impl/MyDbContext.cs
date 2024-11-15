@@ -54,9 +54,7 @@ public class MyDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project)
             .WillCascadeOnDelete(false);
 
-        modelBuilder.Entity<Claim>().HasOptional(c => c.Group).WithMany()
-            .WillCascadeOnDelete(false);
-        modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany()
+        modelBuilder.Entity<Claim>().HasRequired(c => c.Character).WithMany()
             .HasForeignKey(c => c.CharacterId).WillCascadeOnDelete(false);
         modelBuilder.Entity<Claim>().HasRequired(c => c.Player).WithMany(p => p.Claims)
             .WillCascadeOnDelete(false);

@@ -52,7 +52,7 @@ internal class ProblemValidator<TObject>(
         }
     }
 
-    private IEnumerable<FieldRelatedProblem> ValidateField(IClaimSource target, FieldWithValue fieldWithValue)
+    private IEnumerable<FieldRelatedProblem> ValidateField(Character target, FieldWithValue fieldWithValue)
     {
         foreach (var filter in fieldFilters)
         {
@@ -73,11 +73,11 @@ internal class ProblemValidator<TObject>(
         };
     }
 
-    private static IClaimSource GetClaimSource(TObject obj)
+    private static Character GetClaimSource(TObject obj)
     {
         return obj switch
         {
-            Claim claim => claim.GetTarget(),
+            Claim claim => claim.Character,
             Character character => character,
             _ => throw new NotImplementedException(),
         };

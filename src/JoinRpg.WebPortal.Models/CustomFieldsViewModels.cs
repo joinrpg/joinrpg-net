@@ -212,7 +212,7 @@ public class CustomFieldsViewModel
     public AccessArguments AccessArguments { get; }
     public bool EditAllowed { get; }
     [Editable(false)]
-    public IClaimSource Target { get; }
+    public Character Target { get; }
 
     [Editable(false)]
     public IReadOnlyCollection<FieldValueViewModel> Fields { get; }
@@ -263,7 +263,7 @@ public class CustomFieldsViewModel
     /// <summary>
     /// Called from AddClaimViewModel
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, IClaimSource target, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null) : this()
+    public CustomFieldsViewModel(int? currentUserId, Character target, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues) : this()
     {
         AccessArguments = new AccessArguments(
           target.HasMasterAccess(currentUserId),
@@ -275,7 +275,7 @@ public class CustomFieldsViewModel
         Target = target;
 
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
-        var fieldsList = target.GetFieldsForClaimSource(projectInfo);
+        var fieldsList = target.GetFields(projectInfo);
         Fields =
           fieldsList
             .Select(ch => CreateFieldValueView(TryOverrideValue(ch), renderer))
@@ -346,7 +346,7 @@ public class CustomFieldsViewModel
     {
         AccessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
 
-        Target = claim.GetTarget();
+        Target = claim.Character;
         EditAllowed = claim.Project.Active;
 
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);

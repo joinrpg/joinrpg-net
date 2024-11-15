@@ -1,26 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
-public class ClaimShortListItemViewModel
+public class ClaimShortListItemViewModel(Claim claim)
 {
     [Display(Name = "Заявка")]
-    public string Name { get; }
+    public string Name { get; } = claim.Character.CharacterName;
 
-    [Display(Name = "Игрок")]
-    public User Player { get; }
+    public int ClaimId { get; } = claim.ClaimId;
+    public int ProjectId { get; } = claim.ProjectId;
 
-    public int ClaimId { get; }
-    public int ProjectId { get; }
-    public bool IsApproved { get; }
-
-    public ClaimShortListItemViewModel(Claim claim)
-    {
-        ClaimId = claim.ClaimId;
-        Name = claim.Name;
-        Player = claim.Player;
-        ProjectId = claim.ProjectId;
-        IsApproved = claim.IsApproved;
-    }
+    public UserLinkViewModel PlayerLink { get; } = UserLinks.Create(claim.Player);
 }
