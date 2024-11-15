@@ -8,7 +8,6 @@ public interface ISearchResult : ILinkable
     string Name { get; }
     MarkdownString Description { get; }
     bool IsPublic { get; }
-    bool IsActive { get; }
     /// <summary>
     /// Used to indicate that a perfect match was found and other search results are odd and useless. 
     /// </summary>
