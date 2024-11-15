@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Services.Export</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
@@ -10,6 +10,7 @@
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.IO.Packaging" Version="8.0.1" /> <!-- Remove when ClosedXML is updated past 0.104.1 and have non-vulnerable version -->
     <PackageReference Include="ClosedXML" Version="0.104.1" />
   </ItemGroup>
 </Project>
