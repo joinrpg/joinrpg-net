@@ -11,11 +11,6 @@ namespace JoinRpg.Dal.Impl;
 public class MyDbContext : DbContext, IUnitOfWork
 {
     /// <summary>
-    /// Constructor for migrations
-    /// </summary>
-    public MyDbContext() : base("DefaultConnection") => Database.Log = sql => DbEasyLog(sql);
-
-    /// <summary>
     /// Main constructor
     /// </summary>
     public MyDbContext(IJoinDbContextConfiguration configuration) : base(configuration.ConnectionString)

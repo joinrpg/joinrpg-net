@@ -10,7 +10,7 @@ public static class DataProtectionRegistration
         var dataProtection = services.AddDataProtection();
         var dataProtectionConnectionString = configuration.GetConnectionString("DataProtection");
 
-        if (!environment.IsDevelopment() && !string.IsNullOrWhiteSpace(dataProtectionConnectionString))
+        if (!string.IsNullOrWhiteSpace(dataProtectionConnectionString))
         {
             services.AddJoinEfCoreDbContext<DataProtectionDbContext>(configuration, environment, "DataProtection");
             dataProtection.PersistKeysToDbContext<DataProtectionDbContext>();
