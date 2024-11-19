@@ -11,6 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Packaging" Version="8.0.1" /> <!-- Remove when ClosedXML is updated past 0.104.1 and have non-vulnerable version -->
-    <PackageReference Include="ClosedXML" Version="0.104.1" />
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
   </ItemGroup>
 </Project>
