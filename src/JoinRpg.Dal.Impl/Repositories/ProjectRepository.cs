@@ -279,7 +279,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                    ProjectId = gr.Key.ProjectId,
                    ProjectName = gr.Key.ProjectName,
                    LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
-                   GroupsCount = gr.Key.CharacterGroups.Count(g => g.HaveDirectSlots)
+                   GroupsCount = gr.Key.CharacterGroups.Count(g => g.HaveDirectSlots || g.Claims.Any())
                };
     }
 
