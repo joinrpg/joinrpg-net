@@ -3,7 +3,8 @@ namespace JoinRpg.Domain;
 public record class AccessArguments(
         bool MasterAccess,
         bool PlayerAccessToCharacter,
-        bool PlayerAccesToClaim)
+        bool PlayerAccesToClaim,
+        bool EditAllowed)
 {
     /// <summary>
     /// true if a user is logged in, he is a master of this game, he has access to the character or claim

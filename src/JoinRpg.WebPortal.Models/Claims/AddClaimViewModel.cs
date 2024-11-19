@@ -66,7 +66,7 @@ public class AddClaimViewModel : IProjectIdAware
         TargetName = claimSource.CharacterName;
         Description = claimSource.Description.ToHtmlString();
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
-        Fields = new CustomFieldsViewModel(playerUserId, claimSource, projectInfo, overrideValues);
+        Fields = new CustomFieldsViewModel(claimSource, projectInfo, AccessArgumentsFactory.CreateForAdd(claimSource, playerUserId), overrideValues: overrideValues);
         return this;
     }
 

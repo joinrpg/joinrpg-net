@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -41,7 +42,7 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
 
     protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
     {
-        Fields = new CustomFieldsViewModel(currentUserId, field, projectInfo);
+        Fields = new CustomFieldsViewModel(field, projectInfo, AccessArgumentsFactory.Create(field, currentUserId));
         CharactersHaveNameField = projectInfo.CharacterNameField is not null;
         AllowToSetGroups = projectInfo.AllowToSetGroups;
     }

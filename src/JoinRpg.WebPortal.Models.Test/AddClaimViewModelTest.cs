@@ -89,7 +89,7 @@ public class AddClaimViewModelTest
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
         var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
-        var fieldView = vm.Fields.FieldById(Mock.PublicFieldInfo.Id.ProjectFieldId);
+        var fieldView = vm.Fields.Field(Mock.PublicFieldInfo);
         _ = fieldView.ShouldNotBeNull();
         fieldView.ShouldBeVisible();
         fieldView.ShouldBeReadonly();

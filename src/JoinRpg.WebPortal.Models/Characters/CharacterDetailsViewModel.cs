@@ -56,7 +56,11 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
             currentUserIdOrDefault);
-        Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, projectInfo, disableEdit: true);
+        Fields = new CustomFieldsViewModel(
+            character,
+            projectInfo,
+            AccessArgumentsFactory.Create(character, currentUserIdOrDefault) with { EditAllowed = false }
+            );
         Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character, uriService);
 
         HasMasterAccess = character.HasMasterAccess(currentUserIdOrDefault);
