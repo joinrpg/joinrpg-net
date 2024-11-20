@@ -44,9 +44,8 @@
 
                         @if (!Model.IsRootGroup && !Model.IsSpecial && Model.ShowEditControls)
                         {
-                            var disabled = Model.ActiveClaimsCount != 0 ? "disabled" : "";
-                            var uri = Model.ActiveClaimsCount != 0 ? "#" : Url.Action("Delete", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null);
-                            <a href="@uri" type="button" class="btn btn-default @disabled">
+                            var uri = Url.Action("Delete", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null);
+                            <a href="@uri" type="button" class="btn btn-default">
                                 <span title="удалить" class="glyphicon glyphicon-trash"></span> удалить
                             </a>
                         }
@@ -73,47 +72,6 @@
 
             <div class="panel-body">
                 @Model.Description
-                @if (Model.AvaiableDirectSlots != 0 || Model.ActiveClaimsCount > 0)
-                {
-
-                if (Model.AvaiableDirectSlots > 0)
-                {
-                <strong>+@Html.DisplayCount_OfX(Model.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
-                }
-                else if (Model.AvaiableDirectSlots < 0)
-                {
-                <strong>есть вакансии / </strong>
-                }
-
-                if (Model.ActiveClaimsCount > 0 || Model.AvaiableDirectSlots != 0)
-                {
-                    if (Model.HasMasterAccess)
-                    {
-                <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
-                    @Html.ActionLink(
-                                    Html.DisplayCount_OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок"),
-                                    "ListForGroupDirect",
-                                    "ClaimList",
-                                    new { Model.ProjectId, Model.CharacterGroupId },
-                                    null)
-                </strong>
-                    }
-                    else
-                    {
-                @Html.DisplayCount_OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                    }
-                }
-                if (Model.IsAcceptingClaims)
-                {
-                @Html.ActionLink(
-                            "заявиться",
-                            "AddForGroup",
-                            "Claim",
-                            new { Model.ProjectId, Model.CharacterGroupId },
-                            new { @class = "btn btn-default btn-xs" })
-                }
-
-                }
             </div>
         </div>
     }

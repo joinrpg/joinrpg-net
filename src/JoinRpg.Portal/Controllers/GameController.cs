@@ -82,7 +82,6 @@ public class GameController(
             AutoAcceptClaims = project.Details.AutoAcceptClaims,
             EnableAccomodation = project.Details.EnableAccommodation,
             DefaultTemplateCharacterId = project.Details.DefaultTemplateCharacterId,
-            HasGroupClaims = project.Claims.Any(c => c.Group != null) || project.CharacterGroups.Any(cg => cg.HaveDirectSlots),
         });
     }
 
@@ -135,7 +134,7 @@ public class GameController(
 
     [HttpPost("/{projectId}/close")]
     [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
-    public async Task<IActionResult> Close(CloseProjectViewModel viewModel, [FromServices] ISlotMassConvertService massConvertService)
+    public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
@@ -145,7 +144,6 @@ public class GameController(
         try
         {
             ProjectIdentification projectId = new(viewModel.ProjectId);
-            await massConvertService.MassConvert(projectId, considerClosed: true);
             await ProjectService.CloseProject(projectId, viewModel.PublishPlot);
             return await RedirectToProject(viewModel.ProjectId);
         }

@@ -32,23 +32,6 @@
             Заявки на проект закрыты, отослать заявку невозможно.
           </div>
           break;
-        case AddClaimForbideReason.NotForDirectClaims:
-          if (Model.IsRoot)
-          {
-            <div class="alert alert-warning">
-              Мастера проекта просят от игроков выбрать определенную роль
-              из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null), чтобы заявиться.
-              Заявиться «просто на игру», не указав роль, невозможно.
-            </div>
-          }
-          else
-          {
-            <div class="alert alert-warning">
-              Заявки в группу «@Model.TargetName» не принимаются.
-              Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-            </div>
-          }
-          break;
         case AddClaimForbideReason.SlotsExhausted:
           <div class="alert alert-warning">
             Места в группе «@Model.TargetName» закончились.
@@ -111,17 +94,12 @@
       <div>@Model.ClaimApplyRules</div>
     }
 
-    @if (!Model.IsRoot)
-    {
       <div class="form-group">
         @Html.LabelFor(model => model.TargetName, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
           @Html.DisplayFor(model => model.TargetName, new { htmlAttributes = new { @class = "form-control" } })
         </div>
       </div>
-    }
-
-
 
     @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
 
@@ -157,7 +135,6 @@
       </div>
 
       @Html.HiddenFor(model => model.CharacterId)
-      @Html.HiddenFor(model => model.CharacterGroupId)
 
       <div class="form-group">
         <div class="col-md-offset-2 col-md-10">

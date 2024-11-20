@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
-using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.ClaimList;
@@ -51,7 +50,7 @@ public class ClaimListViewModel : IOperationsAwareView
             )
           .ToList();
         ClaimIds = claims.Select(c => c.ClaimId).ToArray();
-        CharacterIds = claims.Select(c => c.CharacterId).WhereNotNull().ToArray();
+        CharacterIds = claims.Select(c => c.CharacterId).ToArray();
         ProjectId = projectId;
         ShowCount = showCount;
         ShowUserColumn = showUserColumn;

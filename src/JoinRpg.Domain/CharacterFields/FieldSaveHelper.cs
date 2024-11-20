@@ -7,16 +7,8 @@ namespace JoinRpg.Domain.CharacterFields;
 /// <summary>
 /// Saves fields either to character or to claim
 /// </summary>
-public class FieldSaveHelper
+public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<FieldSaveHelper> logger)
 {
-    private readonly IFieldDefaultValueGenerator generator;
-    private readonly ILogger<FieldSaveHelper> logger;
-
-    public FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<FieldSaveHelper> logger)
-    {
-        this.generator = generator;
-        this.logger = logger;
-    }
 
     /// <summary>
     /// Saves character fields
@@ -62,7 +54,7 @@ public class FieldSaveHelper
 
     private IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(
         int currentUserId,
-        Character? character,
+        Character character,
         Claim? claim,
         IReadOnlyDictionary<int, string?> newFieldValue,
         ProjectInfo projectInfo)
@@ -81,15 +73,13 @@ public class FieldSaveHelper
         return strategy.GetUpdatedFields();
     }
 
-    private FieldSaveStrategyBase CreateStrategy(int currentUserId, Character? character,
-        Claim? claim, ProjectInfo projectInfo)
+    private FieldSaveStrategyBase CreateStrategy(int currentUserId, Character character, Claim? claim, ProjectInfo projectInfo)
     {
-        return (claim, character) switch
+        return claim switch
         {
-            (null, Character ch) => new SaveToCharacterOnlyStrategy(ch, currentUserId, generator, projectInfo),
-            ({ IsApproved: true }, Character ch) => new SaveToCharacterAndClaimStrategy(claim!, ch, currentUserId, generator, projectInfo),
-            ({ IsApproved: false }, _) => new SaveToClaimOnlyStrategy(claim!, currentUserId, generator, projectInfo),
-            _ => throw new InvalidOperationException("Either claim or character should be correct"),
+            null => new SaveToCharacterOnlyStrategy(character, currentUserId, generator, projectInfo),
+            { IsApproved: true } => new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator, projectInfo),
+            { IsApproved: false } => new SaveToClaimOnlyStrategy(claim, currentUserId, generator, projectInfo),
         };
     }
 

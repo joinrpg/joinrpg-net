@@ -16,7 +16,7 @@ public class CharacterNavigationViewModel
 
     public bool CanAddClaim { get; private set; }
     public int? ClaimId { get; private set; }
-    public int? CharacterId { get; private set; }
+    public int CharacterId { get; private set; }
     public int ProjectId { get; private set; }
 
     public string Name { get; private set; }
@@ -40,7 +40,7 @@ public class CharacterNavigationViewModel
         }
         else // if we have My claims, try select single one. We may fail to do so.
         {
-            claimId = character.Claims.Where(c => c.PlayerUserId == currentUserId)
+            claimId = character.Claims.Where(c => c.PlayerUserId == currentUserId).ToList()
                 .TrySelectSingleClaim()?.ClaimId;
         }
 
@@ -61,19 +61,18 @@ public class CharacterNavigationViewModel
         return vm;
     }
 
-    private void LoadClaims(Character? field)
+    private void LoadClaims(Character field)
     {
         RejectedClaims = LoadClaimsWithCondition(field, claim => !claim.ClaimStatus.IsActive());
         DiscussedClaims = LoadClaimsWithCondition(field, claim => claim.IsInDiscussion);
     }
 
-    private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character? field,
+    private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field,
         Func<Claim, bool> predicate)
     {
-        return HasMasterAccess && field != null
-            ? field.Claims.Where(predicate)
-                .Select(claim => new ClaimShortListItemViewModel(claim))
-            : Enumerable.Empty<ClaimShortListItemViewModel>();
+        return HasMasterAccess
+            ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim))
+            : [];
     }
 
     public static CharacterNavigationViewModel FromClaim(
@@ -81,22 +80,19 @@ public class CharacterNavigationViewModel
         int currentUserId,
         CharacterNavigationPage characterNavigationPage)
     {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
 
         var vm = new CharacterNavigationViewModel
         {
             CanAddClaim = false,
             ClaimId = claim.ClaimId,
             HasMasterAccess = claim.HasMasterAccess(currentUserId),
-            CharacterId = claim.Character?.CharacterId,
+            CharacterId = claim.Character.CharacterId,
             ProjectId = claim.ProjectId,
             Page = characterNavigationPage,
-            Name = claim.GetTarget().Name,
+            Name = claim.Character.CharacterName,
             CanEditRoles = claim.HasEditRolesAccess(currentUserId),
-            IsActive = claim.GetTarget().IsActive,
+            IsActive = claim.Character.IsActive,
         };
         vm.LoadClaims(claim.Character);
         if (vm.RejectedClaims.Any(c => c.ClaimId == claim.ClaimId))

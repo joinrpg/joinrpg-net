@@ -104,28 +104,17 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
             throw new ArgumentException(
                 $"Both {nameof(character)} and {nameof(claim)} were provided");
         }
-        else if (claim != null)
-        {
-            FieldsContainer = claim;
-            Linkable = claim;
-            ProjectName = claim.Project.ProjectName;
-            Claim = claim;
-            Name = claim.Name;
-        }
-        else if (character != null)
-        {
-            FieldsContainer = character;
-            Linkable = character;
-            ProjectName = character.Project.ProjectName;
-            Claim = character.ApprovedClaim;
-            Name = character.CharacterName;
-            IsCharacterMail = true;
-        }
-        else
-        {
-            throw new ArgumentException(
-               $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
-        }
+
+        IsCharacterMail = character != null;
+
+        var targetChar = character ?? claim?.Character ?? throw new ArgumentException($"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+
+        ProjectName = targetChar.Project.ProjectName;
+        Name = targetChar.CharacterName;
+
+        FieldsContainer = (IFieldContainter?)claim ?? character ?? throw new ArgumentException($"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+        Linkable = (ILinkable?)claim ?? character ?? throw new ArgumentException($"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+        Claim = claim ?? targetChar.ApprovedClaim;
 
         Initiator = initiator;
         Text = new MarkdownString();

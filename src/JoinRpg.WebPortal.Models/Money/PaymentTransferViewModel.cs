@@ -63,7 +63,7 @@ public class PaymentTransferViewModel : AddCommentViewModel
         OperationDate = DateTime.UtcNow;
         ActionName = "Перевести";
         ClaimId = claim.ClaimId;
-        ClaimName = claim.Name;
+        ClaimName = claim.Character.CharacterName;
         ProjectId = claim.ProjectId;
         CommentDiscussionId = claim.CommentDiscussionId;
         MaxMoney = claim.GetPaymentSum();

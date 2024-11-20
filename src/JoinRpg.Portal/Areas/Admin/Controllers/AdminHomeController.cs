@@ -13,8 +13,6 @@ public class AdminHomeController(IProjectRepository projectRepository) : Control
     public async Task<IActionResult> StaleGames()
     {
         var stale = await projectRepository.GetStaleProjects(DateTime.Now.AddMonths(-4));
-        var slots = await projectRepository.GetActiveProjectsWithGroupClaims();
-        var projects = stale.Union(slots).DistinctBy(p => p.ProjectId).ToArray();
-        return View(projects);
+        return View(stale);
     }
 }

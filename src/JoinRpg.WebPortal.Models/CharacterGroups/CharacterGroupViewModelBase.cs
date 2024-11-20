@@ -22,19 +22,8 @@ public abstract class CharacterGroupViewModelBase : IProjectIdAware
     [DisplayName("Название группы"), Required]
     public string Name { get; set; }
 
-    [Display(Name = "Лимит заявок", Description = "Не включает уже прописанных в сетке ролей"), Range(0, 100)]
-    public int DirectSlots { get; set; }
-
-    [Display(Name = "Заявки в группу",
-        Description = "Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника». Рекомендуется выбрать вариант «Заявки вне прописанных мастерами персонажей запрещены», а вместо остальных вариантов использовать шаблоны персонажей. Это позволит заранее прописать все нужные поля.")]
-    public DirectClaimSettings HaveDirectSlots { get; set; }
-
     [Display(Name = "Описание", Description = "Для публичных сущностей будет доступно всем."),
      // ReSharper disable once Mvc.TemplateNotResolved
      UIHint("MarkdownString")]
     public string Description { get; set; }
-
-    public bool HaveDirectSlotsForSave() => HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
-
-    public int DirectSlotsForSave() => HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited ? -1 : DirectSlots;
 }

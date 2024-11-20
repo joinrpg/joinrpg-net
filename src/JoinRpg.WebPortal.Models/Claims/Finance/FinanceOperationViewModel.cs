@@ -60,7 +60,7 @@ public class FinanceOperationViewModel
         ProjectId = source.ProjectId;
         Money = source.MoneyAmount;
         LinkedClaimId = source.LinkedClaimId;
-        LinkedClaimName = source.LinkedClaim?.Name ?? "";
+        LinkedClaimName = source.LinkedClaim?.Character.CharacterName ?? "";
         LinkedClaimUser = source.LinkedClaim?.Player!;
         OperationType = (FinanceOperationTypeViewModel)source.OperationType;
         OperationState = (FinanceOperationStateViewModel)source.State;

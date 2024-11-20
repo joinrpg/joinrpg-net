@@ -21,13 +21,7 @@ public class AddClaimValidationRulesTest
     }
 
     [Fact]
-    public void AddClaimAllowedGroup() => ShouldBeAllowed(Mock.Group);
-
-    [Fact]
     public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
-
-    [Fact]
-    public void AddClaimAllowedGroupWithoutUser() => Mock.Group.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
 
     [Fact]
     public void CantSendClaimIfProjectClaimsClosed()
@@ -41,14 +35,6 @@ public class AddClaimValidationRulesTest
     {
         Mock.Project.Active = false;
         ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.ProjectNotActive);
-    }
-
-    [Fact]
-    public void CantSendClaimIfNoSlots()
-    {
-        Mock.Group.HaveDirectSlots = true;
-        Mock.Group.AvaiableDirectSlots = 0;
-        ShouldBeNotAllowed(Mock.Group, AddClaimForbideReason.SlotsExhausted);
     }
 
     [Fact]
@@ -83,21 +69,6 @@ public class AddClaimValidationRulesTest
     }
 
     [Fact]
-    public void CantSendClaimToSameGroup()
-    {
-        _ = Mock.CreateClaim(Mock.Group, Mock.Player);
-        ShouldBeNotAllowed(Mock.Group, AddClaimForbideReason.AlreadySent);
-    }
-
-    [Fact]
-    public void AllowSendClaimToSameGroupIfProjectSettingsAllows()
-    {
-        Mock.Project.Details.EnableManyCharacters = true;
-        _ = Mock.CreateClaim(Mock.Group, Mock.Player);
-        ShouldBeAllowed(Mock.Group);
-    }
-
-    [Fact]
     public void CantSendClaimToSameCharacter()
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
@@ -116,7 +87,8 @@ public class AddClaimValidationRulesTest
     public void CantSendClaimIfHasApproved()
     {
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
-        ShouldBeNotAllowed(Mock.Group, AddClaimForbideReason.OnlyOneCharacter);
+        var another = Mock.CreateCharacter("another");
+        ShouldBeNotAllowed(another, AddClaimForbideReason.OnlyOneCharacter);
     }
 
     [Fact]
@@ -124,19 +96,21 @@ public class AddClaimValidationRulesTest
     {
         Mock.Project.Details.EnableManyCharacters = true;
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
-        ShouldBeAllowed(Mock.Group);
+        var another = Mock.CreateCharacter("another");
+        ShouldBeAllowed(another);
     }
 
     [Fact]
     public void AllowSendClaimEvenIfHasAnotherNotApproved()
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        ShouldBeAllowed(Mock.Group);
+        var another = Mock.CreateCharacter("another");
+        ShouldBeAllowed(another);
     }
 
-    private void ShouldBeAllowed(IClaimSource mockCharacter)
+    private void ShouldBeAllowed(Character mockCharacter)
         => mockCharacter.ValidateIfCanAddClaim(Mock.Player.UserId).ShouldBeEmpty();
 
-    private void ShouldBeNotAllowed(IClaimSource claimSource, AddClaimForbideReason reason)
+    private void ShouldBeNotAllowed(Character claimSource, AddClaimForbideReason reason)
         => claimSource.ValidateIfCanAddClaim(Mock.Player.UserId).ShouldContain(reason);
 }

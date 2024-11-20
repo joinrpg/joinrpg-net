@@ -10,32 +10,16 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl;
 
-internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
+internal class CharacterServiceImpl(
+    IUnitOfWork unitOfWork,
+    IEmailService emailService,
+    FieldSaveHelper fieldSaveHelper,
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor), ICharacterService
 {
-    private readonly FieldSaveHelper fieldSaveHelper;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-    private readonly ILogger<CharacterServiceImpl> logger;
-
-    public CharacterServiceImpl(
-        IUnitOfWork unitOfWork,
-        IEmailService emailService,
-        FieldSaveHelper fieldSaveHelper,
-        ICurrentUserAccessor currentUserAccessor,
-        IProjectMetadataRepository projectMetadataRepository,
-        ILogger<CharacterServiceImpl> logger) : base(unitOfWork, currentUserAccessor)
-    {
-        EmailService = emailService;
-        this.fieldSaveHelper = fieldSaveHelper;
-        this.projectMetadataRepository = projectMetadataRepository;
-        this.logger = logger;
-    }
-
-    private IEmailService EmailService { get; }
-
     public async Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest)
     {
         var project = await ProjectRepository.GetProjectWithFieldsAsync(addCharacterRequest.ProjectId);
@@ -132,7 +116,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         if (email != null)
         {
-            await EmailService.Email(email);
+            await emailService.Email(email);
         }
     }
 
@@ -213,127 +197,7 @@ internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
 
         if (email != null)
         {
-            await EmailService.Email(email);
-        }
-    }
-
-    public async Task<int?> CreateSlotFromGroup(int projectId, int characterGroupId, string slotName, bool allowToChangeInactive, bool considerClosed)
-    {
-        try
-        {
-            var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
-
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-            if (!allowToChangeInactive)
-            {
-                group.Project.EnsureProjectActive();
-            }
-
-            if (!IsCurrentUserAdmin)
-            {
-                group.Project
-                    .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-            }
-
-            var claims = group.Claims.ToList();
-
-            var needToSaveClaims = claims.Any();
-            var needToInitSlot = group.HaveDirectSlots && group.Project.Active && !considerClosed;
-            var needToClearSlot = group.HaveDirectSlots;
-
-            logger.LogInformation("Group (Id={characterGroupId}, Name={characterGroupName}, IsRoot={IsRoot}, Parents={GroupParentIds}) is evaluated to convert to slot. Decision (SaveClaims: {needToSaveClaims}, InitSlot: {needToInitSlot}, ClearSlot: {needToClearSlot})",
-                characterGroupId,
-                group.CharacterGroupName,
-                group.IsRoot,
-                string.Join(", ", group.ParentCharacterGroupIds),
-                needToSaveClaims,
-                needToInitSlot,
-                needToClearSlot);
-
-            if (!needToSaveClaims && !needToInitSlot && !needToClearSlot)
-            {
-                return null; // Do nothing
-            }
-
-            MarkTreeModified(group.Project);
-
-            Character? character;
-            if (needToSaveClaims || needToInitSlot)
-            {
-
-                var addCharacterRequest = new AddCharacterRequest(
-                    projectId,
-                    [characterGroupId],
-                    CharacterTypeInfo.DefaultSlot(slotName),
-                    new Dictionary<int, string?>());
-
-                character = new Character
-                {
-                    ParentCharacterGroupIds = await ValidateGroupListForCharacter(projectInfo, addCharacterRequest.ParentCharacterGroupIds),
-                    ProjectId = addCharacterRequest.ProjectId,
-                    Project = group.Project,
-                };
-
-                SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
-
-                Create(character);
-
-
-                //TODO we do not send message for creating character
-                _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
-                    character,
-                    addCharacterRequest.FieldValues, projectInfo);
-
-                if (needToInitSlot)
-                {
-                    // Move limit to character
-                    character.CharacterSlotLimit = group.DirectSlotsUnlimited ? null : group.AvaiableDirectSlots;
-                    character.IsActive = true;
-                }
-                else
-                {
-                    character.CharacterSlotLimit = 0;
-                    character.IsActive = claims.Any(c => c.IsPending); // if there is some alive claim
-                }
-
-                // Move claims from group to character
-
-                foreach (var claim in claims)
-                {
-                    claim.CharacterGroupId = null;
-                    claim.Character = character;
-                }
-            }
-            else
-            {
-                character = null;
-            }
-
-            //Remove direct claim settings for group 
-            group.HaveDirectSlots = false;
-            group.AvaiableDirectSlots = 0;
-
-            await UnitOfWork.SaveChangesAsync();
-
-            return character?.CharacterId;
-        }
-        catch (DbEntityValidationException exception)
-        {
-            var message = "\nValidation Errors: ";
-            foreach (var error in exception.EntityValidationErrors.SelectMany(entity => entity.ValidationErrors))
-            {
-                message += $"\n * Field name: {error.PropertyName}, Error message: {error.ErrorMessage}";
-            }
-            logger.LogError(exception, "Error during converting CharacterGroup={characterGroupId}. Validation errors: {validationErrors}",
-                characterGroupId,
-                message);
-            throw;
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Error during converting CharacterGroup={characterGroupId}", characterGroupId);
-            throw;
+            await emailService.Email(email);
         }
     }
 

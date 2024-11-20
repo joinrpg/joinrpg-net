@@ -6,27 +6,26 @@ namespace JoinRpg.Domain;
 
 public static class ClaimAcceptOrMoveValidationExtensions
 {
-    public static bool IsAcceptingClaims<T>(this T characterGroup)
-        where T : IClaimSource => !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();
+    public static bool IsAcceptingClaims(this Character character)
+        => !ValidateIfCanAddClaim(character, playerUserId: null).Any();
 
-    public static IEnumerable<AddClaimForbideReason> ValidateIfCanAddClaim<T>(
-        this T claimSource,
+    public static IEnumerable<AddClaimForbideReason> ValidateIfCanAddClaim(
+        this Character claimSource,
         int? playerUserId)
-        where T : IClaimSource => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
+        => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
 
     public static bool CanMoveClaimTo(this Character character, Claim claim) => !ValidateIfCanMoveClaim(character, claim).Any();
 
-    public static IEnumerable<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim)
+    public static IEnumerable<AddClaimForbideReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim)
         => ValidateImpl(claimSource, claim.PlayerUserId, claim);
 
-    public static void EnsureCanAddClaim<T>([NotNull] this T? claimSource, int currentUserId)
-        where T : IClaimSource
+    public static void EnsureCanAddClaim([NotNull] this Character claimSource, int currentUserId)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
         ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
     }
 
-    public static void EnsureCanMoveClaim([NotNull] this IClaimSource? claimSource, Claim claim)
+    public static void EnsureCanMoveClaim([NotNull] this Character claimSource, Claim claim)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
         ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
@@ -48,7 +47,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
         {
             AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(),
 
-            AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted or AddClaimForbideReason.NotForDirectClaims
+            AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted
                 or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive
                     => new ClaimTargetIsNotAcceptingClaims(),
 
@@ -63,13 +62,13 @@ public static class ClaimAcceptOrMoveValidationExtensions
     /// <summary>
     /// Perform real validation
     /// </summary>
-    /// <param name="claimSource">Where we are trying to add/move claim</param>
+    /// <param name="character">Where we are trying to add/move claim</param>
     /// <param name="playerUserId">User</param>
     /// <param name="existingClaim">If we already have claim (move), that's it</param>
     /// <returns></returns>
-    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this IClaimSource claimSource, int? playerUserId, Claim? existingClaim)
+    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, int? playerUserId, Claim? existingClaim)
     {
-        var project = claimSource.Project;
+        var project = character.Project;
 
         if (!project.Active)
         {
@@ -81,15 +80,26 @@ public static class ClaimAcceptOrMoveValidationExtensions
             yield return AddClaimForbideReason.ProjectClaimsClosed;
         }
 
-        switch (claimSource)
+
+        if (character.ApprovedClaimId != null)
         {
-            case CharacterGroup characterGroup:
-                if (!characterGroup.HaveDirectSlots)
-                {
-                    yield return AddClaimForbideReason.NotForDirectClaims;
-                }
-                else if (!characterGroup.DirectSlotsUnlimited &&
-                         characterGroup.AvaiableDirectSlots == 0)
+            yield return AddClaimForbideReason.Busy;
+        }
+
+        if (!character.IsActive)
+        {
+            yield return AddClaimForbideReason.CharacterInactive;
+        }
+
+        switch (character.CharacterType)
+        {
+            case CharacterType.Player:
+                break;
+            case CharacterType.NonPlayer:
+                yield return AddClaimForbideReason.Npc;
+                break;
+            case CharacterType.Slot:
+                if (character.CharacterSlotLimit == 0)
                 {
                     yield return AddClaimForbideReason.SlotsExhausted;
                 }
@@ -98,40 +108,9 @@ public static class ClaimAcceptOrMoveValidationExtensions
                 {
                     yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
                 }
-
-                break;
-            case Character character:
-                if (character.ApprovedClaimId != null)
-                {
-                    yield return AddClaimForbideReason.Busy;
-                }
-
-                if (!character.IsActive)
-                {
-                    yield return AddClaimForbideReason.CharacterInactive;
-                }
-
-                switch (character.CharacterType)
-                {
-                    case CharacterType.Player:
-                        break;
-                    case CharacterType.NonPlayer:
-                        yield return AddClaimForbideReason.Npc;
-                        break;
-                    case CharacterType.Slot:
-                        if (character.CharacterSlotLimit == 0)
-                        {
-                            yield return AddClaimForbideReason.SlotsExhausted;
-                        }
-
-                        if (existingClaim?.IsApproved == true)
-                        {
-                            yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
-                        }
-                        break;
-                }
                 break;
         }
+
 
         if (existingClaim?.ClaimStatus == Claim.Status.CheckedIn)
         {
@@ -140,17 +119,13 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
         if (playerUserId is int playerId)
         {
-            if (claimSource.Claims.OfUserActive(playerId).Any())
+            if (character.Claims.OfUserActive(playerId).Any())
             {
-                if (!(claimSource is CharacterGroup) ||
-                    !project.Details.EnableManyCharacters)
-                {
-                    yield return AddClaimForbideReason.AlreadySent;
-                }
+                yield return AddClaimForbideReason.AlreadySent;
             }
 
             if (!project.Details.EnableManyCharacters &&
-                project.Claims.OfUserApproved(playerId).Except(new[] { existingClaim }).Any())
+                project.Claims.OfUserApproved(playerId).Except([existingClaim]).Any())
             {
                 yield return AddClaimForbideReason.OnlyOneCharacter;
             }

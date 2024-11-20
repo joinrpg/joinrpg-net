@@ -29,7 +29,5 @@ public static class Services
         {
             yield return provider;
         }
-
-        yield return typeof(SlotMassConvertService);
     }
 }

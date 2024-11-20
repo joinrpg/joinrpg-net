@@ -140,7 +140,7 @@ public static class ProjectEntityExtensions
 
         return currentUserId != null && forumThread.IsVisibleToPlayer &&
                forumThread.Project.Claims.OfUserApproved((int)currentUserId)
-                 .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
+                 .Any(c => c.Character.IsPartOfGroup(forumThread.CharacterGroupId));
     }
 
     [Pure]

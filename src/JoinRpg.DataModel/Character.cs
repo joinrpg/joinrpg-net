@@ -6,7 +6,7 @@ using JoinRpg.PrimitiveTypes;
 namespace JoinRpg.DataModel;
 
 
-public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity, ILinkableWithName
+public class Character : IWorldObject, IFieldContainter, ICreatedUpdatedTrackedForEntity, ILinkableWithName
 {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -61,10 +61,6 @@ public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedF
     public int? ApprovedClaimId { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
-    bool IClaimSource.IsRoot => false; //Character is not "root group"
-
-    User? IClaimSource.ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
-
     public string PlotElementOrderData { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }

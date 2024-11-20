@@ -23,7 +23,7 @@ if (Model.ToMyClaimsOnlyWarning)
             @foreach (var claim in Model.Claims)
             {
                 @Html.ActionLink(claim.Name, "Edit", "Claim", new {Model.ProjectId, claim.ClaimId}, null)
-                <text>(@Html.DisplayFor(model => claim.Player))</text>
+                <text>(@Html.DisplayFor(model => claim.PlayerLink))</text>
             }
         </div>
         <hr />

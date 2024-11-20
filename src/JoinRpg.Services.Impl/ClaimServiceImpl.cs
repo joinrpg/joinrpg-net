@@ -123,7 +123,6 @@ internal class ClaimServiceImpl(
         var responsibleMaster = source.GetResponsibleMaster();
         var claim = new Claim()
         {
-            CharacterGroupId = null,
             CharacterId = characterId,
             ProjectId = projectId,
             PlayerUserId = oldClaim.PlayerUserId,
@@ -175,20 +174,14 @@ internal class ClaimServiceImpl(
     }
 
     public async Task AddClaimFromUser(int projectId,
-        int? characterGroupId,
-        int? characterId,
+        int characterId,
         string claimText,
         IReadOnlyDictionary<int, string?> fields)
     {
-        if (characterId is not null)
-        {
-            logger.LogDebug("About to add claim to character {characterId}", characterId);
-        }
-        if (characterGroupId is not null)
-        {
-            logger.LogDebug("About to add claim to character {characterGroupId}", characterGroupId);
-        }
-        var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
+
+        logger.LogDebug("About to add claim to character {characterId}", characterId);
+
+        var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(projectId));
 
         source.EnsureCanAddClaim(CurrentUserId);
@@ -197,7 +190,6 @@ internal class ClaimServiceImpl(
 
         var claim = new Claim()
         {
-            CharacterGroupId = characterGroupId,
             CharacterId = characterId,
             ProjectId = projectId,
             PlayerUserId = CurrentUserId,
@@ -328,16 +320,11 @@ internal class ClaimServiceImpl(
 
         commentText ??= "";
 
-        if (claim.Character?.CharacterType == CharacterType.Slot)
+        if (claim.Character.CharacterType == CharacterType.Slot)
         {
             var character = await CreateCharacterFromSlot(claim.Character, claim.Player);
             claim.Character = character;
             claim.CharacterId = character.CharacterId;
-        }
-
-        else if (claim.Group != null)
-        {
-            ConvertToIndividual(claim);
         }
 
         claim.MasterAcceptedDate = Now;
@@ -363,7 +350,6 @@ internal class ClaimServiceImpl(
         }
 
         MarkCharacterChangedIfApproved(claim);
-        Debug.Assert(claim.Character != null, "claim.Character != null");
         claim.Character.ApprovedClaimId = claim.ClaimId;
         claim.Character.ApprovedClaim = claim; // Used in SaveCharacterFields
         claim.Character.IsHot = false;
@@ -448,38 +434,6 @@ internal class ClaimServiceImpl(
 
         return newCharacter;
     }
-
-
-    private void ConvertToIndividual(Claim claim)
-    {
-        if (claim.Group == null)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (claim.Group.AvaiableDirectSlots > 0)
-        {
-            claim.Group.AvaiableDirectSlots -= 1;
-        }
-
-        var character = new Character()
-        {
-            CharacterName = "$$$ERROR", // always be overwritten later, just for be sure
-            Project = claim.Project,
-            ProjectId = claim.ProjectId,
-            IsAcceptingClaims = true,
-            IsPublic = claim.Group.IsPublic,
-            IsActive = true,
-            ParentCharacterGroupIds = new[] { claim.Group.CharacterGroupId },
-            CharacterId = -1,
-            AutoCreated = true,
-        };
-        MarkCreatedNow(character);
-        claim.CharacterGroupId = null;
-        claim.Character = character;
-        claim.CharacterId = character.CharacterId;
-    }
-
 
     public async Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText, bool deleteCharacter)
     {
@@ -733,7 +687,7 @@ internal class ClaimServiceImpl(
     public async Task RestoreByMaster(int projectId, int claimId, string commentText, int characterId)
     {
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
-        var character = (Character)await ProjectRepository.GetClaimSource(projectId, null, characterId);
+        var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
 
         //Grab subscribtions before change
         var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
@@ -752,8 +706,6 @@ internal class ClaimServiceImpl(
 
         claim.Character = character;
         claim.CharacterId = characterId;
-        claim.Group = null;
-        claim.CharacterGroupId = null;
 
         //Ensure that character is active
         claim.Character.IsActive = true;
@@ -771,7 +723,7 @@ internal class ClaimServiceImpl(
     public async Task MoveByMaster(int projectId, int claimId, string contents, int characterId)
     {
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
-        var source = (Character)await ProjectRepository.GetClaimSource(projectId, null, characterId);
+        var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
 
         //Grab subscribtions before change
         var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
@@ -784,9 +736,7 @@ internal class ClaimServiceImpl(
         {
             claim.Character.ApprovedClaim = null;
         }
-        claim.CharacterGroupId = null;
         claim.CharacterId = characterId;
-        claim.Group = null;
         claim.Character = source; //That fields is required later
 
         if (claim.IsApproved)

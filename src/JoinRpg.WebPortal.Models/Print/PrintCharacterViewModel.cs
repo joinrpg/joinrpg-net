@@ -65,7 +65,11 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
             .ToArray();
 
         PlayerPhoneNumber = character.ApprovedClaim?.Player.Extra?.PhoneNumber;
-        Fields = new CustomFieldsViewModel(currentUserId, character, projectInfo, disableEdit: true, onlyPlayerVisible: true, wherePrintEnabled: true);
+        Fields = new CustomFieldsViewModel(
+            character,
+            projectInfo,
+            AccessArgumentsFactory.CreateForPrint(character, currentUserId) with { EditAllowed = false },
+            wherePrintEnabled: true);
     }
 }
 

@@ -11,7 +11,6 @@ public interface IClaimsRepository : IDisposable
     Task<Claim> GetClaim(int projectId, int? claimId);
     Task<Claim> GetClaimWithDetails(int projectId, int claimId);
     Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds);
-    Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId);
     Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId);
 
     Task<Claim> GetClaimByDiscussion(int projectId, int commentDiscussionId);

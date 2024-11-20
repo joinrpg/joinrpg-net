@@ -28,8 +28,6 @@ internal class ProjectService(
             CharacterGroupName = rootCharacterGroupName,
             IsActive = true,
             ResponsibleMasterUserId = CurrentUserId,
-            HaveDirectSlots = false,
-            AvaiableDirectSlots = 0,
         };
         MarkCreatedNow(rootGroup);
 
@@ -66,8 +64,6 @@ internal class ProjectService(
 
         Create(new CharacterGroup()
         {
-            AvaiableDirectSlots = 0,
-            HaveDirectSlots = false,
             CharacterGroupName = Required(name),
             ParentCharacterGroupIds =
                 await ValidateCharacterGroupList(projectId,
@@ -198,28 +194,25 @@ internal class ProjectService(
         string name,
         bool isPublic,
         IReadOnlyCollection<int> parentCharacterGroupIds,
-        string description,
-        bool haveDirectSlots,
-        int directSlots)
+        string description)
     {
         var characterGroup =
             (await ProjectRepository.GetGroupAsync(projectId, characterGroupId))
             .RequestMasterAccess(currentUserId, acl => acl.CanEditRoles)
             .EnsureProjectActive();
 
-        if (!characterGroup.IsRoot
-        ) //We shoud not edit root group, except of possibility of direct claims here
+        if (characterGroup.IsRoot) //We shoud not edit root group
         {
-            characterGroup.CharacterGroupName = Required(name);
-            characterGroup.IsPublic = isPublic;
-            characterGroup.ParentCharacterGroupIds =
-                await ValidateCharacterGroupList(projectId,
-                    Required(parentCharacterGroupIds),
-                    ensureNotSpecial: true);
-            characterGroup.Description = new MarkdownString(description);
+            throw new InvalidOperationException();
         }
-        characterGroup.AvaiableDirectSlots = directSlots;
-        characterGroup.HaveDirectSlots = haveDirectSlots;
+
+        characterGroup.CharacterGroupName = Required(name);
+        characterGroup.IsPublic = isPublic;
+        characterGroup.ParentCharacterGroupIds =
+            await ValidateCharacterGroupList(projectId,
+                Required(parentCharacterGroupIds),
+                ensureNotSpecial: true);
+        characterGroup.Description = new MarkdownString(description);
 
         MarkTreeModified(characterGroup.Project); // Can be smarted than this
         MarkChanged(characterGroup);
@@ -229,11 +222,6 @@ internal class ProjectService(
     public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
         var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId) ?? throw new DbEntityValidationException();
-
-        if (characterGroup.HasActiveClaims())
-        {
-            throw new DbEntityValidationException();
-        }
 
         _ = characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = characterGroup.EnsureProjectActive();

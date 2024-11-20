@@ -71,48 +71,6 @@
                             @await Html.PartialAsync("_CharacterPartial", character)
                         </li>
                     }
-                    @if (item.AvaiableDirectSlots != 0 || item.ActiveClaimsCount > 0)
-                    {
-                        <li>
-                            @if (item.AvaiableDirectSlots > 0)
-                            {
-                                <strong>+@Html.DisplayCount_OfX(item.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
-                            }
-                            else if (item.AvaiableDirectSlots < 0)
-                            {
-                                <strong>есть вакансии / </strong>
-                            }
-
-                            @if (item.ActiveClaimsCount > 0 || item.AvaiableDirectSlots != 0)
-                            {
-                                if (Model.HasMasterAccess && item.ActiveClaimsCount > 0)
-                                {
-                                    <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
-                                        @Html.ActionLink(
-                                            Html.DisplayCount_OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"),
-                                            "ListForGroupDirect",
-                                            "ClaimList",
-                                            new {Model.ProjectId, item.CharacterGroupId},
-                                            null)
-                                    </strong>
-                                }
-                                else
-                                {
-                                    @Html.DisplayCount_OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                                }
-                            }
-                            @if (item.IsAcceptingClaims)
-                            {
-                                <text>&nbsp;</text>
-                                @Html.ActionLink(
-                                    "заявиться",
-                                    "AddForGroup",
-                                    "Claim",
-                                    new {Model.ProjectId, item.CharacterGroupId},
-                                    new {@class = "btn btn-default btn-xs"})
-                            }
-                        </li>
-                    }
                 </ul>
             </div>
             }

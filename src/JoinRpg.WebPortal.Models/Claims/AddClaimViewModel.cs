@@ -16,8 +16,7 @@ public class AddClaimViewModel : IProjectIdAware
 
     public JoinHtmlString ClaimApplyRules { get; set; }
 
-    public int? CharacterId { get; set; }
-    public int? CharacterGroupId { get; set; }
+    public int CharacterId { get; set; }
 
     [DisplayName("Заявка")]
     public string TargetName { get; set; }
@@ -44,10 +43,7 @@ public class AddClaimViewModel : IProjectIdAware
     public static AddClaimViewModel Create(Character character, int playerUserId, ProjectInfo projectInfo)
         => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, playerUserId, projectInfo);
 
-    public static AddClaimViewModel Create(CharacterGroup group, int playerUserId, ProjectInfo projectInfo)
-        => new AddClaimViewModel { CharacterGroupId = group.CharacterGroupId }.Fill(group, playerUserId, projectInfo);
-
-    public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
+    public AddClaimViewModel Fill(Character claimSource, int playerUserId, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
         var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId).ToList();
 
@@ -67,15 +63,12 @@ public class AddClaimViewModel : IProjectIdAware
 
         ProjectId = claimSource.Project.ProjectId;
         ProjectName = claimSource.Project.ProjectName;
-        TargetName = claimSource.Name;
+        TargetName = claimSource.CharacterName;
         Description = claimSource.Description.ToHtmlString();
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
-        Fields = new CustomFieldsViewModel(playerUserId, claimSource, projectInfo, overrideValues);
-        IsRoot = claimSource.IsRoot;
+        Fields = new CustomFieldsViewModel(claimSource, projectInfo, AccessArgumentsFactory.CreateForAdd(claimSource, playerUserId), overrideValues: overrideValues);
         return this;
     }
-
-    public bool IsRoot { get; private set; }
 
     public bool CanSendClaim => ValidationStatus.Count == 0;
 

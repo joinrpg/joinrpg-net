@@ -4,7 +4,6 @@ public enum AddClaimForbideReason
 {
     ProjectNotActive,
     ProjectClaimsClosed,
-    NotForDirectClaims,
     SlotsExhausted,
     Npc,
     Busy,

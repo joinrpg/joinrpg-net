@@ -42,7 +42,7 @@ internal class ClaimsByIdProvider : ISearchProvider
           .Select(claim => new SearchResultImpl
           {
               LinkType = LinkType.Claim,
-              Name = claim.Name,
+              Name = claim.Character.CharacterName,
               Description = new MarkdownString(WorldObjectProviderBase.GetFoundByIdDescription(claim.ClaimId)),
               Identification = claim.ClaimId.ToString(),
               ProjectId = claim.ProjectId,

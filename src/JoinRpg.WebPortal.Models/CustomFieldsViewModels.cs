@@ -136,7 +136,7 @@ public class FieldValueViewModel
                   && ch.Field.HasViewAccess(model.AccessArguments)
                   && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
-        CanEdit = model.EditAllowed
+        CanEdit = model.AccessArguments.EditAllowed
                   && ch.Field.HasEditAccess(model.AccessArguments)
                   && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
@@ -210,9 +210,8 @@ public class FieldValueViewModel
 public class CustomFieldsViewModel
 {
     public AccessArguments AccessArguments { get; }
-    public bool EditAllowed { get; }
     [Editable(false)]
-    public IClaimSource Target { get; }
+    public Character Target { get; }
 
     [Editable(false)]
     public IReadOnlyCollection<FieldValueViewModel> Fields { get; }
@@ -239,57 +238,16 @@ public class CustomFieldsViewModel
         => HasFieldsWithFee && AccessArguments.AnyAccessToCharacter;
 
     /// <summary>
-    /// Initializes dictionaries
-    /// </summary>
-    private void InitTotals()
-    {
-        foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
-        {
-            FieldsFee[key] = 0;
-            FieldWithFeeCount[key] = 0;
-        }
-    }
-
-    /// <summary>
     /// Returns sum of fees of all fields
     /// </summary>
     public int FieldsTotalFee => FieldsFee.Sum(kv => kv.Value);
 
     /// <summary>
-    /// Common constructor
-    /// </summary>
-    public CustomFieldsViewModel() => InitTotals();
-
-    /// <summary>
     /// Called from AddClaimViewModel
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, IClaimSource target, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null) : this()
+    public CustomFieldsViewModel(Character target, ProjectInfo projectInfo, AccessArguments accessArguments, Dictionary<int, string?>? overrideValues)
+        : this(accessArguments, target, target.GetFields(projectInfo), overrideValues)
     {
-        AccessArguments = new AccessArguments(
-          target.HasMasterAccess(currentUserId),
-          PlayerAccessToCharacter: false,
-          PlayerAccesToClaim: true);
-
-        EditAllowed = target.Project.Active;
-
-        Target = target;
-
-        var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
-        var fieldsList = target.GetFieldsForClaimSource(projectInfo);
-        Fields =
-          fieldsList
-            .Select(ch => CreateFieldValueView(TryOverrideValue(ch), renderer))
-            .ToList();
-
-        FieldWithValue TryOverrideValue(FieldWithValue ch)
-        {
-            var overrideValue = overrideValues?.GetValueOrDefault(ch.Field.Id.ProjectFieldId);
-            if (overrideValue is not null)
-            {
-                ch.Value = overrideValue;
-            }
-            return ch;
-        }
     }
 
     /// <summary>
@@ -299,70 +257,60 @@ public class CustomFieldsViewModel
     /// - Edit character
     /// - print character
     /// </summary>
-    /// <param name="currentUserId">ID of the currect user logged in</param>
     /// <param name="character">Character to print</param>
     /// <param name="projectInfo"></param>
-    /// <param name="disableEdit">disable editing (incl. cases where it's done to speeds up the app)</param>
-    /// <param name="onlyPlayerVisible">
-    /// Used for printing, when the user who prints has master access,
-    /// whereas the print result should contain only user-visible fields.
-    /// </param>
+    /// <param name="accessArguments"></param>
     /// <param name="wherePrintEnabled">when true - print only fields where IncludeInPrint = true</param>
+    /// <param name="overrideValues"></param>
     public CustomFieldsViewModel(
-      int? currentUserId,
       Character character,
       ProjectInfo projectInfo,
-      bool disableEdit = false,
-      bool onlyPlayerVisible = false, bool wherePrintEnabled = false) : this()
+      AccessArguments accessArguments,
+      bool wherePrintEnabled = false,
+      Dictionary<int, string?>? overrideValues = null)
+        : this(
+              accessArguments,
+              character,
+              character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character).Where(f => !wherePrintEnabled || f.Field.IncludeInPrint),
+              overrideValues)
     {
-        EditAllowed = !disableEdit && character.Project.Active;
-        if (onlyPlayerVisible)
-        {
-            AccessArguments = new AccessArguments(
-              MasterAccess: false,
-              // Not a "player visible", because it could be master that asks to view as player
-              PlayerAccessToCharacter: character.HasAnyAccess(currentUserId),
-              PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(currentUserId, ExtraAccessReason.Player) ?? false);
-        }
-        else
-        {
-            AccessArguments = AccessArgumentsFactory.Create(character, currentUserId);
-        }
-
-        Target = character;
-        var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
-        Fields =
-          character.GetFields(projectInfo)
-            .Where(f => f.Field.BoundTo == FieldBoundTo.Character)
-            .Where(f => !wherePrintEnabled || f.Field.IncludeInPrint)
-            .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
-            .ToArray();
     }
 
     /// <summary>
     /// Called from Claim and Claim list
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo) : this()
+    public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo)
+      : this(AccessArgumentsFactory.Create(claim, currentUserId), claim.Character, claim.GetFields(projectInfo), overrideValues: null)
     {
-        AccessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
+    }
 
-        Target = claim.GetTarget();
-        EditAllowed = claim.Project.Active;
-
+    /// <summary>
+    /// Common constructor
+    /// </summary>
+    private CustomFieldsViewModel(
+        AccessArguments accessArguments,
+        Character target,
+        IEnumerable<FieldWithValue> fields,
+        Dictionary<int, string?>? overrideValues
+        )
+    {
+        foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
+        {
+            FieldsFee[key] = 0;
+            FieldWithFeeCount[key] = 0;
+        }
+        AccessArguments = accessArguments;
+        Target = target;
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
-
-        Fields =
-          claim.GetFields(projectInfo)
-            .Select(ch => CreateFieldValueView(ch, renderer))
-            .ToArray();
+        Fields = fields.Select(ch => CreateFieldValueView(ch, renderer, overrideValues)).ToList();
     }
 
     /// <summary>
     /// Creates field value view object
     /// </summary>
-    private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, ILinkRenderer renderer)
+    private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, ILinkRenderer renderer, Dictionary<int, string?>? overrideValues)
     {
-        var result = new FieldValueViewModel(this, fv, renderer);
+        var result = new FieldValueViewModel(this, TryOverrideValue(fv), renderer);
         // Here is the point to calculate total fee
         if (result.HasPrice)
         {
@@ -371,12 +319,18 @@ public class CustomFieldsViewModel
             HasFieldsWithFee = true;
         }
         return result;
+
+        FieldWithValue TryOverrideValue(FieldWithValue ch)
+        {
+            if (overrideValues?.GetValueOrDefault(ch.Field.Id.ProjectFieldId) is string overrideValue)
+            {
+                ch.Value = overrideValue;
+            }
+            return ch;
+        }
     }
 
     public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
 
-    public FieldValueViewModel? FieldById(int projectFieldId) => Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
-    public FieldValueViewModel? Field(ProjectField field) => FieldById(field.ProjectFieldId);
-
-    public FieldValueViewModel? Field(ProjectFieldInfo field) => FieldById(field.Id.ProjectFieldId);
+    public FieldValueViewModel? Field(ProjectFieldInfo field) => Fields.SingleOrDefault(f => f.ProjectFieldId == field.Id.ProjectFieldId);
 }

@@ -25,8 +25,6 @@ public class CharacterGroupReportItemViewModel : IEquatable<CharacterGroupReport
 
     public bool IsPublic { get; set; }
 
-    public int ActiveClaimsCount { get; set; }
-
     public int TotalAcceptedClaims { get; set; }
 
     public bool Unlimited { get; set; }

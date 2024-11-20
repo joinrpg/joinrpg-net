@@ -18,9 +18,7 @@ public interface IProjectService
         string name,
         bool isPublic,
         IReadOnlyCollection<int> parentCharacterGroupIds,
-        string description,
-        bool haveDirectSlots,
-        int directSlots);
+        string description);
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
 

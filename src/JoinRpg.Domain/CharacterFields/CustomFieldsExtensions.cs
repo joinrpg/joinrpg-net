@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
@@ -28,7 +29,7 @@ public static class CustomFieldsExtensions
         return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter.JsonData ?? "") ?? [];
     }
 
-    private static IReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params Dictionary<int, string>?[] containers)
+    private static ReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params Dictionary<int, string>?[] containers)
     {
         var fields = project.SortedFields.Select(pf => new FieldWithValue(pf, value: null)).ToList();
 
@@ -71,7 +72,7 @@ public static class CustomFieldsExtensions
             return claim.Character!.GetFields(projectInfo);
         }
         var publicFields = projectInfo.UnsortedFields.Where(f => f.IsPublic).Select(x => x.Id.ProjectFieldId).ToList();
-        return GetFieldsForContainers(projectInfo, claim.Character?.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
+        return GetFieldsForContainers(projectInfo, claim.Character.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
             claim.DeserializeFieldValues());
     }
 
@@ -81,18 +82,6 @@ public static class CustomFieldsExtensions
     public static FieldWithValue? GetSingleField(this Claim claim, ProjectInfo projectInfo, ProjectFieldIdentification id)
     {
         return claim.GetFields(projectInfo).SingleOrDefault(f => f.Field.Id == id);
-    }
-
-    public static IReadOnlyCollection<FieldWithValue> GetFieldsForClaimSource(this IClaimSource claimSource, ProjectInfo projectInfo)
-    {
-        if (claimSource is Character character)
-        {
-            return character.GetFields(projectInfo);
-        }
-        else
-        {
-            return GetFieldsForContainers(projectInfo);
-        }
     }
 
     public static AccessArguments GetAccessArguments(

@@ -57,7 +57,7 @@ public class FinOperationListItemViewModel : ILinkable
         PaymentTypeName =
             fo.PaymentType?.GetDisplayName()                                        // If this is a payment, get payment type
             ?? ((FinanceOperationTypeViewModel)fo.OperationType).GetDisplayName();  // if this is other operation type, just display operation type
-        Claim = fo.Claim.Name;
+        Claim = fo.Claim.Character.CharacterName;
         FeeChange = fo.FeeChange;
         Money = fo.MoneyAmount;
         OperationDate = fo.OperationDate;

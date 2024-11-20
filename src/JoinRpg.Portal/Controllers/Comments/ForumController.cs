@@ -106,7 +106,7 @@ public class ForumController : ControllerGameBase
         var isMaster = forumThread.HasMasterAccess(CurrentUserId);
         var isPlayer = forumThread.IsVisibleToPlayer &&
                        (await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
-                         claim => claim.IsPartOfGroup(forumThread.CharacterGroupId));
+                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
 
         if (!isMaster && !isPlayer)
         {
@@ -183,7 +183,7 @@ public class ForumController : ControllerGameBase
         {
             var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
 
-            groupIds = claims.SelectMany(claim => claim.Character.GetGroupsPartOf().Select(g => g.CharacterGroupId));
+            groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupsToTop().Select(g => g.CharacterGroupId));
         }
         var threads = await ForumRepository.GetThreads(projectid, isMaster, groupIds);
         var viewModel = new ForumThreadListViewModel(project, threads, CurrentUserId);

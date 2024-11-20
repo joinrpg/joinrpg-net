@@ -386,7 +386,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         var availableMoney = claimFrom.GetPaymentSum();
         if (availableMoney < request.Money)
         {
-            throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Name} to perform transfer");
+            throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Character.CharacterName} to perform transfer");
         }
 
         // Adding comments
