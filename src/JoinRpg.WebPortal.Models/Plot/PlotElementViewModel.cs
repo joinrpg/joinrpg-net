@@ -76,50 +76,23 @@ public class PlotDisplayViewModel
         new(plots,
             currentUserId,
             character,
-            true,
-            PlotElementType.RegularPlot,
             uriService);
 
     private PlotDisplayViewModel(IReadOnlyCollection<PlotElement> plots,
         int? currentUserId,
-        Character? character,
-        bool publishedOnly,
-        PlotElementType plotElementType,
+        Character character,
         IUriService uriService)
     {
-        if (plots == null)
+        ArgumentNullException.ThrowIfNull(plots);
+
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId);
+
+        if (plots.Count > 0 && (accessArguments.AnyAccessToCharacter || character.Project.Details.PublishPlot))
         {
-            throw new ArgumentNullException(nameof(plots));
-        }
+            var linkRenderer = new JoinrpgMarkdownLinkRenderer(character.Project);
 
-        var projectEntity = ((IProjectEntity)character ?? plots.FirstOrDefault())?.Project;
-        var hasMasterAccess = projectEntity?.HasMasterAccess(currentUserId) ?? false;
-
-        var hasPlayerAccess = character?.HasPlayerAccess(currentUserId) ?? false;
-
-
-
-        if (plots.Any() && projectEntity != null &&
-            (hasMasterAccess || hasPlayerAccess || projectEntity.Details.PublishPlot))
-        {
-            if (!hasMasterAccess && !publishedOnly)
-            {
-                throw new NoAccessToProjectException(projectEntity, currentUserId);
-            }
-            var linkRenderer = new JoinrpgMarkdownLinkRenderer(plots.First().Project);
-
-            Func<PlotElement, PlotElementTexts?> selector;
-            if (!publishedOnly)
-            {
-                selector = element => element.LastVersion();
-            }
-            else
-            {
-                selector = element => element.PublishedVersion();
-            }
-
-            Elements = plots.Where(p => p.ElementType == plotElementType && p.IsActive == true)
-                .Select(selector)
+            Elements = plots.Where(p => p.ElementType == PlotElementType.RegularPlot && p.IsActive == true)
+                .Select(element => element.PublishedVersion())
                 .WhereNotNull()
                 .Select(
                     p => new PlotElementViewModel(character,
@@ -129,19 +102,19 @@ public class PlotDisplayViewModel
                         uriService))
                 .MarkFirstAndLast();
 
-            HasUnready = plots.Any(element => element.ElementType == plotElementType &&
+            HasUnready = plots.Any(element => element.ElementType == PlotElementType.RegularPlot &&
                                               element.Published !=
                                               element.Texts.Max(text => text.Version));
         }
         else
         {
-            Elements = Enumerable.Empty<PlotElementViewModel>();
+            Elements = [];
         }
     }
 
-    private PlotDisplayViewModel() => Elements = Enumerable.Empty<PlotElementViewModel>();
+    private PlotDisplayViewModel() => Elements = [];
 
-    public IEnumerable<PlotElementViewModel> Elements { get; }
+    public IList<PlotElementViewModel> Elements { get; }
     public bool HasUnready { get; }
 
     public static PlotDisplayViewModel Empty() => new();
