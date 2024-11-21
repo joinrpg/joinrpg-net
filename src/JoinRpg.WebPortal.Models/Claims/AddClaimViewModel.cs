@@ -70,7 +70,7 @@ public class AddClaimViewModel : IProjectIdAware
         return this;
     }
 
-    public bool CanSendClaim => ValidationStatus.Count == 0;
+    public bool CanSendClaim() => ValidationStatus.Count == 0;
 
     public bool IsProjectRelatedReason { get; private set; }
 
