@@ -132,7 +132,7 @@ public class CustomFieldsViewModelTest
     public void ProperlyHideConditionalHeader()
     {
         var conditionalHeader = Mock.CreateConditionalHeader();
-        var claim = Mock.CreateApprovedClaim(Mock.CharacterWithoutGroup, Mock.Player);
+        var claim = Mock.CreateApprovedClaim(Mock.CreateCharacter("another"), Mock.Player);
 
         var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
         var characterField = vm.Field(conditionalHeader);
