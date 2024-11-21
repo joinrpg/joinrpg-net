@@ -25,6 +25,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
           {"контакты", CharacterFullFunc},
           {"группа", GroupName},
           {"список", GroupListFunc},
+          {"сеткаролей", GroupListFullFunc},
         };
 
         LinkTypesToMatch = [.. matches.Keys.OrderByDescending(c => c.Length)];
@@ -38,20 +39,30 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             return Fail(match, index, extra);
         }
         var groupLink = GroupLinkImpl(index, extra, group);
-        var characters =
-            group.GetOrderedCharacters()
-            .Union(
-                group.GetOrderedChildrenGroupsRecursive().SelectMany(g => g.GetOrderedCharacters())
-                )
-            .Distinct()
-            .Where(chr => chr.IsActive)
-            .Select(c => CharacterImpl(c));
+        var characters = GetGroupCharacters(group).Select(c => CharacterImpl(c));
         var builder = new StringBuilder();
         foreach (var character in characters)
         {
             _ = builder.Append("<br>").Append(character);
         }
         return $"<h4>Группа: {groupLink}</h4><p>{builder}</p>";
+    }
+
+    private string GroupListFullFunc(string match, int index, string extra)
+    {
+        var group = Project.CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == index);
+        if (group == null)
+        {
+            return Fail(match, index, extra);
+        }
+        var groupLink = GroupLinkImpl(index, extra, group);
+        var characters = GetGroupCharacters(group);
+        var builder = new StringBuilder();
+        foreach (var character in characters)
+        {
+            _ = builder.Append($"<p>&nbsp;<b>{CharacterImpl(character)}</b><br>{character.Description.ToHtmlString()}</p>");
+        }
+        return $"<h4>Группа: {groupLink}</h4>{group.Description.ToHtmlString()}{builder}<hr>";
     }
 
     private string GroupName(string match, int index, string extra)
@@ -149,5 +160,14 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             extra = $"({extra})";
         }
         return $"{match}{index}{extra}";
+    }
+
+    private static IEnumerable<Character> GetGroupCharacters(CharacterGroup group)
+    {
+        return group.GetOrderedCharacters()
+                    .Union(
+                        group.GetOrderedChildrenGroupsRecursive().SelectMany(g => g.GetOrderedCharacters().Where(chr => chr.IsActive))
+                        )
+                    .Distinct();
     }
 }
