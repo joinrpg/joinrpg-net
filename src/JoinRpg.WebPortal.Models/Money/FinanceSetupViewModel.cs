@@ -66,7 +66,7 @@ public class FinanceSetupViewModel
                     .ThenBy(li => li.Name))
                 .ToList();
 
-        FeeSettings = project.ProjectFeeSettings
+        FeeSettings = project.ProjectFeeSettings.OrderBy(pfs => pfs.StartDate.Date)
             .Select(fs => new ProjectFeeSettingListItemViewModel(fs))
             .ToList();
 
