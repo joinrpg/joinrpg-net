@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Web.Models.Characters;
 
@@ -41,7 +40,7 @@ public class CharacterViewModelTest
     {
         var field = _mock.CreateConditionalField(_mock.Group);
 
-        var groupForClaim = _mock.CreateCharacterGroup(new CharacterGroup());
+        var groupForClaim = _mock.CreateCharacterGroup();
         var vm = new AddCharacterViewModel().Fill(groupForClaim, _mock.Master.UserId, _mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
 

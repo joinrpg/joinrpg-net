@@ -22,7 +22,6 @@ public class MockedProject
     public ProjectFieldInfo PublicFieldInfo { get; set; }
 
     public Character Character { get; }
-    public Character CharacterWithoutGroup { get; }
 
     public ProjectInfo ProjectInfo { get; private set; }
 
@@ -36,18 +35,7 @@ public class MockedProject
             field.Project = project1;
             field.ProjectId = project1.ProjectId;
         }
-
-        id = 0;
-        foreach (Character field in project1.Characters)
-        {
-            id++;
-            field.CharacterId = id;
-            field.Project = project1;
-            field.ProjectId = project1.ProjectId;
-        }
     }
-
-
 
     public MockedProject()
     {
@@ -66,7 +54,7 @@ public class MockedProject
             IsActive = true,
             FieldBoundTo = FieldBoundTo.Character,
             ShowOnUnApprovedClaims = true,
-            AvailableForCharacterGroupIds = Array.Empty<int>(),
+            AvailableForCharacterGroupIds = [],
         };
 
         HideForUnApprovedClaim = new ProjectField()
@@ -76,7 +64,7 @@ public class MockedProject
             IsActive = true,
             FieldBoundTo = FieldBoundTo.Character,
             ShowOnUnApprovedClaims = false,
-            AvailableForCharacterGroupIds = Array.Empty<int>(),
+            AvailableForCharacterGroupIds = [],
         };
 
         PublicField = new ProjectField()
@@ -86,32 +74,15 @@ public class MockedProject
             IsPublic = true,
             IsActive = true,
             FieldBoundTo = FieldBoundTo.Character,
-            AvailableForCharacterGroupIds = Array.Empty<int>(),
+            AvailableForCharacterGroupIds = [],
             ShowOnUnApprovedClaims = true,
-        };
-
-        Character = new Character
-        {
-            IsActive = true,
-            IsAcceptingClaims = true,
-            ParentCharacterGroupIds = Array.Empty<int>(),
-        };
-
-        CharacterWithoutGroup = new Character
-        {
-            IsActive = true,
-            IsAcceptingClaims = true,
-            ParentCharacterGroupIds = Array.Empty<int>(),
         };
 
         Project = new Project()
         {
             Active = true,
             IsAcceptingClaims = true,
-            ProjectAcls =
-          [
-              ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true),
-          ],
+            ProjectAcls = [ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true),],
             ProjectFields =
           [
               MasterOnlyField,
@@ -119,7 +90,7 @@ public class MockedProject
               HideForUnApprovedClaim,
               PublicField,
           ],
-            Characters = [Character, CharacterWithoutGroup],
+            Characters = [],
             CharacterGroups = [],
             Claims = [],
             Details = new ProjectDetails(),
@@ -128,14 +99,15 @@ public class MockedProject
 
         FixProjectSubEntities(Project);
 
-        Group = CreateCharacterGroup(new CharacterGroup()
-        {
-            IsRoot = true,
-        });
+        Group = CreateCharacterGroup();
+        Group.IsRoot = true;
 
-        Character.ParentCharacterGroupIds = new[] { Group.CharacterGroupId };
+        Character = CreateCharacter("Some Character");
+        Character.ParentCharacterGroupIds = [Group.CharacterGroupId];
 
         ReInitProjectInfo();
+
+
     }
 
     public void ReInitProjectInfo()
@@ -147,15 +119,18 @@ public class MockedProject
         MasterOnlyFieldInfo = ProjectInfo.GetFieldById(new PrimitiveTypes.ProjectFieldIdentification(ProjectInfo.ProjectId, MasterOnlyField.ProjectFieldId));
     }
 
-    public CharacterGroup CreateCharacterGroup(CharacterGroup? characterGroup = null)
+    public CharacterGroup CreateCharacterGroup()
     {
-        characterGroup ??= new CharacterGroup();
+        var id = Project.CharacterGroups.GetNextId();
+        var characterGroup = new CharacterGroup
+        {
+            Project = Project,
+            ProjectId = Project.ProjectId,
 
-        characterGroup.Project = Project;
-        characterGroup.ProjectId = Project.ProjectId;
-        characterGroup.CharacterGroupId = Project.CharacterGroups.GetNextId();
-        characterGroup.CharacterGroupName ??= "test_" + characterGroup.CharacterGroupId;
-        characterGroup.IsActive = true;
+            CharacterGroupId = id,
+            CharacterGroupName = "test_" + id,
+            IsActive = true,
+        };
         Project.CharacterGroups.Add(characterGroup);
 
         return characterGroup;
@@ -169,6 +144,7 @@ public class MockedProject
             IsAcceptingClaims = true,
             ParentCharacterGroupIds = [],
             CharacterId = Project.Characters.GetNextId(),
+            Claims = [],
             Project = Project,
         };
 
@@ -194,7 +170,7 @@ public class MockedProject
         field.ProjectId = Project.ProjectId;
         field.ProjectFieldId = Project.ProjectFields.GetNextId();
         field.FieldName ??= "test_" + field.ProjectFieldId;
-        field.AvailableForCharacterGroupIds = Array.Empty<int>();
+        field.AvailableForCharacterGroupIds = [];
         field.IsActive = true;
         setup(field);
         Project.ProjectFields.Add(field);
@@ -217,6 +193,7 @@ public class MockedProject
             Player = mockUser,
             PlayerUserId = mockUser.UserId,
         };
+        mockCharacter.Claims.Add(claim);
         Project.Claims.Add(claim);
         mockUser.Claims.Add(claim);
         return claim;

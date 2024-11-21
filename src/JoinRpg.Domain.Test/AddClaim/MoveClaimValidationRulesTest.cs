@@ -23,7 +23,8 @@ public class MoveClaimValidationRulesTest
     public void AllowMoveClaimFromCharacterToCharacter()
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
-        ShouldAllowMove(claim, Mock.CharacterWithoutGroup);
+        var another = Mock.CreateCharacter("another");
+        ShouldAllowMove(claim, another);
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public class MoveClaimValidationRulesTest
     public void CantMoveCheckedInClaimFromCharacterToCharacter()
     {
         var claim = Mock.CreateCheckedInClaim(Mock.Character, Mock.Player);
-        ShouldDisAllowMove(claim, Mock.CharacterWithoutGroup, AddClaimForbideReason.CheckedInClaimCantBeMoved);
+        ShouldDisAllowMove(claim, Mock.CreateCharacter("another"), AddClaimForbideReason.CheckedInClaimCantBeMoved);
     }
 
 
@@ -49,7 +50,7 @@ public class MoveClaimValidationRulesTest
     public void AllowMoveApprovedClaimFromCharacterToCharacter()
     {
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
-        ShouldAllowMove(claim, Mock.CharacterWithoutGroup);
+        ShouldAllowMove(claim, Mock.CreateCharacter("another"));
     }
 
     private static void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(claim).ShouldBeEmpty();
