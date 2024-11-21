@@ -1,4 +1,4 @@
-namespace JoinRpg.Domain;
+namespace JoinRpg.PrimitiveTypes;
 
 public record class AccessArguments(
         bool MasterAccess,
