@@ -52,7 +52,8 @@ internal class GameRepositoryImplBase : RepositoryImplBase
         Debug.WriteLine($"{nameof(LoadProjectCharactersAndGroups)} started");
         return Ctx.ProjectsSet
           .Include(p => p.CharacterGroups)
-          .Include(p => p.Characters)
+          .Include(p => p.Characters.Select(c => c.Claims))
+          .Include(p => p.Characters.Select(c => c.ApprovedClaim))
           .Where(p => p.ProjectId == projectId)
           .LoadAsync();
     }
