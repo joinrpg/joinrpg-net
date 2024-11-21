@@ -1,6 +1,5 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
 
     public partial class RemoveGroupClaims : DbMigration
@@ -10,6 +9,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             DropForeignKey("dbo.Claims", "CharacterGroupId", "dbo.CharacterGroups");
             DropIndex("dbo.Claims", new[] { "CharacterId" });
             DropIndex("dbo.Claims", new[] { "CharacterGroupId" });
+            DropIndex("dbo.Claims", "nci_wi_Claims_DD27A24D517BFF9AFEC7C6C5C8FCCA84");
             AlterColumn("dbo.Claims", "CharacterId", c => c.Int(nullable: false));
             CreateIndex("dbo.Claims", "CharacterId");
             DropColumn("dbo.Claims", "CharacterGroupId");
