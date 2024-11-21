@@ -66,7 +66,10 @@ public class AddClaimViewModel : IProjectIdAware
         TargetName = claimSource.CharacterName;
         Description = claimSource.Description.ToHtmlString();
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
-        Fields = new CustomFieldsViewModel(claimSource, projectInfo, AccessArgumentsFactory.CreateForAdd(claimSource, playerUserId), overrideValues: overrideValues);
+        var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, playerUserId);
+        HasMasterAccess = accessArguments.MasterAccess;
+
+        Fields = new CustomFieldsViewModel(claimSource, projectInfo, accessArguments.WithoutMasterAccess(), overrideValues: overrideValues);
         return this;
     }
 
@@ -75,4 +78,6 @@ public class AddClaimViewModel : IProjectIdAware
     public bool IsProjectRelatedReason { get; private set; }
 
     public bool ProjectAllowsMultipleCharacters { get; private set; }
+
+    public bool HasMasterAccess { get; private set; }
 }

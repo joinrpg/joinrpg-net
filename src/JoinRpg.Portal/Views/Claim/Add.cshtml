@@ -89,6 +89,13 @@
       }
     }
 
+    @if (Model.HasMasterAccess)
+    {
+      <div class="alert alert-info">
+          Несмотря на то, что у вас есть мастерские права, форма заявки показывается так, как ее видят игроки (мастерские поля не видны).
+      </div>
+    }
+
     @if (Model.ClaimApplyRules != null)
     {
       <div>@Model.ClaimApplyRules</div>
