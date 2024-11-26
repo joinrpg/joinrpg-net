@@ -53,7 +53,7 @@ public class Character : IWorldObject, IFieldContainter, ICreatedUpdatedTrackedF
     /// </summary>
     public MarkdownString Description { get; set; } = new MarkdownString();
 
-    public virtual HashSet<Claim> Claims { get; set; }
+    public virtual HashSet<Claim> Claims { get; set; } = [];
 
     public virtual Claim? ApprovedClaim { get; set; }
 
