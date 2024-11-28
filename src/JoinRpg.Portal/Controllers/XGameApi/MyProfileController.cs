@@ -4,19 +4,11 @@ using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.XGameApi;
+namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-api/me")]
-public class MyProfileController : ControllerBase
+public class MyProfileController(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : XGameApiController
 {
-    private readonly IProjectRepository projectRepository;
-    private readonly ICurrentUserAccessor currentUserAccessor;
-
-    public MyProfileController(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor)
-    {
-        this.projectRepository = projectRepository;
-        this.currentUserAccessor = currentUserAccessor;
-    }
 
     /// <summary>
     /// All active projects that current user has access

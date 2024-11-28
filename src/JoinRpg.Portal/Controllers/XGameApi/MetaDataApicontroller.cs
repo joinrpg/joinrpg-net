@@ -4,17 +4,11 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.XGameApi;
+namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/metadata"), XGameMasterAuthorize]
-public class MetaDataApiController : XGameApiController
+public class MetaDataApiController(IProjectMetadataRepository projectMetadataRepository) : XGameApiController
 {
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    public MetaDataApiController(IProjectRepository projectRepository, IProjectMetadataRepository projectMetadataRepository) : base(projectRepository)
-    {
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
 
     /// <summary>
     /// All required metadata for fields
