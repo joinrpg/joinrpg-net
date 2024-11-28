@@ -8,15 +8,11 @@ using JoinRpg.WebPortal.Managers.Schedule;
 using JoinRpg.XGameApi.Contract.Schedule;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.XGameApi;
+namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/schedule")]
-public class ProjectScheduleController : XGameApiController
+public class ProjectScheduleController(IProjectRepository projectRepository, SchedulePageManager manager) : XGameApiController
 {
-    private SchedulePageManager Manager { get; }
-
-    public ProjectScheduleController(IProjectRepository projectRepository, SchedulePageManager manager) : base(projectRepository) => Manager = manager;
-
     [HttpGet]
     [Route("all")]
     [ProducesResponseType(410)]
@@ -25,14 +21,14 @@ public class ProjectScheduleController : XGameApiController
     public async Task<ActionResult<List<ProgramItemInfoApi>>> GetSchedule([FromRoute]
         int projectId)
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
+        var project = await projectRepository.GetProjectWithFieldsAsync(projectId);
 
         if (project is null)
         {
             return Problem(statusCode: 410);
         }
 
-        var check = await Manager.CheckScheduleConfiguration();
+        var check = await manager.CheckScheduleConfiguration();
         if (check.Contains(ScheduleConfigProblemsViewModel.NoAccess))
         {
             return Forbid();
@@ -42,7 +38,7 @@ public class ProjectScheduleController : XGameApiController
             return Problem(detail: check.Select(x => x.ToString()).JoinStrings(" ,"), statusCode: 400);
         }
 
-        var scheduleBuilder = await Manager.GetBuilder();
+        var scheduleBuilder = await manager.GetBuilder();
 
         return scheduleBuilder.Build().AllItems.Select(ToProgramItemInfoApi).ToList();
     }

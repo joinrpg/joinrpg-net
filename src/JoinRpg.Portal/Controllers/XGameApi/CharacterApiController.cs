@@ -10,27 +10,15 @@ using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
 using GroupHeader = JoinRpg.XGameApi.Contract.GroupHeader;
 
-namespace JoinRpg.Web.Controllers.XGameApi;
+namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/characters"), XGameMasterAuthorize()]
-public class CharacterApiController : XGameApiController
+public class CharacterApiController(
+    ICharacterRepository characterRepository,
+    ICharacterService characterService,
+    IProjectMetadataRepository projectMetadataRepository
+        ) : XGameApiController()
 {
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private ICharacterRepository CharacterRepository { get; }
-    private ICharacterService CharacterService { get; }
-
-    public CharacterApiController(
-        IProjectRepository projectRepository,
-        ICharacterRepository characterRepository,
-        ICharacterService characterService,
-        IProjectMetadataRepository projectMetadataRepository
-        ) : base(projectRepository)
-    {
-        CharacterRepository = characterRepository;
-        CharacterService = characterService;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
 
     /// <summary>
     /// Load character list. If you aggressively pull characters,
@@ -42,7 +30,7 @@ public class CharacterApiController : XGameApiController
         [FromQuery]
         DateTime? modifiedSince = null)
     {
-        return (await CharacterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(
+        return (await characterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(
             character =>
                 new CharacterHeader
                 {
@@ -61,7 +49,7 @@ public class CharacterApiController : XGameApiController
     [Route("{characterId}/")]
     public async Task<CharacterInfo> GetOne(int projectId, int characterId)
     {
-        var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
+        var character = await characterRepository.GetCharacterViewAsync(projectId, characterId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return
             new CharacterInfo
@@ -82,8 +70,8 @@ public class CharacterApiController : XGameApiController
                     }),
 #pragma warning disable CS0612 // Type or member is obsolete
                 PlayerUserId = character.ApprovedClaim?.PlayerUserId,
-                CharacterDescription = character.Description,
 #pragma warning restore CS0612 // Type or member is obsolete
+                CharacterDescription = character.Description,
                 CharacterName = character.Name,
                 PlayerInfo = character.ApprovedClaim is null ? null :
                     CreatePlayerInfo(character.ApprovedClaim, projectInfo),
@@ -98,12 +86,11 @@ public class CharacterApiController : XGameApiController
     /// <param name="fieldValues">
     /// Key = FieldId, Value = field value.
     /// Skipped values will be left unchanged</param>
-    [XGameMasterAuthorize()]
     [HttpPost]
     [Route("{characterId}/fields")]
     public async Task<string> SetCharacterFields(int projectId, int characterId, Dictionary<int, string?> fieldValues)
     {
-        await CharacterService.SetFields(projectId, characterId, fieldValues);
+        await characterService.SetFields(projectId, characterId, fieldValues);
         return "ok";
     }
 
@@ -125,6 +112,7 @@ public class CharacterApiController : XGameApiController
         return new CharacterPlayerInfo(
                                     claim.PlayerUserId,
                                     claim.ClaimFeeDue(projectInfo) <= 0,
+                                    claim.Player.ExtractDisplayName().DisplayName,
                                     new PlayerContacts(
                                         claim.Player.Email,
                                         claim.Player.Extra?.PhoneNumber,

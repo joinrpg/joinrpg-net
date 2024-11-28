@@ -13,22 +13,15 @@ using Microsoft.IdentityModel.Tokens;
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [ApiController]
-public class XApiLoginController : ControllerBase
+public class XApiLoginController(ApplicationUserManager userManager, IOptions<JwtBearerOptions> jwt, IOptions<JwtSecretOptions> secret) : ControllerBase
 {
-    private readonly ApplicationUserManager userManager;
-    private readonly JwtSecretOptions secret;
-    private readonly JwtBearerOptions jwt;
-
-    public XApiLoginController(ApplicationUserManager userManager, IOptions<JwtBearerOptions> jwt, IOptions<JwtSecretOptions> secret)
-    {
-        this.userManager = userManager;
-        this.secret = secret.Value;
-        this.jwt = jwt.Value;
-    }
+    private readonly JwtSecretOptions secret = secret.Value;
+    private readonly JwtBearerOptions jwt = jwt.Value;
 
     [HttpPost("/x-api/token")]
     [IgnoreAntiforgeryToken]
     [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
     [ProducesResponseType(200)]
     public async Task<ActionResult> Login(
         [FromForm] string username,

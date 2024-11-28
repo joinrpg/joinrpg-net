@@ -62,10 +62,8 @@ public class CharacterInfo
     public string CharacterName { get; set; }
 
     /// <summary>
-    /// This is legacy field. Please use into Fields to get character description.
-    /// In future will be removed.
+    /// Description of character
     /// </summary>
-    [Obsolete]
     public string CharacterDescription { get; set; }
 
 
@@ -78,24 +76,29 @@ public class CharacterInfo
 /// <summary>
 /// Info about player
 /// </summary>
-public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull, PlayerContacts PlayerContacts)
+public record CharacterPlayerInfo(int PlayerUserId, bool PaidInFull, string PlayerDisplayName, PlayerContacts PlayerContacts)
 {
     /// <summary>
     /// true — claim fee paid in full
     /// false — claim fee not paid in full
     /// null 
     /// </summary>
-    public bool PaidInFull { get; set; } = PaidInFull;
+    public bool PaidInFull { get; } = PaidInFull;
 
     /// <summary>
     /// Player user id
     /// </summary>
-    public int PlayerUserId { get; set; } = PlayerUserId;
+    public int PlayerUserId { get; } = PlayerUserId;
+
+    /// <summary>
+    /// Preffered display name (nickname/fullname depending on player settings). 
+    /// </summary>
+    public string PlayerDisplayName { get; } = PlayerDisplayName;
 
     /// <summary>
     /// Player contacts
     /// </summary>
-    public PlayerContacts PlayerContacts { get; set; } = PlayerContacts;
+    public PlayerContacts PlayerContacts { get; } = PlayerContacts;
 }
 
 /// <summary>

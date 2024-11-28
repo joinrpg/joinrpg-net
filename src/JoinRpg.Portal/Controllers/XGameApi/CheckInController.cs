@@ -8,30 +8,15 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.XGameApi;
+namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/checkin"), XGameMasterAuthorize()]
-public class CheckInController : XGameApiController
+public class CheckInController(
+    IClaimsRepository claimsRepository,
+    IClaimService claimsService,
+    IProblemValidator<Claim> claimValidator,
+    IProjectMetadataRepository projectMetadataRepository) : XGameApiController
 {
-    private readonly IProblemValidator<Claim> claimValidator;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private IClaimsRepository ClaimsRepository { get; }
-
-    private IClaimService ClaimsService { get; }
-
-
-    public CheckInController(IProjectRepository projectRepository,
-        IClaimsRepository claimsRepository,
-        IClaimService claimsService,
-        IProblemValidator<Claim> claimValidator,
-        IProjectMetadataRepository projectMetadataRepository) : base(projectRepository)
-    {
-        ClaimsRepository = claimsRepository;
-        ClaimsService = claimsService;
-        this.claimValidator = claimValidator;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
 
     /// <summary>
     /// Claims that are ready for checkin
@@ -40,7 +25,7 @@ public class CheckInController : XGameApiController
     [HttpGet]
     public async Task<IEnumerable<ClaimHeaderInfo>> GetClaimsForCheckIn(int projectId)
     {
-        return (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
+        return (await claimsRepository.GetClaimHeadersWithPlayer(projectId,
                 ClaimStatusSpec.ReadyForCheckIn))
             .Select(claim =>
 
@@ -65,9 +50,9 @@ public class CheckInController : XGameApiController
     {
         return new CheckInStats()
         {
-            CheckIn = (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
+            CheckIn = (await claimsRepository.GetClaimHeadersWithPlayer(projectId,
                 ClaimStatusSpec.CheckedIn)).Count,
-            Ready = (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
+            Ready = (await claimsRepository.GetClaimHeadersWithPlayer(projectId,
                 ClaimStatusSpec.ReadyForCheckIn)).Count,
 
         };
@@ -81,12 +66,12 @@ public class CheckInController : XGameApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesDefaultResponseType]
-    public async Task<ActionResult<ClaimCheckInValidationResult>> PrepareClaimFoCheckIn([FromQuery]
+    public async Task<ActionResult<ClaimCheckInValidationResult>> PrepareClaimFoCheckIn([FromRoute]
         int projectId,
-        [FromQuery]
+        [FromRoute]
         int claimId)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -120,18 +105,18 @@ public class CheckInController : XGameApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesDefaultResponseType]
-    public async Task<ActionResult<string>> CheckinClaim([FromQuery]
+    public async Task<ActionResult<string>> CheckinClaim([FromRoute]
         int projectId,
         [FromBody]
         CheckInCommand command)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, command.ClaimId);
+        var claim = await claimsRepository.GetClaim(projectId, command.ClaimId);
         if (claim == null)
         {
             return NotFound();
         }
 
-        await ClaimsService.CheckInClaim(projectId, command.ClaimId, command.MoneyPaid);
+        await claimsService.CheckInClaim(projectId, command.ClaimId, command.MoneyPaid);
         return "OK";
     }
 }
