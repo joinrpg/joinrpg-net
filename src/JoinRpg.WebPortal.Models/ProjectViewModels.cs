@@ -22,7 +22,10 @@ public class EditProjectViewModel
 {
     public int ProjectId { get; set; }
 
-    [DisplayName("Название проекта"), Required]
+    [DisplayName("Название проекта"), Required,
+ StringLength(60,
+     ErrorMessage = "Название проекта должно быть длиной от 5 до 60 букв.",
+     MinimumLength = 5)]
     public string ProjectName { get; set; }
 
     [DisplayName("Анонс проекта"), UIHint("MarkdownString")]
