@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -8,7 +9,6 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Masters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,11 +22,12 @@ public class GameController(
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
-    public async Task<IActionResult> Details(int projectId, [FromServices] IClaimsRepository claimsRepository)
+    public async Task<IActionResult> Details(int projectId, [FromServices] IClaimsRepository claimsRepository, [FromServices] ICurrentUserAccessor currentUserAccessor)
     {
         var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, CurrentUserId);
-
+        var claims = currentUserAccessor.UserIdOrDefault is int userId
+            ? await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId)
+            : [];
         if (project == null)
         {
             return NotFound();
