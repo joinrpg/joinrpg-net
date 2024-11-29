@@ -1,5 +1,6 @@
-﻿
-@model JoinRpg.Web.Models.AclViewModel
+﻿@using JoinRpg.Web.Models.Masters
+
+@model AclViewModel
 
 @{
     ViewBag.Title = "Изменение прав доступа в игру " + Model.ProjectName;
@@ -19,117 +20,9 @@
 
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanManageClaims, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanManageClaims)
-                    @Html.ValidationMessageFor(model => model.CanManageClaims, "", new { @class = "text-danger" })
-                    @Html.DescriptionFor(model => model.CanManageClaims)
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanChangeFields)
-                    @Html.DescriptionFor(model => model.CanChangeFields)
-                    @Html.ValidationMessageFor(model => model.CanChangeFields, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanChangeProjectProperties, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanChangeProjectProperties)
-                    @Html.DescriptionFor(model => model.CanChangeProjectProperties)
-                    @Html.ValidationMessageFor(model => model.CanChangeProjectProperties, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanGrantRights)
-                    @Html.DescriptionFor(model => model.CanGrantRights)
-                    @Html.ValidationMessageFor(model => model.CanGrantRights, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanEditRoles, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanEditRoles" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanEditRoles, null, htmlFieldName: "CanEditRoles")
-                    @Html.DescriptionFor(model => model.CanEditRoles)
-                    @Html.ValidationMessageFor(model => model.CanEditRoles, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanManageMoney, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanManageMoney" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanManageMoney, null, htmlFieldName: "CanManageMoney")
-                    @Html.DescriptionFor(model => model.CanManageMoney)
-                    @Html.ValidationMessageFor(model => model.CanManageMoney, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanSendMassMails, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanSendMassMails" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanSendMassMails, null, htmlFieldName: "CanSendMassMails")
-                    @Html.DescriptionFor(model => model.CanSendMassMails)
-                    @Html.ValidationMessageFor(model => model.CanSendMassMails, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanManagePlots, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanManagePlots" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.CanManagePlots, null, htmlFieldName: "CanManagePlots")
-                    @Html.DescriptionFor(model => model.CanManagePlots)
-                    @Html.ValidationMessageFor(model => model.CanManagePlots, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        @if (Model.AccomodationEnabled)
+        @foreach (var badge in Model.Badges)
         {
-            <div class="form-group">
-                @Html.LabelFor(model => model.CanManageAccommodation, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanManageAccommodation" })
-                <div class="col-md-10">
-                    <div class="checkbox">
-                        @Html.EditorFor(model => model.CanManageAccommodation, null, htmlFieldName: "CanManageAccommodation")
-                        @Html.DescriptionFor(model => model.CanManageAccommodation)
-                        @Html.ValidationMessageFor(model => model.CanManageAccommodation, "", new { @class = "text-danger" })
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.CanSetPlayersAccommodations, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanSetPlayersAccommodations" })
-                <div class="col-md-10">
-                    <div class="checkbox">
-                        @Html.EditorFor(model => model.CanSetPlayersAccommodations, null, htmlFieldName: "CanSetPlayersAccommodations")
-                        @Html.DescriptionFor(model => model.CanSetPlayersAccommodations)
-                        @Html.ValidationMessageFor(model => model.CanSetPlayersAccommodations, "", new { @class = "text-danger" })
-                    </div>
-                </div>
-            </div>
+            <partial name="_PermissionBadgeCheckbox" model="@badge" />
         }
 
         <div class="form-group">

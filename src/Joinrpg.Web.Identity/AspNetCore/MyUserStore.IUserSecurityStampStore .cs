@@ -20,6 +20,6 @@ public partial class MyUserStore : IUserSecurityStampStore<JoinIdentityUser>
             //TODO if we still need it?
         }
         dbUser.Auth.AspNetSecurityStamp = stamp;
-        _ = await _ctx.SaveChangesAsync(cancellationToken);
+        _ = await ctx.SaveChangesAsync(cancellationToken);
     }
 }

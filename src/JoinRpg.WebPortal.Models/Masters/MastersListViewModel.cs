@@ -23,8 +23,8 @@ public class MastersListViewModel
     {
         Masters = project.ProjectAcls.Select(acl =>
         {
-            return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
-              groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId && gr.IsActive).ToList(), currentUser,
+            return new AclViewModel(acl, currentUser, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
+              groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId && gr.IsActive),
                 uriService);
         }).ToList();
 

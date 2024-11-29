@@ -1,4 +1,4 @@
-namespace JoinRpg.PrimitiveTypes;
+namespace JoinRpg.PrimitiveTypes.Access;
 
 public record class AccessArguments(
         /// <summary>

@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Web.Models;
 
@@ -11,10 +12,7 @@ public class ErrorNoAccessToProjectViewModel
 
     public ErrorNoAccessToProjectViewModel(Project project, Permission permission = Permission.None)
     {
-        if (project == null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
+        ArgumentNullException.ThrowIfNull(project);
 
         CanGrantAccess = project.ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.User);
         ProjectId = project.ProjectId;

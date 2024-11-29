@@ -10,16 +10,14 @@ public partial class MyUserStore : IUserRoleStore<JoinIdentityUser>
     async Task<IList<string>> IUserRoleStore<JoinIdentityUser>.GetRolesAsync(JoinIdentityUser user, CancellationToken cancellationToken)
     {
         var dbUser = await LoadUser(user, cancellationToken);
-        List<string> list;
         if (dbUser.Auth.IsAdmin)
         {
-            list = new List<string>() { Security.AdminRoleName };
+            return [Security.AdminRoleName];
         }
         else
         {
-            list = new List<string>();
+            return [];
         }
-        return list;
     }
 
     Task<IList<JoinIdentityUser>> IUserRoleStore<JoinIdentityUser>.GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken) => throw new NotSupportedException();

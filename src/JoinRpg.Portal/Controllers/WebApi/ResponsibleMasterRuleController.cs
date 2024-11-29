@@ -1,6 +1,7 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Web.Models;
+using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.Web.Models.Masters;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using Microsoft.AspNetCore.Mvc;
 
