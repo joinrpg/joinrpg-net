@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
