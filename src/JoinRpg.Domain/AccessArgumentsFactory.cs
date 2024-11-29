@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;
 
