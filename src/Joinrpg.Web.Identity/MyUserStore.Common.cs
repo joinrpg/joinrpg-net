@@ -1,32 +1,22 @@
 using System.Data.Entity;
+using System.Linq.Expressions;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using DbUser = JoinRpg.DataModel.User;
 
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore
+public partial class MyUserStore(MyDbContext ctx)
 {
-    private readonly MyDbContext _ctx;
-    private readonly IDbSet<DbUser> UserSet;
-
-    public MyUserStore(MyDbContext ctx)
-    {
-        _ctx = ctx;
-        UserSet = _ctx.Set<DbUser>();
-    }
 
     /// <inheritedoc />
-    void IDisposable.Dispose() => _ctx?.Dispose();
+    void IDisposable.Dispose() => ctx?.Dispose();
 
     private async Task CreateImpl(JoinIdentityUser user, CancellationToken ct = default)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
-        var hasAnyUser = await UserSet.AnyAsync(ct);
+        var hasAnyUser = await ctx.Set<DbUser>().AnyAsync(ct);
 
         var dbUser = new DbUser()
         {
@@ -50,8 +40,8 @@ public partial class MyUserStore
             dbUser.Auth.IsAdmin = true;
         }
 
-        _ = _ctx.UserSet.Add(dbUser);
-        _ = await _ctx.SaveChangesAsync(ct);
+        _ = ctx.UserSet.Add(dbUser);
+        _ = await ctx.SaveChangesAsync(ct);
         user.Id = dbUser.UserId;
     }
 
@@ -62,7 +52,7 @@ public partial class MyUserStore
         dbUser.Email = user.UserName;
         dbUser.Auth.EmailConfirmed = user.EmaiLConfirmed;
         dbUser.PasswordHash = user.PasswordHash;
-        _ = await _ctx.SaveChangesAsync(ct);
+        _ = await ctx.SaveChangesAsync(ct);
     }
 
     private async Task SetUserNameImpl(JoinIdentityUser user, string email, CancellationToken ct = default)
@@ -70,16 +60,23 @@ public partial class MyUserStore
         var dbUser = await LoadUser(user, ct);
         dbUser.Email = email;
         dbUser.UserName = email;
-        _ = await _ctx.SaveChangesAsync(ct);
+        _ = await ctx.SaveChangesAsync(ct);
     }
 
     private async Task<DbUser?> LoadUser(string userName, CancellationToken ct = default) =>
-        await _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == userName, ct);
+        await LoadUser(user => user.Email == userName, ct);
 
     private async Task<DbUser?> LoadUser(int id, CancellationToken ct = default) =>
-        await _ctx.UserSet.SingleOrDefaultAsync(user => user.UserId == id, ct);
+        await LoadUser(user => user.UserId == id, ct);
 
     private async Task<DbUser?> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default) =>
-       await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id, ct);
+       await LoadUser(user => user.UserId == joinIdentityUser.Id, ct);
+
+    private async Task<DbUser?> LoadUser(Expression<Func<DbUser, bool>> predicate, CancellationToken ct) =>
+       await ctx
+        .Set<DbUser>()
+        .Include(u => u.ExternalLogins)
+        .Include(u => u.ProjectAcls)
+        .SingleOrDefaultAsync(predicate, ct);
 
 }

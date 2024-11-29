@@ -11,19 +11,19 @@ public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomLog
     {
         var dbUser = await LoadUser(user, ct);
         dbUser.ExternalLogins.Add(new UserExternalLogin() { Key = key, Provider = provider });
-        _ = await _ctx.SaveChangesAsync(ct);
+        _ = await ctx.SaveChangesAsync(ct);
     }
 
     async Task IUserLoginStore<JoinIdentityUser>.AddLoginAsync(JoinIdentityUser user, UserLoginInfo login, CancellationToken cancellationToken)
     {
         var dbUser = await LoadUser(user, cancellationToken);
         dbUser.ExternalLogins.Add(login.ToUserExternalLogin());
-        _ = await _ctx.SaveChangesAsync(cancellationToken);
+        _ = await ctx.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<JoinIdentityUser?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
     {
-        var uel = await _ctx.Set<UserExternalLogin>().SingleOrDefaultAsync(u => u.Key == providerKey && u.Provider == loginProvider);
+        var uel = await ctx.Set<UserExternalLogin>().SingleOrDefaultAsync(u => u.Key == providerKey && u.Provider == loginProvider);
 
         return uel?.User.ToIdentityUser();
     }
@@ -41,8 +41,8 @@ public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomLog
             dbUser.ExternalLogins.First(
                 externalLogin => externalLogin.Key == providerKey &&
                                  externalLogin.Provider.ToLowerInvariant() == loginProvider.ToLowerInvariant());
-        _ = _ctx.Set<UserExternalLogin>().Remove(el);
-        _ = await _ctx.SaveChangesAsync(cancellationToken);
+        _ = ctx.Set<UserExternalLogin>().Remove(el);
+        _ = await ctx.SaveChangesAsync(cancellationToken);
     }
 }
 
