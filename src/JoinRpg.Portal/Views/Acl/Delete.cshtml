@@ -14,7 +14,7 @@
 <h3>@header</h3>
 <div class="form-horizontal">
     <div>
-        @Html.DisplayFor(model => model.UserDetails)
+        @Html.DisplayFor(model => model.InnerModel.UserDetails)
     </div>
 
     @using (Html.BeginForm())
@@ -24,7 +24,7 @@
         @Html.HiddenFor(model => model.ProjectAclId)
         @Html.HiddenFor(model => model.UserId)
 
-        if (Model.ClaimsCount > 0 || Model.ResponsibleFor.Count > 0)
+        if (Model.InnerModel.ClaimsCount > 0 || Model.InnerModel.ResponsibleFor.Count > 0)
         {
             <div class="form-group">
                 @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new {@class = "control-label col-md-2"})

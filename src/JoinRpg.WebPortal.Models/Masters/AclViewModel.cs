@@ -1,190 +1,43 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 
-namespace JoinRpg.Web.Models;
+namespace JoinRpg.Web.Models.Masters;
 
-public class AclViewModelBase
+public class AclViewModel(Project project, User targetUser, User currentUser, PermissionBadgeViewModel[] bagdes)
 {
-    [ReadOnly(true), Display(Name = "Мастер"), Editable(false)]
-    public UserProfileDetailsViewModel UserDetails { get; set; }
+    [Display(Name = "Мастер")]
+    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(targetUser, currentUser);
 
-    [ReadOnly(true), Editable(false)]
-    public IReadOnlyCollection<GameObjectLinkViewModel> ResponsibleFor { get; protected set; }
+    public IReadOnlyCollection<GameObjectLinkViewModel> ResponsibleFor { get; } = [];
 
-    public int? ProjectAclId { get; set; }
+    public int? ProjectAclId { get; }
 
     [Display(Name = "Проект")]
-    public int ProjectId { get; set; }
+    public int ProjectId { get; } = project.ProjectId;
 
-    [Display(Name = "Игра"), ReadOnly(true)]
-    public string ProjectName { get; protected set; }
+    [Display(Name = "Игра")]
+    public string ProjectName { get; } = project.ProjectName;
 
-    [Display(Name = "Заявок"), ReadOnly(true)]
-    public int ClaimsCount { get; protected set; }
+    [Display(Name = "Заявок")]
+    public int ClaimsCount { get; } = 0;
 
-    public int UserId { get; set; }
-}
-public class AclViewModel : AclViewModelBase
-{
-    [Display(
-            Name = "Администратор заявок",
-            Description = "может изменять статус заявок (принимать, отклонять, переносить в лист ожидания) и переназначать ответственного мастера для любой заявки в базе")]
-    public bool CanManageClaims { get; set; }
+    public int UserId { get; } = targetUser.UserId;
+    public PermissionBadgeViewModel[] Badges { get; set; } = bagdes;
 
-    [Display(Name = "Настраивать поля персонажа", Description = "может добавлять, удалять или редактировать поля заявки и поля персонажа")]
-    public bool CanChangeFields { get; set; }
+    public bool CanGrantRights => Badges.Single(b => b.Permission == Permission.CanGrantRights).Value;
 
-    [Display(Name = "Настраивать проект", Description = "может изменять свойства проекта, переименовывать его, отправлять проект в архив и т.д.")]
-    public bool CanChangeProjectProperties { get; set; }
-
-    [Display(Name = "Давать доступ другим мастерам", Description = "может добавлять или удалять пользователей, настраивать права доступа")]
-    public bool CanGrantRights { get; set; }
-
-    [Display(Name = "Редактировать ролевку", Description = "может добавлять новые группы или новых персонажей, редактировать и удалять группы и персонажей")]
-    public bool CanEditRoles { get; set; }
-
-    [Display(Name = "Управлять финансами", Description = "может настраивать размеры взносов и способы оплаты, отмечать взносы, принятые любым мастером, возвращать взносы и т.д.")]
-    public bool CanManageMoney { get; set; }
-
-    [Display(Name = "Делать массовые рассылки", Description = "может разослать письма на емейл любой группе игроков (не только своим)")]
-    public bool CanSendMassMails { get; set; }
-
-    [Display(Name = "Редактор сюжетов", Description = "может добавлять и удалять сюжеты и вводные, назначать группы и персонажей, которым они видны, публиковать вводные")]
-    public bool CanManagePlots { get; set; }
-
-    [Display(Name = "Настраивать поселение", Description = "может добавлять/удалять номера и типы поселений")]
-    public bool CanManageAccommodation { get; set; }
-
-    [Display(Name = "Расселять игроков", Description = "может назначать игрокам номер")]
-    public bool CanSetPlayersAccommodations { get; set; }
-
-    public bool AccomodationEnabled { get; set; }
-
-    public static AclViewModel FromAcl(ProjectAcl acl,
-        int count,
-        IReadOnlyCollection<CharacterGroup> groups,
+    public AclViewModel(ProjectAcl acl,
         User currentUser,
+        int claimsCount,
+        IEnumerable<CharacterGroup> groups,
         IUriService uriService)
+        : this(acl.Project, acl.User, currentUser, acl.GetPermissionViewModels())
     {
-        return new AclViewModel
-        {
-            ProjectId = acl.ProjectId,
-            ProjectAclId = acl.ProjectAclId,
-            UserId = acl.UserId,
-            CanManageClaims = acl.CanManageClaims,
-            CanChangeFields = acl.CanChangeFields,
-            CanChangeProjectProperties = acl.CanChangeProjectProperties,
-            CanGrantRights = acl.CanGrantRights,
-            CanEditRoles = acl.CanEditRoles,
-            CanManageMoney = acl.CanManageMoney,
-            CanSendMassMails = acl.CanSendMassMails,
-            CanManagePlots = acl.CanManagePlots,
-            CanManageAccommodation = acl.CanManageAccommodation,
-            CanSetPlayersAccommodations = acl.CanSetPlayersAccommodations,
-            ProjectName = acl.Project.ProjectName,
-
-            AccomodationEnabled = acl.Project.Details.EnableAccommodation,
-
-            ClaimsCount = count,
-            UserDetails = new UserProfileDetailsViewModel(acl.User,
-                (AccessReason)acl.User.GetProfileAccess(currentUser)),
-            ResponsibleFor = groups.AsObjectLinks(uriService).ToArray(),
-        };
-    }
-
-    public static AclViewModel New(ProjectAcl acl, User currentUser, User targetUser)
-    {
-        return new AclViewModel
-        {
-            ProjectId = acl.ProjectId,
-            ProjectAclId = -1,
-            UserId = targetUser.UserId,
-            CanManageClaims = false,
-            CanChangeFields = false,
-            CanChangeProjectProperties = false,
-            CanGrantRights = false,
-            CanEditRoles = false,
-            CanManageMoney = false,
-            CanSendMassMails = false,
-            CanManagePlots = false,
-            CanManageAccommodation = false,
-            CanSetPlayersAccommodations = false,
-            ProjectName = acl.Project.ProjectName,
-
-            AccomodationEnabled = acl.Project.Details.EnableAccommodation,
-
-            UserDetails = new UserProfileDetailsViewModel(targetUser,
-                (AccessReason)acl.User.GetProfileAccess(currentUser)),
-        };
-    }
-}
-
-public class ChangeAclViewModel
-{
-    [Display(
-            Name = "Администратор заявок",
-            Description = "может изменять статус заявок (принимать, отклонять, переносить в лист ожидания) и переназначать ответственного мастера для любой заявки в базе")]
-    public bool CanManageClaims { get; set; }
-
-    [Display(Name = "Настраивать поля персонажа", Description = "может добавлять, удалять или редактировать поля заявки и поля персонажа")]
-    public bool CanChangeFields { get; set; }
-
-    [Display(Name = "Настраивать проект", Description = "может изменять свойства проекта, переименовывать его, отправлять проект в архив и т.д.")]
-    public bool CanChangeProjectProperties { get; set; }
-
-    [Display(Name = "Давать доступ другим мастерам", Description = "может добавлять или удалять пользователей, настраивать права доступа")]
-    public bool CanGrantRights { get; set; }
-
-    [Display(Name = "Редактировать ролевку", Description = "может добавлять новые группы или новых персонажей, редактировать и удалять группы и персонажей")]
-    public bool CanEditRoles { get; set; }
-
-    [Display(Name = "Управлять финансами", Description = "может настраивать размеры взносов и способы оплаты, отмечать взносы, принятые любым мастером, возвращать взносы и т.д.")]
-    public bool CanManageMoney { get; set; }
-
-    [Display(Name = "Делать массовые рассылки", Description = "может разослать письма на емейл любой группе игроков (не только своим)")]
-    public bool CanSendMassMails { get; set; }
-
-    [Display(Name = "Редактор сюжетов", Description = "может добавлять и удалять сюжеты и вводные, назначать группы и персонажей, которым они видны, публиковать вводные")]
-    public bool CanManagePlots { get; set; }
-
-    [Display(Name = "Настраивать поселение", Description = "может добавлять/удалять номера и типы поселений")]
-    public bool CanManageAccommodation { get; set; }
-
-    [Display(Name = "Расселять игроков", Description = "может назначать игрокам номер")]
-    public bool CanSetPlayersAccommodations { get; set; }
-
-
-    [Display(Name = "Проект")]
-    public int ProjectId { get; set; }
-
-    public int UserId { get; set; }
-}
-
-public class DeleteAclViewModel : AclViewModelBase
-{
-
-    [Display(
-      Name = "Новый ответственный мастер",
-      Description = "Ответственный мастер, который будет назначен тем заявкам, за которые раньше отвечал этот мастер.")]
-    public int? ResponsibleMasterId { get; set; }
-
-    public bool SelfRemove { get; set; }
-
-    public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, IUriService uriService)
-    {
-        return new DeleteAclViewModel
-        {
-            ProjectId = acl.ProjectId,
-            ProjectAclId = acl.ProjectAclId,
-            UserId = acl.UserId,
-            ProjectName = acl.Project.ProjectName,
-            ClaimsCount = count,
-            UserDetails = new UserProfileDetailsViewModel(acl.User, AccessReason.CoMaster),
-            ResponsibleFor = groups.AsObjectLinks(uriService).ToArray(),
-        };
+        ProjectAclId = acl.ProjectAclId;
+        ClaimsCount = claimsCount;
+        ResponsibleFor = groups?.AsObjectLinks(uriService).ToArray() ?? [];
     }
 }

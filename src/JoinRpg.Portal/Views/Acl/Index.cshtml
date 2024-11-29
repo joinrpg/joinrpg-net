@@ -42,25 +42,15 @@
                 @Html.DisplayFor(modelItem => item.UserDetails)
             </td>
             <td class="hidden-xs">
-                <permission-badge asp-for="@item.CanEditRoles" />
-                <permission-badge asp-for="@item.CanSendMassMails" />
-                <permission-badge asp-for="@item.CanManagePlots" />
-                <permission-badge asp-for="@item.CanManageClaims" />
-
-                @if (item.AccomodationEnabled)
+                @foreach (var badge in item.Badges.Take(item.Badges.Length / 2))
                 {
-                    <permission-badge asp-for="@item.CanManageAccommodation" />
+                    <partial name="PermissionBadge" model="@badge" />
                 }
             </td>
             <td class="hidden-xs">
-                <permission-badge asp-for="@item.CanManageMoney" />
-                <permission-badge asp-for="@item.CanChangeFields" />
-                <permission-badge asp-for="@item.CanChangeProjectProperties" />
-                <permission-badge asp-for="@item.CanGrantRights" />
-
-                @if (item.AccomodationEnabled)
+                @foreach (var badge in item.Badges.Skip(item.Badges.Length / 2))
                 {
-                    <permission-badge asp-for="@item.CanSetPlayersAccommodations" />
+                    <partial name="PermissionBadge" model="@badge" />
                 }
             </td>
             <td>
