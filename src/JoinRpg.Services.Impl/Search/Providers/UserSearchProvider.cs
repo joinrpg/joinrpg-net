@@ -54,7 +54,7 @@ internal class UserSearchProvider : ISearchProvider
             predicateBuilder = predicateBuilder.Or(user => user.ExternalLogins.Any(el => el.Key == intId.ToString()));
         }
 
-        if (searchString.UnprefixNumber("id") is int vkIntId)
+        if (searchString.TryUnprefixNumber("id") is int vkIntId)
         {
             predicateBuilder = predicateBuilder.Or(user => user.Extra != null && user.Extra.Vk! == "id" + vkIntId);
             matchByIdIsPerfect = true;

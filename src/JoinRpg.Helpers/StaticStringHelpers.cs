@@ -39,7 +39,7 @@ public static class StaticStringHelpers
             .Select(key => key[prefix.Length..]).Select(int.Parse);
     }
 
-    public static int? UnprefixNumber(
+    public static int? TryUnprefixNumber(
         this string number,
         string prefix)
     {
