@@ -1,15 +1,9 @@
-using EntityFramework.Exceptions.PostgreSQL;
+using JoinRpg.Dal.CommonEfCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Dal.JobService;
 
-public class JobScheduleDataDbContext(DbContextOptions<JobScheduleDataDbContext> options) : DbContext(options)
+public class JobScheduleDataDbContext(DbContextOptions<JobScheduleDataDbContext> options) : JoinPostgreSqlEfContextBase(options)
 {
     public DbSet<DailyJobRun> DailyJobRuns { get; set; } = null!;
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseExceptionProcessor(); // sane index exceptions
-        base.OnConfiguring(optionsBuilder);
-    }
 }
