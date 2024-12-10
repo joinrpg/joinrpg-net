@@ -95,4 +95,26 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
 
         return res.Select(a => (new UserIdentification(a.UserId), new AvatarIdentification(a.UserAvatarId))).ToArray();
     }
+
+    async Task<UserNotificationInfoDto[]> IUserRepository.GetUsersNotificationInfo(UserIdentification[] userIds)
+    {
+        int[] ids = [.. userIds.Select(u => u.Value)];
+        var users = await ctx.Set<User>()
+            .Include(u => u.Auth)
+            .Include(u => u.ExternalLogins)
+            .Include(u => u.Extra)
+            .Where(u => ids.Contains(u.UserId))
+            .ToArrayAsync();
+
+        // TODO Here we need to load only required fields 
+        return [..
+            users.Select(u => new UserNotificationInfoDto
+            {
+                UserId = new(u.UserId),
+                DisplayName = u.ExtractDisplayName(),
+                Email = new Email(u.Email),
+                TelegramId = u.TryGetTelegramId(),
+            })
+            ];
+    }
 }

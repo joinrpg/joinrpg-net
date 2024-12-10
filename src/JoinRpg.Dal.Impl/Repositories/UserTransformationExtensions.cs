@@ -18,4 +18,19 @@ internal static class UserTransformationExtensions
     {
         return UserDisplayName.Create(user.ExtractFullName(), new Email(user.Email));
     }
+
+    public static UserExternalLogin? TryGetExternalLoginByProviderId(this User user, string providerId)
+    {
+        return user.ExternalLogins.SingleOrDefault(l => l.Provider.Equals(providerId, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    public static TelegramId? TryGetTelegramId(this User user)
+    {
+        var elogin = user.TryGetExternalLoginByProviderId("telegram");
+        if (elogin == null)
+        {
+            return null;
+        }
+        return new TelegramId(long.Parse(elogin.Key), PrefferedName.FromOptional(user.Extra?.Telegram));
+    }
 }
