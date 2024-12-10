@@ -1,7 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.Access;
 
-namespace JoinRpg.Domain;
+namespace JoinRpg.Domain.Access;
 
 public static class AccessArgumentsFactory
 {

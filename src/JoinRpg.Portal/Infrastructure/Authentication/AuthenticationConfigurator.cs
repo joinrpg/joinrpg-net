@@ -33,6 +33,8 @@ internal static class AuthenticationConfigurator
 
         _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
 
+        _ = services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.FromSeconds(3)); // Проверять, изменились ли роли мастера каждые 3 секунды
+
         _ = services.ConfigureApplicationCookie(SetCookieOptions());
 
         _ = services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder(

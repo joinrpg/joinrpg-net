@@ -1,7 +1,5 @@
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using Microsoft.AspNetCore.Http;
-using Shouldly;
-using Xunit;
 
 namespace JoinRpg.Portal.Test.Infrastructure;
 

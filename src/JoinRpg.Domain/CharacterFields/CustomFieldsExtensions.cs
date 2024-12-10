@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
