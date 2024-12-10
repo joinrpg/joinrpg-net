@@ -2,7 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;
 
@@ -14,6 +16,14 @@ public static class ProjectEntityExtensions
         ArgumentNullException.ThrowIfNull(entity);
 
         return entity.Project.ProjectAcls.Where(acl => requiredAccess.Compile()(acl)).Any(pa => pa.UserId == currentUserId);
+    }
+
+    [Pure]
+    public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor, Permission permission)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserAccessor.UserId);
     }
 
     public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId)

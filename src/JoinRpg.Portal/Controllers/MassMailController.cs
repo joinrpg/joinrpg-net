@@ -2,29 +2,30 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 [MasterAuthorize()]
 [Route("{projectId}/massmail/[action]")]
-public class MassMailController : Common.ControllerGameBase
+public class MassMailController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IClaimsRepository claimRepository,
+    IUserRepository userRepository,
+    MassMailManager massMailManager) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private IClaimsRepository ClaimRepository { get; }
-    private IEmailService EmailService { get; }
-
     [HttpGet]
     public async Task<ActionResult> ForClaims(int projectid, string claimIds)
     {
-        var claims = (await ClaimRepository.GetClaimsByIds(projectid, claimIds.UnCompressIdList())).ToList();
+        var claims = (await claimRepository.GetClaimsByIds(projectid, claimIds.UnCompressIdList())).ToList();
         var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(projectid);
 
         if (!project.Active)
@@ -48,34 +49,24 @@ public class MassMailController : Common.ControllerGameBase
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ForClaims(MassMailViewModel viewModel)
     {
-        var claims = (await ClaimRepository.GetClaimsByIds(viewModel.ProjectId, viewModel.ClaimIds.UnCompressIdList())).ToList();
-        var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-        _ = project.EnsureProjectActive();
-        var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
-        var filteredClaims = claims.Where(claim => claim.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
-
         try
         {
-
-            var recipients =
-              filteredClaims
-                .Select(c => c.Player)
-                .UnionIf(project.ProjectAcls.Select(acl => acl.User), viewModel.AlsoMailToMasters)
-                .Distinct();
-
-            await EmailService.Email(new MassEmailModel()
-            {
-                Initiator = await GetCurrentUserAsync(),
-                ProjectName = project.ProjectName,
-                Text = new MarkdownString(viewModel.Body),
-                Recipients = recipients.ToList(),
-                Subject = viewModel.Subject,
-            });
+            await massMailManager.MassMail(
+                new(viewModel.ProjectId),
+                [.. viewModel.ClaimIds.UnCompressIdList()],
+                new MarkdownString(viewModel.Body),
+                viewModel.Subject,
+                viewModel.AlsoMailToMasters
+                );
             return View("Success");
         }
         catch (Exception exception)
         {
-            viewModel.Claims = filteredClaims.Select(claim => new ClaimShortListItemViewModel(claim));
+
+            var claims = (await claimRepository.GetClaimsByIds(viewModel.ProjectId, viewModel.ClaimIds.UnCompressIdList())).ToList();
+            var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+            var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
+            viewModel.Claims = claims.Select(claim => new ClaimShortListItemViewModel(claim));
             viewModel.ToMyClaimsOnlyWarning = !canSendMassEmails &&
                                               claims.Any(c => c.ResponsibleMasterUserId != CurrentUserId);
             viewModel.ProjectName = project.ProjectName;
@@ -84,18 +75,4 @@ public class MassMailController : Common.ControllerGameBase
             return View(viewModel);
         }
     }
-
-    #region constructor
-    public MassMailController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IClaimsRepository claimRepository,
-        IEmailService emailService,
-        IUserRepository userRepository) : base(projectRepository, projectService, userRepository)
-    {
-        ClaimRepository = claimRepository;
-        EmailService = emailService;
-    }
-
-    #endregion
 }
