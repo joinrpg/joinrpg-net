@@ -9,34 +9,22 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models.Masters;
 using JoinRpg.Web.Models.Plot;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/plot/[action]")]
-public class PlotController : ControllerGameBase
+public class PlotController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IPlotService plotService,
+    IPlotRepository plotRepository,
+    IUriService uriService,
+    IUserRepository userRepository) : ControllerGameBase(projectRepository,
+        projectService,
+        userRepository)
 {
-    private readonly IPlotService _plotService;
-    private readonly IPlotRepository _plotRepository;
-    private IUriService UriService { get; }
-
-    public PlotController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IPlotService plotService,
-        IPlotRepository plotRepository,
-        IUriService uriService,
-        IUserRepository userRepository) : base(projectRepository,
-            projectService,
-            userRepository)
-    {
-        _plotService = plotService;
-        _plotRepository = plotRepository;
-        UriService = uriService;
-    }
-
     [MasterAuthorize(Permission.CanManagePlots)]
     [HttpGet]
     public async Task<ActionResult> Create(int projectId)
@@ -59,7 +47,7 @@ public class PlotController : ControllerGameBase
 
         try
         {
-            await _plotService.CreatePlotFolder(viewModel.ProjectId,
+            await plotService.CreatePlotFolder(viewModel.ProjectId,
                 viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
             return RedirectToAction("Index", "PlotList", new { viewModel.ProjectId });
         }
@@ -73,12 +61,12 @@ public class PlotController : ControllerGameBase
     [HttpGet, RequireMasterOrPublish]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
-        var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
             return NotFound();
         }
-        return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, UriService));
+        return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, uriService));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
@@ -87,14 +75,14 @@ public class PlotController : ControllerGameBase
         try
         {
             await
-              _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
+              plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
             return ReturnToPlot(viewModel.ProjectId, viewModel.PlotFolderId);
         }
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var folder = await _plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
-            viewModel.Fill(folder, CurrentUserId, UriService);
+            var folder = await plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
+            viewModel.Fill(folder, CurrentUserId, uriService);
             return View(viewModel);
         }
     }
@@ -103,7 +91,7 @@ public class PlotController : ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
     {
-        var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
             return NotFound();
@@ -119,7 +107,7 @@ public class PlotController : ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
     {
-        var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
             return NotFound();
@@ -143,7 +131,7 @@ public class PlotController : ControllerGameBase
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+            var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
             if (folder == null)
             {
                 return NotFound();
@@ -170,7 +158,7 @@ public class PlotController : ControllerGameBase
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+            var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
             if (folder == null)
             {
                 return NotFound();
@@ -192,7 +180,7 @@ public class PlotController : ControllerGameBase
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
-          _plotService.CreatePlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars,
+          plotService.CreatePlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars,
             (PlotElementType)elementType);
         return ReturnToPlot(projectId, plotFolderId);
     }
@@ -207,12 +195,12 @@ public class PlotController : ControllerGameBase
     [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
-        var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
             return NotFound();
         }
-        return View(new EditPlotFolderViewModel(folder, CurrentUserId, UriService));
+        return View(new EditPlotFolderViewModel(folder, CurrentUserId, uriService));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
@@ -220,7 +208,7 @@ public class PlotController : ControllerGameBase
     {
         try
         {
-            await _plotService.DeleteFolder(projectId, plotFolderId);
+            await plotService.DeleteFolder(projectId, plotFolderId);
             return RedirectToAction("Index", "PlotList", new { projectId });
         }
         catch (Exception)
@@ -234,7 +222,7 @@ public class PlotController : ControllerGameBase
     {
         try
         {
-            await _plotService.DeleteElement(projectId, plotFolderId, plotelementid);
+            await plotService.DeleteElement(projectId, plotFolderId, plotelementid);
             return ReturnToPlot(projectId, plotFolderId);
         }
         catch (Exception)
@@ -248,14 +236,14 @@ public class PlotController : ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
     {
-        var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
             return NotFound();
         }
         var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid),
           folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots),
-            UriService);
+            uriService);
         return View(viewModel);
     }
 
@@ -271,13 +259,13 @@ public class PlotController : ControllerGameBase
                 var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
                 var targetChars = targets.OrEmptyList().GetUnprefixedChars();
                 await
-                  _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups,
+                  plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups,
                     targetChars);
             }
             else
             {
                 await
-                  _plotService.EditPlotElementText(projectId, plotFolderId, plotelementid, content, todoField);
+                  plotService.EditPlotElementText(projectId, plotFolderId, plotelementid, content, todoField);
             }
             return ReturnToPlot(projectId, plotFolderId);
         }
@@ -295,7 +283,7 @@ public class PlotController : ControllerGameBase
     {
         try
         {
-            await _plotService.MoveElement(projectid, listItemId, parentObjectId, direction);
+            await plotService.MoveElement(projectid, listItemId, parentObjectId, direction);
 
 
             return RedirectToAction("Details", "Character", new { projectId = projectid, characterId = parentObjectId });
@@ -314,7 +302,7 @@ public class PlotController : ControllerGameBase
     {
         try
         {
-            await _plotService.PublishElementVersion(model);
+            await plotService.PublishElementVersion(model);
             return ReturnToPlot(model.ProjectId, model.PlotFolderId);
         }
         catch (Exception)
@@ -332,7 +320,7 @@ public class PlotController : ControllerGameBase
         try
         {
             model.Version = null;
-            await _plotService.PublishElementVersion(model);
+            await plotService.PublishElementVersion(model);
             return ReturnToPlot(model.ProjectId, model.PlotFolderId);
         }
         catch (Exception)
@@ -345,14 +333,14 @@ public class PlotController : ControllerGameBase
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version)
     {
-        var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
             return NotFound();
         }
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
-            UriService, version));
+            uriService, version));
     }
 
 }

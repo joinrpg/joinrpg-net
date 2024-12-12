@@ -281,23 +281,16 @@ new { Model.ProjectId, Model.Player.UserId }, null).
       <div class="panel panel-default collapse" id="moveClaimActionPanel">
         <div class="panel-heading">Перемещение заявки</div>
         <div class="panel-body">
-          @if (Model.Status.IsAlreadyApproved())
-          {
-            <div class="alert alert-warning">
-              <span class="glyphicon glyphicon-exclamation-sign"></span>
-              Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к
-              новому персонажу.
-              <br />
-              Используйте этот инструмент только если хотите передать существующую роль другому игроку.
-              Если вы хотите изменить состав групп у <b>существующего</b> персонажа,
-              <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)</b> его.
-            </div>
-          }
+
           <form asp-action="Move" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-            @await Html.PartialAsync("AvailClaimTargetsPartial", Model.PotentialCharactersToMove)
-            @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+            
+                    @await Html.PartialAsync("MoveClaimOperationPartial", new MoveClaimOperationViewModel
             {
-            ActionName = "Переместить заявку"
+              PotentialCharactersToMove = Model.PotentialCharactersToMove,
+              IsAlreadyAccepted = Model.Status.IsAlreadyApproved(),
+              ProjectId = Model.ProjectId,
+              CharacterId = Model.CharacterId,
+              CanAcceptAfter = Model.CanManageThisClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready,
             })
           </form>
         </div>

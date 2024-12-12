@@ -791,20 +791,20 @@ internal class ClaimServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private async Task<T> AddCommentWithEmail<T>(string commentText, Claim claim,
+    private async Task<T> AddCommentWithEmail<T>(string? commentText, Claim claim,
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment? parentComment,
       CommentExtraAction? extraAction = null, IEnumerable<User>? extraSubscriptions = null) where T : ClaimEmailModel, new()
     {
         var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
-        _ = AddCommentImpl(claim, parentComment, commentText, visibleToPlayerUpdated, extraAction);
+        _ = AddCommentImpl(claim, parentComment, commentText ?? "", visibleToPlayerUpdated, extraAction);
 
         var extraRecipients =
           new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
-          Union(extraSubscriptions ?? Enumerable.Empty<User>());
+          Union(extraSubscriptions ?? []);
 
         var mastersOnly = !visibleToPlayerUpdated;
         return
-          await CreateClaimEmail<T>(claim, commentText, predicate,
+          await CreateClaimEmail<T>(claim, commentText ?? "", predicate,
             extraAction, mastersOnly, extraRecipients);
     }
 
