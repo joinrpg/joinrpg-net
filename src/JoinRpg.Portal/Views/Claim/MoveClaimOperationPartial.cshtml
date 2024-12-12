@@ -1,0 +1,44 @@
+﻿@model JoinRpg.Web.Models.MoveClaimOperationViewModel
+@if (Model.IsAlreadyAccepted)
+{
+    <div class="alert alert-warning">
+        <span class="glyphicon glyphicon-exclamation-sign"></span>
+        Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к
+        новому персонажу.
+        <br />
+        Используйте этот инструмент только если хотите передать существующую роль другому игроку.
+        Если вы хотите изменить состав групп у <b>существующего</b> персонажа,
+        <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)</b> его.
+    </div>
+}
+
+@await Html.PartialAsync("AvailClaimTargetsPartial", Model.PotentialCharactersToMove)
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.CommentText, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.CommentText, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.CommentText, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    @if (Model.CanAcceptAfter)
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.AcceptAfterMove, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.CheckBoxFor(model => model.AcceptAfterMove, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.AcceptAfterMove, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.AcceptAfterMove)
+            </div>
+        </div>
+    }
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Переместить заявку" class="btn btn-success" />
+        </div>
+    </div>
+</div>

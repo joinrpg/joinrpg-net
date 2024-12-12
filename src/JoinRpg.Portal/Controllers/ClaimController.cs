@@ -13,7 +13,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
-using JoinRpg.Web.Models.Masters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -366,7 +365,7 @@ public class ClaimController(
 
     [MasterAuthorize()]
     [HttpPost]
-    public async Task<ActionResult> Move(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
+    public async Task<ActionResult> Move(int projectId, int claimId, MoveClaimOperationViewModel viewModel, int characterId)
     {
         var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
@@ -382,6 +381,11 @@ public class ClaimController(
             }
 
             await claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
+
+            if (viewModel.AcceptAfterMove)
+            {
+                await claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, "");
+            }
 
             return ReturnToClaim(projectId, claimId);
         }
