@@ -10,27 +10,22 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public class CharacterListByGroupViewModel : CharacterListViewModel, IOperationsAwareView
+public class CharacterListByGroupViewModel(int currentUserId,
+    IReadOnlyCollection<Character> characters,
+    CharacterGroup group,
+    ProjectInfo projectInfo,
+    IProblemValidator<Character> problemValidator) :
+
+    CharacterListViewModel(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, group.Project, projectInfo, problemValidator), IOperationsAwareView
 {
-    public CharacterListByGroupViewModel(int currentUserId,
-        IReadOnlyCollection<Character> characters,
-        CharacterGroup group,
-        ProjectInfo projectInfo,
-        IProblemValidator<Character> problemValidator)
-        : base(currentUserId,
-            $"Персонажи — {group.CharacterGroupName}",
-            characters,
-            group.Project, projectInfo, problemValidator)
-    {
-        GroupModel =
+    public CharacterGroupDetailsViewModel GroupModel { get; } =
             new CharacterGroupDetailsViewModel(group,
                 currentUserId,
                 GroupNavigationPage.Characters);
-    }
-
-    public CharacterGroupDetailsViewModel GroupModel { get; }
 
     int? IOperationsAwareView.CharacterGroupId => GroupModel.CharacterGroupId;
+    //Не вливаем заголовок в строку с кнопочками, она внутри контрола управления группами.
+    string? IOperationsAwareView.InlineTitle => null;
 }
 
 public class CharacterListViewModel(
@@ -55,6 +50,8 @@ public class CharacterListViewModel(
     public bool HasEditAccess { get; } = project.HasEditRolesAccess(currentUserId);
 
     public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedActiveFields.Where(f => !f.IsName && !f.IsMultiLine).ToArray();
+
+    string? IOperationsAwareView.InlineTitle => Title;
 }
 
 public class CharacterListItemViewModel : ILinkable

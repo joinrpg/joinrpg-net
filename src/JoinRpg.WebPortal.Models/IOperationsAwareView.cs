@@ -11,4 +11,6 @@ public interface IOperationsAwareView
     IReadOnlyCollection<int> ClaimIds { get; }
 
     IReadOnlyCollection<int> CharacterIds { get; }
+
+    public string? InlineTitle => null;
 }

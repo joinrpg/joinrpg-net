@@ -4,7 +4,13 @@
 {
     return;
 }
-<div class="btn-group" style="padding: 1em">
+<div style="display:flex;align-items:center">
+    @if (Model.InlineTitle is not null)
+    {
+        <h2>@Model.InlineTitle</h2>
+    }
+<div class="btn-group" style="padding: 1em; fi">
+    
     @if (ViewBag.CountString != null)
     {
         <a href="#" class="disabled btn btn-default">@ViewBag.CountString</a>
@@ -48,5 +54,7 @@
         </a>
     
     }
+
+</div>
 
 </div>
