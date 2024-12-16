@@ -99,11 +99,12 @@ public class MockedProject
 
         FixProjectSubEntities(Project);
 
+        var rootGroup = CreateCharacterGroup();
+        rootGroup.IsRoot = true;
+
         Group = CreateCharacterGroup();
-        Group.IsRoot = true;
 
         Character = CreateCharacter("Some Character");
-        Character.ParentCharacterGroupIds = [Group.CharacterGroupId];
 
         ReInitProjectInfo();
 
@@ -142,7 +143,7 @@ public class MockedProject
         {
             IsActive = true,
             IsAcceptingClaims = true,
-            ParentCharacterGroupIds = [],
+            ParentCharacterGroupIds = [Project.CharacterGroups.Single(x => x.IsRoot).CharacterGroupId],
             CharacterId = Project.Characters.GetNextId(),
             Claims = [],
             Project = Project,
@@ -217,7 +218,7 @@ public class MockedProject
         return claim;
     }
 
-    public ProjectFieldInfo CreateConditionalHeader()
+    public ProjectFieldInfo CreateConditionalHeader(CharacterGroup characterGroup)
     {
         return CreateConditionalField(f =>
         {
@@ -228,7 +229,7 @@ public class MockedProject
             f.FieldType = ProjectFieldType.Header;
             f.FieldName = "Conditional";
         },
-            Group);
+            characterGroup);
     }
 
     public ProjectFieldInfo CreateConditionalField()
@@ -246,4 +247,6 @@ public class MockedProject
     }
 
     public static void AssignFieldValues(IFieldContainter mockCharacter, params FieldWithValue[] fieldWithValues) => mockCharacter.JsonData = fieldWithValues.SerializeFields();
+
+    public static void AddCharToGroup(DataModel.Character character, DataModel.CharacterGroup group) => character.ParentCharacterGroupIds = [.. character.ParentCharacterGroupIds.Union([group.CharacterGroupId])];
 }
