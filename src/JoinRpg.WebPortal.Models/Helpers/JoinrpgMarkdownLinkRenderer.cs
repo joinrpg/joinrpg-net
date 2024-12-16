@@ -4,6 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Helpers;
 
@@ -14,10 +15,12 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     public string[] LinkTypesToMatch { get; }
 
     private readonly Dictionary<string, Func<string, int, string, string>> matches;
+    private readonly ProjectInfo projectInfo;
 
-    public JoinrpgMarkdownLinkRenderer(Project project)
+    public JoinrpgMarkdownLinkRenderer(Project project, ProjectInfo projectInfo)
     {
         Project = project;
+        this.projectInfo = projectInfo;
         matches = new Dictionary
           <string, Func<string, int, string, string>>
         {

@@ -4,6 +4,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
@@ -73,16 +74,18 @@ public class PlotDisplayViewModel
     public static PlotDisplayViewModel Published(IReadOnlyCollection<PlotElement> plots,
         int? currentUserId,
         Character character,
-        IUriService uriService) =>
+        IUriService uriService, ProjectInfo projectInfo) =>
         new(plots,
             currentUserId,
             character,
-            uriService);
+            uriService,
+            projectInfo);
 
     private PlotDisplayViewModel(IReadOnlyCollection<PlotElement> plots,
         int? currentUserId,
         Character character,
-        IUriService uriService)
+        IUriService uriService,
+        ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(plots);
 
@@ -90,7 +93,7 @@ public class PlotDisplayViewModel
 
         if (plots.Count > 0 && (accessArguments.AnyAccessToCharacter || character.Project.Details.PublishPlot))
         {
-            var linkRenderer = new JoinrpgMarkdownLinkRenderer(character.Project);
+            var linkRenderer = new JoinrpgMarkdownLinkRenderer(character.Project, projectInfo);
 
             Elements = plots.Where(p => p.ElementType == PlotElementType.RegularPlot && p.IsActive == true)
                 .Select(element => element.PublishedVersion())

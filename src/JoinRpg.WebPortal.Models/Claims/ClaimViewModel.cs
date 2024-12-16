@@ -194,7 +194,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             Plot = PlotDisplayViewModel.Published(readOnlyList,
                 currentUser.UserId,
                 claim.Character,
-                uriService);
+                uriService, projectInfo);
         }
         else
         {

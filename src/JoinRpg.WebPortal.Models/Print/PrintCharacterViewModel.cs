@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -50,18 +51,15 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
       (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService, ProjectInfo projectInfo)
       : base(character, projectInfo)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
 
         var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
-        Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character, uriService);
+        Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character, uriService, projectInfo);
 
         Handouts =
           plotElements.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
             .Select(e => e.PublishedVersion())
-            .Where(e => e != null)
+            .WhereNotNull()
             .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
             .ToArray();
 
