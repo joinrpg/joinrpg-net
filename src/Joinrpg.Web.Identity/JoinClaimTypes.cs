@@ -10,6 +10,4 @@ public static class JoinClaimTypes
     /// Id of Avatar
     /// </summary>
     public const string AvatarId = "joinrpg.AvatarId";
-
-    public const string ProjectPrefix = "joinrpg.MasterOf__";
 }
