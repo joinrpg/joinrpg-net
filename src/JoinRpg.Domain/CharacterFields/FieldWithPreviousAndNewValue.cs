@@ -14,7 +14,7 @@ public class FieldWithPreviousAndNewValue(
     public string? PreviousValue { get; private set; } = previousValue;
 
     public string PreviousDisplayString =>
-      GetDisplayValue(PreviousValue, Field.HasValueList ? PreviousValue.ToIntList() : []);
+      GetDisplayValue(PreviousValue, Field.HasValueList ? PreviousValue?.ParseToIntList() ?? [] : []);
 
     public override string ToString() => $"{Field.Name}={Value},PreviousValue={PreviousValue}";
 }

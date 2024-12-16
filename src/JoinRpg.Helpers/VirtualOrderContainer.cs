@@ -36,7 +36,7 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
 
         var list = entites.ToList(); // Copy 
 
-        foreach (var virtualOrderItem in ParseStoredData(storedOrder))
+        foreach (var virtualOrderItem in storedOrder.AsSpan().ParseToIntList())
         {
             var item = FindItem(list, virtualOrderItem);
             if (item != null)
@@ -45,20 +45,10 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
             }
         }
 
-        foreach (var item in list.OrderBy(li => li.Id))
-        {
-            Items.Add(item);
-        }
+        Items.AddRange(list.OrderBy(li => li.Id));
     }
 
-    private IEnumerable<int> ParseStoredData(string storedOrder)
-    {
-        return storedOrder
-            .Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(orderItem => int.Parse(orderItem.AsSpan().Trim()));
-    }
-
-    private static TItem? FindItem(ICollection<TItem> list, int virtualOrderItem)
+    private static TItem? FindItem(List<TItem> list, int virtualOrderItem)
     {
         var item = list.FirstOrDefault(i => i.Id == virtualOrderItem);
         if (item != null)

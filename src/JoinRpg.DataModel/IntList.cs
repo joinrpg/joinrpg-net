@@ -8,7 +8,7 @@ namespace JoinRpg.DataModel;
 public class IntList
 {
     private string _internalData;
-    public int[] _parentCharacterGroupIds = Array.Empty<int>();
+    public int[] _parentCharacterGroupIds = [];
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public string ListIds
@@ -17,7 +17,7 @@ public class IntList
         set
         {
             _internalData = value;
-            _parentCharacterGroupIds = value.ToIntList();
+            _parentCharacterGroupIds = [.. value?.ParseToIntList() ?? []];
         }
     }
 }

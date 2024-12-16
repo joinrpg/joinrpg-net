@@ -85,15 +85,22 @@ public static class StaticStringHelpers
         return retval;
     }
 
-    public static int[] ToIntList(this string? claimIds)
+    public static List<int> ParseToIntList(this ReadOnlySpan<char> intList)
     {
-        if (claimIds is null)
+        var list = new List<int>();
+        foreach (var range in intList.Split(','))
         {
-            return [];
+            var item = intList[range].Trim();
+            if (item.Length == 0)
+            {
+                continue;
+            }
+            list.Add(int.Parse(item));
         }
-
-        return claimIds.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse).ToArray();
+        return list;
     }
+
+    public static List<int> ParseToIntList(this string intList) => intList.AsSpan().ParseToIntList();
 
     public static string WithDefaultStringValue(
         this string? value,
