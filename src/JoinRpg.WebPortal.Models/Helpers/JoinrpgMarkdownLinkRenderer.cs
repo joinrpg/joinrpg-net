@@ -24,25 +24,21 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         matches = new Dictionary
           <string, Func<string, int, string, string>>
         {
-          {"персонаж", Charname},
-          {"контакты", CharacterFullFunc},
-          {"группа", GroupName},
-          {"список", GroupListFunc},
-          {"сеткаролей", GroupListFullFunc},
+          {"персонаж", CharWrapper(CharacterLinkImpl) },
+          {"контакты", CharWrapper(CharacterImpl) },
+          {"группа", GroupWrapper(GroupName)},
+          {"список", GroupWrapper(GroupListFunc)},
+          {"сеткаролей", GroupWrapper(GroupListFullFunc)}
         };
 
         LinkTypesToMatch = [.. matches.Keys.OrderByDescending(c => c.Length)];
     }
 
-    private string GroupListFunc(string match, int index, string extra)
+    private string GroupListFunc(int groupId, string extra, CharacterGroup group, IEnumerable<Character> ch)
     {
-        var group = Project.CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == index);
-        if (group == null)
-        {
-            return Fail(match, index, extra);
-        }
-        var groupLink = GroupLinkImpl(index, extra, group);
-        var characters = GetGroupCharacters(group).Select(c => CharacterImpl(c));
+        var groupLink = GroupLinkImpl(group, extra);
+
+        var characters = ch.Select(c => CharacterImpl(c));
         var builder = new StringBuilder();
         foreach (var character in characters)
         {
@@ -51,15 +47,9 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         return $"<h4>Группа: {groupLink}</h4><p>{builder}</p>";
     }
 
-    private string GroupListFullFunc(string match, int index, string extra)
+    private string GroupListFullFunc(int groupId, string extra, CharacterGroup group, IEnumerable<Character> characters)
     {
-        var group = Project.CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == index);
-        if (group == null)
-        {
-            return Fail(match, index, extra);
-        }
-        var groupLink = GroupLinkImpl(index, extra, group);
-        var characters = GetGroupCharacters(group);
+        var groupLink = GroupLinkImpl(group, extra);
         var builder = new StringBuilder();
         foreach (var character in characters)
         {
@@ -68,26 +58,12 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         return $"<h4>Группа: {groupLink}</h4>{group.Description.ToHtmlString()}{builder}<hr>";
     }
 
-    private string GroupName(string match, int index, string extra)
-    {
-        var group = Project.CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == index);
-        if (group == null)
-        {
-            return Fail(match, index, extra);
-        }
-        return GroupLinkImpl(index, extra, group);
-    }
+    private string GroupName(int groupId, string extra, CharacterGroup group, IEnumerable<Character> ch) => GroupLinkImpl(group, extra);
 
-    private string GroupLinkImpl(int index, string extra, CharacterGroup group)
+    private string GroupLinkImpl(CharacterGroup group, ReadOnlySpan<char> extra)
     {
         var name = extra == "" ? group.CharacterGroupName : extra;
-        return $"<a href=\"/{Project.ProjectId}/roles/{index}/details\">{name}</a>";
-    }
-
-    private string CharacterFullFunc(string match, int index, string extra)
-    {
-        var character = Project.Characters.SingleOrDefault(c => c.CharacterId == index);
-        return character == null ? Fail(match, index, extra) : CharacterImpl(character, extra);
+        return $"<a href=\"/{Project.ProjectId}/roles/{group.CharacterGroupId}/details\">{name}</a>";
     }
 
     private string CharacterImpl(Character character, string extra = "")
@@ -131,17 +107,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         return string.IsNullOrEmpty(link) ? null : $"Телеграм: <a href=\"https://t.me/{link}\">t.me/{link}</a>";
     }
 
-    private string Charname(string match, int index, string extra)
-    {
-        var character = Project.Characters.SingleOrDefault(c => c.CharacterId == index);
-        if (character == null)
-        {
-            return Fail(match, index, extra);
-        }
-        return CharacterLinkImpl(character, extra);
-    }
-
-    private string CharacterLinkImpl(Character character, string extra = "")
+    private string CharacterLinkImpl(Character character, string extra)
     {
         var name = extra == "" ? character.CharacterName : extra;
         return $"<a href=\"/{Project.ProjectId}/character/{character.CharacterId}\">{name}</a>";
@@ -149,9 +115,17 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     public string Render(string match, int index, string extra)
     {
-        if (match.Length > 1 && match[0] == '%' && matches.ContainsKey(match[1..]))
+        if (match.Length > 1 && match[0] == '%' && matches.TryGetValue(match[1..], out Func<string, int, string, string>? func))
         {
-            return matches[match[1..]](match, index, extra);
+            try
+            {
+                return func(match, index, extra);
+            }
+            catch (Exception ex)
+            {
+                // TODO Need to inject logger here
+                return $"ERROR rendering:<pre>{Fail(match, index, extra)}</pre>";
+            }
         }
         return Fail(match, index, extra);
     }
@@ -165,12 +139,34 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         return $"{match}{index}{extra}";
     }
 
-    private static IEnumerable<Character> GetGroupCharacters(CharacterGroup group)
+    private Func<string, int, string, string> GroupWrapper(Func<int, string, CharacterGroup, IEnumerable<Character>, string> inner)
     {
-        return group.GetOrderedCharacters()
+        return (match, index, extra) =>
+        {
+            var group = Project.CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == index);
+            if (group == null)
+            {
+                return Fail(match, index, extra);
+            }
+            IEnumerable<Character> ch = group.GetOrderedCharacters()
                     .Union(
                         group.GetOrderedChildrenGroupsRecursive().SelectMany(g => g.GetOrderedCharacters().Where(chr => chr.IsActive))
                         )
                     .Distinct();
+            return inner(index, extra, group, ch);
+        };
+    }
+
+    private Func<string, int, string, string> CharWrapper(Func<Character, string, string> inner)
+    {
+        return (match, index, extra) =>
+        {
+            var character = Project.Characters.SingleOrDefault(c => c.CharacterId == index);
+            if (character == null)
+            {
+                return Fail(match, index, extra);
+            }
+            return inner(character, extra);
+        };
     }
 }
