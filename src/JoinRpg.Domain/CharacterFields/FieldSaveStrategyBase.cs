@@ -4,33 +4,21 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.CharacterFields;
 
-internal abstract class FieldSaveStrategyBase
+internal abstract class FieldSaveStrategyBase(Claim? claim,
+    Character? character,
+    int currentUserId,
+    IFieldDefaultValueGenerator generator,
+    ProjectInfo projectInfo)
 {
-    protected Claim? Claim { get; }
-    protected Character? Character { get; }
-    private int CurrentUserId { get; }
-    private IFieldDefaultValueGenerator Generator { get; }
-    protected Project Project { get; }
+    protected Claim? Claim { get; } = claim;
+    protected Character? Character { get; } = character;
+    protected Project Project { get; } = character?.Project ?? claim?.Project ?? throw new ArgumentNullException("",
+                "Either character or claim should be not null");
 
-    protected ProjectInfo ProjectInfo { get; }
+    protected ProjectInfo ProjectInfo { get; } = projectInfo;
 
     private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } =
         new List<FieldWithPreviousAndNewValue>();
-
-    protected FieldSaveStrategyBase(Claim? claim,
-        Character? character,
-        int currentUserId,
-        IFieldDefaultValueGenerator generator,
-        ProjectInfo projectInfo)
-    {
-        Claim = claim;
-        Character = character;
-        CurrentUserId = currentUserId;
-        Generator = generator;
-        Project = character?.Project ?? claim?.Project ?? throw new ArgumentNullException("",
-                "Either character or claim should be not null");
-        ProjectInfo = projectInfo;
-    }
 
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>
         UpdatedFields.Where(uf => uf.PreviousDisplayString != uf.DisplayString).ToList();
@@ -44,13 +32,13 @@ internal abstract class FieldSaveStrategyBase
     public void EnsureEditAccess(FieldWithValue field)
     {
         var accessArguments = Character != null
-            ? AccessArgumentsFactory.Create(Character, CurrentUserId)
-            : AccessArgumentsFactory.Create(Claim!, CurrentUserId); // Either character or claim should be not null
+            ? AccessArgumentsFactory.Create(Character, currentUserId)
+            : AccessArgumentsFactory.Create(Claim!, currentUserId); // Either character or claim should be not null
 
         var editAccess = field.Field.HasEditAccess(accessArguments);
         if (!editAccess)
         {
-            throw new NoAccessToProjectException(Project, CurrentUserId);
+            throw new NoAccessToProjectException(Project, currentUserId);
         }
     }
 
@@ -76,31 +64,16 @@ internal abstract class FieldSaveStrategyBase
         }
 
         field.Value = newValue;
-        MarkUsed(field);
 
         return true;
-    }
-
-    private void MarkUsed(FieldWithValue field)
-    {
-        var entityField = Project.ProjectFields.Single(f => f.ProjectFieldId == field.Field.Id.ProjectFieldId);
-        entityField.WasEverUsed = true;
-
-        if (field.Field.HasValueList)
-        {
-            foreach (var val in field.GetDropdownValues())
-            {
-                entityField.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == val.Id.ProjectFieldVariantId).WasEverUsed = true;
-            }
-        }
     }
 
     public string? GenerateDefaultValue(FieldWithValue field)
     {
         return field.Field.BoundTo switch
         {
-            FieldBoundTo.Character => Generator.CreateDefaultValue(Character, field),
-            FieldBoundTo.Claim => Generator.CreateDefaultValue(Claim, field),
+            FieldBoundTo.Character => generator.CreateDefaultValue(Character, field),
+            FieldBoundTo.Claim => generator.CreateDefaultValue(Claim, field),
             _ => throw new ArgumentOutOfRangeException(),
         };
     }

@@ -70,7 +70,32 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         GenerateDefaultValues(character, fields, strategy);
 
         strategy.Save(fields);
-        return strategy.GetUpdatedFields();
+        var updatedFields = strategy.GetUpdatedFields();
+
+        MarkAsUsed(updatedFields, character.Project);
+        return updatedFields;
+    }
+
+    private static void MarkUsed(FieldWithValue field, Project project)
+    {
+        var entityField = project.ProjectFields.Single(f => f.ProjectFieldId == field.Field.Id.ProjectFieldId);
+        entityField.WasEverUsed = true;
+
+        if (field.Field.HasValueList)
+        {
+            foreach (var val in field.GetDropdownValues())
+            {
+                entityField.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == val.Id.ProjectFieldVariantId).WasEverUsed = true;
+            }
+        }
+    }
+
+    protected virtual void MarkAsUsed(IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields, Project project)
+    {
+        foreach (var field in updatedFields)
+        {
+            MarkUsed(field, project);
+        }
     }
 
     private FieldSaveStrategyBase CreateStrategy(int currentUserId, Character character, Claim? claim, ProjectInfo projectInfo)

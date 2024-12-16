@@ -19,10 +19,12 @@ public class FieldSaveHelperTest
         this.testOutputHelper = testOutputHelper;
     }
 
-    private FieldSaveHelper InitFieldSaveHelper()
+    private class MockedFieldSaveHelper(ITestOutputHelper testOutputHelper) : FieldSaveHelper(new MockedFieldDefaultValueGenerator(), new XUnitLogger<FieldSaveHelper>(testOutputHelper))
     {
-        return new FieldSaveHelper(new MockedFieldDefaultValueGenerator(), new XUnitLogger<FieldSaveHelper>(testOutputHelper));
+        protected override void MarkAsUsed(IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields, Project project) { }
     }
+
+    private FieldSaveHelper InitFieldSaveHelper() => new MockedFieldSaveHelper(testOutputHelper);
 
     [Fact]
     public void SaveOnAddTest()
@@ -243,7 +245,7 @@ public class FieldSaveHelperTest
         _original = new MockedProject();
         var mock = new MockedProject();
 
-        var mandatoryField = mock.AddField(f => { f.MandatoryStatus = MandatoryStatus.Required; f.CanPlayerEdit = true; });
+        var mandatoryField = mock.CreateField("Mandatory", canPlayerEdit: true, canPlayerView: true, mandatoryStatus: MandatoryStatus.Required);
 
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 

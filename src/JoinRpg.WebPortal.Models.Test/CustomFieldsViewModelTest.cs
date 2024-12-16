@@ -132,7 +132,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void ProperlyHideConditionalHeader()
     {
-        var conditionalHeader = Mock.CreateConditionalHeader();
+        var conditionalHeader = Mock.CreateConditionalHeader(Mock.Group);
         var claim = Mock.CreateApprovedClaim(Mock.CreateCharacter("another"), Mock.Player);
 
         var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
@@ -148,7 +148,9 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void ProperlyShowConditionalHeaderTest()
     {
-        var conditionalHeader = Mock.CreateConditionalHeader();
+        var conditionalHeader = Mock.CreateConditionalHeader(Mock.Group);
+        MockedProject.AddCharToGroup(Mock.Character, Mock.Group);
+
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
 
         var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
@@ -160,7 +162,6 @@ public class CustomFieldsViewModelTest
 
         characterField.ShouldBeEditable();
     }
-
 
     [Fact]
     public void AllowCharactersFieldOnAddClaimForGroupTest()

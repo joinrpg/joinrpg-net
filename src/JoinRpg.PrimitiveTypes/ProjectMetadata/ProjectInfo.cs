@@ -29,11 +29,13 @@ public record class ProjectInfo
 
     public int RootCharacterGroupId { get; }
 
+    public string FieldsOrdering { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         string projectName,
         string ordering,
-        IReadOnlyCollection<ProjectFieldInfo> fields,
+        IReadOnlyCollection<ProjectFieldInfo> unsortedFields,
         ProjectFieldSettings projectFieldSettings,
         ProjectFinanceSettings projectFinanceSettings,
         bool accomodationEnabled,
@@ -41,23 +43,18 @@ public record class ProjectInfo
         bool allowToSetGroups,
         int rootCharacterGroupId)
     {
-        UnsortedFields = fields;
+        UnsortedFields = unsortedFields;
         ProjectId = projectId;
         ProjectName = projectName;
-        sortedFieldsContainer = VirtualOrderContainerFacade.CreateLazy(fields, ordering);
-        sortedActiveFieldsContainer = VirtualOrderContainerFacade.CreateLazy(fields.Where(f => f.IsActive), ordering);
+        FieldsOrdering = ordering;
+        sortedFieldsContainer = VirtualOrderContainerFacade.CreateLazy(unsortedFields, ordering);
+        sortedActiveFieldsContainer = VirtualOrderContainerFacade.CreateLazy(unsortedFields.Where(f => f.IsActive), ordering);
         ProjectFieldSettings = projectFieldSettings;
         ProjectFinanceSettings = projectFinanceSettings;
         AccomodationEnabled = accomodationEnabled;
-        if (projectFieldSettings.NameField is ProjectFieldIdentification nameField)
-        {
-            CharacterNameField = GetFieldById(nameField);
-        }
+        CharacterNameField = projectFieldSettings.NameField is ProjectFieldIdentification nameField ? GetFieldById(nameField) : null;
 
-        if (projectFieldSettings.DescriptionField is ProjectFieldIdentification descriptionField)
-        {
-            CharacterDescriptionField = GetFieldById(descriptionField);
-        }
+        CharacterDescriptionField = projectFieldSettings.DescriptionField is ProjectFieldIdentification descriptionField ? GetFieldById(descriptionField) : null;
 
         TimeSlotField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleTimeSlotField && f.IsActive);
         RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);

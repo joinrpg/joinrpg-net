@@ -10,7 +10,7 @@ public class CharacterViewModelTest
     [Fact]
     public void AddCharacterViewModelHaveSimpleFields()
     {
-        var field = _mock.AddField();
+        var field = _mock.CreateField("Char1");
         var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId, _mock.ProjectInfo);
         var fieldView = vm.Fields.Field(field);
 

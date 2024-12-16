@@ -24,7 +24,7 @@ public record class ProjectFieldInfo(
     bool IncludeInPrint,
     ProjectFieldSettings FieldSettings,
     string? ProgrammaticValue)
-    : IOrderableEntity
+    : IProjectEntityWithId
 {
     private const string CheckboxValueOn = "on";
 
@@ -92,6 +92,8 @@ public record class ProjectFieldInfo(
             );
 
     int IOrderableEntity.Id => Id.ProjectFieldId;
+
+    int IProjectEntityWithId.ProjectId => Id.ProjectId;
 
     public bool HasEditAccess(AccessArguments accessArguments)
     {
