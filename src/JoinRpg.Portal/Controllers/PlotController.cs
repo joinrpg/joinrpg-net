@@ -21,7 +21,8 @@ public class PlotController(
     IPlotService plotService,
     IPlotRepository plotRepository,
     IUriService uriService,
-    IUserRepository userRepository) : ControllerGameBase(projectRepository,
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository) : ControllerGameBase(projectRepository,
         projectService,
         userRepository)
 {
@@ -66,7 +67,8 @@ public class PlotController(
         {
             return NotFound();
         }
-        return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, uriService));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, uriService, projectInfo));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
@@ -82,7 +84,8 @@ public class PlotController(
         {
             ModelState.AddException(exception);
             var folder = await plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
-            viewModel.Fill(folder, CurrentUserId, uriService);
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
+            viewModel.Fill(folder, CurrentUserId, uriService, projectInfo);
             return View(viewModel);
         }
     }
@@ -200,7 +203,8 @@ public class PlotController(
         {
             return NotFound();
         }
-        return View(new EditPlotFolderViewModel(folder, CurrentUserId, uriService));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        return View(new EditPlotFolderViewModel(folder, CurrentUserId, uriService, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
@@ -338,9 +342,10 @@ public class PlotController(
         {
             return NotFound();
         }
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
-            uriService, version));
+            uriService, projectInfo, version));
     }
 
 }

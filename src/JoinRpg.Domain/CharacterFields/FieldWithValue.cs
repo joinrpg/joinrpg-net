@@ -26,7 +26,7 @@ public class FieldWithValue
             _value = value;
             if (Field.HasValueList)
             {
-                SelectedIds = Value.ToIntList();
+                SelectedIds = Value?.ParseToIntList() ?? [];
             }
         }
     }

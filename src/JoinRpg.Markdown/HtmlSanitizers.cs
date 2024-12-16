@@ -19,23 +19,19 @@ internal static class HtmlSanitizers
                 "li", "a", "blockquote");
     }
 
-    private static HtmlSanitizer FlattenTags(this HtmlSanitizer htmlSanitizer, params string[] tagNames)
+    private static HtmlSanitizer FlattenTags(this HtmlSanitizer htmlSanitizer, params ReadOnlySpan<string> tagNames)
     {
         foreach (var tagName in tagNames)
         {
-            FlattenTag(tagName);
+            _ = htmlSanitizer.Tag(tagName).Operation(SanitizerOperation.FlattenTag);
         }
         return htmlSanitizer;
-
-        void FlattenTag(string s)
-        {
-            _ = htmlSanitizer.Tag(s).Operation(SanitizerOperation.FlattenTag);
-        }
     }
 
     private static HtmlSanitizer InitHtml5Sanitizer()
     {
         var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
+        _ = sanitizer.AllowCss("table");
         _ = sanitizer.Tag("img")
            .CheckAttributeUrl("src")
            .AllowAttributes("height")
@@ -52,6 +48,10 @@ internal static class HtmlSanitizers
         _ = sanitizer.Tag("s");
         _ = sanitizer.Tag("pre");
         _ = sanitizer.Tag("code");
+        _ = sanitizer.Tag("table");
+        _ = sanitizer.Tag("tr");
+        _ = sanitizer.Tag("td");
+        _ = sanitizer.Tag("th");
         return sanitizer;
     }
 }

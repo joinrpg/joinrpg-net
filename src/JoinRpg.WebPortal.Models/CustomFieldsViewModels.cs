@@ -248,7 +248,7 @@ public class CustomFieldsViewModel
     /// Called from AddClaimViewModel
     /// </summary>
     public CustomFieldsViewModel(Character target, ProjectInfo projectInfo, AccessArguments accessArguments, Dictionary<int, string?>? overrideValues)
-        : this(accessArguments, target, target.GetFields(projectInfo), overrideValues)
+        : this(accessArguments, target, target.GetFields(projectInfo), overrideValues, projectInfo)
     {
     }
 
@@ -274,7 +274,8 @@ public class CustomFieldsViewModel
               accessArguments,
               character,
               character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character).Where(f => !wherePrintEnabled || f.Field.IncludeInPrint),
-              overrideValues)
+              overrideValues,
+              projectInfo)
     {
     }
 
@@ -282,7 +283,7 @@ public class CustomFieldsViewModel
     /// Called from Claim and Claim list
     /// </summary>
     public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo)
-      : this(AccessArgumentsFactory.Create(claim, currentUserId), claim.Character, claim.GetFields(projectInfo), overrideValues: null)
+      : this(AccessArgumentsFactory.Create(claim, currentUserId), claim.Character, claim.GetFields(projectInfo), overrideValues: null, projectInfo)
     {
     }
 
@@ -293,7 +294,8 @@ public class CustomFieldsViewModel
         AccessArguments accessArguments,
         Character target,
         IEnumerable<FieldWithValue> fields,
-        Dictionary<int, string?>? overrideValues
+        Dictionary<int, string?>? overrideValues,
+        ProjectInfo projectInfo
         )
     {
         foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
@@ -303,7 +305,7 @@ public class CustomFieldsViewModel
         }
         AccessArguments = accessArguments;
         Target = target;
-        var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
+        var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project, projectInfo);
         Fields = fields.Select(ch => CreateFieldValueView(ch, renderer, overrideValues)).ToList();
     }
 

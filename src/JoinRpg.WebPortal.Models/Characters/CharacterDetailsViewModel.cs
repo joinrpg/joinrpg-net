@@ -62,7 +62,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
             projectInfo,
             AccessArgumentsFactory.Create(character, currentUserIdOrDefault) with { EditAllowed = false }
             );
-        Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character, uriService);
+        Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character, uriService, projectInfo);
 
         HasMasterAccess = character.HasMasterAccess(currentUserIdOrDefault);
         CreatedAt = character.CreatedAt;

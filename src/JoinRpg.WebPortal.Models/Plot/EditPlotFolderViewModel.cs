@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 
@@ -27,7 +28,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
     public string PlotFolderTitleAndTags { get; set; }
 
-    public EditPlotFolderViewModel(PlotFolder folder, int? currentUserId, IUriService uriService)
+    public EditPlotFolderViewModel(PlotFolder folder, int? currentUserId, IUriService uriService, ProjectInfo projectInfo)
     {
         if (folder == null)
         {
@@ -37,7 +38,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         PlotFolderId = folder.PlotFolderId;
         TodoField = folder.TodoField;
         ProjectId = folder.ProjectId;
-        Fill(folder, currentUserId, uriService);
+        Fill(folder, currentUserId, uriService, projectInfo);
         if (TagNames.Any())
         {
             PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
@@ -49,11 +50,11 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     }
 
     [MemberNotNull(nameof(TagNames))]
-    public void Fill(PlotFolder folder, int? currentUserId, IUriService uriService)
+    public void Fill(PlotFolder folder, int? currentUserId, IUriService uriService, ProjectInfo projectInfo)
     {
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
-        Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId, uriService)).OrderBy(e => e.Status);
+        Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId, uriService, projectInfo)).OrderBy(e => e.Status);
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
         HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
         HasMasterAccess = folder.HasMasterAccess(currentUserId);
@@ -110,7 +111,7 @@ public class EditPlotElementViewModel : IProjectIdAware
 public class PlotElementListItemViewModel : IProjectIdAware
 {
 
-    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, IUriService uriService, int? currentVersion = null)
+    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, IUriService uriService, ProjectInfo projectInfo, int? currentVersion = null)
     {
         CurrentVersion = currentVersion ?? e.LastVersion().Version;
 
@@ -123,7 +124,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
             throw new ArgumentOutOfRangeException(nameof(currentVersion));
         }
 
-        var renderer = new JoinrpgMarkdownLinkRenderer(e.Project);
+        var renderer = new JoinrpgMarkdownLinkRenderer(e.Project, projectInfo);
 
         PlotElementId = e.PlotElementId;
         TargetsForDisplay = e.GetTargetLinks().AsObjectLinks(uriService).ToList();
