@@ -18,7 +18,7 @@ public static class MarkDownRendererFacade
             .UseSoftlineBreakAsHardlineBreak()
             .UseMediaLinks()
             .UseAutoLinks()
-            .UseEntityLinker(["персонаж", "контакты", "группа", "список", "сеткаролей"])
+            .UseEntityLinker(["персонаж", "контакты", "группа", "список", "сеткаролей", "экспериментальнаятаблица"])
             .Build();
     }
 

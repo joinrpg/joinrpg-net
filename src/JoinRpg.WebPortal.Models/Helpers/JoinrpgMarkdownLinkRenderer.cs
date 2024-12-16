@@ -28,10 +28,48 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
           {"контакты", CharWrapper(CharacterImpl) },
           {"группа", GroupWrapper(GroupName)},
           {"список", GroupWrapper(GroupListFunc)},
-          {"сеткаролей", GroupWrapper(GroupListFullFunc)}
+          {"сеткаролей", GroupWrapper(GroupListFullFunc)},
+          {"экспериментальнаятаблица", GroupWrapper(ExperimentalTableFunc) }
         };
 
         LinkTypesToMatch = [.. matches.Keys.OrderByDescending(c => c.Length)];
+    }
+
+    private string ExperimentalTableFunc(int groupId, string extra, CharacterGroup group, IEnumerable<Character> characters)
+    {
+        var groupLink = GroupLinkImpl(group, "");
+
+        var builder = new StringBuilder();
+        builder.AppendLine($"<h4>Группа: {groupLink}</h4>");
+        builder.AppendLine("<table class='table'>");
+
+        List<int> fieldList = extra.ParseToIntList();
+        ProjectFieldInfo[] fields = fieldList.Count > 0
+            ? fieldList.Select(fieldId => projectInfo.GetFieldById(new ProjectFieldIdentification(projectInfo.ProjectId, fieldId))).ToArray()
+            : ([.. projectInfo.SortedActiveFields]);
+
+        builder.AppendLine("<tr>");
+        builder.AppendLine($"<th>Имя&nbsp;персонажа</th>");
+        foreach (var field in fields)
+        {
+            builder.AppendLine($"<th>{field.Name}</th>");
+        }
+        builder.AppendLine("</tr>");
+
+        foreach (var character in characters)
+        {
+            var fieldsDict = character.GetFieldsDict(projectInfo);
+
+            builder.AppendLine("<tr>");
+            builder.Append($"<td>{CharacterImpl(character)}</td>");
+            foreach (var field in fields)
+            {
+                builder.AppendLine($"<td>{fieldsDict[field.Id].DisplayString}</td>");
+            }
+            builder.AppendLine("</tr>");
+        }
+        builder.AppendLine("</table>");
+        return builder.ToString();
     }
 
     private string GroupListFunc(int groupId, string extra, CharacterGroup group, IEnumerable<Character> ch)
