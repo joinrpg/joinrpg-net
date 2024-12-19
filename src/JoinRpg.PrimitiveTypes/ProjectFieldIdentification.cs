@@ -11,4 +11,6 @@ public record ProjectFieldIdentification(ProjectIdentification ProjectId, int Pr
             _ => new(project, projectFieldId.Value)
         };
     }
+
+    public override string ToString() => $"ProjectFieldId({ProjectFieldId}, {ProjectId})";
 }

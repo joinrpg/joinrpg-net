@@ -42,37 +42,34 @@ public class MockedProject
 
         ProjectInfo = ProjectRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
 
-        MasterOnlyFieldInfo = CreateField("Master only", canPlayerEdit: false, canPlayerView: false, showOnUnApprovedClaims: true);
-        CharacterFieldInfo = CreateField("Visible & Editorable field", canPlayerEdit: true, canPlayerView: true, showOnUnApprovedClaims: true);
-        HideForUnApprovedClaimInfo = CreateField("Hide on unapproved", canPlayerView: true, canPlayerEdit: true, showOnUnApprovedClaims: false);
-        PublicFieldInfo = CreateField("Public", canPlayerView: true, canPlayerEdit: false, showOnUnApprovedClaims: true, isPublic: true);
+        MasterOnlyFieldInfo = CreateField("Master only", canPlayerEdit: false, showOnUnApprovedClaims: true, projectFieldVisibility: ProjectFieldVisibility.MasterOnly);
+        CharacterFieldInfo = CreateField("Visible & Editorable field", canPlayerEdit: true, showOnUnApprovedClaims: true);
+        HideForUnApprovedClaimInfo = CreateField("Hide on unapproved", canPlayerEdit: true, showOnUnApprovedClaims: false);
+        PublicFieldInfo = CreateField("Public", projectFieldVisibility: ProjectFieldVisibility.Public, canPlayerEdit: false, showOnUnApprovedClaims: true);
 
         Group = CreateCharacterGroup();
 
         Character = CreateCharacter("Some Character");
     }
 
-    public ProjectFieldInfo CreateField(string name, bool canPlayerEdit = false,
-        bool canPlayerView = false, bool showOnUnApprovedClaims = false, bool isPublic = false,
+    public ProjectFieldInfo CreateField(string name, ProjectFieldVisibility projectFieldVisibility = ProjectFieldVisibility.PlayerAndMaster, bool canPlayerEdit = false,
+        bool showOnUnApprovedClaims = false, bool isPublic = false,
         int[]? availForIds = null, ProjectFieldType fieldType = ProjectFieldType.String,
         MandatoryStatus mandatoryStatus = MandatoryStatus.Optional)
     {
         availForIds ??= [];
-        if (isPublic && !canPlayerView)
-        {
-            throw new InvalidOperationException();
-        }
-        if (canPlayerEdit && !canPlayerView)
+        if (canPlayerEdit && projectFieldVisibility != ProjectFieldVisibility.PlayerAndMaster)
         {
             throw new InvalidOperationException();
         }
         var id = new ProjectFieldIdentification(ProjectInfo.ProjectId, ProjectInfo.UnsortedFields.GetNextId());
-        var field = new ProjectFieldInfo(id, name, fieldType, FieldBoundTo.Character, [], "", 0, CanPlayerEdit: canPlayerEdit, CanPlayerView: canPlayerView,
-            ShowOnUnApprovedClaims: showOnUnApprovedClaims, IsPublic: isPublic, MandatoryStatus: mandatoryStatus, ValidForNpc: true, IsActive: true,
-            GroupsAvailableForIds: availForIds,
-            Description: new MarkdownString(), MasterDescription: new MarkdownString(),
-            IncludeInPrint: true,
-            FieldSettings: ProjectInfo.ProjectFieldSettings, ProgrammaticValue: null);
+        var field = new ProjectFieldInfo(id, name, fieldType, FieldBoundTo.Character, [], "", 0, CanPlayerEdit: canPlayerEdit, ShowOnUnApprovedClaims: showOnUnApprovedClaims,
+            MandatoryStatus: mandatoryStatus, ValidForNpc: true, IsActive: true, GroupsAvailableForIds: availForIds, Description: new MarkdownString(),
+            MasterDescription: new MarkdownString(),
+            IncludeInPrint: true, FieldSettings: ProjectInfo.ProjectFieldSettings,
+            ProgrammaticValue: null,
+            ProjectFieldVisibility: projectFieldVisibility
+            );
 
         ProjectFieldInfo[] fields = [field, .. ProjectInfo.UnsortedFields];
 
@@ -175,12 +172,12 @@ public class MockedProject
 
     public ProjectFieldInfo CreateConditionalHeader(CharacterGroup characterGroup)
     {
-        return CreateField("", canPlayerEdit: true, canPlayerView: true, showOnUnApprovedClaims: true, availForIds: [characterGroup.CharacterGroupId], fieldType: ProjectFieldType.Header);
+        return CreateField("", canPlayerEdit: true, showOnUnApprovedClaims: true, availForIds: [characterGroup.CharacterGroupId], fieldType: ProjectFieldType.Header);
     }
 
     public ProjectFieldInfo CreateConditionalField()
     {
-        return CreateField("", canPlayerEdit: true, canPlayerView: true, showOnUnApprovedClaims: true, availForIds: [Group.CharacterGroupId]);
+        return CreateField("", canPlayerEdit: true, showOnUnApprovedClaims: true, availForIds: [Group.CharacterGroupId]);
     }
 
     public static void AssignFieldValues(IFieldContainter mockCharacter, params FieldWithValue[] fieldWithValues) => mockCharacter.JsonData = fieldWithValues.SerializeFields();

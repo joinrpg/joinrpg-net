@@ -314,8 +314,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     field.Price,
                     field.CanPlayerEdit,
                     field.ShowOnUnApprovedClaims,
-                    field.IsPublic,
-                    field.CanPlayerView,
                     field.MandatoryStatus,
                     field.ValidForNpc,
                     field.IsActive,
@@ -324,7 +322,19 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     field.MasterDescription,
                     field.IncludeInPrint,
                     fieldSettings,
-                    field.ProgrammaticValue);
+                        field.ProgrammaticValue,
+                        CreateProjectFieldVisibility(field));
+            }
+
+            static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)
+            {
+                return field switch
+                {
+                    { IsPublic: true, CanPlayerView: true } => ProjectFieldVisibility.Public,
+                    { IsPublic: false, CanPlayerView: true } => ProjectFieldVisibility.PlayerAndMaster,
+                    { IsPublic: false, CanPlayerView: false } => ProjectFieldVisibility.MasterOnly,
+                    { IsPublic: true, CanPlayerView: false } => throw new InvalidOperationException("Invalid combination of flagss"),
+                };
             }
         }
 

@@ -1,17 +1,14 @@
 namespace JoinRpg.PrimitiveTypes.Access;
-
+/// <summary>
+/// 
+/// </summary>
+/// <param name="MasterAccess">true if a user is logged in, he is a master of this game, he has access to the character or claim</param>
+/// <param name="PlayerAccessToCharacter">true if a user is logged in and he is assigned with the character</param>
+/// <param name="PlayerAccesToClaim"> true if a user is logged in and he is the owner of the claim</param>
+/// <param name="EditAllowed"></param>
 public record class AccessArguments(
-        /// <summary>
-        /// true if a user is logged in, he is a master of this game, he has access to the character or claim
-        /// </summary>
         bool MasterAccess,
-        /// <summary>
-        /// true if a user is logged in and he is assigned with the character
-        /// </summary>
         bool PlayerAccessToCharacter,
-        /// <summary>
-        /// true if a user is logged in and he is the owner of the claim
-        /// </summary>
         bool PlayerAccesToClaim,
         bool EditAllowed)
 {
