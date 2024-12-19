@@ -245,7 +245,7 @@ public class FieldSaveHelperTest
         _original = new MockedProject();
         var mock = new MockedProject();
 
-        var mandatoryField = mock.CreateField("Mandatory", canPlayerEdit: true, canPlayerView: true, mandatoryStatus: MandatoryStatus.Required);
+        var mandatoryField = mock.CreateField("Mandatory", canPlayerEdit: true, mandatoryStatus: MandatoryStatus.Required);
 
         var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 

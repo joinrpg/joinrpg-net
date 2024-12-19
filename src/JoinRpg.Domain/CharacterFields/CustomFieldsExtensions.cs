@@ -73,7 +73,7 @@ public static class CustomFieldsExtensions
         {
             return claim.Character!.GetFields(projectInfo);
         }
-        var publicFields = projectInfo.UnsortedFields.Where(f => f.IsPublic).Select(x => x.Id.ProjectFieldId).ToList();
+        var publicFields = projectInfo.UnsortedFields.Where(f => f.ProjectFieldVisibility == ProjectFieldVisibility.Public).Select(x => x.Id.ProjectFieldId).ToList();
         return GetFieldsForContainers(projectInfo, claim.Character.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
             claim.DeserializeFieldValues());
     }
