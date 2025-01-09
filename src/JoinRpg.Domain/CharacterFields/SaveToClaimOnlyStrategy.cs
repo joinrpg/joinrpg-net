@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Access;
 
 namespace JoinRpg.Domain.CharacterFields;
 
@@ -13,7 +14,8 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
         character: null,
         currentUserId,
         generator,
-        projectInfo)
+        projectInfo,
+        AccessArgumentsFactory.Create(claim, currentUserId))
     {
     }
 
