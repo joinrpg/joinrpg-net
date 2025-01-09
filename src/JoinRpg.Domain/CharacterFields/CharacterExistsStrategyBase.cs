@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.CharacterFields;
@@ -8,7 +9,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
     protected new Character Character => base.Character!; //Character should always exists
 
     protected CharacterExistsStrategyBase(Claim? claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator, ProjectInfo projectInfo)
-        : base(claim, character, currentUserId, generator, projectInfo)
+        : base(claim, character, currentUserId, generator, projectInfo, AccessArgumentsFactory.Create(character, currentUserId))
     {
     }
 

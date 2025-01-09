@@ -2,6 +2,8 @@ using System.Linq.Expressions;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 
@@ -26,18 +28,16 @@ public class MustBeAdminException : JoinRpgInvalidUserException
     }
 }
 
-public class JoinRpgProjectException : JoinRpgBaseException
+public class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
 {
-    public Project Project { get; }
-
-    public JoinRpgProjectException(Project project, string message) : base(message) => Project = project;
+    public ProjectIdentification ProjectId { get; } = projectId;
 }
 
 public abstract class JoinRpgProjectEntityException : JoinRpgProjectException
 {
-    public IProjectEntity Entity { get; set; }
-    protected JoinRpgProjectEntityException(IProjectEntity entity, string message)
-        : base(entity.Project, message)
+    public IProjectEntityWithId Entity { get; set; }
+    protected JoinRpgProjectEntityException(IProjectEntityWithId entity, string message)
+        : base(entity.ProjectIdentification, message)
     {
         Entity = entity;
     }
@@ -117,10 +117,8 @@ public class PreferentialFeeNotEnabled : JoinRpgBaseException
     }
 }
 
-public class PaymentException : JoinRpgProjectException
+public class PaymentException(Project project, string message) : JoinRpgProjectException(new ProjectIdentification(project.ProjectId), message)
 {
-    public PaymentException(Project project, string message)
-        : base(project, message) { }
 }
 
 public class OnlinePaymentUnexpectedStateException : PaymentException
@@ -220,18 +218,30 @@ public class RoomIsOccupiedException : JoinRpgProjectEntityException
     }
 }
 
-public class NoAccessToProjectException : JoinRpgProjectEntityException
+public class NoAccessToProjectException : JoinRpgProjectException
 {
+
+    public Permission Permission = Permission.None;
     public int? UserId { get; }
 
+    [Obsolete("Use ctor that accepts ProjectInfo")]
     public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)
-      : base(project, $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}") => UserId = userId;
+      : base(new ProjectIdentification(project.ProjectId), $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}") => UserId = userId;
 
+    [Obsolete("Use ctor that accepts ProjectInfo")]
     public NoAccessToProjectException(Project project, int? userId)
-      : base(project, $"No access to project {project.ProjectName} for user {userId}") => UserId = userId;
+      : base(new ProjectIdentification(project.ProjectId), $"No access to project {project.ProjectName} for user {userId}") => UserId = userId;
 
+    public NoAccessToProjectException(ProjectInfo project, int? userId, Permission permission = Permission.None)
+       : base(project.ProjectId, $"No access to project {project.ProjectName} for user {userId}")
+    {
+        UserId = userId;
+        Permission = permission;
+    }
+
+    [Obsolete("Use ctor that accepts ProjectInfo")]
     public NoAccessToProjectException(IProjectEntity entity, int? userId)
-  : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}") => UserId = userId;
+  : base(new ProjectIdentification(entity.ProjectId), $"No access to entity of {entity.Project.ProjectName} for user {userId}") => UserId = userId;
 }
 
 public class FieldRequiredException(string fieldName) : JoinRpgBaseException($"Field {fieldName} is required")

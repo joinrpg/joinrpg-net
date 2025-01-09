@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
@@ -381,7 +382,12 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     {
         var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
-        var masters = project.ProjectAcls.Select(acl => new ProjectMasterInfo(new UserIdentification(acl.User.UserId), acl.User.ExtractDisplayName(), new Email(acl.User.Email)));
+        var masters = project.ProjectAcls.Select(acl => new ProjectMasterInfo(
+            new UserIdentification(acl.User.UserId),
+            acl.User.ExtractDisplayName(),
+            new Email(acl.User.Email),
+            acl.GetPermissions())
+            );
 
         return new ProjectMastersListInfo(projectId, project.ProjectName, masters.ToArray());
     }

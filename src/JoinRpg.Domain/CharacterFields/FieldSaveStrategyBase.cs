@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain.Access;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.CharacterFields;
@@ -8,20 +8,15 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     Character? character,
     int currentUserId,
     IFieldDefaultValueGenerator generator,
-    ProjectInfo projectInfo)
+    ProjectInfo projectInfo,
+    AccessArguments accessArguments)
 {
     protected Claim? Claim { get; } = claim;
     protected Character? Character { get; } = character;
-    protected Project Project { get; } = character?.Project ?? claim?.Project ?? throw new ArgumentNullException("",
-                "Either character or claim should be not null");
 
     protected ProjectInfo ProjectInfo { get; } = projectInfo;
 
-    private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } =
-        new List<FieldWithPreviousAndNewValue>();
-
-    public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>
-        UpdatedFields.Where(uf => uf.PreviousDisplayString != uf.DisplayString).ToList();
+    private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } = [];
 
     public virtual void Save(Dictionary<int, FieldWithValue> fields) => SerializeFields(fields);
 
@@ -29,16 +24,12 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     public abstract IReadOnlyCollection<FieldWithValue> GetFields();
 
-    public void EnsureEditAccess(FieldWithValue field)
+    private void EnsureEditAccess(FieldWithValue field)
     {
-        var accessArguments = Character != null
-            ? AccessArgumentsFactory.Create(Character, currentUserId)
-            : AccessArgumentsFactory.Create(Claim!, currentUserId); // Either character or claim should be not null
-
         var editAccess = field.Field.HasEditAccess(accessArguments);
         if (!editAccess)
         {
-            throw new NoAccessToProjectException(Project, currentUserId);
+            throw new NoAccessToProjectException(ProjectInfo, currentUserId);
         }
     }
 
@@ -79,4 +70,61 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     }
 
     protected abstract void SetCharacterNameFromPlayer();
+
+    private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
+    {
+        return field.Field.Type switch
+        {
+            ProjectFieldType.Checkbox => toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
+                                ? FieldWithValue.CheckboxValueOn
+                                : "",
+            _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
+        };
+    }
+
+    public void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
+    {
+        foreach (var field in fields.Values.Where(
+            f => !f.HasEditableValue && f.Field.CanHaveValue &&
+                 f.Field.IsAvailableForTarget(Character)))
+        {
+            var newValue = GenerateDefaultValue(field);
+
+            var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
+
+            _ = AssignFieldValue(field, normalizedValue);
+        }
+    }
+
+    public void AssignValues(IReadOnlyDictionary<int, string?> newFieldValue, Dictionary<int, FieldWithValue> fields)
+    {
+        foreach (var keyValuePair in newFieldValue)
+        {
+            var field = fields[keyValuePair.Key];
+
+            EnsureEditAccess(field);
+
+            var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
+
+            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required)
+            {
+                throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id);
+            }
+
+            _ = AssignFieldValue(field, normalizedValue);
+        }
+    }
+
+
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(IReadOnlyDictionary<int, string?> newFieldValue)
+    {
+        var fields = GetFields().ToDictionary(f => f.Field.Id.ProjectFieldId);
+
+        AssignValues(newFieldValue, fields);
+
+        GenerateDefaultValues(fields);
+
+        Save(fields);
+        return UpdatedFields;
+    }
 }

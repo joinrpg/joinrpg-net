@@ -1,5 +1,5 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain.Access;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using Microsoft.AspNetCore.Authorization;

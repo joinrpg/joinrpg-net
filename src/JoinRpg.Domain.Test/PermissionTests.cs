@@ -1,4 +1,4 @@
-using JoinRpg.Domain.Access;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.TestHelpers;
 using Shouldly;

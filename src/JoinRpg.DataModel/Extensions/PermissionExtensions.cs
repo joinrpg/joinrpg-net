@@ -1,8 +1,7 @@
 using System.Diagnostics.Contracts;
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.Access;
 
-namespace JoinRpg.Domain.Access;
+namespace JoinRpg.DataModel.Extensions;
 
 public static class PermissionExtensions
 {

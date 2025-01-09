@@ -63,18 +63,12 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
 
         logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
-        var fields = strategy.GetFields().ToDictionary(f => f.Field.Id.ProjectFieldId);
-
-        AssignValues(newFieldValue, fields, strategy);
-
-        GenerateDefaultValues(character, fields, strategy);
-
-        strategy.Save(fields);
-        var updatedFields = strategy.GetUpdatedFields();
+        var updatedFields = strategy.PerformSave(newFieldValue);
 
         MarkAsUsed(updatedFields, character.Project);
         return updatedFields;
     }
+
 
     private static void MarkUsed(FieldWithValue field, Project project)
     {
@@ -105,52 +99,6 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
             null => new SaveToCharacterOnlyStrategy(character, currentUserId, generator, projectInfo),
             { IsApproved: true } => new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator, projectInfo),
             { IsApproved: false } => new SaveToClaimOnlyStrategy(claim, currentUserId, generator, projectInfo),
-        };
-    }
-
-    private static void AssignValues(IReadOnlyDictionary<int, string?> newFieldValue, Dictionary<int, FieldWithValue> fields,
-        FieldSaveStrategyBase strategy)
-    {
-        foreach (var keyValuePair in newFieldValue)
-        {
-            var field = fields[keyValuePair.Key];
-
-            strategy.EnsureEditAccess(field);
-
-            var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
-
-            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required)
-            {
-                throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id);
-            }
-
-            _ = strategy.AssignFieldValue(field, normalizedValue);
-        }
-    }
-
-    private static void GenerateDefaultValues(Character? character, Dictionary<int, FieldWithValue> fields,
-        FieldSaveStrategyBase strategy)
-    {
-        foreach (var field in fields.Values.Where(
-            f => !f.HasEditableValue && f.Field.CanHaveValue &&
-                 f.Field.IsAvailableForTarget(character)))
-        {
-            var newValue = strategy.GenerateDefaultValue(field);
-
-            var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
-
-            _ = strategy.AssignFieldValue(field, normalizedValue);
-        }
-    }
-
-    private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
-    {
-        return field.Field.Type switch
-        {
-            ProjectFieldType.Checkbox => toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
-                                ? FieldWithValue.CheckboxValueOn
-                                : "",
-            _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
         };
     }
 }
