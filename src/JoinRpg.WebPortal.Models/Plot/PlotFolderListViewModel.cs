@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
@@ -105,6 +106,6 @@ public class PlotFolderListItemViewModel : PlotFolderViewModelBase
         Status = folder.GetStatus();
         ElementsCount = folder.Elements.Count;
         TodoField = folder.TodoField;
-        HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
+        HasEditAccess = folder.HasMasterAccess(currentUserId, Permission.CanManagePlots) && folder.Project.Active;
     }
 }

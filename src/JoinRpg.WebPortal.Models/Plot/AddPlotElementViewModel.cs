@@ -7,7 +7,8 @@ public class AddPlotElementViewModel : IProjectIdAware
 {
     [ReadOnly(true)]
     public int ProjectId { get; set; }
-    public int PlotFolderId { get; set; }
+    [Display(Name = "Сюжет", Description = "Сюжет выступает в роли папки для вводных"), Required]
+    public int? PlotFolderId { get; set; }
     [Display(Name = "Текст вводной"), UIHint("MarkdownString"), Required]
     public string Content { get; set; }
 
@@ -16,7 +17,6 @@ public class AddPlotElementViewModel : IProjectIdAware
 
     [Display(Name = "Для кого", Description = "Тех, кому предназначена эта вводная, можно добавить сейчас или позже.")]
     public IEnumerable<string> Targets { get; set; } = [];
-    public string PlotFolderName { get; set; }
 
     [Display(Name = "Тип"), ReadOnly(true)]
     public PlotElementTypeView ElementType { get; } = PlotElementTypeView.RegularPlot;

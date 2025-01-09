@@ -1,0 +1,55 @@
+@inject IPlotClient client
+
+@if (items is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    int[] initial = SelectedId is not null ? [SelectedId.Value] : [];
+    <IntSelector
+    Name="@Name"
+    SelectedValues="@initial"
+    SelectedValuesChanged="SelectedValuesChanged"
+    PossibleValues="items"
+    Multiple="@false"
+    />
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter][EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    [Parameter] public int? SelectedId { get; set; } 
+    [Parameter] public EventCallback<int[]> SelectedIdsChanged { get; set; }
+    [Parameter] public EventCallback<PlotFolderDto[]> SelectedChanged { get; set; }
+
+    public string SelectedCharactersText{ get; private set; } = "";
+
+    private IntSelectListItem[] items = null!;
+    private PlotFolderDto[] folders = null!;
+
+    private async Task SelectedValuesChanged(int[] values)
+    {
+        values = [..values.Where(v => v != -1)];
+
+        var selectedItems = folders.Where(item => values.Contains(item.PlotFolderId.PlotFolderId)).ToArray();
+        await SelectedIdsChanged.InvokeAsync(values);
+        await SelectedChanged.InvokeAsync(selectedItems);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        folders = await client.GetPlotFoldersList(ProjectId);
+        items = [.. folders.Select(ToSelectListItem)];
+    }
+
+    private static IntSelectListItem ToSelectListItem(PlotFolderDto item)
+    {
+        return new IntSelectListItem(
+          Value: item.PlotFolderId.PlotFolderId,
+          Text: item.Name,
+          Subtext: "",
+          ExtraSearch: "");
+    }
+}
