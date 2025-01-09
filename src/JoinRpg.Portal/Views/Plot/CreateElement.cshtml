@@ -1,4 +1,4 @@
-﻿
+﻿@using JoinRpg.PrimitiveTypes
 @model JoinRpg.Web.Models.Plot.AddPlotElementViewModel
 
 @{
@@ -13,11 +13,8 @@
     @Html.AntiForgeryToken()
     
     <div class="form-horizontal">
-        <h4>Cюжет @Html.ActionLink(Model.PlotFolderName, "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)</h4>
-        <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(p => p.ProjectId)
-        @Html.HiddenFor(p => p.PlotFolderId)
         @Html.HiddenFor(p => p.ElementType)
 
         <div class="form-group">
@@ -25,6 +22,18 @@
             <div class="col-md-10">
                 @Html.DisplayFor(model => model.ElementType)
                 @Html.DescriptionFor(model => model.ElementType)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.PlotFolderId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <component type="typeof(JoinRpg.Web.Plots.PlotFolderSelector)"
+                           param-Name="nameof(Model.PlotFolderId)"
+                           param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+                           param-SelectedId="@Model.PlotFolderId"
+                           render-mode="Static" />
+                @Html.DescriptionFor(model => model.PlotFolderId)
             </div>
         </div>
 

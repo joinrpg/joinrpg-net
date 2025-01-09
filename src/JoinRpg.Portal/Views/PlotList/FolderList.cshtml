@@ -35,10 +35,21 @@
             @Html.DisplayCount_OfX(item.ElementsCount, "вводная", "вводные", "вводных")
         </td>
         <td>
-            @if (item.Status != PlotStatus.Deleted && item.HasEditAccess)
-            {
-            @Html.ActionLink("Удалить", "Delete", "Plot", new { item.PlotFolderId, item.ProjectId })
-            }
+          @if (Model.HasMasterAccess && item.Status != PlotStatus.Deleted)
+          {
+                    <div class="btn-group btn-group-sm" style="display: inline-block">
+
+                          <a title="Добавить вводную" href="@Url.Action("CreateElement", "Plot", new { item.PlotFolderId, item.ProjectId })"
+                              class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i>Добавить вводную</a>
+                        @if (item.HasEditAccess)
+                        {
+                            <a title="Удалить"
+                               href="@Url.Action("Delete", "Plot", new { item.PlotFolderId, item.ProjectId })" class="btn btn-warning">
+                               <i class="glyphicon glyphicon-trash"></i>Удалить</a>
+                        }
+
+                    </div>
+          }
         </td>
     </tr>
     }

@@ -92,18 +92,17 @@ public class PlotController(
 
     #region Create elements & handouts
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
+    public async Task<ActionResult> CreateElement(int projectId, int? plotFolderId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-        if (folder == null)
+        var folders = await plotRepository.GetPlots(projectId);
+        if (folders.Count == 0)
         {
-            return NotFound();
+            return RedirectToAction("Create", "Plot", new { projectId });
         }
         return View(new AddPlotElementViewModel()
         {
             ProjectId = projectId,
             PlotFolderId = plotFolderId,
-            PlotFolderName = folder.MasterTitle,
         });
     }
 
@@ -170,7 +169,6 @@ public class PlotController(
             {
                 ProjectId = projectId,
                 PlotFolderId = plotFolderId,
-                PlotFolderName = folder.MasterTitle,
                 Content = content,
                 TodoField = todoField,
             });

@@ -1,3 +1,5 @@
+using JoinRpg.WebPortal.Managers.Plots;
+
 namespace JoinRpg.WebPortal.Managers;
 
 public static class Registration
@@ -14,5 +16,6 @@ public static class Registration
         yield return typeof(ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService);
         yield return typeof(ProjectMasterViewService);
         yield return typeof(MassMailManager);
+        yield return typeof(PlotViewService);
     }
 }

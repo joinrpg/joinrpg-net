@@ -26,6 +26,14 @@ public static class ProjectEntityExtensions
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserAccessor.UserId);
     }
 
+    [Pure]
+    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Permission permission)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserId);
+    }
+
     public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId)
     {
         ArgumentNullException.ThrowIfNull(entity);

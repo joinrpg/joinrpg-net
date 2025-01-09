@@ -128,6 +128,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.Claims", "src\J
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Dal.CommonEfCore", "src\JoinRpg.Dal.CommonEfCore\JoinRpg.Dal.CommonEfCore.csproj", "{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.Plots", "src\JoinRpg.Web.Plots\JoinRpg.Web.Plots.csproj", "{C6E4113C-2B71-4D70-9244-6FCA1991B642}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -330,6 +332,10 @@ Global
 		{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6E4113C-2B71-4D70-9244-6FCA1991B642}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6E4113C-2B71-4D70-9244-6FCA1991B642}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6E4113C-2B71-4D70-9244-6FCA1991B642}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6E4113C-2B71-4D70-9244-6FCA1991B642}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -375,6 +381,7 @@ Global
 		{340E5B6E-2C23-43B6-869D-D9BF807E69D3} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
 		{971478A6-DD20-47DA-8B9C-DFC7E19A9240} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
+		{C6E4113C-2B71-4D70-9244-6FCA1991B642} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}
