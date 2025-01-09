@@ -13,8 +13,6 @@ public record class ProjectFieldInfo(
     int Price,
     bool CanPlayerEdit,
     bool ShowOnUnApprovedClaims,
-    bool IsPublic,
-    bool CanPlayerView,
     MandatoryStatus MandatoryStatus,
     bool ValidForNpc,
     bool IsActive,
@@ -23,7 +21,8 @@ public record class ProjectFieldInfo(
     MarkdownString MasterDescription,
     bool IncludeInPrint,
     ProjectFieldSettings FieldSettings,
-    string? ProgrammaticValue)
+    string? ProgrammaticValue,
+    ProjectFieldVisibility ProjectFieldVisibility)
     : IProjectEntityWithId
 {
     private const string CheckboxValueOn = "on";
@@ -108,13 +107,19 @@ public record class ProjectFieldInfo(
 
     public bool HasViewAccess(AccessArguments accessArguments)
     {
-        return IsPublic
-          || accessArguments.MasterAccess
-          ||
-          (accessArguments.PlayerAccessToCharacter && CanPlayerView &&
-           BoundTo == FieldBoundTo.Character)
-          ||
-          (accessArguments.PlayerAccesToClaim && CanPlayerView &&
-           BoundTo == FieldBoundTo.Claim);
+        return ProjectFieldVisibility switch
+        {
+            ProjectFieldVisibility.MasterOnly => accessArguments.MasterAccess,
+            ProjectFieldVisibility.PlayerAndMaster when BoundTo == FieldBoundTo.Character => accessArguments.AnyAccessToCharacter,
+            ProjectFieldVisibility.PlayerAndMaster when BoundTo == FieldBoundTo.Claim => accessArguments.AnyAccessToClaim,
+            ProjectFieldVisibility.Public => true,
+            _ => throw new ArgumentOutOfRangeException(ProjectFieldVisibility.ToString())
+        };
     }
+
+    public bool IsPublic => ProjectFieldVisibility == ProjectFieldVisibility.Public;
+
+    public bool CanPlayerView => ProjectFieldVisibility != ProjectFieldVisibility.MasterOnly;
+
+    public override string ToString() => $"ProjectFieldInfo(Id={Id}, Name=\"{Name}\")";
 }

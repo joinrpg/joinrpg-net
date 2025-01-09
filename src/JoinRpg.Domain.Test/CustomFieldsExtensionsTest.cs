@@ -66,7 +66,7 @@ public class CustomFieldsExtensionsTest
           projectMock.CreateApprovedClaim(projectMock.Character, projectMock.Player), //when claim is approved
           projectMock.Master, //then a Master sees every field
           projectMock.ProjectInfo,
-          allFields);
+          [.. projectMock.ProjectInfo.UnsortedFields]);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class CustomFieldsExtensionsTest
     {
         var accessPredicate = claim.GetAccessArguments(viewerUser.UserId);
 
-        IList<FieldWithValue> userVisibleFields = claim.GetFields(projectInfo).Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();
+        var userVisibleFields = claim.GetFields(projectInfo).Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();
 
         AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
     }
