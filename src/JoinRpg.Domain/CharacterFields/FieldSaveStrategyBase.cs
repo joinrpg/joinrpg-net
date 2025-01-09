@@ -13,8 +13,6 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 {
     protected Claim? Claim { get; } = claim;
     protected Character? Character { get; } = character;
-    protected Project Project { get; } = character?.Project ?? claim?.Project ?? throw new ArgumentNullException("",
-                "Either character or claim should be not null");
 
     protected ProjectInfo ProjectInfo { get; } = projectInfo;
 
@@ -31,7 +29,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         var editAccess = field.Field.HasEditAccess(accessArguments);
         if (!editAccess)
         {
-            throw new NoAccessToProjectException(Project, currentUserId);
+            throw new NoAccessToProjectException(ProjectInfo, currentUserId);
         }
     }
 

@@ -22,8 +22,7 @@ public class AccountController(
     IUserRepository userRepository,
     IOptions<RecaptchaOptions> recaptchaOptions,
     IRecaptchaVerificator recaptchaVerificator,
-    ExternalLoginProfileExtractor externalLoginProfileExtractor,
-    Lazy<IProjectRepository> projectRepository
+    ExternalLoginProfileExtractor externalLoginProfileExtractor
     ) : Common.ControllerBase
 {
     [AllowAnonymous]
@@ -477,12 +476,13 @@ public class AccountController(
     #endregion
 
     [AllowAnonymous]
-    public async Task<ActionResult> AccessDenied(string returnUrl, int? projectId)
+    public async Task<ActionResult> AccessDenied(string returnUrl, int? projectId, [FromServices] IProjectMetadataRepository projectMetadataRepository)
     {
-        if (projectId is not null)
+        if (projectId is int projectIdValue)
         {
-            var project = await projectRepository.Value.GetProjectAsync(projectId.Value);
-            return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectIdValue));
+            var masters = await projectMetadataRepository.GetMastersList(new PrimitiveTypes.ProjectIdentification(projectIdValue));
+            return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(projectInfo, masters.Masters));
         }
         return View("AccessDenied", returnUrl);
     }

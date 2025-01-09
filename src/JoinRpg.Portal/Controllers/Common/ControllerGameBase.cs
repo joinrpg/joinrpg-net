@@ -1,14 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.Web.Filter;
-using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.Common;
 
-[CaptureNoAccessExceptionHandler]
+[TypeFilter<CaptureNoAccessExceptionFilter>]
 [DiscoverProjectFilter]
 public abstract class ControllerGameBase : LegacyJoinControllerBase
 {
@@ -25,7 +26,8 @@ public abstract class ControllerGameBase : LegacyJoinControllerBase
         ProjectService = projectService;
     }
 
-    protected ActionResult NoAccesToProjectView(Project project) => View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
+    [DoesNotReturn]
+    protected ActionResult NoAccesToProjectView(Project project) => throw new NoAccessToProjectException(project, CurrentUserId);
 
     [Obsolete]
     protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders) => folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);

@@ -1,9 +1,9 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-[CaptureNoAccessExceptionHandler]
+[TypeFilter<CaptureNoAccessExceptionFilter>]
 [DiscoverProjectFilter]
 [RequireMaster]
 [Route("{projectId}/subscribe/[action]")]
