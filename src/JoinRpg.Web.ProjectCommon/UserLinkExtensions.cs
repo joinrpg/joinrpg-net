@@ -1,5 +1,4 @@
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.ProjectCommon;
 public static class UserLinkExtensions
