@@ -7,7 +7,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Web.Helpers;
-using JoinRpg.WebPortal.Managers;
+using JoinRpg.WebPortal.Managers.Projects;
 using Microsoft.AspNetCore.Authorization;
 using CurrentProjectAccessor = JoinRpg.Portal.Infrastructure.CurrentProjectAccessor;
 

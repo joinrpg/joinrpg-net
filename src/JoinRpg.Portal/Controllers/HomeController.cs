@@ -1,4 +1,4 @@
-using JoinRpg.WebPortal.Managers;
+using JoinRpg.WebPortal.Managers.Projects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -3,7 +3,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
 
-namespace JoinRpg.WebPortal.Managers;
+namespace JoinRpg.WebPortal.Managers.Projects;
 
 /// <summary>
 /// Shows project list
@@ -31,7 +31,7 @@ public class ProjectListManager
         var projects =
             allProjects
                 .Select(p => new ProjectListItemViewModel(p))
-                .Where(p => (showInactive && p.ClaimCount > 0) || p.IsMaster || p.HasMyClaims || p.IsAcceptingClaims)
+                .Where(p => showInactive && p.ClaimCount > 0 || p.IsMaster || p.HasMyClaims || p.IsAcceptingClaims)
                 .ToList();
 
         var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(
