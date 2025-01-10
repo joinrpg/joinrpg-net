@@ -14,7 +14,7 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.39.1" />
+    <PackageReference Include="Markdig" Version="0.40.0" />
     <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.72" /> <!-- Pin, because Vereyon.Web.HtmlSanitizer using older version -->
   </ItemGroup>
