@@ -1,6 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.WebComponents;
-
 namespace JoinRpg.Web.ProjectCommon;
 
 public record MasterViewModel(int MasterId, UserDisplayName DisplayName)
