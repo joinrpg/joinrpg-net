@@ -3,14 +3,8 @@ using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
-internal class MasterClient : IMasterClient
+internal class MasterClient(HttpClient httpClient) : IMasterClient
 {
-    private readonly HttpClient httpClient;
-
-    public MasterClient(HttpClient httpClient)
-    {
-        this.httpClient = httpClient;
-    }
     public async Task<List<MasterViewModel>> GetMasters(int projectId)
     {
         return await httpClient.GetFromJsonAsync<List<MasterViewModel>>(

@@ -1,8 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Helpers.Web;
 
-namespace JoinRpg.Web.Models;
+namespace JoinRpg.Web.ProjectCommon.Projects;
 
 public class ProjectCreateViewModel
 {
@@ -32,5 +31,5 @@ public enum ProjectTypeViewModel
     Convention,
 
     [Display(Name = "Конвент - мероприятия")]
-    ConventionProgram,
+    ConventionProgram
 }

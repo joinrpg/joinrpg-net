@@ -1,17 +1,12 @@
-﻿@typeparam TValue
-@*TODO where enum not supported until 6.0 https://github.com/dotnet/aspnetcore/issues/8433*@
-@*TODO now it's supported and works, but it's prevent inferring https://github.com/dotnet/razor-compiler/issues/261*@
-@foreach (var enumValue in Enum.GetValues(typeof(TValue)).Cast<TValue>())
+﻿@typeparam TValue where TValue:struct, Enum
+@foreach (var enumValue in Enum.GetValues<TValue>())
 {
   <div>
     <label>
       <input type="radio" value="@enumValue" checked="@(enumValue.Equals(SelectedValue))" @onchange="UpdateSelected" name="@Name" />
-      @{
-          var enumVal = (System.Enum)Enum.Parse(typeof(TValue), enumValue.ToString()!); // we need this, because TValue is not constrained to be enum
-      }
-      &nbsp;@enumVal.GetDisplayName()
+      &nbsp;@enumValue.GetDisplayName()
     </label>
-    @if (enumVal.GetDescription() is string description)
+    @if (enumValue.GetDescription() is string description)
     {
       <div class="help-block">@description</div>
     }
@@ -30,6 +25,6 @@
 
     private async Task UpdateSelected(ChangeEventArgs eventArgs)
     {
-      await SelectedValueChanged.InvokeAsync((TValue) Enum.Parse(typeof(TValue), eventArgs.Value!.ToString ()!));
+      await SelectedValueChanged.InvokeAsync(Enum.Parse<TValue>(eventArgs.Value!.ToString ()!));
     }
 }

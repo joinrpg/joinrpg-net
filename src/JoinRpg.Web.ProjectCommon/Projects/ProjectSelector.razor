@@ -1,0 +1,64 @@
+@inject IProjectListClient client
+
+@if (items is null)
+{
+   <JoinLoadingMessage />
+}
+else
+{
+  <IntSelector
+               Name="@Name"
+               SelectedValues="@Selected"
+               SelectedValuesChanged="@HandleSelectedChanged"
+               PossibleValues="items"
+               Multiple="false"
+               />
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int? ProjectId { get; set; }
+    [Parameter] public EventCallback<int?> ProjectIdChanged { get; set; }
+
+    [Parameter] public ProjectDto? Project { get; set; }
+    [Parameter] public EventCallback<ProjectDto?> ProjectChanged { get; set; }
+
+    private int[] Selected { get; set; } = new int[0];
+    private IntSelectListItem[] items = null!;
+    private ProjectDto[] sourceItems = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        sourceItems = await client.GetProjectsWithMyMasterAccess();
+        items = sourceItems
+          .Select(i =>
+            new IntSelectListItem(
+              Value: i.ProjectId.Value,
+              Text: i.ProjectName,
+              Subtext: "",
+              ExtraSearch: ""))
+           .ToArray();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (ProjectId is not null)
+        {
+            Selected = [ ProjectId.Value ];
+        }
+        else if (Project is not null)
+        {
+            Selected = [ Project.ProjectId.Value ];
+        }
+    }
+
+    private async Task HandleSelectedChanged(int[] values)
+    {
+        int? id = values.Length == 0 ? null : values.Single();
+        var master = sourceItems.SingleOrDefault(m => m.ProjectId.Value == id);
+        await ProjectIdChanged.InvokeAsync(id);
+        await ProjectChanged.InvokeAsync(master);
+    }
+}

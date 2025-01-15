@@ -12,27 +12,24 @@
         <span class="h4 navbar-text" style="@strikeStyleOfName">@ViewBag.Title</span>
   </div>
     <ul class="nav nav-pills">
-        @if (Model.CharacterId != null)
-        {
-            <nav-link
-                asp-action="Details"
-                asp-controller="Character"
-                asp-route-projectid="@Model.ProjectId"
-                asp-route-characterid="@Model.CharacterId">
-                Персонаж
-            </nav-link>
+          <nav-link
+              asp-action="Details"
+              asp-controller="Character"
+              asp-route-projectid="@Model.ProjectId"
+              asp-route-characterid="@Model.CharacterId">
+              Персонаж
+          </nav-link>
 
-            if (Model.HasMasterAccess)
-            {
-                <nav-link
-                    asp-action="Edit"
-                    asp-controller="Character"
-                    asp-route-projectid="@Model.ProjectId"
-                    asp-route-characterid="@Model.CharacterId">
-                    Редактировать
-                </nav-link>
-            }
-        }
+          if (Model.HasMasterAccess)
+          {
+              <nav-link
+                  asp-action="Edit"
+                  asp-controller="Character"
+                  asp-route-projectid="@Model.ProjectId"
+                  asp-route-characterid="@Model.CharacterId">
+                  Редактировать
+              </nav-link>
+          }
         @if (Model.ClaimId != null)
         {
             <nav-link
