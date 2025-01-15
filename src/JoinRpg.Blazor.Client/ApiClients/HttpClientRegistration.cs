@@ -1,6 +1,7 @@
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -23,6 +24,7 @@ public static class HttpClientRegistration
     public static WebAssemblyHostBuilder AddHttpClients(this WebAssemblyHostBuilder builder)
     {
         return builder
+                .AddHttpClient<IProjectListClient, ProjectClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()
                 .AddHttpClient<IMasterClient, MasterClient>()
                 .AddHttpClient<IGameSubscribeClient, GameSubscribeClient>()

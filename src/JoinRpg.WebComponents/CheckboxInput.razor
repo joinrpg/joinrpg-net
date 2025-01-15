@@ -1,5 +1,5 @@
 ﻿<input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
-<input type="checkbox" name="@Name" @onchange="UpdateValue" checked="@internalValue" />
+<input type="checkbox" name="@Name" @onchange="UpdateValue" checked="@internalValue"/>
 
 @code {
     [Parameter]
