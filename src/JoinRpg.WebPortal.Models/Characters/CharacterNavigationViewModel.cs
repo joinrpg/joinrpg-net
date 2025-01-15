@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.ClaimList;
@@ -8,24 +7,23 @@ namespace JoinRpg.Web.Models.Characters;
 /// <summary>
 /// TODO: LEO describe the meaning of this tricky class properly
 /// </summary>
-public class CharacterNavigationViewModel
+public class CharacterNavigationViewModel(Character character, int? currentUserId)
 {
     public CharacterNavigationPage Page { get; private set; }
-    public bool HasMasterAccess { get; private set; }
-    public bool CanEditRoles { get; private set; }
+    public bool HasMasterAccess { get; } = character.HasMasterAccess(currentUserId);
+    public bool CanEditRoles { get; } = character.HasEditRolesAccess(currentUserId);
 
     public bool CanAddClaim { get; private set; }
     public int? ClaimId { get; private set; }
-    public int CharacterId { get; private set; }
-    public int ProjectId { get; private set; }
+    public int CharacterId { get; } = character.CharacterId;
+    public int ProjectId { get; } = character.ProjectId;
 
-    public string Name { get; private set; }
+    public string Name { get; } = character.CharacterName;
 
-    [ReadOnly(true)]
-    public bool IsActive { get; private set; }
+    public bool IsActive { get; } = character.IsActive;
 
-    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; private set; }
-    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; private set; }
+    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => claim.IsInDiscussion);
+    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => !claim.ClaimStatus.IsActive());
 
     public static CharacterNavigationViewModel FromCharacter(Character character,
         CharacterNavigationPage page,
@@ -44,33 +42,20 @@ public class CharacterNavigationViewModel
                 .TrySelectSingleClaim()?.ClaimId;
         }
 
-        var vm = new CharacterNavigationViewModel
+        var vm = new CharacterNavigationViewModel(character, currentUserId)
         {
             CanAddClaim = character.IsAcceptingClaims(),
             ClaimId = claimId,
-            HasMasterAccess = character.HasMasterAccess(currentUserId),
-            CanEditRoles = character.HasEditRolesAccess(currentUserId),
-            CharacterId = character.CharacterId,
-            ProjectId = character.ProjectId,
             Page = page,
-            Name = character.CharacterName,
-            IsActive = character.IsActive,
         };
 
-        vm.LoadClaims(character);
         return vm;
     }
 
-    private void LoadClaims(Character field)
-    {
-        RejectedClaims = LoadClaimsWithCondition(field, claim => !claim.ClaimStatus.IsActive());
-        DiscussedClaims = LoadClaimsWithCondition(field, claim => claim.IsInDiscussion);
-    }
-
-    private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field,
+    private static IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, int? currentUserId,
         Func<Claim, bool> predicate)
     {
-        return HasMasterAccess
+        return field.HasMasterAccess(currentUserId)
             ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim))
             : [];
     }
@@ -82,19 +67,12 @@ public class CharacterNavigationViewModel
     {
         ArgumentNullException.ThrowIfNull(claim);
 
-        var vm = new CharacterNavigationViewModel
+        var vm = new CharacterNavigationViewModel(claim.Character, currentUserId)
         {
             CanAddClaim = false,
             ClaimId = claim.ClaimId,
-            HasMasterAccess = claim.HasMasterAccess(currentUserId),
-            CharacterId = claim.Character.CharacterId,
-            ProjectId = claim.ProjectId,
             Page = characterNavigationPage,
-            Name = claim.Character.CharacterName,
-            CanEditRoles = claim.HasEditRolesAccess(currentUserId),
-            IsActive = claim.Character.IsActive,
         };
-        vm.LoadClaims(claim.Character);
         if (vm.RejectedClaims.Any(c => c.ClaimId == claim.ClaimId))
         {
             vm.Page = CharacterNavigationPage.RejectedClaim;
