@@ -1,0 +1,61 @@
+﻿@inject ILogger<CreateProjectPanel> logger
+<JoinPanel>
+    <Header>Создание новой базы заявок</Header>
+    <Body>
+        <EditForm FormName="CreateProject" EditContext="@editContext">
+            <FormHorizontal>
+                <DataAnnotationsValidator />    
+                <ValidationSummary />
+                <FormRowFor For="@(() => Model.ProjectName)">
+                    <InputText @bind-Value="Model.ProjectName" class="form-control" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.RulesApproved)">
+                    <CheckboxInput @bind-Value="Model.RulesApproved" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.ProjectType)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.ProjectType" Name="nameof(Model.ProjectType)"/>
+                </FormRowFor>
+                @if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother){
+                    <FormRowFor For="@(() => Model.CopyFromProjectId)">
+                        авыаываываываываы
+                        <ProjectSelector @bind-ProjectId=" Model.CopyFromProjectId" Name="CopyFromProjectId" />
+                    </FormRowFor>
+                }
+                <FormRow>
+                    <JoinCreateButton Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+@code {
+
+    private EditContext? editContext;
+    private bool formInvalid = true;
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectCreateViewModel Model { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        editContext = new(Model);
+        //editContext.OnValidationRequested += HandleValidationRequested;
+        editContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+
+        if (editContext is not null)
+        {
+            logger.LogDebug("Validating...");
+            formInvalid = !editContext.Validate();
+            logger.LogDebug(string.Join(",", editContext.GetValidationMessages()));
+            StateHasChanged();
+        }
+    }
+
+}

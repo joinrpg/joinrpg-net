@@ -1,5 +1,6 @@
-﻿
-@model JoinRpg.Web.ProjectCommon.Projects.ProjectCreateViewModel
+﻿@using JoinRpg.Web.ProjectCommon.Projects
+
+@model             ProjectCreateViewModel
 
 @{
     ViewBag.Title = "Создание базы заявок для новой игры";
@@ -32,43 +33,5 @@
             и @Html.ActionLink("пожертвовать эти деньги", "HowToHelp", "Home") на наш сайт.
         Так мы сможем покрыть расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
         </p>
-    <div class="panel panel-default">
-        <div class="panel-heading">Создание новой базы заявок</div>
-        <div class="panel-body">
-
-            <div class="form-horizontal">
-                @Html.ValidationSummary(true, "", new {@class = "text-danger"})
-                <div class="form-group">
-                    @Html.LabelFor(model => model.ProjectName, htmlAttributes: new {@class = "control-label col-md-2"})
-                    <div class="col-md-10">
-                        @Html.EditorFor(model => model.ProjectName, new {htmlAttributes = new {@class = "form-control"}})
-                        @Html.ValidationMessageFor(model => model.ProjectName, "", new {@class = "text-danger"})
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    @Html.LabelFor(m => m.RulesApproved, new {@class = "col-md-2 control-label"})
-                    <div class="col-md-2">
-                        @Html.EditorFor(m => m.RulesApproved)
-                        @Html.ValidationMessageFor(model => model.RulesApproved, "", new { @class = "text-danger" })
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    @Html.LabelFor(m => m.ProjectType, new {@class = "col-md-2 control-label"})
-                    <div class="col-md-10">
-                        @Html.EditorFor(m => m.ProjectType)
-                        @Html.ValidationMessageFor(model => model.ProjectType, "", new { @class = "text-danger" })
-                        @Html.DescriptionFor(m => m.ProjectType)
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="col-md-offset-2 col-md-10">
-                        <input type="submit" value="Создать базу заявок" class="btn btn-default"/>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <component type="typeof(JoinRpg.Web.ProjectCommon.Projects.CreateProjectPanel)" render-mode="WebAssemblyPrerendered" param-Model="@Model" />
 }
