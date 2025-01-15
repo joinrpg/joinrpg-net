@@ -19,6 +19,9 @@ public class ProjectCreateViewModel
     [Display(Name = "Тип проекта",
      Description = "Выберите, что лучше описывает ваш проект и мы сразу настроим его наиболее оптимально для вас. Не бойтесь, вы всегда сможете изменить конкретные настройки позже.")]
     public ProjectTypeViewModel ProjectType { get; set; }
+
+    [Display(Name = "Откуда копировать", Description = "Из этого проекта будут перенесены все поля и настройки")]
+    public int? CopyFromProjectId { get; set; }
 }
 
 public enum ProjectTypeViewModel
@@ -31,5 +34,8 @@ public enum ProjectTypeViewModel
     Convention,
 
     [Display(Name = "Конвент - мероприятия")]
-    ConventionProgram
+    ConventionProgram,
+
+    [Display(Name = "Скопировать настройки с другого проекта")]
+    CopyFromAnother
 }
