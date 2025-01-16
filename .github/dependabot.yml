@@ -12,6 +12,7 @@ updates:
           - "Microsoft.EntityFrameworkCore*"
           - "System.Text.Json"
           - "System.Net.Http.Json"
+          - "dotnet-ef"
         update-types:
           - "minor"
           - "patch"
