@@ -19,11 +19,13 @@ updates:
         patterns:
           - "Serilog*"
   - package-ecosystem: "docker" 
-    directory: "/src/JoinRpg.*" 
+    directories: 
+      - "/src/Joinrpg.Dal.Migrate" 
+      - "/src/JoinRpg.Portal" 
     schedule:
       interval: "daily"
     groups:
-      docker-updates:
+      aspnet-updates:
         patterns:
           - "dotnet/aspnet*"
   - package-ecosystem: "github-actions" 
