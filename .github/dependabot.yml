@@ -1,14 +1,15 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/" # Location of package manifests
+    directory: "/" 
     schedule:
       interval: "daily"
     groups:
-      aspnetcore-dependencies:
+      net:
         patterns:
           - "Microsoft.Extensions.*"
           - "Microsoft.AspNetCore.*"
+          - "System.Text.Json"
         update-types:
           - "minor"
           - "patch"
@@ -25,7 +26,7 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      aspnet-updates:
+      net:
         patterns:
           - "dotnet/aspnet*"
   - package-ecosystem: "github-actions" 
