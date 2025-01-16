@@ -19,7 +19,7 @@ updates:
         patterns:
           - "Serilog*"
   - package-ecosystem: "docker" 
-    directory: "/src/JoinRpg.*" 
+    directories: "/src/JoinRpg.*" 
     schedule:
       interval: "daily"
     groups:
