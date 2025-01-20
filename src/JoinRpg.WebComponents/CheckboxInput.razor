@@ -16,6 +16,7 @@
     public Expression<Func<bool>> ValueExpression { get; set; } = default!;
 
     [Parameter]
+    [Obsolete]
     public string Name { get; set; } = null!;
 
     protected internal FieldIdentifier FieldIdentifier { get; set; }
@@ -26,6 +27,7 @@
     {
         internalValue = Value;
         FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+        Name ??= FieldIdentifier.FieldName;
     }
 
     private async Task UpdateValue(ChangeEventArgs eventArgs)
