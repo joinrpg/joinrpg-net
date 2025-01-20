@@ -20,6 +20,12 @@ public class AddPlotElementViewModel : IProjectIdAware
 
     [Display(Name = "Тип"), ReadOnly(true)]
     public PlotElementTypeView ElementType { get; } = PlotElementTypeView.RegularPlot;
+
+    [ReadOnly(true)]
+    public required bool HasPlotEditAccess { get; set; }
+
+    [Display(Name = "Сразу опубликовать", Description = "Публиковать можно только законченную вводную (с пустым TODO) и заполненной привязкой.")]
+    public bool PublishNow { get; set; }
 }
 
 public class AddPlotHandoutViewModel : IProjectIdAware

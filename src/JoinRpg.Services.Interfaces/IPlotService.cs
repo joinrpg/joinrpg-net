@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Services.Interfaces;
 
@@ -7,18 +8,18 @@ public interface IPlotService
     Task CreatePlotFolder(int projectId, string masterTitle, string todo);
     Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField);
 
-    Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
+    Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType);
 
     Task DeleteFolder(int projectId, int plotFolderId);
-    Task DeleteElement(int projectId, int plotFolderId, int plotelementid);
+    Task DeleteElement(PlotElementIdentification plotElementId);
 
-    Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField,
+    Task EditPlotElement(PlotElementIdentification plotelementid, string contents, string todoField,
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars);
 
     Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction);
 
-    Task PublishElementVersion(IPublishPlotElementModel model);
+    Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText);
 
-    Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string content, string todoField);
+    Task EditPlotElementText(PlotElementIdentification plotelementid, string content, string todoField);
 }
