@@ -9,10 +9,6 @@
 <h2>@ViewBag.Title</h2>
 
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-
     <div class="alert alert-info">
         <ol>
             <li>Joinrpg — для ролевых игр. Если ваше мероприятие не является ролевой игрой или ролевым конвентом, просьба согласовать возможность использования joinrpg отдельно по адресу support@joinrpg.ru</li>
@@ -33,5 +29,10 @@
             и @Html.ActionLink("пожертвовать эти деньги", "HowToHelp", "Home") на наш сайт.
         Так мы сможем покрыть расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
         </p>
-    <component type="typeof(JoinRpg.Web.ProjectCommon.Projects.CreateProjectPanel)" render-mode="WebAssemblyPrerendered" param-Model="@Model" />
+    <component type="typeof(JoinRpg.Web.ProjectCommon.Projects.CreateProjectPanel)" render-mode="WebAssemblyPrerendered" />
+
+@section Scripts {
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
 }

@@ -26,16 +26,15 @@ public class ProjectCreateViewModel
 
 public enum ProjectTypeViewModel
 {
-    [Display(Name = "Ролевая игра",
-        Description = "")]
+    [Display(Name = "Ролевая игра", Description = "")]
     Larp,
-    [Display(Name = "Конвент - участники",
-        Description = "")]
+
+    [Display(Name = "Конвент - участники", Description = "")]
     Convention,
 
     [Display(Name = "Конвент - мероприятия")]
     ConventionProgram,
 
     [Display(Name = "Скопировать настройки с другого проекта")]
-    CopyFromAnother
+    CopyFromAnother,
 }

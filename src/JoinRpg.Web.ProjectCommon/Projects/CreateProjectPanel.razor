@@ -2,7 +2,7 @@
 <JoinPanel>
     <Header>Создание новой базы заявок</Header>
     <Body>
-        <EditForm FormName="CreateProject" EditContext="@editContext">
+        <EditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="ValidSubmitted">
             <FormHorizontal>
                 <DataAnnotationsValidator />    
                 <ValidationSummary />
@@ -13,14 +13,11 @@
                     <CheckboxInput @bind-Value="Model.RulesApproved" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.ProjectType)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.ProjectType" Name="nameof(Model.ProjectType)"/>
+                    <EnumRadioButtonGroup2 @bind-SelectedValue="Model.ProjectType" Name="nameof(Model.ProjectType)"/>
                 </FormRowFor>
-                @if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother){
-                    <FormRowFor For="@(() => Model.CopyFromProjectId)">
-                        авыаываываываываы
-                        <ProjectSelector @bind-ProjectId=" Model.CopyFromProjectId" Name="CopyFromProjectId" />
-                    </FormRowFor>
-                }
+                  <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
+                  <ProjectSelector @bind-ProjectId=" Model.CopyFromProjectId" Name="CopyFromProjectId" />
+                </FormRowFor>
                 <FormRow>
                     <JoinCreateButton Submit="true" Disabled="@formInvalid" />
                 </FormRow>
@@ -36,6 +33,7 @@
 
     [Parameter]
     [EditorRequired]
+    [SupplyParameterFromForm]
     public ProjectCreateViewModel Model { get; set; } = null!;
 
     protected override void OnInitialized()
@@ -44,6 +42,8 @@
         editContext = new(Model);
         //editContext.OnValidationRequested += HandleValidationRequested;
         editContext.OnFieldChanged += HandleFieldChanged;
+
+        logger.LogInformation("Setup everything");
     }
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
@@ -51,11 +51,16 @@
 
         if (editContext is not null)
         {
-            logger.LogDebug("Validating...");
+            logger.LogInformation("Validating...");
             formInvalid = !editContext.Validate();
-            logger.LogDebug(string.Join(",", editContext.GetValidationMessages()));
+            logger.LogInformation(string.Join(",", editContext.GetValidationMessages()));
             StateHasChanged();
         }
+    }
+
+    private void ValidSubmitted()
+    {
+        logger.LogInformation("Submitted...");
     }
 
 }
