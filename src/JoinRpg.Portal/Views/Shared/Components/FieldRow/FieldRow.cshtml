@@ -43,9 +43,20 @@
                 @foreach (var value in item.DropdownValues)
                     {
                 <li>
-                    @(value.CharacterGroupId != null
-                ? Html.ActionLink(value.Label, "ByGroup", "CharacterList", new { item.ProjectId, value.CharacterGroupId }, null)
-                : Html.Raw(value.Label))
+                  @if (value.CharacterGroupId is not null)
+                  {
+                    <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@item.ProjectId" asp-route-CharacterGroupId="@value.CharacterGroupId">
+                      @if (!value.IsActive)
+                      {
+                        <del>@value.Label</del>
+                      }
+                      else
+                      {
+                        @value.Label
+                      }
+
+                    </a>
+                  }
                 </li>
                     }
                 @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)

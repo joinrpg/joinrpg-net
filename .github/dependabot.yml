@@ -1,38 +1,39 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/" # Location of package manifests
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "docker" 
-    directory: "/src/JoinRpg.Portal" 
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "docker" 
-    directory: "/src/Joinrpg.Dal.Migrate" 
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "github-actions" 
     directory: "/" 
     schedule:
       interval: "daily"
     groups:
-      aspnetcore-dependencies:
+      net:
         patterns:
           - "Microsoft.Extensions.*"
           - "Microsoft.AspNetCore.*"
+          - "Microsoft.EntityFrameworkCore*"
+          - "System.Text.Json"
+          - "System.Net.Http.Json"
+          - "dotnet-ef"
         update-types:
           - "minor"
           - "patch"
-      aspnetcore2:
-        applies-to: version-updates
-        patterns:
-          - "dotnet/aspnet*"
       xunit:
-        applies-to: version-updates
         patterns:
           - "xunit*"
       serilog:
-        applies-to: version-updates
         patterns:
           - "Serilog*"
+  - package-ecosystem: "docker" 
+    directories: 
+      - "/src/Joinrpg.Dal.Migrate" 
+      - "/src/JoinRpg.Portal" 
+    schedule:
+      interval: "daily"
+    groups:
+      net:
+        patterns:
+          - "dotnet/aspnet*"
+  - package-ecosystem: "github-actions" 
+    directory: "/" 
+    schedule:
+      interval: "daily"
+

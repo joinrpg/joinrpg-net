@@ -23,13 +23,13 @@
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
       <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.1" />
     <PackageReference Include="BitArmory.ReCaptcha" Version="5.0.1" />
     <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Aspnetcore.Components.Webassembly.Server" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Aspnetcore.Components.Webassembly.Server" Version="9.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -42,7 +42,7 @@
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Formatting.Elasticsearch" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" /> <!-- Bump up implicitly, so transtitive dependiencies would not warn -->
+    <PackageReference Include="System.Text.Json" Version="9.0.1" /> <!-- Bump up implicitly, so transtitive dependiencies would not warn -->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj" />
