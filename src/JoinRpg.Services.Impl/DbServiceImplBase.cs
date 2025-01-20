@@ -7,6 +7,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Impl;
 
@@ -14,7 +15,7 @@ namespace JoinRpg.Services.Impl;
 public class DbServiceImplBase
 {
     protected readonly IUnitOfWork UnitOfWork;
-    private readonly ICurrentUserAccessor currentUserAccessor;
+    protected readonly ICurrentUserAccessor currentUserAccessor;
 
     protected IUserRepository UserRepository => _userRepository.Value;
 
@@ -89,8 +90,20 @@ public class DbServiceImplBase
         throw new DbEntityValidationException();
     }
 
+    protected async Task<T> LoadProjectSubEntityAsync<T>(IProjectEntityId id)
+    where T : class, IProjectEntity
+    {
+        var field = await UnitOfWork.GetDbSet<T>().FindAsync(id.Id);
+        if (field != null && field.Project.ProjectId == id.ProjectId)
+        {
+            return field;
+        }
+
+        throw new DbEntityValidationException();
+    }
+
     protected static string Required([NotNull] string? stringValue,
-        [CallerArgumentExpression("stringValue")] string? fieldName = null)
+        [CallerArgumentExpression(nameof(stringValue))] string? fieldName = null)
     {
         if (string.IsNullOrWhiteSpace(stringValue))
         {

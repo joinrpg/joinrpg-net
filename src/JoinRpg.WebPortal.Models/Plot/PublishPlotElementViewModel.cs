@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Plot;
@@ -31,4 +33,7 @@ public class PublishPlotElementViewModel : IPublishPlotElementModel
         ProjectId = source.ProjectId;
         PlotFolderId = source.PlotFolderId;
     }
+
+    public PlotVersionIdentification GetVersionId() => new PlotVersionIdentification(new PlotElementIdentification(new PlotFolderIdentification(
+        new ProjectIdentification(ProjectId), PlotFolderId), PlotElementId), Version);
 }

@@ -11,7 +11,7 @@
 @using (Html.BeginForm("")) 
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(p => p.ProjectId)
@@ -29,10 +29,10 @@
             @Html.LabelFor(model => model.PlotFolderId, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 <component type="typeof(JoinRpg.Web.Plots.PlotFolderSelector)"
-                           param-Name="nameof(Model.PlotFolderId)"
-                           param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
-                           param-SelectedId="@Model.PlotFolderId"
-                           render-mode="Static" />
+                param-Name="nameof(Model.PlotFolderId)"
+                param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+                param-SelectedId="@Model.PlotFolderId"
+                render-mode="Static" />
                 @Html.DescriptionFor(model => model.PlotFolderId)
             </div>
         </div>
@@ -61,6 +61,19 @@
                 @Html.ValidationMessageFor(model => model.Targets, "", new {@class = "text-danger"})
             </div>
         </div>
+
+        @if (Model.HasPlotEditAccess)
+        {
+
+           <div class="form-group">
+                @Html.LabelFor(model => model.PublishNow, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-8">
+                @Html.DescriptionFor(model => model.PublishNow)
+                @Html.CheckBoxFor(model => model.PublishNow)
+                @Html.ValidationMessageFor(model => model.PublishNow, "", new { @class = "text-danger" })
+            </div>
+          </div>
+        }
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
