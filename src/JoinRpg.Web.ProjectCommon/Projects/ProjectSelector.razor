@@ -1,25 +1,28 @@
+@using System.Linq.Expressions
 @inject IProjectListClient client
 
 @if (items is null)
 {
-   <JoinLoadingMessage />
+    <JoinLoadingMessage />
 }
 else
 {
-  <IntSelector
-               Name="@Name"
-               SelectedValues="@Selected"
-               SelectedValuesChanged="@HandleSelectedChanged"
-               PossibleValues="items"
-               Multiple="false"
-               />
+    <IntSelector
+    Name="@Name"
+    SelectedValues="@Selected"
+    SelectedValuesChanged="@HandleSelectedChanged"
+    PossibleValues="items"
+    Multiple="false"
+    />
 }
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public int? ProjectId { get; set; }
     [Parameter] public EventCallback<int?> ProjectIdChanged { get; set; }
+    [Parameter] public Expression<Func<int?>>? ProjectIdExpression { get; set; } 
 
     [Parameter] public ProjectDto? Project { get; set; }
     [Parameter] public EventCallback<ProjectDto?> ProjectChanged { get; set; }
@@ -27,6 +30,7 @@ else
     private int[] Selected { get; set; } = new int[0];
     private IntSelectListItem[] items = null!;
     private ProjectDto[] sourceItems = null!;
+    private FieldIdentifier? fieldIdentifier = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,6 +43,11 @@ else
               Subtext: "",
               ExtraSearch: ""))
            .ToArray();
+        if (ProjectIdExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(ProjectIdExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
     }
 
     protected override void OnParametersSet()
@@ -60,5 +69,9 @@ else
         var master = sourceItems.SingleOrDefault(m => m.ProjectId.Value == id);
         await ProjectIdChanged.InvokeAsync(id);
         await ProjectChanged.InvokeAsync(master);
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 }
