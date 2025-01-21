@@ -5,7 +5,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Services.Impl.Projects;
 
 internal class CreateProjectService
     (ProjectService projectService,

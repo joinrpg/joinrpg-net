@@ -10,7 +10,7 @@ using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.Extensions.Logging;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Services.Impl.Projects;
 
 internal class ProjectService(
     IUnitOfWork unitOfWork,
