@@ -24,7 +24,8 @@ public static class HttpClientRegistration
     public static WebAssemblyHostBuilder AddHttpClients(this WebAssemblyHostBuilder builder)
     {
         return builder
-                .AddHttpClient<IProjectListClient, ProjectClient>()
+                .AddHttpClient<IProjectListClient, ProjectListClient>()
+                .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()
                 .AddHttpClient<IMasterClient, MasterClient>()
                 .AddHttpClient<IGameSubscribeClient, GameSubscribeClient>()

@@ -1,8 +1,11 @@
 ﻿@inject ILogger<CreateProjectPanel> logger
+@inject NavigationManager NavigationManager
+@inject IServiceProvider Services
+@implements IDisposable
 <JoinPanel>
     <Header>Создание новой базы заявок</Header>
     <Body>
-        <EditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="ValidSubmitted">
+        <EditForm FormName="CreateProject" EditContext="@editContext" method="post" action="/game/create" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
                 <DataAnnotationsValidator />    
                 <ValidationSummary />
@@ -13,10 +16,10 @@
                     <CheckboxInput @bind-Value="Model.RulesApproved" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.ProjectType)">
-                    <EnumRadioButtonGroup2 @bind-SelectedValue="Model.ProjectType" Name="nameof(Model.ProjectType)"/>
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.ProjectType"/>
                 </FormRowFor>
-                  <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
-                  <ProjectSelector @bind-ProjectId=" Model.CopyFromProjectId" Name="CopyFromProjectId" />
+                <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
+                    <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" Name="CopyFromProjectId" />
                 </FormRowFor>
                 <FormRow>
                     <JoinCreateButton Submit="true" Disabled="@formInvalid" />
@@ -30,6 +33,7 @@
 
     private EditContext? editContext;
     private bool formInvalid = true;
+    private ValidationMessageStore? messageStore;
 
     [Parameter]
     [EditorRequired]
@@ -40,27 +44,54 @@
     {
         Model ??= new();
         editContext = new(Model);
-        //editContext.OnValidationRequested += HandleValidationRequested;
+        editContext.OnValidationRequested += HandleValidationRequested;
         editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
 
         logger.LogInformation("Setup everything");
     }
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
-
         if (editContext is not null)
         {
-            logger.LogInformation("Validating...");
             formInvalid = !editContext.Validate();
-            logger.LogInformation(string.Join(",", editContext.GetValidationMessages()));
             StateHasChanged();
         }
     }
 
-    private void ValidSubmitted()
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
-        logger.LogInformation("Submitted...");
+        messageStore?.Clear();
+
+        // Custom validation logic
+        if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother && Model.CopyFromProjectId is null)
+        {
+            messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try {
+            formInvalid = true;
+            var id = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
+            NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при создании проекта");
+            formInvalid = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
     }
 
 }
