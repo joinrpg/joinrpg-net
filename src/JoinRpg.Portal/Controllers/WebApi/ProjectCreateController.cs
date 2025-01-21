@@ -1,3 +1,4 @@
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,11 @@ public class ProjectCreateController(ILogger<ProjectCreateController> logger) : 
 
         try
         {
-            var project = await createProjectService.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
+            var project = await createProjectService.CreateProject(new CreateProjectRequest(
+                new ProjectName(model.ProjectName),
+                (ProjectTypeDto)model.ProjectType),
+                ProjectIdentification.FromOptional(model.CopyFromProjectId)
+                );
 
             return Ok(project.Value);
         }
