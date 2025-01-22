@@ -11,7 +11,6 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
-using JoinRpg.Web.Models.Masters;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -230,10 +229,9 @@ public class GameFieldController(
             await
                 fieldSetupService.CreateFieldValueVariant(
                     new CreateFieldValueVariantRequest(
-                        viewModel.ProjectId,
+                        new(new ProjectIdentification(viewModel.ProjectId), viewModel.ProjectFieldId),
                         viewModel.Label,
                         viewModel.Description,
-                        viewModel.ProjectFieldId,
                         viewModel.MasterDescription,
                         viewModel.ProgrammaticValue,
                         viewModel.Price,
@@ -273,11 +271,10 @@ public class GameFieldController(
         {
             var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
             await fieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
-                viewModel.ProjectId,
+                new(new ProjectIdentification(viewModel.ProjectId), viewModel.ProjectFieldId),
                 viewModel.ProjectFieldDropdownValueId,
                 viewModel.Label,
                 viewModel.Description,
-                viewModel.ProjectFieldId,
                 viewModel.MasterDescription,
                 viewModel.ProgrammaticValue,
                 viewModel.Price,
@@ -384,7 +381,8 @@ public class GameFieldController(
     [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> MassCreateValueVariants(int projectId, int projectFieldId, string valuesToAdd)
     {
-        var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+        var id = new ProjectFieldIdentification(new(projectId), projectFieldId);
+        var value = await ProjectRepository.GetProjectField(id);
 
         if (value == null)
         {
@@ -393,7 +391,7 @@ public class GameFieldController(
 
         try
         {
-            await fieldSetupService.CreateFieldValueVariants(projectId, projectFieldId, valuesToAdd);
+            await fieldSetupService.CreateFieldValueVariants(id, valuesToAdd);
 
 
             return ReturnToField(value);

@@ -41,30 +41,6 @@ public class GameController(
     [HttpGet("/game/create")]
     public IActionResult Create() => View(new ProjectCreateViewModel());
 
-    // POST: Game/Create
-    [Authorize]
-    [HttpPost("/game/create")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ProjectCreateViewModel model, [FromServices] ICreateProjectService createProjectService)
-    {
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
-
-        try
-        {
-            var project = await createProjectService.CreateProject(new CreateProjectRequest(new ProjectName(model.ProjectName), (ProjectTypeDto)model.ProjectType));
-
-            return RedirectTo(project);
-        }
-        catch (Exception exception)
-        {
-            ModelState.AddException(exception);
-            return View(model);
-        }
-    }
-
     private IActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
 
     [HttpGet("/{projectId}/project/settings")]
@@ -74,8 +50,8 @@ public class GameController(
         var project = await ProjectRepository.GetProjectAsync(projectId);
         return View(new EditProjectViewModel
         {
-            ClaimApplyRules = project.Details.ClaimApplyRules.Contents,
-            ProjectAnnounce = project.Details.ProjectAnnounce.Contents,
+            ClaimApplyRules = project.Details.ClaimApplyRules?.Contents ?? "",
+            ProjectAnnounce = project.Details.ProjectAnnounce?.Contents ?? "",
             ProjectId = project.ProjectId,
             ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,

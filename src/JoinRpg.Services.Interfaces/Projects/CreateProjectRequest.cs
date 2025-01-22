@@ -6,7 +6,7 @@ public record CreateProjectRequest
 {
     public CreateProjectRequest(ProjectName ProjectName, ProjectTypeDto ProjectType, ProjectIdentification? CopyFromId)
     {
-        if (ProjectType == ProjectTypeDto.CopyFrom)
+        if (ProjectType == ProjectTypeDto.CopyFromAnother)
         {
             ArgumentNullException.ThrowIfNull(CopyFromId);
         }
@@ -14,7 +14,7 @@ public record CreateProjectRequest
         {
             if (CopyFromId is not null)
             {
-                throw new ArgumentException("Should be null if ProjectTypeDto!=CopyFrom", nameof(CopyFromId);
+                throw new ArgumentException("Should be null if ProjectTypeDto!=CopyFrom", nameof(CopyFromId));
             }
         }
         this.ProjectName = ProjectName;

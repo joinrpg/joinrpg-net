@@ -35,6 +35,6 @@ public enum ProjectTypeViewModel
     [Display(Name = "Конвент - мероприятия")]
     ConventionProgram,
 
-    [Display(Name = "Скопировать настройки с другого проекта")]
+    [Display(Name = "Скопировать настройки с другого проекта", Description = "Будут перенесены настройки и поля. Персонажи, взнос и сюжет перенесены не будут")]
     CopyFromAnother,
 }

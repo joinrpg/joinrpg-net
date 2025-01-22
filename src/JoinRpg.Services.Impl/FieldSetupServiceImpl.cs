@@ -133,7 +133,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 
     public async Task CreateFieldValueVariant(CreateFieldValueVariantRequest request)
     {
-        var field = await ProjectRepository.GetProjectField(request.ProjectId, request.ProjectFieldId);
+        var field = await ProjectRepository.GetProjectField(request.ProjectFieldId);
 
         _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
@@ -145,7 +145,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 
     public async Task UpdateFieldValueVariant(UpdateFieldValueVariantRequest request)
     {
-        var field = await ProjectRepository.GetFieldValue(request.ProjectId,
+        var field = await ProjectRepository.GetFieldValue(
             request.ProjectFieldId,
             request.ProjectFieldDropdownValueId);
 
@@ -347,18 +347,18 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateFieldValueVariants(int projectId, int projectFieldId, string valuesToAdd)
+    public async Task CreateFieldValueVariants(ProjectFieldIdentification projectFieldId, string valuesToAdd)
     {
-        var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+        var field = await ProjectRepository.GetProjectField(projectFieldId);
 
         _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
         foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
         {
-            CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(field.ProjectId,
+            CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(
+                    projectFieldId,
                     label,
                     null,
-                    field.ProjectFieldId,
                     null,
                     null,
                     0,
