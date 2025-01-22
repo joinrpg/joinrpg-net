@@ -40,6 +40,9 @@ internal partial class CreateProjectService
             case ProjectTypeDto.CopyFromAnother:
                 await CopyFromAnother(request.ProjectName, project, projectId, request.CopyFromId!);
                 break;
+            case ProjectTypeDto.EmptyProject:
+                // Ничего не делаем
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(request.ProjectType));
         }
