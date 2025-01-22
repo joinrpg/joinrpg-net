@@ -1,4 +1,4 @@
-﻿<div class="form-group">
+﻿<div class="form-group" @attributes="@InputAttributes">
   <label class="control-label col-md-2">@Label</label>
   <div class="col-md-10">
     @ChildContent
@@ -19,4 +19,6 @@
     [Parameter] public RenderFragment? DescriptionFragment { get; set; } = null;
     [Parameter] public string? Description { get; set; } = null;
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> InputAttributes { get; set; } = new();
 }

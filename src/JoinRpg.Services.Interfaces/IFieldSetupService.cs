@@ -27,8 +27,7 @@ public interface IFieldSetupService
         int projectFieldVariantId,
         short direction);
 
-    Task CreateFieldValueVariants(int projectId,
-        int projectFieldId,
+    Task CreateFieldValueVariants(ProjectFieldIdentification projectFieldId,
         string valuesToAdd);
 
     Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
@@ -41,7 +40,7 @@ public class FieldSettingsRequest
 {
     public ProjectFieldIdentification? NameField { get; set; }
     public ProjectFieldIdentification? DescriptionField { get; set; }
-    public ProjectIdentification ProjectId { get; set; }
+    public required ProjectIdentification ProjectId { get; set; }
 }
 
 public abstract class FieldRequestBase
@@ -172,8 +171,7 @@ public sealed class UpdateFieldRequest : FieldRequestBase
 
 public abstract class FieldValueVariantRequestBase
 {
-    public int ProjectId { get; }
-    public int ProjectFieldId { get; }
+    public ProjectFieldIdentification ProjectFieldId { get; }
     public string Label { get; }
     public string? Description { get; }
     public string? MasterDescription { get; }
@@ -182,17 +180,15 @@ public abstract class FieldValueVariantRequestBase
     public bool PlayerSelectable { get; }
     public TimeSlotOptions? TimeSlotOptions { get; }
 
-    protected FieldValueVariantRequestBase(int projectId,
+    protected FieldValueVariantRequestBase(ProjectFieldIdentification projectFieldId,
         string label,
         string? description,
-        int projectFieldId,
         string? masterDescription,
         string? programmaticValue,
         int price,
         bool playerSelectable,
         TimeSlotOptions? timeSlotOptions)
     {
-        ProjectId = projectId;
         Label = label;
         Description = description;
         ProjectFieldId = projectFieldId;
@@ -206,20 +202,18 @@ public abstract class FieldValueVariantRequestBase
 
 public class UpdateFieldValueVariantRequest : FieldValueVariantRequestBase
 {
-    public UpdateFieldValueVariantRequest(int projectId,
+    public UpdateFieldValueVariantRequest(ProjectFieldIdentification projectFieldId,
         int projectFieldDropdownValueId,
         string label,
         string description,
-        int projectFieldId,
         string masterDescription,
         string programmaticValue,
         int price,
         bool playerSelectable,
         TimeSlotOptions? timeSlotOptions)
-        : base(projectId,
+        : base(projectFieldId,
             label,
             description,
-            projectFieldId,
             masterDescription,
             programmaticValue,
             price,
@@ -231,19 +225,17 @@ public class UpdateFieldValueVariantRequest : FieldValueVariantRequestBase
 
 public class CreateFieldValueVariantRequest : FieldValueVariantRequestBase
 {
-    public CreateFieldValueVariantRequest(int projectId,
+    public CreateFieldValueVariantRequest(ProjectFieldIdentification projectFieldId,
         string label,
         string? description,
-        int projectFieldId,
         string? masterDescription,
         string? programmaticValue,
         int price,
         bool playerSelectable,
         TimeSlotOptions? timeSlotOptions)
-        : base(projectId,
+        : base(projectFieldId,
             label,
             description,
-            projectFieldId,
             masterDescription,
             programmaticValue,
             price,

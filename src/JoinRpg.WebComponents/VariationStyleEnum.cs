@@ -6,4 +6,5 @@ public enum VariationStyleEnum
     Success,
     Warning,
     Danger,
+    Info
 }

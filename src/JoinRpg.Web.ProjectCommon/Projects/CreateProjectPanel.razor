@@ -1,0 +1,128 @@
+﻿@inject ILogger<CreateProjectPanel> logger
+@inject NavigationManager NavigationManager
+@inject IServiceProvider Services
+@implements IDisposable
+
+<JoinAlert Variation="VariationStyleEnum.Success">
+    Наш сайт — бесплатен для игроков и мастеров, на нем нет рекламы.
+    Хостинг, а иногда и другие расходы оплачиваются из пожертвований.
+    Мы были бы очень благодарны, если бы вы сочли возможным повысить ваш взнос всего на 20, 50 или 100 рублей
+    и <a href="/home/howtohelp">пожертвовать эти деньги</a> на наш сайт.
+    Так мы сможем покрыть расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
+</JoinAlert>
+
+@if (creating)
+{
+  <JoinLoadingMessage Message="Проект создается..."/>
+  return;
+}
+
+<JoinAlert Variation="VariationStyleEnum.Info">
+  <h4>Правила сайта</h4>
+    <ol>
+        <li>Joinrpg — для ролевых игр. Если ваше мероприятие не является ролевой игрой или ролевым конвентом, просьба предварительно согласовать с нами по адресу support@joinrpg.ru</li>
+        <li>Надеемся, что вам понравится наш сайт. Мы сами мастера и делаем его для других мастеров. Ведите себя адекватно, используйте сайт по назначению и все будет здорово.</li>
+        <li>Если у вас будут какие-то проблемы, пишите в поддержку. Мы всегда рады помочь, но обратите внимание: вы ничего не платите нам, и, следовательно, не являетесь нашим клиентом. Мы поддерживаем сайт бесплатно и в свободное время, у нас есть работа, семья, личная жизнь, другие хобби.</li>
+        <li>Вы можете обсудить проблему с другими пользователями в чате в телеграмме. Это часто самый быстрый способ получить ответ. Если вам нужна именно наша помощь, напишите в техподдержку, чат мы не всегда просматриваем.</li>
+        <li>Мы будем вынуждены заблокировать тех пользователей, которые нарушают общепринятые правила интернетов. Это включает (но не ограничивается): спам, взлом нашего или других сайтов, любые другие действия, которые ставят нас под угрозу технически или юридически. Мы не ограничиваем себя определенным списком или правилами, но постараемся применять блокировки только как крайнюю меру. Пока что такой необходимости не возникало. Мастерская группа в целом отвечает за поведение на сайте каждого конкретного мастера.</li>
+        <li>Если вам нужна какая-то доработка или не совсем удобно использовать наш сайт, мы с радостью обсудим доработки, но команда сайта не может гарантировать никаких сроков. Код сайта <a href="https://gitgub.com/joinrpg/joinrpg-net/">open source</a>, вполне возможно, вам самим удастся найти программиста. В прошлом мы заключали сделки вроде «доработки за пожертвование» и готовы обсудить их снова.</li>
+        <li>Если кто-то ведет себя как м...к по отношению к нам, мы не даем таким людям согласия на использование нашего сайта.</li>
+        <li>Рады вас видеть и удачной вам игры!</li>
+    </ol>
+</JoinAlert>
+
+<JoinPanel>
+    <Header>Создание новой базы заявок</Header>
+    <Body>
+        <EditForm FormName="CreateProject" EditContext="@editContext" method="post" action="/game/create" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                <DataAnnotationsValidator />    
+                <FormRowFor For="@(() => Model.ProjectName)">
+                    <InputText @bind-Value="Model.ProjectName" class="form-control" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.RulesApproved)">
+                    <CheckboxInput @bind-Value="Model.RulesApproved" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.ProjectType)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.ProjectType"/>
+                    <JoinAlert Variation="VariationStyleEnum.Info">Все настройки можно будет изменить после создания проекта.</JoinAlert>
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
+                    <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" Name="CopyFromProjectId" />
+                </FormRowFor>
+                <FormRow>
+                    <JoinCreateButton Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+
+@code {
+
+    private EditContext? editContext;
+    private bool formInvalid = true;
+    private bool creating = false;
+    private ValidationMessageStore? messageStore;
+
+    [Parameter]
+    [EditorRequired]
+    [SupplyParameterFromForm]
+    public ProjectCreateViewModel Model { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        editContext = new(Model);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+
+        logger.LogInformation("Setup everything");
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+
+        // Custom validation logic
+        if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother && Model.CopyFromProjectId is null)
+        {
+            messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try {
+            creating = true;
+            var id = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
+            NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при создании проекта");
+            creating = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
+    }
+
+}

@@ -11,13 +11,13 @@
         {
         <div>
             <p>
-                Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База заявок от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
+                Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База персонажей от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
             </p>
 
             @Html.ActionLink("О проекте", "About", null,  null, new { @class = "btn btn-primary" })
             <a href="https://docs.joinrpg.ru" class="btn btn-info">Документация</a>
             @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
-            @Html.ActionLink("Как помочь?", "HowToHelp", null, new { @class = "btn btn-default" })
+            @Html.ActionLink("Как помочь?", "HowToHelp", null, null, new { @class = "btn btn-default" })
         </div>
         }
         else

@@ -1,5 +1,6 @@
-﻿
-@model JoinRpg.Web.ProjectCommon.Projects.ProjectCreateViewModel
+﻿@using JoinRpg.Web.ProjectCommon.Projects
+
+@model ProjectCreateViewModel
 
 @{
     ViewBag.Title = "Создание базы заявок для новой игры";
@@ -7,68 +8,10 @@
 
 <h2>@ViewBag.Title</h2>
 
+    <component type="typeof(JoinRpg.Web.ProjectCommon.Projects.CreateProjectPanel)" render-mode="WebAssemblyPrerendered" />
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+@section Scripts {
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
-    <div class="alert alert-info">
-        <ol>
-            <li>Joinrpg — для ролевых игр. Если ваше мероприятие не является ролевой игрой или ролевым конвентом, просьба согласовать возможность использования joinrpg отдельно по адресу support@joinrpg.ru</li>
-            <li>Надеемся, что вам понравится наш сайт. Мы сами мастера и делаем его для других мастеров. Ведите себя адекватно, используйте сайт по назначению и все будет здорово.</li>
-            <li>Если у вас будут какие-то проблемы, пишите в поддержку. Мы всегда рады помочь, но обратите внимание: вы ничего не платите нам, и, следовательно, не являетесь нашим клиентом. Мы поддерживаем сайт бесплатно и в свободное время, у нас есть работа, семья, личная жизнь, другие хобби.</li>
-            <li>Вы можете обсудить проблему с другими пользователями в чате в телеграмме. Это часто самый быстрый способ получить ответ. Если вам нужна именно наша помощь, напишите в техподдержку, чат мы не всегда просматриваем.</li>
-            <li>Мы будем вынуждены заблокировать тех пользователей, которые нарушают общепринятые правила интернетов. Это включает (но не ограничивается): спам, взлом нашего или других сайтов, любые другие действия, которые ставят нас под угрозу технически или юридически. Мы не ограничиваем себя определенным списком или правилами, но постараемся применять блокировки только как крайнюю меру. Пока что такой необходимости не возникало. Мастерская группа в целом отвечает за поведение на сайте каждого конкретного мастера.</li>
-            <li>Если вам нужна какая-то доработка или не совсем удобно использовать наш сайт, мы с радостью обсудим доработки, но команда сайта не может гарантировать никаких сроков. Код сайта <a href="https://gitgub.com/joinrpg/joinrpg-net/">open source</a>, вполне возможно, вам самим удастся найти программиста. В прошлом мы заключали сделки вроде «доработки за пожертвование» и готовы обсудить их снова.</li>
-            <li>Если кто-то ведет себя как м...к по отношению к нам, мы не даем таким людям согласия на использование нашего сайта.</li>
-            <li>Рады вас видеть и удачной вам игры!</li>
-        </ol>
-
-    </div>
-    <p class="alert alert-success">
-        Наш сайт — бесплатен для игроков и мастеров, на нем нет рекламы.
-        Хостинг, а иногда и другие расходы оплачиваются из пожертвований.
-        Мы были бы очень благодарны, если бы вы сочли возможным повысить ваш взнос всего на 20, 50 или 100 рублей
-            и @Html.ActionLink("пожертвовать эти деньги", "HowToHelp", "Home") на наш сайт.
-        Так мы сможем покрыть расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
-        </p>
-    <div class="panel panel-default">
-        <div class="panel-heading">Создание новой базы заявок</div>
-        <div class="panel-body">
-
-            <div class="form-horizontal">
-                @Html.ValidationSummary(true, "", new {@class = "text-danger"})
-                <div class="form-group">
-                    @Html.LabelFor(model => model.ProjectName, htmlAttributes: new {@class = "control-label col-md-2"})
-                    <div class="col-md-10">
-                        @Html.EditorFor(model => model.ProjectName, new {htmlAttributes = new {@class = "form-control"}})
-                        @Html.ValidationMessageFor(model => model.ProjectName, "", new {@class = "text-danger"})
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    @Html.LabelFor(m => m.RulesApproved, new {@class = "col-md-2 control-label"})
-                    <div class="col-md-2">
-                        @Html.EditorFor(m => m.RulesApproved)
-                        @Html.ValidationMessageFor(model => model.RulesApproved, "", new { @class = "text-danger" })
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    @Html.LabelFor(m => m.ProjectType, new {@class = "col-md-2 control-label"})
-                    <div class="col-md-10">
-                        @Html.EditorFor(m => m.ProjectType)
-                        @Html.ValidationMessageFor(model => model.ProjectType, "", new { @class = "text-danger" })
-                        @Html.DescriptionFor(m => m.ProjectType)
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="col-md-offset-2 col-md-10">
-                        <input type="submit" value="Создать базу заявок" class="btn btn-default"/>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 }

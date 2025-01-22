@@ -15,6 +15,9 @@ namespace JoinRpg.WebPortal.Models.Test;
 public class EnumTests
 {
     [Fact]
+    public void ProjectCreateType() => EnumerationTestComparer.EnsureSame<ProjectTypeViewModel, ProjectTypeDto>();
+
+    [Fact]
     public void AccessReason() => EnumerationTestComparer.EnsureSame<UserExtensions.AccessReason, AccessReason>();
 
     [Fact]

@@ -156,7 +156,7 @@ public class Startup
               options.DefaultRequestCulture = new RequestCulture("ru-RU");
 
               //TODO before adding other cultures, ensure that datetime fields send correct format
-              options.SupportedCultures = new CultureInfo[] { new CultureInfo("ru-RU") };
+              options.SupportedCultures = [new CultureInfo("ru-RU")];
           });
 
         if (env.IsDevelopment())

@@ -1,7 +1,11 @@
-﻿<input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
+﻿@using System.Linq.Expressions
+<input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
 <input type="checkbox" name="@Name" @onchange="UpdateValue" checked="@internalValue"/>
 
 @code {
+    [CascadingParameter]
+    private EditContext? EditContext {get;set;}
+
     [Parameter]
     public bool Value { get; set; }
 
@@ -9,18 +13,27 @@
     public EventCallback<bool> ValueChanged { get; set; }
 
     [Parameter]
+    public Expression<Func<bool>> ValueExpression { get; set; } = default!;
+
+    [Parameter]
+    [Obsolete]
     public string Name { get; set; } = null!;
+
+    protected internal FieldIdentifier FieldIdentifier { get; set; }
 
     private bool internalValue;
 
     protected override void OnInitialized()
     {
         internalValue = Value;
+        FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+        Name ??= FieldIdentifier.FieldName;
     }
 
     private async Task UpdateValue(ChangeEventArgs eventArgs)
     {
         internalValue = !internalValue;
         await ValueChanged.InvokeAsync(internalValue);
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
     }
 }

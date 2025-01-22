@@ -11,6 +11,7 @@ internal static class BootstrapStyle
             null => $" {componentPrefix}-default",
             VariationStyleEnum.Warning => $" {componentPrefix}-warning",
             VariationStyleEnum.Danger => $" {componentPrefix}-danger",
+            VariationStyleEnum.Info => $" {componentPrefix}-info",
             _ => throw new ArgumentException("Incorrect variation", nameof(variationStyle)),
         };
 

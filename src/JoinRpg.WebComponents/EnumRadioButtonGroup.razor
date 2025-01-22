@@ -1,30 +1,48 @@
 ﻿@typeparam TValue where TValue:struct, Enum
+@inject ILogger<EnumRadioButtonGroup<TValue>> logger
 @foreach (var enumValue in Enum.GetValues<TValue>())
 {
-  <div>
-    <label>
-      <input type="radio" value="@enumValue" checked="@(enumValue.Equals(SelectedValue))" @onchange="UpdateSelected" name="@Name" />
-      &nbsp;@enumValue.GetDisplayName()
-    </label>
-    @if (enumValue.GetDescription() is string description)
-    {
-      <div class="help-block">@description</div>
-    }
-  </div>
+    <div>
+        <label>
+            <input type="radio" value="@enumValue" checked="@(enumValue.Equals(SelectedValue))" @onchange="UpdateSelected" name="@fieldIdentifier.FieldName" />
+            &nbsp;@enumValue.GetDisplayName()
+        </label>
+        @if (enumValue.GetDescription() is string description)
+        {
+            <div class="help-block">@description</div>
+        }
+    </div>
 }
 
 @code {
+    private FieldIdentifier fieldIdentifier = default!;
+
+    [CascadingParameter]
+    public EditContext? EditContext { get; set; } = default!;
     [Parameter]
     public TValue SelectedValue { get; set; } = default(TValue)!;
 
     [Parameter]
     public EventCallback<TValue> SelectedValueChanged { get; set; }
 
+
+    [Parameter]
+    public System.Linq.Expressions.Expression<Func<TValue>> SelectedValueExpression { get; set; } = default!;
+
     [Parameter]
     public string Name { get; set; } = null!;
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        fieldIdentifier = FieldIdentifier.Create(SelectedValueExpression);
+        logger.LogInformation("FieldName = {fieldName}", fieldIdentifier.FieldName);
+        Name ??= fieldIdentifier.FieldName;
+    }
+
     private async Task UpdateSelected(ChangeEventArgs eventArgs)
     {
-      await SelectedValueChanged.InvokeAsync(Enum.Parse<TValue>(eventArgs.Value!.ToString ()!));
+        await SelectedValueChanged.InvokeAsync(Enum.Parse<TValue>(eventArgs.Value!.ToString ()!));
+        EditContext?.NotifyFieldChanged(fieldIdentifier);
     }
 }

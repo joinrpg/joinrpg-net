@@ -16,6 +16,7 @@ public static class Registration
         yield return typeof(CheckIn.CheckInViewService);
         yield return typeof(ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService);
         yield return typeof(ProjectMasterViewService);
+        yield return typeof(ProjectListViewService);
         yield return typeof(MassMailManager);
         yield return typeof(PlotViewService);
     }

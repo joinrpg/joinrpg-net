@@ -5,4 +5,6 @@ public enum ProjectTypeDto
     Larp,
     Convention,
     ConventionProgram,
+    CopyFromAnother,
+    EmptyProject
 }

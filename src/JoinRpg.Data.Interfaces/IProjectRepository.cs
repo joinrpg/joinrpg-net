@@ -34,9 +34,14 @@ public interface IProjectRepository : IDisposable
 
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
 
+    Task<ProjectField> GetProjectField(ProjectFieldIdentification projectFieldId);
+
     Task<ProjectFieldDropdownValue> GetFieldValue(int projectId,
         int projectFieldId,
         int projectCharacterFieldDropdownValueId);
+
+    Task<ProjectFieldDropdownValue> GetFieldValue(ProjectFieldIdentification projectFieldId,
+    int projectCharacterFieldDropdownValueId);
 
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);
