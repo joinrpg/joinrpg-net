@@ -1,1 +1,6 @@
-﻿<div>Loading...</div>
+﻿<JoinAlert>@Message</JoinAlert>
+
+@code{
+    [Parameter]
+    public string Message { get; set; } = "Идет загрузка...";
+}
