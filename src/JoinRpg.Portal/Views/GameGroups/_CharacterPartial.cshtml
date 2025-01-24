@@ -45,7 +45,13 @@
     {
         if (Model.SlotLimit is not null && Model.SlotLimit > 1)
           {
+            if (Model.SlotLimit == 0)
+            {
+              <text>мест нет</text>
+            }
+            else {
                 <text>&nbsp; (@Html.DisplayCount_OfX(Model.SlotLimit.Value, "место", "места", "мест"))</text>
+            }
           }
     }
 
