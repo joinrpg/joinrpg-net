@@ -36,6 +36,7 @@
     <Body>
         <EditForm FormName="CreateProject" EditContext="@editContext" method="post" action="/game/create" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
+                <ValidationSummary />
                 <DataAnnotationsValidator />    
                 <FormRowFor For="@(() => Model.ProjectName)">
                     <InputText @bind-Value="Model.ProjectName" class="form-control" />

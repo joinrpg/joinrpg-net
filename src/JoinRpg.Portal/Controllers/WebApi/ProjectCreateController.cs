@@ -31,7 +31,7 @@ public class ProjectCreateController(ILogger<ProjectCreateController> logger) : 
         catch (Exception exception)
         {
             logger.LogError(exception, "Error creating project");
-            return StatusCode(500);
+            return Problem(title: "Произошла ошибка при обработке запроса", detail: exception.Message, statusCode: 500);
         }
     }
 }
