@@ -4,7 +4,7 @@
 {
     <div>
         <label>
-            <input type="radio" value="@enumValue" checked="@(enumValue.Equals(SelectedValue))" @onchange="UpdateSelected" name="@fieldIdentifier.FieldName" />
+            <input type="radio" value="@enumValue" checked="@(enumValue.Equals(SelectedValue))" @onchange="UpdateSelected" name="@name" />
             &nbsp;@enumValue.GetDisplayName()
         </label>
         @if (enumValue.GetDescription() is string description)
@@ -16,6 +16,7 @@
 
 @code {
     private FieldIdentifier fieldIdentifier = default!;
+    private string name = default!;
 
     [CascadingParameter]
     public EditContext? EditContext { get; set; } = default!;
@@ -37,7 +38,13 @@
         base.OnInitialized();
         fieldIdentifier = FieldIdentifier.Create(SelectedValueExpression);
         logger.LogInformation("FieldName = {fieldName}", fieldIdentifier.FieldName);
-        Name ??= fieldIdentifier.FieldName;
+        name ??= fieldIdentifier.FieldName;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        name = Name ?? fieldIdentifier.FieldName;
     }
 
     private async Task UpdateSelected(ChangeEventArgs eventArgs)
