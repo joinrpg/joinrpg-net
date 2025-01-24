@@ -143,7 +143,7 @@ internal partial class CreateProjectService
                             field.IsPublic,
                             field.BoundTo,
                             field.MandatoryStatus,
-                            field.GroupsAvailableForIds,
+                            [], //field.GroupsAvailableForIds, TODO научиться копировать группы
                             field.ValidForNpc,
                             field.IncludeInPrint,
                             field.ShowOnUnApprovedClaims,
