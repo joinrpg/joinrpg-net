@@ -153,7 +153,7 @@ internal partial class CreateProjectService
                         );
             if (field.HasValueList)
             {
-                foreach (var variant in field.Variants)
+                foreach (var variant in field.Variants.Where(v => v.IsActive))
                 {
                     await fieldSetupService.CreateFieldValueVariant(new CreateFieldValueVariantRequest(newId, variant.Label, variant.Description?.Contents, variant.MasterDescription?.Contents, variant.ProgrammaticValue, variant.Price, variant.IsPlayerSelectable, (variant as TimeSlotFieldVariant)?.TimeSlotOptions));
                 }
