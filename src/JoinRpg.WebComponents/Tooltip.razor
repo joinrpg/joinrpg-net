@@ -1,0 +1,17 @@
+<div class="join-tooltip-container">
+    <div>
+        @ChildContent
+    </div>
+    <div class="join-tooltip">
+        @Title
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = null!;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; } = null!;
+}
+

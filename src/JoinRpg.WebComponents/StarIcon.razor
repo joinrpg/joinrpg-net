@@ -1,5 +1,6 @@
-<span class="@BootstrapStyle.Build("text", Variation, size: null)" title="@Title" data-toggle="tooltip">*</span>
-@* data-toggle=tooltip активируется в JoinRpg.Portal/edit-func.js*@
+<Tooltip Title="@Title">
+  <span class="@BootstrapStyle.Build("text", Variation, size: null)">*</span>
+</Tooltip>
 
 @code {
     [Parameter] public VariationStyleEnum? Variation { get; set; } = null;

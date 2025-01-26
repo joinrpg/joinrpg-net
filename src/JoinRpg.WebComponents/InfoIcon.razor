@@ -1,5 +1,7 @@
-﻿<span class="glyphicon glyphicon-info-sign" title="@Title" data-toggle="tooltip">&nbsp;</span>
-@* data-toggle=tooltip активируется в JoinRpg.Portal/edit-func.js*@
+﻿<Tooltip Title="@Title">
+    <span class="glyphicon glyphicon-info-sign">&nbsp;</span>
+</Tooltip>
+
 @code {
     [Parameter]
     public string Title { get; set; } = null!;
