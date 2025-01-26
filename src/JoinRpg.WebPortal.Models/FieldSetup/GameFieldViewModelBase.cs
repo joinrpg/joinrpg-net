@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Web.ProjectCommon.Fields;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 

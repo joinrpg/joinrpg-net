@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.ProjectCommon.Fields;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 
@@ -38,8 +39,8 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
     {
         CanPlayerView = field.CanPlayerView;
         CanPlayerEdit = field.CanPlayerEdit;
-        DescriptionEditable = field.Description.Contents;
-        MasterDescriptionEditable = field.MasterDescription.Contents;
+        DescriptionEditable = field.Description?.Contents ?? "";
+        MasterDescriptionEditable = field.MasterDescription?.Contents ?? "";
         DescriptionDisplay = field.Description.ToHtmlString();
         MasterDescriptionDisplay = field.MasterDescription.ToHtmlString();
         ProjectFieldId = field.ProjectFieldId;
@@ -56,7 +57,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         ValidForNpc = field.ValidForNpc;
         ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
         Price = field.Price;
-        ProgrammaticValue = field.ProgrammaticValue;
+        ProgrammaticValue = field.ProgrammaticValue ?? "";
 
         FillNotEditable(field, currentUserId);
     }

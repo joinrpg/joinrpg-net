@@ -7,6 +7,7 @@ using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.ProjectCommon.Fields;
 
 namespace JoinRpg.Web.Models;
 
