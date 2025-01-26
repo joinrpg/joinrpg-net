@@ -1,6 +1,7 @@
 ﻿@using System.ComponentModel
 
 @using JoinRpg.Web.Models
+@using MandatoryStatusViewType = JoinRpg.Web.ProjectCommon.Fields.MandatoryStatusViewType
 @model FieldValueViewModel
 
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
@@ -8,7 +9,7 @@
 @if (Model.FieldViewType == ProjectFieldViewType.Header)
 {
     <h4 class="@hideClassName">@Model.FieldName</h4>
-    
+
     if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
     {
         <div class="help-block @hideClassName">
@@ -26,49 +27,41 @@
 }
 
 <div class="form-group @hideClassName">
-  <label class="control-label col-md-2">
-    @if (Model.IsDeleted)
-    {
-      <del>@Model.FieldName</del>
-    }
-    else
-    {
-      @Model.FieldName
-    }
-
-    @Html.DisplayFor(model => model.MandatoryStatus)
-    @if (Model.HasMasterAccess)
-    {
-      foreach (var label in Model.Labels)
-      {
-        switch (label)
+    <label class="control-label col-md-2">
+        @if (Model.IsDeleted)
         {
-          case FieldSpecialLabelView.ForClaim:
-            <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
-            break;
-          case FieldSpecialLabelView.Name:
-
-            <span class="glyphicon glyphicon-info-sign"
-                  title="Это поле считается именем персонажа и показывается в сетке ролей. Это можно изменить в настройках"></span>
-            break;
-          case FieldSpecialLabelView.Description:
-
-            <span class="glyphicon glyphicon-info-sign"
-                  title="Это поле считается описанием персонажа и показывается в сетке ролей. Это можно изменить в настройках"></span>
-            break;
-          case FieldSpecialLabelView.SchedulePlace:
-
-            <span class="glyphicon glyphicon-info-sign"
-                  title="Это поле считается местом проведения мероприятия. Это можно изменить в настройках"></span>
-            break;
-          case FieldSpecialLabelView.ScheduleTime:
-
-            <span class="glyphicon glyphicon-info-sign"
-                  title="Это поле считается временем проведения мероприятия. Это можно изменить в настройках"></span>
-            break;
+            <del>@Model.FieldName</del>
         }
-      }
-    }
+        else
+        {
+            @Model.FieldName
+        }<span style="white-space:nowrap">
+        @Html.DisplayFor(model => model.MandatoryStatus)
+        @if (Model.HasMasterAccess)
+        {
+            foreach (var label in Model.Labels)
+            {
+                switch (label)
+                {
+                    case FieldSpecialLabelView.ForClaim:
+                      <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
+                      break;
+                    case FieldSpecialLabelView.Name:
+                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается именем персонажа и показывается в сетке ролей. Это можно изменить в настройках.")" />
+                      break;
+                    case FieldSpecialLabelView.Description:
+                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается описанием персонажа и показывается в сетке ролей. Это можно изменить в настройках.")"   />
+                      break;
+                    case FieldSpecialLabelView.SchedulePlace:
+                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается местом проведения мероприятия. Это можно изменить в настройках.")" />
+                      break;
+                    case FieldSpecialLabelView.ScheduleTime:
+                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается временем проведения мероприятия. Это можно изменить в настройках")" />
+                    break;
+                }
+          }
+        }
+        </span>
   </label>
     <div class="col-md-8">
       @{
@@ -197,7 +190,7 @@
         @{
             var tryGetModelStateResult = ViewData.ModelState.TryGetValue(Model.FieldClientId, out var entry);
             var modelErrors = tryGetModelStateResult ? entry?.Errors : null;
-            Microsoft.AspNetCore.Mvc.ModelBinding.ModelError modelError = null;
+            Microsoft.AspNetCore.Mvc.ModelBinding.ModelError? modelError = null;
             if (modelErrors != null && modelErrors.Count != 0)
             {
                 modelError = modelErrors.FirstOrDefault(m => !string.IsNullOrEmpty(m.ErrorMessage)) ?? modelErrors[0];

@@ -7,6 +7,7 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Claims.Finance;
+using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.Projects;
 using MoreLinq;
 
@@ -47,6 +48,9 @@ public class EnumTests
     [Fact]
     public void ContactsAccessType()
         => EnumerationTestComparer.EnsureSame<ContactsAccessType, ContactsAccessTypeView>();
+
+    [Fact]
+    public void MandatoryStatus() => EnumerationTestComparer.EnsureSame<MandatoryStatus, MandatoryStatusViewType>();
 
     [Theory]
     [ClassData(typeof(EnumTheoryDataGenerator<ProjectFieldViewType>))]

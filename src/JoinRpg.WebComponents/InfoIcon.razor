@@ -1,5 +1,9 @@
-﻿<span class="glyphicon glyphicon-info-sign" title="@Title">&nbsp;</span>
+﻿<Tooltip Title="@Title">
+    <span class="glyphicon glyphicon-info-sign">&nbsp;</span>
+</Tooltip>
+
 @code {
     [Parameter]
     public string Title { get; set; } = null!;
 }
+

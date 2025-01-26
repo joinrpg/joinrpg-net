@@ -1,0 +1,21 @@
+﻿@switch (Status)
+{
+    case MandatoryStatusViewType.Optional:
+        break;
+    case MandatoryStatusViewType.Recommended:
+        <StarIcon Variation="VariationStyleEnum.Info" Title="Рекомендуется заполнить это поле" />
+        break;
+    case MandatoryStatusViewType.Required:
+        <StarIcon Variation="VariationStyleEnum.Danger" Title="Поле обязательно к заполнению" />
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public MandatoryStatusViewType Status { get; set; }
+
+}

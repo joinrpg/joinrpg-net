@@ -1,0 +1,9 @@
+<Tooltip Title="@Title">
+  <span class="@BootstrapStyle.Build("text", Variation, size: null)">*</span>
+</Tooltip>
+
+@code {
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
+    [Parameter]
+    public string Title { get; set; } = null!;
+}
