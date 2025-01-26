@@ -198,8 +198,8 @@ public class Startup
             _ = app.UseHttpsRedirection();
         }
 
-        _ = app.UseStaticFiles()
-               .UseBlazorFrameworkFiles();
+        //_ = app.UseStaticFiles()
+        //       .UseBlazorFrameworkFiles();
 
         _ = app.UseRouting();
 
@@ -211,6 +211,7 @@ public class Startup
 
         _ = app.UseEndpoints(endpoints =>
           {
+              _ = endpoints.MapStaticAssets();
               endpoints.MapJoinHealthChecks();
 
               _ = endpoints.MapControllers();
