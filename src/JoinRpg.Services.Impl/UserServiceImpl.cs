@@ -229,11 +229,6 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
     {
         logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
 
-        if (CurrentUserId != userId)
-        {
-            throw new JoinRpgInvalidUserException();
-        }
-
         var user = await UserRepository.WithProfile(userId);
 
         if (
