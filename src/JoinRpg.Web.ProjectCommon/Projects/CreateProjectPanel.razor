@@ -34,12 +34,12 @@
 <JoinPanel>
     <Header>Создание новой базы заявок</Header>
     <Body>
-        <EditForm FormName="CreateProject" EditContext="@editContext" method="post" action="/game/create" OnValidSubmit="HandleValidSubmit">
+        <EditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
                 <ValidationSummary />
                 <DataAnnotationsValidator />    
                 <FormRowFor For="@(() => Model.ProjectName)">
-                    <InputText @bind-Value="Model.ProjectName" class="form-control" />
+                    <JoinTextInput @bind-Value="Model.ProjectName" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.RulesApproved)">
                     <CheckboxInput @bind-Value="Model.RulesApproved" />
@@ -49,7 +49,7 @@
                     <JoinAlert Variation="VariationStyleEnum.Info">Все настройки можно будет изменить после создания проекта.</JoinAlert>
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
-                    <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" Name="CopyFromProjectId" />
+                    <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" />
                 </FormRowFor>
                 <FormRow>
                     <JoinCreateButton Submit="true" Disabled="@formInvalid" />

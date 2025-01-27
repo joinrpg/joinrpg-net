@@ -26,9 +26,4 @@
     <None Update="libman.json" />
   </ItemGroup>
 
-  <ItemGroup>
-    <UpToDateCheckInput Remove="HelpLink.razor" />
-    <_ContentIncludedByDefault Remove="HelpLink.razor" />
-  </ItemGroup>
-
 </Project>
