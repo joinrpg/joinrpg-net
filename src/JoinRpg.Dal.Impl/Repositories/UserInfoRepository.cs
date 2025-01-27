@@ -10,7 +10,7 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubscribeRepository
 {
-    public Task<User> GetById(int id) => ctx.UserSet.FindAsync(id);
+    public Task<User> GetById(int id) => ctx.UserSet.FindAsync(id) ?? throw new JoinRpgEntityNotFoundException(id, nameof(User));
     public Task<User> WithProfile(int userId)
     {
         return ctx.Set<User>()
