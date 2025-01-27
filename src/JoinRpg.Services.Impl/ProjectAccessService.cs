@@ -28,6 +28,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
             {
                 ProjectId = project.ProjectId,
                 UserId = grantAccessRequest.UserId,
+                Project = project,
             };
             project.ProjectAcls.Add(acl);
         }
