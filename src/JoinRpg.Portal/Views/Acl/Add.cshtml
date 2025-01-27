@@ -16,6 +16,8 @@
 @using (Html.BeginForm(FormMethod.Post))
 {
   <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
     @foreach (var badge in Model.Badges)
     {
         <partial name="_PermissionBadgeCheckbox" model="@badge" />
