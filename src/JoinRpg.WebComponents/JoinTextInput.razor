@@ -1,0 +1,33 @@
+@using System.Linq.Expressions
+<input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" />
+
+@code {
+    [CascadingParameter]
+    private EditContext? EditContext {get;set;}
+
+    [Parameter]
+    public string Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string>> ValueExpression { get; set; } = default!;
+
+    private FieldIdentifier FieldIdentifier { get; set; }
+
+    private string internalValue = "";
+
+    protected override void OnInitialized()
+    {
+        internalValue = Value;
+        FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+    }
+
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
+    {
+        internalValue = (string?) eventArgs.Value ?? "";
+        await ValueChanged.InvokeAsync(internalValue);
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
+    }
+}
