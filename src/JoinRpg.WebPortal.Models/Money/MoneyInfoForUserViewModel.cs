@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models.Money;
 using MoreLinq;
 
 namespace JoinRpg.Web.Models;
