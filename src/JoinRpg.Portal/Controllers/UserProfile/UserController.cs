@@ -27,13 +27,12 @@ public class UserController : Common.ControllerBase
 
         var currentUser = User.Identity?.IsAuthenticated == true ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
 
-        var accessReason = (AccessReason)user.GetProfileAccess(currentUser);
         var userProfileViewModel = new UserProfileViewModel()
         {
             DisplayName = user.GetDisplayName(),
             ThisUserProjects = user.ProjectAcls.Select(p => p.Project).ToLinkViewModels().ToList(),
             UserId = user.UserId,
-            Details = new UserProfileDetailsViewModel(user, accessReason),
+            Details = new UserProfileDetailsViewModel(user, currentUser),
             HasAdminAccess = CurrentUserAccessor.IsAdmin,
             IsAdmin = user.Auth.IsAdmin,
         };

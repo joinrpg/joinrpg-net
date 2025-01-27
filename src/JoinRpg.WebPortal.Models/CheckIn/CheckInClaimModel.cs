@@ -31,7 +31,7 @@ public class CheckInClaimModel : IProjectIdAware
         Validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
-        PlayerDetails = new UserProfileDetailsViewModel(claim.Player, (AccessReason)claim.Player.GetProfileAccess(currentUser));
+        PlayerDetails = new UserProfileDetailsViewModel(claim.Player, currentUser);
         Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None);
 
         CanAcceptFee = claim.Project.CanAcceptCash(currentUser);

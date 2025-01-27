@@ -67,7 +67,7 @@ public class UserProfileDetailsViewModel
 
     public ContactsAccessTypeView SocialNetworkAccess { get; }
 
-    public UserProfileDetailsViewModel(User user, User currentUser)
+    public UserProfileDetailsViewModel(User user, User? currentUser)
         : this(user, (AccessReason)user.GetProfileAccess(currentUser))
     {
 
