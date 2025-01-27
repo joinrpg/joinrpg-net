@@ -8,9 +8,8 @@
 
 <h2>@ViewBag.Title</h2>
 
-<div>
-    @Html.DisplayFor(model => model.UserDetails)
-</div>
+<partial name="_UserDetailsPanel" model="@Model.UserDetails" />
+<hr class="col-md-12" />
 
 
 @using (Html.BeginForm(FormMethod.Post))

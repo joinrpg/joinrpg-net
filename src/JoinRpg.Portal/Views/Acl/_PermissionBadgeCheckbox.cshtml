@@ -4,9 +4,7 @@
     <div class="form-group">
         @Html.Label("", Model.DisplayName, htmlAttributes: new { @class = "control-label col-md-3", @for = Model.Permission.ToString() })
         <div class="col-md-8">
-            <div class="checkbox">
-                @Html.CheckBox(Model.Permission.ToString(), Model.Value)
-                <div class="help-block">@Model.Description</div>
-            </div>
+            @Html.CheckBox(Model.Permission.ToString(), Model.Value)
+          <div class="help-block">@Model.Description</div>
         </div>
     </div>
