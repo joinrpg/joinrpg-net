@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
@@ -228,11 +229,6 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
     async Task IAvatarService.AddGrAvatarIfRequired(int userId)
     {
         logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
-
-        if (CurrentUserId != userId)
-        {
-            throw new JoinRpgInvalidUserException();
-        }
 
         var user = await UserRepository.WithProfile(userId);
 

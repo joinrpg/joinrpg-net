@@ -73,11 +73,11 @@
       return;
     }
 
-    @if (Model.WarnForAnotherClaim)
+    @if (Model.WarnForAnotherClaim && Model.CanSendClaim())
     {
       if (Model.ProjectAllowsMultipleCharacters)
       {
-        <div class="alert alert-warning">
+        <div class="alert alert-info">
           У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
         </div>
       }

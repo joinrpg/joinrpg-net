@@ -8,14 +8,15 @@
 
 <h2>@ViewBag.Title</h2>
 
-<div>
-    @Html.DisplayFor(model => model.UserDetails)
-</div>
+<partial name="_UserDetailsPanel" model="@Model.UserDetails" />
+<hr class="col-md-12" />
 
 
 @using (Html.BeginForm(FormMethod.Post))
 {
   <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
     @foreach (var badge in Model.Badges)
     {
         <partial name="_PermissionBadgeCheckbox" model="@badge" />

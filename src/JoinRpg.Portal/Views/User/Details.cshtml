@@ -10,27 +10,7 @@
 
 <div class="container">
     
-  <div class="col-md-5">
-    <div class="panel panel-default">
-      <div class="panel-body">
-        @Html.DisplayFor(model => model.Details)
-
-      </div>
-      @if (Model.Details.HasAccess)
-      {
-        <div class="panel-footer" title="Почему я вижу этот профиль?">
-
-          @Html.DisplayFor(model => model.Details.Reason)
-          @if (Model.Details.Reason == AccessReason.ItsMe)
-          {
-            <text>[ @Html.ActionLink("Настроить", "SetupProfile", "Manage") ]</text>
-          }
-        </div>
-      }
-    </div>
-  </div>
-    
-    
+  <partial  name="_UserDetailsPanel" model="@Model.Details"/>
 
     @if (Model.ThisUserProjects.Any())
     {

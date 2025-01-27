@@ -12,10 +12,11 @@
 }
 
 <h3>@header</h3>
+
+<partial name="_UserDetailsPanel" model="@Model.InnerModel.UserDetails" />
+<hr class="col-md-12" />
+
 <div class="form-horizontal">
-    <div>
-        @Html.DisplayFor(model => model.InnerModel.UserDetails)
-    </div>
 
     @using (Html.BeginForm())
     {

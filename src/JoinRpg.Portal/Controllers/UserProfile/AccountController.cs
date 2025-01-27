@@ -3,6 +3,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -120,7 +121,7 @@ public class AccountController(
     // POST: /Account/Register
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken)
+    public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken, [FromServices] IAvatarService avatarService)
     {
         var isRecaptchaConfigured = recaptchaVerificator.IsRecaptchaConfigured();
 
@@ -170,6 +171,8 @@ public class AccountController(
             model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
             return View(model);
         }
+
+        await avatarService.AddGrAvatarIfRequired(user.Id);
 
         //We don't want to sign in user until he has email confirmed 
         //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
@@ -401,8 +404,7 @@ public class AccountController(
     [HttpPost]
     [AllowAnonymous]
 
-    public async Task<ActionResult> ExternalLoginConfirmation(
-        ExternalLoginConfirmationViewModel model)
+    public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, [FromServices] IAvatarService avatarService)
     {
         if (User.Identity?.IsAuthenticated == true)
         {
@@ -439,6 +441,7 @@ public class AccountController(
                     await signInManager.SignInAsync(user, isPersistent: true);
 
                     await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                    await avatarService.AddGrAvatarIfRequired(user.Id);
                     return RedirectToLocal(model.ReturnUrl);
                 }
             }

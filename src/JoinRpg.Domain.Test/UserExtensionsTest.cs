@@ -1,6 +1,4 @@
 using JoinRpg.DataModel;
-using Shouldly;
-using Xunit;
 
 namespace JoinRpg.Domain.Test;
 

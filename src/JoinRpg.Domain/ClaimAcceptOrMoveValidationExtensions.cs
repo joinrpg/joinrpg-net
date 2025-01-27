@@ -73,11 +73,13 @@ public static class ClaimAcceptOrMoveValidationExtensions
         if (!project.Active)
         {
             yield return AddClaimForbideReason.ProjectNotActive;
+            yield break;
         }
 
         if (!project.IsAcceptingClaims)
         {
             yield return AddClaimForbideReason.ProjectClaimsClosed;
+            yield break;
         }
 
 
