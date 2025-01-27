@@ -42,9 +42,8 @@ public class ClaimListController(
         if (exportType == null)
         {
             ViewBag.MasterAccessColumn = true;
-            ViewBag.Title = title;
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(CurrentUserId, claims, projectId, unreadComments, claimValidator, projectInfo);
+            var view = new RegularClaimListViewModel(CurrentUserId, claims, projectId, unreadComments, claimValidator, projectInfo, title);
             return View("Index", view);
         }
         else
@@ -106,9 +105,8 @@ public class ClaimListController(
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page, unreadComments, claimValidator, projectInfo);
+            var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
             ViewBag.MasterAccessColumn = true;
-            ViewBag.Title = title + " " + characterGroup.CharacterGroupName;
             return View("ByGroup", view);
         }
         else
@@ -145,11 +143,11 @@ public class ClaimListController(
         string title;
         if (roomTypeId == null)
         {
-            title = "Активные заявки без поселения";
+            title = "Заявки без поселения";
         }
         else
         {
-            title = "Активные заявки по типу поселения: " +
+            title = "Заявки с поселением:" +
                     (await accommodationRepository.GetRoomTypeById(roomTypeId.Value)).Name;
         }
 
@@ -264,8 +262,6 @@ public class ClaimListController(
         var user = await GetCurrentUserAsync();
         var title = "Мои заявки";
 
-        ViewBag.Title = title;
-
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
         var claims = user.Claims.ToList();
@@ -277,14 +273,10 @@ public class ClaimListController(
 
         if (exportType == null)
         {
-            var viewModel = new ClaimListViewModel(
+            var viewModel = new MyClaimListViewModel(
                 CurrentUserId,
                 claims,
-                projectId: null,
-                showCount: false,
-                claimValidator: claimValidator,
-                projectInfos: projectInfos,
-                showUserColumn: false,
+                title: "Мои заявки",
                 unreadComments: new Dictionary<int, int>()); ; //TODO Pass unread info here
             return base.View("Index", viewModel);
         }

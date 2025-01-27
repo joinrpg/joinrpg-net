@@ -1,7 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Web.Models;
+namespace JoinRpg.Web.Models.Money;
 
 public class FinOperationListViewModel : IOperationsAwareView
 {
@@ -11,9 +11,11 @@ public class FinOperationListViewModel : IOperationsAwareView
 
     public IReadOnlyCollection<int> ClaimIds { get; }
 
-    IReadOnlyCollection<int> IOperationsAwareView.CharacterIds => Array.Empty<int>();
+    IReadOnlyCollection<int> IOperationsAwareView.CharacterIds => [];
     int? IOperationsAwareView.ProjectId => ProjectId;
     bool IOperationsAwareView.ShowCharacterCreateButton => false;
+
+    string? IOperationsAwareView.InlineTitle => null;
 
     public FinOperationListViewModel(Project project, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations)
     {

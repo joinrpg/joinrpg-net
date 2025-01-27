@@ -14,7 +14,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
-using JoinRpg.Web.Models.Masters;
+using JoinRpg.Web.Models.Money;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

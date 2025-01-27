@@ -4,8 +4,13 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
-public class ClaimListViewModel : IOperationsAwareView
+public abstract class ClaimListViewModel : IOperationsAwareView
 {
+    string? IOperationsAwareView.InlineTitle => Title;
+    bool IOperationsAwareView.ShowCharacterCreateButton => false;
+
+    public string? Title { get; set; }
+
     public IEnumerable<ClaimListItemViewModel> Items { get; }
 
     public int? ProjectId { get; }
@@ -13,32 +18,15 @@ public class ClaimListViewModel : IOperationsAwareView
     public IReadOnlyCollection<int> CharacterIds { get; }
 
     public bool ShowCount { get; }
-    public bool ShowUserColumn { get; }
-
-    public ClaimListViewModel(
-        int currentUserId,
-        IReadOnlyCollection<Claim> claims,
-        int? projectId,
-        Dictionary<int, int> unreadComments,
-        IProblemValidator<Claim> claimValidator,
-        ProjectInfo projectInfo,
-        bool showCount = true,
-        bool showUserColumn = true
-        )
-        : this(currentUserId, claims, projectId, unreadComments, claimValidator, new[] { projectInfo }, showCount, showUserColumn)
-    {
-    }
+    public abstract bool ShowUserColumn { get; }
 
     public ClaimListViewModel(
        int currentUserId,
        IReadOnlyCollection<Claim> claims,
        int? projectId,
        Dictionary<int, int> unreadComments,
-       IProblemValidator<Claim> claimValidator,
-       IReadOnlyCollection<ProjectInfo> projectInfos,
-       bool showCount = true,
-       bool showUserColumn = true
-       )
+       string? title,
+       bool showCount = true)
     {
         Items = claims
           .Select(c =>
@@ -46,13 +34,44 @@ public class ClaimListViewModel : IOperationsAwareView
                 c,
                 currentUserId,
                 unreadComments.GetValueOrDefault(c.CommentDiscussionId),
-                claimValidator.Validate(c, projectInfos.Single(pi => pi.ProjectId.Value == c.ProjectId)))
+                ValidateClaim(c))
             )
           .ToList();
         ClaimIds = claims.Select(c => c.ClaimId).ToArray();
         CharacterIds = claims.Select(c => c.CharacterId).ToArray();
         ProjectId = projectId;
         ShowCount = showCount;
-        ShowUserColumn = showUserColumn;
+        Title = title;
     }
+
+    protected abstract IEnumerable<ClaimProblem> ValidateClaim(Claim c);
+}
+
+public class RegularClaimListViewModel(
+   int currentUserId,
+   IReadOnlyCollection<Claim> claims,
+   int? projectId,
+   Dictionary<int, int> unreadComments,
+   IProblemValidator<Claim> claimValidator,
+   ProjectInfo projectInfo,
+   string title
+       ) : ClaimListViewModel(currentUserId, claims, projectId, unreadComments, title, showCount: true)
+{
+    protected override IEnumerable<ClaimProblem> ValidateClaim(Claim c) => claimValidator.Validate(c, projectInfo);
+
+    public override bool ShowUserColumn => true;
+}
+
+public class MyClaimListViewModel : ClaimListViewModel
+{
+    public MyClaimListViewModel(
+      int currentUserId,
+      IReadOnlyCollection<Claim> claims,
+      Dictionary<int, int> unreadComments,
+      string? title)
+     : base(currentUserId, claims, projectId: null, unreadComments: unreadComments, title: title) { }
+
+    public override bool ShowUserColumn => false;
+
+    protected override IEnumerable<ClaimProblem> ValidateClaim(Claim c) => [];
 }

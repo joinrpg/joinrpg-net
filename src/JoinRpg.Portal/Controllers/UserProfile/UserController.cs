@@ -1,9 +1,6 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;
@@ -11,13 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-public class UserController : Common.ControllerBase
+public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor) : Common.ControllerBase()
 {
-    private readonly IProblemValidator<Claim> claimValidator;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    public IUserRepository UserRepository { get; }
-    public ICurrentUserAccessor CurrentUserAccessor { get; }
+    public IUserRepository UserRepository { get; } = userRepository;
+    public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
 
     [HttpGet("user/{userId}")]
     [AllowAnonymous]
@@ -45,30 +39,13 @@ public class UserController : Common.ControllerBase
                 ? user.Claims.ToArray()
                 : user.Claims.Where(claim => claim.HasAccess(CurrentUserAccessor.UserId, ExtraAccessReason.Player)).ToArray();
 
-            var projectInfos = new List<ProjectInfo>();
-            foreach (var projectId in claims.Select(c => c.ProjectId).Distinct())
-            {
-                projectInfos.Add(await projectMetadataRepository.GetProjectMetadata(new(projectId)));
-            }
-            userProfileViewModel.Claims = new ClaimListViewModel(CurrentUserAccessor.UserId,
+            userProfileViewModel.Claims = new MyClaimListViewModel(CurrentUserAccessor.UserId,
                 claims,
-                null,
                 new Dictionary<int, int>(), //TODO pass unread data here
-                claimValidator,
-                projectInfos, showCount: false,
-                showUserColumn: false);
+                title: null);
         }
 
         return View(userProfileViewModel);
-    }
-
-    public UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, IProblemValidator<Claim> claimValidator, IProjectMetadataRepository projectMetadataRepository)
-        : base()
-    {
-        UserRepository = userRepository;
-        CurrentUserAccessor = currentUserAccessor;
-        this.claimValidator = claimValidator;
-        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     [Authorize]
