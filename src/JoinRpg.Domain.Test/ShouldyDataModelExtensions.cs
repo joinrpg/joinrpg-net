@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using Shouldly;
 
 internal static class ShouldyDataModelExtensions
 {

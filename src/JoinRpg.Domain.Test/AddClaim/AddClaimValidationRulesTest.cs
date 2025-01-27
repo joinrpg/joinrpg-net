@@ -1,7 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using Shouldly;
-using Xunit;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
