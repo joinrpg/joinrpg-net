@@ -202,3 +202,4 @@ appsettings.Development.json
 
 #generated kubeconfig
 /scripts/github-actions-*
+/scripts/*.yaml
