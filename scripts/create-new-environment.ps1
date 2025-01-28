@@ -6,16 +6,29 @@ Creates new environment in cluster and produces kubeconfig with permissions to i
 [CmdletBinding()]
 param(
     [Parameter(Position = 0, Mandatory = $true)]
-    [String]$namespace
+    [String]$namespace,
+    [Parameter(Mandatory = $false)]
+    [String]$ServiceAccountName
 )
 
 
 
 $CONTEXT=kubectl config current-context
-$SERVICE_ACCOUNT_NAME = "github-actions-$NAMESPACE"
 
-$NEW_CONTEXT="github-actions-$NAMESPACE"
-$KUBECONFIG_FILE="github-actions-$NAMESPACE"
+$SERVICE_ACCOUNT_NAME = ""
+
+if ($ServiceAccountName.Length -eq 0)
+{
+  $SERVICE_ACCOUNT_NAME = "github-actions-$NAMESPACE"
+}
+else 
+{
+  $SERVICE_ACCOUNT_NAME = $ServiceAccountName
+  
+}
+
+$NEW_CONTEXT=$SERVICE_ACCOUNT_NAME
+$KUBECONFIG_FILE= "$SERVICE_ACCOUNT_NAME.yaml"
 
 kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 
@@ -23,14 +36,14 @@ kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f 
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: github-actions-$namespace
+  name: $SERVICE_ACCOUNT_NAME
   namespace: ${NAMESPACE}
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: github-actions-${NAMESPACE}
+  name: $SERVICE_ACCOUNT_NAME
   namespace: ${NAMESPACE}
 rules:
 - apiGroups: ["*"]
@@ -38,31 +51,35 @@ rules:
   verbs: ["*"]
 
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: ${NAMESPACE}
+  name: $SERVICE_ACCOUNT_NAME-secret
+  annotations:
+    kubernetes.io/service-account.name: $SERVICE_ACCOUNT_NAME
+type: kubernetes.io/service-account-token
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: github-actions-${NAMESPACE}
+  name: $SERVICE_ACCOUNT_NAME
   namespace: ${NAMESPACE}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: github-actions-${NAMESPACE}
+  name: $SERVICE_ACCOUNT_NAME
 subjects:
 - namespace: ${NAMESPACE}
   kind: ServiceAccount
-  name: github-actions-${NAMESPACE}
+  name: $SERVICE_ACCOUNT_NAME
 "@ >create-namespace.tmp.yml
 
 kubectl apply -f create-namespace.tmp.yml
 
 Remove-Item create-namespace.tmp.yml
 
-#Get token of the ServiceAccount
-$SECRET_NAME=kubectl get serviceaccount ${SERVICE_ACCOUNT_NAME} --context ${CONTEXT} --namespace ${NAMESPACE} -o jsonpath='{.secrets[0].name}' | Out-String -NoNewline
-
-Write-Host "Secret name will be $SECRET_NAME"
-
-$TOKEN_DATA=kubectl get secret ${SECRET_NAME} --context ${CONTEXT} --namespace ${NAMESPACE} -o jsonpath='{.data.token}' | Out-String -NoNewline
+$TOKEN_DATA=kubectl get secret $SERVICE_ACCOUNT_NAME-secret --context ${CONTEXT} --namespace ${NAMESPACE} -o jsonpath='{.data.token}' | Out-String -NoNewline
 
 $TOKEN = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($TOKEN_DATA))
 
