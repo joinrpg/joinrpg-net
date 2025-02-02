@@ -11,5 +11,6 @@ internal class JoinMigrationsConfig : DbMigrationsConfiguration<MyDbContext>
         MigrationsAssembly = typeof(MyDbContext).Assembly;
         MigrationsNamespace = typeof(MyDbContext).Namespace + ".Migrations";
         ContextKey = "JoinRpg.Dal.Impl.Migrations.Configuration";
+        CommandTimeout = 900;  // seconds
     }
 }
