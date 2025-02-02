@@ -1,0 +1,114 @@
+<JoinPanel>
+    <Header>@projectName :: @(creating ? "Новый персонаж" : "Редактирование персонажа")</Header>
+    <Body>
+        <p>
+            <HelpLink Link="characters" Message="Справка о персонажах"/>
+        </p>
+        <EditForm FormName="EditCharacter" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                <ValidationSummary />
+                <DataAnnotationsValidator />
+
+                <FormRow Label="Видимость">
+                    <EnumRadioButtonGroup @bind-SelectedValue="@Model.CharacterVisibility" />
+                </FormRow>
+
+                <FormRow Label="Тип Персонажа">
+                    @if (!EditTypeDisabled)
+                    {
+                        <EnumRadioButtonGroup @bind-SelectedValue="@characterType" Name="@(Name + ".CharacterType")" />
+                    }
+                    else
+                    {
+                        <label>@characterType.GetDisplayName()</label>
+                        <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
+                        if (IsDefaultTemplate)
+                        {
+                            <InfoIcon Title="Нельзя изменить тип персонажа, т.к. это шаблон по умолчанию для заявок. Это можно поменять в настройках" />
+                        }
+                        else if (!CharactersHaveNameField)
+                        {
+                            <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только шаблоны персонажей (другие типы персонажей создавать нельзя)" />
+                        }
+                        else if (ActiveClaimsCount > 0)
+                        {
+                            <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
+                        }
+                    }
+                </FormRow>
+
+                @if (characterType == CharacterTypeView.Slot)
+                {
+                    <FormRow Label="Лимит персонажей для шаблона" Description="Оставьте пустым, чтобы не ограничивать число персонажей, которые могут быть созданы из этого шаблона.">
+                        <NumberInput @bind-Value="@characterSlotLimit" name="@(Name + ".SlotLimit")" Min="0" />
+                    </FormRow>
+
+                    @if (!CharactersHaveNameField)
+                    {
+                        <FormRow Label="Название шаблона персонажей">
+                            <StringInput @bind-Value="@slotName" name="@(Name + ".SlotName")" Required="true" />
+                        </FormRow>
+                    }
+                }
+
+                @if (!HasApprovedClaim && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
+                {
+                    <FormRow Label="Горячая роль" Description="Горячая роль специальным образом выделяется в ролевке">
+                        <CheckboxInput @bind-Value="@isHot" Name="@(Name + ".IsHot")" />
+                    </FormRow>
+                }
+
+
+                <FormRow>
+                    <JoinButton Preset="ButtonPreset.Create" Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+@code {
+
+    private EditContext? editContext;
+    private bool formInvalid = true;
+    private bool creating = false;
+    private ValidationMessageStore? messageStore;
+
+
+    private string projectName = null;
+
+
+
+
+    [Parameter]
+    [EditorRequired]
+    [SupplyParameterFromForm]
+    public CharacterEdtiViewModel Model { get; set; } = null!;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            creating = true;
+            var result = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
+            if (result.Error is null && result.ProjectId is ProjectIdentification id)
+            {
+                NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+            }
+            else
+            {
+                if (result.ProjectId is not null)
+                {
+                    created = result.ProjectId;
+                }
+                messageStore?.Add(() => Model, result.Error ?? "Неизвестная серверная ошибка при создании проекта");
+                creating = false;
+            }
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при создании проекта");
+            creating = false;
+        }
+    }
+
+}
