@@ -38,7 +38,7 @@ public class CharacterListController : ControllerGameBase
     [HttpGet]
     public Task<ActionResult> Problems(int projectid, string export)
       => MasterCharacterList(projectid,
-        (character, projectInfo) => problemValidator.Validate(character, projectInfo).Any(), export,
+        (character, projectInfo) => character.IsActive && problemValidator.Validate(character, projectInfo).Any(), export,
         "Проблемные персонажи");
 
     [HttpGet]
