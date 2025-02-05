@@ -111,7 +111,7 @@ public class EditPlotElementViewModel : IProjectIdAware
 public class PlotElementListItemViewModel : IProjectIdAware
 {
 
-    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, IUriService uriService, ProjectInfo projectInfo, int? currentVersion = null)
+    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, IUriService uriService, ProjectInfo projectInfo, int? currentVersion = null, bool printMode = false)
     {
         CurrentVersion = currentVersion ?? e.LastVersion().Version;
 
@@ -146,6 +146,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotFolderMasterTitle = e.PlotFolder.MasterTitle;
 
         PublishedVersion = e.Published;
+        PrintMode = printMode;
     }
 
     [ReadOnly(true)]
@@ -188,6 +189,8 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
     public int? PublishedVersion { get; }
     public string PlotFolderMasterTitle { get; }
+
+    public bool PrintMode { get; }
 
     public bool ThisPublished => CurrentVersion == PublishedVersion;
 }

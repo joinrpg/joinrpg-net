@@ -5,6 +5,17 @@
 {
     return;
 }
+
+@if (Model.PrintMode)
+{
+    @Model.Content
+    @if (string.IsNullOrWhiteSpace(Model.Content.ToHtmlString()))
+    {
+        <i>Вводная пуста</i>
+    }
+
+    return;
+}
 <div class="panel panel-default">
     <div class="panel-heading">
 
@@ -91,6 +102,18 @@
                         @Html.DisplayFor(model => model.PrevModifiedDateTime)
                     </a>
                 }
+                <a
+                  asp-action="ShowElementVersion"
+                  asp-controller="Plot"
+                  asp-route-ProjectId="@Model.ProjectId"
+                  asp-route-PlotFolderId="@Model.PlotFolderId"
+                  asp-route-PlotElementId="@Model.PlotElementId"
+                  asp-route-Version="@Model.CurrentVersion"
+                  asp-route-PrintMode="true"
+                  class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-print"></span>
+                    Печать
+                </a>
                 if (Model.NextModifiedDateTime == null)
                 {
                     <a class="btn btn-default btn-sm"

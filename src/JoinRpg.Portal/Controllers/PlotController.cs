@@ -353,7 +353,7 @@ public class PlotController(
     }
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version)
+    public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version, bool printMode)
     {
         var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
@@ -363,7 +363,7 @@ public class PlotController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
-            uriService, projectInfo, version));
+            uriService, projectInfo, version, printMode));
     }
 
 }
