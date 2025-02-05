@@ -41,10 +41,10 @@ public class CharacterListViewModel(
                 new CharacterListItemViewModel(character,
                     currentUserId,
                     projectInfo, problemValidator)).ToArray();
-    public int? ProjectId { get; } = project.ProjectId;
+    public int? ProjectId { get; } = projectInfo.ProjectId.Value;
     public IReadOnlyCollection<int> ClaimIds { get; } = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
     public IReadOnlyCollection<int> CharacterIds { get; } = characters.Select(c => c.CharacterId).ToArray();
-    public string ProjectName { get; } = project.ProjectName;
+    public string ProjectName { get; } = projectInfo.ProjectName;
     public string Title { get; } = title;
 
     public bool HasEditAccess { get; } = project.HasEditRolesAccess(currentUserId);
