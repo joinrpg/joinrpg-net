@@ -441,3 +441,10 @@ hr.list-divider {
 .validation-message {
   color: #a94442;
 }
+
+@media print
+{
+    footer {
+        visibility:collapse
+    }
+}
