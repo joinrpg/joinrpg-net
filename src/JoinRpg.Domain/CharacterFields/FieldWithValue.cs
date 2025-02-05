@@ -66,7 +66,7 @@ public class FieldWithValue
 
     public IEnumerable<ProjectFieldVariant> GetDropdownValues() => Field.SortedVariants.Where(v => SelectedIds.Contains(v.Id.ProjectFieldVariantId));
 
-    public IEnumerable<int> GetSpecialGroupsToApply() => Field.HasSpecialGroup ? GetDropdownValues().Select(c => c.CharacterGroupId).WhereNotNull() : Enumerable.Empty<int>();
+    public IEnumerable<int> GetSpecialGroupsToApply() => Field.HasSpecialGroup ? GetDropdownValues().Select(c => c.CharacterGroupId).WhereNotNull() : [];
 
     public override string ToString() => $"{Field.Name}={Value}";
 
