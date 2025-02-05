@@ -210,7 +210,7 @@
         foreach (var value in Model.ValueList.Where(v => v.SpecialGroupId != null))
         {
           @sep
-          Html.ActionLink(value.Label, "Details", "GameGroups", new { Model.ProjectId, CharacterGroupId = value.SpecialGroupId }, null);
+          <a asp-controller="GameGroups" asp-action="Details" asp-route-ProjectId="@Model.ProjectId" asp-route-CharacterGroupId="@value.SpecialGroupId">@value.Label</a>
           sep = " • ";
         }
       }
