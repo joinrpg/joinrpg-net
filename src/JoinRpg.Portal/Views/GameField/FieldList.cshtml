@@ -27,6 +27,10 @@
         </table>
     </div>
 
+    <a asp-controller="GameField" asp-action="Create" asp-route-ProjectId="@Model.Navigation.ProjectId" class="btn btn-success">
+        <span class="glyphicon glyphicon-plus"></span>Добавить новое поле
+    </a>
+
     @await Html.PartialAsync("_DeleteEntityDlg", new DeleteDialogViewModel() { ProjectId = Model.Navigation.ProjectId, Title = "Удаление поля"})
 
 
