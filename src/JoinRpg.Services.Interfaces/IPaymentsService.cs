@@ -271,6 +271,21 @@ public interface IPaymentsService
     Task<FinanceOperation?> PerformRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false);
 
     /// <summary>
+    /// Tries to charge <paramref name="amount"/> money using payment method assigned with a specified recurrent payment.
+    /// </summary>
+    /// <param name="recurrentPayment">Data of recurrent payment to perform. It must have <see cref="RecurrentPayment.Claim"/>,
+    /// <see cref="RecurrentPayment.Project"/> and <see cref="RecurrentPayment.PaymentType"/> properties initialized
+    /// with valid data.</param>
+    /// <param name="amount">How much money to charge. If null, will be taken as much as was charged in the first payment.</param>
+    /// <param name="internalCall">When true, access will not be verified.</param>
+    /// <returns>An instance of the <see cref="FinanceOperation"/> or null when it was even not possible to initiate operation.</returns>
+    /// <remarks>
+    /// Payments are typically asynchronous operations. It is necessary to update its state
+    /// a little bit later using <see cref="UpdateClaimPaymentAsync"/>.
+    /// </remarks>
+    Task<FinanceOperation?> PerformRecurrentPaymentAsync(RecurrentPayment recurrentPayment, int? amount, bool internalCall = false);
+
+    /// <summary>
     /// Tries to make a refund of a specified payment.
     /// </summary>
     /// <param name="projectId">Id of a project</param>
@@ -285,4 +300,17 @@ public interface IPaymentsService
     /// <param name="externalPaymentKey">A key returned from an external payment system.</param>
     /// <returns></returns>
     string? GetExternalPaymentUrl(string? externalPaymentKey);
+
+    /// <summary>
+    /// Searches for recurrent payments using the key-set pagination.
+    /// </summary>
+    /// <param name="afterId">Takes recurrent payments with primary keys greater than provided value.</param>
+    /// <param name="activityStatus">Determines how to treat activity of a recurrent payment.
+    ///     Active recurrent payment is that payment which has the <see cref="RecurrentPaymentStatus.Active"/> status,
+    ///     and its project is active, its claim is active and corresponding payment type is enabled.
+    ///     Therefore, when true is provided, only active recurrent payments will be returned;
+    ///     when false only inactive; when null activity will not be taken into account.</param>
+    /// <param name="pageSize">How many records to return. Maximum allowed value is 10000.</param>
+    /// <returns>A collection of discovered payments. When collection is empty, there is no payments for the provided search criteria.</returns>
+    Task<IReadOnlyList<RecurrentPayment>> FindRecurrentPaymentsAsync(int? afterId = null, bool? activityStatus = true, int pageSize = 100);
 }
