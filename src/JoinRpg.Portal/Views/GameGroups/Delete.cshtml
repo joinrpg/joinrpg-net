@@ -6,7 +6,7 @@
 
 
 @{
-  ViewBag.Title = "Удаление группы персонажей «" + Model.CharacterGroupName + "»";
+    ViewBag.Title = "Удаление группы персонажей «" + Model.CharacterGroupName + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -14,8 +14,6 @@
 
 <h3>Вы действительно хотите удалить группу персонажей?</h3>
 <div>
-    <h4>@Model.CharacterGroupName</h4>
-    <hr/>
     <dl class="dl-horizontal">
 
         @if (Model.Characters.Any() || Model.ChildGroups.Any())
@@ -39,25 +37,19 @@
                 привязаны к группам выше.
             </dd>
         }
+        @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
+        {
+            <dt>
+                Описание группы
+            </dt>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.IsPublic)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsPublic)
+            <dd>
+                @Model.Description.ToHtmlString()
         </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-
-        <dd>
-            @Model.Description.ToHtmlString()
-        </dd>
+        }
     </dl>
 
-    using (Html.BeginForm())
+    @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
         @Html.HiddenFor(model => model.CharacterGroupId)
