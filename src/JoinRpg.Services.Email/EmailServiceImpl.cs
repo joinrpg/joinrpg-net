@@ -332,7 +332,7 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
 Для вас опубликована вводная. Прочитать ее: {messageService.GetUserDependentValue(ClaimUriKey)}
 
-{email.Text}");
+{email.Text.Contents}");
 
         var recipients = email.Claims
             .DistinctBy(x => x.PlayerUserId)
