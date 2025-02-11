@@ -122,26 +122,39 @@
                         Изменить
                     </a>
 
-                    if ((Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null) && Model.HasEditAccess)
+                    if ((Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null))
                     {
-                        if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any())
+                        if (Model.HasEditAccess)
                         {
-                            <button type="button"
-                                    class="btn btn-success btn-sm"
-                                    data-toggle="modal"
-                                    data-target="#publishElementModal"
-                                    data-element="@Model.PlotElementId"
-                                    data-version="@Model.CurrentVersion">
-                                <span class="glyphicon glyphicon-share-alt"></span>
-                                Опубликовать
-                            </button>
+                          if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any())
+                          {
+                              <button type="button"
+                                      class="btn btn-success btn-sm"
+                                      data-toggle="modal"
+                                      data-target="#publishElementModal"
+                                      data-element="@Model.PlotElementId"
+                                      data-version="@Model.CurrentVersion">
+                                  <span class="glyphicon glyphicon-share-alt"></span>
+                                  Опубликовать
+                              </button>
+                          }
+                          else
+                          {
+                              <button type="button"
+                                      class="btn btn-success btn-sm disabled"
+                                      disabled="disabled"
+                                      title="Невозможно опубликовать вводную. Убедитесь что: Все TODO закрыты и поле очищено; вводная привязана к чему-то.">
+                                  <span class="glyphicon glyphicon-share-alt"></span>
+                                  Опубликовать
+                              </button>
+                          }
                         }
                         else
                         {
                             <button type="button"
                                     class="btn btn-success btn-sm disabled"
                                     disabled="disabled"
-                                    title="Невозможно опубликовать вводную. Убедитесь что: Все TODO закрыты и поле очищено; вводная привязана к чему-то.">
+                                    title="У вас должны быть права редактора сюжетов для этого">
                                 <span class="glyphicon glyphicon-share-alt"></span>
                                 Опубликовать
                             </button>
