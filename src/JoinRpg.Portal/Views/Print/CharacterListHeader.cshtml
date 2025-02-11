@@ -2,25 +2,30 @@
 @using JoinRpg.Web.Models.Plot
 @using JoinRpg.Helpers
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
-<div style="border: solid 5px">
-    <h1 style="">@Model.CharacterName</h1>
-    <table class="table table-bordered">
+<div class="print-character-header">
+
+  <br>
+<div class="print-character-box">
+        <h1>
+            @if (Model.RegistrationOnHold)
+            {
+                <span class="print-character-holdalert">(Не готов)</span>
+            }
+            @Model.CharacterName
+
+        </h1>
+        <p class="print-character-gamename">@Model.ProjectName</p>
+    <table class="table">
+      @if (Model.Groups.Count > 0)
+      {
         <tr>
             <th>Группы</th>
             <td>@Model.Groups.Select(g => g.Name).JoinStrings(" • ")</td>
         </tr>
+      }
         <tr>
             <th>Мастер</th>
-            <td>
-                @if (Model.ResponsibleMaster == null)
-                {
-                <text>нет</text>
-                }
-                else
-                {
-                @Model.ResponsibleMaster.GetDisplayName()
-                }
-            </td>
+            <td>@Model.ResponsibleMaster.GetDisplayName()</td>
 
         </tr>
         @if (Model.PlayerDisplayName != null)
@@ -47,24 +52,30 @@
         }
 
     </table>
+        <div class="print-character-footer">
+            создано при помощи joinrpg.ru
+        </div>
+    
+</div>
+
     @if (Model.RegistrationOnHold)
     {
-    <div class="panel panel-danger">
-        <div class="panel-heading">Перед выдачей конверта</div>
-        <div class="panel-body">
+        <div class="print-character-registration-alert ">
+            <h2>Конверт не готов к выдаче</h2>
             <ul>
                 @if (Model.FeeDue > 0)
                 {
-                <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
+                    <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
                 }
                 @if (Model.Plots.HasUnready)
                 {
-                <li>
-                    Часть загрузов помечены как не готовы!
-                </li>
+                    <li>
+                        Часть загрузов помечены как не готовы!
+                    </li>
                 }
             </ul>
         </div>
-    </div>
     }
+
+    <partial name="_CharacterHandout" model="@Model.Handouts" />
 </div>

@@ -1,17 +1,17 @@
 ﻿@model IReadOnlyCollection<JoinRpg.Web.Models.Print.HandoutListItemViewModel>
 @if (Model.Any())
 {
-<h1>Раздатка</h1>
-    <p>Здесь собраны все вещи, которые нужно положить в конверт.</p>
-    <table style="border-spacing: 10px; border-collapse: separate; font-size: 120%">
-        @foreach (var handout in Model)
-        {
-        <tr>
-            <td style="vertical-align: text-top"><div style="width: 2em; height: 2em; border: black solid thick;"></div></td>
-
-            <td>@handout.Text</td>
-        </tr>
-        }
-
-    </table>
+  <div class="print-character-handout">
+    <h1>Раздатка</h1>
+        <p>Здесь собраны все вещи, которые нужно положить в конверт.</p>
+        <table>
+            @foreach (var handout in Model)
+            {
+              <tr>
+                  <td class="handout-checkbox-cell"><div>&nbsp;</div></td>
+                  <td>@handout.Text</td>
+              </tr>
+            }
+        </table>
+    </div>
 }
