@@ -17,7 +17,7 @@ public class PrintCharacterViewModelSlim
     public string CharacterName { get; }
     public int FeeDue { get; }
     public IReadOnlyCollection<CharacterGroupWithDescViewModel> Groups { get; }
-    public User? ResponsibleMaster { get; }
+    public User ResponsibleMaster { get; }
     public string? PlayerDisplayName { get; }
     public string? PlayerFullName { get; }
 
@@ -33,7 +33,7 @@ public class PrintCharacterViewModelSlim
             .Distinct()
             .Select(g => new CharacterGroupWithDescViewModel(g))
             .ToArray();
-        ResponsibleMaster = character.GetResponsibleMasterOrDefault();
+        ResponsibleMaster = character.GetResponsibleMasterOrDefault() ?? character.Project.GetDefaultResponsibleMaster();
         PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName();
         PlayerFullName = character.ApprovedClaim?.Player.FullName;
     }
