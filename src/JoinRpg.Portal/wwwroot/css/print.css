@@ -1,6 +1,85 @@
-﻿h1, h2, h3, h4, h5, h6, p, div, dt {
+﻿h1, h2, h3, h4, h5, h6, p, div, dt, dd {
   font-family: 'Roboto', sans-serif;
 }
 dt {
   font-weight: bold;
+}
+
+.print-character-header
+{
+    break-inside: avoid-page;
+    break-after: page;
+}
+
+.print-character-gamename {
+    font-style: italic;
+}
+
+.print-character-holdalert {
+    text-decoration: underline;
+}
+
+.print-character-box, .print-character-registration-alert, .print-character-handout {
+  margin: 1em;
+  border: solid 5px;
+}
+
+div.print-character-list-box table, div.print-character-list-box table th, div.print-character-list-box table td {
+  border: 1px solid #ddd
+}
+
+div.print-character-list-box table {
+  border: 1px solid #ddd
+}
+
+.print-character-handout {
+    break-before: avoid-page;
+    break-inside: avoid-page;
+}
+
+.print-character-handout table {
+  border-spacing: 10px;
+  border-collapse: separate;
+  font-size: 120%
+}
+
+.handout-checkbox-cell {
+  vertical-align: text-top
+}
+.handout-checkbox-cell div {
+  width: 2em;
+  height: 2em;
+  border: black solid thick;
+}
+
+.print-character-main
+{
+  break-after: page;
+}
+
+.print-character-fields
+{
+    break-after: page;
+}
+
+.print-character-plots h1 {
+    break-after: avoid-page;
+}
+
+.print-character-plot-element {
+    break-inside: avoid-page;
+}
+
+@page {
+    padding: 0.5cm;
+    margin: 1cm;
+}
+
+.print-character-footer {
+  font-size: 50%;
+  width: 100%;
+  font-style: italic;
+  bottom: 0.5em;
+  right: 0.5em;
+  text-align: right;
 }

@@ -1,36 +1,37 @@
 ﻿@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
-<h1 style="page-break-before: always">@Model.CharacterName</h1>
-<h1>Группы</h1>
-<dl>
-    @foreach (var group in Model.Groups)
+<div class="print-character-main">
+    <h1>@Model.CharacterName</h1>
+    <p class="print-character-gamename">@Model.ProjectName</p>
+
+    @if (Model.Fields.AnythingAccessible)
     {
-        <dt>@group.Name</dt>
-        <dd>@Html.DisplayFor(model => group.Description)</dd>
-    }
-</dl>
-
-@if (Model.Fields.AnythingAccessible)
-{
-    <h1 style="page-break-before: always">Поля персонажа</h1>
-    <dl>
-        @foreach (var field in Model.Fields.Fields.Where(f => f.HasValue && f.CanView))
-        {
-            <dt>@field.FieldName</dt>
-            <dd>@field.DisplayString</dd>
-        }
-    </dl>
-}
-
-@if (Model.Plots.Elements.Any())
-{
-    <h1 style="page-break-before: always; page-break-after: avoid">Загрузы (@Model.Plots.Elements.Count()) </h1>
-
-
-    foreach (var plot in Model.Plots.Elements)
-    {
-        <div style="page-break-inside: avoid">
-            @plot.Content
+        <div class="print-character-fields">
+            <h2>Поля персонажа</h2>
+            <dl>
+                @foreach (var field in Model.Fields.Fields.Where(f => f.HasValue && f.CanView))
+                {
+                    <dt>@field.FieldName</dt>
+                    <dd>@field.DisplayString</dd>
+                }
+            </dl>
         </div>
     }
-}
-<br style="page-break-after: always"/>
+
+    @if (Model.Plots.Elements.Any())
+    {
+        <div class="print-character-plots">
+            <h2>Загрузы (@Model.Plots.Elements.Count()) </h2>
+
+
+            @foreach (var plot in Model.Plots.Elements)
+            {
+                <div class="print-character-plot-element">
+                    @plot.Content
+                </div>
+            }
+        </div>
+        <div class="print-character-footer">
+            создано при помощи joinrpg.ru
+        </div>
+    }
+</div>

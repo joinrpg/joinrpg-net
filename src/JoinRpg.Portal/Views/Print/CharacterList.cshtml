@@ -9,16 +9,13 @@
 <html>
 <head>
     <title>@Model.First().ProjectName</title>
-    <link href="~/Content/Print.css" rel="stylesheet" />
+    <link href="~/css/print.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
 </head>
 <body>
-
     @foreach (var item in Model)
     {
-
         @await Html.PartialAsync("CharacterListHeader", item)
-        @await Html.PartialAsync("_CharacterHandout", item.Handouts)
         @await Html.PartialAsync("PrintCharacter", item)
     }
 

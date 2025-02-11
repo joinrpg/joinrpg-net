@@ -8,11 +8,23 @@ public interface IOrderableEntity
 public static class VirtualOrderContainerFacade
 {
     //Factory function enable type inference
-    public static VirtualOrderContainer<TChild> Create<TChild>(IEnumerable<TChild> childs,
-        string ordering) where TChild : class, IOrderableEntity => new(ordering, childs);
+    public static VirtualOrderContainer<TChild>
+        Create<TChild>(IEnumerable<TChild> childs, string ordering)
+        where TChild : class, IOrderableEntity
+        => new(ordering, childs);
+
+    public static VirtualOrderContainer<TChild>
+        Create<TChild>(IOrderedEnumerable<TChild> childs, string ordering)
+        where TChild : class, IOrderableEntity
+        => new(ordering, childs);
 
     public static Lazy<VirtualOrderContainer<TChild>>
         CreateLazy<TChild>(IEnumerable<TChild> childs, string ordering)
+        where TChild : class, IOrderableEntity
+        => new(() => new(ordering, childs));
+
+    public static Lazy<VirtualOrderContainer<TChild>>
+        CreateLazy<TChild>(IOrderedEnumerable<TChild> childs, string ordering)
         where TChild : class, IOrderableEntity
         => new(() => new(ordering, childs));
 
@@ -23,18 +35,15 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
     private const char Separator = ',';
 
 
-    private List<TItem> Items { get; } = new List<TItem>();
+    private List<TItem> Items { get; } = [];
 
-
-    public VirtualOrderContainer(
-        string? storedOrder,
-        IEnumerable<TItem> entites)
+    public VirtualOrderContainer(string? storedOrder, IOrderedEnumerable<TItem> entities)
     {
         storedOrder ??= "";
 
-        ArgumentNullException.ThrowIfNull(entites);
+        ArgumentNullException.ThrowIfNull(entities);
 
-        var list = entites.ToList(); // Copy 
+        var list = entities.ToList(); // Copy 
 
         foreach (var virtualOrderItem in storedOrder.AsSpan().ParseToIntList())
         {
@@ -45,7 +54,15 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
             }
         }
 
-        Items.AddRange(list.OrderBy(li => li.Id));
+        Items.AddRange(list);
+    }
+
+
+    public VirtualOrderContainer(
+        string? storedOrder,
+        IEnumerable<TItem> entities) : this(storedOrder, entities.OrderBy(li => li.Id))
+    {
+
     }
 
     private static TItem? FindItem(List<TItem> list, int virtualOrderItem)
