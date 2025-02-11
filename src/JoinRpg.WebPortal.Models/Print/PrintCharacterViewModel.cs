@@ -45,7 +45,7 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string? PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
-    public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;
+    public bool RegistrationOnHold => FeeDue > 0 || Plots.HasUnready;
 
     public PrintCharacterViewModel
       (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService, ProjectInfo projectInfo)
