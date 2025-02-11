@@ -32,6 +32,8 @@ public class AddPlotHandoutViewModel : IProjectIdAware
 {
     [ReadOnly(true)]
     public int ProjectId { get; set; }
+
+    [Display(Name = "Сюжет", Description = "Сюжет выступает в роли папки для вводных"), Required]
     public int PlotFolderId { get; set; }
     [Display(Name = "Что выдать")]
     public string Content { get; set; }
