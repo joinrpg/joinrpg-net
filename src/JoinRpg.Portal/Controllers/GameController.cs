@@ -23,7 +23,7 @@ public class GameController(
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
-    public async Task<IActionResult> Details(int projectId, [FromServices] IClaimsRepository claimsRepository, [FromServices] ICurrentUserAccessor currentUserAccessor)
+    public async Task<IActionResult> Details(ProjectIdentification projectId, [FromServices] IClaimsRepository claimsRepository, [FromServices] ICurrentUserAccessor currentUserAccessor)
     {
         var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
         var claims = currentUserAccessor.UserIdOrDefault is int userId
