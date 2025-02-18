@@ -13,8 +13,8 @@
 
 @if (creating)
 {
-  <JoinLoadingMessage Message="Проект создается..."/>
-  return;
+    <JoinLoadingMessage Message="Проект создается..."/>
+    return;
 }
 
 <JoinRulesPanel />
@@ -38,6 +38,9 @@
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
                     <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.CopySettings)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.CopySettings" />
                 </FormRowFor>
                 <FormRow>
                     <JoinCreateButton Submit="true" Disabled="@formInvalid" />
@@ -85,9 +88,12 @@
         messageStore?.Clear();
 
         // Custom validation logic
-        if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother && Model.CopyFromProjectId is null)
+        if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother)
         {
-            messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
+            if (Model.CopyFromProjectId is null)
+            {
+                messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
+            }
         }
     }
 

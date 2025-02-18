@@ -21,6 +21,19 @@ public class ProjectCreateViewModel
 
     [Display(Name = "Откуда копировать", Description = "Из этого проекта будут перенесены все поля и настройки")]
     public int? CopyFromProjectId { get; set; }
+
+    [Display(Name = "Глубина копирования")]
+    public ProjectCopySettingsViewModel CopySettings { get; set; } = default;
+}
+
+public enum ProjectCopySettingsViewModel
+{
+    [Display(Name = "Настройки и поля", Description = "Будут перенесены настройки проекта, поля персонажа и заявки (с условных полей будет убрано условие).")]
+    SettingsAndFields,
+    [Display(Name = "Все выше + группы и персонажи", Description = "Также будет перенесены группы персонажей с описанием, сами персонажи (кроме удаленных). Условия у полей будут сохранены. Заявки и сюжеты не будут перенесены.")]
+    SettingsFieldsGroupsAndCharacters,
+    [Display(Name = "Все выше + сюжеты", Description = "Также будет перенесены сюжеты и раздатки. Заявки не будут перенесены.")]
+    SettingsFieldsGroupsCharactersAndPlot,
 }
 
 public enum ProjectTypeViewModel
@@ -34,7 +47,7 @@ public enum ProjectTypeViewModel
     [Display(Name = "Конвент: мероприятия", Description = "Рекомендованные настройки: поля «название» и «описание», можно отправлять несколько заявок, включена система расписания.")]
     ConventionProgram,
 
-    [Display(Name = "Скопировать настройки с другого проекта", Description = "Будут перенесены настройки и поля. Персонажи, взнос и сюжет перенесены не будут.")]
+    [Display(Name = "Скопировать настройки с другого проекта", Description = "Глубину копирования можно выбрать")]
     CopyFromAnother,
 
     [Display(Name = "Нет настроек", Description = "В проекте не установлены никакие настройки, все надо будет делать с нуля и вручную. Не рекомендуется.")]
