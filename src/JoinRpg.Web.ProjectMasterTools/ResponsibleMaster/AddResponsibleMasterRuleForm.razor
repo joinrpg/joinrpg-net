@@ -12,8 +12,8 @@
             <MasterSelector ProjectId="@ProjectId" @bind-Master="_model.Master" />
         </FormRow>
         <br />
-        <JoinAddButton Submit="true" /> |
-        <JoinCancelButton OnClick="OnCancelAdd" />
+        <JoinButton Preset="ButtonPreset.Add" Submit="true" /> |
+        <JoinButton Preset="ButtonPreset.Cancel" OnClick="OnCancelAdd" />
     </FormHorizontal>
 </EditForm>
 

@@ -1,0 +1,85 @@
+﻿<button href="#"
+class="@style"
+@onclick="OnClickHappened"
+type="@buttonType"
+disabled="@disabled"
+title="@Title">
+    @label
+</button>
+@code {
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.Success;
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public bool Submit { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public string? Title { get; set; } = null;
+    [Parameter] public ButtonPreset? Preset { get; set; } = null;
+
+    private string buttonType => Submit ? "submit" : "button";
+    private string style => BootstrapStyle.Build("btn", Variation, Size);
+    private bool operationInProgress = false;
+    private bool disabled => Disabled || operationInProgress;
+    private RenderFragment label => operationInProgress ? progressResult : labelResult;
+
+    private RenderFragment labelResult = null!;
+    private RenderFragment progressResult = null!;
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public RenderFragment? LabelFragment { get; set; }
+    [Parameter] public string? ProgressText { get; set; }
+    [Parameter] public RenderFragment? ProgressFragment { get; set; }
+
+    private async Task OnClickHappened(MouseEventArgs e)
+    {
+        if (disabled) { return; }
+        operationInProgress = true;
+        await OnClick.InvokeAsync(e);
+        operationInProgress = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Disabled)
+        {
+            OnClick = EventCallback<MouseEventArgs>.Empty;
+        }
+
+        labelResult = SelectLabelFragment(ProgressFragment, ProgressText, Preset, LabelPresets);
+        progressResult = SelectLabelFragment(ProgressFragment, ProgressText, Preset, ProgressPresets);
+    }
+
+    internal static RenderFragment FormatLabel(string label, string icon) => @<text><span class="glyphicon @icon"></span> @label</text>;
+
+    internal static RenderFragment SelectLabelFragment(RenderFragment? providedFragment, string? providedLabel, ButtonPreset? providedPreset, Dictionary<ButtonPreset, (string label, string icon)> presets)
+    {
+        return (providedFragment, providedLabel, providedPreset) switch
+        {
+            (RenderFragment fragment, null, null) => fragment,
+            (null, string lbl, null) => @<text>@lbl</text>,
+            (null, string lbl, ButtonPreset preset) => FormatLabel(lbl, presets[preset].icon),
+            (null, null, ButtonPreset preset) => FormatLabel(presets[preset].label, presets[preset].icon),
+            _ => throw new InvalidOperationException("Do not set both text and fragment")
+        };
+    }
+
+    public static Dictionary<ButtonPreset, (string label, string icon)> LabelPresets = new()
+    {
+        { ButtonPreset.Add, ("Добавить", "glyphicon-plus") },
+        { ButtonPreset.Cancel, ("Отменить", "glyphicon-remove")},
+        {ButtonPreset.Create, ("Создать", "glyphicon-ok")},
+        {ButtonPreset.Delete, ("Удалить", "glyphicon-trash")},
+        {ButtonPreset.Download, ("Скачать", "glyphicon-cloud-download")},
+        {ButtonPreset.Update, ("Обновить", "glyphicon-refresh")},
+    };
+
+    public static Dictionary<ButtonPreset, (string label, string icon)> ProgressPresets = new()
+    {
+        { ButtonPreset.Add, ("Добавляем...", "glyphicon-hourglass") },
+        { ButtonPreset.Cancel, ("Отменяем...", "glyphicon-hourglass") },
+        { ButtonPreset.Create, ("Создаем...", "glyphicon-hourglass") },
+        { ButtonPreset.Delete, ("Удаляем...", "glyphicon-hourglass")},
+        { ButtonPreset.Download, ("Скачиваем...", "glyphicon-hourglass")},
+        { ButtonPreset.Update, ("Обновляем...", "glyphicon-hourglass")},
+    };
+}

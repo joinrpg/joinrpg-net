@@ -52,7 +52,7 @@
                     <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" />
                 </FormRowFor>
                 <FormRow>
-                    <JoinCreateButton Submit="true" Disabled="@formInvalid" />
+                    <JoinButton Preset="ButtonPreset.Create" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
             </FormHorizontal>
         </EditForm>

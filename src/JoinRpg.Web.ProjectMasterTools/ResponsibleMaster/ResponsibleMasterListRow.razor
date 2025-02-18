@@ -19,13 +19,13 @@
     {
       if (HasEditAccess)
       {
-        <JoinDeleteButton
+       <JoinButton Preset="ButtonPreset.Delete" 
         OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
         Label="Удалить правило" />
       }
       else
       {
-         <JoinDeleteButton
+        <JoinButton Preset="ButtonPreset.Delete" 
           Disabled="true"
           Title="Для управления настройками нужны права администратора заявок"
           Label="Удалить правило"/>
@@ -34,7 +34,7 @@
     }
     else
     {
-       <JoinDeleteButton
+      <JoinButton Preset="ButtonPreset.Delete" 
         Disabled="true"
         Title="Удалить это правило невозможно, т.к. какой-то ответственный мастер все равно должен быть назначен"
         Label="Удалить правило" />
