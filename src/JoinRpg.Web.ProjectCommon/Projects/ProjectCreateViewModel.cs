@@ -20,7 +20,7 @@ public class ProjectCreateViewModel
     public ProjectTypeViewModel ProjectType { get; set; }
 
     [Display(Name = "Откуда копировать", Description = "Из этого проекта будут перенесены все поля и настройки")]
-    public int? CopyFromProjectId { get; set; }
+    public ProjectIdentification? CopyFromProjectId { get; set; }
 
     [Display(Name = "Глубина копирования")]
     public ProjectCopySettingsViewModel CopySettings { get; set; } = default;

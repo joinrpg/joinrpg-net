@@ -20,9 +20,9 @@ else
 
     [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter] public int? ProjectId { get; set; }
-    [Parameter] public EventCallback<int?> ProjectIdChanged { get; set; }
-    [Parameter] public Expression<Func<int?>>? ProjectIdExpression { get; set; } 
+    [Parameter] public ProjectIdentification? ProjectId { get; set; }
+    [Parameter] public EventCallback<ProjectIdentification?> ProjectIdChanged { get; set; }
+    [Parameter] public Expression<Func<ProjectIdentification?>>? ProjectIdExpression { get; set; }
 
     [Parameter] public ProjectDto? Project { get; set; }
     [Parameter] public EventCallback<ProjectDto?> ProjectChanged { get; set; }
@@ -67,7 +67,7 @@ else
     {
         int? id = values.Length == 0 ? null : values.Single();
         var master = sourceItems.SingleOrDefault(m => m.ProjectId.Value == id);
-        await ProjectIdChanged.InvokeAsync(id);
+        await ProjectIdChanged.InvokeAsync(ProjectIdentification.FromOptional(id));
         await ProjectChanged.InvokeAsync(master);
         if (EditContext is not null && fieldIdentifier is not null)
         {
