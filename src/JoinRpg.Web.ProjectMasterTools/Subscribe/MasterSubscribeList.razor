@@ -13,7 +13,7 @@
 }
 else
 {
-    <JoinAddButton Label="Подписаться на группу" OnClick="OnAddClicked" Disabled="@(!model.AllowChanges)"/> 
+    <JoinButton Preset="ButtonPreset.Add"  Label="Подписаться на группу" OnClick="OnAddClicked" Disabled="@(!model.AllowChanges)"/> 
 }
 
 <div class="master-subscribe-list">
