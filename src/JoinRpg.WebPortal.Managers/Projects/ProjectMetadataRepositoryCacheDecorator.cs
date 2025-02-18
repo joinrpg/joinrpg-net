@@ -8,14 +8,15 @@ public class ProjectMetadataRepositoryCacheDecorator(
     IProjectMetadataRepository repository,
     PerRequestCache<ProjectIdentification, ProjectInfo> projectMetadataCache) : IProjectMetadataRepository
 {
-    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId)
+    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool skipCache)
     {
-        var projectInfo = projectMetadataCache.TryGet(projectId);
-        if (projectInfo == null)
+        if (!skipCache && projectMetadataCache.TryGet(projectId) is ProjectInfo value)
         {
-            projectInfo = await repository.GetProjectMetadata(projectId);
-            projectMetadataCache.Set(projectId, projectInfo);
+            return value;
         }
+        var projectInfo = await repository.GetProjectMetadata(projectId);
+        projectMetadataCache.Set(projectId, projectInfo);
+
         return projectInfo;
     }
 

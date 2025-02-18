@@ -273,8 +273,9 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
     }
 
-    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId)
+    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache)
     {
+        _ = ignoreCache; // Мы не кешируем
         var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
         return CreateInfoFromProject(project, projectId);
