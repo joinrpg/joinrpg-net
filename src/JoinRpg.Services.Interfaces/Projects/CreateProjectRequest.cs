@@ -4,27 +4,32 @@ namespace JoinRpg.Services.Interfaces.Projects;
 
 public record CreateProjectRequest
 {
-    public CreateProjectRequest(ProjectName ProjectName, ProjectTypeDto ProjectType, ProjectIdentification? CopyFromId)
+    internal CreateProjectRequest(ProjectName ProjectName, ProjectTypeDto ProjectType)
     {
-        if (ProjectType == ProjectTypeDto.CopyFromAnother)
-        {
-            ArgumentNullException.ThrowIfNull(CopyFromId);
-        }
-        else
-        {
-            if (CopyFromId is not null)
-            {
-                throw new ArgumentException("Should be null if ProjectTypeDto!=CopyFrom", nameof(CopyFromId));
-            }
-        }
         this.ProjectName = ProjectName;
         this.ProjectType = ProjectType;
-        this.CopyFromId = CopyFromId;
     }
 
     public ProjectName ProjectName { get; }
     public ProjectTypeDto ProjectType { get; }
-    public ProjectIdentification? CopyFromId { get; }
+
+    public static CreateProjectRequest Create(ProjectName ProjectName, ProjectTypeDto ProjectType, ProjectIdentification? CopyFromId, ProjectCopySettingsDto CopySettings)
+    {
+        if (CopyFromId is not null && ProjectType == ProjectTypeDto.CopyFromAnother)
+        {
+            return new CloneProjectRequest(ProjectName, CopyFromId, CopySettings);
+        }
+        if (ProjectType != ProjectTypeDto.CopyFromAnother)
+        {
+            return new CreateProjectRequest(ProjectName, ProjectType);
+        }
+        throw new ArgumentException("Incorrect combination of parameters");
+    }
+}
+
+public record CloneProjectRequest(ProjectName ProjectName, ProjectIdentification CopyFromId, ProjectCopySettingsDto CopySettings) : CreateProjectRequest(ProjectName, ProjectTypeDto.CopyFromAnother)
+{
+
 }
 
 public record ProjectName : SingleValueType<string>
