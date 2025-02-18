@@ -20,7 +20,10 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
 
+    [Obsolete]
     Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId);
+
+    Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
     Task<CharacterGroup> GetRootGroupAsync(int projectId);
 

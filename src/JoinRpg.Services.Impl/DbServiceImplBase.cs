@@ -142,6 +142,13 @@ public class DbServiceImplBase
         }
     }
 
+    protected async Task<int[]> ValidateCharacterGroupList(ProjectIdentification projectId,
+       IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+       bool ensureNotSpecial = false)
+    {
+        return await ValidateCharacterGroupList(projectId.Value, [.. groupIds.Select(g => g.CharacterGroupId)], ensureNotSpecial);
+    }
+
     protected async Task<int[]> ValidateCharacterGroupList(int projectId,
         IReadOnlyCollection<int> groupIds,
         bool ensureNotSpecial = false)
@@ -183,12 +190,13 @@ public class DbServiceImplBase
         entity.UpdatedById = entity.CreatedById = CurrentUserId;
     }
 
-    protected void Create<T>(T entity)
+    protected T Create<T>(T entity)
         where T : class, ICreatedUpdatedTrackedForEntity
     {
         MarkCreatedNow(entity);
 
         _ = UnitOfWork.GetDbSet<T>().Add(entity);
+        return entity;
     }
 
     protected void MarkChanged(ICreatedUpdatedTrackedForEntity entity)

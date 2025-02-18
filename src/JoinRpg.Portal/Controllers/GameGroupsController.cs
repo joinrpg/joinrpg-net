@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -12,7 +13,6 @@ using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.Masters;
 using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -287,11 +287,9 @@ public class GameGroupsController : ControllerGameBase
 
         try
         {
-            await ProjectService.EditCharacterGroup(
-              group.ProjectId,
-              CurrentUserId,
-              group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-              viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description);
+            await ProjectService.EditCharacterGroup(new CharacterGroupIdentification(new(viewModel.ProjectId), viewModel.CharacterGroupId),
+              viewModel.Name, viewModel.IsPublic,
+              [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().Select(i => new CharacterGroupIdentification(new(viewModel.ProjectId), i))], viewModel.Description);
 
             return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
         }
@@ -378,7 +376,7 @@ public class GameGroupsController : ControllerGameBase
         try
         {
             await ProjectService.AddCharacterGroup(
-              viewModel.ProjectId,
+              new(viewModel.ProjectId),
               viewModel.Name, viewModel.IsPublic,
               viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description);
 

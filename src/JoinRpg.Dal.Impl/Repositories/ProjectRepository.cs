@@ -80,12 +80,14 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public async Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId)
+    public Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId) => GetGroupAsync(new(new ProjectIdentification(projectId), characterGroupId));
+
+    public async Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId)
     {
         return
           await Ctx.Set<CharacterGroup>()
             .Include(cg => cg.Project)
-            .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
+            .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId.CharacterGroupId && cg.ProjectId == characterGroupId.ProjectId);
     }
 
     public Task<CharacterGroup> GetRootGroupAsync(int projectId)
