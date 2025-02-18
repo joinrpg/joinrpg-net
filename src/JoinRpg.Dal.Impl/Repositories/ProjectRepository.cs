@@ -147,6 +147,23 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public async Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds) => await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
 
+    public async Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    {
+        if (groupIds.Count == 0)
+        {
+            return [];
+        }
+        var projectId = groupIds.First().ProjectId;
+        foreach (var g in groupIds)
+        {
+            if (g.ProjectId != projectId)
+            {
+                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
+            }
+        }
+        return await LoadGroups(projectId, [.. groupIds.Select(x => x.CharacterGroupId)]);
+    }
+
     public Task<ProjectField> GetProjectField(ProjectFieldIdentification id) => GetProjectField(id.ProjectId, id.ProjectFieldId);
     public Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId)
     {
@@ -303,7 +320,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             project.Details.EnableAccommodation,
             CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
-            rootCharacterGroupId: project.RootGroup.CharacterGroupId);
+            rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId));
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
         {
@@ -323,13 +340,14 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     field.MandatoryStatus,
                     field.ValidForNpc,
                     field.IsActive,
-                    field.AvailableForCharacterGroupIds,
+                    [.. CharacterGroupIdentification.FromList(field.AvailableForCharacterGroupIds, projectId)],
                     field.Description,
                     field.MasterDescription,
                     field.IncludeInPrint,
                     fieldSettings,
                         field.ProgrammaticValue,
-                        CreateProjectFieldVisibility(field));
+                        CreateProjectFieldVisibility(field),
+                    CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroup?.CharacterGroupId));
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)
@@ -356,7 +374,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                             variant.Price,
                             variant.PlayerSelectable,
                             variant.IsActive,
-                            variant.CharacterGroup?.CharacterGroupId,
+                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroup?.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue
@@ -373,7 +391,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                             variant.Price,
                             variant.PlayerSelectable,
                             variant.IsActive,
-                            variant.CharacterGroup?.CharacterGroupId,
+                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroup?.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue

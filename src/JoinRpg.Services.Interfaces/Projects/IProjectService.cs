@@ -9,7 +9,7 @@ public interface IProjectService
     Task<CharacterGroupIdentification> AddCharacterGroup(ProjectIdentification projectId,
         string name,
         bool isPublic,
-        IReadOnlyCollection<int> parentCharacterGroupIds,
+        IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description);
 
     Task EditCharacterGroup(CharacterGroupIdentification characterGroupId,

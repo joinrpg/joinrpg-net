@@ -1,6 +1,7 @@
 ﻿@using System.Diagnostics
 @using JoinRpg.DataModel
 @using JoinRpg.Domain.Problems
+@using JoinRpg.PrimitiveTypes
 @using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
@@ -106,9 +107,9 @@
                                 foreach (var variant in fieldValueViewModel.GetDropdownValues())
                                 {
                                     @sep
-                                    if (variant.CharacterGroupId is int characterGroupId)
+                                    if (variant.CharacterGroupId is CharacterGroupIdentification characterGroupId)
                                     {
-                                        <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@Model.ProjectId" asp-route-CharacterGroupId="@characterGroupId">@variant.Label</a>
+                                        <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@Model.ProjectId" asp-route-CharacterGroupId="@characterGroupId.CharacterGroupId">@variant.Label</a>
                                     }
                                     else
                                     {

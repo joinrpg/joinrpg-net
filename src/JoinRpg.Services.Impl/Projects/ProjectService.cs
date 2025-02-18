@@ -54,7 +54,7 @@ internal class ProjectService(
     public async Task<CharacterGroupIdentification> AddCharacterGroup(ProjectIdentification projectId,
         string name,
         bool isPublic,
-        IReadOnlyCollection<int> parentCharacterGroupIds,
+        IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);

@@ -15,4 +15,6 @@ public record CharacterIdentification(
             return new CharacterIdentification(ProjectId, CharacterId.Value);
         }
     }
+
+    public static IEnumerable<CharacterIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new CharacterIdentification(projectId, g));
 }

@@ -12,7 +12,7 @@ public interface IFieldSetupService
 
     Task<ProjectFieldIdentification> AddField(CreateFieldRequest request);
 
-    Task CreateFieldValueVariant(CreateFieldValueVariantRequest request);
+    Task<ProjectFieldVariantIdentification> CreateFieldValueVariant(CreateFieldValueVariantRequest request);
 
     Task UpdateFieldValueVariant(UpdateFieldValueVariantRequest request);
 
@@ -43,54 +43,36 @@ public class FieldSettingsRequest
     public required ProjectIdentification ProjectId { get; set; }
 }
 
-public abstract class FieldRequestBase
+public abstract class FieldRequestBase(ProjectIdentification projectId,
+    string name,
+    string fieldHint,
+    bool canPlayerEdit,
+    bool canPlayerView,
+    bool isPublic,
+    MandatoryStatus mandatoryStatus,
+    IReadOnlyCollection<CharacterGroupIdentification> showForGroups,
+    bool validForNpc,
+    bool includeInPrint,
+    bool showForUnapprovedClaims,
+    int price,
+    string masterFieldHint,
+    string? programmaticValue)
 {
-    protected FieldRequestBase(int projectId,
-        string name,
-        string fieldHint,
-        bool canPlayerEdit,
-        bool canPlayerView,
-        bool isPublic,
-        MandatoryStatus mandatoryStatus,
-        IReadOnlyCollection<int> showForGroups,
-        bool validForNpc,
-        bool includeInPrint,
-        bool showForUnapprovedClaims,
-        int price,
-        string masterFieldHint,
-        string? programmaticValue)
-    {
-        ProjectId = projectId;
-        Name = name;
-        FieldHint = fieldHint;
-        CanPlayerEdit = canPlayerEdit;
-        CanPlayerView = canPlayerView;
-        IsPublic = isPublic;
-        MandatoryStatus = mandatoryStatus;
-        ShowForGroups = showForGroups;
-        ValidForNpc = validForNpc;
-        IncludeInPrint = includeInPrint;
-        ShowForUnapprovedClaims = showForUnapprovedClaims;
-        Price = price;
-        MasterFieldHint = masterFieldHint;
-        ProgrammaticValue = programmaticValue;
-    }
+    public ProjectIdentification ProjectId { get; } = projectId;
+    public string Name { get; } = name;
+    public string FieldHint { get; } = fieldHint;
 
-    public int ProjectId { get; }
-    public string Name { get; }
-    public string FieldHint { get; }
-
-    public bool CanPlayerEdit { get; }
-    public bool CanPlayerView { get; }
-    public bool IsPublic { get; }
-    public MandatoryStatus MandatoryStatus { get; }
-    public IReadOnlyCollection<int> ShowForGroups { get; }
-    public bool ValidForNpc { get; }
-    public bool IncludeInPrint { get; }
-    public bool ShowForUnapprovedClaims { get; }
-    public int Price { get; }
-    public string MasterFieldHint { get; }
-    public string? ProgrammaticValue { get; }
+    public bool CanPlayerEdit { get; } = canPlayerEdit;
+    public bool CanPlayerView { get; } = canPlayerView;
+    public bool IsPublic { get; } = isPublic;
+    public MandatoryStatus MandatoryStatus { get; } = mandatoryStatus;
+    public IReadOnlyCollection<CharacterGroupIdentification> ShowForGroups { get; } = showForGroups;
+    public bool ValidForNpc { get; } = validForNpc;
+    public bool IncludeInPrint { get; } = includeInPrint;
+    public bool ShowForUnapprovedClaims { get; } = showForUnapprovedClaims;
+    public int Price { get; } = price;
+    public string MasterFieldHint { get; } = masterFieldHint;
+    public string? ProgrammaticValue { get; } = programmaticValue;
 }
 
 public sealed class CreateFieldRequest : FieldRequestBase
@@ -99,7 +81,7 @@ public sealed class CreateFieldRequest : FieldRequestBase
     public FieldBoundTo FieldBoundTo { get; }
 
     /// <inheritdoc />
-    public CreateFieldRequest(int projectId,
+    public CreateFieldRequest(ProjectIdentification projectId,
         ProjectFieldType fieldType,
         string name,
         string fieldHint,
@@ -108,7 +90,7 @@ public sealed class CreateFieldRequest : FieldRequestBase
         bool isPublic,
         FieldBoundTo fieldBoundTo,
         MandatoryStatus mandatoryStatus,
-        IReadOnlyCollection<int> showForGroups,
+        IReadOnlyCollection<CharacterGroupIdentification> showForGroups,
         bool validForNpc,
         bool includeInPrint,
         bool showForUnapprovedClaims,
@@ -137,21 +119,20 @@ public sealed class CreateFieldRequest : FieldRequestBase
 public sealed class UpdateFieldRequest : FieldRequestBase
 {
     /// <inheritdoc />
-    public UpdateFieldRequest(int projectId,
+    public UpdateFieldRequest(ProjectFieldIdentification projectFieldId,
         string name,
         string fieldHint,
         bool canPlayerEdit,
         bool canPlayerView,
         bool isPublic,
         MandatoryStatus mandatoryStatus,
-        IReadOnlyCollection<int> showForGroups,
+        IReadOnlyCollection<CharacterGroupIdentification> showForGroups,
         bool validForNpc,
         bool includeInPrint,
         bool showForUnapprovedClaims,
         int price,
         string masterFieldHint,
-        int projectFieldId,
-        string programmaticValue) : base(projectId,
+        string programmaticValue) : base(projectFieldId.ProjectId,
         name,
         fieldHint,
         canPlayerEdit,
@@ -166,7 +147,7 @@ public sealed class UpdateFieldRequest : FieldRequestBase
         masterFieldHint,
         programmaticValue) => ProjectFieldId = projectFieldId;
 
-    public int ProjectFieldId { get; }
+    public ProjectFieldIdentification ProjectFieldId { get; }
 }
 
 public abstract class FieldValueVariantRequestBase

@@ -146,6 +146,13 @@ public class DbServiceImplBase
        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
        bool ensureNotSpecial = false)
     {
+        foreach (var g in groupIds)
+        {
+            if (g.ProjectId != projectId)
+            {
+                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
+            }
+        }
         return await ValidateCharacterGroupList(projectId.Value, [.. groupIds.Select(g => g.CharacterGroupId)], ensureNotSpecial);
     }
 
@@ -175,6 +182,23 @@ public class DbServiceImplBase
     {
         var characters =
             await CharactersRepository.GetCharacters(projectId, characterIds);
+
+        if (characters.Count != characterIds.Distinct().Count())
+        {
+            throw new DbEntityValidationException();
+        }
+
+        return characters.ToArray();
+    }
+
+    protected async Task<ICollection<Character>> ValidateCharactersList(IReadOnlyCollection<CharacterIdentification> characterIds)
+    {
+        if (characterIds.Select(c => c.ProjectId).Distinct().Count() > 1)
+        {
+            throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(characterIds));
+        }
+        var characters =
+            await CharactersRepository.GetCharacters(characterIds);
 
         if (characters.Count != characterIds.Distinct().Count())
         {

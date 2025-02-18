@@ -11,7 +11,6 @@ using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.Masters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -106,7 +105,7 @@ public class CharacterController : Common.ControllerGameBase
             await CharacterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                    ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
+                    ParentCharacterGroupIds: [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIds, new(viewModel.ProjectId))],
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix))
                 );
@@ -161,9 +160,9 @@ public class CharacterController : Common.ControllerGameBase
         try
         {
             await CharacterService.AddCharacter(new AddCharacterRequest(
-                ProjectId: viewModel.ProjectId,
+                ProjectId: new(viewModel.ProjectId),
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                ParentCharacterGroupIds: viewModel.ParentCharacterGroupIds,
+                ParentCharacterGroupIds: [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIds, new(viewModel.ProjectId))],
                 FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
             ));
 

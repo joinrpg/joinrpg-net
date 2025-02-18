@@ -104,7 +104,7 @@ public class GameFieldController(
         try
         {
             var request = new CreateFieldRequest(
-                viewModel.ProjectId,
+                new(viewModel.ProjectId),
                 (ProjectFieldType)viewModel.FieldViewType,
                 viewModel.Name,
                 viewModel.DescriptionEditable,
@@ -113,7 +113,7 @@ public class GameFieldController(
                 viewModel.IsPublic,
                 (FieldBoundTo)viewModel.FieldBoundTo,
                 (MandatoryStatus)viewModel.MandatoryStatus,
-                viewModel.ShowForGroups.GetUnprefixedGroups(),
+                viewModel.ShowForGroups.GetUnprefixedGroups(new ProjectIdentification(viewModel.ProjectId)),
                 viewModel.ValidForNpc,
                 viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
                 viewModel.ShowForUnApprovedClaim,
@@ -157,20 +157,19 @@ public class GameFieldController(
         }
         try
         {
-            var request = new UpdateFieldRequest(project.ProjectId,
+            var request = new UpdateFieldRequest(new ProjectFieldIdentification(new ProjectIdentification(project.ProjectId), field.ProjectFieldId),
                 viewModel.Name,
                 viewModel.DescriptionEditable,
                 viewModel.CanPlayerEdit,
                 viewModel.CanPlayerView,
                 viewModel.IsPublic,
                 (MandatoryStatus)viewModel.MandatoryStatus,
-                viewModel.ShowForGroups.GetUnprefixedGroups(),
+                viewModel.ShowForGroups.GetUnprefixedGroups(new ProjectIdentification(project.ProjectId)),
                 viewModel.ValidForNpc,
                 viewModel.IncludeInPrint,
                 viewModel.ShowForUnApprovedClaim,
                 viewModel.Price,
                 viewModel.MasterDescriptionEditable,
-                field.ProjectFieldId,
                 viewModel.ProgrammaticValue);
 
             await fieldSetupService.UpdateFieldParams(request);

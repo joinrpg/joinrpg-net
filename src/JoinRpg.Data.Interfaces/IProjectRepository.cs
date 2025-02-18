@@ -32,6 +32,8 @@ public interface IProjectRepository : IDisposable
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
     Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);
 
+    Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds);
+
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId,
          IReadOnlyCollection<int> characterIds);
 

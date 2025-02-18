@@ -27,7 +27,7 @@ public record class ProjectInfo
     public CharacterIdentification? DefaultTemplateCharacter { get; }
     public bool AllowToSetGroups { get; }
 
-    public int RootCharacterGroupId { get; }
+    public CharacterGroupIdentification RootCharacterGroupId { get; }
 
     public string FieldsOrdering { get; }
 
@@ -41,7 +41,7 @@ public record class ProjectInfo
         bool accomodationEnabled,
         CharacterIdentification? defaultTemplateCharacter,
         bool allowToSetGroups,
-        int rootCharacterGroupId)
+        CharacterGroupIdentification rootCharacterGroupId)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;

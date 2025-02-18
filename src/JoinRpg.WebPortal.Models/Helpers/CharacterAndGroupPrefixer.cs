@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Helpers;
 
@@ -17,24 +18,18 @@ public static class CharacterAndGroupPrefixer
     private static IEnumerable<string> PrefixAsCharacters(this IEnumerable<int> characterId)
       => characterId.Select(id => $"'{CharFieldPrefix}{id}'");
 
-    public static List<int> GetUnprefixedChars(this IEnumerable<string> targets)
+    public static List<CharacterIdentification> GetUnprefixedChars(this IEnumerable<string> targets, ProjectIdentification projectIdentification)
     {
-        if (targets == null)
-        {
-            throw new ArgumentNullException(nameof(targets));
-        }
+        ArgumentNullException.ThrowIfNull(targets);
 
-        return targets.UnprefixNumbers(CharFieldPrefix).ToList();
+        return [.. CharacterIdentification.FromList(targets.UnprefixNumbers(CharFieldPrefix), projectIdentification)];
     }
 
-    public static List<int> GetUnprefixedGroups(this IEnumerable<string> targets)
+    public static List<CharacterGroupIdentification> GetUnprefixedGroups(this IEnumerable<string> targets, ProjectIdentification projectIdentification)
     {
-        if (targets == null)
-        {
-            throw new ArgumentNullException(nameof(targets));
-        }
+        ArgumentNullException.ThrowIfNull(targets);
 
-        return targets.UnprefixNumbers(GroupFieldPrefix).ToList();
+        return [.. CharacterGroupIdentification.FromList(targets.UnprefixNumbers(GroupFieldPrefix), projectIdentification)];
     }
 
     public static List<string> GetParentGroupsForEdit(this IWorldObject field) => field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();

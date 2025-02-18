@@ -18,7 +18,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
         var ids = fields.Values.SelectMany(v => v.GetSpecialGroupsToApply()).ToArray();
         var groupsToKeep = Character.Groups.Where(g => !g.IsSpecial)
             .Select(g => g.CharacterGroupId);
-        Character.ParentCharacterGroupIds = groupsToKeep.Union(ids).ToArray();
+        Character.ParentCharacterGroupIds = [.. groupsToKeep.Union(ids.Select(i => i.CharacterGroupId))];
     }
 
     protected void SetCharacterDescription(Dictionary<int, FieldWithValue> fields)

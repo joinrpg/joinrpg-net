@@ -201,10 +201,10 @@ internal class CharacterServiceImpl(
         }
     }
 
-    private async Task<int[]> ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<int> groupIds)
+    private async Task<int[]> ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<CharacterGroupIdentification> groupIds)
     {
         return projectInfo.AllowToSetGroups ?
                         await ValidateCharacterGroupList(projectInfo.ProjectId, Required(groupIds), ensureNotSpecial: true)
-                        : [projectInfo.RootCharacterGroupId];
+                        : [projectInfo.RootCharacterGroupId.CharacterGroupId];
     }
 }

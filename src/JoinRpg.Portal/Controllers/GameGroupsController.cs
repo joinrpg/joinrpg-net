@@ -287,9 +287,9 @@ public class GameGroupsController : ControllerGameBase
 
         try
         {
-            await ProjectService.EditCharacterGroup(new CharacterGroupIdentification(new(viewModel.ProjectId), viewModel.CharacterGroupId),
-              viewModel.Name, viewModel.IsPublic,
-              [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().Select(i => new CharacterGroupIdentification(new(viewModel.ProjectId), i))], viewModel.Description);
+            ProjectIdentification projectId = new(viewModel.ProjectId);
+            await ProjectService.EditCharacterGroup(new CharacterGroupIdentification(projectId, viewModel.CharacterGroupId),
+              viewModel.Name, viewModel.IsPublic, [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(projectId)], viewModel.Description);
 
             return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
         }
@@ -375,12 +375,13 @@ public class GameGroupsController : ControllerGameBase
 
         try
         {
+            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(new(viewModel.ProjectId))];
             await ProjectService.AddCharacterGroup(
               new(viewModel.ProjectId),
               viewModel.Name, viewModel.IsPublic,
-              viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description);
+              parentCharacterGroupIds, viewModel.Description);
 
-            return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
+            return RedirectToRoles(parentCharacterGroupIds.First());
         }
         catch (Exception exception)
         {

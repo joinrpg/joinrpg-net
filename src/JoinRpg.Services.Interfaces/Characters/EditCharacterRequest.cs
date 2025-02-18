@@ -7,7 +7,7 @@ namespace JoinRpg.Services.Interfaces.Characters;
 /// </summary>
 public record EditCharacterRequest(
     CharacterIdentification Id,
-    IReadOnlyCollection<int> ParentCharacterGroupIds,
+    IReadOnlyCollection<CharacterGroupIdentification> ParentCharacterGroupIds,
     CharacterTypeInfo CharacterTypeInfo,
     IReadOnlyDictionary<int, string?> FieldValues)
 { }

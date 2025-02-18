@@ -12,7 +12,7 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     int Price,
     bool IsPlayerSelectable,
     bool IsActive,
-    int? CharacterGroupId,
+    CharacterGroupIdentification? CharacterGroupId,
     MarkdownString Description,
     MarkdownString MasterDescription,
     string? ProgrammaticValue)
