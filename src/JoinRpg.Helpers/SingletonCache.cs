@@ -9,5 +9,5 @@ public class SingletonCache<TKey, TValue>
     private readonly ConcurrentDictionary<TKey, TValue> cache = new();
     public TValue? TryGet(TKey key) => cache.TryGetValue(key, out var value) ? value : null;
 
-    public void Set(TKey key, TValue value) => _ = cache.TryAdd(key, value);
+    public void Set(TKey key, TValue value) => _ = cache.AddOrUpdate(key, _ => value, (_, _) => value);
 }

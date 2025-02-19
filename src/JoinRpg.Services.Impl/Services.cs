@@ -26,6 +26,8 @@ public static class Services
 
         yield return typeof(ProjectAccessService);
 
+        yield return typeof(CloneProjectHelperFactory);
+
         foreach (var provider in Assembly.GetExecutingAssembly().DefinedTypes.Where(t => t.IsAssignableTo(typeof(ISearchProvider))).Select(t => t.AsType()))
         {
             yield return provider;

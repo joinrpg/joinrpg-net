@@ -142,6 +142,20 @@ public class DbServiceImplBase
         }
     }
 
+    protected async Task<int[]> ValidateCharacterGroupList(ProjectIdentification projectId,
+       IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+       bool ensureNotSpecial = false)
+    {
+        foreach (var g in groupIds)
+        {
+            if (g.ProjectId != projectId)
+            {
+                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
+            }
+        }
+        return await ValidateCharacterGroupList(projectId.Value, [.. groupIds.Select(g => g.CharacterGroupId)], ensureNotSpecial);
+    }
+
     protected async Task<int[]> ValidateCharacterGroupList(int projectId,
         IReadOnlyCollection<int> groupIds,
         bool ensureNotSpecial = false)
@@ -177,18 +191,36 @@ public class DbServiceImplBase
         return characters.ToArray();
     }
 
+    protected async Task<ICollection<Character>> ValidateCharactersList(IReadOnlyCollection<CharacterIdentification> characterIds)
+    {
+        if (characterIds.Select(c => c.ProjectId).Distinct().Count() > 1)
+        {
+            throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(characterIds));
+        }
+        var characters =
+            await CharactersRepository.GetCharacters(characterIds);
+
+        if (characters.Count != characterIds.Distinct().Count())
+        {
+            throw new DbEntityValidationException();
+        }
+
+        return characters.ToArray();
+    }
+
     protected void MarkCreatedNow(ICreatedUpdatedTrackedForEntity entity)
     {
         entity.UpdatedAt = entity.CreatedAt = Now;
         entity.UpdatedById = entity.CreatedById = CurrentUserId;
     }
 
-    protected void Create<T>(T entity)
+    protected T Create<T>(T entity)
         where T : class, ICreatedUpdatedTrackedForEntity
     {
         MarkCreatedNow(entity);
 
         _ = UnitOfWork.GetDbSet<T>().Add(entity);
+        return entity;
     }
 
     protected void MarkChanged(ICreatedUpdatedTrackedForEntity entity)

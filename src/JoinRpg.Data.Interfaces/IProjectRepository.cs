@@ -20,7 +20,10 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
 
+    [Obsolete]
     Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId);
+
+    Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
     Task<CharacterGroup> GetRootGroupAsync(int projectId);
 
@@ -28,6 +31,8 @@ public interface IProjectRepository : IDisposable
     Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
     Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);
+
+    Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds);
 
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId,
          IReadOnlyCollection<int> characterIds);

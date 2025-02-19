@@ -8,3 +8,11 @@ public enum ProjectTypeDto
     CopyFromAnother,
     EmptyProject
 }
+
+public enum ProjectCopySettingsDto
+{
+    SettingsAndFields,
+    SettingsFieldsGroupsAndTemplates,
+    SettingsFieldsGroupsAndCharacters,
+    SettingsFieldsGroupsCharactersAndPlot,
+}

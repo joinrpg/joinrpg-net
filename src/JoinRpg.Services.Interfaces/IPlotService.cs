@@ -1,21 +1,22 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Services.Interfaces;
 
 public interface IPlotService
 {
-    Task CreatePlotFolder(int projectId, string masterTitle, string todo);
+    Task<PlotFolderIdentification> CreatePlotFolder(ProjectIdentification projectId, string masterTitle, string todo);
     Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField);
 
     Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
-      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType);
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType);
 
     Task DeleteFolder(int projectId, int plotFolderId);
     Task DeleteElement(PlotElementIdentification plotElementId);
 
     Task EditPlotElement(PlotElementIdentification plotelementid, string contents, string todoField,
-      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars);
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars);
 
     Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction);
 

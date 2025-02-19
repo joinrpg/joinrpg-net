@@ -50,7 +50,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 
     public async Task UpdateFieldParams(UpdateFieldRequest request)
     {
-        var field = await ProjectRepository.GetProjectField(request.ProjectId, request.ProjectFieldId);
+        var field = await ProjectRepository.GetProjectField(request.ProjectFieldId);
 
         _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
@@ -131,15 +131,17 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
     }
 
-    public async Task CreateFieldValueVariant(CreateFieldValueVariantRequest request)
+    public async Task<ProjectFieldVariantIdentification> CreateFieldValueVariant(CreateFieldValueVariantRequest request)
     {
         var field = await ProjectRepository.GetProjectField(request.ProjectFieldId);
 
         _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
-        CreateFieldValueVariantImpl(request, field);
+        var variant = CreateFieldValueVariantImpl(request, field);
 
         await UnitOfWork.SaveChangesAsync();
+
+        return new ProjectFieldVariantIdentification(request.ProjectFieldId, variant.ProjectFieldDropdownValueId);
     }
 
 
@@ -190,7 +192,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         self.ProgrammaticValue = JsonSerializer.Serialize(timeSlotOptions);
     }
 
-    private void CreateFieldValueVariantImpl(CreateFieldValueVariantRequest request, ProjectField field)
+    private ProjectFieldDropdownValue CreateFieldValueVariantImpl(CreateFieldValueVariantRequest request, ProjectField field)
     {
         var fieldVariant = new ProjectFieldDropdownValue()
         {
@@ -204,6 +206,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         SetFieldVariantPropsFromRequest(request, fieldVariant);
 
         field.DropdownValues.Add(fieldVariant);
+        return fieldVariant;
     }
 
     private void CreateOrUpdateSpecialGroup(ProjectFieldDropdownValue fieldValue)

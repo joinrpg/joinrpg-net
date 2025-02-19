@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -106,15 +107,18 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
 
-            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required)
+            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character))
             {
-                throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id);
+                ThrowRequiredField(field);
+                return;
             }
 
             _ = AssignFieldValue(field, normalizedValue);
         }
     }
 
+    [DoesNotReturn]
+    protected abstract void ThrowRequiredField(FieldWithValue field);
 
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(IReadOnlyDictionary<int, string?> newFieldValue)
     {

@@ -20,7 +20,7 @@ public class FieldPossibleValueViewModel
         Label = value.Label;
         DescriptionHtml = value.Description.ToHtmlString();
         MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
-        SpecialGroupId = value.CharacterGroupId;
+        SpecialGroupId = value.CharacterGroupId?.CharacterGroupId;
         Price = value.Price;
         HasPrice = hasPrice;
         Selected = selected;

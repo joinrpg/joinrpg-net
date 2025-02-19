@@ -6,6 +6,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
@@ -52,7 +53,7 @@ public class PlotController(
 
         try
         {
-            await plotService.CreatePlotFolder(viewModel.ProjectId,
+            await plotService.CreatePlotFolder(new(viewModel.ProjectId),
                 viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
             return RedirectToAction("Index", "PlotList", new { viewModel.ProjectId });
         }
@@ -128,12 +129,12 @@ public class PlotController(
     }
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId, string content,
+    public async Task<ActionResult> CreateHandout(ProjectIdentification projectId, int plotFolderId, string content,
       string todoField, ICollection<string>? targets, PlotElementTypeView elementType)
     {
         try
         {
-            return await CreateElementImpl(projectId, plotFolderId, content, todoField, targets ?? [], elementType, publishNow: false);
+            return await CreateElementImpl(new(projectId, plotFolderId), content, todoField, targets ?? [], elementType, publishNow: false);
         }
         catch (Exception exception)
         {
@@ -155,12 +156,12 @@ public class PlotController(
     }
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, string content,
+    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int plotFolderId, string content,
       string todoField, ICollection<string>? targets, PlotElementTypeView elementType, bool publishNow)
     {
         try
         {
-            return await CreateElementImpl(projectId, plotFolderId, content, todoField, targets ?? [], elementType, publishNow);
+            return await CreateElementImpl(new(projectId, plotFolderId), content, todoField, targets ?? [], elementType, publishNow);
         }
         catch (Exception exception)
         {
@@ -181,20 +182,20 @@ public class PlotController(
         }
     }
 
-    private async Task<ActionResult> CreateElementImpl(int projectId, int plotFolderId, string content, string todoField, ICollection<string> targets,
+    private async Task<ActionResult> CreateElementImpl(PlotFolderIdentification plotFolderId, string content, string todoField, ICollection<string> targets,
       PlotElementTypeView elementType, bool publishNow)
     {
-        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
-        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
+        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups(plotFolderId.ProjectId);
+        var targetChars = targets.OrEmptyList().GetUnprefixedChars(plotFolderId.ProjectId);
         var elementId = await
-          plotService.CreatePlotElement(new PlotFolderIdentification(new(projectId), plotFolderId), content, todoField, targetGroups, targetChars,
+          plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroups, targetChars,
             (PlotElementType)elementType);
 
         if (publishNow && string.IsNullOrWhiteSpace(todoField) && targets.Any())
         {
             await plotService.PublishElementVersion(elementId, sendNotification: false, commentText: null);
         }
-        return ReturnToPlot(projectId, plotFolderId);
+        return ReturnToPlot(plotFolderId);
     }
     #endregion
 
@@ -263,7 +264,7 @@ public class PlotController(
     }
 
     [HttpPost, MasterAuthorize()]
-    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, string content, string todoField,
+    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
       ICollection<string>? targets)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
@@ -272,8 +273,8 @@ public class PlotController(
             var project = await ProjectRepository.GetProjectAsync(projectId);
             if (project.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
             {
-                var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
-                var targetChars = targets.OrEmptyList().GetUnprefixedChars();
+                var targetGroups = targets.OrEmptyList().GetUnprefixedGroups(projectId);
+                var targetChars = targets.OrEmptyList().GetUnprefixedChars(projectId);
 
                 await
                   plotService.EditPlotElement(id, content, todoField, targetGroups, targetChars);

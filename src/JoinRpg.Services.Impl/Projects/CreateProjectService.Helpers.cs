@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
@@ -37,7 +36,11 @@ internal partial class CreateProjectService
                                 );
     }
 
-    private async Task<CharacterIdentification> CreateTopLevelCharacterSlot(Project project, string slotName, ProjectFieldIdentification? name)
+    private async Task<CharacterIdentification> CreateTopLevelCharacterSlot(
+        ProjectIdentification projectId,
+        CharacterGroupIdentification rootCharacterGroupId,
+        string slotName,
+        ProjectFieldIdentification? name)
     {
         var fields = new Dictionary<int, string?>();
         if (name is not null)
@@ -45,8 +48,8 @@ internal partial class CreateProjectService
             fields.Add(name.ProjectFieldId, slotName);
         }
         return await characterService.AddCharacter(new AddCharacterRequest(
-                project.ProjectId,
-                ParentCharacterGroupIds: [project.RootGroup.CharacterGroupId],
+                projectId,
+                ParentCharacterGroupIds: [rootCharacterGroupId],
                 CharacterTypeInfo: CharacterTypeInfo.DefaultSlot(slotName),
                 FieldValues: fields
                 ));

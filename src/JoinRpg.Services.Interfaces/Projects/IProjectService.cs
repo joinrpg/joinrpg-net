@@ -6,18 +6,16 @@ public interface IProjectService
 {
     Task EditProject(EditProjectRequest request);
 
-    Task AddCharacterGroup(int projectId,
+    Task<CharacterGroupIdentification> AddCharacterGroup(ProjectIdentification projectId,
         string name,
         bool isPublic,
-        IReadOnlyCollection<int> parentCharacterGroupIds,
+        IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description);
 
-    Task EditCharacterGroup(int projectId,
-        int currentUserId,
-        int characterGroupId,
+    Task EditCharacterGroup(CharacterGroupIdentification characterGroupId,
         string name,
         bool isPublic,
-        IReadOnlyCollection<int> parentCharacterGroupIds,
+        IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description);
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);

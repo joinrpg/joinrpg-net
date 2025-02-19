@@ -51,10 +51,10 @@ internal class ProjectService(
 
 
 
-    public async Task AddCharacterGroup(int projectId,
+    public async Task<CharacterGroupIdentification> AddCharacterGroup(ProjectIdentification projectId,
         string name,
         bool isPublic,
-        IReadOnlyCollection<int> parentCharacterGroupIds,
+        IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -62,7 +62,7 @@ internal class ProjectService(
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
         _ = project.EnsureProjectActive();
 
-        Create(new CharacterGroup()
+        var group = Create(new CharacterGroup()
         {
             CharacterGroupName = Required(name),
             ParentCharacterGroupIds =
@@ -79,6 +79,8 @@ internal class ProjectService(
         MarkTreeModified(project);
 
         await UnitOfWork.SaveChangesAsync();
+
+        return new CharacterGroupIdentification(projectId, group.CharacterGroupId);
     }
 
 
@@ -188,20 +190,18 @@ internal class ProjectService(
         return project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
     }
 
-    public async Task EditCharacterGroup(int projectId,
-        int currentUserId,
-        int characterGroupId,
+    public async Task EditCharacterGroup(CharacterGroupIdentification characterGroupId,
         string name,
         bool isPublic,
-        IReadOnlyCollection<int> parentCharacterGroupIds,
+        IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description)
     {
         var characterGroup =
-            (await ProjectRepository.GetGroupAsync(projectId, characterGroupId))
-            .RequestMasterAccess(currentUserId, acl => acl.CanEditRoles)
+            (await ProjectRepository.GetGroupAsync(characterGroupId))
+            .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles)
             .EnsureProjectActive();
 
-        if (characterGroup.IsRoot) //We shoud not edit root group
+        if (characterGroup.IsRoot || characterGroup.IsSpecial) //We shoud not edit root group or special group
         {
             throw new InvalidOperationException();
         }
@@ -209,7 +209,7 @@ internal class ProjectService(
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
         characterGroup.ParentCharacterGroupIds =
-            await ValidateCharacterGroupList(projectId,
+            await ValidateCharacterGroupList(characterGroupId.ProjectId,
                 Required(parentCharacterGroupIds),
                 ensureNotSpecial: true);
         characterGroup.Description = new MarkdownString(description);

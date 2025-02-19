@@ -16,6 +16,9 @@ namespace JoinRpg.WebPortal.Models.Test;
 public class EnumTests
 {
     [Fact]
+    public void ProjectCopySettings() => EnumerationTestComparer.EnsureSame<ProjectCopySettingsViewModel, ProjectCopySettingsDto>();
+
+    [Fact]
     public void ProjectCreateType() => EnumerationTestComparer.EnsureSame<ProjectTypeViewModel, ProjectTypeDto>();
 
     [Fact]

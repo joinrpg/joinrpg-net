@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -18,7 +19,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
         var ids = fields.Values.SelectMany(v => v.GetSpecialGroupsToApply()).ToArray();
         var groupsToKeep = Character.Groups.Where(g => !g.IsSpecial)
             .Select(g => g.CharacterGroupId);
-        Character.ParentCharacterGroupIds = groupsToKeep.Union(ids).ToArray();
+        Character.ParentCharacterGroupIds = [.. groupsToKeep.Union(ids.Select(i => i.CharacterGroupId))];
     }
 
     protected void SetCharacterDescription(Dictionary<int, FieldWithValue> fields)
@@ -54,4 +55,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
 
         UpdateSpecialGroups(fields);
     }
+
+    [DoesNotReturn]
+    protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Character.CharacterId));
 }

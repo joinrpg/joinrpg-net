@@ -1,4 +1,5 @@
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -66,7 +67,7 @@ public class FieldWithValue
 
     public IEnumerable<ProjectFieldVariant> GetDropdownValues() => Field.SortedVariants.Where(v => SelectedIds.Contains(v.Id.ProjectFieldVariantId));
 
-    public IEnumerable<int> GetSpecialGroupsToApply() => Field.HasSpecialGroup ? GetDropdownValues().Select(c => c.CharacterGroupId).WhereNotNull() : [];
+    public IEnumerable<CharacterGroupIdentification> GetSpecialGroupsToApply() => Field.HasSpecialGroup ? GetDropdownValues().Select(c => c.CharacterGroupId).WhereNotNull() : [];
 
     public override string ToString() => $"{Field.Name}={Value}";
 

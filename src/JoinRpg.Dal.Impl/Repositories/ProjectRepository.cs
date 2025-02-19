@@ -73,19 +73,25 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public async Task<Project?> GetProjectWithFieldsAsync(int project)
-      => await AllProjects
-        .Include(p => p.Details)
-        .Include(p => p.ProjectAcls.Select(a => a.User))
-        .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
-        .SingleOrDefaultAsync(p => p.ProjectId == project);
+    public Task<Project?> GetProjectWithFieldsAsync(int project) => GetProjectWithFieldsAsync(project, skipCache: false);
+    public async Task<Project?> GetProjectWithFieldsAsync(int project, bool skipCache)
+    {
+        var query = skipCache ? AllProjects.AsNoTracking() : AllProjects;
+        return await query
+         .Include(p => p.Details)
+         .Include(p => p.ProjectAcls.Select(a => a.User))
+         .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
+         .SingleOrDefaultAsync(p => p.ProjectId == project);
+    }
 
-    public async Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId)
+    public Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId) => GetGroupAsync(new(new ProjectIdentification(projectId), characterGroupId));
+
+    public async Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId)
     {
         return
           await Ctx.Set<CharacterGroup>()
             .Include(cg => cg.Project)
-            .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
+            .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId.CharacterGroupId && cg.ProjectId == characterGroupId.ProjectId);
     }
 
     public Task<CharacterGroup> GetRootGroupAsync(int projectId)
@@ -144,6 +150,23 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     }
 
     public async Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds) => await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
+
+    public async Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    {
+        if (groupIds.Count == 0)
+        {
+            return [];
+        }
+        var projectId = groupIds.First().ProjectId;
+        foreach (var g in groupIds)
+        {
+            if (g.ProjectId != projectId)
+            {
+                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
+            }
+        }
+        return await LoadGroups(projectId, [.. groupIds.Select(x => x.CharacterGroupId)]);
+    }
 
     public Task<ProjectField> GetProjectField(ProjectFieldIdentification id) => GetProjectField(id.ProjectId, id.ProjectFieldId);
     public Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId)
@@ -271,9 +294,9 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
     }
 
-    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId)
+    public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache)
     {
-        var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
+        var project = await GetProjectWithFieldsAsync(projectId, ignoreCache) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
         return CreateInfoFromProject(project, projectId);
     }
@@ -300,7 +323,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             project.Details.EnableAccommodation,
             CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
-            rootCharacterGroupId: project.RootGroup.CharacterGroupId);
+            rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId));
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
         {
@@ -320,13 +343,14 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     field.MandatoryStatus,
                     field.ValidForNpc,
                     field.IsActive,
-                    field.AvailableForCharacterGroupIds,
+                    [.. CharacterGroupIdentification.FromList(field.AvailableForCharacterGroupIds, projectId)],
                     field.Description,
                     field.MasterDescription,
                     field.IncludeInPrint,
                     fieldSettings,
                         field.ProgrammaticValue,
-                        CreateProjectFieldVisibility(field));
+                        CreateProjectFieldVisibility(field),
+                    CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroup?.CharacterGroupId));
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)
@@ -353,7 +377,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                             variant.Price,
                             variant.PlayerSelectable,
                             variant.IsActive,
-                            variant.CharacterGroup?.CharacterGroupId,
+                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroup?.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue
@@ -370,7 +394,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                             variant.Price,
                             variant.PlayerSelectable,
                             variant.IsActive,
-                            variant.CharacterGroup?.CharacterGroupId,
+                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroup?.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue

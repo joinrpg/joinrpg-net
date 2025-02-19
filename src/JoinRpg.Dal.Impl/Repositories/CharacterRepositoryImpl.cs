@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -26,6 +27,15 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
     }
 
     public async Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds) => await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
+
+    public Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds)
+    {
+        if (characterIds.Select(c => c.ProjectId).Distinct().Count() > 1)
+        {
+            throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(characterIds));
+        }
+        return GetCharacters(characterIds.First().ProjectId, [.. characterIds.Select(c => c.CharacterId)]);
+    }
 
     public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
     {

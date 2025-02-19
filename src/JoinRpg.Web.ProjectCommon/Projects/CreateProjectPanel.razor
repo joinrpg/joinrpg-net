@@ -13,23 +13,20 @@
 
 @if (creating)
 {
-  <JoinLoadingMessage Message="Проект создается..."/>
-  return;
+    <JoinLoadingMessage Message="Проект создается..."/>
+    return;
 }
 
-<JoinAlert Variation="VariationStyleEnum.Info">
-  <h4>Правила сайта</h4>
-    <ol>
-        <li>Joinrpg — для ролевых игр. Если ваше мероприятие не является ролевой игрой или ролевым конвентом, просьба предварительно согласовать с нами по адресу support@joinrpg.ru</li>
-        <li>Надеемся, что вам понравится наш сайт. Мы сами мастера и делаем его для других мастеров. Ведите себя адекватно, используйте сайт по назначению и все будет здорово.</li>
-        <li>Если у вас будут какие-то проблемы, пишите в поддержку. Мы всегда рады помочь, но обратите внимание: вы ничего не платите нам, и, следовательно, не являетесь нашим клиентом. Мы поддерживаем сайт бесплатно и в свободное время, у нас есть работа, семья, личная жизнь, другие хобби.</li>
-        <li>Вы можете обсудить проблему с другими пользователями в чате в телеграмме. Это часто самый быстрый способ получить ответ. Если вам нужна именно наша помощь, напишите в техподдержку, чат мы не всегда просматриваем.</li>
-        <li>Мы будем вынуждены заблокировать тех пользователей, которые нарушают общепринятые правила интернетов. Это включает (но не ограничивается): спам, взлом нашего или других сайтов, любые другие действия, которые ставят нас под угрозу технически или юридически. Мы не ограничиваем себя определенным списком или правилами, но постараемся применять блокировки только как крайнюю меру. Пока что такой необходимости не возникало. Мастерская группа в целом отвечает за поведение на сайте каждого конкретного мастера.</li>
-        <li>Если вам нужна какая-то доработка или не совсем удобно использовать наш сайт, мы с радостью обсудим доработки, но команда сайта не может гарантировать никаких сроков. Код сайта <a href="https://gitgub.com/joinrpg/joinrpg-net/">open source</a>, вполне возможно, вам самим удастся найти программиста. В прошлом мы заключали сделки вроде «доработки за пожертвование» и готовы обсудить их снова.</li>
-        <li>Если кто-то ведет себя как м...к по отношению к нам, мы не даем таким людям согласия на использование нашего сайта.</li>
-        <li>Рады вас видеть и удачной вам игры!</li>
-    </ol>
-</JoinAlert>
+@if (created is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">
+        Проект был создан, вы можете перейти на <a href="/@(created.Value)/home">страницу проекта</a>.
+        При настройке проекта согласно вашим запросам произошла ошибка. Обратитесь в техподдержку и/или проверьте настройки проекта вручную.
+    </JoinAlert>
+    return;
+}
+
+<JoinRulesPanel />
 
 <JoinPanel>
     <Header>Создание новой базы заявок</Header>
@@ -51,6 +48,9 @@
                 <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
                     <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" />
                 </FormRowFor>
+                <FormRowFor For="@(() => Model.CopySettings)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.CopySettings" />
+                </FormRowFor>
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Create" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
@@ -66,6 +66,7 @@
     private bool formInvalid = true;
     private bool creating = false;
     private ValidationMessageStore? messageStore;
+    private ProjectIdentification? created;
 
     [Parameter]
     [EditorRequired]
@@ -97,9 +98,12 @@
         messageStore?.Clear();
 
         // Custom validation logic
-        if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother && Model.CopyFromProjectId is null)
+        if (Model.ProjectType == ProjectTypeViewModel.CopyFromAnother)
         {
-            messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
+            if (Model.CopyFromProjectId is null)
+            {
+                messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
+            }
         }
     }
 
@@ -107,8 +111,20 @@
     {
         try {
             creating = true;
-            var id = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
-            NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+            var result = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
+            if (result.Error is null && result.ProjectId is ProjectIdentification id)
+            {
+                NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+            }
+            else
+            {
+                if (result.ProjectId is not null)
+                {
+                    created = result.ProjectId;
+                }
+                messageStore?.Add(() => Model, result.Error ?? "Неизвестная серверная ошибка при создании проекта");
+                creating = false;
+            }
         }
         catch
         {

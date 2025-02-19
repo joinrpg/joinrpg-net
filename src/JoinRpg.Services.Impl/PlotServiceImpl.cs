@@ -15,14 +15,14 @@ namespace JoinRpg.Services.Impl;
 
 public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurrentUserAccessor currentUserAccessor) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPlotService
 {
-    public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
+    public async Task<PlotFolderIdentification> CreatePlotFolder(ProjectIdentification projectId, string masterTitle, string todo)
     {
         if (masterTitle == null)
         {
             throw new ArgumentNullException(nameof(masterTitle));
         }
 
-        var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
+        var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId.Value);
         _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
         var startTimeUtc = DateTime.UtcNow;
         var plotFolder = new PlotFolder
@@ -39,6 +39,8 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
 
         project.PlotFolders.Add(plotFolder);
         await UnitOfWork.SaveChangesAsync();
+
+        return new PlotFolderIdentification(projectId, plotFolder.PlotFolderId);
     }
 
     private async Task AssignTagList(ICollection<ProjectItemTag> presentTags, string title)
@@ -74,18 +76,18 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     }
 
     public async Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
-      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType)
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
 
         _ = folder.RequestMasterAccess(CurrentUserId);
 
         var now = DateTime.UtcNow;
-        var characterGroups = await ProjectRepository.LoadGroups(plotFolderId.ProjectId, targetGroups);
+        var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
 
         if (characterGroups.Count != targetGroups.Distinct().Count())
         {
-            var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+            var missing = string.Join(", ", targetGroups.Select(g => g.CharacterGroupId).Except(characterGroups.Select(cg => cg.CharacterGroupId)));
             throw new Exception($"Groups {missing} doesn't belong to project");
         }
         var plotElement = new PlotElement()
@@ -97,7 +99,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
             ProjectId = plotFolderId.ProjectId,
             PlotFolderId = plotFolderId,
             TargetGroups = characterGroups,
-            TargetCharacters = await ValidateCharactersList(plotFolderId.ProjectId, targetChars),
+            TargetCharacters = await ValidateCharactersList(plotFolderId.ProjectId, [.. targetChars.Select(c => c.CharacterId)]),
             ElementType = elementType,
         };
 
@@ -153,7 +155,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     }
 
     public async Task EditPlotElement(PlotElementIdentification plotelementid, string contents,
-      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars)
+      string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars)
     {
         var now = DateTime.UtcNow;
         var plotElement = await LoadElement(plotelementid);
@@ -173,18 +175,18 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
         plotElement.PlotFolder.ModifiedDateTime = now;
     }
 
-    private async Task UpdateElementTarget(ProjectIdentification projectId, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars,
+    private async Task UpdateElementTarget(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars,
       PlotElement plotElement)
     {
-        var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
+        var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
 
         if (characterGroups.Count != targetGroups.Distinct().Count())
         {
-            var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+            var missing = string.Join(", ", targetGroups.Select(x => x.CharacterGroupId).Except(characterGroups.Select(cg => cg.CharacterGroupId)));
             throw new Exception($"Groups {missing} doesn't belong to project");
         }
         plotElement.TargetGroups.AssignLinksList(characterGroups);
-        plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
+        plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(targetChars));
     }
 
     private void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)

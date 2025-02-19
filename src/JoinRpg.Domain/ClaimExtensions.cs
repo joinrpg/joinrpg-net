@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain;
 
@@ -24,10 +25,10 @@ public static class ClaimExtensions
         return claim.Character.Claims.Any(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive());
     }
 
-    public static bool IsPartOfAnyOfGroups(this Character claimSource, IReadOnlyCollection<int> groups)
+    public static bool IsPartOfAnyOfGroups(this Character claimSource, IReadOnlyCollection<CharacterGroupIdentification> groups)
     {
         //TODO we can do faster than this
-        return claimSource.GetParentGroupsToTop().Select(x => x.CharacterGroupId).Intersect(groups).Any();
+        return CharacterGroupIdentification.FromList(claimSource.GetParentGroupsToTop().Select(x => x.CharacterGroupId), new ProjectIdentification(claimSource.ProjectId)).Intersect(groups).Any();
     }
 
     public static bool IsPartOfGroup(this Character claimSource, int characterGroupId)

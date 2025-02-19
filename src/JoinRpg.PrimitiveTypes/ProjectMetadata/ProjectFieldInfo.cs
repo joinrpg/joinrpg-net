@@ -16,13 +16,14 @@ public record class ProjectFieldInfo(
     MandatoryStatus MandatoryStatus,
     bool ValidForNpc,
     bool IsActive,
-    IReadOnlyCollection<int> GroupsAvailableForIds,
+    IReadOnlyCollection<CharacterGroupIdentification> GroupsAvailableForIds,
     MarkdownString Description,
     MarkdownString MasterDescription,
     bool IncludeInPrint,
     ProjectFieldSettings FieldSettings,
     string? ProgrammaticValue,
-    ProjectFieldVisibility ProjectFieldVisibility)
+    ProjectFieldVisibility ProjectFieldVisibility,
+    CharacterGroupIdentification? SpecialGroupId)
     : IProjectEntityWithId
 {
     private const string CheckboxValueOn = "on";

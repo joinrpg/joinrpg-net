@@ -1,8 +1,4 @@
 namespace JoinRpg.PrimitiveTypes;
-
-/// <summary>
-/// Moniker that indetifies character and user that performs access to it.
-/// </summary>
 public record CharacterIdentification(
     int ProjectId,
     int CharacterId)
@@ -19,4 +15,6 @@ public record CharacterIdentification(
             return new CharacterIdentification(ProjectId, CharacterId.Value);
         }
     }
+
+    public static IEnumerable<CharacterIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new CharacterIdentification(projectId, g));
 }

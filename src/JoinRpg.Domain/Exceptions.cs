@@ -226,14 +226,21 @@ public class NoAccessToProjectException : JoinRpgProjectException
   : base(new ProjectIdentification(entity.ProjectId), $"No access to entity of {entity.Project.ProjectName} for user {userId}") => UserId = userId;
 }
 
-public class FieldRequiredException(string fieldName) : JoinRpgBaseException($"Field {fieldName} is required")
+public class FieldRequiredException(string fieldName, string message) : JoinRpgBaseException(message)
 {
+    public FieldRequiredException(string fieldName) : this(fieldName, $"Field {fieldName} is required")
+    {
+
+    }
+
     public string FieldName { get; } = fieldName;
 }
 
-public class CharacterFieldRequiredException(string fieldName, ProjectFieldIdentification fieldId) : FieldRequiredException(fieldName)
+public class CharacterFieldRequiredException(string fieldName, ProjectFieldIdentification fieldId, CharacterIdentification characterId)
+    : FieldRequiredException(fieldName, $"Проблема при сохранении персонажа {characterId}: поле \"{fieldName}\"{fieldId} обязательно, но не заполнено.")
 {
     public ProjectFieldIdentification FieldId { get; } = fieldId;
+    public CharacterIdentification CharacterId { get; } = characterId;
 }
 
 public class ValueAlreadySetException : JoinRpgBaseException

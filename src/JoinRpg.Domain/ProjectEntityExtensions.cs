@@ -52,12 +52,18 @@ public static class ProjectEntityExtensions
     public static T RequestMasterAccess<T>([NotNull] this T? field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
             where T : IProjectEntity
     {
-        return field.RequestMasterAccess(currentUserAccessor.UserId, acl => permission.GetPermssionExpression()(acl));
+        return field.RequestMasterAccess(currentUserAccessor.UserId, permission);
+    }
+
+    public static T RequestMasterAccess<T>([NotNull] this T? field, int? currentUserId, Permission permission = Permission.None)
+        where T : IProjectEntity
+    {
+        return field.RequestMasterAccess(currentUserId, acl => permission.GetPermssionExpression()(acl));
     }
 
     public static T RequestMasterAccess<T>([NotNull] this T? field,
         int? currentUserId,
-        Expression<Func<ProjectAcl, bool>>? accessType = null)
+        Expression<Func<ProjectAcl, bool>>? accessType)
     where T : IProjectEntity
     {
         ArgumentNullException.ThrowIfNull(field);
