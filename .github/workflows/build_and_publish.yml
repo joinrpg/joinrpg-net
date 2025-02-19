@@ -140,3 +140,32 @@ jobs:
           docker tag ${MIGRATOR_NAME} ${MIGRATOR_IMAGE_ID}:latest
           docker push ${MIGRATOR_IMAGE_ID}:latest
         fi
+
+    - name: Log in to Yandex Container Registry
+      # if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      id: login-cr
+      uses: yc-actions/yc-cr-login@v2
+      with:
+        yc-sa-json-credentials: ${{ secrets.YANDEX_CR_SA_KEY_JSON }}
+
+    - name: Push portal image to Yandex Cloud Container Registry
+    # if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      env:
+          CR_REGISTRY: crp3fr717nr1rn78qeij
+          CR_REPOSITORY: joinrpg-net
+          IMAGE_TAG: ${{ github.repository_owner }}
+      run: |
+          APP_IMAGE_ID=cr.yandex/$CR_REGISTRY/${{ github.repository_owner }}/${APP_NAME}
+
+          # Change all uppercase to lowercase
+          APP_IMAGE_ID=$(echo ${APP_IMAGE_ID} | tr '[A-Z]' '[a-z]')
+          VERSION=$(echo ${{ env.CALCULATED_VERSION }}  | tr '[A-Z]' '[a-z]')
+
+          docker tag ${APP_NAME} ${APP_IMAGE_ID}:${VERSION}
+          docker push ${APP_IMAGE_ID}:${VERSION}
+
+          if [[ "${{ env.CALCULATED_VERSION_IS_RELEASE }}" == "True" ]]
+          then
+            docker tag ${APP_NAME} ${APP_IMAGE_ID}:latest
+            docker push ${APP_IMAGE_ID}:latest
+          fi
