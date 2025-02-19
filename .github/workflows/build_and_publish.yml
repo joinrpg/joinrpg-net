@@ -89,19 +89,19 @@ jobs:
     #Rest of the pipeline implies write api privileges and can't be run on PRs
 
     - name: Publish portal
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      #if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish -c Release --no-build ./src/JoinRpg.Portal/JoinRpg.Portal.csproj -p:Version=${{ env.CALCULATED_VERSION }}
 
     - name: Publish migrator
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      #if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish -c Release --no-build ./src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj -p:Version=${{ env.CALCULATED_VERSION }}
 
     - name: Build portal image
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      #if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: docker build ./src/JoinRpg.Portal --tag ${APP_NAME} --label "runnumber=${GITHUB_RUN_ID}"
 
     - name: Build migrator image
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      #if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: docker build ./src/Joinrpg.Dal.Migrate --tag ${MIGRATOR_NAME} --label "runnumber=${GITHUB_RUN_ID}"
 
     - name: Log in to docker registry
