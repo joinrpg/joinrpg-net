@@ -5,6 +5,7 @@ using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
@@ -296,18 +297,32 @@ internal class CloneProjectHelper(
     {
         foreach (var originalFolder in originalEntity.PlotFolders.Where(c => c.IsActive))
         {
-            var plotFolderId = await plotService.CreatePlotFolder(projectId, originalFolder.MasterTitle, originalFolder.TodoField);
-
-            foreach (var originalElement in originalFolder.Elements)
+            var originalPlotId = new PlotFolderIdentification(original.ProjectId, originalFolder.PlotFolderId);
+            try
             {
-                PlotElementTexts lastVersion = originalElement.LastVersion();
-                await plotService.CreatePlotElement(
-                    plotFolderId,
-                    lastVersion.Content.Contents ?? "",
-                    lastVersion.TodoField,
-                    TryMapOriginalGroupIds(originalElement.TargetGroups.Select(g => g.CharacterGroupId)),
-                    TryMapOriginalCharacterIds(originalElement.TargetCharacters.Select(c => c.CharacterId)),
-                    originalElement.ElementType);
+                var plotFolderId = await plotService.CreatePlotFolder(projectId, originalFolder.MasterTitle, originalFolder.TodoField);
+
+                foreach (var originalElement in originalFolder.Elements)
+                {
+                    PlotElementTexts lastVersion = originalElement.LastVersion();
+                    await plotService.CreatePlotElement(
+                        plotFolderId,
+                        lastVersion.Content.Contents ?? "",
+                        lastVersion.TodoField,
+                        TryMapOriginalGroupIds(originalElement.TargetGroups.Select(g => g.CharacterGroupId)),
+                        TryMapOriginalCharacterIds(originalElement.TargetCharacters.Select(c => c.CharacterId)),
+                        originalElement.ElementType);
+                }
+            }
+            catch (DbEntityValidationException ex)
+            {
+                logger.LogWarning(ex, "Не удалось скопировать сюжет {originalPlotId} в проект {projectId}. Копирование проекта будет продолжено.", originalPlotId, projectId);
+                everythingFine = false;
+            }
+            catch (JoinRpgBaseException ex)
+            {
+                logger.LogWarning(ex, "Не удалось скопировать сюжет {originalPlotId} в проект {projectId}. Копирование проекта будет продолжено.", originalPlotId, projectId);
+                everythingFine = false;
             }
         }
     }
