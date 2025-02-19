@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -54,4 +55,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
 
         UpdateSpecialGroups(fields);
     }
+
+    [DoesNotReturn]
+    protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Character.CharacterId));
 }

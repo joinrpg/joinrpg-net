@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 
@@ -31,4 +32,7 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
     }
 
     public override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields(ProjectInfo);
+
+    [DoesNotReturn]
+    protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Claim.CharacterId));
 }
