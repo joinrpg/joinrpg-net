@@ -107,7 +107,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
 
-            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required)
+            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character))
             {
                 ThrowRequiredField(field);
                 return;
