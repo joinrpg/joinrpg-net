@@ -160,13 +160,13 @@ jobs:
           IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
           VERSION=$(echo ${{ env.CALCULATED_VERSION }}  | tr '[A-Z]' '[a-z]')
 
-          docker tag ${APP_NAME} ${APP_IMAGE_ID}:${VERSION}
-          docker push ${APP_IMAGE_ID}:${VERSION}
+          docker tag ${APP_NAME} ${IMAGE_ID}:${VERSION}
+          docker push ${IMAGE_ID}:${VERSION}
 
           if [[ "${{ env.CALCULATED_VERSION_IS_RELEASE }}" == "True" ]]
           then
-            docker tag ${APP_NAME} ${APP_IMAGE_ID}:latest
-            docker push ${APP_IMAGE_ID}:latest
+            docker tag ${APP_NAME} ${IMAGE_ID}:latest
+            docker push ${IMAGE_ID}:latest
           fi
 
     - name: Push migrator image to Yandex Cloud Container Registry
