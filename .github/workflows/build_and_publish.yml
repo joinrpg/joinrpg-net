@@ -154,7 +154,7 @@ jobs:
     - name: Push portal image to Yandex Cloud Container Registry
     # if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: |
-          APP_IMAGE_ID=cr.yandex/$YCR_REGISTRY/${{ github.repository_owner }}/${APP_NAME}
+          APP_IMAGE_ID=cr.yandex/$YCR_REGISTRY/${APP_NAME}
 
           # Change all uppercase to lowercase
           APP_IMAGE_ID=$(echo ${APP_IMAGE_ID} | tr '[A-Z]' '[a-z]')
