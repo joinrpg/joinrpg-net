@@ -28,8 +28,10 @@ public record class ProjectInfo
     public bool AllowToSetGroups { get; }
 
     public CharacterGroupIdentification RootCharacterGroupId { get; }
-
+    public IReadOnlyCollection<ProjectMasterInfo> Masters { get; }
     public string FieldsOrdering { get; }
+
+    public bool PublishPlot { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -41,7 +43,9 @@ public record class ProjectInfo
         bool accomodationEnabled,
         CharacterIdentification? defaultTemplateCharacter,
         bool allowToSetGroups,
-        CharacterGroupIdentification rootCharacterGroupId)
+        CharacterGroupIdentification rootCharacterGroupId,
+        IReadOnlyCollection<ProjectMasterInfo> masters,
+        bool publishPlot)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -62,6 +66,8 @@ public record class ProjectInfo
         DefaultTemplateCharacter = defaultTemplateCharacter;
         AllowToSetGroups = allowToSetGroups;
         RootCharacterGroupId = rootCharacterGroupId;
+        Masters = masters;
+        PublishPlot = publishPlot;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)

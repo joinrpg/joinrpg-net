@@ -1,27 +1,16 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
+using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization;
 
-public class AllowMasterHandler : AuthorizationHandler<MasterRequirement>
+public class AllowMasterHandler(
+    IProjectMetadataRepository projectMetadataRepository,
+    IHttpContextAccessor httpContextAccessor,
+    ILogger<AllowMasterHandler> logger) : AuthorizationHandler<MasterRequirement>
 {
-    private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly ILogger<AllowMasterHandler> logger;
-
-    public AllowMasterHandler(
-        IProjectRepository projectRepository,
-        IHttpContextAccessor httpContextAccessor,
-        ILogger<AllowMasterHandler> logger)
-    {
-        ProjectRepository = projectRepository;
-        this.httpContextAccessor = httpContextAccessor;
-        this.logger = logger;
-    }
-    private IProjectRepository ProjectRepository { get; }
-
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)
     {
         if (context.User.Identity?.IsAuthenticated != true)
@@ -30,24 +19,17 @@ public class AllowMasterHandler : AuthorizationHandler<MasterRequirement>
             return;
         }
 
-        if (httpContextAccessor.HttpContext?.TryGetProjectIdFromItems() is not int projectId)
+        if (httpContextAccessor.HttpContext?.TryGetProjectIdFromItems() is not ProjectIdentification projectId)
         {
             logger.LogError("Project id was not discovered, but master access required. That's probably problem with routing");
             return;
         }
 
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-
-        if (project == null)
-        {
-            logger.LogInformation("Failed to load Project={projectId}, that's incorrect id. Should be accompanied by 404.", projectId);
-            return;
-        }
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var userId = context.User.GetUserIdOrDefault();
 
-        //Move this to claims to prevent DB call
-        if (project.ProjectAcls.Any(acl => acl.UserId == userId && requirement.Permission.GetPermssionExpression()(acl)))
+        if (project.Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(requirement.Permission)))
         {
             context.Succeed(requirement);
         }

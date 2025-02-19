@@ -1,15 +1,17 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
 
 internal static class ProjectIdExtractor
 {
 
-    public static int? TryGetProjectIdFromItems(this HttpContext httpContext)
+    public static ProjectIdentification? TryGetProjectIdFromItems(this HttpContext httpContext)
     {
         if (httpContext.Items.TryGetValue(Constants.ProjectIdName, out var projectIdBoxed))
         {
             if (projectIdBoxed is int projectId)
             {
-                return projectId;
+                return new(projectId);
             }
         }
         return null;

@@ -323,7 +323,21 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             project.Details.EnableAccommodation,
             CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
-            rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId));
+            rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId),
+            masters: CreateMasterList(project),
+            publishPlot: project.Details.PublishPlot
+            );
+
+        IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
+        {
+            return [.. project.ProjectAcls.Select(acl => new ProjectMasterInfo(
+                new UserIdentification(acl.User.UserId),
+                acl.User.ExtractDisplayName(),
+                new Email(acl.User.Email),
+                acl.GetPermissions())
+                )
+                ];
+        }
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)
         {
