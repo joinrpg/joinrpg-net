@@ -1,3 +1,4 @@
+using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using JoinRpg.Portal.Infrastructure.Logging;
 using Serilog;
@@ -14,7 +15,26 @@ public class Program
 
         try
         {
-            CreateHostBuilder(args).Build().Run();
+            var builder = WebApplication.CreateBuilder(args);
+
+            var startup = new Startup(builder.Configuration, builder.Environment);
+
+            startup.ConfigureServices(builder.Services);
+
+            builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+            builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
+
+            builder.Host.UseSerilog((context, _, configuration) =>
+             {
+                 var loggerOptions = context.Configuration.GetSection("Logging").Get<SerilogOptions>();
+                 configuration.ConfigureLogger(loggerOptions!);
+             });
+
+            var app = builder.Build();
+
+            startup.Configure(app, app.Environment);
+
+            app.Run();
         }
         catch (Exception e)
         {
@@ -26,15 +46,4 @@ public class Program
             Log.CloseAndFlush();
         }
     }
-
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host
-            .CreateDefaultBuilder(args)
-            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .UseSerilog((context, _, configuration) =>
-            {
-                var loggerOptions = context.Configuration.GetSection("Logging").Get<SerilogOptions>();
-                configuration.ConfigureLogger(loggerOptions!);
-            })
-            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
 }
