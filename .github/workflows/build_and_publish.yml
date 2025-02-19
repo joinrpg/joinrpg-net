@@ -154,10 +154,10 @@ jobs:
     - name: Push portal image to Yandex Cloud Container Registry
     # if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: |
-          APP_IMAGE_ID=cr.yandex/$YCR_REGISTRY/${APP_NAME}
+          IMAGE_ID=cr.yandex/$YCR_REGISTRY/${APP_NAME}
 
           # Change all uppercase to lowercase
-          APP_IMAGE_ID=$(echo ${APP_IMAGE_ID} | tr '[A-Z]' '[a-z]')
+          IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
           VERSION=$(echo ${{ env.CALCULATED_VERSION }}  | tr '[A-Z]' '[a-z]')
 
           docker tag ${APP_NAME} ${APP_IMAGE_ID}:${VERSION}
@@ -167,4 +167,22 @@ jobs:
           then
             docker tag ${APP_NAME} ${APP_IMAGE_ID}:latest
             docker push ${APP_IMAGE_ID}:latest
+          fi
+
+    - name: Push migrator image to Yandex Cloud Container Registry
+    # if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      run: |
+          IMAGE_ID=cr.yandex/$YCR_REGISTRY/${MIGRATOR_NAME}
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
+          VERSION=$(echo ${{ env.CALCULATED_VERSION }}  | tr '[A-Z]' '[a-z]')
+
+          docker tag ${MIGRATOR_NAME} ${IMAGE_ID}:${VERSION}
+          docker push ${IMAGE_ID}:${VERSION}
+
+          if [[ "${{ env.CALCULATED_VERSION_IS_RELEASE }}" == "True" ]]
+          then
+            docker tag ${MIGRATOR_NAME} ${IMAGE_ID}:latest
+            docker push ${IMAGE_ID}:latest
           fi
