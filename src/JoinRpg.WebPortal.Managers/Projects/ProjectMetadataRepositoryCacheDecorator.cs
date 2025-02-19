@@ -14,7 +14,7 @@ public class ProjectMetadataRepositoryCacheDecorator(
         {
             return value;
         }
-        var projectInfo = await repository.GetProjectMetadata(projectId);
+        var projectInfo = await repository.GetProjectMetadata(projectId, skipCache);
         projectMetadataCache.Set(projectId, projectInfo);
 
         return projectInfo;

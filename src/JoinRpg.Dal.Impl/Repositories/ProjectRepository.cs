@@ -73,12 +73,16 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public async Task<Project?> GetProjectWithFieldsAsync(int project)
-      => await AllProjects
-        .Include(p => p.Details)
-        .Include(p => p.ProjectAcls.Select(a => a.User))
-        .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
-        .SingleOrDefaultAsync(p => p.ProjectId == project);
+    public Task<Project?> GetProjectWithFieldsAsync(int project) => GetProjectWithFieldsAsync(project, skipCache: false);
+    public async Task<Project?> GetProjectWithFieldsAsync(int project, bool skipCache)
+    {
+        var query = skipCache ? AllProjects.AsNoTracking() : AllProjects;
+        return await query
+         .Include(p => p.Details)
+         .Include(p => p.ProjectAcls.Select(a => a.User))
+         .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
+         .SingleOrDefaultAsync(p => p.ProjectId == project);
+    }
 
     public Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId) => GetGroupAsync(new(new ProjectIdentification(projectId), characterGroupId));
 
@@ -292,8 +296,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache)
     {
-        _ = ignoreCache; // Мы не кешируем
-        var project = await GetProjectWithFieldsAsync(projectId.Value) ?? throw new InvalidOperationException($"Project with {projectId} not found");
+        var project = await GetProjectWithFieldsAsync(projectId, ignoreCache) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
         return CreateInfoFromProject(project, projectId);
     }

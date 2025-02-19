@@ -21,7 +21,7 @@ public class PerRequestCache<TKey, TValue>
 
     public void Set(TKey key, TValue value)
     {
-        _ = cache.TryAdd(key, value);
+        _ = cache.AddOrUpdate(key, _ => value, (_, _) => value);
     }
 
 
