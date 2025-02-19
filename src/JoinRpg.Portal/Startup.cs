@@ -147,8 +147,10 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        app.MapStaticAssets();
+
         _ = app.UseForwardedHeaders();
 
         _ = app.UseRequestLocalization(options =>
@@ -193,15 +195,12 @@ public class Startup
             .UseSwagger(Swagger.Configure)
             .UseSwaggerUI(Swagger.ConfigureUI);
 
+        app.MapJoinHealthChecks();
+
         if (!env.IsDevelopment())
         {
             _ = app.UseHttpsRedirection();
         }
-
-        //_ = app.UseStaticFiles()
-        //       .UseBlazorFrameworkFiles();
-
-        _ = app.UseRouting();
 
         _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
@@ -209,15 +208,9 @@ public class Startup
         _ = app.UseAuthorization()
             .UseMiddleware<CsrfTokenCookieMiddleware>();
 
-        _ = app.UseEndpoints(endpoints =>
-          {
-              _ = endpoints.MapStaticAssets();
-              endpoints.MapJoinHealthChecks();
-
-              _ = endpoints.MapControllers();
-              _ = endpoints.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
-              _ = endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
-              _ = endpoints.MapRazorPages();
-          });
+        _ = app.MapControllers().WithStaticAssets();
+        _ = app.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}").WithStaticAssets();
+        _ = app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
+        _ = app.MapRazorPages().WithStaticAssets();
     }
 }
