@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Services.Interfaces.Projects;
 
 public interface ICreateProjectService
@@ -7,5 +5,5 @@ public interface ICreateProjectService
     /// <summary>
     /// Create of new project
     /// </summary>
-    Task<ProjectIdentification> CreateProject(CreateProjectRequest request);
+    Task<CreateProjectResultBase> CreateProject(CreateProjectRequest request);
 }

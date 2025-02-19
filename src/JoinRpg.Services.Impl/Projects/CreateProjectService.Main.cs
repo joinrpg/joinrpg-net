@@ -3,6 +3,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl.Projects;
 
@@ -12,43 +13,79 @@ internal partial class CreateProjectService
     IAccommodationService accommodationService,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
-    IProjectRepository projectRepository) : ICreateProjectService
+    IProjectRepository projectRepository,
+    ILogger<CreateProjectService> logger,
+    CloneProjectHelperFactory cloneProjectHelperFactory
+    ) : ICreateProjectService
 {
 
     //TODO[Localize]
-    async Task<ProjectIdentification> ICreateProjectService.CreateProject(CreateProjectRequest request)
+    async Task<CreateProjectResultBase> ICreateProjectService.CreateProject(CreateProjectRequest request)
     {
-        var project = await projectService.AddProject(
-            request.ProjectName,
-            rootCharacterGroupName: "Все роли");
+        DataModel.Project project;
+        try
+        {
+            project = await projectService.AddProject(
+                request.ProjectName,
+                rootCharacterGroupName: "Все роли");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при создании проекта");
+            return new FaildToCreateProjectResult(ex.Message);
+        }
 
         var projectId = new ProjectIdentification(project.ProjectId);
 
         if (request is CloneProjectRequest cloneRequest)
         {
-            await CopyFromAnother(request.ProjectName, project, projectId, cloneRequest.CopyFromId);
-            return projectId;
-        }
+            try
+            {
+                if (await CopyFromAnother(cloneRequest, project, projectId))
+                {
+                    return new SuccessCreateProjectResult(projectId);
+                }
+                else
+                {
+                    return new PartiallySuccessCreateProjectResult(projectId, "Удалось скопировать не все");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ошибка при клонировании проекта");
+                return new PartiallySuccessCreateProjectResult(projectId, ex.Message);
+            }
 
-        switch (request.ProjectType)
+        }
+        var rootGroupId = new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId);
+
+        try
         {
-            case ProjectTypeDto.Larp:
-                await SetupLarp(request, project, projectId);
-                break;
-            case ProjectTypeDto.Convention:
-                await SetupConventionParticipant(request, project, projectId);
-                break;
-            case ProjectTypeDto.ConventionProgram:
-                await SetupConventionProgram(request, project, projectId);
-                break;
-            case ProjectTypeDto.EmptyProject:
-                // Ничего не делаем
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(request.ProjectType));
+            switch (request.ProjectType)
+            {
+                case ProjectTypeDto.Larp:
+
+                    await SetupLarp(request, projectId, rootGroupId);
+                    break;
+                case ProjectTypeDto.Convention:
+                    await SetupConventionParticipant(request, projectId, rootGroupId);
+                    break;
+                case ProjectTypeDto.ConventionProgram:
+                    await SetupConventionProgram(request, projectId, rootGroupId);
+                    break;
+                case ProjectTypeDto.EmptyProject:
+                    // Ничего не делаем
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(request.ProjectType));
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при настройке проекта");
+            return new PartiallySuccessCreateProjectResult(projectId, ex.Message);
         }
 
-
-        return projectId;
+        return new SuccessCreateProjectResult(projectId);
     }
 }

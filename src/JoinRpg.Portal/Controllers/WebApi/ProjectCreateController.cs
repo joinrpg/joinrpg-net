@@ -24,9 +24,15 @@ public class ProjectCreateController(ILogger<ProjectCreateController> logger) : 
                 model.CopyFromProjectId,
                 (ProjectCopySettingsDto)model.CopySettings
                 );
-            var project = await createProjectService.CreateProject(request);
+            var result = await createProjectService.CreateProject(request);
 
-            return Ok(project.Value);
+            return result switch
+            {
+                FaildToCreateProjectResult failed => Problem(title: "Произошла ошибка при обработке запроса", detail: failed.Message, statusCode: 500),
+                PartiallySuccessCreateProjectResult partially => Ok(new ProjectCreateResultViewModel(partially.ProjectId, partially.Message)),
+                SuccessCreateProjectResult successCreateProjectResult => Ok(new ProjectCreateResultViewModel(successCreateProjectResult.ProjectId, Error: null)),
+                _ => Ok(result)
+            };
         }
         catch (Exception exception)
         {

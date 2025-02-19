@@ -27,6 +27,26 @@ public record CreateProjectRequest
     }
 }
 
+public abstract record CreateProjectResultBase
+{
+
+}
+
+public record PartiallySuccessCreateProjectResult(ProjectIdentification ProjectId, string Message) : CreateProjectResultBase()
+{
+
+}
+
+public record SuccessCreateProjectResult(ProjectIdentification ProjectId) : CreateProjectResultBase()
+{
+
+}
+
+public record FaildToCreateProjectResult(string Message) : CreateProjectResultBase()
+{
+
+}
+
 public record CloneProjectRequest(ProjectName ProjectName, ProjectIdentification CopyFromId, ProjectCopySettingsDto CopySettings) : CreateProjectRequest(ProjectName, ProjectTypeDto.CopyFromAnother)
 {
 

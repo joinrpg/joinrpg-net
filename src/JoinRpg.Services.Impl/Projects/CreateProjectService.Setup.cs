@@ -9,10 +9,10 @@ namespace JoinRpg.Services.Impl.Projects;
 internal partial class CreateProjectService
 {
 
-    private async Task SetupConventionProgram(CreateProjectRequest request, Project project, ProjectIdentification projectId)
+    private async Task SetupConventionProgram(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
     {
         var name = await CreateField(projectId, "Название мероприятия", ProjectFieldType.String, MandatoryStatus.Required, canPlayerEdit: true);
-        var defaultChar = await CreateTopLevelCharacterSlot(project, "Хочу заявить мероприятие", name);
+        var defaultChar = await CreateTopLevelCharacterSlot(projectId, rootCharacterGroupId, "Хочу заявить мероприятие", name);
 
         await SetProjectSettings(projectId, request.ProjectName, defaultChar, autoAcceptClaims: false, enableAccomodation: false);
 
@@ -22,7 +22,7 @@ internal partial class CreateProjectService
         _ = await CreateField(projectId, "Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
     }
 
-    private async Task SetupConventionParticipant(CreateProjectRequest request, Project project, ProjectIdentification projectId)
+    private async Task SetupConventionParticipant(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
     {
         await fieldSetupService.SetFieldSettingsAsync(
             new FieldSettingsRequest()
@@ -32,7 +32,7 @@ internal partial class CreateProjectService
                 NameField = null
             });
 
-        var defaultChar = await CreateTopLevelCharacterSlot(project, "Участник конвента", null);
+        var defaultChar = await CreateTopLevelCharacterSlot(projectId, rootCharacterGroupId, "Участник конвента", null);
         await SetProjectSettings(projectId, request.ProjectName, defaultChar, autoAcceptClaims: true, enableAccomodation: true);
 
         await accommodationService.SaveRoomTypeAsync(new ProjectAccommodationType()
@@ -50,12 +50,12 @@ internal partial class CreateProjectService
 
     }
 
-    private async Task SetupLarp(CreateProjectRequest request, Project project, ProjectIdentification projectId)
+    private async Task SetupLarp(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
     {
         var name = await CreateField(projectId, "Имя персонажа", ProjectFieldType.String, MandatoryStatus.Required);
         var description = await CreateField(projectId, "Описание персонажа", ProjectFieldType.Text);
         await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
-        var defaultChar = await CreateTopLevelCharacterSlot(project, "Хочу на игру", name);
+        var defaultChar = await CreateTopLevelCharacterSlot(projectId, rootCharacterGroupId, "Хочу на игру", name);
 
         await SetProjectSettings(projectId, request.ProjectName, defaultChar, autoAcceptClaims: false, enableAccomodation: false);
     }

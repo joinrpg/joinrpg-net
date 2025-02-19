@@ -17,6 +17,15 @@
     return;
 }
 
+@if (created is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">
+        Проект был создан, вы можете перейти на <a href="/@(created.Value)/home">страницу проекта</a>.
+        При настройке проекта согласно вашим запросам произошла ошибка. Обратитесь в техподдержку и/или проверьте настройки проекта вручную.
+    </JoinAlert>
+    return;
+}
+
 <JoinRulesPanel />
 
 <JoinPanel>
@@ -57,6 +66,7 @@
     private bool formInvalid = true;
     private bool creating = false;
     private ValidationMessageStore? messageStore;
+    private ProjectIdentification? created;
 
     [Parameter]
     [EditorRequired]
@@ -101,8 +111,20 @@
     {
         try {
             creating = true;
-            var id = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
-            NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+            var result = await Services.GetRequiredService<IProjectCreateClient>().CreateProject(Model);
+            if (result.Error is null && result.ProjectId is ProjectIdentification id)
+            {
+                NavigationManager.NavigateTo($"/{id.Value}/home", forceLoad: true);
+            }
+            else
+            {
+                if (result.ProjectId is not null)
+                {
+                    created = result.ProjectId;
+                }
+                messageStore?.Add(() => Model, result.Error ?? "Неизвестная серверная ошибка при создании проекта");
+                creating = false;
+            }
         }
         catch
         {

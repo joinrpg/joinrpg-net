@@ -12,6 +12,7 @@ public enum ProjectTypeDto
 public enum ProjectCopySettingsDto
 {
     SettingsAndFields,
+    SettingsFieldsGroupsAndTemplates,
     SettingsFieldsGroupsAndCharacters,
     SettingsFieldsGroupsCharactersAndPlot,
 }
