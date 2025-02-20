@@ -247,6 +247,13 @@ public interface IPaymentsService
     Task UpdateLastClaimPaymentAsync(int projectId, int claimId);
 
     /// <summary>
+    /// Updates a provided finance operation
+    /// </summary>
+    /// <param name="fo">Finance operation to update</param>
+    /// <returns>State of the provided finance operation after the update</returns>
+    Task<FinanceOperationState> UpdateFinanceOperationAsync(FinanceOperation fo);
+
+    /// <summary>
     /// Sets recurrent payment to cancelled internally and tries to cancel on the bank side.
     /// </summary>
     /// <param name="projectId">Id of a project</param>
@@ -313,4 +320,21 @@ public interface IPaymentsService
     /// <param name="pageSize">How many records to return. Maximum allowed value is 10000.</param>
     /// <returns>A collection of discovered payments. When collection is empty, there is no payments for the provided search criteria.</returns>
     Task<IReadOnlyList<RecurrentPayment>> FindRecurrentPaymentsAsync(int? afterId = null, bool? activityStatus = true, int pageSize = 100);
+
+    /// <summary>
+    /// Searches for finance operations of a recurrent payment using the key-set pagination.
+    /// </summary>
+    /// <param name="recurrentPaymentId">Recurrent payment to to search finance operations of.</param>
+    /// <param name="forPeriod">UTC date for period to search finance operations of.</param>
+    /// <param name="ofStates">One or more states to search finance operations of.</param>
+    /// <param name="afterId">Takes finance operations with primary keys greater than provided value.</param>
+    /// <param name="pageSize">How many records to return. Maximum allowed value is 10000.</param>
+    /// <returns>A collection of discovered finance operations. When collection is empty, there is no finance operations for the provided search criteria.</returns>
+    Task<IReadOnlyList<FinanceOperation>> FindOperationsOfRecurrentPaymentAsync(
+        int recurrentPaymentId,
+        DateTime? forPeriod = null,
+        IReadOnlySet<FinanceOperationState>? ofStates = null,
+        int? afterId = null,
+        int pageSize = 100);
+
 }
