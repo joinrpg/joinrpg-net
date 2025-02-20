@@ -1,0 +1,25 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@switch (ProjectStatus)
+{
+    case ProjectLifecycleStatus.ActiveClaimsOpen:
+        if (!SkipIfOpen)
+        {
+            <b>Прием заявок открыт</b>
+        }
+        break;
+    case ProjectLifecycleStatus.ActiveClaimsClosed:
+        <b>Прием заявок закрыт</b>
+        break;
+    case ProjectLifecycleStatus.Archived:
+        <b>Проект в архиве</b>
+        break;
+
+}
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectLifecycleStatus ProjectStatus { get; set; } = default!;
+
+    [Parameter]
+    public bool SkipIfOpen { get; set; } = true;
+}

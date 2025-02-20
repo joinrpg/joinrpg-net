@@ -77,7 +77,8 @@ public class CloseProjectViewModel
     public bool IsMaster { get; set; }
 }
 
-public class ProjectDetailsViewModel(Project project, IReadOnlyCollection<Claim> claims)
+//TODO: Make this use ProjectInfo
+public class ProjectDetailsViewModel(Project project, IReadOnlyCollection<ClaimWithPlayer> claims)
 {
     public int ProjectId { get; } = project.ProjectId;
 

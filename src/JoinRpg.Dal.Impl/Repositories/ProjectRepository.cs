@@ -70,6 +70,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
       => AllProjects
+        .Include(p => p.Details)
         .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
@@ -81,6 +82,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
          .Include(p => p.Details)
          .Include(p => p.ProjectAcls.Select(a => a.User))
          .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
+         .Include(p => p.PaymentTypes)
          .SingleOrDefaultAsync(p => p.ProjectId == project);
     }
 
@@ -122,6 +124,19 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         {
             return project.RootGroup;
         }
+    }
+
+    public async Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId)
+    {
+        var query =
+            from characterGroup in Ctx.Set<CharacterGroup>()
+            where characterGroup.ProjectId == characterGroupId.ProjectId && characterGroup.ParentGroupsImpl.ListIds.Contains(characterGroupId.CharacterGroupId.ToString())
+            where !characterGroup.IsSpecial && characterGroup.IsActive
+            select characterGroup;
+
+        var list = await query.ToListAsync();
+        return [.. list.Where(g => g.ParentCharacterGroupIds.Contains(characterGroupId.CharacterGroupId))
+            .Select(g => new CharacterGroupHeaderDto(new CharacterGroupIdentification(new ProjectIdentification(g.ProjectId), g.CharacterGroupId), g.CharacterGroupName, g.IsActive, g.IsPublic))];
     }
 
     public async Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
@@ -313,6 +328,14 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             project.Details.PreferentialFeeEnabled,
             project.PaymentTypes.Select(pt => new PaymentTypeInfo(pt.TypeKind, pt.IsActive, pt.UserId)).ToArray());
 
+        var status = (project.Active, project.IsAcceptingClaims) switch
+        {
+            (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
+            (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
+            (false, false) => ProjectLifecycleStatus.Archived,
+            (false, true) => throw new InvalidOperationException()
+        };
+
         return new ProjectInfo(
             projectId,
             project.ProjectName,
@@ -325,7 +348,10 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
             rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId),
             masters: CreateMasterList(project),
-            publishPlot: project.Details.PublishPlot
+            publishPlot: project.Details.PublishPlot,
+            new ProjectCheckInSettings(project.Details.EnableCheckInModule),
+            status,
+            new ProjectScheduleSettings(project.Details.ScheduleEnabled)
             );
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)

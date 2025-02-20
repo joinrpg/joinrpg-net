@@ -132,6 +132,23 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     }
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
 
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
+    {
+        return await Ctx
+          .ClaimSet
+          .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
+          .Where(claim => claim.PlayerUserId == userId)
+          .Where(c => c.ProjectId == projectId)
+          .Select(claim => new ClaimWithPlayer
+          {
+              Player = claim.Player,
+              CharacterName = claim.Character.CharacterName,
+              Extra = claim.Player.Extra,
+              ClaimId = claim.ClaimId,
+          })
+          .ToListAsync();
+    }
+
     public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)
     {
         var claims = Ctx.Set<Claim>()

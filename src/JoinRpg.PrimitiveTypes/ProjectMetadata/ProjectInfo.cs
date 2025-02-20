@@ -32,6 +32,10 @@ public record class ProjectInfo
     public string FieldsOrdering { get; }
 
     public bool PublishPlot { get; }
+    public ProjectCheckInSettings ProjectCheckInSettings { get; }
+
+    public ProjectLifecycleStatus ProjectStatus { get; }
+    public ProjectScheduleSettings ProjectScheduleSettings { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -45,7 +49,10 @@ public record class ProjectInfo
         bool allowToSetGroups,
         CharacterGroupIdentification rootCharacterGroupId,
         IReadOnlyCollection<ProjectMasterInfo> masters,
-        bool publishPlot)
+        bool publishPlot,
+        ProjectCheckInSettings projectCheckInSettings,
+        ProjectLifecycleStatus projectStatus,
+        ProjectScheduleSettings projectScheduleSettings)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -68,6 +75,9 @@ public record class ProjectInfo
         RootCharacterGroupId = rootCharacterGroupId;
         Masters = masters;
         PublishPlot = publishPlot;
+        ProjectCheckInSettings = projectCheckInSettings;
+        ProjectStatus = projectStatus;
+        ProjectScheduleSettings = projectScheduleSettings;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)

@@ -76,7 +76,10 @@ public class MockedProject
 
         ProjectFieldInfo[] fields = [field, .. ProjectInfo.UnsortedFields];
 
-        ProjectInfo = new ProjectInfo(ProjectInfo.ProjectId, ProjectInfo.ProjectName, ProjectInfo.FieldsOrdering, fields, ProjectInfo.ProjectFieldSettings, ProjectInfo.ProjectFinanceSettings, ProjectInfo.AccomodationEnabled, ProjectInfo.DefaultTemplateCharacter, ProjectInfo.AllowToSetGroups, ProjectInfo.RootCharacterGroupId, [], false);
+        ProjectInfo = new ProjectInfo(ProjectInfo.ProjectId, ProjectInfo.ProjectName, ProjectInfo.FieldsOrdering, fields,
+            ProjectInfo.ProjectFieldSettings, ProjectInfo.ProjectFinanceSettings, ProjectInfo.AccomodationEnabled, ProjectInfo.DefaultTemplateCharacter,
+            ProjectInfo.AllowToSetGroups, ProjectInfo.RootCharacterGroupId, ProjectInfo.Masters, ProjectInfo.PublishPlot, ProjectInfo.ProjectCheckInSettings,
+            ProjectInfo.ProjectStatus, ProjectInfo.ProjectScheduleSettings);
         return field;
     }
 

@@ -27,7 +27,7 @@ public class GameController(
     {
         var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
         var claims = currentUserAccessor.UserIdOrDefault is int userId
-            ? await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId)
+            ? await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId)
             : [];
         if (project == null)
         {

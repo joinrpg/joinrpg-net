@@ -1,4 +1,6 @@
 ﻿@using JoinRpg.Portal.Infrastructure.Authentication
+@using JoinRpg.PrimitiveTypes.Access
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon;
 @model JoinRpg.Web.Models.MasterMenuViewModel
 
@@ -31,9 +33,9 @@
                         </li>
                         <li>@Html.ActionLink("Мои деньги", "ByMaster", "Finances", new { Model.ProjectId, MasterId = User.GetUserIdOrDefault() }, null)</li>
                         <li>
-                             <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@Model.ProjectId" asp-route-masterId="@User.GetUserIdOrDefault()">
-                                 Мои подписки
-                             </a>
+                            <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@Model.ProjectId" asp-route-masterId="@User.GetUserIdOrDefault()">
+                                Мои подписки
+                            </a>
                         </li>
                     </ul>
                 </li>
@@ -48,48 +50,48 @@
                             @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
                         </li>
                         <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
-                        
+
                         @if (Model.BigGroups.Any())
                         {
-                          <li role="separator" class="dropdown-header">По группам:</li>
+                            <li role="separator" class="dropdown-header">По группам:</li>
                         }
                         @foreach (var cg in Model.BigGroups)
-                            {
-                              <li>@(await Html.RenderComponentAsync<CharacterGroupLink>(RenderMode.Static, new {Model = cg})) </li>
-                            }
+                        {
+                            <li>@(await Html.RenderComponentAsync<CharacterGroupLink>(RenderMode.Static, new {Model = cg})) </li>
+                        }
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Персонажи <span class="caret"></span></a>
 
                     <ul class="dropdown-menu">
-                      <li>
-                        @Html.ActionLink("Все персонажи", "Active", "CharacterList", new { Model.ProjectId }, null)
-                      </li>
-                      <li>
-                        @Html.ActionLink("Свободные персонажи", "Vacant", "CharacterList", new { Model.ProjectId }, null)
-                      </li>
-                      <li>
-                        @Html.ActionLink("Занятые персонажи", "WithPlayers", "CharacterList", new { Model.ProjectId }, null)
-                      </li>
-                      <li>
-                        @Html.ActionLink("Проблемные персонажи", "Problems", "CharacterList", new { Model.ProjectId }, null)
-                      </li>
-                      <li>
-                        @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
-                      </li>
-                      <li>
+                        <li>
+                            @Html.ActionLink("Все персонажи", "Active", "CharacterList", new { Model.ProjectId }, null)
+                        </li>
+                        <li>
+                            @Html.ActionLink("Свободные персонажи", "Vacant", "CharacterList", new { Model.ProjectId }, null)
+                        </li>
+                        <li>
+                            @Html.ActionLink("Занятые персонажи", "WithPlayers", "CharacterList", new { Model.ProjectId }, null)
+                        </li>
+                        <li>
+                            @Html.ActionLink("Проблемные персонажи", "Problems", "CharacterList", new { Model.ProjectId }, null)
+                        </li>
+                        <li>
+                            @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
+                        </li>
+                        <li>
                             <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить персонажа</a>
-                      </li>
+                        </li>
 
-                      @if (Model.BigGroups.Any())
-                      {
-                        <li role="separator" class="dropdown-header">По группам:</li>
-                      }
-                      @foreach (var cg in Model.BigGroups)
-                      {
-                        <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
-                      }
+                        @if (Model.BigGroups.Any())
+                        {
+                            <li role="separator" class="dropdown-header">По группам:</li>
+                        }
+                        @foreach (var cg in Model.BigGroups)
+                        {
+                            <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                        }
 
                     </ul>
                 </li>
@@ -119,12 +121,12 @@
                         <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
                         @if (Model.BigGroups.Any())
                         {
-                          <li role="separator" class="dropdown-header">По группам:</li>
+                            <li role="separator" class="dropdown-header">По группам:</li>
                         }
                         @foreach (var cg in Model.BigGroups)
-                            {
-                        <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
-                            }
+                        {
+                            <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                        }
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -143,15 +145,15 @@
                             </a>
                         </li>
                         @if (Model.EnableAccommodation)
-                            {
-                        <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new { Model.ProjectId }, null)</li>
-                            }
+                        {
+                            <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new { Model.ProjectId }, null)</li>
+                        }
                     </ul>
                 </li>
                 @if (Model.ShowSchedule)
-                    {
-                <li>@Html.ActionLink("Расписание", "Index", "ShowSchedule", new { Model.ProjectId }, null)</li>
-                    }
+                {
+                    <li>@Html.ActionLink("Расписание", "Index", "ShowSchedule", new { Model.ProjectId }, null)</li>
+                }
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Прочее <span class="caret"></span></a>
                     <ul class="dropdown-menu">
@@ -162,29 +164,24 @@
                         <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Мастера", "Index", "Acl", new { Model.ProjectId }, null)</li>
                         <li><a asp-page="/GamePages/ResponsibleMasterRules" asp-route-projectId="@Model.ProjectId">
-                          Настройки ответственных
-                          </a></li>
+                                Настройки ответственных
+                            </a></li>
                         @if (Model.CheckInModuleEnabled)
-                            {
-                        <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
-                            }
+                        {
+                            <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
+                        }
 
-                        <li asp-is-disabled="!@Model.AccessToProject.CanChangeProjectProperties">
-                            <a asp-action="Edit" asp-controller="Game" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.AccessToProject.CanChangeProjectProperties">
+                        <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanChangeProjectProperties)">
+                            <a asp-action="Edit" asp-controller="Game" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanChangeProjectProperties)">
                                 Настройка
                             </a>
                         </li>
                     </ul>
                 </li>
             </ul>
-            @if (!Model.IsActive)
-                {
-            <p class="navbar-text"><b>Проект в архиве</b></p>
-                }
-                else if (!Model.IsAcceptingClaims)
-                {
-            <p class="navbar-text"><b>Прием заявок закрыт</b></p>
-                }
+            <p class="navbar-text">
+              <component type="typeof(ProjectStatusLabel)" param-ProjectStatus="@Model.ProjectStatus" param-SkipIfOpen="true" render-mode="Static" />
+            </p>
         </div>
     </div>
 </div>

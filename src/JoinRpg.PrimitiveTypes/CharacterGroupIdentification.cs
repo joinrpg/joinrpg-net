@@ -2,8 +2,9 @@ namespace JoinRpg.PrimitiveTypes;
 
 public record CharacterGroupIdentification(
     ProjectIdentification ProjectId,
-    int CharacterGroupId)
+    int CharacterGroupId) : IProjectEntityId
 {
+    int IProjectEntityId.Id => CharacterGroupId;
 
     public static CharacterGroupIdentification? FromOptional(int ProjectId, int? CharacterGroupId)
     {
