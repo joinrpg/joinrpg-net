@@ -39,6 +39,8 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddJoinOpenTelemetry();
+
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
             .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
@@ -132,9 +134,6 @@ public class Startup
         });
     }
 
-
-
-
     /// <summary>
     /// Runs after ConfigureServices
     /// </summary>
@@ -150,6 +149,7 @@ public class Startup
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
         app.MapStaticAssets();
+        app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
         _ = app.UseForwardedHeaders();
 

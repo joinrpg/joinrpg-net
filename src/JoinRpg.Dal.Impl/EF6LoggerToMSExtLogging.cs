@@ -1,12 +1,16 @@
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Interception;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Dal.Impl;
 
 public class EF6LoggerToMSExtLogging(DbContext context, Action<string> writeAction) : DatabaseLogFormatter(context, writeAction)
 {
+    private static readonly Meter meter = new("JoinRpg");
+    private static readonly Counter<int> lazyLoadCounter = meter.CreateCounter<int>("joinrpg.mydbcontext.lazy_loads");
+
     public override void LogCommand<TResult>(
         DbCommand command, DbCommandInterceptionContext<TResult> interceptionContext)
     {
@@ -16,6 +20,7 @@ public class EF6LoggerToMSExtLogging(DbContext context, Action<string> writeActi
             logger.LogDebug("SQL started: {sql}", sql);
             if (command.Parameters.Count == 1 && command.Parameters[0].ParameterName == "EntityKeyValue1")
             {
+                lazyLoadCounter.Add(1);
                 var tableName = TryGetTableNameFromSql(sql) ?? "!unknown_table";
                 logger.LogWarning("SQL: Probably lazy load from '{tableName}': {sql}", tableName, sql);
             }
