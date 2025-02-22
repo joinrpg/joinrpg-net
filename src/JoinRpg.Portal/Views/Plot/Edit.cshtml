@@ -1,4 +1,5 @@
-﻿
+
+@using JoinRpg.PrimitiveTypes
 @using JoinRpg.Web.Models.Plot
 @model EditPlotFolderViewModel
 
@@ -81,5 +82,5 @@
 
 @await Html.PartialAsync("_PublishPlotElementDlg", new PublishPlotElementViewModel(Model))
 @await Html.PartialAsync("_DeletePlotElementDlg", Model)
-@await Html.PartialAsync("_UnpublishPlotElementDlg", Model)
+@await Html.PartialAsync("_UnpublishPlotElementDlg", new ProjectIdentification (Model.ProjectId))
 @await Html.PartialAsync("_RestorePlotElementDlg", Model)

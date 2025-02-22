@@ -15,7 +15,7 @@ public class PlotIdParseTest
     }
 
     [Fact]
-    public void ShouldRoundTrip()
+    public void PlotVersionShouldRoundTrip()
     {
         var version = new PlotVersionIdentification(1, 2, 3, 4);
         var val = version.ToString();
@@ -23,19 +23,22 @@ public class PlotIdParseTest
         parseResult.ShouldBe(version);
     }
 
-    [Fact]
-    public void ShouldRoundTripWithoutVersion()
+    [Theory]
+    [InlineData("1-2-3")]
+    [InlineData("PlotElementIdentification(1-2-3)")]
+    [InlineData("PlotElement(1-2-3)")]
+    public void PlotElementShouldParseTo123(string val)
     {
-        var version = new PlotVersionIdentification(1, 2, 3, null);
-        var val = version.ToString();
-        PlotVersionIdentification.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
-        parseResult.ShouldBe(version);
+        PlotElementIdentification.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(new PlotElementIdentification(1, 2, 3));
     }
 
     [Fact]
-    public void ToStringWithoutVersion()
+    public void PlotElementShouldRoundTrip()
     {
-        var version = new PlotVersionIdentification(1, 2, 3, null);
-        version.ToString().ShouldBe("PlotVersion(1-2-3)");
+        var version = new PlotElementIdentification(1, 2, 3);
+        var val = version.ToString();
+        PlotElementIdentification.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(version);
     }
 }

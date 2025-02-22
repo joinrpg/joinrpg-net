@@ -139,8 +139,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
 
     public async Task DeleteElement(PlotElementIdentification plotElementId)
     {
-        var plotElement = await LoadElement(plotElementId);
-        _ = plotElement.RequestMasterAccess(currentUserAccessor, Permission.CanManagePlots);
+        var plotElement = await LoadElementForManage(plotElementId);
 
         _ = SmartDelete(plotElement);
         plotElement.ModifiedDateTime = DateTime.UtcNow;
@@ -154,29 +153,34 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
         return folder.Elements.Single(e => e.PlotElementId == plotElementId.PlotElementId);
     }
 
+    private async Task<PlotElement> LoadElementForManage(PlotElementIdentification plotElementId)
+    {
+        var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
+        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots);
+        return folder.Elements.Single(e => e.PlotElementId == plotElementId.PlotElementId);
+    }
+
     public async Task EditPlotElement(PlotElementIdentification plotelementid, string contents,
       string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars)
     {
-        var now = DateTime.UtcNow;
         var plotElement = await LoadElement(plotelementid);
 
-        UpdateElementText(contents, todoField, plotElement, now);
+        UpdateElementText(contents, todoField, plotElement);
 
-        await UpdateElementTarget(plotelementid.ProjectId, targetGroups, targetChars, plotElement);
+        await UpdateElementTarget(targetGroups, targetChars, plotElement);
 
-        UpdateElementMetadata(plotElement, now);
+        UpdateElementMetadata(plotElement);
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void UpdateElementMetadata(PlotElement plotElement, DateTime now)
+    private void UpdateElementMetadata(PlotElement plotElement)
     {
         plotElement.IsActive = true;
-        plotElement.ModifiedDateTime = now;
-        plotElement.PlotFolder.ModifiedDateTime = now;
+        plotElement.ModifiedDateTime = Now;
+        plotElement.PlotFolder.ModifiedDateTime = Now;
     }
 
-    private async Task UpdateElementTarget(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars,
-      PlotElement plotElement)
+    private async Task UpdateElementTarget(IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElement plotElement)
     {
         var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
 
@@ -189,7 +193,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
         plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(targetChars));
     }
 
-    private void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
+    private void UpdateElementText(string contents, string todoField, PlotElement plotElement)
     {
         if (plotElement.LastVersion().Content.Contents == contents &&
             plotElement.LastVersion().TodoField == todoField)
@@ -203,7 +207,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
             TodoField = todoField,
             Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
             PlotElementId = plotElement.PlotElementId,
-            ModifiedDateTime = now,
+            ModifiedDateTime = Now,
             AuthorUserId = CurrentUserId,
         };
         plotElement.Texts.Add(text);
@@ -212,12 +216,11 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
 
     public async Task EditPlotElementText(PlotElementIdentification plotelementid, string contents, string todoField)
     {
-        var now = DateTime.UtcNow;
         var plotElement = await LoadElement(plotelementid);
 
-        UpdateElementText(contents, todoField, plotElement, now);
+        UpdateElementText(contents, todoField, plotElement);
 
-        UpdateElementMetadata(plotElement, now);
+        UpdateElementMetadata(plotElement);
         await UnitOfWork.SaveChangesAsync();
     }
 
@@ -270,17 +273,11 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     public async Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText)
     {
         // Publishing
-        var plotElement = await LoadElement(version.PlotElementId);
-        if (!plotElement.IsActive)
-        {
-            var now = DateTime.UtcNow;
-            UpdateElementMetadata(plotElement, now);
-        }
-        _ = plotElement.EnsureActive();
-        _ = plotElement.RequestMasterAccess(currentUserAccessor, Permission.CanManagePlots);
-        plotElement.IsCompleted = version.Version != null;
+        var plotElement = await LoadElementForManage(version.PlotElementId);
+
+        plotElement.IsCompleted = true;
         plotElement.Published = version.Version;
-        plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
+        UpdateElementMetadata(plotElement);
         await UnitOfWork.SaveChangesAsync();
 
         if (plotElement.IsCompleted && sendNotification)
@@ -301,5 +298,15 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
                 Text = new MarkdownString(commentText),
             });
         }
+    }
+
+    public async Task UnPublishElement(PlotElementIdentification plotElementId)
+    {
+        var plotElement = await LoadElementForManage(plotElementId);
+
+        plotElement.IsCompleted = false;
+        plotElement.Published = null;
+        UpdateElementMetadata(plotElement);
+        await UnitOfWork.SaveChangesAsync();
     }
 }

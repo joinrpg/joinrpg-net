@@ -187,13 +187,13 @@ public class PlotController(
     {
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups(plotFolderId.ProjectId);
         var targetChars = targets.OrEmptyList().GetUnprefixedChars(plotFolderId.ProjectId);
-        var elementId = await
+        var versionId = await
           plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroups, targetChars,
             (PlotElementType)elementType);
 
-        if (publishNow && string.IsNullOrWhiteSpace(todoField) && targets.Any())
+        if (publishNow && string.IsNullOrWhiteSpace(todoField) && targets.Count != 0)
         {
-            await plotService.PublishElementVersion(elementId, sendNotification: false, commentText: null);
+            await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
         }
         return ReturnToPlot(plotFolderId);
     }
@@ -332,19 +332,15 @@ public class PlotController(
         }
     }
 
-    [HttpPost]
+    [HttpPost()]
     [MasterAuthorize(Permission.CanManagePlots)]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> UnPublishElement(PublishPlotElementViewModel model)
+    public async Task<ActionResult> UnPublishElement([FromForm] PlotElementIdentification elementId)
     {
         try
         {
-            model.Version = null;
-            await plotService.PublishElementVersion(
-                model.GetVersionId(),
-                model.SendNotification,
-                model.CommentText);
-            return ReturnToPlot(model.ProjectId, model.PlotFolderId);
+            await plotService.UnPublishElement(elementId);
+            return ReturnToPlot(elementId.PlotFolderId);
         }
         catch (Exception)
         {

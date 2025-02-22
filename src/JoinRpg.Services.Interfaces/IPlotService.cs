@@ -22,5 +22,7 @@ public interface IPlotService
 
     Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText);
 
+    Task UnPublishElement(PlotElementIdentification element);
+
     Task EditPlotElementText(PlotElementIdentification plotelementid, string content, string todoField);
 }

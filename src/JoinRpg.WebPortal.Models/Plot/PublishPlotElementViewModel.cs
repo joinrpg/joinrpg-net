@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
-using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Plot;
 
-public class PublishPlotElementViewModel : IPublishPlotElementModel
+public class PublishPlotElementViewModel
 {
 
     public int ProjectId { get; set; }
@@ -14,7 +13,7 @@ public class PublishPlotElementViewModel : IPublishPlotElementModel
 
     public int PlotElementId { get; set; }
 
-    public int? Version { get; set; }
+    public int Version { get; set; }
 
     [Display(Name = "Отправить уведомление всем ассоциированным игрокам")]
     public bool SendNotification { get; set; } = true;

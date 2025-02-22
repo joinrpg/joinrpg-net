@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
@@ -127,6 +128,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         var renderer = new JoinrpgMarkdownLinkRenderer(e.Project, projectInfo);
 
         PlotElementId = e.PlotElementId;
+        PlotElementIdentification = new PlotElementIdentification(projectInfo.ProjectId, e.PlotFolderId, e.PlotElementId);
         TargetsForDisplay = e.GetTargetLinks().AsObjectLinks(uriService).ToList();
         Content = currentVersionText.Content.ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
@@ -155,6 +157,9 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public int PlotFolderId { get; }
     [ReadOnly(true)]
     public int PlotElementId { get; }
+
+    [ReadOnly(true)]
+    public PlotElementIdentification PlotElementIdentification { get; }
 
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
     public JoinHtmlString Content { get; }
