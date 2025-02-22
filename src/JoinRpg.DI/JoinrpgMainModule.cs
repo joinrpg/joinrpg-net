@@ -22,8 +22,7 @@ public class JoinrpgMainModule : Module
         _ = builder.RegisterType<MyDbContext>()
             .AsSelf()
             .AsImplementedInterfaces()
-            .InstancePerDependency()
-            .UsingConstructor(typeof(IJoinDbContextConfiguration));
+            .InstancePerDependency();
 
         _ = builder.RegisterType<VirtualUsersService>().As<IVirtualUsersService>().SingleInstance();
 

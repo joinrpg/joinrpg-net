@@ -4,7 +4,7 @@ namespace JoinRpg.Dal.Impl;
 public class MyDbContextFactory : IDbContextFactory<MyDbContext>
 {
     // DbContextFactory используется только при миграциях, поэтому нормально что тут захардкожено.
-    MyDbContext IDbContextFactory<MyDbContext>.Create() => new(new DesignTimeConfig());
+    MyDbContext IDbContextFactory<MyDbContext>.Create() => new(new DesignTimeConfig(), logger: null);
 
     private class DesignTimeConfig : IJoinDbContextConfiguration
     {
