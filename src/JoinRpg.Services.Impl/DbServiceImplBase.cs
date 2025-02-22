@@ -177,22 +177,12 @@ public class DbServiceImplBase
         return groupIds.ToArray();
     }
 
-    protected async Task<ICollection<Character>> ValidateCharactersList(int projectId,
-        IReadOnlyCollection<int> characterIds)
-    {
-        var characters =
-            await CharactersRepository.GetCharacters(projectId, characterIds);
-
-        if (characters.Count != characterIds.Distinct().Count())
-        {
-            throw new DbEntityValidationException();
-        }
-
-        return characters.ToArray();
-    }
-
     protected async Task<ICollection<Character>> ValidateCharactersList(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
+        if (characterIds.Count == 0)
+        {
+            return [];
+        }
         if (characterIds.Select(c => c.ProjectId).Distinct().Count() > 1)
         {
             throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(characterIds));
