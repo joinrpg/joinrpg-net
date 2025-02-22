@@ -71,6 +71,6 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
 
 internal interface ICurrentUserSetAccessor
 {
-    public void StartImpersonate(User user);
-    public void StopImpersonate();
+    void StartImpersonate(User user);
+    void StopImpersonate();
 }
