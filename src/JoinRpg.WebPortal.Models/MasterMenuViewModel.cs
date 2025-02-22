@@ -1,4 +1,5 @@
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.ProjectCommon;
 
@@ -15,16 +16,17 @@ public class MenuViewModelBase
     public IEnumerable<CharacterGroupLinkSlimViewModel> BigGroups { get; set; } = null!;
     public bool IsAdmin { get; set; }
     public bool ShowSchedule { get; set; }
+    public ProjectLifecycleStatus ProjectStatus { get; set; }
 }
 
 public class PlayerMenuViewModel : MenuViewModelBase
 {
-    public ICollection<ClaimShortListItemViewModel> Claims { get; set; }
-    public bool PlotPublished { get; set; }
+    public required IReadOnlyCollection<ClaimShortListItemViewModel> Claims { get; set; }
+    public required bool PlotPublished { get; set; }
 }
 
 public class MasterMenuViewModel : MenuViewModelBase
 {
-    public ProjectAcl AccessToProject { get; set; }
-    public bool CheckInModuleEnabled { get; set; }
+    public required IReadOnlyCollection<Permission> Permissions { get; set; }
+    public required bool CheckInModuleEnabled { get; set; }
 }

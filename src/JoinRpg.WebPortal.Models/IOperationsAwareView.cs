@@ -12,5 +12,5 @@ public interface IOperationsAwareView
 
     IReadOnlyCollection<int> CharacterIds { get; }
 
-    public string? InlineTitle { get; }
+    string? InlineTitle { get; }
 }

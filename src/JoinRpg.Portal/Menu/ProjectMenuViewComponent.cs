@@ -1,7 +1,7 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.ProjectCommon;
@@ -13,48 +13,64 @@ namespace JoinRpg.Portal.Menu;
 public class ProjectMenuViewComponent(
     ICurrentUserAccessor currentUserAccessor,
     IProjectRepository projectRepository,
-    ICurrentProjectAccessor currentProjectAccessor) : ViewComponent
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentProjectAccessor currentProjectAccessor,
+    IClaimsRepository claimsRepository
+    ) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var project = await projectRepository.GetProjectAsync(currentProjectAccessor.ProjectId);
 
-        var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == currentUserAccessor.UserIdOrDefault);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProjectAccessor.ProjectId);
+
+        var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == currentUserAccessor.UserIdOrDefault);
 
         if (acl != null)
         {
             var menuModel = new MasterMenuViewModel()
             {
-                AccessToProject = acl,
-                CheckInModuleEnabled = project.Details.EnableCheckInModule,
+                Permissions = acl.Permissions,
+                CheckInModuleEnabled = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled,
             };
-            SetCommonMenuParameters(menuModel, project);
+            await SetCommonMenuParameters(menuModel, projectInfo);
             return View("MasterMenu", menuModel);
         }
         else
         {
+            var project = await projectRepository.GetProjectAsync(currentProjectAccessor.ProjectId);
+            IReadOnlyCollection<ClaimShortListItemViewModel> claims;
+            if (currentUserAccessor.UserIdOrDefault is int userId)
+            {
+                claims = [..
+                    (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
+                    .Select(c => new ClaimShortListItemViewModel(c))
+                    ];
+            }
+            else
+            {
+                claims = [];
+            }
             var menuModel = new PlayerMenuViewModel()
             {
-                Claims = project.Claims.OfUserActive(currentUserAccessor.UserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-                PlotPublished = project.Details.PublishPlot,
+                Claims = claims,
+                PlotPublished = projectInfo.PublishPlot,
             };
-            SetCommonMenuParameters(menuModel, project);
+            await SetCommonMenuParameters(menuModel, projectInfo);
             return View("PlayerMenu", menuModel);
         }
     }
 
-    private void SetCommonMenuParameters(MenuViewModelBase menuModel, Project project)
+    private async Task SetCommonMenuParameters(MenuViewModelBase menuModel, ProjectInfo projectInfo)
     {
-        menuModel.ProjectId = project.ProjectId;
-        menuModel.ProjectName = project.ProjectName;
-        //TODO[GroupsLoad]. If we not loaded groups already, that's slow
-        menuModel.BigGroups = project.RootGroup.ChildGroups.Where(
-                cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(currentUserAccessor.UserIdOrDefault))
-            .Select(cg => new CharacterGroupLinkSlimViewModel(new(cg.ProjectId), cg.CharacterGroupId, cg.CharacterGroupName, cg.IsPublic, cg.IsActive)).ToList();
-        menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
-        menuModel.IsActive = project.Active;
-        menuModel.EnableAccommodation = project.Details.EnableAccommodation;
+        menuModel.ProjectId = projectInfo.ProjectId;
+        menuModel.ProjectName = projectInfo.ProjectName;
+        menuModel.BigGroups = [..
+            (await projectRepository.LoadDirectChildGroupHeaders(projectInfo.RootCharacterGroupId))
+            .Select(dto => new CharacterGroupLinkSlimViewModel(dto))
+            ];
+        menuModel.ProjectStatus = projectInfo.ProjectStatus;
+        menuModel.EnableAccommodation = projectInfo.AccomodationEnabled;
         menuModel.IsAdmin = currentUserAccessor.IsAdmin;
-        menuModel.ShowSchedule = project.Details.ScheduleEnabled;
+        menuModel.ShowSchedule = projectInfo.ProjectScheduleSettings.ScheduleEnabled;
     }
 }

@@ -45,6 +45,8 @@ public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity, IV
 
     public virtual CharacterGroup? CharacterGroup { get; set; }
 
+    public virtual int? CharacterGroupId { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (PlayerSelectable && !ProjectField.CanPlayerEdit)

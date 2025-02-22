@@ -60,6 +60,8 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
     Task<ProjectHeaderDto[]> GetMyProjects(UserIdentification userIdentification);
+
+    Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId);
 }
 
 public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims) : ILinkableWithName
@@ -71,4 +73,15 @@ public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectNa
     string? ILinkable.Identification => null;
 
     int? ILinkable.ProjectId => ProjectId.Value;
+}
+
+public record CharacterGroupHeaderDto(CharacterGroupIdentification CharacterGroupId, string Name, bool IsActive, bool IsPublic) : ILinkableWithName
+{
+    string ILinkableWithName.Name => Name;
+
+    LinkType ILinkable.LinkType => LinkType.ResultCharacterGroup;
+
+    string? ILinkable.Identification => CharacterGroupId.CharacterGroupId.ToString();
+
+    int? ILinkable.ProjectId => CharacterGroupId.ProjectId;
 }

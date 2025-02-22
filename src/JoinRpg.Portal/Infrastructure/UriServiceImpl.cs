@@ -80,7 +80,13 @@ internal class UriServiceImpl(
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
         GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.ToString()));
     Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target) =>
-         GetUri(new Linkable(LinkType.ResultCharacterGroup, ProjectId: target.ProjectId.Value, Identification: target.CharacterGroupId.ToString()));
+         GetUri(new Linkable(LinkType.ResultCharacterGroup, target.CharacterGroupId));
 
-    private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable;
+    private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
+    {
+        public Linkable(LinkType linkType, IProjectEntityId projectEntityId) : this(linkType, projectEntityId.ProjectId, projectEntityId.Id.ToString())
+        {
+
+        }
+    }
 }
