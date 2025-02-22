@@ -1,4 +1,4 @@
-﻿<button href="#"
+<button href="#"
 class="@style"
 @onclick="OnClickHappened"
 type="@buttonType"
@@ -71,6 +71,7 @@ title="@Title">
         {ButtonPreset.Delete, ("Удалить", "glyphicon-trash")},
         {ButtonPreset.Download, ("Скачать", "glyphicon-cloud-download")},
         {ButtonPreset.Update, ("Обновить", "glyphicon-refresh")},
+        {ButtonPreset.Hide, ("Скрыть", "glyphicon-remove-sign")},
     };
 
     public static Dictionary<ButtonPreset, (string label, string icon)> ProgressPresets = new()
@@ -81,5 +82,6 @@ title="@Title">
         { ButtonPreset.Delete, ("Удаляем...", "glyphicon-hourglass")},
         { ButtonPreset.Download, ("Скачиваем...", "glyphicon-hourglass")},
         { ButtonPreset.Update, ("Обновляем...", "glyphicon-hourglass")},
+        {ButtonPreset.Hide, ("Скрываем...", "glyphicon-hourglass")},
     };
 }
