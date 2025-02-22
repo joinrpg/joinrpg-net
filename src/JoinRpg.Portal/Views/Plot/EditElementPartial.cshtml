@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Models.Plot
+@using JoinRpg.Web.Models.Plot
 @model PlotElementListItemViewModel
 
 @if (!Model.HasMasterAccess && Model.Status != PlotStatus.Completed)
@@ -166,7 +166,7 @@
                         <button type="button"
                                 class="btn btn-info btn-sm"
                                 data-toggle="modal"
-                                data-target="#unpublishElementModal" data-element="@Model.PlotElementId"
+                                data-target="#unpublishElementModal" data-element="@Model.PlotElementIdentification"
                                 title="Скрыть опубликованную версию от игроков">
                             <span class="glyphicon glyphicon-remove-sign"></span>
                             Скрыть

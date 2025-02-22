@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace JoinRpg.PrimitiveTypes.Plots;
-public record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int? Version) : IParsable<PlotVersionIdentification>
+public record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version) : IParsable<PlotVersionIdentification>
 {
-    public PlotVersionIdentification(int projectId, int plotFolderId, int plotElementId, int? version)
+    public PlotVersionIdentification(int projectId, int plotFolderId, int plotElementId, int version)
         : this(new PlotElementIdentification(new PlotFolderIdentification(new ProjectIdentification(projectId), plotFolderId), plotElementId), version)
     {
 
@@ -37,23 +37,14 @@ public record class PlotVersionIdentification(PlotElementIdentification PlotElem
 
         Span<Range> ranges = stackalloc Range[4];
         var count = val.Split(ranges, "-", StringSplitOptions.TrimEntries);
-        if (count >= 3
+        if (count == 4
            && ProjectIdentification.TryParse(val[ranges[0]], provider, out var projectId)
            && int.TryParse(val[ranges[1]], provider, out var plotfolderInt)
            && int.TryParse(val[ranges[2]], provider, out var plotElementInt)
-           )
+           && int.TryParse(val[ranges[3]], provider, out var plotVersionInt))
         {
-            if (count == 4 && int.TryParse(val[ranges[3]], provider, out var plotVersionInt))
-            {
-                result = new PlotVersionIdentification(projectId, plotfolderInt, plotElementInt, plotVersionInt);
-                return true;
-            }
-
-            if (count == 3)
-            {
-                result = new PlotVersionIdentification(projectId, plotfolderInt, plotElementInt, version: null);
-                return true;
-            }
+            result = new PlotVersionIdentification(projectId, plotfolderInt, plotElementInt, plotVersionInt);
+            return true;
         }
 
         result = null;
@@ -61,15 +52,5 @@ public record class PlotVersionIdentification(PlotElementIdentification PlotElem
 
     }
 
-    public override string ToString()
-    {
-        if (Version is null)
-        {
-            return $"PlotVersion({ProjectId.Value}-{PlotFolderId.PlotFolderId}-{PlotElementId.PlotElementId})";
-        }
-        else
-        {
-            return $"PlotVersion({ProjectId.Value}-{PlotFolderId.PlotFolderId}-{PlotElementId.PlotElementId}-{Version})";
-        }
-    }
+    public override string ToString() => $"PlotVersion({ProjectId.Value}-{PlotFolderId.PlotFolderId}-{PlotElementId.PlotElementId}-{Version})";
 }
