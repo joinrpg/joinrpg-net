@@ -68,24 +68,25 @@ public partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
     private async Task<DbUser?> LoadUser(string userName, CancellationToken ct = default)
     {
         logger.LogDebug("LoadUser = {username}", userName);
-        return await _LoadUserImpl(user => user.Email == userName, ct);
+        return await LoadUserImpl(user => user.Email == userName, ct);
     }
 
     private async Task<DbUser?> LoadUser(int userId, CancellationToken ct = default)
     {
         logger.LogDebug("LoadUser = {userId}", userId);
-        return await _LoadUserImpl(user => user.UserId == userId, ct);
+        return await LoadUserImpl(user => user.UserId == userId, ct);
     }
 
     private async Task<DbUser?> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default)
     {
         logger.LogDebug("LoadUser = {userId}", joinIdentityUser.Id);
-        return await _LoadUserImpl(user => user.UserId == joinIdentityUser.Id, ct);
+        return await LoadUserImpl(user => user.UserId == joinIdentityUser.Id, ct);
     }
 
-    private async Task<DbUser?> _LoadUserImpl(Expression<Func<DbUser, bool>> predicate, CancellationToken ct) =>
+    private async Task<DbUser?> LoadUserImpl(Expression<Func<DbUser, bool>> predicate, CancellationToken ct) =>
        await ctx
         .Set<DbUser>()
+        .Include(u => u.Auth)
         .Include(u => u.ExternalLogins)
         .Include(u => u.ProjectAcls)
         .SingleOrDefaultAsync(predicate, ct);
