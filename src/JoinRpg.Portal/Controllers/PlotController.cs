@@ -26,7 +26,8 @@ public class PlotController(
     IUriService uriService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUserAccessor
+    ICurrentUserAccessor currentUserAccessor,
+    ILogger<PlotController> logger
     ) : ControllerGameBase(projectRepository,
         projectService,
         userRepository)
@@ -286,8 +287,10 @@ public class PlotController(
             }
             return ReturnToPlot(id.PlotFolderId);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogWarning(ex, "Ошибка при изменении вводной {plotElementId}", plotelementid);
+            ModelState.AddException(ex);
             return await Edit(projectId, plotFolderId);
         }
     }

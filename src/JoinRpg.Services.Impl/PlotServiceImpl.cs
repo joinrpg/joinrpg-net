@@ -99,7 +99,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
             ProjectId = plotFolderId.ProjectId,
             PlotFolderId = plotFolderId,
             TargetGroups = characterGroups,
-            TargetCharacters = await ValidateCharactersList(plotFolderId.ProjectId, [.. targetChars.Select(c => c.CharacterId)]),
+            TargetCharacters = await ValidateCharactersList(targetChars),
             ElementType = elementType,
         };
 
