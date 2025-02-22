@@ -2,6 +2,7 @@ namespace JoinRpg.WebComponents;
 
 public enum ButtonPreset
 {
+    None,
     Add,
     Cancel,
     Create,
