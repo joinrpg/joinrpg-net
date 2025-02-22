@@ -159,7 +159,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             {
                 return func(match, index, extra);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO Need to inject logger here
                 return $"ERROR rendering:<pre>{Fail(match, index, extra)}</pre>";

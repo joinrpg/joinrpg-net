@@ -12,8 +12,8 @@ public class CustomFieldsExtensionsTest
 
     public CustomFieldsExtensionsTest()
     {
-        var conditionalHeader = projectMock.CreateConditionalHeader(projectMock.Group);
-        var conditionalField = projectMock.CreateConditionalField();
+        _ = projectMock.CreateConditionalHeader(projectMock.Group);
+        _ = projectMock.CreateConditionalField();
 
         allFieldsExceptMasterOnly = projectMock.ProjectInfo.UnsortedFields.Except(new[] { projectMock.MasterOnlyFieldInfo }).ToArray();
 
