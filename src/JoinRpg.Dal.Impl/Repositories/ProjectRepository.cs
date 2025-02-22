@@ -390,7 +390,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     fieldSettings,
                         field.ProgrammaticValue,
                         CreateProjectFieldVisibility(field),
-                    CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroup?.CharacterGroupId));
+                    CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroupId));
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)
@@ -417,7 +417,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                             variant.Price,
                             variant.PlayerSelectable,
                             variant.IsActive,
-                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroup?.CharacterGroupId),
+                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue
@@ -434,7 +434,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                             variant.Price,
                             variant.PlayerSelectable,
                             variant.IsActive,
-                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroup?.CharacterGroupId),
+                            CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue

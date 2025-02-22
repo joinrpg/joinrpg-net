@@ -31,7 +31,7 @@ public static class FieldExtensions
     public static ProjectFieldDropdownValue? GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)
     {
         return group.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
-                .SingleOrDefault(pfv => pfv.CharacterGroup == group);
+                .SingleOrDefault(pfv => pfv.CharacterGroupId == group.CharacterGroupId);
     }
 
     /// <summary>

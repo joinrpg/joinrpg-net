@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using System.Linq.Expressions;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
@@ -137,13 +138,8 @@ public class MyDbContext : DbContext, IUnitOfWork
             .HasForeignKey(text => text.AuthorUserId);
         ConfigureUser(modelBuilder);
 
-        _ = modelBuilder.Entity<ProjectFieldDropdownValue>()
-            .HasOptional(v => v.CharacterGroup)
-            .WithOptionalDependent();
-
-        _ = modelBuilder.Entity<ProjectField>()
-            .HasOptional(v => v.CharacterGroup)
-            .WithOptionalDependent();
+        ConfigureOptionalDependPropertyFor<ProjectFieldDropdownValue, CharacterGroup>(modelBuilder, v => v.CharacterGroup, v => v.CharacterGroupId);
+        ConfigureOptionalDependPropertyFor<ProjectField, CharacterGroup>(modelBuilder, v => v.CharacterGroup, v => v.CharacterGroupId);
 
         modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
             .WillCascadeOnDelete(false);
@@ -159,6 +155,25 @@ public class MyDbContext : DbContext, IUnitOfWork
         ConfigureMoneyTransfer(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    private void ConfigureOptionalDependPropertyFor<TEntityType, TTargetEntity>(
+        DbModelBuilder modelBuilder,
+        Expression<Func<TEntityType, TTargetEntity?>> navigation,
+        Expression<Func<TEntityType, int?>> key
+        )
+        where TEntityType : class
+        where TTargetEntity : class
+    {
+        modelBuilder.Entity<TEntityType>()
+            .HasOptional(navigation)
+            .WithMany() //Это ограничение EF, иначе не получится XXXId нормально сделать.
+                        // https://stackoverflow.com/questions/32313842/mapping-foreign-key-in-hasoptional-withoptionaldependent-relation-in-entity
+            .HasForeignKey(key)
+            .WillCascadeOnDelete(false);
+
+        _ = modelBuilder.Entity<TEntityType>()
+            .HasIndex(key);
     }
 
     private void ConfigureRecurrentPayments(DbModelBuilder modelBuilder)

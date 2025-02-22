@@ -62,6 +62,7 @@ public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObj
     public string ValuesOrdering { get; set; }
 
     public virtual CharacterGroup? CharacterGroup { get; set; }
+    public virtual int? CharacterGroupId { get; set; }
 
     /// <summary>
     /// External value for external IT systems

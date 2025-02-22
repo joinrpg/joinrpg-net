@@ -38,7 +38,7 @@ public class GameFieldDropdownValueListItemViewModel : IMovableListItem
         ProjectId = value.ProjectId;
         ProjectFieldId = value.ProjectFieldId;
         ValueId = value.ProjectFieldDropdownValueId;
-        CharacterGroupId = value.CharacterGroup?.CharacterGroupId;
+        CharacterGroupId = value.CharacterGroupId;
         MasterRestricted = !value.PlayerSelectable && value.ProjectField.CanPlayerEdit;
     }
 
