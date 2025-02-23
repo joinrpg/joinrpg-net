@@ -1,7 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace JoinRpg.PrimitiveTypes.Plots;
-public record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version) : IParsable<PlotVersionIdentification>
+
+[method: JsonConstructor]
+public record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version) : IParsable<PlotVersionIdentification>, IProjectEntityId
 {
     public PlotVersionIdentification(int projectId, int plotFolderId, int plotElementId, int version)
         : this(new PlotElementIdentification(new PlotFolderIdentification(new ProjectIdentification(projectId), plotFolderId), plotElementId), version)
@@ -9,8 +12,19 @@ public record class PlotVersionIdentification(PlotElementIdentification PlotElem
 
     }
 
+    public PlotVersionIdentification(ProjectIdentification projectId, int plotFolderId, int plotElementId, int version)
+        : this(new PlotElementIdentification(new PlotFolderIdentification(projectId, plotFolderId), plotElementId), version)
+    {
+
+    }
+
     public ProjectIdentification ProjectId => PlotElementId.PlotFolderId.ProjectId;
     public PlotFolderIdentification PlotFolderId => PlotElementId.PlotFolderId;
+
+    int IProjectEntityId.Id => Version;
+
+    public static PlotVersionIdentification? FromOptional(PlotElementIdentification? plotElementId, int? Version)
+        => Version is not null && plotElementId is not null ? new PlotVersionIdentification(plotElementId, Version.Value) : null;
 
     public static PlotVersionIdentification Parse(string value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
@@ -52,5 +66,7 @@ public record class PlotVersionIdentification(PlotElementIdentification PlotElem
 
     }
 
+    public PlotVersionIdentification Next() => this with { Version = Version + 1 };
+    public PlotVersionIdentification? Prev() => Version == 0 ? null : this with { Version = Version - 1 };
     public override string ToString() => $"PlotVersion({ProjectId.Value}-{PlotFolderId.PlotFolderId}-{PlotElementId.PlotElementId}-{Version})";
 }

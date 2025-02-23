@@ -1,7 +1,16 @@
-namespace JoinRpg.PrimitiveTypes;
+using System.Text.Json.Serialization;
 
-public record ProjectFieldIdentification(ProjectIdentification ProjectId, int ProjectFieldId)
+namespace JoinRpg.PrimitiveTypes;
+[method: JsonConstructor]
+
+public record ProjectFieldIdentification(ProjectIdentification ProjectId, int ProjectFieldId) : IProjectEntityId
 {
+    public ProjectFieldIdentification(int ProjectId, int ProjectFieldId) : this(new ProjectIdentification(ProjectId), ProjectFieldId)
+    {
+
+    }
+    int IProjectEntityId.Id => ProjectFieldId;
+
     public static ProjectFieldIdentification? FromOptional(ProjectIdentification? project, int? projectFieldId)
     {
         return (project, projectFieldId) switch
