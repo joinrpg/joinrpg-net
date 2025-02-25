@@ -32,7 +32,7 @@
         </AssemblyAttribute>
     </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ReferenceTrimmer" Version="3.3.10">
+    <PackageReference Include="ReferenceTrimmer" Version="3.3.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
