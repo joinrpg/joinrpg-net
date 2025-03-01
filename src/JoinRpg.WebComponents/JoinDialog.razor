@@ -13,9 +13,24 @@
     {
         <div class="join-dialog-body">@Body</div>
     }
-    @if (Footer is not null)
+    @if (Footer is not null || HasCancelButton)
     {
-        <div class="join-dialog-footer">@Footer</div>
+
+        <div class="join-dialog-footer">
+            @if (Footer is not null)
+            {
+                @Footer
+            }
+            @if (ConfirmButtonLabel is not null)
+            {
+                <JoinButton Preset="@(ConfirmButtonPreset ?? ButtonPreset.None)" Label="@ConfirmButtonLabel" OnClick="ConfirmExecuted" />
+            }
+            @if (HasCancelButton)
+            {
+                <JoinButton Preset="ButtonPreset.Cancel" OnClick="() => Close()" />
+            }
+
+        </div>
     }
 </dialog>
 
@@ -23,9 +38,13 @@
     [Parameter] public RenderFragment? Header { get; set; }
     [Parameter] public RenderFragment? Body { get; set; }
     [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public bool HasCancelButton { get; set;  }
+    [Parameter] public string? ConfirmButtonLabel { get; set; }
+    [Parameter] public ButtonPreset? ConfirmButtonPreset { get; set; }
 
-    public EventCallback<EventArgs> OnCloseCallback { get; set; }
-    public EventCallback<EventArgs> OnCancelCallback { get; set; }
+    [Parameter] public EventCallback<EventArgs> OnCloseCallback { get; set; }
+    [Parameter] public EventCallback<EventArgs> OnConfirmCallback { get; set; }
+    [Parameter] public EventCallback<EventArgs> OnCancelCallback { get; set; }
 
     private IJSObjectReference module = null!;
     private ElementReference dialogRef;
@@ -38,6 +57,12 @@
     public void Close()
     {
         module.InvokeVoidAsync("closeModal", dialogRef);
+    }
+
+    public async Task ConfirmExecuted(EventArgs args)
+    {
+        await OnConfirmCallback.InvokeAsync(args);
+        Close();
     }
 
 
