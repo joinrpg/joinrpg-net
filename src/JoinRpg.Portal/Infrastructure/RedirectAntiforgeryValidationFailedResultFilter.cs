@@ -12,7 +12,7 @@ public class RedirectAntiforgeryValidationFailedResultFilter : IAlwaysRunResultF
         {
             var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger(context.ActionDescriptor.DisplayName ?? nameof(RedirectAntiforgeryValidationFailedResultFilter));
-            logger.LogInformation("Antiforgery validation error");
+            logger.LogWarning("Antiforgery validation error");
             context.Result = new RedirectResult("/error/antiforgery");
         }
     }
