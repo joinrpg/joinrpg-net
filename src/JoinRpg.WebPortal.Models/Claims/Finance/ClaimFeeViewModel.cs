@@ -77,10 +77,11 @@ public class ClaimFeeViewModel
             .Select(e => new RecurrentPaymentViewModel(this, e))
             .OrderBy(static e => e.CreatedAt)
             .ToArray();
-        CanMakeNewSubscription = ShowOnlinePaymentControls
+        CanMakeNewSubscription = ShowRecurrentPaymentControls
             && RecurrentPayments.All(rp => rp.Status is RecurrentPaymentStatusViewModel.Cancelled or RecurrentPaymentStatusViewModel.Failed);
-        CanCancelSubscription = ShowOnlinePaymentControls
-            && RecurrentPayments.Any(rp => rp.Status is RecurrentPaymentStatusViewModel.Active || (HasFeeAdminAccess && rp.Status is RecurrentPaymentStatusViewModel.Created or RecurrentPaymentStatusViewModel.Cancelling));
+        CanCancelSubscription = ShowRecurrentPaymentControls
+            && RecurrentPayments.Any(rp => rp.Status is RecurrentPaymentStatusViewModel.Active
+                || (HasFeeAdminAccess && rp.Status is RecurrentPaymentStatusViewModel.Created or RecurrentPaymentStatusViewModel.Cancelling));
     }
 
     /// <summary>
