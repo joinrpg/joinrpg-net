@@ -1,0 +1,60 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<dialog @ref="dialogRef" @onclose="OnCloseCallback" @oncancel="OnCancelCallback">
+    @if (Header is not null)
+    {
+        <div class="join-dialog-heading">
+            <button type="button" class="join-close" aria-label="Close" @onclick="() => Close()"><span aria-hidden="true">×</span></button>
+            @Header
+        </div>
+    }
+    @if (Body is not null)
+    {
+        <div class="join-dialog-body">@Body</div>
+    }
+    @if (Footer is not null)
+    {
+        <div class="join-dialog-footer">@Footer</div>
+    }
+</dialog>
+
+@code{
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    public EventCallback<EventArgs> OnCloseCallback { get; set; }
+    public EventCallback<EventArgs> OnCancelCallback { get; set; }
+
+    private IJSObjectReference module = null!;
+    private ElementReference dialogRef;
+
+    public void ShowModal()
+    {
+        module.InvokeVoidAsync("showModal", dialogRef);
+    }
+
+    public void Close()
+    {
+        module.InvokeVoidAsync("closeModal", dialogRef);
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+
+}
