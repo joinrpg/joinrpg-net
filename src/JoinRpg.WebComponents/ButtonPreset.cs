@@ -12,4 +12,9 @@ public enum ButtonPreset
     Hide,
     Print,
     Email,
+    /// <summary>
+    /// Удалить восстановленное или скрытое
+    /// </summary>
+    Restore,
+    Publish,
 }
