@@ -22,7 +22,7 @@ public class EF6LoggerToMSExtLogging(DbContext context, Action<string> writeActi
             {
                 lazyLoadCounter.Add(1);
                 var tableName = TryGetTableNameFromSql(sql) ?? "!unknown_table";
-                logger.LogWarning("SQL: Probably lazy load from '{tableName}': {sql}", tableName, sql);
+                logger.LogWarning("SQL: Probably lazy load from '{lazyLoadTableName}': {sql}", tableName, sql);
             }
         }
         else
@@ -61,7 +61,7 @@ public class EF6LoggerToMSExtLogging(DbContext context, Action<string> writeActi
         if (idx > 0)
         {
             idx += fromString.Length;
-            var tail = sql.AsSpan()[idx..];
+            var tail = sql.AsSpan()[idx..].TrimStart();
             idx = tail.IndexOf(" ");
             if (idx > 0)
             {
