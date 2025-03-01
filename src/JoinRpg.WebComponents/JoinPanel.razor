@@ -1,4 +1,4 @@
-﻿<div class="@style">
+<div class="@style">
     @if (Header is not null)
     {
         <div class="panel-heading">@Header</div>
@@ -7,11 +7,16 @@
     {
        <div class="panel-body">@Body</div>
     }
+    @if (Footer is not null)
+    {
+        <div class="panel-footer">@Footer</div>
+    }
 </div>
 
 @code {
     [Parameter] public RenderFragment? Header { get; set; }
     [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
 
     private string style => BootstrapStyle.Build("panel", Variation, null);
