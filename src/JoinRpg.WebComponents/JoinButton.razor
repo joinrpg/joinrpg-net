@@ -52,9 +52,9 @@ title="@Title">
         variationResult = Variation ?? Presets[Preset]?.Variation ?? VariationStyleEnum.None;
     }
 
-    internal static RenderFragment FormatLabel(string label, string icon) => @<text><span class="glyphicon @icon"></span> @label</text>;
+    internal static RenderFragment FormatLabel(string label, string icon) => @<text><span class="glyphicon @icon"></span>&nbsp;@label</text>;
 
-    internal static RenderFragment SelectLabelFragment(RenderFragment? providedFragment, string? providedLabel, (string label, string icon)? providedPreset)
+    internal static RenderFragment SelectLabelFragment(RenderFragment? providedFragment, string? providedLabel, (string label, string? icon)? providedPreset)
     {
         return (providedFragment, providedLabel, providedPreset) switch
         {
@@ -62,19 +62,21 @@ title="@Title">
             (null, string lbl, null) => @<text>@lbl</text>,
             (null, string lbl, (string label, string icon) preset) => FormatLabel(lbl, preset.icon),
             (null, null, (string label, string icon) preset) => FormatLabel(preset.label, preset.icon),
-            _ => throw new InvalidOperationException("Do not set both text and fragment")
+            (null, string lbl, (string label, null) preset) => @<text>@lbl</text>,
+            (null, null, (string label, null) preset) => @<text>@preset.label</text>,
+            _ => @<text>Не удалось отформатировать кнопку</text>
         };
     }
 
-    private static ((string label, string icon) Label, (string label, string icon) Progress, VariationStyleEnum? Variation) CreatePreset(string label, string progress, string icon, VariationStyleEnum? variation = null)
+    private static ((string label, string? icon) Label, (string label, string? icon) Progress, VariationStyleEnum? Variation) CreatePreset(string label, string progress, string? icon = null, VariationStyleEnum? variation = null)
     {
         return ((label, icon), (progress, "glyphicon-hourglass"), variation);
     }
 
-    private readonly static Dictionary<ButtonPreset, ((string label, string icon) Label, (string label, string icon) Progress, VariationStyleEnum? Variation)?> Presets = new()
+    private readonly static Dictionary<ButtonPreset, ((string label, string? icon) Label, (string label, string? icon) Progress, VariationStyleEnum? Variation)?> Presets = new()
     {
         { ButtonPreset.Add, CreatePreset("Добавить", "Добавляем...", "glyphicon-plus", VariationStyleEnum.Success) },
-        { ButtonPreset.Cancel, CreatePreset("Отменить", "Отменяем...", "glyphicon-remove", VariationStyleEnum.Danger)},
+        { ButtonPreset.Cancel, CreatePreset("Отменить", "Отменяем...")},
         {ButtonPreset.Create, CreatePreset("Создать", "Создаем...", "glyphicon-ok", VariationStyleEnum.Success)},
         {ButtonPreset.Delete, CreatePreset("Удалить", "Удаляем...", "glyphicon-trash", VariationStyleEnum.Danger)},
         {ButtonPreset.Download, CreatePreset("Скачать", "Скачиваем...", "glyphicon-cloud-download")},
