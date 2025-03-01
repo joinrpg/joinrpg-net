@@ -73,7 +73,8 @@ title="@Title">
         return ((label, icon), (progress, "glyphicon-hourglass"), variation);
     }
 
-    private readonly static Dictionary<ButtonPreset, ((string label, string? icon) Label, (string label, string? icon) Progress, VariationStyleEnum? Variation)?> Presets = new()
+    // for tests
+    internal readonly static Dictionary<ButtonPreset, ((string label, string? icon) Label, (string label, string? icon) Progress, VariationStyleEnum? Variation)?> Presets = new()
     {
         { ButtonPreset.Add, CreatePreset("Добавить", "Добавляем...", "glyphicon-plus", VariationStyleEnum.Success) },
         { ButtonPreset.Cancel, CreatePreset("Отменить", "Отменяем...")},

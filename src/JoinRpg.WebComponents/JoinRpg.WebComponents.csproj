@@ -26,4 +26,8 @@
     <None Update="libman.json" />
   </ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="JoinRpg.WebPortal.Models.Test" />
+	</ItemGroup>
+
 </Project>
