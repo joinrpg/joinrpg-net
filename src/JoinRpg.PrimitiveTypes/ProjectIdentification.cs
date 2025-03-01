@@ -10,7 +10,7 @@ public record ProjectIdentification(int Value) : SingleValueType<int>(Value), IL
 
     int? ILinkable.ProjectId => Value;
 
-    public override string ToString() => base.ToString();
+    public override string ToString() => $"Project({Value})";
 
     public static ProjectIdentification? FromOptional(int? value) => value is int id ? new(id) : null;
     public static ProjectIdentification Parse(string value, IFormatProvider? provider) => Parse(value.AsSpan(), provider);
@@ -25,6 +25,10 @@ public record ProjectIdentification(int Value) : SingleValueType<int>(Value), IL
         if (val.StartsWith(nameof(ProjectIdentification)))
         {
             val = val[nameof(ProjectIdentification).Length..];
+        }
+        if (val.StartsWith("Project"))
+        {
+            val = val["Project".Length..];
         }
         if (val.StartsWith("("))
         {
