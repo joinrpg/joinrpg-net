@@ -284,9 +284,10 @@ public class PaymentsController : Common.ControllerBase
                 _ => BadRequest(),
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest();
+            logger.LogError(ex, "Возникла ошибка при попытке обновить статус платежа {paymentId} заявка {claimId}.", orderId, claimId);
+            return StatusCode(500);
         }
     }
 
