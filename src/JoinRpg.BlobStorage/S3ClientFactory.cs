@@ -9,7 +9,6 @@ internal static class S3ClientFactory
         var config = new AmazonS3Config()
         {
             ServiceURL = options.Endpoint,
-
         };
 
         return new AmazonS3Client(options.AccessKey, options.SecretKey, config);

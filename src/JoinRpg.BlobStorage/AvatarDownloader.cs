@@ -1,3 +1,4 @@
+using System.Buffers;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.BlobStorage;
@@ -12,29 +13,39 @@ internal class AvatarDownloader
         this.logger = logger;
     }
 
-    internal async Task<(Stream Stream, string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, CancellationToken ct)
+    internal async Task<(string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, Stream target, CancellationToken ct)
     {
         logger.LogInformation("Start downloading avatar for {avatarRemoteUri}", remoteUri);
-        // TODO: We need to check size here to prevent downloading of something too large
-        // but it's safe for now because remoteUri in practice only from "trusted sources" 
-        // (100% avatar from social networks)
+
         var httpClient = httpClientFactory.CreateClient("download-avatar-client");
 
         var response = await httpClient.GetAsync(remoteUri, ct);
-        var mediaType = response.Content.Headers.ContentType?.MediaType;
 
-        if (mediaType is null)
+        var mediaType = (response.Content.Headers.ContentType?.MediaType) ?? throw new Exception("Avatar should have media type");
+        var extension = ParseContentTypeToExtension(mediaType) ?? throw new Exception($"Is not safe to use {mediaType} as avatar media type");
+
+        const long maxSize = 1 * 1024 * 1024; // 1 MB
+        long totalRead = 0;
+
+        using var stream = await response.Content.ReadAsStreamAsync(ct);
+
+        var buffer = ArrayPool<byte>.Shared.Rent(8192);
+
+        int read;
+        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
         {
-            throw new Exception("Avatar should have media type");
+            totalRead += read;
+            if (totalRead > maxSize)
+            {
+                throw new InvalidOperationException("Файл слишком большой.");
+            }
+            target.Write(buffer, 0, read);
         }
 
-        var extension = ParseContentTypeToExtension(mediaType);
-        if (extension is null)
-        {
-            throw new Exception($"Is not safe to use {mediaType} as avatar media type");
-        }
+        ArrayPool<byte>.Shared.Return(buffer);
 
-        return (await response.Content.ReadAsStreamAsync(ct), mediaType, extension);
+
+        return (mediaType, extension);
     }
 
     private static string? ParseContentTypeToExtension(string mediaType)
