@@ -8,51 +8,58 @@ using Microsoft.Extensions.Options;
 
 namespace JoinRpg.BlobStorage;
 
-internal class S3AvatarStorageService : IAvatarStorageService
+internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
+    IOptions<S3StorageOptions> options,
+    ILogger<S3AvatarStorageService> logger,
+    IAmazonS3 amazonS3client) : IAvatarStorageService
 {
-    private readonly AvatarDownloader avatarDownloader;
-    private readonly S3StorageOptions options;
-    private readonly ILogger<S3AvatarStorageService> logger;
-    private readonly IAmazonS3 amazonS3Client;
-
-    public S3AvatarStorageService(AvatarDownloader avatarDownloader,
-        IOptions<S3StorageOptions> options,
-        ILogger<S3AvatarStorageService> logger,
-        IAmazonS3 amazonS3client)
-    {
-        this.avatarDownloader = avatarDownloader;
-        this.options = options.Value;
-        this.logger = logger;
-        amazonS3Client = amazonS3client;
-    }
+    private readonly S3StorageOptions options = options.Value;
 
     public async Task<Uri?> StoreAvatar(Uri remoteUri, CancellationToken ct = default)
     {
-        logger.LogInformation("Start uploading avatar from {avatarUri}", remoteUri);
-        var downloadResult = await avatarDownloader.DownloadAvatarAsync(remoteUri, ct);
-
-        var avatarName = CreateAvatarBlobName(remoteUri, downloadResult.Extension);
-        var putRequest1 = new PutObjectRequest
+        var retries = 0;
+        while (true)
         {
-            BucketName = options.BucketName,
-            Key = avatarName,
-            InputStream = downloadResult.Stream,
-            ContentType = downloadResult.ContentType
-        };
+            logger.LogInformation("Start uploading avatar from {avatarUri}", remoteUri);
+            var downloadResult = await avatarDownloader.DownloadAvatarAsync(remoteUri, ct);
 
-        _ = await amazonS3Client.PutObjectAsync(putRequest1, ct);
-        var uri = new Uri($"{options.Endpoint}/{options.BucketName}/{avatarName}");
+            var avatarName = CreateAvatarBlobName(remoteUri, downloadResult.Extension);
+            var putRequest1 = new PutObjectRequest
+            {
+                BucketName = options.BucketName,
+                Key = avatarName,
+                InputStream = downloadResult.Stream,
+                ContentType = downloadResult.ContentType,
+            };
 
-        logger.LogInformation(
-            "Avatar uploaded to {cachedAvatarUri}",
-            uri);
+            try
+            {
+                _ = await amazonS3client.PutObjectAsync(putRequest1, ct);
+            }
+            catch (AmazonS3Exception s3exception)
+            {
+                if (retries < 3)
+                {
+                    logger.LogWarning(s3exception, "Проблема при загрузке аватара {avatarUri} в S3 хранилище (Type={s3errorType}, Code={s3errorCode}: {message}", remoteUri, s3exception.ErrorType, s3exception.ErrorCode, s3exception.Message);
+                    retries++;
+                    continue;
+                }
+                logger.LogError(s3exception, "Проблема при загрузке аватара {avatarUri} в S3 хранилище (Type={s3errorType}, Code={s3errorCode}: {message}", remoteUri, s3exception.ErrorType, s3exception.ErrorCode, s3exception.Message);
+                throw;
+            }
+            var uri = new Uri($"{options.Endpoint}/{options.BucketName}/{avatarName}");
 
-        return uri;
+            logger.LogInformation(
+                "Avatar uploaded to {cachedAvatarUri}",
+                uri);
+
+            return uri;
+        }
     }
 
     private static string CreateAvatarBlobName(Uri remoteUri, string extension)
     {
         var hash = SHA1.HashData(Encoding.UTF8.GetBytes(remoteUri.AbsoluteUri + Random.Shared.Next().ToString("X")));
-        return BitConverter.ToString(hash).Replace("-", "") + extension;
+        return Convert.ToHexString(hash) + extension;
     }
 }
