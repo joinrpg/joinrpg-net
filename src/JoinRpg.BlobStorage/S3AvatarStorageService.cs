@@ -21,14 +21,20 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
         while (true)
         {
             logger.LogInformation("Start uploading avatar from {avatarUri}", remoteUri);
-            var downloadResult = await avatarDownloader.DownloadAvatarAsync(remoteUri, ct);
+
+            using var memoryStream = new MemoryStream(8192);
+            var downloadResult = await avatarDownloader.DownloadAvatarAsync(remoteUri, memoryStream, ct);
 
             var avatarName = CreateAvatarBlobName(remoteUri, downloadResult.Extension);
+
+            using var anotherStream = new MemoryStream([.. Enumerable.Repeat((byte)0, 8192)]);
+
+
             var putRequest1 = new PutObjectRequest
             {
                 BucketName = options.BucketName,
                 Key = avatarName,
-                InputStream = downloadResult.Stream,
+                InputStream = anotherStream,
                 ContentType = downloadResult.ContentType,
             };
 
