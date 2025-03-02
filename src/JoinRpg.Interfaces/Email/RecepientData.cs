@@ -19,4 +19,6 @@ public sealed class RecepientData(string displayName, string email, IReadOnlyDic
         : this(displayName1.DisplayName, email.Value, recipientSpecificValues)
     {
     }
+
+    public override string ToString() => $"Recepient({DisplayName} {email})";
 }
