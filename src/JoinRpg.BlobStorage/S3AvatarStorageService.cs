@@ -27,15 +27,17 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
 
             var avatarName = CreateAvatarBlobName(remoteUri, downloadResult.Extension);
 
-            using var anotherStream = new MemoryStream([.. Enumerable.Repeat((byte)0, 8192)]);
+            var hash = SHA256.HashData(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
 
 
             var putRequest1 = new PutObjectRequest
             {
                 BucketName = options.BucketName,
                 Key = avatarName,
-                InputStream = anotherStream,
+                InputStream = memoryStream,
                 ContentType = downloadResult.ContentType,
+                ChecksumSHA256 = Convert.ToBase64String(hash),
             };
 
             try
