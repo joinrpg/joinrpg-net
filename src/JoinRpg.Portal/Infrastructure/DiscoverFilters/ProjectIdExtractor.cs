@@ -17,12 +17,22 @@ internal static class ProjectIdExtractor
         return null;
     }
 
-    public static int? TryExtractFromQuery(this IQueryCollection query)
+    public static ProjectIdentification? TryExtractFromQuery(this IQueryCollection query)
     {
-        if (query.ContainsKey(Constants.ProjectIdName)
-            && int.TryParse(query[Constants.ProjectIdName], out var projectId))
+        if (query.ContainsKey(Constants.ProjectIdName))
         {
-            return projectId;
+            if (int.TryParse(query[Constants.ProjectIdName], out var projectId))
+            {
+                return new(projectId);
+            }
+            else if (ProjectIdentification.TryParse(query[Constants.ProjectIdName], null, out var projectId2))
+            {
+                return projectId2;
+            }
+            else
+            {
+                return null;
+            }
         }
         else
         {
@@ -30,7 +40,7 @@ internal static class ProjectIdExtractor
         }
     }
 
-    public static int? TryExtractFromPath(this PathString path)
+    public static ProjectIdentification? TryExtractFromPath(this PathString path)
     {
         if (path.Value is null)
         {
@@ -40,11 +50,11 @@ internal static class ProjectIdExtractor
         var secondPart = parts.Skip(1).FirstOrDefault();
         if (secondPart != null && int.TryParse(secondPart, out var projectId))
         {
-            return projectId;
+            return new(projectId);
         }
         else if (parts.Skip(2).FirstOrDefault() is string thirdPart && secondPart == "x-game-api" && int.TryParse(thirdPart, out var projectIdSecond))
         {
-            return projectIdSecond;
+            return new(projectIdSecond);
         }
         else
         {

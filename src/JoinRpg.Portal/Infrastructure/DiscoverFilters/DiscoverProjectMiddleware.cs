@@ -1,3 +1,4 @@
+using JoinRpg.PrimitiveTypes;
 using Serilog.Context;
 
 namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
@@ -5,20 +6,17 @@ namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
 /// <summary>
 /// Store projectId for CurrentProjectAccessor
 /// </summary>
-public class DiscoverProjectMiddleware
+public class DiscoverProjectMiddleware(RequestDelegate nextDelegate)
 {
-    private readonly RequestDelegate nextDelegate;
-
-    public DiscoverProjectMiddleware(RequestDelegate nextDelegate) => this.nextDelegate = nextDelegate;
 
     /// <inheritedoc />
     public async Task InvokeAsync(HttpContext context)
     {
         HttpRequest request = context.Request;
 
-        if ((request.Path.TryExtractFromPath() ?? request.Query.TryExtractFromQuery()) is int projectId)
+        if ((request.Path.TryExtractFromPath() ?? request.Query.TryExtractFromQuery()) is ProjectIdentification projectId)
         {
-            context.Items[Constants.ProjectIdName] = projectId;
+            context.Items[Constants.ProjectIdName] = projectId.Value;
             _ = LogContext.PushProperty(Constants.ProjectIdName, projectId);
         }
 
