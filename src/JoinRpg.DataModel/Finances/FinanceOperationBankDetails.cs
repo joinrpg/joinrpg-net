@@ -12,7 +12,7 @@ public class FinanceOperationBankDetails
     public string? BankRefundKey { get; set; }
 
     /// <summary>
-    /// Identifier of a ?????? TODO[shiko] operation received from bank.
+    /// Identifier of an operation received from bank.
     /// </summary>
     [MaxLength(256)]
     public string? BankOperationKey { get; set; }

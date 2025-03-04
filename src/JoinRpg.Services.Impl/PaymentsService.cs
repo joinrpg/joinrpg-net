@@ -118,14 +118,14 @@ public class PaymentsService(
         if (pi.Payment?.Status == PaymentStatus.Expired)
         {
             logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment is expired", fo.CommentId, claimId, projectId);
-            await UpdateClaimPaymentAsync(fo, pi);
+            await UpdateFinanceOperationAsync(fo, pi);
             throw new PaymentException(fo.Project, "Unable to continue payment that is expired");
         }
 
         if (pi.Payment?.Status != PaymentStatus.AwaitingForPayment)
         {
             logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment state is {bankPaymentState}", fo.CommentId, claimId, projectId, pi.Payment.Status);
-            await UpdateClaimPaymentAsync(fo, pi);
+            await UpdateFinanceOperationAsync(fo, pi);
             throw new PaymentException(fo.Project, "Unable to continue payment that doesn't awaits payment");
         }
 
@@ -396,7 +396,7 @@ public class PaymentsService(
             Now,
             // Do not remove null-coalescing here!
             // Payment comment is not necessary, but it must not be null to create comment.
-            request.CommentText ?? "",
+            request.CommentText?.Trim() ?? "",
             true,
             null);
         comment.Finance = new FinanceOperation
@@ -412,6 +412,7 @@ public class PaymentsService(
             Changed = Now,
             State = FinanceOperationState.Proposed,
             RecurrentPaymentId = request.Recurrent ? null : request.FromRecurrentPaymentId,
+            ReccurrentPaymentInstanceToken = request.Recurrent ? FinanceOperation.MakeInstanceToken(DateTime.UtcNow) : null,
             BankDetails = new FinanceOperationBankDetails(),
         };
         _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
@@ -567,7 +568,7 @@ public class PaymentsService(
         }
     }
 
-    private async Task<FinanceOperationState> UpdateClaimPaymentAsync(FinanceOperation fo, PaymentInfo? paymentInfo = null)
+    private async Task<FinanceOperationState> UpdateFinanceOperationAsync(FinanceOperation fo, PaymentInfo? paymentInfo)
     {
         if (fo.State != FinanceOperationState.Proposed)
         {
@@ -772,7 +773,7 @@ public class PaymentsService(
 
     /// <inheritdoc />
     public async Task<FinanceOperationState> UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
-        => await UpdateClaimPaymentAsync(await LoadFinanceOperationAsync(projectId, claimId, orderId));
+        => await UpdateFinanceOperationAsync(await LoadFinanceOperationAsync(projectId, claimId, orderId), null);
 
     /// <inheritdoc />
     public async Task UpdateLastClaimPaymentAsync(int projectId, int claimId)
@@ -780,9 +781,12 @@ public class PaymentsService(
         var fo = await LoadLastUnapprovedFinanceOperationAsync(projectId, claimId);
         if (fo is not null)
         {
-            await UpdateClaimPaymentAsync(fo);
+            await UpdateFinanceOperationAsync(fo, null);
         }
     }
+
+    public async Task<FinanceOperationState> UpdateFinanceOperationAsync(FinanceOperation fo)
+        => await UpdateFinanceOperationAsync(UnitOfWork.GetDbSet<FinanceOperation>().Attach(fo), paymentInfo: null);
 
     /// <inheritdoc />
     public async Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId)
@@ -844,11 +848,29 @@ public class PaymentsService(
         return false;
     }
 
+
+    /// <inheritdoc />
+    public Task<FinanceOperation?> PerformRecurrentPaymentAsync(RecurrentPayment recurrentPayment, int? amount, bool internalCall = false)
+    {
+        if (recurrentPayment.Claim is null)
+        {
+            throw new ArgumentException($"The {nameof(recurrentPayment.Claim)} property cannot be null.", nameof(recurrentPayment));
+        }
+        if (recurrentPayment.Project is null)
+        {
+            throw new ArgumentException($"The {nameof(recurrentPayment.Project)} property cannot be null.", nameof(recurrentPayment));
+        }
+        if (recurrentPayment.PaymentType is null)
+        {
+            throw new ArgumentException($"The {nameof(recurrentPayment.Project)} property cannot be null.", nameof(recurrentPayment));
+        }
+
+        return InternalPerformRecurrentPaymentAsync(recurrentPayment, amount, internalCall);
+    }
+
     /// <inheritdoc />
     public async Task<FinanceOperation?> PerformRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false)
     {
-        logger.LogInformation("Trying to perform recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
-
         var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
             .Include(rp => rp.Claim)
             .Include(rp => rp.Project)
@@ -862,6 +884,13 @@ public class PaymentsService(
             throw new JoinRpgEntityNotFoundException(recurrentPaymentId, nameof(RecurrentPayment));
         }
 
+        return await InternalPerformRecurrentPaymentAsync(recurrentPayment, amount, internalCall);
+    }
+
+    private async Task<FinanceOperation?> InternalPerformRecurrentPaymentAsync(RecurrentPayment recurrentPayment, int? amount, bool internalCall = false)
+    {
+        logger.LogInformation("Trying to perform recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId);
+
         if (!internalCall)
         {
             if (!recurrentPayment.Claim.HasAccess(CurrentUserId, e => e.CanManageMoney))
@@ -872,7 +901,7 @@ public class PaymentsService(
 
         if (recurrentPayment.Status is not RecurrentPaymentStatus.Active)
         {
-            logger.LogError("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} state {recurrentPaymentState} is not active", recurrentPayment.RecurrentPaymentId, claimId, projectId, recurrentPayment.Status);
+            logger.LogError("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} state {recurrentPaymentState} is not active", recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId, recurrentPayment.Status);
             return null; // TODO: Do we need to throw something here?
         }
 
@@ -903,20 +932,20 @@ public class PaymentsService(
             new ClaimPaymentRequest
             {
                 Money = amount ?? recurrentPayment.PaymentAmount,
-                ClaimId = claimId,
-                ProjectId = projectId,
+                ClaimId = recurrentPayment.ClaimId,
+                ProjectId = recurrentPayment.ProjectId,
                 PayerId = recurrentPayment.Claim.PlayerUserId,
                 OperationDate = Now,
-                FromRecurrentPaymentId = recurrentPaymentId,
+                FromRecurrentPaymentId = recurrentPayment.RecurrentPaymentId,
                 CommentText = $"Списание средств по подписке от {recurrentPayment.CreateDate:d}",
             });
         var fo = comment.Finance;
 
         await UnitOfWork.SaveChangesAsync();
 
-        logger.LogInformation("Acquiring payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", fo.CommentId, recurrentPayment.RecurrentPaymentId, claimId, projectId);
+        logger.LogInformation("Acquiring payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId);
 
-        var api = GetApi(projectId, claimId);
+        var api = GetApi(recurrentPayment.ProjectId, recurrentPayment.ClaimId);
 
         // First, we have to acquire QR-code token
         var initResult = await api.SetupFastPaymentSystemRecurrentPayments(
@@ -927,12 +956,11 @@ public class PaymentsService(
 
         if (initResult.Status == PaymentInfoQueryStatus.Success)
         {
-            logger.LogInformation("Successfully acquired payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been configured", fo.CommentId, recurrentPaymentId, claimId, projectId);
-            recurrentPayment.Status = RecurrentPaymentStatus.Active;
+            logger.LogInformation("Successfully acquired payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been configured", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId);
         }
         else
         {
-            logger.LogError("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed because {bankError}", fo.CommentId, recurrentPaymentId, claimId, projectId, initResult.ErrorDescription);
+            logger.LogError("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed because {bankError}", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId, initResult.ErrorDescription);
             fo.State = FinanceOperationState.Declined;
             fo.Changed = Now;
             await UnitOfWork.SaveChangesAsync();
@@ -949,7 +977,7 @@ public class PaymentsService(
 
         if (result.Status == PaymentInfoQueryStatus.Success)
         {
-            logger.LogInformation("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated", fo.CommentId, recurrentPaymentId, claimId, projectId);
+            logger.LogInformation("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully initiated", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId);
             fo.BankDetails ??= new FinanceOperationBankDetails();
             fo.BankDetails.BankOperationKey = result.Payment!.Id;
             if (result.Payment.Status == PaymentStatus.Done)
@@ -960,7 +988,7 @@ public class PaymentsService(
         }
         else
         {
-            logger.LogError("Failed to initiate payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because {bankError}", fo.CommentId, recurrentPaymentId, claimId, projectId, result.Error?.Description);
+            logger.LogError("Failed to initiate payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} because {bankError}", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId, result.Error?.Description);
             fo.State = FinanceOperationState.Declined;
             fo.Changed = Now;
         }
@@ -1060,6 +1088,90 @@ public class PaymentsService(
         => string.IsNullOrWhiteSpace(externalPaymentKey) || string.IsNullOrWhiteSpace(_lazyExternalPaymentsSystemPaymentUrlTemplate.Value)
             ? null
             : string.Format(_lazyExternalPaymentsSystemPaymentUrlTemplate.Value, externalPaymentKey);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<RecurrentPayment>> FindRecurrentPaymentsAsync(
+        int? afterId = null,
+        bool? activityStatus = true,
+        int pageSize = 100)
+    {
+        if (pageSize is <= 0 or > 10000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be between 1 and 10000");
+        }
+
+        afterId ??= 0;
+
+        var query = UnitOfWork.GetDbSet<RecurrentPayment>()
+            .OrderBy(rp => rp.RecurrentPaymentId)
+            .Take(pageSize)
+            .Where(rp => rp.RecurrentPaymentId > afterId);
+        switch (activityStatus)
+        {
+            case true:
+                query = query.Where(
+                    rp => rp.Status == RecurrentPaymentStatus.Active
+                          && rp.Project.Active
+                          && rp.Claim.IsApproved
+                          && rp.PaymentType.IsActive);
+                break;
+            case false:
+                query = query.Where(
+                    rp => rp.Status != RecurrentPaymentStatus.Active
+                          || !rp.PaymentType.IsActive
+                          || !rp.Claim.IsApproved
+                          || !rp.Project.Active);
+                break;
+        }
+
+        var result = await query.ToArrayAsync();
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<FinanceOperation>> FindOperationsOfRecurrentPaymentAsync(
+        int recurrentPaymentId,
+        DateTime? forPeriod = null,
+        IReadOnlySet<FinanceOperationState>? ofStates = null,
+        int? afterId = null,
+        int pageSize = 100)
+    {
+        if (pageSize is <= 0 or > 10000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be between 1 and 10000");
+        }
+
+        afterId ??= 0;
+
+        if (ofStates?.Count == 0)
+        {
+            ofStates = null;
+        }
+
+        var query = UnitOfWork.GetDbSet<FinanceOperation>()
+            .OrderBy(fo => fo.CommentId)
+            .Take(pageSize)
+            .Where(fo => fo.CommentId > afterId)
+            .Where(fo => fo.RecurrentPaymentId == recurrentPaymentId)
+            .Where(fo => fo.State != FinanceOperationState.Declined && fo.State != FinanceOperationState.Invalid);
+        if (forPeriod.HasValue)
+        {
+            query = query.Where(fo => fo.ReccurrentPaymentInstanceToken == FinanceOperation.MakeInstanceToken(forPeriod.Value));
+        }
+
+        if (ofStates?.Count == 1)
+        {
+            var state = ofStates.First();
+            query = query.Where(fo => fo.State == state);
+        }
+        else if (ofStates?.Count > 1)
+        {
+            query = query.Where(fo => ofStates.Contains(fo.State));
+        }
+
+        var result = await query.ToArrayAsync();
+        return result;
+    }
 
     private abstract class PaymentRedirectUrl : ILinkableClaim
     {
