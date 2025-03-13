@@ -186,7 +186,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             {
                 return Fail(match, index, extra);
             }
-            IEnumerable<Character> ch = group.GetOrderedCharacters()
+            IEnumerable<Character> ch = group.GetOrderedCharacters().Where(chr => chr.IsActive)
                     .Union(
                         group.GetOrderedChildrenGroupsRecursive().SelectMany(g => g.GetOrderedCharacters().Where(chr => chr.IsActive))
                         )
