@@ -5,13 +5,24 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      net:
+      net: #I like to merge this groups, but it will cause dependabot to timeout
         patterns:
           - "Microsoft.Extensions.*"
-          - "Microsoft.AspNetCore.*"
-          - "Microsoft.EntityFrameworkCore*"
           - "System.Text.Json"
           - "System.Net.Http.Json"
+        update-types:
+          - "minor"
+          - "patch"
+      aspnet:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+        update-types:
+          - "minor"
+          - "patch"
+      efcore:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.EntityFrameworkCore*"
           - "dotnet-ef"
         update-types:
           - "minor"
