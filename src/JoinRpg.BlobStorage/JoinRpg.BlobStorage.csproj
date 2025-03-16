@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.415.14" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.415.18" />
   </ItemGroup>
 
   <ItemGroup>
