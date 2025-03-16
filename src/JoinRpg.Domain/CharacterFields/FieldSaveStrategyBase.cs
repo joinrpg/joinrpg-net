@@ -23,7 +23,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     protected abstract void SerializeFields(Dictionary<int, FieldWithValue> fields);
 
-    public abstract IReadOnlyCollection<FieldWithValue> GetFields();
+    protected abstract IReadOnlyCollection<FieldWithValue> GetFields();
 
     private void EnsureEditAccess(FieldWithValue field)
     {
@@ -107,7 +107,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
 
-            if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character))
+            if (normalizedValue is null && FieldIsMandatory(field))
             {
                 ThrowRequiredField(field);
                 return;
@@ -116,6 +116,8 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
             _ = AssignFieldValue(field, normalizedValue);
         }
     }
+
+    protected abstract bool FieldIsMandatory(FieldWithValue field);
 
     [DoesNotReturn]
     protected abstract void ThrowRequiredField(FieldWithValue field);

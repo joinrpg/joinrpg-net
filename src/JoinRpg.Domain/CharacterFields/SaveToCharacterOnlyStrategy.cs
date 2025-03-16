@@ -22,7 +22,7 @@ internal class SaveToCharacterOnlyStrategy(
         UpdateSpecialGroups(fields);
     }
 
-    public override IReadOnlyCollection<FieldWithValue> GetFields() => Character.GetFields(ProjectInfo);
+    protected override IReadOnlyCollection<FieldWithValue> GetFields() => Character.GetFields(ProjectInfo);
 
     protected override void SetCharacterNameFromPlayer()
     {
@@ -38,4 +38,6 @@ internal class SaveToCharacterOnlyStrategy(
             .Where(v => v.Field.BoundTo == FieldBoundTo.Character)
             .SerializeFields();
     }
+
+    protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character);
 }
