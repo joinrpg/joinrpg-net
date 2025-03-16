@@ -12,10 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
   </ItemGroup>

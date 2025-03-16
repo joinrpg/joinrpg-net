@@ -9,9 +9,4 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
-    <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
-  </ItemGroup>
-
 </Project>

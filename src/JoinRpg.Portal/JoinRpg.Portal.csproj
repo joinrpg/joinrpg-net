@@ -20,7 +20,6 @@
 
     <ItemGroup>
       <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
       <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.3" />
@@ -32,16 +31,23 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" PrivateAssets="all">
+      <TreatAsUsed>true</TreatAsUsed>
+    </PackageReference>
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.1" />
 	<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.1" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
-    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog" Version="4.2.0">
+      <TreatAsUsed>true</TreatAsUsed>
+    </PackageReference>
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0">
+      <TreatAsUsed>true</TreatAsUsed>
+    </PackageReference>
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Formatting.Elasticsearch" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" /> <!-- Bump up implicitly, so transtitive dependiencies would not warn -->
