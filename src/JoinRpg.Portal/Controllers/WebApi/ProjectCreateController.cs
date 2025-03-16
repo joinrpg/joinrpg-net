@@ -29,7 +29,7 @@ public class ProjectCreateController(ILogger<ProjectCreateController> logger) : 
             return result switch
             {
                 FaildToCreateProjectResult failed => Problem(title: "Произошла ошибка при обработке запроса", detail: failed.Message, statusCode: 500),
-                PartiallySuccessCreateProjectResult partially => Ok(new ProjectCreateResultViewModel(partially.ProjectId, partially.Message)),
+                PartiallySuccessCreateProjectResult partially => Ok(new ProjectCreateResultViewModel(partially.ProjectId, $"Ошибка: {partially.Message}\n RequestId: {HttpContext.TraceIdentifier}")),
                 SuccessCreateProjectResult successCreateProjectResult => Ok(new ProjectCreateResultViewModel(successCreateProjectResult.ProjectId, Error: null)),
                 _ => Ok(result)
             };

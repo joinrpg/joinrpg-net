@@ -47,7 +47,7 @@ internal partial class CreateProjectService
                 }
                 else
                 {
-                    return new PartiallySuccessCreateProjectResult(projectId, "Удалось скопировать не все");
+                    return new PartiallySuccessCreateProjectResult(projectId, "Удалось скопировать не все элементы проекта");
                 }
             }
             catch (Exception ex)

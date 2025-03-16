@@ -1,4 +1,4 @@
-﻿@inject ILogger<CreateProjectPanel> logger
+@inject ILogger<CreateProjectPanel> logger
 @inject NavigationManager NavigationManager
 @inject IServiceProvider Services
 @implements IDisposable
@@ -22,6 +22,8 @@
     <JoinAlert Variation="VariationStyleEnum.Danger">
         Проект был создан, вы можете перейти на <a href="/@(created.Value)/home">страницу проекта</a>.
         При настройке проекта согласно вашим запросам произошла ошибка. Обратитесь в техподдержку и/или проверьте настройки проекта вручную.
+        <br> 
+        @createErrorResult
     </JoinAlert>
     return;
 }
@@ -67,6 +69,7 @@
     private bool creating = false;
     private ValidationMessageStore? messageStore;
     private ProjectIdentification? created;
+    private string? createErrorResult;
 
     [Parameter]
     [EditorRequired]
@@ -122,7 +125,7 @@
                 {
                     created = result.ProjectId;
                 }
-                messageStore?.Add(() => Model, result.Error ?? "Неизвестная серверная ошибка при создании проекта");
+                createErrorResult = result.Error ?? "Неизвестная серверная ошибка при создании проекта";
                 creating = false;
             }
         }
