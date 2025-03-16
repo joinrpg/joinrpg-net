@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.CharacterFields;
 
@@ -11,7 +12,7 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
     public SaveToClaimOnlyStrategy(Claim claim,
         int currentUserId,
         IFieldDefaultValueGenerator generator,
-        PrimitiveTypes.ProjectMetadata.ProjectInfo projectInfo) : base(claim,
+        ProjectInfo projectInfo) : base(claim,
         character: null,
         currentUserId,
         generator,
@@ -31,8 +32,10 @@ internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
         //Do nothing player could not change character yet
     }
 
-    public override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields(ProjectInfo);
+    protected override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields(ProjectInfo);
 
     [DoesNotReturn]
     protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Claim.CharacterId));
+
+    protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character);
 }

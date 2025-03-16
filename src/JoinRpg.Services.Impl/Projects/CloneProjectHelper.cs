@@ -262,7 +262,10 @@ internal class CloneProjectHelper(
         {
             var fieldValues = originalChar.GetFields(original);
             var setFieldsRequest = new Dictionary<int, string?>();
-            foreach (var originalFieldValue in fieldValues)
+            foreach (var originalFieldValue in fieldValues
+                .Where(fv => fv.Field.BoundTo == FieldBoundTo.Character) // Только поля персонажей
+                .Where(fv => fv.HasEditableValue) // Только те поля, у которых есть какое-то значение
+                )
             {
                 var newFieldId = FieldMapping.GetValueOrDefault(originalFieldValue.Field.Id);
                 if (newFieldId is null)
