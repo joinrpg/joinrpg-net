@@ -28,9 +28,6 @@
       <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ReferenceTrimmer" Version="3.3.11">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
+    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.11" />
   </ItemGroup>
 </Project>
