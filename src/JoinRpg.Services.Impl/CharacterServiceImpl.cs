@@ -7,6 +7,7 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
@@ -86,7 +87,7 @@ internal class CharacterServiceImpl(
     {
         var character = await LoadCharacter(editCharacterRequest.Id);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(editCharacterRequest.Id.ProjectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(editCharacterRequest.Id.ProjectId);
 
         SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo, projectInfo);
 
@@ -145,7 +146,7 @@ internal class CharacterServiceImpl(
     {
         var character = await CharactersRepository.GetCharacterAsync(moniker.ProjectId, moniker.CharacterId);
 
-        return character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles).EnsureProjectActive();
+        return character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
     }
 
     public async Task MoveCharacter(int currentUserId,
@@ -166,13 +167,10 @@ internal class CharacterServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues)
+    public async Task SetFields(CharacterIdentification characterId, Dictionary<int, string?> requestFieldValues)
     {
-        var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-
-        _ = character.EnsureProjectActive();
+        var character = await LoadCharacter(characterId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
 
         var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
@@ -183,7 +181,7 @@ internal class CharacterServiceImpl(
 
         FieldsChangedEmail? email = null;
 
-        if (changedFields.Any())
+        if (changedFields.Count != 0)
         {
             var user = await UserRepository.GetById(CurrentUserId);
             email = EmailHelpers.CreateFieldsEmail(

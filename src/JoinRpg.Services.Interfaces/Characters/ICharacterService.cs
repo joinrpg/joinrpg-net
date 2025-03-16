@@ -16,5 +16,5 @@ public interface ICharacterService
         int parentCharacterGroupId,
         short direction);
 
-    Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues);
+    Task SetFields(CharacterIdentification characterId, Dictionary<int, string?> requestFieldValues);
 }
