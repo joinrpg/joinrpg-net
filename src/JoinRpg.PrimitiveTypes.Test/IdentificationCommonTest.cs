@@ -72,7 +72,11 @@ public class IdentificationCommonTest
         {
             return;
         }
-        var acceptsProjectEntityId = type.GetConstructors().Any(c => c.GetParameters().Any(p => p.ParameterType == typeof(ProjectIdentification) || p.ParameterType.IsAssignableTo(typeof(IProjectEntityId))));
+        var acceptsProjectEntityId = type.GetConstructors().Any(c => c.GetParameters().Any(
+            p => p.ParameterType == typeof(ProjectIdentification)
+            || p.ParameterType.IsAssignableTo(typeof(IProjectEntityId))
+            || p.Name?.Equals("ProjectId", StringComparison.InvariantCultureIgnoreCase) == true
+            ));
 
         if (acceptsProjectEntityId)
         {
