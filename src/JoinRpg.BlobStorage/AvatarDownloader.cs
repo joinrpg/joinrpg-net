@@ -32,7 +32,7 @@ internal class AvatarDownloader
         var buffer = ArrayPool<byte>.Shared.Rent(8192);
 
         int read;
-        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
+        while ((read = await stream.ReadAsync(buffer, ct)) > 0)
         {
             totalRead += read;
             if (totalRead > maxSize)
