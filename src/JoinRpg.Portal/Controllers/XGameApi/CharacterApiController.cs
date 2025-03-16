@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
@@ -90,7 +91,7 @@ public class CharacterApiController(
     [Route("{characterId}/fields")]
     public async Task<string> SetCharacterFields(int projectId, int characterId, Dictionary<int, string?> fieldValues)
     {
-        await characterService.SetFields(projectId, characterId, fieldValues);
+        await characterService.SetFields(new CharacterIdentification(projectId, characterId), fieldValues);
         return "ok";
     }
 

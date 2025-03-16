@@ -305,10 +305,10 @@ internal class CloneProjectHelper(
             {
                 var plotFolderId = await plotService.CreatePlotFolder(projectId, originalFolder.MasterTitle, originalFolder.TodoField);
 
-                foreach (var originalElement in originalFolder.Elements)
+                foreach (var originalElement in originalFolder.Elements.Where(e => e.IsActive))
                 {
                     PlotElementTexts lastVersion = originalElement.LastVersion();
-                    await plotService.CreatePlotElement(
+                    _ = await plotService.CreatePlotElement(
                         plotFolderId,
                         lastVersion.Content.Contents ?? "",
                         lastVersion.TodoField,
