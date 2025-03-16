@@ -40,7 +40,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
             var name = GetFieldValue(nameField);
 
             Character.CharacterName = string.IsNullOrWhiteSpace(name) ?
-                Character.CharacterName = "CHAR" + Character.CharacterId
+                "CHAR" + Character.CharacterId
                 : name;
         }
 
