@@ -23,9 +23,9 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
             logger.LogInformation("Start uploading avatar from {avatarUri}", remoteUri);
 
             using var memoryStream = new MemoryStream(8192);
-            var downloadResult = await avatarDownloader.DownloadAvatarAsync(remoteUri, memoryStream, ct);
+            var (contentType, extension) = await avatarDownloader.DownloadAvatarAsync(remoteUri, memoryStream, ct);
 
-            var avatarName = CreateAvatarBlobName(remoteUri, downloadResult.Extension);
+            var avatarName = CreateAvatarBlobName(remoteUri, extension);
 
             var hash = SHA256.HashData(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
@@ -36,7 +36,7 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
                 BucketName = options.BucketName,
                 Key = avatarName,
                 InputStream = memoryStream,
-                ContentType = downloadResult.ContentType,
+                ContentType = contentType,
                 ChecksumSHA256 = Convert.ToBase64String(hash),
             };
 
