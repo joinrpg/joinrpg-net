@@ -120,7 +120,24 @@ jobs:
 
           #Keep waiting while job is not completed or failed
           while ( $(&"kubectl" "--%" "get jobs joinrpg-dal-migrate -n $env:ENVIRONMENT -o json" | ConvertFrom-Json -Depth 99).status.conditions.type -inotmatch "^Complete$|^Failed$" ){
+
+            $status = kubectl get job joinrpg-dal-migrate -n $env:ENVIRONMENT -o json | ConvertFrom-Json
             if ($LastExitCode -ne 0) {exit $LastExitCode}
+            $conditions = $status.status.conditions
+            if ($conditions) {
+              foreach ($condition in $conditions) {
+                if ($condition.type -eq "Complete" -and $condition.status -eq "True") {
+                    Write-Output "✅ Job завершен успешно!"
+                    exit 0
+                }
+                elseif ($condition.type -eq "Failed" -and $condition.status -eq "True") {
+                   Write-Output "Migration has failed. Migration's job pod info:"
+                   &"kubectl" "--%"  "get pods -n $env:ENVIRONMENT --selector=job-name=joinrpg-dal-migrate -o=yaml"
+                   exit 1
+                }
+              }
+            }
+
 
             #Check last event for error. Must throw an error if, for instance, namespace CPU quota was exceeded
             $LastEventForJob = &"kubectl" "--%" "get events -n $env:ENVIRONMENT --sort-by=.metadata.creationTimestamp --field-selector involvedObject.kind=Job,involvedObject.name=joinrpg-dal-migrate -o jsonpath='{.items[-1:].message}'"
@@ -129,13 +146,6 @@ jobs:
             &"kubectl" "--%" "logs -n $env:ENVIRONMENT --follow job/joinrpg-dal-migrate"
             Start-Sleep 3
           }
-
-           #Fail step if job is Failed
-           if ($Matches[0] -eq 'Failed') {
-           Write-Output "Migration has failed. Migration's job pod info:"
-           &"kubectl" "--%"  "get pods -n $env:ENVIRONMENT --selector=job-name=joinrpg-dal-migrate -o=yaml"
-           exit 1
-           }
         shell: pwsh
 
       - name: Deploy to k8s
