@@ -1,3 +1,4 @@
+name: Deploy
 on:
   workflow_call:
     inputs:
@@ -119,7 +120,7 @@ jobs:
           Write-Output "Waiting for job/joinrpg-dal-migrate to be completed or failed..."
 
           #Keep waiting while job is not completed or failed
-          while ( $(&"kubectl" "--%" "get jobs joinrpg-dal-migrate -n $env:ENVIRONMENT -o json" | ConvertFrom-Json -Depth 99).status.conditions.type -inotmatch "^Complete$|^Failed$" ){
+          while ($true){
 
             $status = kubectl get job joinrpg-dal-migrate -n $env:ENVIRONMENT -o json | ConvertFrom-Json
             if ($LastExitCode -ne 0) {exit $LastExitCode}
@@ -157,20 +158,20 @@ jobs:
 
 
           KUBECTL_PRUNE_WHITELIST="\
-          --prune-whitelist=core/v1/ConfigMap \
-          --prune-whitelist=core/v1/Endpoints \
-          --prune-whitelist=core/v1/PersistentVolumeClaim \
-          --prune-whitelist=core/v1/Pod \
-          --prune-whitelist=core/v1/ReplicationController \
-          --prune-whitelist=core/v1/Secret \
-          --prune-whitelist=core/v1/Service \
-          --prune-whitelist=batch/v1/Job \
-          --prune-whitelist=batch/v1/CronJob \
-          --prune-whitelist=networking.k8s.io/v1/Ingress \
-          --prune-whitelist=apps/v1/DaemonSet \
-          --prune-whitelist=apps/v1/Deployment \
-          --prune-whitelist=apps/v1/ReplicaSet \
-          --prune-whitelist=apps/v1/StatefulSet
+          --prune-allowlist=core/v1/ConfigMap \
+          --prune-allowlist=core/v1/Endpoints \
+          --prune-allowlist=core/v1/PersistentVolumeClaim \
+          --prune-allowlist=core/v1/Pod \
+          --prune-allowlist=core/v1/ReplicationController \
+          --prune-allowlist=core/v1/Secret \
+          --prune-allowlist=core/v1/Service \
+          --prune-allowlist=batch/v1/Job \
+          --prune-allowlist=batch/v1/CronJob \
+          --prune-allowlist=networking.k8s.io/v1/Ingress \
+          --prune-allowlist=apps/v1/DaemonSet \
+          --prune-allowlist=apps/v1/Deployment \
+          --prune-allowlist=apps/v1/ReplicaSet \
+          --prune-allowlist=apps/v1/StatefulSet
           "
 
           kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${ENVIRONMENT} $KUBECTL_PRUNE_WHITELIST
