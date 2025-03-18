@@ -20,28 +20,17 @@ public class CheckInIndexViewModel : IProjectIdAware
     public IReadOnlyCollection<CheckInListItemViewModel> Claims { get; }
 }
 
-public class CheckInListItemViewModel
+public class CheckInListItemViewModel(ClaimWithPlayer claim)
 {
+    public string OtherNicks { get; } = claim.ExtraNicknames ?? "";
 
+    public string NickName { get; } = claim.Player.GetDisplayName();
 
-    public CheckInListItemViewModel(ClaimWithPlayer claim)
-    {
-        ClaimId = claim.ClaimId;
-        CharacterName = claim.CharacterName;
-        Fullname = claim.Player.FullName;
-        NickName = claim.Player.GetDisplayName();
-        OtherNicks = claim.Extra?.Nicknames ?? "";
-    }
+    public string Fullname { get; } = claim.Player.FullName;
 
-    public string OtherNicks { get; }
+    public string CharacterName { get; } = claim.CharacterName;
 
-    public string NickName { get; }
-
-    public string Fullname { get; }
-
-    public string CharacterName { get; }
-
-    public int ClaimId { get; }
+    public int ClaimId { get; } = claim.ClaimId;
 }
 
 public class CheckInSetupModel : IValidatableObject

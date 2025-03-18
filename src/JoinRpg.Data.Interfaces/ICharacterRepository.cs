@@ -75,9 +75,9 @@ public class ClaimHeader
 
 public class ClaimWithPlayer
 {
-    public int ProjectId { get; set; }
-    public int ClaimId { get; set; }
+    public required ProjectIdentification ProjectId { get; set; }
+    public required int ClaimId { get; set; }
     public required string CharacterName { get; set; }
     public required User Player { get; set; }
-    public required UserExtra? Extra { get; set; }
+    public required string? ExtraNicknames { get; set; }
 }
