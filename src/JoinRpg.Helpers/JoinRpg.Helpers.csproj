@@ -3,7 +3,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers</AssemblyTitle>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 </Project>
