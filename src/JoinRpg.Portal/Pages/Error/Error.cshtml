@@ -1,0 +1,47 @@
+@page "/error/{statusCode:int?}"
+@model JoinRpg.Portal.Pages.Error.ErrorPageModel
+@{
+    ViewBag.Title = Model.HttpStatusCode == 404 ? "Страница не найдена" : "Ошибка";
+}
+
+<h1 class="text-danger">@ViewBag.Title</h1>
+@if (Model.HttpStatusCode == 404)
+{
+    <h3 class="text-danger">
+        Если вы перешли на эту страницу по ссылке с нашего сайта, обратитесь в техподдержку.
+    </h3>
+}
+else
+{
+    <h3 class="text-danger">При обработке вашего запроса возникла ошибка.</h3>
+}
+
+<div class="panel panel-warning">
+    <div class="panel-heading">
+        <b>Данные для техподдержки</b>
+    </div>
+
+    <div class="panel-body">
+
+        @if (Model.ActivityId is not null)
+        {
+            <p> <b>ActivityId:</b> @Model.ActivityId </p>
+        }
+
+        <p><b>RequestId</b>: @Model.RequestId</p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Path))
+        {
+            var path = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + Model.Path;
+            <p> <b>Путь</b>: <a href="@path">@path</a> </p>
+        }
+
+        @if (Model.Referer is not null)
+        {
+            <p><b>Referer</b>: <a href="@Model.Referer">@Model.Referer</a></p>
+        }
+    </div>
+    <div class="panel-footer">
+        <i>Пожалуйста, присылайте данные текстом, а не скриншотом</i>
+    </div>
+</div>

@@ -26,6 +26,5 @@ public class SetIsProductionFilterAttribute : ResultFilterAttribute
     {
         var host = context.HttpContext.Request.Host.Host;
         viewData["IsProduction"] = host == "joinrpg.ru";
-        viewData["FullHostName"] = context.HttpContext.Request.Scheme + host;
     }
 }

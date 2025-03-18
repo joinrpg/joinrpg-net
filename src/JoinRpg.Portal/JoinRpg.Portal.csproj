@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\GamePages\Groups\**" />
+    <Content Remove="Pages\GamePages\Groups\**" />
+    <EmbeddedResource Remove="Pages\GamePages\Groups\**" />
+    <None Remove="Pages\GamePages\Groups\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="App_Code\ConfirmDialog.cs" />
     <Compile Remove="App_Code\SearchableDropdownMvcHelper.cs" />
   </ItemGroup>
@@ -61,7 +68,6 @@
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Pages\GamePages\Groups\" />
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
   <ItemGroup>

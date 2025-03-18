@@ -161,29 +161,8 @@ public class Startup
               options.SupportedCultures = [new CultureInfo("ru-RU")];
           });
 
-        if (env.IsDevelopment())
-        {
-            _ = app.UseDeveloperExceptionPage();
-            _ = app.UseMigrationsEndPoint();
-        }
-        else if (env.IsEnvironment("IntegrationTest"))
-        {
-            //need this to ensure that exceptions from controller will fall directly to integration test
-        }
-        else
-        {
-            _ = app.UseExceptionHandler("/error");
-        }
-
-        _ = app.Use(async (context, next) =>
-          {
-              await next();
-              if (context.Response.StatusCode == 404)
-              {
-                  context.Request.Path = "/error/404";
-                  await next();
-              }
-          });
+        _ = app.UseExceptionHandler("/error");
+        _ = app.UseStatusCodePagesWithReExecute("/error/{0}");
 
         _ = app.UseSerilogRequestLogging(opts =>
         {
