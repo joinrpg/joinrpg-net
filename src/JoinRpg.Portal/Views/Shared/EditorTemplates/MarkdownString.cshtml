@@ -1,4 +1,4 @@
-﻿@model string
+@model string
 @*
     @{
       var requiredMsg = new HtmlString("");
@@ -15,8 +15,16 @@
     >id="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
             name="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
             @requiredMsg @(validation ? "data-val=true" : "") *@
+
+@{
+    var rows = 4;
+    if (ViewBag.Rows is int r)
+    {
+        rows = r;
+    }
+}
 <textarea class="form-control"
           cols="100"
           asp-for="@Model"
-          rows="4">@(Model ?? "")</textarea>
+          rows="@rows">@(Model ?? "")</textarea>
 <div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>

@@ -1,4 +1,4 @@
-﻿h1, h2, h3, h4, h5, h6, p, div, dt {
+h1, h2, h3, h4, h5, h6, p, div, dt {
   font-family: 'Roboto', sans-serif;
 }
 
@@ -447,4 +447,8 @@ hr.list-divider {
     footer {
         visibility:collapse
     }
+}
+
+.navbar {
+    margin-bottom:3px;
 }

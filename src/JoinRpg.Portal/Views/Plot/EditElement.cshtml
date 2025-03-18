@@ -1,4 +1,4 @@
-﻿
+
 @using JoinRpg.Web.Models.Plot
 @model EditPlotElementViewModel
 
@@ -18,7 +18,7 @@
     ViewBag.Title = "Редактирование " + objectName;
 }
 
-<h2>Редактирование вводной</h2>
+<h2>@ViewBag.Title</h2>
 @using (Html.BeginForm("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, FormMethod.Post))
 {
     <div class="form-horizontal">
@@ -62,7 +62,7 @@
                 }
                 else
                 {
-                    @Html.EditorFor(model => Model.Content, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.EditorFor(model => Model.Content, new { rows = 20 })
                 }
                 @Html.ValidationMessageFor(model => Model.Content, "", new {@class = "text-danger"})
             </div>
