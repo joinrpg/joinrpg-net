@@ -32,8 +32,7 @@ else
 
         @if (!string.IsNullOrWhiteSpace(Model.Path))
         {
-            var path = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + Model.Path;
-            <p> <b>Путь</b>: <a href="@path">@path</a> </p>
+            <p> <b>Путь</b>: <a href="@Model.Path">@Model.Path</a> </p>
         }
 
         @if (Model.Referer is not null)
