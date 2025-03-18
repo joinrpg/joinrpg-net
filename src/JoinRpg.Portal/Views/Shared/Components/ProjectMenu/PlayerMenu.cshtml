@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.ProjectCommon;
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@using JoinRpg.Web.ProjectCommon;
 @model JoinRpg.Web.Models.PlayerMenuViewModel
 
 <div class="navbar navbar-default">
@@ -95,7 +96,7 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Функции администратора<span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            @if (Model.IsActive)
+                            @if (Model.ProjectStatus != ProjectLifecycleStatus.Archived)
                             {
                                 <li>
                                     @Html.ActionLink("Закрыть проект", "Close", "Game", new { Model.ProjectId }, null)

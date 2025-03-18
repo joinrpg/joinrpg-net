@@ -27,50 +27,46 @@ public class ProjectMenuViewComponent(
 
         if (acl != null)
         {
-            var menuModel = new MasterMenuViewModel()
-            {
-                Permissions = acl.Permissions,
-                CheckInModuleEnabled = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled,
-            };
-            await SetCommonMenuParameters(menuModel, projectInfo);
-            return View("MasterMenu", menuModel);
+            return await GenerateMasterMenu(projectInfo, acl);
         }
         else
         {
-            var project = await projectRepository.GetProjectAsync(currentProjectAccessor.ProjectId);
-            IReadOnlyCollection<ClaimShortListItemViewModel> claims;
-            if (currentUserAccessor.UserIdOrDefault is int userId)
-            {
-                claims = [..
-                    (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
-                    .Select(c => new ClaimShortListItemViewModel(c))
-                    ];
-            }
-            else
-            {
-                claims = [];
-            }
-            var menuModel = new PlayerMenuViewModel()
-            {
-                Claims = claims,
-                PlotPublished = projectInfo.PublishPlot,
-            };
-            await SetCommonMenuParameters(menuModel, projectInfo);
-            return View("PlayerMenu", menuModel);
+            return await GeneratePlayerMenu(projectInfo);
         }
     }
 
-    private async Task SetCommonMenuParameters(MenuViewModelBase menuModel, ProjectInfo projectInfo)
+    private async Task<IViewComponentResult> GeneratePlayerMenu(ProjectInfo projectInfo)
     {
-        menuModel.ProjectId = projectInfo.ProjectId;
-        menuModel.ProjectName = projectInfo.ProjectName;
-        menuModel.BigGroups = [..
-            (await projectRepository.LoadDirectChildGroupHeaders(projectInfo.RootCharacterGroupId))
-            .Select(dto => new CharacterGroupLinkSlimViewModel(dto))
-            ];
-        menuModel.ProjectStatus = projectInfo.ProjectStatus;
-        menuModel.EnableAccommodation = projectInfo.AccomodationEnabled;
-        menuModel.IsAdmin = currentUserAccessor.IsAdmin;
-        menuModel.ShowSchedule = projectInfo.ProjectScheduleSettings.ScheduleEnabled;
+        IReadOnlyCollection<ClaimShortListItemViewModel> claims;
+        if (currentUserAccessor.UserIdOrDefault is int userId)
+        {
+            claims = [..
+                    (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
+                    .Select(c => new ClaimShortListItemViewModel(c))
+                ];
+        }
+        else
+        {
+            claims = [];
+        }
+        var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
+        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups)
+        {
+            Claims = claims,
+        };
+        return View("PlayerMenu", menuModel);
+    }
+
+    private async Task<IViewComponentResult> GenerateMasterMenu(ProjectInfo projectInfo, ProjectMasterInfo acl)
+    {
+        var bigGroups = (await LoadBigGroups(projectInfo)).ToArray();
+        var menuModel = new MasterMenuViewModel(projectInfo, currentUserAccessor, bigGroups, acl.Permissions);
+        return View("MasterMenu", menuModel);
+    }
+
+    private async Task<IEnumerable<CharacterGroupLinkSlimViewModel>> LoadBigGroups(ProjectInfo projectInfo)
+    {
+        return (await projectRepository.LoadDirectChildGroupHeaders(projectInfo.RootCharacterGroupId))
+            .Select(dto => new CharacterGroupLinkSlimViewModel(dto));
     }
 }
