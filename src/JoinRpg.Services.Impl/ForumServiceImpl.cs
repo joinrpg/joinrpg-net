@@ -13,8 +13,6 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
     private IEmailService EmailService { get; }
     public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => EmailService = emailService;
 
-    private int[] GetChildrenGroupIds(CharacterGroup group) => group.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId).Append(group.CharacterGroupId).ToArray();
-
     public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
     {
         var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
@@ -45,7 +43,7 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
 
         if (emailEverybody)
         {
-            var groups = GetChildrenGroupIds(group);
+            var groups = group.GetChildrenGroupsIdRecursiveIncludingThis();
             var players = hideFromUser ? [] :
               (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Approved, groups)).Select(
                 claim => claim.Player);

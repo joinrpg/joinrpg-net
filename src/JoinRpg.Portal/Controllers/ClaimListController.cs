@@ -166,24 +166,27 @@ public class ClaimListController(
     public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
     {
         var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
+
+        if (group == null)
+        {
+            return NotFound();
+        }
+        var groupIds = group.GetChildrenGroupsIdRecursiveIncludingThis();
         var claims = await claimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, groupIds);
 
         return await ShowMasterClaimListForGroup(group, export, "Заявки в группу (все)", claims,
             GroupNavigationPage.ClaimsActive, ClaimStatusSpec.Active);
     }
 
-    private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
-    {
-        var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        return groups.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
-    }
-
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
     {
         var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-        var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
+        if (group == null)
+        {
+            return NotFound();
+        }
+        var groupIds = group.GetChildrenGroupsIdRecursiveIncludingThis();
         var claims = await claimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, groupIds);
 
         return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки в группу (все)",

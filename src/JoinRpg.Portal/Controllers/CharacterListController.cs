@@ -103,7 +103,7 @@ public class CharacterListController : ControllerGameBase
             return NotFound();
         }
 
-        var groupIds = characterGroup.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId).Append(characterGroupId).ToArray();
+        var groupIds = characterGroup.GetChildrenGroupsIdRecursiveIncludingThis();
         var characters = (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
         var plots = await PlotRepository.GetPlotsWithTargets(projectId);
