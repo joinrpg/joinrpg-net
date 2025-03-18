@@ -35,7 +35,7 @@ internal static class ClaimPredicates
 
     public static Expression<Func<Claim, bool>> GetResponsible(int masterUserId) => claim => claim.ResponsibleMasterUserId == masterUserId;
 
-    public static Expression<Func<Claim, bool>> GetMyClaim(int userId) => claim => claim.PlayerUserId == userId;
+    public static Expression<Func<Claim, bool>> GetForUser(int userId) => claim => claim.PlayerUserId == userId;
 
     public static Expression<Func<Claim, bool>> GetInGroupPredicate(int[] characterGroupsIds) =>
         claim => characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0);

@@ -56,8 +56,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
     public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(e => e.ClaimId == claimId && e.ProjectId == projectId);
 
-    public Task<Claim> GetClaimByDiscussion(int projectId, int commentDiscussionId) => GetClaimImpl(e => e.CommentDiscussionId == commentDiscussionId && e.ProjectId == projectId);
-
     public async Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec)
     {
         return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
@@ -68,18 +66,10 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
     public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec claimStatusSpec)
     {
-        return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
-          .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
-          .Include(c => c.Player.Extra)
-          .Select(
-            claim => new ClaimWithPlayer()
-            {
-                Player = claim.Player,
-                ClaimId = claim.ClaimId,
-                CharacterName = claim.Character.CharacterName,
-                Extra = claim.Player.Extra,
-            })
-          .ToListAsync();
+        var query = Ctx.ClaimSet
+              .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
+              .Where(c => c.ProjectId == projectId);
+        return await MapToClaimWithPlayer(query);
     }
 
     public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId)
@@ -130,23 +120,41 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     {
         return GetClaimsImpl(projectId, active, ClaimPredicates.GetInGroupPredicate(characterGroupsIds));
     }
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
+        => GetClaimsImpl(projectId, claimStatusSpec, ClaimPredicates.GetForUser(userId));
 
     public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
     {
-        return await Ctx
-          .ClaimSet
+        var query = Ctx.ClaimSet
           .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
-          .Where(claim => claim.PlayerUserId == userId)
-          .Where(c => c.ProjectId == projectId)
-          .Select(claim => new ClaimWithPlayer
+          .Where(ClaimPredicates.GetForUser(userId))
+          .Where(c => c.ProjectId == projectId);
+        return await MapToClaimWithPlayer(query);
+    }
+
+    private static async Task<IReadOnlyCollection<ClaimWithPlayer>> MapToClaimWithPlayer(IQueryable<Claim> query)
+    {
+        var result = await query
+          .Select(claim => new
           {
-              Player = claim.Player,
-              CharacterName = claim.Character.CharacterName,
-              Extra = claim.Player.Extra,
-              ClaimId = claim.ClaimId,
+              claim.ProjectId,
+              claim.Player,
+              claim.Character.CharacterName,
+              claim.Player.Extra!.Nicknames,
+              claim.ClaimId,
           })
           .ToListAsync();
+
+        return [.. result.Select(
+            c => new ClaimWithPlayer
+            {
+                CharacterName = c.CharacterName,
+                ClaimId = c.ClaimId,
+                ExtraNicknames = c.Nicknames,
+                Player = c.Player,
+                ProjectId = new (c.ProjectId)
+            }
+            )];
     }
 
     public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)

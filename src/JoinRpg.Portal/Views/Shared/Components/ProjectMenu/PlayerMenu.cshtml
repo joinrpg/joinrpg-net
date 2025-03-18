@@ -49,7 +49,7 @@
                 {
                     var claim = Model.Claims.Single();
                     <li>
-                        @Html.ActionLink("Заявка: " + claim.Name, "Edit", "Claim", new { projectId = claim.ProjectId, claim.ClaimId }, null)
+                        @Html.ActionLink("Заявка: " + claim.Name, "Edit", "Claim", new { projectId = claim.ProjectId.Value, claim.ClaimId }, null)
                     </li>
                 }
                 else if (Model.Claims.Count > 0)
@@ -60,7 +60,7 @@
                             @foreach (var claim in Model.Claims)
                             {
                                 <li>
-                                    @Html.ActionLink(claim.Name, "Edit", "Claim", new { projectId = claim.ProjectId, claim.ClaimId }, null)
+                                    @Html.ActionLink(claim.Name, "Edit", "Claim", new { projectId = claim.ProjectId.Value, claim.ClaimId }, null)
                                 </li>
                             }
                         </ul>

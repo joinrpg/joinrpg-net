@@ -38,7 +38,7 @@ public class CheckInController(
                         PlayerId = claim.Player.UserId,
                         NickName = claim.Player.GetDisplayName(),
                         FullName = claim.Player.FullName,
-                        OtherNicks = claim.Extra?.Nicknames ?? "",
+                        OtherNicks = claim.ExtraNicknames ?? "",
                     },
                 });
     }

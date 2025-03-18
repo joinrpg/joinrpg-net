@@ -10,7 +10,7 @@ namespace JoinRpg.Web.Models.ClaimList;
 public class ClaimShortListItemViewModel(string name, int claimId, ProjectIdentification projectId, UserLinkViewModel player)
 {
     public ClaimShortListItemViewModel(ClaimWithPlayer claimWithPlayer)
-        : this(claimWithPlayer.CharacterName, claimWithPlayer.ClaimId, new(claimWithPlayer.ProjectId), UserLinks.Create(claimWithPlayer.Player))
+        : this(claimWithPlayer.CharacterName, claimWithPlayer.ClaimId, claimWithPlayer.ProjectId, UserLinks.Create(claimWithPlayer.Player))
     {
 
     }

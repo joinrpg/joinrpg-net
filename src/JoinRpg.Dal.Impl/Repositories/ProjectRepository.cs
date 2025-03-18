@@ -20,7 +20,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     {
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
         var activeOrOnHoldClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var myClaim = userId == null ? claim => false : ClaimPredicates.GetMyClaim(userId.Value);
+        var myClaim = userId == null ? claim => false : ClaimPredicates.GetForUser(userId.Value);
         return project => new ProjectWithClaimCount()
         {
             ProjectId = project.ProjectId,

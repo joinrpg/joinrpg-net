@@ -7,7 +7,7 @@ namespace JoinRpg.Web.Models.UserProfile;
 
 public static class UserLinks
 {
-    [return: NotNullIfNotNull("user")]
+    [return: NotNullIfNotNull(nameof(user))]
     public static UserLinkViewModel? Create(User? user, ViewMode viewMode = ViewMode.Show)
     {
         return (user, viewMode) switch
