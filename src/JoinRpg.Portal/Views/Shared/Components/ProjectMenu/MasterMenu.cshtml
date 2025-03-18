@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Portal.Infrastructure.Authentication
+@using JoinRpg.Portal.Infrastructure.Authentication
 @using JoinRpg.PrimitiveTypes.Access
 @using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon;
@@ -90,7 +90,7 @@
                         }
                         @foreach (var cg in Model.BigGroups)
                         {
-                            <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                            <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new { Model.ProjectId, cg.CharacterGroupId.CharacterGroupId }, null)</li>
                         }
 
                     </ul>
@@ -125,7 +125,7 @@
                         }
                         @foreach (var cg in Model.BigGroups)
                         {
-                            <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                            <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new { Model.ProjectId, cg.CharacterGroupId.CharacterGroupId }, null)</li>
                         }
                     </ul>
                 </li>
