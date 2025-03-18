@@ -1,3 +1,4 @@
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.ClaimList;
@@ -5,28 +6,27 @@ using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
-public class MenuViewModelBase
+public class MenuViewModelBase(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, CharacterGroupLinkSlimViewModel[] bigGroups)
 {
-    // Constructed only in SetCommonMenuParameters and it's ensures that every member is set
-    public int ProjectId { get; set; }
-    public string ProjectName { get; set; } = null!;
-    public bool IsActive { get; set; }
-    public bool IsAcceptingClaims { get; set; }
-    public bool EnableAccommodation { get; set; }
-    public IEnumerable<CharacterGroupLinkSlimViewModel> BigGroups { get; set; } = null!;
-    public bool IsAdmin { get; set; }
-    public bool ShowSchedule { get; set; }
-    public ProjectLifecycleStatus ProjectStatus { get; set; }
+    public int ProjectId { get; } = projectInfo.ProjectId.Value;
+    public string ProjectName { get; } = projectInfo.ProjectName;
+    public bool EnableAccommodation { get; } = projectInfo.AccomodationEnabled;
+    public CharacterGroupLinkSlimViewModel[] BigGroups { get; } = bigGroups;
+    public bool IsAdmin { get; } = currentUserAccessor.IsAdmin;
+    public bool ShowSchedule { get; } = projectInfo.ProjectScheduleSettings.ScheduleEnabled;
+    public ProjectLifecycleStatus ProjectStatus { get; } = projectInfo.ProjectStatus;
 }
 
-public class PlayerMenuViewModel : MenuViewModelBase
+public class PlayerMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, CharacterGroupLinkSlimViewModel[] bigGroups)
+    : MenuViewModelBase(projectInfo, currentUserAccessor, bigGroups)
 {
     public required IReadOnlyCollection<ClaimShortListItemViewModel> Claims { get; set; }
-    public required bool PlotPublished { get; set; }
+    public bool PlotPublished { get; } = projectInfo.PublishPlot;
 }
 
-public class MasterMenuViewModel : MenuViewModelBase
+public class MasterMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, CharacterGroupLinkSlimViewModel[] bigGroups, Permission[] permissions)
+    : MenuViewModelBase(projectInfo, currentUserAccessor, bigGroups)
 {
-    public required IReadOnlyCollection<Permission> Permissions { get; set; }
-    public required bool CheckInModuleEnabled { get; set; }
+    public Permission[] Permissions { get; set; } = permissions;
+    public bool CheckInModuleEnabled { get; } = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled;
 }
