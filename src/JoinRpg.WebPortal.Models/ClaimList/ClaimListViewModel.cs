@@ -1,17 +1,16 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
 public abstract class ClaimListViewModel : IOperationsAwareView
 {
-    string? IOperationsAwareView.InlineTitle => Title;
+    public string? InlineTitle { get; private set; }
     bool IOperationsAwareView.ShowCharacterCreateButton => false;
 
-    public string? Title { get; set; }
-
-    public IEnumerable<ClaimListItemViewModel> Items { get; }
+    public IReadOnlyCollection<ClaimListItemViewModel> Items { get; }
 
     public int? ProjectId { get; }
     public IReadOnlyCollection<int> ClaimIds { get; }
@@ -19,6 +18,8 @@ public abstract class ClaimListViewModel : IOperationsAwareView
 
     public bool ShowCount { get; }
     public abstract bool ShowUserColumn { get; }
+
+    public string? CountString => CountHelper.DisplayCount(Items.Count, "заявка", "заявки", "заявок");
 
     public ClaimListViewModel(
        int currentUserId,
@@ -41,7 +42,7 @@ public abstract class ClaimListViewModel : IOperationsAwareView
         CharacterIds = claims.Select(c => c.CharacterId).ToArray();
         ProjectId = projectId;
         ShowCount = showCount;
-        Title = title;
+        InlineTitle = title;
     }
 
     protected abstract IEnumerable<ClaimProblem> ValidateClaim(Claim c);

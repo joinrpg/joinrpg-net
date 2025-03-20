@@ -1,13 +1,10 @@
-﻿@using System.Diagnostics
+@using System.Diagnostics
 @using JoinRpg.DataModel
 @using JoinRpg.Domain.Problems
 @using JoinRpg.PrimitiveTypes
 @using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
-@{
-    ViewBag.CountString = Html.DisplayCount_OfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей");
-}
 
 @await Html.PartialAsync("_ListOperationsDropdown", Model)
 

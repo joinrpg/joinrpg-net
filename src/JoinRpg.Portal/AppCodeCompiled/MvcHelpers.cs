@@ -16,11 +16,8 @@ namespace JoinRpg.Portal;
 public static class DisplayCount
 {
     [Pure]
-    public static IHtmlContent OfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return new HtmlString(count + " " + selected);
-    }
+    [Obsolete("Use CountHelper.DisplayCount")]
+    public static IHtmlContent OfX(int count, string single, string multi1, string multi2) => new HtmlString(CountHelper.DisplayCount(count, single, multi1, multi2));
 }
 public static class MvcHtmlHelpers
 {
@@ -153,11 +150,9 @@ public static class MvcHtmlHelpers
         => self.GetModelExplorer(expression).Model;
 
     [Pure]
+    [Obsolete("Use CountHelper.DisplayCount")]
     public static string DisplayCount_OfX<TModel>(this IHtmlHelper<TModel> self, int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
+        => CountHelper.DisplayCount(count, single, multi1, multi2);
 
     public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new(request.Scheme + "://" + request.Host);
 }

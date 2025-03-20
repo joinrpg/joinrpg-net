@@ -51,6 +51,8 @@ public class CharacterListViewModel(
 
     public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedActiveFields.Where(f => !f.IsName && !f.IsMultiLine).ToArray();
 
+    public string? CountString => CountHelper.DisplayCount(Items.Count(), "персонаж", "персонажа", "персонажей");
+
     string? IOperationsAwareView.InlineTitle => Title;
 }
 
