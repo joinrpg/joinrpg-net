@@ -1,5 +1,5 @@
-﻿@model JoinRpg.Web.Models.ClaimList.ClaimListViewModel
+@model JoinRpg.Web.Models.ClaimList.ClaimListViewModel
 @{
-    ViewBag.Title = Model.Title;
+    ViewBag.Title = Model.InlineTitle;
 }
 @await Html.PartialAsync("_ClaimList", Model)

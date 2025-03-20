@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Helpers.Web
+@using JoinRpg.Helpers.Web
+@using JoinRpg.WebComponents
 @model JoinRpg.Web.Models.IOperationsAwareView
 @if (ViewBag.HideOperations == true)
 {
@@ -9,50 +10,48 @@
     {
         <h2>@Model.InlineTitle</h2>
     }
-<div class="btn-group" style="padding: 1em; fi">
+<div class="btn-group" style="padding: 1em">
     
-    @if (ViewBag.CountString != null)
+    @if (Model.CountString != null)
     {
-        <a href="#" class="disabled btn btn-default">@ViewBag.CountString</a>
+        <a href="#" class="disabled btn btn-default">@Model.CountString</a>
     }
     @{
         var separator = ViewBag.FullyQualifiedUri.Contains('?') ? "&" : "?";
+            var exportUri = ViewBag.FullyQualifiedUri + separator + "export=xlsx";
     }
-    <a href="@(ViewBag.FullyQualifiedUri + separator)export=xlsx" class="btn btn-default"
-       title="Экспорт в Excel">
-        <span class="glyphicon glyphicon-download"></span>
-        Скачать в Excel
-    </a>
+        <component type="typeof(JoinButton)"
+                   render-mode="Static"
+                   param-Link="@exportUri"
+                   param-Preset="@ButtonPreset.Download"
+                   param-Title="@("Скачать в Excel")" />
+
     @if (Model.ShowCharacterCreateButton)
     {
-      <a
-         asp-controller="Character"
-         asp-action="Create"
-         asp-route-ProjectId="@Model.ProjectId"
-         asp-route-CharacterGroupId="@Model.CharacterGroupId"
-         class="btn btn-default">
-        Добавить персонажа
-      </a>
+      <component
+        type="typeof(JoinButton)"
+        render-mode="Static"
+        param-Link="@(Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}))"
+        param-Preset="@ButtonPreset.Add"
+        param-Title="@("Добавить персонажа")"
+        />
     }
     @if (Model.ClaimIds.Any() && Model.ProjectId != null)
     {
-        
-        <a href="@Url.Action("ForClaims", "MassMail", new {Model.ProjectId, ClaimIds = Model.ClaimIds.CompressIdList()})"
-           class="btn btn-default">
-            <span class="glyphicon glyphicon-envelope"></span>
-            Написать всем
-        </a>
+        <component type="typeof(JoinButton)"
+                    render-mode="Static"
+                    param-Link="@(@Url.Action("ForClaims", "MassMail", new {Model.ProjectId, ClaimIds = Model.ClaimIds.CompressIdList()}))"
+                    param-Preset="@ButtonPreset.Email"
+                    param-Title="@("Написать всем")" />
     
     }
     @if (Model.CharacterIds.Any() && Model.ProjectId != null)
     {
-        
-        <a class="btn btn-default"
-           href="@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()})">
-            <span class="glyphicon glyphicon-print"></span>
-            Распечатать все
-        </a>
-    
+            <component type="typeof(JoinButton)"
+                       render-mode="Static"
+                       param-Link="@(@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()}))"
+                       param-Preset="@ButtonPreset.Email"
+                       param-Title="@("Распечатать все")" />
     }
 
 </div>
