@@ -9,5 +9,7 @@ public enum ButtonPreset
     Delete,
     Download,
     Update,
-    Hide
+    Hide,
+    Print,
+    Email,
 }
