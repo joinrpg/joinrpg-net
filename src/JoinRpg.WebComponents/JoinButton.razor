@@ -1,12 +1,26 @@
-<button href="#"
-class="@style"
-@onclick="OnClickHappened"
-type="@buttonType"
-disabled="@disabled"
-title="@Title">
-    @label
-</button>
+@if (Link is not null)
+{
+    <a href="@Link"
+      class="@style"
+      type="@buttonType"
+      disabled="@disabled"
+      title="@Title">
+        @label
+    </a>
+}
+else
+{
+    <button href="#"
+      class="@style"
+      @onclick="OnClickHappened"
+      type="@buttonType"
+      disabled="@disabled"
+      title="@Title">
+          @label
+    </button>
+}
 @code {
+    [Parameter] public string? Link { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; }
     [Parameter] public SizeStyleEnum? Size { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -45,9 +59,15 @@ title="@Title">
         if (Disabled)
         {
             OnClick = EventCallback<MouseEventArgs>.Empty;
+            Link = null;
         }
 
-        labelResult = SelectLabelFragment(ProgressFragment, ProgressText, Presets[Preset]?.Label);
+        if (Link is not null && OnClick.HasDelegate)
+        {
+            throw new InvalidOperationException("Нельзя установить одновременно обработчик OnClick и ссылку");
+        }
+
+        labelResult = SelectLabelFragment(LabelFragment, Title, Presets[Preset]?.Label);
         progressResult = SelectLabelFragment(ProgressFragment, ProgressText, Presets[Preset]?.Progress);
         variationResult = Variation ?? Presets[Preset]?.Variation ?? VariationStyleEnum.None;
     }
@@ -76,13 +96,15 @@ title="@Title">
     // for tests
     internal readonly static Dictionary<ButtonPreset, ((string label, string? icon) Label, (string label, string? icon) Progress, VariationStyleEnum? Variation)?> Presets = new()
     {
-        { ButtonPreset.Add, CreatePreset("Добавить", "Добавляем...", "glyphicon-plus", VariationStyleEnum.Success) },
+        { ButtonPreset.Add, CreatePreset("Добавить", "Добавляем...", "glyphicon-plus", VariationStyleEnum.None) },
         { ButtonPreset.Cancel, CreatePreset("Отменить", "Отменяем...")},
         {ButtonPreset.Create, CreatePreset("Создать", "Создаем...", "glyphicon-ok", VariationStyleEnum.Success)},
         {ButtonPreset.Delete, CreatePreset("Удалить", "Удаляем...", "glyphicon-trash", VariationStyleEnum.Danger)},
         {ButtonPreset.Download, CreatePreset("Скачать", "Скачиваем...", "glyphicon-cloud-download")},
         {ButtonPreset.Update, CreatePreset("Обновить", "Обновляем...", "glyphicon-refresh")},
         {ButtonPreset.Hide, CreatePreset("Скрыть","Скрываем...", "glyphicon-remove-sign", VariationStyleEnum.Info)},
+        {ButtonPreset.Print, CreatePreset("Напечатать","Печатаем...", "glyphicon glyphicon-print", VariationStyleEnum.None)},
+        {ButtonPreset.Email, CreatePreset("Написать","Отправляем письмо...", "glyphicon glyphicon-envelope", VariationStyleEnum.None)},
         {ButtonPreset.None, null}
     };
 }
