@@ -1,4 +1,5 @@
-﻿@model DateTime?
+@using JoinRpg.Helpers
+@model DateTime?
 @{
     if (Model == null)
     {
@@ -27,7 +28,7 @@
     }
     else if (span.Days > 1)
     {
-        <text>@Html.DisplayCount_OfX(span.Days, "день", "дня", "дней") назад @*(@val.ToString("dddd"))*@ </text>
+        <text>@CountHelper.DisplayCount(span.Days, "день", "дня", "дней") назад @*(@val.ToString("dddd"))*@ </text>
     }
     else if (span.Days == 1)
     {
@@ -39,11 +40,11 @@
     }
     else if (span.Hours > 0)
     {
-        @Html.DisplayCount_OfX(span.Hours, "час", "часа", "часов")<text> назад</text>
+        @CountHelper.DisplayCount(span.Hours, "час", "часа", "часов")<text> назад</text>
     }
     else if (span.Minutes > 0)
     {
-        @Html.DisplayCount_OfX(span.Minutes, "минуту", "минуты", "минут")<text> назад</text>
+        @CountHelper.DisplayCount(span.Minutes, "минуту", "минуты", "минут")<text> назад</text>
     }
     else if (span.Seconds > 20)
     {

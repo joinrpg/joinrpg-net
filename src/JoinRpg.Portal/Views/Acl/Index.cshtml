@@ -1,16 +1,6 @@
+@using JoinRpg.Helpers
 @model JoinRpg.Web.Models.Masters.MastersListViewModel
 @addTagHelper *, PermissionBadge
-@functions
-
-{
-
-    public static string CountOfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
-
-}
 @{
     ViewBag.Title = "Мастера";
 }
@@ -60,7 +50,7 @@
               {
                 <div>
                   @Html.ActionLink(
-                           CountOfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
+                           CountHelper.DisplayCount(item.ClaimsCount, "заявка", "заявки", "заявок"),
                            "Responsible", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null)
                   <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null))</span>
                 </div>

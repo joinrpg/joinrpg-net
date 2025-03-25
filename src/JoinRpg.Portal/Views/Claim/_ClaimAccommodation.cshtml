@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Markdown
+@using JoinRpg.Helpers
+@using JoinRpg.Markdown
 @using JoinRpg.DataModel
 @using JoinRpg.Domain
 @using JoinRpg.Web.Models
@@ -10,16 +11,6 @@
 @if (!Model.AccommodationEnabledForClaim)
 {
     return;
-}
-
-@functions
-{
-    [Pure]
-    public static string CountOfX(int count, string single, string multi1, string multi2)
-    {
-        string selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + selected;
-    }
 }
 
 <div class="panel panel-default" id="accommodationRequests">
@@ -43,7 +34,7 @@
             <span style="margin-right: 1em;">
               <strong>@Model.AccommodationRequest.AccommodationType.Name</strong>
               <text>
-                (@CountOfX(Model.AccommodationRequest.AccommodationType.Capacity, "место",
+                        (@CountHelper.DisplayCount(Model.AccommodationRequest.AccommodationType.Capacity, "место",
                    "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
               </text>
             </span>
@@ -79,7 +70,7 @@
                   }
                   @if (roomFreeSpace > 0)
                   {
-                    <li>@CountOfX(roomFreeSpace, " свободное место", "свободных места", "свободных мест")</li>
+                    <li>@CountHelper.DisplayCount(roomFreeSpace, " свободное место", "свободных места", "свободных мест")</li>
                   }
                 </ul>
 

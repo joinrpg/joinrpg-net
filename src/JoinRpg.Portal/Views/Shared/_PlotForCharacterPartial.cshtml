@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models.Plot
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Models.Plot
 @model PlotDisplayViewModel
 
 
@@ -8,7 +9,7 @@
         <div class="panel-heading" id="headingOne">
             <h4 class="panel-title">
                 <a role="button" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    @Html.DisplayCount_OfX(Model.Elements.Count(), "загруз", "загруза", "загрузов")
+                    @CountHelper.DisplayCount(Model.Elements.Count(), "загруз", "загруза", "загрузов")
                 </a>
             </h4>
         </div>

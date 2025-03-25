@@ -1,10 +1,5 @@
-﻿@using JoinRpg.Portal.Infrastructure.Authentication
+@using JoinRpg.Portal.Infrastructure.Authentication
 @model           JoinRpg.Web.Models.ClaimList.ClaimListViewModel
-
-@if (Model.ShowCount)
-{
-    ViewBag.CountString = Html.DisplayCount_OfX(Model.Items.Count(), "заявка", "заявки", "заявок");
-}
 
 @await Html.PartialAsync("_ListOperationsDropdown", Model)
 
@@ -15,30 +10,30 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => firstItem.Name)
+            @Html.DisplayNameFor(model => firstItem!.Name)
         </th>
         @if (Model.ShowUserColumn)
         {
             <th>
-                @Html.DisplayNameFor(model => firstItem.Player)
+                @Html.DisplayNameFor(model => firstItem!.Player)
             </th>
         }
         @if (Model.ProjectId == null) //We need to differentiate by project
         {
             <th>
-                @Html.DisplayNameFor(model => firstItem.ProjectName)
+                @Html.DisplayNameFor(model => firstItem!.ProjectName)
             </th>
         }
         <th>
-            @Html.DisplayNameFor(model => firstItem.ClaimFullStatusView)
+            @Html.DisplayNameFor(model => firstItem!.ClaimFullStatusView)
         </th>
         <th>
-            @Html.DisplayNameFor(model => firstItem.UpdateDate)
+            @Html.DisplayNameFor(model => firstItem!.UpdateDate)
         </th>
         @if (ViewBag.MasterAccessColumn == true)
         {
-            <th>@Html.DisplayNameFor(model => firstItem.Responsible)</th>
-            <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
+            <th>@Html.DisplayNameFor(model => firstItem!.Responsible)</th>
+            <th>@Html.DisplayNameFor(model => firstItem!.Problems)</th>
         }
     </tr>
 

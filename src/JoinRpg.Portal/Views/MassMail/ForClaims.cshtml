@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.MassMailViewModel
+@using JoinRpg.Helpers
+@model JoinRpg.Web.Models.MassMailViewModel
 
 @{
     ViewBag.Title = "Массовая рассылка";
@@ -18,7 +19,7 @@ if (Model.ToMyClaimsOnlyWarning)
  }
 
     <div class="form-horizontal">
-        <h4>Рассылка по @Html.DisplayCount_OfX(Model.Claims.Count(), "заявке", "заявкам", "заявкам")</h4>
+        <h4>Рассылка по @CountHelper.DisplayCount(Model.Claims.Count(), "заявке", "заявкам", "заявкам")</h4>
         <div>
             @foreach (var claim in Model.Claims)
             {
