@@ -4,6 +4,10 @@ updates:
     directory: "/" 
     schedule:
       interval: "daily"
+    ignore:
+    # https://github.com/dependabot/dependabot-core/issues/11479
+      - dependency-name: "Microsoft.NET.ILLink.Tasks"
+      - dependency-name: "Microsoft.NET.Sdk.WebAssembly.Pack"
     groups:
       net: #I like to merge this groups, but it will cause dependabot to timeout
         patterns:
