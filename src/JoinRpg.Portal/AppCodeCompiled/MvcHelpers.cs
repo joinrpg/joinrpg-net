@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Net;
 using JoinRpg.Domain;
@@ -12,33 +11,14 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace JoinRpg.Portal;
 
-
-public static class DisplayCount
-{
-    [Pure]
-    [Obsolete("Use CountHelper.DisplayCount")]
-    public static IHtmlContent OfX(int count, string single, string multi1, string multi2) => new HtmlString(CountHelper.DisplayCount(count, single, multi1, multi2));
-}
 public static class MvcHtmlHelpers
 {
-    //private static readonly ModelExpressionProvider ModelExpressionProvider = new ModelExpressionProvider(new EmptyModelMetadataProvider());
-    ////https://stackoverflow.com/a/17455541/408666
-    //public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper,
-    //    Expression<Func<TModel, TProperty>> expression, TProperty value)
-    //{
-    //    string expressionText = ModelExpressionProvider.GetExpressionText(expression);
-    //    string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
-
-    //    return htmlHelper.Hidden(propertyName, value, new { });
-    //}
-
-    public static string? GetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
-        Expression<Func<TModel, TValue>> expression) => self.GetMetadataFor(expression).Description;
-
     private static string? TryGetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
         Expression<Func<TModel, TValue>> expression)
     {
-        var description = self.GetDescription(expression);
+        ModelMetadata modelMetadata = self.GetMetadataFor(expression);
+
+        var description = modelMetadata.Description;
 
         if (!string.IsNullOrWhiteSpace(description))
         {
@@ -47,8 +27,7 @@ public static class MvcHtmlHelpers
 
         //Try to get enum description
 
-        var metadata = self.GetMetadataFor(expression);
-        if (metadata.ModelType == typeof(Enum))
+        if (modelMetadata.ModelType == typeof(Enum))
         {
             var e = (Enum)self.GetUntypedModelFor(expression);
             var dispAttr = e.GetAttribute<DisplayAttribute>();
@@ -69,8 +48,7 @@ public static class MvcHtmlHelpers
             return HtmlString.Empty;
         }
 
-        // ReSharper disable once UseStringInterpolation we are inside Razor
-        return new HtmlString(string.Format(@"<div class=""help-block"">{0}</div>", description));
+        return new HtmlString(@$"<div class=""help-block"">{description}</div>");
     }
 
     /// <summary>
@@ -148,11 +126,6 @@ public static class MvcHtmlHelpers
     private static object GetUntypedModelFor<TModel, TValue>(
         this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
         => self.GetModelExplorer(expression).Model;
-
-    [Pure]
-    [Obsolete("Use CountHelper.DisplayCount")]
-    public static string DisplayCount_OfX<TModel>(this IHtmlHelper<TModel> self, int count, string single, string multi1, string multi2)
-        => CountHelper.DisplayCount(count, single, multi1, multi2);
 
     public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new(request.Scheme + "://" + request.Host);
 }

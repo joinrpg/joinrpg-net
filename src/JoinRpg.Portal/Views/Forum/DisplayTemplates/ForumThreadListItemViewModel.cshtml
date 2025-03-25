@@ -1,11 +1,12 @@
-﻿@model JoinRpg.Web.Models.ForumThreadListItemViewModel
+@using JoinRpg.Helpers
+@model JoinRpg.Web.Models.ForumThreadListItemViewModel
   
 <p>
     @if (Model.UnreadCount > 0)
     {
     <span class="badge" title="Непрочитанные ответы">@Model.UnreadCount</span>
     }
-    <span class="h4" title="@Html.DisplayCount_OfX(Model.TotalCount, "ответ", "ответа", "ответов")">
+    <span class="h4" title="@CountHelper.DisplayCount(Model.TotalCount, "ответ", "ответа", "ответов")">
          <a href="@Url.Action("ViewThread", new {Model.ProjectId, Model.ForumThreadId})">@Model.Header</a>
     </span>
     
