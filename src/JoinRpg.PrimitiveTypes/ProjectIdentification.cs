@@ -21,24 +21,7 @@ public record ProjectIdentification(int Value) : SingleValueType<int>(Value), IL
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
     public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out ProjectIdentification result)
     {
-        var val = value.Trim();
-        if (val.StartsWith(nameof(ProjectIdentification)))
-        {
-            val = val[nameof(ProjectIdentification).Length..];
-        }
-        if (val.StartsWith("Project"))
-        {
-            val = val["Project".Length..];
-        }
-        if (val.StartsWith("("))
-        {
-            val = val[1..];
-        }
-        if (val.EndsWith(")"))
-        {
-            val = val[..^1];
-        }
-        if (int.TryParse(val, provider, out var id))
+        if (IdentificationParseHelper.TryParse1(value, provider, [nameof(ProjectIdentification), "Project"]) is int id)
         {
             result = new ProjectIdentification(id);
             return true;
