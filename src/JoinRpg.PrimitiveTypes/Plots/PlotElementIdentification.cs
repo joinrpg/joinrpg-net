@@ -34,34 +34,11 @@ public record class PlotElementIdentification(PlotFolderIdentification PlotFolde
 
     public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, [NotNullWhen(true)] out PlotElementIdentification? result)
     {
-        var val = value.Trim();
-        if (val.StartsWith(nameof(PlotElementIdentification)))
-        {
-            val = val[nameof(PlotElementIdentification).Length..];
-        }
-        if (val.StartsWith("PlotElement"))
-        {
-            val = val["PlotElement".Length..];
-        }
-        if (val.StartsWith("("))
-        {
-            val = val[1..];
-        }
-        if (val.EndsWith(")"))
-        {
-            val = val[..^1];
-        }
-        value = val.ToString();
+        var parsed = IdentificationParseHelper.TryParse3(value, provider, [nameof(PlotElementIdentification), "PlotElement"]);
 
-        Span<Range> ranges = stackalloc Range[3];
-        var count = val.Split(ranges, "-", StringSplitOptions.TrimEntries);
-        if (count == 3
-           && ProjectIdentification.TryParse(val[ranges[0]], provider, out var projectId)
-           && int.TryParse(val[ranges[1]], provider, out var plotfolderInt)
-           && int.TryParse(val[ranges[2]], provider, out var plotElementInt)
-           )
+        if (parsed != null)
         {
-            result = new PlotElementIdentification(projectId, plotfolderInt, plotElementInt);
+            result = new PlotElementIdentification(parsed.Value.i1, parsed.Value.i2, parsed.Value.i3);
             return true;
         }
 
