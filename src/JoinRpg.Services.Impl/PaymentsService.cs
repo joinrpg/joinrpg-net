@@ -1,6 +1,5 @@
 using System.Data.Entity;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
@@ -22,13 +21,13 @@ public static class FinanceOperationExtensions
     /// <summary>
     /// Creates the order id that is used to identify our payments on the bank side
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static string GetOrderId(this FinanceOperation fo) => GetOrderId(fo.CommentId);
 
     /// <summary>
     /// Creates the order id that is used to identify our payments on the bank side
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static string GetOrderId(this Comment comment) => GetOrderId(comment.CommentId);
 
     /// <summary>
@@ -36,7 +35,7 @@ public static class FinanceOperationExtensions
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static string GetOrderId(int id) => id.ToString().PadLeft(10, '0');
 }
 
@@ -998,7 +997,7 @@ public class PaymentsService(
         return comment.Finance;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     Task<FinanceOperation> IPaymentsService.RefundAsync(int projectId, int claimId, int operationId)
         => RefundAsync(projectId, claimId, operationId);
 
