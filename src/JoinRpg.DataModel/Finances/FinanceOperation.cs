@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 
@@ -67,7 +66,7 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     /// </summary>
     public string? ReccurrentPaymentInstanceToken { get; set; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static string MakeInstanceToken(DateTime date) => date.ToString("yyyyMM");
 
     int IOrderableEntity.Id => ProjectId;
