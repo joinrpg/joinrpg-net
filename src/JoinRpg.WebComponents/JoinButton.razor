@@ -4,35 +4,43 @@
       class="@style"
       type="@buttonType"
       disabled="@disabled"
-      title="@Title">
+      title="@Title"
+      style="margin: 0.1em">
         @label
     </a>
+    return;
 }
-else
-{
-    <button href="#"
-      class="@style"
-      @onclick="OnClickHappened"
-      type="@buttonType"
-      disabled="@disabled"
-      title="@Title">
-          @label
-    </button>
-}
+<button 
+    href="#"
+    class="@style"
+    @onclick="OnClickHappened"
+    type="@buttonType"
+    disabled="@disabled"
+    title="@title"
+    style="margin: 0.1em"
+        >
+    @label
+</button>
 @code {
     [Parameter] public string? Link { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; }
     [Parameter] public SizeStyleEnum? Size { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<EventArgs> OnClick { get; set; }
     [Parameter] public bool Submit { get; set; } = false;
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public string? Title { get; set; } = null;
+    /// <summary>
+    /// Если Disabled=True и этот параметр установлен, то используется этот вариант Title
+    /// </summary>
+    [Parameter] public string? DisabledTitle { get; set; } = null;
     [Parameter] public ButtonPreset Preset { get; set; } = ButtonPreset.None;
 
     private string buttonType => Submit ? "submit" : "button";
     private string style => BootstrapStyle.Build("btn", variationResult, Size);
     private bool operationInProgress = false;
     private bool disabled => Disabled || operationInProgress;
+    private string? title => Disabled ? (DisabledTitle ?? Title) : Title;
+
     private RenderFragment label => operationInProgress ? progressResult : labelResult;
 
     private RenderFragment labelResult = null!;
@@ -41,13 +49,16 @@ else
     public VariationStyleEnum variationResult = default;
 
     [Parameter] public string? Label { get; set; }
-    [Parameter] public RenderFragment? LabelFragment { get; set; }
     [Parameter] public string? ProgressText { get; set; }
-    [Parameter] public RenderFragment? ProgressFragment { get; set; }
 
     private async Task OnClickHappened(MouseEventArgs e)
     {
         if (disabled) { return; }
+        await ConfirmHappened(e);
+    }
+
+    private async Task ConfirmHappened(EventArgs e)
+    {
         operationInProgress = true;
         await OnClick.InvokeAsync(e);
         operationInProgress = false;
@@ -58,7 +69,7 @@ else
         base.OnParametersSet();
         if (Disabled)
         {
-            OnClick = EventCallback<MouseEventArgs>.Empty;
+            OnClick = EventCallback<EventArgs>.Empty;
             Link = null;
         }
 
@@ -67,23 +78,22 @@ else
             throw new InvalidOperationException("Нельзя установить одновременно обработчик OnClick и ссылку");
         }
 
-        labelResult = SelectLabelFragment(LabelFragment, Title, Presets[Preset]?.Label);
-        progressResult = SelectLabelFragment(ProgressFragment, ProgressText, Presets[Preset]?.Progress);
+        labelResult = SelectLabelFragment(Label, Presets[Preset]?.Label);
+        progressResult = SelectLabelFragment(ProgressText, Presets[Preset]?.Progress);
         variationResult = Variation ?? Presets[Preset]?.Variation ?? VariationStyleEnum.None;
     }
 
     internal static RenderFragment FormatLabel(string label, string icon) => @<text><span class="glyphicon @icon"></span>&nbsp;@label</text>;
 
-    internal static RenderFragment SelectLabelFragment(RenderFragment? providedFragment, string? providedLabel, (string label, string? icon)? providedPreset)
+    internal static RenderFragment SelectLabelFragment(string? providedLabel, (string label, string? icon)? providedPreset)
     {
-        return (providedFragment, providedLabel, providedPreset) switch
+        return (providedLabel, providedPreset) switch
         {
-            (RenderFragment fragment, null, null) => fragment,
-            (null, string lbl, null) => @<text>@lbl</text>,
-            (null, string lbl, (string label, string icon) preset) => FormatLabel(lbl, preset.icon),
-            (null, null, (string label, string icon) preset) => FormatLabel(preset.label, preset.icon),
-            (null, string lbl, (string label, null) preset) => @<text>@lbl</text>,
-            (null, null, (string label, null) preset) => @<text>@preset.label</text>,
+            (string lbl, null) => @<text>@lbl</text>,
+            (string lbl, (string label, string icon) preset) => FormatLabel(lbl, preset.icon),
+            (null, (string label, string icon) preset) => FormatLabel(preset.label, preset.icon),
+            (string lbl, (string label, null) preset) => @<text>@lbl</text>,
+            (null, (string label, null) preset) => @<text>@preset.label</text>,
             _ => @<text>Не удалось отформатировать кнопку</text>
         };
     }
@@ -103,8 +113,10 @@ else
         {ButtonPreset.Download, CreatePreset("Скачать", "Скачиваем...", "glyphicon-cloud-download")},
         {ButtonPreset.Update, CreatePreset("Обновить", "Обновляем...", "glyphicon-refresh")},
         {ButtonPreset.Hide, CreatePreset("Скрыть","Скрываем...", "glyphicon-remove-sign", VariationStyleEnum.Info)},
+        {ButtonPreset.Restore, CreatePreset("Восстановить","Восстанавливаем...", icon: null, VariationStyleEnum.Success)},
         {ButtonPreset.Print, CreatePreset("Напечатать","Печатаем...", "glyphicon glyphicon-print", VariationStyleEnum.None)},
         {ButtonPreset.Email, CreatePreset("Написать","Отправляем письмо...", "glyphicon glyphicon-envelope", VariationStyleEnum.None)},
+        {ButtonPreset.Publish, CreatePreset("Опубликовать","Публикуем...", "glyphicon-share-alt", VariationStyleEnum.Success)},
         {ButtonPreset.None, null}
     };
 }
