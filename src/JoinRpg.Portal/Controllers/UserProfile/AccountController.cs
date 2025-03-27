@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces;
@@ -23,7 +24,8 @@ public class AccountController(
     IUserRepository userRepository,
     IOptions<RecaptchaOptions> recaptchaOptions,
     IRecaptchaVerificator recaptchaVerificator,
-    ExternalLoginProfileExtractor externalLoginProfileExtractor
+    ExternalLoginProfileExtractor externalLoginProfileExtractor,
+    ILogger<AccountController> logger
     ) : Common.ControllerBase
 {
     [AllowAnonymous]
@@ -204,7 +206,7 @@ public class AccountController(
     {
         if (userId == null || code == null)
         {
-            return View("Error");
+            return NotFound();
         }
         var user = await userManager.FindByIdAsync(userId.Value.ToString()) ?? throw new InvalidOperationException();
         var result = await userManager.ConfirmEmailAsync(user, code);
@@ -214,7 +216,11 @@ public class AccountController(
         }
         else
         {
-            return View("Error");
+            foreach (var err in result.Errors)
+            {
+                logger.LogWarning("Ошибка при подтверждении email (Code={accountErrorCode}: {description}", err.Code, err.Description);
+            }
+            throw new JoinRpgAccountOperationFailedException($"Не удалось подтвердить email ({string.Join(", ", result.Errors.Select(e => e.Code.ToString()))})");
         }
     }
 
@@ -272,7 +278,7 @@ public class AccountController(
     {
         if (userId == 0 || code is null)
         {
-            return View("Error");
+            return NotFound();
         }
 
         return View(new ResetPasswordViewModel() { Code = code, Email = "" });
