@@ -1,4 +1,4 @@
-@page "/error/{statusCode:int?}"
+@page "/error/{HttpStatusCode:int?}"
 @model JoinRpg.Portal.Pages.Error.ErrorPageModel
 @{
     ViewBag.Title = Model.HttpStatusCode == 404 ? "Страница не найдена" : "Ошибка";
