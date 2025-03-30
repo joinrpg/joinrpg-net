@@ -1,6 +1,3 @@
-using JoinRpg.DataModel;
-using Shouldly;
-
 namespace JoinRpg.Markdown.Test;
 
 public static class MarkdownTestExtension

@@ -1,0 +1,23 @@
+@inject IUriLocator<CharacterLinkSlimViewModel> linkLocator
+@{
+    var activeClass = Model.IsActive ? "" : "join-inactive-object";
+}
+@switch (Model.ViewMode)
+{
+    case JoinRpg.WebComponents.ViewMode.Show:
+        <a href="@TargetUri" class="@activeClass">@Model.Name</a>
+        break;
+    case JoinRpg.WebComponents.ViewMode.ShowAsPrivate:
+        <a href="@TargetUri" class="world-object-hidden @activeClass">@Model.Name</a>
+        break;
+    case JoinRpg.WebComponents.ViewMode.Hide:
+        <i>???</i>
+        break;
+}
+
+@code {
+    [Parameter] [EditorRequired]
+    public CharacterLinkSlimViewModel Model { get; set; } = null!;
+
+    public Uri TargetUri => linkLocator.GetUri(Model);
+}

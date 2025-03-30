@@ -5,7 +5,7 @@ namespace JoinRpg.Blazor.Client;
 
 public static class UriLocatorExtensions
 {
-    private class UriLocator : IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
+    private class UriLocator : IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>
     {
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
         {
@@ -16,9 +16,13 @@ public static class UriLocatorExtensions
             return new($"/user/{target.UserId}");
         }
 
+        // TODO implement for Blazor. Added so we will have nice exception instead of bla-bla not resolved.
         Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target)
             => throw new NotImplementedException();
-        // TODO implement for Blazor. Added so we will have nice exception instead of bla-bla not resolved.
+        Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => throw new NotImplementedException();
+
+        //end of TODO
+
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {

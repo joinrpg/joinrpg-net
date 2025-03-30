@@ -1,4 +1,5 @@
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
 
 namespace JoinRpg.Helpers.Web;
@@ -43,4 +44,6 @@ public sealed class JoinHtmlString : IHtmlContent
     /// Is null or whitespace
     /// </summary>
     public bool IsNullOrWhiteSpace() => string.IsNullOrWhiteSpace(Value);
+
+    public MarkupString ToMarkupString() => new MarkupString(Value);
 }

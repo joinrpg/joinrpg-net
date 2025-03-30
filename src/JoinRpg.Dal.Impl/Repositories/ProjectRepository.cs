@@ -35,7 +35,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     }
 
     public async Task<IReadOnlyCollection<ProjectWithClaimCount>>
-        GetActiveProjectsWithClaimCount(int? userId) => await GetProjectWithClaimCounts(project => project.Active, userId);
+        GetActiveProjectsWithClaimCount(int? userId) => await GetProjectWithClaimCounts(ProjectPredicates.Active(), userId);
 
     private async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetProjectWithClaimCounts(
         Expression<Func<Project, bool>> condition,
@@ -50,7 +50,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public async Task<IReadOnlyCollection<ProjectWithClaimCount>>
         GetArchivedProjectsWithClaimCount(int? userId)
-        => await GetProjectWithClaimCounts(project => !project.Active, userId);
+        => await GetProjectWithClaimCounts(ProjectPredicates.Status(ProjectLifecycleStatus.Archived), userId);
 
     public async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(
         int? userId)
@@ -60,7 +60,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
     public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
-      ActiveProjects.Where(MyProjectPredicate(new(userInfoId))).ToListAsync();
+      ActiveProjects.Where(ProjectPredicates.MyProjectPredicate(new(userInfoId))).ToListAsync();
 
     public async Task<IEnumerable<Project>> GetActiveProjectsWithSchedule()
         => await ActiveProjects.Where(project => project.Details.ScheduleEnabled)
@@ -145,11 +145,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return
           await Ctx.Set<CharacterGroup>()
             .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
-    }
-
-    private static Expression<Func<Project, bool>> MyProjectPredicate(UserIdentification userInfoId)
-    {
-        return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId.Value);
     }
 
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)

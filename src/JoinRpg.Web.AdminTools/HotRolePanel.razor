@@ -1,0 +1,12 @@
+<JoinPanel>
+  <Header><CharacterLink Model="Model.CharacterLink" /> из проекта @Model.ProjectName</Header>
+  <Body>
+    @Model.CharacterDesc.ToMarkupString()
+    <p>@Model.ProjectDesc</p>
+  </Body>
+</JoinPanel>
+@code {
+    [Parameter]
+    [EditorRequired]
+    public AdminHotRoleViewModel Model { get; set; } = null!;
+}

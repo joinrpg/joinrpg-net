@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using Joinrpg.Web.Identity
 @using JoinRpg.Portal.Infrastructure.Authentication
 
@@ -26,7 +26,7 @@
                     @if (User.IsInRole("admin"))
                     {
                         <li class="dropdown-item">
-                            <a asp-action="Index" asp-controller="AdminHome" asp-area="Admin">Панель Администратора</a>
+                            <a asp-page="/Admin/Index">Панель Администратора</a>
                         </li>
                     }
                     <li class="dropdown-item"><a href="javascript:document.getElementById('logoutForm').submit()">Выйти</a></li>

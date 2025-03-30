@@ -62,6 +62,7 @@
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
     <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj" />
     <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\JoinRpg.XGameApi.Contract\JoinRpg.XGameApi.Contract.csproj" />
     <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />

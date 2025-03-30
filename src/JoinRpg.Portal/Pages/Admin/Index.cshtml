@@ -1,0 +1,13 @@
+@page
+@model JoinRpg.Portal.Pages.Admin.IndexModel
+@{
+    ViewBag.Title = "Администрирование";
+}
+<h3>@ViewBag.Title</h3>
+<ul>
+    <li><a asp-controller="ProjectList" asp-area="Admin">Список активных игр</a></li>
+    <li><a asp-controller="AdminHome" asp-action="StaleGames" asp-area="Admin">Проблемные проекты</a></li>
+    <li><a asp-controller="DumpConfig" asp-area="Admin">Конфигурация (для отладки)</a></li>
+    <li><a asp-page="/Admin/Jobs">Джобы</a></li>
+    <li><a asp-page="/Admin/AdminHotRolesList">Горячие роли</a></li>
+</ul>
