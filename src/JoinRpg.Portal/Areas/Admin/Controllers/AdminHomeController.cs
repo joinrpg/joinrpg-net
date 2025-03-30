@@ -8,8 +8,6 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 [Area("Admin")]
 public class AdminHomeController(IProjectRepository projectRepository) : Controller
 {
-    public IActionResult Index() => View();
-
     public async Task<IActionResult> StaleGames()
     {
         var stale = await projectRepository.GetStaleProjects(DateTime.Now.AddMonths(-4));
