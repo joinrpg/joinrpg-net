@@ -2,12 +2,11 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
 
-namespace JoinRpg.Helpers.Web;
+namespace JoinRpg.Web.Models.CommonTypes;
 
 /// <inheritdoc cref="IHtmlContent" />
 /// <summary>
-/// Proxy class that allows conversion from System.Web style strings to Microsoft.AspNetCore versions
-/// Will be removed after porting to ASP.NET Core
+/// Proxy class that allows conversion from Blazor Markup string to Microsoft.AspNetCore versions.
 /// </summary>
 public sealed class JoinHtmlString : IHtmlContent
 {
@@ -27,6 +26,11 @@ public sealed class JoinHtmlString : IHtmlContent
     }
 
     /// <summary>
+    /// Converts from Blazor style string
+    /// </summary>
+    public static implicit operator JoinHtmlString(MarkupString content) => new(content.Value);
+
+    /// <summary>
     /// concat operator 
     /// </summary>
     public static JoinHtmlString operator +(JoinHtmlString left, JoinHtmlString right) => new(left.ToString() + right);
@@ -44,6 +48,4 @@ public sealed class JoinHtmlString : IHtmlContent
     /// Is null or whitespace
     /// </summary>
     public bool IsNullOrWhiteSpace() => string.IsNullOrWhiteSpace(Value);
-
-    public MarkupString ToMarkupString() => new MarkupString(Value);
 }

@@ -1,11 +1,11 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Print;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -118,7 +118,6 @@ public class PrintController : Common.ControllerGameBase
 <hr>
 <i>{v.Groups.Select(g => g.Name).JoinStrings(" • ")}</i><br>
 ", CardSize.A7));
-        ViewBag.CardSanitizeDisable = true;
         return View("PrintCards", cards);
     }
 

@@ -2,7 +2,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
@@ -74,7 +73,7 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
 
 public class HandoutListItemViewModel : HandoutViewModelBase
 {
-    public HandoutListItemViewModel(JoinHtmlString text, User master) : base(text, master)
+    public HandoutListItemViewModel(string text, User master) : base(text, master)
     {
     }
 }

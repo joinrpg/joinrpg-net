@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace JoinRpg.Helpers.Web;
+namespace JoinRpg.Web.Models.CommonTypes;
 
 public static class IdListUrlExtensions
 {

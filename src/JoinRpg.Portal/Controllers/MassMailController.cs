@@ -2,12 +2,12 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Mvc;
 

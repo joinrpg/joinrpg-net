@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CharacterGroups;
 

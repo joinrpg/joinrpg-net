@@ -37,9 +37,9 @@ public class MetaDataApiController(IProjectMetadataRepository projectMetadataRep
                                 ProjectFieldVariantId = variant.Id.ProjectFieldVariantId,
                                 Label = variant.Label,
                                 IsActive = variant.IsActive,
-                                Description = variant.Description.ToHtmlString().ToHtmlString(),
+                                Description = variant.Description.ToHtmlString().Value,
                                 MasterDescription =
-                                    variant.MasterDescription.ToHtmlString().ToHtmlString(),
+                                    variant.MasterDescription.ToHtmlString().Value,
                                 ProgrammaticValue = variant.ProgrammaticValue,
                             }),
                     }),

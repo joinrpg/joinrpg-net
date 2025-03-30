@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models.Characters;

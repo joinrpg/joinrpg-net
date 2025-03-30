@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
-using JoinRpg.Helpers.Web;
 using Markdig;
+using Microsoft.AspNetCore.Components;
 using Vereyon.Web;
 
 namespace JoinRpg.Markdown;
@@ -25,18 +25,18 @@ public static class MarkDownRendererFacade
     /// <summary>
     /// Converts markdown to HtmlString with all sanitization
     /// </summary>
-    public static JoinHtmlString ToHtmlString(
+    public static MarkupString ToHtmlString(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
-        => PerformRender(markdownString,
+        => new MarkupString(PerformRender(markdownString,
             renderer,
             (text, writer, pipeline, context) => Markdig.Markdown.ToHtml(text, writer, pipeline, context),
-            HtmlSanitizers.Simple);
+            HtmlSanitizers.Simple));
 
     /// <summary>
     /// Converts markdown to plain text
     /// </summary>
-    public static JoinHtmlString ToPlainText(
+    public static string ToPlainText(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
         =>
@@ -45,12 +45,12 @@ public static class MarkDownRendererFacade
                 (text, writer, pipeline, context) => Markdig.Markdown.ToPlainText(text, writer, pipeline, context),
                 HtmlSanitizers.RemoveAll);
 
-    private static JoinHtmlString PerformRender(MarkdownString? markdownString, ILinkRenderer? linkRenderer,
+    private static string PerformRender(MarkdownString? markdownString, ILinkRenderer? linkRenderer,
         Action<string, TextWriter, MarkdownPipeline, MarkdownParserContext> renderMethod, IHtmlSanitizer sanitizer)
     {
         if (markdownString?.Contents == null)
         {
-            return "".MarkAsHtmlString();
+            return "";
         }
 
         var context = new MarkdownParserContext();
@@ -65,7 +65,7 @@ public static class MarkDownRendererFacade
 
         var rendered = writer.ToString();
 
-        return sanitizer.Sanitize(rendered).MarkAsHtmlString();
+        return sanitizer.Sanitize(rendered);
     }
 }
 

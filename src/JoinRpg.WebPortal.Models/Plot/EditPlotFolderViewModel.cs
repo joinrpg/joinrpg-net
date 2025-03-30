@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
+using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -164,7 +164,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
     public JoinHtmlString Content { get; }
 
-    public JoinHtmlString ShortContent { get; }
+    public string ShortContent { get; }
 
     [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }

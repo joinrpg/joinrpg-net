@@ -1,28 +1,27 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
+using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models.Print;
 
-public class HandoutReportViewModel
+public class HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnlyCollection<Character> characters)
 {
-    public HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnlyCollection<Character> characters) => Handouts = elements.Select(e => new HandoutReportItemViewModel(e, characters));
-    public IEnumerable<HandoutReportItemViewModel> Handouts { get; }
+    public IEnumerable<HandoutReportItemViewModel> Handouts { get; } = elements.Select(e => new HandoutReportItemViewModel(e, characters));
 }
 
 public class HandoutViewModelBase
 {
-    public HandoutViewModelBase(JoinHtmlString text, User master)
+    public HandoutViewModelBase(string text, User master)
     {
         Text = text;
         Master = master;
     }
 
     [Display(Name = "Что раздавать")]
-    public JoinHtmlString Text { get; }
+    public string Text { get; }
 
     [Display(Name = "Мастер")]
     public User Master { get; }

@@ -2,51 +2,38 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.ProjectCommon.Fields;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models;
 
-public class FieldPossibleValueViewModel
+public class FieldPossibleValueViewModel(ProjectFieldVariant value, bool hasPrice, bool selected = false)
 {
-    public FieldPossibleValueViewModel(ProjectFieldVariant value, bool hasPrice, bool selected = false)
-    {
-        ProjectFieldDropdownValueId = value.Id.ProjectFieldVariantId;
-        DescriptionPlainText = value.Description.ToPlainText();
-        Label = value.Label;
-        DescriptionHtml = value.Description.ToHtmlString();
-        MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
-        SpecialGroupId = value.CharacterGroupId?.CharacterGroupId;
-        Price = value.Price;
-        HasPrice = hasPrice;
-        Selected = selected;
-    }
+    public int? SpecialGroupId { get; } = value.CharacterGroupId?.CharacterGroupId;
 
-    public int? SpecialGroupId { get; }
+    public int ProjectFieldDropdownValueId { get; } = value.Id.ProjectFieldVariantId;
 
-    public int ProjectFieldDropdownValueId { get; }
+    public string DescriptionPlainText { get; } = value.Description.ToPlainText();
 
-    public JoinHtmlString DescriptionPlainText { get; }
-
-    public string Label { get; }
-    public JoinHtmlString DescriptionHtml { get; }
-    public JoinHtmlString MasterDescriptionHtml { get; }
+    public string Label { get; } = value.Label;
+    public JoinHtmlString DescriptionHtml { get; } = value.Description.ToHtmlString();
+    public JoinHtmlString MasterDescriptionHtml { get; } = value.MasterDescription.ToHtmlString();
 
     /// <summary>
     /// Value's price as specified in value's definition
     /// </summary>
-    public int Price { get; }
+    public int Price { get; } = value.Price;
 
     /// <summary>
     /// True if owner has a price
     /// </summary>
-    public bool HasPrice { get; }
+    public bool HasPrice { get; } = hasPrice;
 
-    public bool Selected { get; }
+    public bool Selected { get; } = selected;
 }
 
 public enum FieldSpecialLabelView
@@ -128,7 +115,7 @@ public class FieldValueViewModel
         HasMasterAccess = model.AccessArguments.MasterAccess;
         Description = ch.Field.Description.ToHtmlString();
 
-        MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : "".MarkAsHtmlString();
+        MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : new MarkupString();
 
         IsPlayerVisible = ch.Field.CanPlayerView;
         IsDeleted = !ch.Field.IsActive;

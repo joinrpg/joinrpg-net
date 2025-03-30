@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Helpers.Web;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Schedules;

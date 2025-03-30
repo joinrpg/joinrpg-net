@@ -72,7 +72,7 @@ public class SchedulePageManager
             Summary = evt.ProgramItem.Name,
             IsAllDay = false,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
-            Description = evt.ProgramItem.Description.ToPlainText().ToHtmlString(),
+            Description = evt.ProgramItem.Description.ToPlainText(),
         };
     }
 
