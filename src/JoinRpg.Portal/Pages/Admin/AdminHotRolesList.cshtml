@@ -1,0 +1,12 @@
+@page "/admin/hot-roles"
+@model JoinRpg.Portal.Pages.Admin.AdminHotRolesListModel
+@{
+    ViewBag.Title = "Горячие роли во всех проектах";
+}
+<h3>@ViewBag.Title</h3>
+@{
+    @foreach (var hotRole in Model.HotRoles)
+    {
+        <component type="typeof(JoinRpg.Web.AdminTools.HotRolePanel)" param-Model="@hotRole" render-mode="Static" />
+    }
+}

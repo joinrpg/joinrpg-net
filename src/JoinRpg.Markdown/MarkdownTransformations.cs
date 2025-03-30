@@ -20,7 +20,7 @@ public static class MarkdownTransformations
         var w = words;
         var idx = markdownString.Contents
             .TakeWhile(c => (w -= char.IsWhiteSpace(c) ? 1 : 0) > 0 && c != '\n').Count();
-        var mdContents = markdownString.Contents.Substring(0, idx);
+        var mdContents = markdownString.Contents[..idx];
         return new MarkdownString(mdContents);
     }
 

@@ -1,0 +1,12 @@
+<JoinPanel>
+  <Header>@Model.CharacterName :: @Model.ProjectName</Header>
+  <Body>
+    <p>@Model.CharacterDesc</p>
+    <p>@Model.ProjectDesc</p>
+  </Body>
+</JoinPanel>
+@code {
+    [Parameter]
+    [EditorRequired]
+    public AdminHotRoleViewModel Model { get; set; } = null!;
+}
