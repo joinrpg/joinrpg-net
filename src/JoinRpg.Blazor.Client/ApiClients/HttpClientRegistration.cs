@@ -1,3 +1,4 @@
+using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
@@ -28,6 +29,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()
                 .AddHttpClient<IMasterClient, MasterClient>()
+                .AddHttpClient<IKogdaIgraSyncClient, KogdaIgraSyncClient>()
                 .AddHttpClient<IGameSubscribeClient, GameSubscribeClient>()
                 .AddHttpClient<ICharacterGroupsClient, CharacterGroupsClient>()
                 .AddHttpClient<ICharactersClient, CharactersClient>()

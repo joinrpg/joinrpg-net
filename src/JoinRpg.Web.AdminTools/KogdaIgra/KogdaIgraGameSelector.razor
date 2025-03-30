@@ -1,0 +1,66 @@
+﻿@using JoinRpg.PrimitiveTypes
+@inject IKogdaIgraSyncClient client
+
+@if (items is null)
+{
+   <JoinLoadingMessage />
+}
+else
+{
+  <IntSelector
+               Name="@Name"
+               SelectedValues="@Selected"
+               SelectedValuesChanged="@HandleSelectedChanged"
+               PossibleValues="items"
+               Multiple="false"
+               />
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public int? KogdaIgraId { get; set; }
+    [Parameter] public EventCallback<int?> KogdaIgraIdChanged { get; set; }
+
+    [Parameter] public KogdaIgraShortViewModel? KogdaIgra { get; set; }
+    [Parameter] public EventCallback<KogdaIgraShortViewModel?> KogdaIgraChanged { get; set; }
+    [Parameter] public KogdaIgraShortViewModel[]? InitialList { get; set; }
+
+    private int[] Selected { get; set; } = new int[0];
+    private IntSelectListItem[] items = null!;
+    private KogdaIgraShortViewModel[] itemModels = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        itemModels = InitialList ?? await client.GetKogdaIgraCandidates();
+        items = itemModels
+          .Select(master =>
+            new IntSelectListItem(
+              Value: master.KogdaIgraId,
+              Text: master.Name,
+              Subtext: "",
+              ExtraSearch: ""))
+           .ToArray();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (KogdaIgraId is not null)
+        {
+            Selected = new int[] { KogdaIgraId.Value };
+        }
+        else if (KogdaIgra is not null)
+        {
+            Selected = new int[] { KogdaIgra.KogdaIgraId };
+        }
+    }
+
+    private async Task HandleSelectedChanged(int[] values)
+    {
+        int? id = values.Length == 0 ? null : values.Single();
+        var item = itemModels.SingleOrDefault(m => m.KogdaIgraId == id);
+        await KogdaIgraIdChanged.InvokeAsync(id);
+        await KogdaIgraChanged.InvokeAsync(item);
+    }
+}

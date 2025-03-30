@@ -1,0 +1,26 @@
+﻿@using Microsoft.JSInterop
+@inject IKogdaIgraSyncClient Client
+
+<KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
+
+@if (JoinCandidates is null || KogdaIgraCandidates is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    foreach (var candidate in JoinCandidates)
+    {
+        <KogdaIgraCandidateCard JoinCandidate="@candidate" KogdaIgraCandidates="@KogdaIgraCandidates" />
+    }
+}
+
+@code {
+    [Parameter]
+    public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
+
+    public JoinRpgSyncCandidateViewModel[]? JoinCandidates = null;
+
+    private KogdaIgraShortViewModel[]? KogdaIgraCandidates = null;
+
+}

@@ -1,0 +1,25 @@
+@inject IKogdaIgraSyncClient client;
+
+@if (model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+Игра: <a href="@model.KogdaIgraUri"> @model.Name</a>
+Даты: @model.Begin — @model.End
+Регион: @model.RegionName
+МГ: @model.MasterGroupName
+Сайт: @model.SiteUri
+@code {
+    [Parameter]
+    [EditorRequired]
+    public int KogdaIgraId { get; set; }
+
+    private KogdaIgraCardViewModel? model;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        model = await client.GetKogdaIgraCard(KogdaIgraId);
+    }
+}
