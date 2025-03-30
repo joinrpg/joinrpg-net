@@ -6,6 +6,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Projects;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Dal.Impl;
@@ -272,6 +273,9 @@ public class MyDbContext : DbContext, IUnitOfWork
     {
         _ = modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
         _ = modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
+        modelBuilder.Entity<KogdaIgraGame>()
+            .HasMany(kig => kig.Projects)
+            .WithMany(p => p.KogdaIgraGames);
     }
 
     private static void ConfigureMoneyTransfer(DbModelBuilder modelBuilder)

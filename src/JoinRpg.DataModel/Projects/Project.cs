@@ -1,4 +1,5 @@
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Projects;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -54,4 +55,6 @@ public class Project : IProjectEntity
     public virtual ICollection<GameReport2DTemplate> GameReport2DTemplates { get; set; }
 
     public virtual ICollection<MoneyTransfer> MoneyTransfers { get; set; }
+
+    public virtual HashSet<KogdaIgraGame> KogdaIgraGames { get; set; } = null!;
 }
