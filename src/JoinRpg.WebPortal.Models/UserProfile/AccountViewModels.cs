@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Helpers.Web;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models;
 
