@@ -1,7 +1,7 @@
 <JoinPanel>
-  <Header>@Model.CharacterName :: @Model.ProjectName</Header>
+  <Header><CharacterLink Model="Model.CharacterLink" /> из проекта @Model.ProjectName</Header>
   <Body>
-    <p>@Model.CharacterDesc</p>
+    @Model.CharacterDesc.ToMarkupString()
     <p>@Model.ProjectDesc</p>
   </Body>
 </JoinPanel>

@@ -10,7 +10,10 @@ namespace JoinRpg.Web.Helpers;
 internal class UriServiceImpl(
     IHttpContextAccessor httpContextAccessor,
     LinkGenerator linkGenerator,
-    IOptions<NotificationsOptions> notificationOptions) : IUriService, IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>
+    IOptions<NotificationsOptions> notificationOptions) : IUriService,
+    IUriLocator<UserLinkViewModel>,
+    IUriLocator<CharacterGroupLinkSlimViewModel>,
+    IUriLocator<CharacterLinkSlimViewModel>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -80,7 +83,9 @@ internal class UriServiceImpl(
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
         GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.ToString()));
     Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target) =>
-         GetUri(new Linkable(LinkType.ResultCharacterGroup, target.CharacterGroupId));
+         GetUri(new Linkable(target.CharacterGroupId));
+    Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
+        => GetUri(new Linkable(target.CharacterId));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {
@@ -88,5 +93,9 @@ internal class UriServiceImpl(
         {
 
         }
+
+        public Linkable(CharacterIdentification id) : this(LinkType.ResultCharacter, id) { }
+
+        public Linkable(CharacterGroupIdentification id) : this(LinkType.ResultCharacterGroup, id) { }
     }
 }

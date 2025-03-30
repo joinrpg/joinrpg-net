@@ -16,12 +16,24 @@ internal class HotCharactersRepository(MyDbContext ctx) : RepositoryImplBase(ctx
             .SelectMany(c => c.Characters)
             .Where(CharacterPredicates.Hot())
             .Apply(pagination, c => c.CharacterId)
-            .Select(c => new { c.CharacterId, c.ProjectId, c.CharacterName, c.Project.ProjectName, CharacterDesc = c.Description, ProjectDesc = c.Project.Details.ProjectAnnounce });
+            .Select(c => new
+            {
+                c.CharacterId,
+                c.ProjectId,
+                c.CharacterName,
+                c.Project.ProjectName,
+                CharacterDesc = c.Description,
+                ProjectDesc = c.Project.Details.ProjectAnnounce,
+                c.IsActive,
+                c.IsPublic,
+            });
 
         return [..(await query.ToListAsync())
             .Select(c => new CharacterWithProject(
                 new CharacterIdentification(c.ProjectId, c.CharacterId),
                 c.CharacterName,
+                c.IsPublic,
+                c.IsActive,
                 new ProjectName(c.ProjectName),
                 c.CharacterDesc,
                 c.ProjectDesc))];

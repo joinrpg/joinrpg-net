@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj" />
+    <ProjectReference Include="..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
   </ItemGroup>
 
