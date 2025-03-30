@@ -4,6 +4,7 @@ using JoinRpg.Interfaces.Email;
 using JoinRpg.Markdown;
 using Mailgun.Messages;
 using Mailgun.Service;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Common.EmailSending.Impl;
@@ -23,8 +24,8 @@ internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttp
             return;
         }
 
-        var html = body.ToHtmlString().ToHtmlString();
-        var text = body.ToPlainText().ToString();
+        var html = body.ToHtmlString();
+        var text = body.ToPlainText();
 
         foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
@@ -36,7 +37,7 @@ internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttp
         string subject,
         string text,
         RecepientData sender,
-        string html)
+        MarkupString html)
     {
         var message = new MessageBuilder().AddUsers(recipients)
             .SetSubject(subject)
@@ -47,7 +48,7 @@ internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttp
             })
             .SetReplyToAddress(sender.ToMailGunRecepient())
             .SetTextBody(text)
-            .SetHtmlBody(html)
+            .SetHtmlBody(html.Value)
             .GetMessage();
 
         message.RecipientVariables = recipients.ToRecipientVariables();

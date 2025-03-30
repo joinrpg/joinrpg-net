@@ -1,9 +1,9 @@
 using JoinRpg.Domain.Schedules;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.WebComponents;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.WebPortal.Managers.Schedule;
 
@@ -53,8 +53,7 @@ internal static class SchedulePageViewModelBuilder
                 Id = slot.Id.ProjectFieldVariantId,
                 Name = slot.Name,
                 Description =
-                    $"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br />"
-                        .MarkAsHtmlString() + scheduleItem.Description.ToHtmlString(),
+                    new MarkupString($"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br /> {scheduleItem.Description.ToHtmlString().Value}"),
             };
         }
         if (scheduleItem is ScheduleRoom room)

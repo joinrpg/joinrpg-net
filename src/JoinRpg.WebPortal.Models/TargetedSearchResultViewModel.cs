@@ -1,9 +1,8 @@
 using System.Text.RegularExpressions;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
-using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models;
 
@@ -11,17 +10,19 @@ namespace JoinRpg.Web.Models;
 /// A view model for a single item from search result
 /// carrying, in additon, the target of the made search.
 /// </summary>
-public class TargetedSearchResultViewModel
+public class TargetedSearchResultViewModel(ISearchResult searchResult,
+    string searchTarget,
+    IUriService uriService)
 {
-    private string SearchTarget { get; }
-    public ISearchResult SearchResult { get; }
+    private string SearchTarget { get; } = searchTarget ?? throw new ArgumentNullException(nameof(searchTarget));
+    public ISearchResult SearchResult { get; } = searchResult ?? throw new ArgumentNullException(nameof(searchResult));
     public GameObjectLinkType LinkType => SearchResult.LinkType.AsViewModel();
-    public Uri Url { get; }
+    public Uri Url { get; } = uriService.GetUri(searchResult);
 
     public JoinHtmlString GetFormattedDescription(int maxLengthToShow)
     {
         var descriptionToShow = TruncateString(
-            SearchResult.Description.ToPlainText().ToHtmlString(),
+            SearchResult.Description.ToPlainText(),
             SearchTarget,
             maxLengthToShow);
 
@@ -31,7 +32,7 @@ public class TargetedSearchResultViewModel
             match => "<b><u>" + match.Value + "</u></b>",
             RegexOptions.IgnoreCase);
 
-        return new HtmlString(descriptionToShow);
+        return new MarkupString(descriptionToShow);
     }
 
     private static string TruncateString(
@@ -75,14 +76,5 @@ public class TargetedSearchResultViewModel
             truncatedString += "...";
         }
         return truncatedString;
-    }
-
-    public TargetedSearchResultViewModel(ISearchResult searchResult,
-        string searchTarget,
-        IUriService uriService)
-    {
-        SearchResult = searchResult ?? throw new ArgumentNullException(nameof(searchResult));
-        SearchTarget = searchTarget ?? throw new ArgumentNullException(nameof(searchTarget));
-        Url = uriService.GetUri(searchResult);
     }
 }

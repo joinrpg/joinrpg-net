@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace JoinRpg.Helpers.Web;
+namespace JoinRpg.Services.Impl;
 
 public static class GravatarHelper
 {

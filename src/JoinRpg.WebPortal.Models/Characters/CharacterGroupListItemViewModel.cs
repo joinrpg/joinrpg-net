@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using JoinRpg.Helpers.Web;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Characters;
 

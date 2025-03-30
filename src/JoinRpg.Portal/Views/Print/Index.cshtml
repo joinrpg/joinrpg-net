@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Helpers.Web
+@using JoinRpg.Web.Models.CommonTypes
 @model JoinRpg.Web.Models.Print.PrintIndexViewModel
 
 @functions
@@ -6,8 +6,8 @@
 
     class Chunk
     {
-        public string Name { get; set; }
-        public string CharacterIds { get; set; }
+        public required string Name { get; set; }
+        public required string CharacterIds { get; set; }
     }
 
     IEnumerable<Chunk> SplitByChunks(int chunkSize = 100)

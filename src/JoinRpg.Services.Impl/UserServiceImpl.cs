@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;

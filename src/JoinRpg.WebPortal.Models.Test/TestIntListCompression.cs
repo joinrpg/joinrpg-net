@@ -1,7 +1,6 @@
-using Shouldly;
-using Xunit;
+using JoinRpg.Web.Models.CommonTypes;
 
-namespace JoinRpg.Helpers.Web.Test;
+namespace JoinRpg.WebPortal.Models.Test;
 
 public class TestIntListCompression
 {
