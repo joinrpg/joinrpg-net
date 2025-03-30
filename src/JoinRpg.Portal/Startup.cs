@@ -5,6 +5,7 @@ using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.Integrations.KogdaIgra;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
@@ -14,6 +15,7 @@ using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -48,7 +50,8 @@ public class Startup
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
             .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
             .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"))
-            .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"));
+            .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
+            .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
 
         s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
@@ -57,6 +60,8 @@ public class Startup
             .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>();
 
         _ = services.AddHttpClient();
+
+        services.AddKogdaIgra();
 
         _ = services.AddRouting(options => options.LowercaseUrls = true);
         var mvc = services
