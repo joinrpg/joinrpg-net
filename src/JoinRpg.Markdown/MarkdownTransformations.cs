@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Markdown;
@@ -11,6 +12,7 @@ public static class MarkdownTransformations
     /// Return X first words from markdown (keeping formating).
     /// TODO: That method could be improved and unit tested
     /// </summary>
+    [return: NotNullIfNotNull(nameof(markdownString))]
     public static MarkdownString? TakeWords(this MarkdownString? markdownString, int words)
     {
         if (markdownString?.Contents == null)
@@ -18,9 +20,26 @@ public static class MarkdownTransformations
             return null;
         }
         var w = words;
-        var idx = markdownString.Contents
-            .TakeWhile(c => (w -= char.IsWhiteSpace(c) ? 1 : 0) > 0 && c != '\n').Count();
-        var mdContents = markdownString.Contents[..idx];
+        var str = markdownString.Contents;
+        var idx = 0;
+        while (w > 0 && idx < str.Length)
+        {
+            if (str[idx] == '\n')
+            {
+                break;
+            }
+            if (char.IsWhiteSpace(str[idx]))
+            {
+                w--;
+            }
+            idx++;
+        }
+        if (str.Length == idx)
+        {
+            return markdownString;
+        }
+        var mdContents = markdownString.Contents[..idx] + "...";
+
         return new MarkdownString(mdContents);
     }
 
