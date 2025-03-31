@@ -46,7 +46,7 @@ public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncCli
             }
             catch
             {
-                return new ResyncOperationResultsViewModel(false, e.Message, new SyncStatusViewModel(0, DateTimeOffset.UnixEpoch)); ;
+                return new ResyncOperationResultsViewModel(false, e.Message, new SyncStatusViewModel(0, DateTimeOffset.UnixEpoch, 0)); ;
             }
         }
     }

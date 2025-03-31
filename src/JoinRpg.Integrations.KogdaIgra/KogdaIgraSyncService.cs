@@ -11,8 +11,9 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
     public async Task<SyncStatus> GetSyncStatus()
     {
         var count = await unitOfWork.GetDbSet<KogdaIgraGame>().CountAsync();
-        var lastUpdated = await unitOfWork.GetDbSet<KogdaIgraGame>().MaxAsync(kig => (DateTimeOffset?)kig.LastUpdatedAt);
-        return new(count, lastUpdated ?? DateTimeOffset.UnixEpoch);
+        var lastUpdated = await unitOfWork.GetDbSet<KogdaIgraGame>().MaxAsync(kig => (DateTimeOffset?)kig.UpdateRequestedAt);
+        var pending = await unitOfWork.GetDbSet<KogdaIgraGame>().Where(UpdateRequestedPredicate()).CountAsync();
+        return new(count, lastUpdated ?? DateTimeOffset.UnixEpoch, pending);
     }
     public async Task PerformSync()
     {
@@ -23,7 +24,7 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
         await MarkUpdateRequested(updated);
 
         var elementsToUpdate = await unitOfWork.GetDbSet<KogdaIgraGame>()
-            .Where(e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt)
+            .Where(UpdateRequestedPredicate())
             .OrderByDescending(e => e.UpdateRequestedAt)
             .Take(100)
             .ToListAsync();
@@ -35,6 +36,8 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
             await UpsertItem(kiData);
         }
     }
+
+    private static System.Linq.Expressions.Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;
 
     private async Task MarkUpdateRequested(KogdaIgraGameUpdateMarker[] updated)
     {

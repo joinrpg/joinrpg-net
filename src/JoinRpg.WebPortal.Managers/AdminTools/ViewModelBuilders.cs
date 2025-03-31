@@ -6,7 +6,7 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 internal static class ViewModelBuilders
 {
-    public static SyncStatusViewModel ToViewModel(this SyncStatus status) => new(status.CountOfGames, status.LastUpdated);
+    public static SyncStatusViewModel ToViewModel(this SyncStatus status) => new(status.CountOfGames, status.LastUpdated, status.PendingGamesCount);
 
     public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGame game) =>
         new KogdaIgraCardViewModel(

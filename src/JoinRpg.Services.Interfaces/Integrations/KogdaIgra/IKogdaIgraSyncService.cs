@@ -5,4 +5,4 @@ public interface IKogdaIgraSyncService
     Task<SyncStatus> GetSyncStatus();
 }
 
-public record class SyncStatus(int CountOfGames, DateTimeOffset LastUpdated) { }
+public record class SyncStatus(int CountOfGames, DateTimeOffset LastUpdated, int PendingGamesCount) { }
