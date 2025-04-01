@@ -18,5 +18,6 @@ public static class RepositoriesRegistraton
         yield return typeof(FinanceReportRepositoryImpl);
         yield return typeof(ResponsibleMasterRulesRepository);
         yield return typeof(HotCharactersRepository);
+        yield return typeof(FinanceOperationsRepository);
     }
 }

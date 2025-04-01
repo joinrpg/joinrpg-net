@@ -1172,20 +1172,6 @@ public class PaymentsService(
         return result;
     }
 
-    public async Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(int pageSize = 1000, FinanceOperationIdentification? afterId = null)
-    {
-        var afterIdInt = afterId?.FinanceOperationId ?? 0;
-        var query = UnitOfWork.GetDbSet<FinanceOperation>()
-                .OrderBy(fo => fo.CommentId)
-                .Take(pageSize)
-                .Where(fo => fo.CommentId > afterIdInt)
-                .Where(fo => fo.State != FinanceOperationState.Declined && fo.State != FinanceOperationState.Approved)
-                .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId });
-
-        var result = await query.ToArrayAsync();
-        return [.. result.Select(r => new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId))];
-    }
-
     private abstract class PaymentRedirectUrl : ILinkableClaim
     {
         /// <inheritdoc />
