@@ -51,7 +51,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Formatting.Elasticsearch" Version="10.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" /> <!-- Bump up implicitly, so transtitive dependiencies would not warn -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0" /> <!-- Bump up implicitly, so transtitive dependiencies would not warn -->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj" />
