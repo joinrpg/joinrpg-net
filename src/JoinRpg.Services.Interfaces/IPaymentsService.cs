@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using PscbApi;
 using PscbApi.Models;
 
@@ -338,12 +337,4 @@ public interface IPaymentsService
         IReadOnlySet<FinanceOperationState>? ofStates = null,
         int? afterId = null,
         int pageSize = 100);
-
-    /// <summary>
-    /// Грузит операции, которые не перешли в финальный статус
-    /// </summary>
-    /// <param name="pageSize"></param>
-    /// <param name="afterId"></param>
-    /// <returns></returns>
-    Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(int pageSize = 1000, FinanceOperationIdentification? afterId = null);
 }

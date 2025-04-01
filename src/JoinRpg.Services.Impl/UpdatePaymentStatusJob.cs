@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -8,11 +9,11 @@ namespace JoinRpg.Services.Impl;
 /// <summary>
 /// Каждую ночь пытается протолкнуть зависшие операции
 /// </summary>
-public class UpdatePaymentStatusJob(IPaymentsService paymentsService, ILogger<UpdatePaymentStatusJob> logger) : IDailyJob
+public class UpdatePaymentStatusJob(IPaymentsService paymentsService, ILogger<UpdatePaymentStatusJob> logger, IFinanceOperationsRepository financeOperationsRepository) : IDailyJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {
-        var unfinishedOperations = await paymentsService.GetUnfinishedOperations(pageSize: 1000);
+        var unfinishedOperations = await financeOperationsRepository.GetUnfinishedOperations();
 
         logger.LogInformation("Обнаружено {unfinishedOperationsCount} незавершенных операций", unfinishedOperations.Count);
 
