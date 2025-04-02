@@ -1,5 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Logging;
 using Serilog;
 
@@ -19,7 +20,7 @@ public class Program
 
             var startup = new Startup(builder.Configuration, builder.Environment);
 
-            startup.ConfigureServices(builder.Services);
+            startup.ConfigureServices(new JoinServiceCollectionProxy(builder.Services));
 
             builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
             builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);

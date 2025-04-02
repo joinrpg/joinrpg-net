@@ -4,8 +4,8 @@ using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
-using JoinRpg.Interfaces;
 using JoinRpg.Integrations.KogdaIgra;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
@@ -38,8 +38,7 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
-    // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IJoinServiceCollection services)
     {
         services.AddJoinOpenTelemetry();
 
