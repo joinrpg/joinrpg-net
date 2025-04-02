@@ -3,6 +3,7 @@ using System.Text;
 using Amazon.S3;
 using Amazon.S3.Model;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

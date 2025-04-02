@@ -1,6 +1,6 @@
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Services.Interfaces;
+namespace JoinRpg.Services.Interfaces.Avatars;
 
 /// <summary>
 /// Operations with avatars

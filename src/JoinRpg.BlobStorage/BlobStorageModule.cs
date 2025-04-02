@@ -1,5 +1,6 @@
 using Autofac;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 
 namespace JoinRpg.BlobStorage;
 

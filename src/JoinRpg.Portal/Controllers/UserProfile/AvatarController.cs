@@ -2,7 +2,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
