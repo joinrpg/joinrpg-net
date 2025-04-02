@@ -192,8 +192,8 @@ public class Startup
             .UseMiddleware<CsrfTokenCookieMiddleware>();
 
         _ = app.MapControllers().WithStaticAssets();
-        _ = app.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}").WithStaticAssets();
-        _ = app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
+        _ = app.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
+        _ = app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
         _ = app.MapRazorPages().WithStaticAssets();
     }
 }
