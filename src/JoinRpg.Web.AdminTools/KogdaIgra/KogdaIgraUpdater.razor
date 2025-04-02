@@ -1,0 +1,51 @@
+@inject IKogdaIgraSyncClient Client
+
+@if (model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<JoinPanel>
+  <Header>Обновление списка Игр</Header>
+  <Body>
+    <p>
+      Всего игр в базе/ожидают обновления: @model.CountOfGames/@model.PendingGamesCount <br />
+      Последний раз обновлено: @model.LastUpdated
+    </p>
+
+    @if (resyncResult is null)
+    {
+
+    }
+    else if (resyncResult.OperationSuccessful)
+    {
+      <p>Успешно обновлено.</p>
+    }
+    else {
+      <p>Ошибка обновления: @resyncResult.OperationStatusMessage</p>
+    }
+        <JoinButton Label="Обновить" OnClick="@OnSyncClicked" Preset="ButtonPreset.Download" />
+    </Body>
+</JoinPanel>
+
+@code {
+    private SyncStatusViewModel? model;
+
+    private ResyncOperationResultsViewModel? resyncResult;
+
+    [Parameter]
+    public SyncStatusViewModel? InitialModel { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        model = InitialModel ?? await Client.GetSyncStatus();
+    }
+
+    private async Task OnSyncClicked()
+    {
+        resyncResult = await Client.ResyncKograIgra();
+        model = resyncResult.SyncStatus;
+    }
+
+}

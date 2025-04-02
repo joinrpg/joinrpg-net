@@ -1,3 +1,4 @@
+using System.Reflection;
 using JoinRpg.Dal.Impl.Repositories;
 
 namespace JoinRpg.Dal.Impl;
@@ -6,18 +7,10 @@ public static class RepositoriesRegistraton
 {
     public static IEnumerable<Type> GetTypes()
     {
-        yield return typeof(ProjectRepository);
+        foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsAssignableTo(typeof(RepositoryImplBase)) && !t.IsAbstract))
+        {
+            yield return type;
+        }
         yield return typeof(UserInfoRepository);
-        yield return typeof(ClaimsRepositoryImpl);
-        yield return typeof(PlotRepositoryImpl);
-        yield return typeof(ForumRepositoryImpl);
-        yield return typeof(CharacterRepositoryImpl);
-        yield return typeof(AccommodationRepositoryImpl);
-        yield return typeof(AccommodationRequestRepositoryImpl);
-        yield return typeof(AccommodationInviteRepositoryImpl);
-        yield return typeof(FinanceReportRepositoryImpl);
-        yield return typeof(ResponsibleMasterRulesRepository);
-        yield return typeof(HotCharactersRepository);
-        yield return typeof(FinanceOperationsRepository);
     }
 }

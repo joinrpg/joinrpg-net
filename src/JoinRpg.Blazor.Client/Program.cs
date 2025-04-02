@@ -13,6 +13,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         //Workaround for https://github.com/dotnet/aspnetcore/issues/26601
+        //Remove on .NET 9
         //If top-level component is not defined in this project,
         //it should be forcefully loaded
         _ = typeof(MasterSubscribeList).ToString();
@@ -21,6 +22,7 @@ public class Program
         _ = typeof(PrimitiveTypes.CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
         _ = typeof(ResponsibleMasterRulesList).ToString();
+        _ = typeof(KogdaIgraSyncClient).ToString();
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

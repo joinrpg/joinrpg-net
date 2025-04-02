@@ -1,0 +1,17 @@
+﻿@page "/admin/kogda-igra-sync"
+@using JoinRpg.Web.AdminTools.KogdaIgra
+@model JoinRpg.Portal.Pages.Admin.SyncWithKogdaIgraModel
+
+@{
+    ViewBag.Title = "Синхронизация с КогдаИгрой";
+}
+
+<h2>Синхронизация с КогдаИгрой</h2>
+
+@(await Html.RenderComponentAsync<KogdaIgraSyncList>(RenderMode.WebAssemblyPrerendered, new { Model.KogdaIgraSyncStatus }))
+
+@section Scripts {
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
+}

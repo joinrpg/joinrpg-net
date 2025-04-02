@@ -19,5 +19,6 @@ public static class Registration
         yield return typeof(ProjectListViewService);
         yield return typeof(MassMailManager);
         yield return typeof(PlotViewService);
+        yield return typeof(AdminTools.KogdaIgraSyncManager);
     }
 }

@@ -7,7 +7,7 @@ namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
 public static class DailyJobRegistration
 {
-    public static void AddJoinDailyJob(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static void AddJoinDailyJob(this IJoinServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         services.AddOptions<DailyJobOptions>();
         services.AddDailyJobsDal(configuration, environment);
@@ -20,14 +20,5 @@ public static class DailyJobRegistration
             .AddDailyJob<UpdatePaymentStatusJob>()
             ;
         services.AddDailyJob<PerformRecurrentPaymentMidnightJob>();
-    }
-
-    public static IServiceCollection AddDailyJob<TJob>(this IServiceCollection services) where TJob : class, IDailyJob
-    {
-        return services
-            .AddScoped<TJob>()
-            .AddScoped<IDailyJob, TJob>()
-            .AddScoped<JobRunner<TJob>>()
-            .AddHostedService<MidnightJobBackgroundService<TJob>>();
     }
 }
