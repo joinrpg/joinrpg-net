@@ -1,4 +1,4 @@
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.BlobStorage;

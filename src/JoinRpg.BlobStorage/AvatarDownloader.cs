@@ -1,4 +1,5 @@
 using System.Buffers;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.BlobStorage;
@@ -21,8 +22,8 @@ internal class AvatarDownloader
 
         var response = await httpClient.GetAsync(remoteUri, ct);
 
-        var mediaType = (response.Content.Headers.ContentType?.MediaType) ?? throw new Exception("Avatar should have media type");
-        var extension = ParseContentTypeToExtension(mediaType) ?? throw new Exception($"Is not safe to use {mediaType} as avatar media type");
+        var mediaType = (response.Content.Headers.ContentType?.MediaType) ?? throw new AvatarDownloadException("Avatar should have media type");
+        var extension = ParseContentTypeToExtension(mediaType) ?? throw new AvatarDownloadException($"Is not safe to use {mediaType} as avatar media type");
 
         const long maxSize = 1 * 1024 * 1024; // 1 MB
         long totalRead = 0;
@@ -56,6 +57,7 @@ internal class AvatarDownloader
             "image/png" => ".png",
             "image/webp" => ".webp",
             "image/avif" => ".avif",
+            "image/gif" => ".gif",
             _ => null,
         };
     }

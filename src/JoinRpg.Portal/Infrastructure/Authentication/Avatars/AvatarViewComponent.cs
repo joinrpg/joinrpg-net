@@ -1,6 +1,6 @@
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Impl;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;

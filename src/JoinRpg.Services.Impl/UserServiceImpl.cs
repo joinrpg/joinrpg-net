@@ -7,6 +7,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl;

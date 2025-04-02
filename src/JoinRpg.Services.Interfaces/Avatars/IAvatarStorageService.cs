@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces;
+namespace JoinRpg.Services.Interfaces.Avatars;
 
 /// <summary>
 /// Service that stores avatars to permanent storage

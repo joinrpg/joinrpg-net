@@ -45,9 +45,12 @@ public class ExternalLoginProfileExtractor
 
         await userService.SetNameIfNotSetWithoutAccessChecks(user.Id, userFullName);
 
-        var avatar = loginInfo["photo_url"];
+        var avatar = loginInfo.GetValueOrDefault("photo_url");
 
-        await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, new TelegramId(long.Parse(loginInfo["id"]), prefferedName), new AvatarInfo(new Uri(avatar), 50, 50));
+        if (avatar is not null)
+        {
+            await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, new TelegramId(long.Parse(loginInfo["id"]), prefferedName), new AvatarInfo(new Uri(avatar), 50, 50));
+        }
     }
 
     private static UserFullName TryGetUserName(ExternalLoginInfo loginInfo)
