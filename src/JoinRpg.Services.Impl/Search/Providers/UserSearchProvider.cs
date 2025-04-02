@@ -70,7 +70,7 @@ internal class UserSearchProvider : ISearchProvider
 
         return results.Select(user =>
         {
-            var wasfoundById = user.UserId == idToFind || user.Extra?.Vk == idToFind.ToString();
+            var wasfoundById = idToFind is int && (user.UserId == idToFind || user.Extra?.Vk == idToFind.ToString());
             var description = new MarkdownString(wasfoundById
         ? WorldObjectProviderBase.GetFoundByIdDescription(user.UserId)
         : "");
