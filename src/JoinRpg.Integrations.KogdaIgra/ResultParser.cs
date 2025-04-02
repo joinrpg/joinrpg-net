@@ -1,6 +1,4 @@
 using System.Text.Json;
-using JoinRpg.Helpers;
-using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 
 namespace JoinRpg.Integrations.KogdaIgra;
 
@@ -12,7 +10,24 @@ internal static class ResultParser
         return deserializeResult.Select(x => x.ToMarker()).WhereNotNull().ToArray();
     }
 
-    private record class kogda_igra_game_marker(string id, string update_date, string redirect_id)
+    internal static KogdaIgraGameInfo ParseGameInfo(int gameId, string strResult)
+    {
+        var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult) ?? throw new Exception("Failed to parse result");
+        var ret = new KogdaIgraGameInfo(parsedResult.id, parsedResult.name, strResult, parsedResult.update_date ?? DateTimeOffset.Now);
+        if (ret.Id != gameId && string.IsNullOrWhiteSpace(ret.Name))
+        {
+            throw new KogdaIgraParseException(gameId, "Incorrect record");
+        }
+        return ret;
+    }
+
+#pragma warning disable IDE1006 // Naming Styles
+    private record class kogda_igra_game_data(int id, string name, DateTimeOffset? update_date)
+    {
+
+    }
+
+    private record class kogda_igra_game_marker(int id, DateTimeOffset? update_date, string redirect_id)
     {
         internal KogdaIgraGameUpdateMarker? ToMarker()
         {
@@ -20,9 +35,13 @@ internal static class ResultParser
             {
                 return null;
             }
+            if (update_date is null)
+            {
+                return null;
+            }
             try
             {
-                return new(int.Parse(id), DateTimeOffset.Parse(update_date));
+                return new(id, update_date.Value);
             }
             catch
             {
@@ -31,4 +50,5 @@ internal static class ResultParser
             }
         }
     }
+#pragma warning restore IDE1006 // Naming Styles
 }

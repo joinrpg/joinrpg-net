@@ -2,7 +2,6 @@ using System.Data;
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
-using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Integrations.KogdaIgra;
@@ -30,10 +29,21 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
             .ToListAsync();
         foreach (var item in elementsToUpdate)
         {
-            var kiData = await apiClient.GetGameInfo(item.KogdaIgraGameId);
-            logger.LogInformation("Received game record from kogda-igra {kogdaIgraGameRecord}", kiData);
+            try
+            {
+                var kiData = await apiClient.GetGameInfo(item.KogdaIgraGameId);
+                logger.LogInformation("Received game record from kogda-igra {kogdaIgraGameRecord}", kiData);
 
-            await UpsertItem(kiData);
+                await UpsertItem(kiData);
+            }
+            catch (KogdaIgraParseException e)
+            {
+                logger.LogError(e, "Ошибка при разборе ответа КогдаИгры, игра {kogdaIgraGameId}", item.KogdaIgraGameId);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Неожиданная ошибка при обновлении с КогдаИгры, игра {kogdaIgraGameId}", item.KogdaIgraGameId);
+            }
         }
     }
 

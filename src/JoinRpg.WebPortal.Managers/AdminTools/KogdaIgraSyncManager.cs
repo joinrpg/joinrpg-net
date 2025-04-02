@@ -43,7 +43,7 @@ internal class KogdaIgraSyncManager(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error during sync with kogda-igra");
-                return (false, "Error during sync");
+                return (false, $"Error during sync: {ex.Message}");
             }
         }
     }
