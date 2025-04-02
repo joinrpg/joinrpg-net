@@ -1,4 +1,5 @@
 using System.Buffers;
+using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.BlobStorage;
@@ -56,6 +57,7 @@ internal class AvatarDownloader
             "image/png" => ".png",
             "image/webp" => ".webp",
             "image/avif" => ".avif",
+            "image/gif" => ".gif",
             _ => null,
         };
     }
