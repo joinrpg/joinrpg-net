@@ -29,21 +29,20 @@ internal class KogdaIgraSyncManager(
 
     public async Task<ResyncOperationResultsViewModel> ResyncKograIgra()
     {
-        var (success, statusMessage) = await PerformSync();
-        var status = (await kogdaIgraSyncService.GetSyncStatus()).ToViewModel();
-        return new ResyncOperationResultsViewModel(success, statusMessage, status);
+        var (status, statusMessage) = await PerformSync();
+        status ??= (await kogdaIgraSyncService.GetSyncStatus());
+        return new ResyncOperationResultsViewModel(statusMessage == null, statusMessage ?? "", status.ToViewModel());
 
-        async Task<(bool, string)> PerformSync()
+        async Task<(SyncStatus?, string?)> PerformSync()
         {
             try
             {
-                await kogdaIgraSyncService.PerformSync();
-                return (true, "");
+                return (await kogdaIgraSyncService.PerformSync(), null);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error during sync with kogda-igra");
-                return (false, $"Error during sync: {ex.Message}");
+                return (null, $"Error during sync: {ex.Message}");
             }
         }
     }

@@ -14,7 +14,7 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
         var pending = await unitOfWork.GetDbSet<KogdaIgraGame>().Where(UpdateRequestedPredicate()).CountAsync();
         return new(count, lastUpdated ?? DateTimeOffset.UnixEpoch, pending);
     }
-    public async Task PerformSync()
+    public async Task<SyncStatus> PerformSync()
     {
         var status = await GetSyncStatus();
         logger.LogInformation("Sync status is {syncStatus}", status);
@@ -45,6 +45,10 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
                 logger.LogError(e, "Неожиданная ошибка при обновлении с КогдаИгры, игра {kogdaIgraGameId}", item.KogdaIgraGameId);
             }
         }
+
+        status = await GetSyncStatus();
+        logger.LogInformation("Sync status is {syncStatus}", status);
+        return status;
     }
 
     private static System.Linq.Expressions.Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;

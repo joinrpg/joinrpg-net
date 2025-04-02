@@ -1,7 +1,7 @@
 namespace JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 public interface IKogdaIgraSyncService
 {
-    Task PerformSync();
+    Task<SyncStatus> PerformSync();
     Task<SyncStatus> GetSyncStatus();
 }
 

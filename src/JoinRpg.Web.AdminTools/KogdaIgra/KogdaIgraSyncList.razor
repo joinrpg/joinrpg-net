@@ -1,7 +1,19 @@
-﻿@using Microsoft.JSInterop
+@using Microsoft.JSInterop
 @inject IKogdaIgraSyncClient Client
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
+
+<JoinPanel Variation="VariationStyleEnum.Warning">
+    <Header>Функционал не реализован</Header>
+    <Body>
+        Здесь будет инструмент привязки проектов джойна к играм на КогдаИгре.
+    </Body>
+</JoinPanel>
+
+@if (true)
+{
+    return;
+}
 
 @if (JoinCandidates is null || KogdaIgraCandidates is null)
 {
