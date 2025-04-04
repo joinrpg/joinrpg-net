@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <AssemblyTitle>JoinRpg.Domain</AssemblyTitle>
@@ -10,7 +10,7 @@
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.2.0" />
+    <PackageReference Include="Autofac" Version="8.2.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
