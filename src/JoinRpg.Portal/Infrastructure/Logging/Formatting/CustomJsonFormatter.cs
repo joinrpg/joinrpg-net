@@ -1,9 +1,8 @@
 using Serilog.Events;
 using Serilog.Extensions.Logging;
-using Serilog.Formatting.Elasticsearch;
 using Serilog.Parsing;
 
-namespace JoinRpg.Portal.Infrastructure.Logging;
+namespace JoinRpg.Portal.Infrastructure.Logging.Formatting;
 
 internal class CustomJsonFormatter : ElasticsearchJsonFormatter
 {
@@ -18,7 +17,7 @@ internal class CustomJsonFormatter : ElasticsearchJsonFormatter
 
     protected override void WriteTimestamp(DateTimeOffset timestamp, ref string delim, TextWriter output)
     {
-        WriteJsonProperty("@timestamp", (object)timestamp.ToUniversalTime().ToString(DateTimeFormat), ref delim, output);
+        WriteJsonProperty("@timestamp", timestamp.ToUniversalTime().ToString(DateTimeFormat), ref delim, output);
     }
 
     protected override void WriteLevel(LogEventLevel level, ref string delim, TextWriter output)

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
 using Microsoft.Extensions.Options;
@@ -14,7 +13,6 @@ public class MidnightJobBackgroundService<TJob>(
 {
     private static readonly string JobName = typeof(TJob).FullName!;
     private bool skipWait = options.Value.DebugDailyJobMode;
-    private static ActivitySource activitySource = new ActivitySource(nameof(JoinRpg.Portal.Infrastructure.DailyJobs.MidnightJobBackgroundService<TJob>));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -25,7 +23,8 @@ public class MidnightJobBackgroundService<TJob>(
             stoppingToken.ThrowIfCancellationRequested();
 
             using var scope = serviceProvider.CreateScope();
-            using var activity = activitySource.StartActivity($"Run of {JobName}");
+            using var activity = BackgroundServiceActivity.ActivitySource.StartActivity($"Run of {JobName}");
+            activity?.AddTag("jobName", JobName);
             var dailyJobRepository = scope.ServiceProvider.GetRequiredService<IDailyJobRepository>();
 
             var jobId = new JobId(JobName, DateOnly.FromDateTime(DateTime.Now));
