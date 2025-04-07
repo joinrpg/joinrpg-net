@@ -1,4 +1,5 @@
 using System.Reflection;
+using JoinRpg.Portal.Infrastructure.DailyJobs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -10,7 +11,7 @@ public static class OpenTelemetryRegistration
     public static void AddJoinOpenTelemetry(this IServiceCollection services)
     {
         const string serviceName = "JoinRpg";
-        services.AddOpenTelemetry()
+        _ = services.AddOpenTelemetry()
             .ConfigureResource(builder =>
             {
 
@@ -18,6 +19,7 @@ public static class OpenTelemetryRegistration
             })
             .WithTracing(tracing =>
             {
+                tracing.AddSource(BackgroundServiceActivity.ActivitySourceName);
                 tracing
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation();

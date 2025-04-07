@@ -1,3 +1,4 @@
+using JoinRpg.Portal.Infrastructure.Logging.Formatting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Debugging;
@@ -23,6 +24,7 @@ public static class SerilogExtensions
             .Enrich.WithMachineName()
             .Enrich.With<YcLevelEnricher>()
             .Enrich.With<LoggedUserEnricher>()
+            .Enrich.With<ActivityTagsEnricher>()
             .Enrich.WithProperty("AppName", "JoinRpg.Portal");
 
         foreach (var (@namespace, logLevel) in serilogOptions.LogLevel)
@@ -42,7 +44,7 @@ public static class SerilogExtensions
                 "Host", "Protocol", "Scheme", "ResponseContentType", "RequestMethod", "RequestPath",
                 "StatusCode", "Elapsed", "SourceContext", "RequestId", "ConnectionId", "EndpointName",
                 "RouteData", "ActionName", "ActionId", "ValidationState", "RazorPageHandler", "YcLevel",
-                "QueryString", "ViewComponentName", "ViewComponentId", "LoggedUser", "ProjectId",
+                "QueryString", "ViewComponentName", "ViewComponentId", "LoggedUser", "ProjectId", "jobName", "EventId"
             };
 
             loggerConfiguration.WriteTo.Console(formatter: new CustomJsonFormatter(topLevelPropertiesNames));
