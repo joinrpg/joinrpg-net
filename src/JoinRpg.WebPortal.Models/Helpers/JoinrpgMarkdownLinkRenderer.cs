@@ -43,13 +43,42 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         builder.AppendLine($"<h4>Группа: {groupLink}</h4>");
         builder.AppendLine("<table class='table'>");
 
-        List<int> fieldList = extra.ParseToIntList();
-        ProjectFieldInfo[] fields = fieldList.Count > 0
-            ? fieldList.Select(fieldId => projectInfo.GetFieldById(new ProjectFieldIdentification(projectInfo.ProjectId, fieldId))).ToArray()
-            : ([.. projectInfo.SortedActiveFields]);
+        List<ProjectFieldInfo> fields;
+        bool showContacts = false;
+
+        if (string.IsNullOrWhiteSpace(extra))
+        {
+            fields = [.. projectInfo.SortedActiveFields];
+            showContacts = true;
+        }
+        else
+        {
+            fields = [];
+            foreach (var r in extra.AsSpan().Split(","))
+            {
+                var item = extra[r].Trim();
+                if (item.Length == 0)
+                {
+                    continue;
+                }
+                if (item == "контакты")
+                {
+                    showContacts = true;
+                }
+                else if (int.TryParse(item, out var fieldId))
+                {
+                    fields.Add(projectInfo.GetFieldById(new ProjectFieldIdentification(projectInfo.ProjectId, fieldId)));
+                }
+            }
+        }
 
         builder.AppendLine("<tr>");
         builder.AppendLine($"<th>Имя&nbsp;персонажа</th>");
+        builder.AppendLine("<th>Игрок</th>");
+
+        //TODO: Контакты должны быть колонкой, которую можно поставить в любое место
+        //TODO: Добавить колонку «группы» со списком всех группы и публичныегруппы со списком всех публичных групп
+
         foreach (var field in fields)
         {
             builder.AppendLine($"<th>{field.Name}</th>");
@@ -61,7 +90,9 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             var fieldsDict = character.GetFieldsDict(projectInfo);
 
             builder.AppendLine("<tr>");
-            builder.Append($"<td>{CharacterImpl(character)}</td>");
+            builder.Append($"<td>{CharacterLinkImpl(character)}</td>");
+            builder.AppendLine($"<td>{GetPlayerString(character, showContacts)}</td>");
+
             foreach (var field in fields)
             {
                 builder.AppendLine($"<td>{fieldsDict[field.Id].DisplayString}</td>");
@@ -106,19 +137,20 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     private string CharacterImpl(Character character, string extra = "")
     {
-        return $"<span>{CharacterLinkImpl(character, extra)}&nbsp;({GetPlayerString()})</span>";
+        return $"<span>{CharacterLinkImpl(character, extra)}&nbsp;({GetPlayerString(character, showContacts: true)})</span>";
+    }
 
-        string GetPlayerString()
+    private static string GetPlayerString(Character character, bool showContacts)
+    {
+        return (character.CharacterType, character.ApprovedClaim?.Player) switch
         {
-            return (character.CharacterType, character.ApprovedClaim?.Player) switch
-            {
-                (CharacterType.NonPlayer, _) => "NPC",
-                (CharacterType.Slot, _) => "шаблон",
-                (CharacterType.Player, null) => "нет игрока",
-                (CharacterType.Player, User player) => GetPlayerContacts(player),
-                _ => throw new NotImplementedException(),
-            };
-        }
+            (CharacterType.NonPlayer, _) => "NPC",
+            (CharacterType.Slot, _) => "шаблон",
+            (CharacterType.Player, null) => "нет игрока",
+            (CharacterType.Player, User player) when showContacts => GetPlayerContacts(player),
+            (CharacterType.Player, User player) when !showContacts => player.GetDisplayName(),
+            _ => throw new NotImplementedException(),
+        };
 
         string GetPlayerContacts(User player)
         {
@@ -145,7 +177,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         return string.IsNullOrEmpty(link) ? null : $"Телеграм: <a href=\"https://t.me/{link}\">t.me/{link}</a>";
     }
 
-    private string CharacterLinkImpl(Character character, string extra)
+    private string CharacterLinkImpl(Character character, string extra = "")
     {
         var name = extra == "" ? character.CharacterName : extra;
         return $"<a href=\"/{Project.ProjectId}/character/{character.CharacterId}\">{name}</a>";
