@@ -74,7 +74,6 @@ public class Startup
                 options.Filters.Add<SerilogMvcFilter>();
                 options.Filters.Add<SerilogRazorPagesFilter>();
                 options.Filters.Add(new SetIsProductionFilterAttribute());
-                options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
                 options.Filters.Add(new AddFullUriFilter());
 
                 //TODO need to fix this
@@ -87,7 +86,6 @@ public class Startup
         {
             options.Conventions.ConfigureFilter(new DiscoverProjectPageFilterAttribute());
             options.Conventions.ConfigureFilter(new SetIsProductionFilterAttribute());
-            options.Conventions.ConfigureFilter(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
             options.Conventions.ConfigureFilter(new RedirectAntiforgeryValidationFailedResultFilter());
         });
 
