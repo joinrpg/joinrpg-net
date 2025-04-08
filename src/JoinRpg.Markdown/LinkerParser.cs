@@ -53,7 +53,7 @@ internal class LinkerParser(string[] prefixes) : InlineParser
             slice.Start++;
         }
 
-        var index = builder.Length > 0 ? int.Parse(builder.ToString()) : 0;
+        var index = builder.Length > 0 && int.TryParse(builder.ToString(), out var i) ? i : 0;
 
         if (index == 0)
         {
