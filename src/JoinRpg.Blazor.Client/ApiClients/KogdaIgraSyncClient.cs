@@ -17,6 +17,12 @@ public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncCli
             ?? throw new Exception("Couldn't get result from server");
     }
 
+    public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated()
+    {
+        return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetKogdaIgraNotUpdated")
+           ?? throw new Exception("Couldn't get result from server");
+    }
+
     public async Task<SyncStatusViewModel> GetSyncStatus()
     {
         return await httpClient.GetFromJsonAsync<SyncStatusViewModel>("webapi/kogdaigra/GetSyncStatus")

@@ -12,6 +12,12 @@ public class KogdaIgraSyncController(IKogdaIgraSyncClient client) : ControllerBa
     [HttpGet]
     public async Task<SyncStatusViewModel> GetSyncStatus() => await client.GetSyncStatus();
 
+    [HttpGet]
+    public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates() => await client.GetKogdaIgraCandidates();
+
+    [HttpGet]
+    public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated() => await client.GetKogdaIgraNotUpdated();
+
     [HttpPost]
     public async Task<ResyncOperationResultsViewModel> Resync() => await client.ResyncKograIgra();
 }

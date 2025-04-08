@@ -2,23 +2,33 @@ using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 internal class KogdaIgraSyncManager(
     IKogdaIgraSyncService kogdaIgraSyncService,
     ILogger<KogdaIgraSyncManager> logger,
-    IKogdaIgraRepository kogdaIgraRepository) : IKogdaIgraSyncClient
+    IKogdaIgraRepository kogdaIgraRepository,
+    IOptions<KogdaIgraOptions> kograIgraOptions) : IKogdaIgraSyncClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
         var items = await kogdaIgraRepository.GetAll();
-        return items.Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name)).ToArray();
+        return ToShortViewModels(items);
     }
 
+    private KogdaIgraShortViewModel[] ToShortViewModels((int KogdaIgraId, string Name)[] items)
+        => items.Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name, new Uri(kograIgraOptions.Value.HostName + "game/" + i.KogdaIgraId))).ToArray();
     public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(int kogdaIgraId)
     {
         var item = await kogdaIgraRepository.GetById(kogdaIgraId);
         return item.ToViewModel();
+    }
+
+    public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated()
+    {
+        var items = await kogdaIgraRepository.GetNotUpdated();
+        return ToShortViewModels(items);
     }
 
     public async Task<SyncStatusViewModel> GetSyncStatus()

@@ -7,29 +7,45 @@
 }
 
 <JoinPanel>
-  <Header>Обновление списка Игр</Header>
-  <Body>
-    <p>
-      Всего игр в базе/ожидают обновления: @model.CountOfGames/@model.PendingGamesCount <br />
-      Последний раз обновлено: @model.LastUpdated
-    </p>
+    <Header>Обновление списка Игр</Header>
+    <Body>
+        <p>
+            Всего игр в базе/ожидают обновления: @model.CountOfGames/@model.PendingGamesCount <br />
+            Последний раз обновлено: @model.LastUpdated
+        </p>
 
-    @if (resyncResult is null)
-    {
+        @if (resyncResult is null)
+        {
 
-    }
-    else if (resyncResult.OperationSuccessful)
-    {
-      <p>Успешно обновлено.</p>
-    }
-    else {
-      <p>Ошибка обновления: @resyncResult.OperationStatusMessage</p>
-    }
+        }
+        else if (resyncResult.OperationSuccessful)
+        {
+            <p>Успешно обновлено.</p>
+        }
+        else {
+            <p>Ошибка обновления: @resyncResult.OperationStatusMessage</p>
+        }
         <JoinButton Label="Обновить" OnClick="@OnSyncClicked" Preset="ButtonPreset.Download" />
     </Body>
 </JoinPanel>
 
+@if (NotUpdated is not null)
+{
+    <JoinPanel>
+        <Header>Необновленные игры</Header>
+        <Body>
+          <ul>
+            @foreach (var g in NotUpdated)
+            {
+                <li><a href="@g.KogdaIgraLink">@(g.Name)</a> </li>
+            }
+            </ul>
+        </Body>
+    </JoinPanel>
+}
+
 @code {
+    private KogdaIgraShortViewModel[]? NotUpdated = null;
     private SyncStatusViewModel? model;
 
     private ResyncOperationResultsViewModel? resyncResult;
@@ -44,8 +60,10 @@
 
     private async Task OnSyncClicked()
     {
+        NotUpdated = null;
         resyncResult = await Client.ResyncKograIgra();
         model = resyncResult.SyncStatus;
+        NotUpdated = await Client.GetKogdaIgraNotUpdated();
     }
 
 }
