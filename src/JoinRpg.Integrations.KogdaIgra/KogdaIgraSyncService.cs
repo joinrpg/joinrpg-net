@@ -1,4 +1,3 @@
-using System.Data;
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
@@ -11,7 +10,7 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
     {
         var count = await unitOfWork.GetDbSet<KogdaIgraGame>().CountAsync();
         var lastUpdated = await unitOfWork.GetDbSet<KogdaIgraGame>().MaxAsync(kig => (DateTimeOffset?)kig.UpdateRequestedAt);
-        var pending = await unitOfWork.GetDbSet<KogdaIgraGame>().Where(UpdateRequestedPredicate()).CountAsync();
+        var pending = await unitOfWork.GetKogdaIgraRepository().GetNotUpdatedCount();
         return new(count, lastUpdated ?? DateTimeOffset.UnixEpoch, pending);
     }
     public async Task<SyncStatus> PerformSync()
@@ -22,11 +21,7 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
         logger.LogInformation("Received from kogda-igra {kogdaIgraCount} records updated since {lastUpdated}", updated.Length, status.LastUpdated);
         await MarkUpdateRequested(updated);
 
-        var elementsToUpdate = await unitOfWork.GetDbSet<KogdaIgraGame>()
-            .Where(UpdateRequestedPredicate())
-            .OrderByDescending(e => e.UpdateRequestedAt)
-            .Take(100)
-            .ToListAsync();
+        var elementsToUpdate = await unitOfWork.GetKogdaIgraRepository().GetNotUpdatedObjects();
         foreach (var item in elementsToUpdate)
         {
             try
@@ -51,8 +46,6 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
         return status;
     }
 
-    private static System.Linq.Expressions.Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;
-
     private async Task MarkUpdateRequested(KogdaIgraGameUpdateMarker[] updated)
     {
         foreach (var item in updated)
@@ -63,7 +56,7 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
                 dbRecord = new()
                 {
                     KogdaIgraGameId = item.Id,
-                    Name = "Загружается",
+                    Name = "Загружается " + item.Id,
                     LastUpdatedAt = null,
                 };
                 logger.LogInformation("New record from kogda-igra {kogdaIgraId}", item.Id);

@@ -2,7 +2,9 @@ using System.Data.Entity;
 using System.Linq.Expressions;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -289,4 +291,7 @@ public class MyDbContext : DbContext, IUnitOfWork
         _ = entity.HasRequired(comment => comment.TransferText).WithRequiredPrincipal();
         _ = modelBuilder.Entity<TransferText>().HasKey(pd => pd.MoneyTransferId);
     }
+
+    IKogdaIgraRepository IUnitOfWork.GetKogdaIgraRepository() => new KogdaIgraRepository(this);
+    IFinanceOperationsRepository IUnitOfWork.GetFinanceOperationsRepositoryRepository() => new FinanceOperationsRepository(this);
 }

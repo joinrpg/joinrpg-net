@@ -1,6 +1,8 @@
 using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Finances;
 
 namespace JoinRpg.Data.Write.Interfaces;
 
@@ -21,4 +23,8 @@ public interface IUnitOfWork : IDisposable
     IForumRepository GetForumRepository();
     ICharacterRepository GetCharactersRepository();
     IAccommodationRepository GetAccomodationRepository();
+
+    IKogdaIgraRepository GetKogdaIgraRepository();
+
+    IFinanceOperationsRepository GetFinanceOperationsRepositoryRepository();
 }
