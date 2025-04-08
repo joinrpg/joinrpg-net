@@ -23,7 +23,7 @@ jobs:
     name: deploy
     env:
       ENVIRONMENT: ${{ inputs.environment }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     permissions: read-all
     steps:
       - name: Check images existence and fill images related env vars
