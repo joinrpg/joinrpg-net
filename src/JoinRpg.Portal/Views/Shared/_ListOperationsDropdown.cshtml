@@ -24,7 +24,7 @@
                    render-mode="Static"
                    param-Link="@exportUri"
                    param-Preset="@ButtonPreset.Download"
-                   param-Title="@("Скачать в Excel")" />
+                   param-Label="@("Скачать в Excel")" />
 
     @if (Model.ShowCharacterCreateButton)
     {
@@ -33,7 +33,7 @@
         render-mode="Static"
         param-Link="@(Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}))"
         param-Preset="@ButtonPreset.Add"
-        param-Title="@("Добавить персонажа")"
+        param-Label="@("Добавить персонажа")"
         />
     }
     @if (Model.ClaimIds.Any() && Model.ProjectId != null)
@@ -42,7 +42,7 @@
                     render-mode="Static"
                     param-Link="@(@Url.Action("ForClaims", "MassMail", new {Model.ProjectId, ClaimIds = Model.ClaimIds.CompressIdList()}))"
                     param-Preset="@ButtonPreset.Email"
-                    param-Title="@("Написать всем")" />
+                    param-Label="@("Написать всем")" />
     
     }
     @if (Model.CharacterIds.Any() && Model.ProjectId != null)
@@ -50,8 +50,8 @@
             <component type="typeof(JoinButton)"
                        render-mode="Static"
                        param-Link="@(@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()}))"
-                       param-Preset="@ButtonPreset.Email"
-                       param-Title="@("Распечатать все")" />
+                       param-Preset="@ButtonPreset.Print"
+                       param-Label="@("Распечатать все")" />
     }
 
 </div>
