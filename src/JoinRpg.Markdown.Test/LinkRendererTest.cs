@@ -45,6 +45,9 @@ public class LinkRendererTest
     [Fact]
     public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%персонаж12");
 
+    [Fact]
+    public void TestIntOverflowIgnored() => NoMatch("%персонаж123234324324235t42534534");
+
     //Test that pipeline uses correct renderer, not prev. one
     [Fact]
     public void TestAnotherMatch() => new MarkdownString("%контакты12").ShouldBeHtml("<p><strong>12</strong></p>", new LinkRendererMock2());
