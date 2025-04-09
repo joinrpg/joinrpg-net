@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
 
@@ -49,13 +50,4 @@ public class AddPlotHandoutViewModel : IProjectIdAware
 
     [Display(Name = "Тип"), ReadOnly(true)]
     public PlotElementTypeView ElementType { get; } = PlotElementTypeView.Handout;
-}
-
-
-public enum PlotElementTypeView
-{
-    [Display(Name = "Обычная вводная", Description = "Текст, который нужно выдать игроку.")]
-    RegularPlot,
-    [Display(Name = "Элемент раздатки", Description = "Инструкция службе регистрации выдать какой-то определенный предмет игроку. Одна строка — один предмет.")]
-    Handout,
 }

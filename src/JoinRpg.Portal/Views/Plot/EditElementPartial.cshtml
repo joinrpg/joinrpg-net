@@ -20,23 +20,28 @@
 <div class="panel panel-default">
     <div class="panel-heading">
 
-        <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">
-            @if (Model.HasMasterAccess)
-            {
-                @Html.DisplayFor(model => model.Status)
-            }
-            @switch (Model.ElementType)
-            {
-                case PlotElementTypeView.RegularPlot:
-                    break;
-                case PlotElementTypeView.Handout:
-                    <span class="label label-info">Раздатка</span>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">@Model.ShortContent</a>
 
+        @if (Model.HasMasterAccess)
+        {
+            <component type="typeof(PlotStatusBadge)"
+            render-mode="Static"
+            param-Status="@Model.Status" />
+        }
+
+        <component type="typeof(PlotElementTypeBadge)"
+                   render-mode="Static"
+                   param-ElementType="@Model.ElementType" />
+
+        @if (Model.HasMasterAccess)
+        {
+
+          <component type="typeof(PlotTodoBadge)"
+                   render-mode="Static"
+                   param-Todo="@Model.TodoField" />
+
+        }
+        <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">
+            <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">@Model.ShortContent</a>
         </span>
         @if (Model.HasMasterAccess)
         {

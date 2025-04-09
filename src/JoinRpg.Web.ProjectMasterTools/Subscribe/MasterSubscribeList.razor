@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.ProjectCommon
 @using Microsoft.JSInterop
 @inject IGameSubscribeClient Client
 @if (model is null)
@@ -33,9 +33,9 @@ else
         <tr>
           <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
           <td>
-            <Label Variation="VariationStyleEnum.Success">
+            <JoinBadge Variation="VariationStyleEnum.Success">
               Отмеченные взносы
-            </Label>
+            </JoinBadge>
           </td>
           <td></td>
         </tr>
@@ -43,9 +43,9 @@ else
       <tr>
         <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
         <td>
-          <Label Variation="VariationStyleEnum.Success">
+          <JoinBadge Variation="VariationStyleEnum.Success">
             Любые изменения
-          </Label>
+          </JoinBadge>
         </td>
         <td></td>
       </tr>

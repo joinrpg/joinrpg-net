@@ -1,8 +1,11 @@
-﻿@model JoinRpg.Web.Models.Plot.PlotFolderListItemViewModel
+@model JoinRpg.Web.Models.Plot.PlotFolderListItemViewModel
 @Html.ActionLink(Model.PlotFolderMasterTitle, "Edit", "Plot",  new { Model.PlotFolderId, Model.ProjectId }, null)
-@if (!string.IsNullOrWhiteSpace(Model.TodoField) && Model.HasEditAccess)
+@if (Model.HasEditAccess)
 {
-    <span title="@Model.TodoField">TODO</span>
+  <component type="typeof(JoinRpg.Web.Plots.PlotTodoBadge)"
+    render-mode="Static"
+    param-Todo="@Model.TodoField"
+    />
 }
 @if (Model.TagNames.Any())
 {

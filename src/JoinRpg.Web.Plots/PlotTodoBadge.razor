@@ -1,0 +1,12 @@
+@if (string.IsNullOrWhiteSpace(Todo))
+{
+    return;
+}
+<Tooltip Title="@Todo">
+    <JoinBadge Variation="VariationStyleEnum.Warning">TODO</JoinBadge>
+</Tooltip>
+@code{
+    [Parameter]
+    [EditorRequired]
+    public string? Todo { get; set; }
+}

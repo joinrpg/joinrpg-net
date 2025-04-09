@@ -4,6 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Plot;
+using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Print;
 

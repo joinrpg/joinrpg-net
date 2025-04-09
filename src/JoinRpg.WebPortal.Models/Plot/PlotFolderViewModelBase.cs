@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
 

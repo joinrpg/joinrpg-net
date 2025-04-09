@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Models.Plot;
+namespace JoinRpg.Web.Plots;
 
 public enum PlotStatus
 {
