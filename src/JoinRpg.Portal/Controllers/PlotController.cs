@@ -110,6 +110,7 @@ public class PlotController(
             ProjectId = projectId,
             PlotFolderId = plotFolderId,
             HasPlotEditAccess = folders.First().HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
+            Content = AddPlotElementViewModel.GetDefaultContent(),
         });
     }
 
