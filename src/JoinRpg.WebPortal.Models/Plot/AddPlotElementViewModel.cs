@@ -26,6 +26,8 @@ public class AddPlotElementViewModel : IProjectIdAware
 
     [Display(Name = "Сразу опубликовать", Description = "Публиковать можно только законченную вводную (с пустым TODO) и заполненной привязкой.")]
     public bool PublishNow { get; set; }
+
+    public static string GetDefaultContent() => "# Заголовок вводной\n\n---\n";
 }
 
 public class AddPlotHandoutViewModel : IProjectIdAware
