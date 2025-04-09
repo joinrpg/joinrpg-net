@@ -1,0 +1,29 @@
+@using JoinRpg.Helpers
+@using System.Linq.Expressions
+
+@if (For == false)
+{
+    return;
+}
+<label @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
+  @TryGetLabel()
+  @ChildContent
+</label>
+
+@code {
+    [Parameter]
+    public bool? For { get; set; }
+
+    [Parameter]
+    public Expression<Func<bool>>? ForExpression { get; set; }
+
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public VariationStyleEnum? Variation { get; set; }
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? InputAttributes { get; set; }
+
+    private string? TryGetLabel() => ForExpression?.AsPropertyAccess()?.GetDisplayName();
+}

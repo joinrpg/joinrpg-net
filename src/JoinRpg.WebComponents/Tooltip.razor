@@ -1,3 +1,9 @@
+@if(string.IsNullOrWhiteSpace(Title))
+{
+    @ChildContent
+    return;
+}
+
 <div class="join-tooltip-container">
     <div>
         @ChildContent
@@ -9,9 +15,9 @@
 
 @code {
     [Parameter]
-    public string Title { get; set; } = null!;
+    public string? Title { get; set; }
 
     [Parameter]
-    public RenderFragment? ChildContent { get; set; } = null!;
+    public RenderFragment? ChildContent { get; set; }
 }
 

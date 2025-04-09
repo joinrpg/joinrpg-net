@@ -1,0 +1,25 @@
+@switch (Status)
+{
+    case PlotStatus.InWork:
+        <JoinBadge Variation="VariationStyleEnum.Info">Разработка</JoinBadge>
+        break;
+    case PlotStatus.HasNewVersion:
+        <Tooltip Title="Вводная была опубликована, но есть более новая, неопубликованная версия">
+            <JoinBadge Variation="VariationStyleEnum.Info">Доработка</JoinBadge>
+        </Tooltip>
+        break;
+    case PlotStatus.Completed:
+        <JoinBadge Variation="VariationStyleEnum.Success">Готова</JoinBadge>
+        break;
+    case PlotStatus.Deleted:
+        <JoinBadge Variation="VariationStyleEnum.None"><del>Удалена</del></JoinBadge>
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public PlotStatus Status { get; set; }
+}

@@ -9,6 +9,7 @@ using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
 

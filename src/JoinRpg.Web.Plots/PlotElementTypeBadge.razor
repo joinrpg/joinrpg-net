@@ -1,0 +1,16 @@
+@switch (ElementType)
+{
+    case PlotElementTypeView.RegularPlot:
+        break;
+    case PlotElementTypeView.Handout:
+        <JoinBadge Variation="VariationStyleEnum.Info"> Раздатка </JoinBadge>
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public PlotElementTypeView ElementType { get; set; }
+}

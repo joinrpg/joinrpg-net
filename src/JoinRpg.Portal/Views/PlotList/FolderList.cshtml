@@ -1,5 +1,6 @@
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Models.Plot
+@using JoinRpg.Web.Plots
 @model PlotFolderListViewModel
 
 @{
@@ -29,7 +30,9 @@
         @if (Model.HasMasterAccess)
         {
         <td>
-            @Html.DisplayFor(modelItem => item.Status)
+                    <component type="typeof(PlotStatusBadge)"
+                               render-mode="Static"
+                               param-Status="@item.Status" />
         </td>
         }
         <td>
