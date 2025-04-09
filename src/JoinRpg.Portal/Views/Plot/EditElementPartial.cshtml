@@ -197,6 +197,15 @@
                             <span class="glyphicon glyphicon-trash"></span>
                             Удалить
                         </button>
+
+                        var url = Url.Action("CreateElement", "Plot", new { Model.ProjectId, Model.PlotFolderId, copyFrom = Model.PlotElementIdentification });
+                        <component
+                          type="typeof(JoinButton)"
+                          render-mode="Static"
+                          param-Link="@url"
+                          param-Preset="ButtonPreset.Copy"
+                          param-Size="SizeStyleEnum.Small"
+                          />
                     }
                 }
                 if (Model.NextModifiedDateTime != null)

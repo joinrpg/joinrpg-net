@@ -69,7 +69,7 @@ public class PlotController(
     [HttpGet, RequireMasterOrPublish]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(new PlotFolderIdentification(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
@@ -90,7 +90,7 @@ public class PlotController(
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
+            var folder = await plotRepository.GetPlotFolderAsync(new(viewModel.ProjectId, viewModel.PlotFolderId));
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
             viewModel.Fill(folder, CurrentUserId, uriService, projectInfo);
             return View(viewModel);
@@ -99,26 +99,38 @@ public class PlotController(
 
     #region Create elements & handouts
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> CreateElement(int projectId, int? plotFolderId)
+    public async Task<ActionResult> CreateElement(int projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
     {
         var folders = await plotRepository.GetPlots(projectId);
         if (folders.Count == 0)
         {
             return RedirectToAction("Create", "Plot", new { projectId });
         }
+
+        PlotElement? originalElement = null;
+        if (copyFrom is not null)
+        {
+            var originalElementFolder = await plotRepository.GetPlotFolderAsync(copyFrom.PlotFolderId);
+            if (originalElementFolder is not null && originalElementFolder.ProjectId == projectId)
+            {
+                originalElement = originalElementFolder.Elements.Single(e => e.PlotElementId == copyFrom.PlotElementId);
+            }
+        }
         return View(new AddPlotElementViewModel()
         {
             ProjectId = projectId,
-            PlotFolderId = plotFolderId,
+            PlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId,
             HasPlotEditAccess = folders.First().HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
-            Content = AddPlotElementViewModel.GetDefaultContent(),
+            Content = originalElement?.LastVersion().Content.Contents ?? AddPlotElementViewModel.GetDefaultContent(),
+            TodoField = originalElement?.LastVersion().TodoField ?? "",
+            Targets = originalElement?.GetElementBindingsForEdit() ?? [],
         });
     }
 
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
@@ -135,14 +147,16 @@ public class PlotController(
     public async Task<ActionResult> CreateHandout(ProjectIdentification projectId, int plotFolderId, string content,
       string todoField, ICollection<string>? targets, PlotElementTypeView elementType)
     {
+        PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
         try
         {
-            return await CreateElementImpl(new(projectId, plotFolderId), content, todoField, targets ?? [], elementType, publishNow: false);
+
+            return await CreateElementImpl(plotFolderId1, content, todoField, targets ?? [], elementType, publishNow: false);
         }
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+            var folder = await plotRepository.GetPlotFolderAsync(plotFolderId1);
             if (folder == null)
             {
                 return NotFound();
@@ -162,14 +176,15 @@ public class PlotController(
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int plotFolderId, string content,
       string todoField, ICollection<string>? targets, PlotElementTypeView elementType, bool publishNow)
     {
+        PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
         try
         {
-            return await CreateElementImpl(new(projectId, plotFolderId), content, todoField, targets ?? [], elementType, publishNow);
+            return await CreateElementImpl(plotFolderId1, content, todoField, targets ?? [], elementType, publishNow);
         }
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+            var folder = await plotRepository.GetPlotFolderAsync(plotFolderId1);
             if (folder == null)
             {
                 return NotFound();
@@ -211,7 +226,7 @@ public class PlotController(
     [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
@@ -255,7 +270,7 @@ public class PlotController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
@@ -357,7 +372,7 @@ public class PlotController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version, bool printMode)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
