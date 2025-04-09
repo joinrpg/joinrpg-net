@@ -14,6 +14,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Plots;
+using JoinRpg.WebComponents.ElementMoving;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
@@ -381,6 +382,15 @@ public class PlotController(
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
             uriService, projectInfo, version, printMode));
+    }
+
+    [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
+    public async Task<RedirectToActionResult> Reorder(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
+    {
+        var plotFolderId = PlotFolderIdentification.Parse(viewModel.ElementIdentification, provider: null);
+        var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        await plotService.ReoderPlots(plotFolderId, afterPlotFolderId);
+        return RedirectToAction("Index", "PlotList", new { projectId = projectId.Value });
     }
 
 }

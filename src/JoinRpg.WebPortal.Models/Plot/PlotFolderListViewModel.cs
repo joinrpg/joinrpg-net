@@ -8,6 +8,7 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
 
@@ -27,10 +28,12 @@ public class PlotFolderListViewModelForGroup(IEnumerable<PlotFolder> folders, Pr
 }
 
 [ReadOnly(true)]
-public class PlotFolderListViewModel : PlotFolderListViewModelBase
+public class PlotFolderListViewModel : PlotFolderListViewModelBase, IPlotFolderListViewModel
 {
     public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
     public bool HasMasterAccess { get; private set; }
+
+    public IReadOnlyCollection<PlotFolderIdentification> FolderIds { get; private set; }
 
     public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, ProjectInfo projectInfo)
       : base(projectInfo, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
@@ -41,6 +44,8 @@ public class PlotFolderListViewModel : PlotFolderListViewModelBase
             .Select(f => new PlotFolderListItemViewModel(f, currentUserId))
             .OrderBy(pf => pf.Status)
             .ThenBy(pf => pf.PlotFolderMasterTitle);
+
+        FolderIds = [.. Folders.Select(f => f.PlotFolderId)];
     }
 }
 
@@ -88,9 +93,9 @@ public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
     }
 }
 
-public class PlotFolderListItemViewModel : PlotFolderViewModelBase
+public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderListItemViewModel
 {
-    public int PlotFolderId { get; }
+    public PlotFolderIdentification PlotFolderId { get; }
     public int ElementsCount { get; }
     public bool HasEditAccess { get; }
 
@@ -98,7 +103,7 @@ public class PlotFolderListItemViewModel : PlotFolderViewModelBase
 
     public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
     {
-        PlotFolderId = folder.PlotFolderId;
+        PlotFolderId = new(folder.ProjectId, folder.PlotFolderId);
         PlotFolderMasterTitle = folder.MasterTitle;
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
         ProjectId = folder.ProjectId;
