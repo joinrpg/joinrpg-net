@@ -1,23 +1,37 @@
-﻿@model JoinRpg.Web.Models.MoveControlParametersViewModel
+@model JoinRpg.Web.Models.MoveControlParametersViewModel
+@functions {
+    string? GetDirectionUri(int direction)
+    {
+        return Url.Action(Model.ActionName, Model.ControllerName, new
+        {
+            Model.ProjectId,
+            Model.ListItemId,
+            Model.ParentObjectId,
+            Direction = direction,
+        }, null);
+    }
+}
 <div class="btn-group btn-group-sm">
     @if (!Model.Item.First)
     {
-        <a title="Переместить выше" class="btn btn-default" href="@Url.Action(Model.ActionName, Model.ControllerName, new
-                 {
-                     Model.ProjectId,
-                     Model.ListItemId,
-                     Model.ParentObjectId,
-                     Direction = -1
-                 }, null)"><i class="glyphicon glyphicon-arrow-up"></i></a>
+        var upUrl = GetDirectionUri(-1);
+        <component
+          type="typeof(JoinButton)"
+          render-mode="Static"
+          param-Preset="ButtonPreset.Up",
+          param-Link="upUrl"
+          param-Title="@("Переместить выше")"
+          param-Size="SizeStyleEnum.Small"
+        />
     }
     @if (!Model.Item.Last)
     {
-        <a title="Переместить ниже" class="btn btn-default" href="@Url.Action(Model.ActionName, Model.ControllerName, new
-                 {
-                     Model.ProjectId,
-                     Model.ListItemId,
-                     Model.ParentObjectId,
-                     Direction = 1
-                 }, null)"><i class="glyphicon glyphicon-arrow-down"></i></a>
+        var downUrl = GetDirectionUri(1);
+        <component type="typeof(JoinButton)"
+                   render-mode="Static"
+                   param-Preset="ButtonPreset.Down" ,
+                   param-Link="downUrl"
+                   param-Title="@("Переместить ниже")"
+                   param-Size="SizeStyleEnum.Small" />
     }
 </div>
