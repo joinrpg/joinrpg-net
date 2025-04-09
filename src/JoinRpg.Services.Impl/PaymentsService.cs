@@ -1111,14 +1111,14 @@ public class PaymentsService(
                 query = query.Where(
                     rp => rp.Status == RecurrentPaymentStatus.Active
                           && rp.Project.Active
-                          && rp.Claim.IsApproved
+                          && (rp.Claim.ClaimStatus == Claim.Status.Approved || rp.Claim.ClaimStatus == Claim.Status.CheckedIn)
                           && rp.PaymentType.IsActive);
                 break;
             case false:
                 query = query.Where(
                     rp => rp.Status != RecurrentPaymentStatus.Active
                           || !rp.PaymentType.IsActive
-                          || !rp.Claim.IsApproved
+                          || !(rp.Claim.ClaimStatus == Claim.Status.Approved || rp.Claim.ClaimStatus == Claim.Status.CheckedIn)
                           || !rp.Project.Active);
                 break;
         }

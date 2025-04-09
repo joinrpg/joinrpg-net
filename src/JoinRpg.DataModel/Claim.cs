@@ -54,16 +54,26 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     public DenialStatus? ClaimDenialStatus { get; set; }
 
 
-    public bool IsPending =>
-          ClaimStatus != Status.DeclinedByMaster
-          && ClaimStatus != Status.DeclinedByUser;
-    public bool IsInDiscussion =>
-            ClaimStatus == Status.AddedByMaster
-            || ClaimStatus == Status.AddedByUser
-            || ClaimStatus == Status.Discussed;
-    public bool IsApproved =>
-            ClaimStatus == Status.Approved
-            || ClaimStatus == Status.CheckedIn;
+    /// <summary>
+    /// Returns true when claim is pending an action.
+    /// </summary>
+    /// <remarks>This property is not mapped to database and can not be used in predicates.</remarks>
+    // TODO: Implement as extension
+    public bool IsPending => ClaimStatus is not Status.DeclinedByMaster and not Status.DeclinedByUser;
+
+    /// <summary>
+    /// Returns true when claim is in discussion.
+    /// </summary>
+    /// <remarks>This property is not mapped to database and can not be used in predicates.</remarks>
+    // TODO: Implement as extension
+    public bool IsInDiscussion => ClaimStatus is Status.AddedByMaster or Status.AddedByUser or Status.Discussed;
+
+    /// <summary>
+    /// Returns true when claim is approved.
+    /// </summary>
+    /// <remarks>This property is not mapped to database and can not be used in predicates.</remarks>
+    // TODO: Implement as extension
+    public bool IsApproved => ClaimStatus is Status.Approved or Status.CheckedIn;
 
     [Obsolete("Use Character.CharacterName")]
     public string Name => Character.CharacterName ?? "заявка";

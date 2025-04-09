@@ -7,10 +7,11 @@ namespace JoinRpg.Domain;
 public static class ClaimExtensions
 {
 
-    public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim) => claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
+    public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim)
+        => claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
 
     /// <summary>
-    /// Other claims for this character is blocking approval 
+    /// Returns true when approval is blocked by other claims for character of the current claim
     /// </summary>
     public static bool HasOtherClaimsForThisCharacter(this Claim claim)
     {
