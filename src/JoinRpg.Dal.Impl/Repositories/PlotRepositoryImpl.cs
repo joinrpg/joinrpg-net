@@ -2,22 +2,23 @@ using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IPlotRepository
 {
-    public async Task<PlotFolder?> GetPlotFolderAsync(int projectId, int plotFolderId)
+    public async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
     {
-        await LoadProjectCharactersAndGroups(projectId);
-        await LoadMasters(projectId);
+        await LoadProjectCharactersAndGroups(plotFolderId.ProjectId);
+        await LoadMasters(plotFolderId.ProjectId);
 
         return
           await Ctx.Set<PlotFolder>()
             .Include(pf => pf.Elements)
             .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
             .Include(pf => pf.Project.Claims)
-            .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId && pf.ProjectId == projectId);
+            .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId);
     }
 
     public async Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character)

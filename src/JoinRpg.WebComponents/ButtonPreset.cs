@@ -17,4 +17,5 @@ public enum ButtonPreset
     /// </summary>
     Restore,
     Publish,
+    Copy,
 }
