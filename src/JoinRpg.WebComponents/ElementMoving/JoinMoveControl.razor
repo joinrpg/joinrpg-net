@@ -5,7 +5,7 @@
 }
 <div class="btn-group">
     @* Добавить сюда кнопочку "поместить после", которая вызывает диалог *@
-    @if (targetIfUp is not null)
+    @if (showUp)
     {
         <form method="post" action="@Endpoint">
             <input type="hidden" name="MoveAfterIdentification" value="@targetIfUp" />
@@ -14,7 +14,7 @@
             <JoinButton Preset="ButtonPreset.Up" Size="SizeStyleEnum.Small" Title="Переместить вверх" Submit=true />
         </form>
     }
-    @if (targetIfDown is not null)
+    @if (showDown)
     {
         <form method="post" action="@Endpoint">
             <input type="hidden" name="MoveAfterIdentification" value="@targetIfDown" />
@@ -40,6 +40,8 @@
 
     private string? targetIfUp, targetIfDown;
 
+    private bool showUp, showDown;
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -48,7 +50,9 @@
         {
             throw new InvalidOperationException("SelfId не найден в ItemIds");
         }
-        targetIfUp = idx > 0 ? ItemIds[idx - 1] : null;
+        targetIfUp = idx > 1 ? ItemIds[idx - 2] : null;
+        showUp = idx > 0;
         targetIfDown = idx < (ItemIds.Length -1) ? ItemIds[idx + 1] : null;
+        showDown = idx < ItemIds.Length - 1;
     }
 }

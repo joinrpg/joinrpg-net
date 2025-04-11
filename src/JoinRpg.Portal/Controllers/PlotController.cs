@@ -100,12 +100,12 @@ public class PlotController(
 
     #region Create elements & handouts
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> CreateElement(int projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
+    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
     {
         var folders = await plotRepository.GetPlots(projectId);
         if (folders.Count == 0)
         {
-            return RedirectToAction("Create", "Plot", new { projectId });
+            return RedirectToAction("Create", "Plot", new { projectId = projectId.Value });
         }
 
         PlotElement? originalElement = null;
@@ -117,11 +117,13 @@ public class PlotController(
                 originalElement = originalElementFolder.Elements.Single(e => e.PlotElementId == copyFrom.PlotElementId);
             }
         }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new AddPlotElementViewModel()
         {
             ProjectId = projectId,
             PlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId,
-            HasPlotEditAccess = folders.First().HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
+            HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             Content = originalElement?.LastVersion().Content.Contents ?? AddPlotElementViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersion().TodoField ?? "",
             Targets = originalElement?.GetElementBindingsForEdit() ?? [],
@@ -389,7 +391,7 @@ public class PlotController(
     {
         var plotFolderId = PlotFolderIdentification.Parse(viewModel.ElementIdentification, provider: null);
         var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
-        await plotService.ReoderPlots(plotFolderId, afterPlotFolderId);
+        await plotService.ReorderPlots(plotFolderId, afterPlotFolderId);
         return RedirectToAction("Index", "PlotList", new { projectId = projectId.Value });
     }
 

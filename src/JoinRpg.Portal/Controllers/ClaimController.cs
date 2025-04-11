@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -38,7 +39,9 @@ public class ClaimController(
     IUserRepository userRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Claim> claimValidator) : ControllerGameBase(projectRepository, projectService, userRepository)
+    IProblemValidator<Claim> claimValidator,
+    ICurrentUserAccessor currentUserAccessor
+    ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
@@ -150,6 +153,7 @@ public class ClaimController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
         var claimViewModel = new ClaimViewModel(currentUser,
+            currentUserAccessor,
             claim,
             plots,
             uriService,

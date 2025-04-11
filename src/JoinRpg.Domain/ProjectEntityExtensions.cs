@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 
@@ -19,11 +20,21 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
-    public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor, Permission permission)
+    public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserAccessor.UserId);
+    }
+
+    [Pure]
+    public static bool HasMasterAccess(this ProjectInfo entity, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var userId = currentUserAccessor.UserIdOrDefault;
+
+        return userId is not null && entity.HasMasterAccess(currentUserAccessor.UserIdentification, permission);
     }
 
     [Pure]

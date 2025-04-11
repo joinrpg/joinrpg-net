@@ -309,4 +309,26 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
         UpdateElementMetadata(plotElement);
         await UnitOfWork.SaveChangesAsync();
     }
+
+    public async Task ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId)
+    {
+        var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
+        var afterFolder = afterPlotFolderId is not null ? await LoadProjectSubEntityAsync<PlotFolder>(afterPlotFolderId) : null;
+
+        targetFolder.Project.Details.PlotFoldersOrdering
+            = targetFolder.Project.GetPlotFoldersContainer().MoveAfter(targetFolder, afterFolder).GetStoredOrder();
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId)
+    {
+        var target = await LoadProjectSubEntityAsync<PlotElement>(plotElementId);
+        var after = afterPlotElementId is not null ? await LoadProjectSubEntityAsync<PlotElement>(afterPlotElementId) : null;
+
+        target.PlotFolder.ElementsOrdering
+            = target.PlotFolder.GetPlotElementsContainer().MoveAfter(target, after).GetStoredOrder();
+
+        await UnitOfWork.SaveChangesAsync();
+    }
 }

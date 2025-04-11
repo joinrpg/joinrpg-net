@@ -254,7 +254,6 @@ internal class ProjectService(
 
         if (characterGroup.CanBePermanentlyDeleted)
         {
-            characterGroup.DirectlyRelatedPlotFolders.CleanLinksList();
             characterGroup.DirectlyRelatedPlotElements.CleanLinksList();
         }
 

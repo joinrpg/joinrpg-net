@@ -1,8 +1,10 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -18,21 +20,23 @@ public class PlotListController(
     IPlotRepository plotRepository,
     IUriService uriService,
     IUserRepository userRepository,
-    IProjectMetadataRepository projectMetadataRepository) : ControllerGameBase(projectRepository,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUser
+    ) : ControllerGameBase(projectRepository,
     projectService,
     userRepository)
 {
     [RequireMasterOrPublish]
     [HttpGet]
-    public async Task<ActionResult> Index(int projectId) => await PlotList(projectId, pf => true);
+    public async Task<ActionResult> Index(ProjectIdentification projectId) => await PlotList(projectId, pf => true);
 
     [RequireMasterOrPublish]
     [HttpGet]
-    public async Task<ActionResult> InWork(int projectId) => await PlotList(projectId, pf => pf.InWork);
+    public async Task<ActionResult> InWork(ProjectIdentification projectId) => await PlotList(projectId, pf => pf.InWork);
 
     [RequireMasterOrPublish]
     [HttpGet]
-    public async Task<ActionResult> Ready(int projectId) => await PlotList(projectId, pf => pf.Completed);
+    public async Task<ActionResult> Ready(ProjectIdentification projectId) => await PlotList(projectId, pf => pf.Completed);
 
     [RequireMasterOrPublish]
     [HttpGet]
@@ -40,10 +44,7 @@ public class PlotListController(
     {
         var allFolders = await plotRepository.GetPlotsByTag(projectid, tagname);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-#pragma warning disable CS0612 // Type or member is obsolete
-        var project = await GetProjectFromList(projectid, allFolders);
-#pragma warning restore CS0612 // Type or member is obsolete
-        return View("Index", new PlotFolderListViewModel(allFolders, project, CurrentUserIdOrDefault, projectInfo));
+        return View("Index", new PlotFolderListViewModel(allFolders, currentUser, projectInfo));
     }
 
 
@@ -62,12 +63,11 @@ public class PlotListController(
         var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
         var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
         var folders = await plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
-        var project = group.Project;
 
         var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return View("ForGroup", new PlotFolderListViewModelForGroup(folders, project, CurrentUserIdOrDefault, groupNavigation, projectInfo));
+        return View("ForGroup", new PlotFolderListViewModelForGroup(folders, currentUser, groupNavigation, projectInfo));
     }
 
     [RequireMasterOrPublish]
@@ -76,15 +76,12 @@ public class PlotListController(
     {
         var folders = (await plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-#pragma warning disable CS0612 // Type or member is obsolete
-        var project = await GetProjectFromList(projectId, folders);
-#pragma warning restore CS0612 // Type or member is obsolete
         return View(
             new PlotFolderFullListViewModel(
                 folders,
-                project,
-                CurrentUserIdOrDefault,
-                uriService, projectInfo));
+                currentUser,
+                uriService,
+                projectInfo));
     }
 
     [RequireMasterOrPublish]
@@ -92,22 +89,23 @@ public class PlotListController(
     public async Task<ActionResult> FlatListUnready(int projectId)
     {
         var folders = (await plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
-#pragma warning disable CS0612 // Type or member is obsolete
-        var project = await GetProjectFromList(projectId, folders);
-#pragma warning restore CS0612 // Type or member is obsolete
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View("FlatList",
-            new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, uriService, projectInfo, true));
+            new PlotFolderFullListViewModel(folders, currentUser, uriService, projectInfo, true));
     }
 
-    private async Task<ActionResult> PlotList(int projectId, Func<PlotFolder, bool> predicate)
+    private async Task<ActionResult> PlotList(ProjectIdentification projectId, Func<PlotFolder, bool> predicate)
     {
         var allFolders = await plotRepository.GetPlots(projectId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        if (allFolders.Count == 0)
+        {
+            return View("Index", new PlotFolderListViewModel([], currentUser, projectInfo));
+        }
+
+        var order = allFolders.First().GetPlotElementsContainer();
         var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
-#pragma warning disable CS0612 // Type or member is obsolete
-        var project = await GetProjectFromList(projectId, folders);
-#pragma warning restore CS0612 // Type or member is obsolete
-        return View("Index", new PlotFolderListViewModel(folders, project, CurrentUserIdOrDefault, projectInfo));
+        return View("Index", new PlotFolderListViewModel(folders, currentUser, projectInfo));
     }
 }

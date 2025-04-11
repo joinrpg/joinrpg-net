@@ -2,6 +2,7 @@ using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -18,39 +19,25 @@ using Microsoft.CodeAnalysis;
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/character/{characterid}/[action]")]
-public class CharacterController : Common.ControllerGameBase
+public class CharacterController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IPlotRepository plotRepository,
+    ICharacterRepository characterRepository,
+    IUriService uriService,
+    IUserRepository userRepository,
+    ICharacterService characterService,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUser
+        ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private IPlotRepository PlotRepository { get; }
-    private ICharacterRepository CharacterRepository { get; }
-    private IUriService UriService { get; }
-    private ICharacterService CharacterService { get; }
-
-    public CharacterController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IPlotRepository plotRepository,
-        ICharacterRepository characterRepository,
-        IUriService uriService,
-        IUserRepository userRepository,
-        ICharacterService characterService,
-        IProjectMetadataRepository projectMetadataRepository)
-        : base(projectRepository, projectService, userRepository)
-    {
-        PlotRepository = plotRepository;
-        CharacterRepository = characterRepository;
-        UriService = uriService;
-        CharacterService = characterService;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
 
     [HttpGet("~/{projectId}/character/{characterid}/")]
     [HttpGet("~/{projectId}/character/{characterid}/details")]
     [AllowAnonymous]
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
-        var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
+        var field = await characterRepository.GetCharacterWithGroups(projectid, characterid);
         return field is null ? NotFound() : await ShowCharacter(field);
     }
 
@@ -62,20 +49,20 @@ public class CharacterController : Common.ControllerGameBase
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(character.ProjectId));
         return View("Details",
-            new CharacterDetailsViewModel(CurrentUserIdOrDefault,
+            new CharacterDetailsViewModel(currentUser,
                 character,
                 plots.ToList(),
-                UriService, projectInfo));
+                uriService, projectInfo));
     }
 
     private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character) =>
-        character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character));
+        character.GetOrderedPlots(await plotRepository.GetPlotsForCharacter(character));
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterId)
     {
-        var field = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
-        var view = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
+        var field = await characterRepository.GetCharacterWithDetails(projectId, characterId);
+        var view = await characterRepository.GetCharacterViewAsync(projectId, characterId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
         return View(new EditCharacterViewModel()
         {
@@ -92,7 +79,7 @@ public class CharacterController : Common.ControllerGameBase
     public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
     {
         var field =
-             await CharacterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
+             await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
         try
@@ -102,7 +89,7 @@ public class CharacterController : Common.ControllerGameBase
                 return View(viewModel.Fill(field, CurrentUserId, projectInfo));
             }
 
-            await CharacterService.EditCharacter(
+            await characterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
                     ParentCharacterGroupIds: [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIds, new(viewModel.ProjectId))],
@@ -159,7 +146,7 @@ public class CharacterController : Common.ControllerGameBase
         var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
         try
         {
-            await CharacterService.AddCharacter(new AddCharacterRequest(
+            await characterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: new(viewModel.ProjectId),
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
                 ParentCharacterGroupIds: [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIds, new(viewModel.ProjectId))],
@@ -212,7 +199,7 @@ public class CharacterController : Common.ControllerGameBase
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Delete(int projectid, int characterid)
     {
-        var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
+        var field = await characterRepository.GetCharacterAsync(projectid, characterid);
         if (field == null)
         {
             return NotFound();
@@ -226,10 +213,10 @@ public class CharacterController : Common.ControllerGameBase
         int characterId,
         IFormCollection form)
     {
-        var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);
+        var field = await characterRepository.GetCharacterAsync(projectId, characterId);
         try
         {
-            await CharacterService.DeleteCharacter(new DeleteCharacterRequest(new CharacterIdentification(projectId, characterId)));
+            await characterService.DeleteCharacter(new DeleteCharacterRequest(new CharacterIdentification(projectId, characterId)));
 
             return RedirectToIndex(field.Project);
         }
@@ -267,7 +254,7 @@ public class CharacterController : Common.ControllerGameBase
     {
         try
         {
-            await CharacterService.MoveCharacter(CurrentUserId,
+            await characterService.MoveCharacter(CurrentUserId,
                 projectId,
                 characterId,
                 parentCharacterGroupId,

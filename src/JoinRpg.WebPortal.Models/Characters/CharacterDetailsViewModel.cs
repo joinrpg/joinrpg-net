@@ -2,6 +2,7 @@ using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
@@ -45,26 +46,30 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
     public bool HasMasterAccess { get; }
 
     public CharacterDetailsViewModel(
-        int? currentUserIdOrDefault,
+        ICurrentUserAccessor currentUserId,
         Character character,
         IReadOnlyCollection<PlotElement> plots,
         IUriService uriService,
         ProjectInfo projectInfo)
     {
 
-        PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserIdOrDefault);
-        ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserIdOrDefault));
+        PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserId.UserIdOrDefault);
+
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId.UserIdOrDefault) with { EditAllowed = false };
+
+        ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess);
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
-            currentUserIdOrDefault);
+            currentUserId.UserIdOrDefault);
+
         Fields = new CustomFieldsViewModel(
             character,
             projectInfo,
-            AccessArgumentsFactory.Create(character, currentUserIdOrDefault) with { EditAllowed = false }
+            accessArguments
             );
-        Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character, uriService, projectInfo);
+        Plot = PlotDisplayViewModel.Published(plots, currentUserId, character, uriService, projectInfo);
 
-        HasMasterAccess = character.HasMasterAccess(currentUserIdOrDefault);
+        HasMasterAccess = accessArguments.MasterAccess;
         CreatedAt = character.CreatedAt;
         UpdatedAt = character.UpdatedAt;
         CreatedBy = character.CreatedBy;

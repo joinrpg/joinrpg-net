@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -30,34 +31,29 @@ public class PlotElementViewModel : IMovableListItem
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
     public PlotElementViewModel(Character? character,
-        int? currentUserId,
+        ICurrentUserAccessor currentUser,
         ILinkRenderer linkRendrer,
         PlotElementTexts plotElementVersion,
-        IUriService uriService)
+        IUriService uriService,
+        ProjectInfo projectInfo)
     {
-        if (linkRendrer == null)
-        {
-            throw new ArgumentNullException(nameof(linkRendrer));
-        }
+        ArgumentNullException.ThrowIfNull(linkRendrer);
 
-        if (plotElementVersion == null)
-        {
-            throw new ArgumentNullException(nameof(plotElementVersion));
-        }
+        ArgumentNullException.ThrowIfNull(plotElementVersion);
 
         var p = plotElementVersion.PlotElement;
 
         Content = plotElementVersion.Content.ToHtmlString(linkRendrer);
         TodoField = plotElementVersion.TodoField;
-        HasMasterAccess = p.HasMasterAccess(currentUserId);
-        HasEditAccess = p.HasMasterAccess(currentUserId) && p.Project.Active;
+        HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
+        HasEditAccess = projectInfo.HasMasterAccess(currentUser) && p.Project.Active;
         PlotFolderId = p.PlotFolderId;
         PlotElementId = p.PlotElementId;
         ProjectId = p.ProjectId;
         Status = p.GetStatus();
         TargetsForDisplay = p.GetTargetLinks().AsObjectLinks(uriService).ToList();
         CharacterId = character?.CharacterId;
-        PublishMode = !HasMasterAccess && !(character?.HasPlayerAccess(currentUserId) ?? false);
+        PublishMode = !HasMasterAccess && !(character?.HasPlayerAccess(currentUser.UserIdOrDefault) ?? false);
     }
 
     public bool PublishMode { get; }
@@ -72,24 +68,24 @@ public class PlotElementViewModel : IMovableListItem
 public class PlotDisplayViewModel
 {
     public static PlotDisplayViewModel Published(IReadOnlyCollection<PlotElement> plots,
-        int? currentUserId,
+        ICurrentUserAccessor currentUser,
         Character character,
         IUriService uriService, ProjectInfo projectInfo) =>
         new(plots,
-            currentUserId,
+            currentUser,
             character,
             uriService,
             projectInfo);
 
     private PlotDisplayViewModel(IReadOnlyCollection<PlotElement> plots,
-        int? currentUserId,
+        ICurrentUserAccessor currentUser,
         Character character,
         IUriService uriService,
         ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(plots);
 
-        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId);
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUser.UserIdOrDefault);
 
         if (plots.Count > 0 && (accessArguments.AnyAccessToCharacter || character.Project.Details.PublishPlot))
         {
@@ -100,10 +96,12 @@ public class PlotDisplayViewModel
                 .WhereNotNull()
                 .Select(
                     p => new PlotElementViewModel(character,
-                        currentUserId,
+                        currentUser,
                         linkRenderer,
                         p,
-                        uriService))
+                        uriService,
+                        projectInfo
+                        ))
                 .MarkFirstAndLast();
 
             HasUnready = plots.Any(element => element.ElementType == PlotElementType.RegularPlot &&

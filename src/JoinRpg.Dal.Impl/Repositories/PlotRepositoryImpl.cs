@@ -2,6 +2,7 @@ using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -49,13 +50,14 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
           .Where(pf => pf.ProjectId == projectid)
           .ToListAsync();
 
-    public async Task<List<PlotFolder>> GetPlots(int project)
+    public async Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId)
     {
-        await LoadProjectGroups(project); //TODO[GroupsLoad] it's unclear why we need this
-        return await Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Elements)
-          .Where(pf => pf.ProjectId == project)
-          .ToListAsync();
+        var project = await Ctx.Set<Project>()
+          .Include(p => p.PlotFolders.Select(pf => pf.Elements))
+          .Include(p => p.Details)
+          .SingleAsync(pf => pf.ProjectId == projectId.Value);
+
+        return VirtualOrderContainerFacade.Create(project.PlotFolders, project.Details.PlotFoldersOrdering).OrderedItems;
     }
 
     public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)

@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
@@ -15,46 +16,33 @@ namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
 [Route("{projectId}/print/[action]")]
-public class PrintController : Common.ControllerGameBase
+public class PrintController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IPlotRepository plotRepository,
+    ICharacterRepository characterRepository,
+    IUriService uriService,
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor
+    ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private IPlotRepository PlotRepository { get; }
-    private ICharacterRepository CharacterRepository { get; }
-    private IUriService UriService { get; }
-
-    public PrintController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IPlotRepository plotRepository,
-        ICharacterRepository characterRepository,
-        IUriService uriService,
-        IUserRepository userRepository,
-        IProjectMetadataRepository projectMetadataRepository) : base(projectRepository, projectService, userRepository)
-    {
-        PlotRepository = plotRepository;
-        CharacterRepository = characterRepository;
-        UriService = uriService;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
-
-
     [HttpGet]
     public async Task<IActionResult> Character(int projectId, int characterid)
     {
-        var character = await CharacterRepository.GetCharacterWithGroups(projectId, characterid);
+        var character = await characterRepository.GetCharacterWithGroups(projectId, characterid);
         if (character == null)
         {
             return NotFound();
         }
-        if (!character.HasAnyAccess(CurrentUserId))
+        if (!character.HasAnyAccess(currentUserAccessor.UserIdOrDefault))
         {
             return NoAccesToProjectView(character.Project);
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
 
-        return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character), UriService, projectInfo));
+        return View(new PrintCharacterViewModel(currentUserAccessor, character, await plotRepository.GetPlotsForCharacter(character), uriService, projectInfo));
     }
 
     [MasterAuthorize()]
@@ -63,13 +51,13 @@ public class PrintController : Common.ControllerGameBase
     {
         var characters = await CharacterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
 
-        var plotElements = (await PlotRepository.GetPlotsWithTargetAndText(projectId)).SelectMany(p => p.Elements).ToArray();
+        var plotElements = (await plotRepository.GetPlotsWithTargetAndText(projectId)).SelectMany(p => p.Elements).ToArray();
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
 
         var viewModel =
           characters.Select(
-            c => new PrintCharacterViewModel(CurrentUserId, c, plotElements, UriService, projectInfo)).ToArray();
+            c => new PrintCharacterViewModel(currentUserAccessor, c, plotElements, uriService, projectInfo)).ToArray();
 
         return View(viewModel);
     }
@@ -89,7 +77,7 @@ public class PrintController : Common.ControllerGameBase
     public async Task<ActionResult> HandoutReport(int projectid)
     {
         var plotElements =
-          await PlotRepository.GetActiveHandouts(projectid);
+          await plotRepository.GetActiveHandouts(projectid);
 
         var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
 

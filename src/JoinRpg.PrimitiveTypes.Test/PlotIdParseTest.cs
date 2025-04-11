@@ -41,4 +41,23 @@ public class PlotIdParseTest
         PlotElementIdentification.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(version);
     }
+
+    [Theory]
+    [InlineData("1-2")]
+    [InlineData("PlotFolderIdentification(1-2)")]
+    [InlineData("PlotFolder(1-2)")]
+    public void PlotFolderShouldParseTo123(string val)
+    {
+        PlotFolderIdentification.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(new PlotFolderIdentification(1, 2));
+    }
+
+    [Fact]
+    public void PlotFolderShouldRoundTrip()
+    {
+        var version = new PlotFolderIdentification(1, 2);
+        var val = version.ToString();
+        PlotFolderIdentification.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(version);
+    }
 }

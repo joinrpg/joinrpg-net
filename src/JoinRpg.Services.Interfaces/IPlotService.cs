@@ -25,5 +25,5 @@ public interface IPlotService
     Task UnPublishElement(PlotElementIdentification element);
 
     Task EditPlotElementText(PlotElementIdentification plotelementid, string content, string todoField);
-    Task ReoderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId);
+    Task ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId);
 }

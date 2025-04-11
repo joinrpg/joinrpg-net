@@ -118,8 +118,6 @@ public class MyDbContext : DbContext, IUnitOfWork
         ConfigureFinanceOperation(modelBuilder);
         ConfigureRecurrentPayments(modelBuilder);
 
-        _ = modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups)
-            .WithMany(cg => cg.DirectlyRelatedPlotFolders);
         modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project)
             .WithMany(p => p.PlotFolders).WillCascadeOnDelete(false);
 

@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -48,13 +49,13 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
     public bool RegistrationOnHold => FeeDue > 0 || Plots.HasUnready;
 
     public PrintCharacterViewModel
-      (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService, ProjectInfo projectInfo)
+      (ICurrentUserAccessor currentUser, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService, ProjectInfo projectInfo)
       : base(character, projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);
 
         var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
-        Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character, uriService, projectInfo);
+        Plots = PlotDisplayViewModel.Published(plotElements, currentUser, character, uriService, projectInfo);
 
         Handouts =
           plotElements.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
@@ -67,7 +68,7 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
         Fields = new CustomFieldsViewModel(
             character,
             projectInfo,
-            AccessArgumentsFactory.CreateForPrint(character, currentUserId) with { EditAllowed = false },
+            AccessArgumentsFactory.CreateForPrint(character, currentUser.UserIdOrDefault) with { EditAllowed = false },
             wherePrintEnabled: true);
     }
 }

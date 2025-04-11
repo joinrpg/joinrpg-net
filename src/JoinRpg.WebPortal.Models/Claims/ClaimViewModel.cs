@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
@@ -99,6 +100,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
 
     public ClaimViewModel(User currentUser,
+        ICurrentUserAccessor currentUserAccessor,
       Claim claim,
       IReadOnlyCollection<PlotElement> plotElements,
       IUriService uriService,
@@ -188,7 +190,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         {
             var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
             Plot = PlotDisplayViewModel.Published(readOnlyList,
-                currentUser.UserId,
+                currentUserAccessor,
                 claim.Character,
                 uriService, projectInfo);
         }

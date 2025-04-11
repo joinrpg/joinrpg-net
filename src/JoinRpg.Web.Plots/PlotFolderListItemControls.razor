@@ -5,20 +5,25 @@
     <div class="btn-group btn-group-sm" style="display: inline-block">
 
         <JoinButton
-          Link="@createElementUri"
-          Preset="ButtonPreset.Add"
-          Label="Добавить вводную"
-          />
+        Link="@createElementUri"
+        Preset="ButtonPreset.Add"
+        Label="Добавить вводную"
+        />
         @if (List.HasEditAccess)
         {
             <JoinButton Link="@deletePlotUri"
-                        Preset="ButtonPreset.Delete"
-                        Label="Удалить" />
+            Preset="ButtonPreset.Delete"
+            Label="Удалить" />
+        }
+    </div>
+    <text>&nbsp;</text>
+    @if (List.HasEditAccess)
+    {
             @*Здесь нужна кнопка восстановить *@
             <JoinMoveControl Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
-        }
+    }
 
-    </div>
+
 }
 
 @code

@@ -62,17 +62,13 @@ public class CharacterGroup : IWorldObject, IDeletableSubEntity, IValidatableObj
     public string ChildCharactersOrdering { get; set; }
     public string ChildGroupsOrdering { get; set; }
 
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
-    public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
-
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
 
     // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
     public bool CanBePermanentlyDeleted
-      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any();
+      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotElements.Any();
 
     #region Implementation of IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -29,7 +29,7 @@ public class AllowMasterHandler(
 
         var userId = context.User.GetUserIdOrDefault();
 
-        if (project.Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(requirement.Permission)))
+        if (userId is not null && project.HasMasterAccess(new UserIdentification(userId.Value), requirement.Permission))
         {
             context.Succeed(requirement);
         }

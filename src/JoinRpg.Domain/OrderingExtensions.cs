@@ -35,4 +35,12 @@ public static class OrderingExtensions
     public static VirtualOrderContainer<ProjectField> GetFieldsContainer(
       this Project field)
       => VirtualOrderContainerFacade.Create(field.ProjectFields, field.Details.FieldsOrdering);
+
+    public static VirtualOrderContainer<PlotFolder> GetPlotFoldersContainer(this Project field)
+        => VirtualOrderContainerFacade.Create(field.PlotFolders, field.Details.PlotFoldersOrdering);
+
+    public static IReadOnlyList<PlotFolder> GetOrderedPlotFolders(this Project field) => field.GetPlotFoldersContainer().OrderedItems;
+
+    public static VirtualOrderContainer<PlotElement> GetPlotElementsContainer(this PlotFolder field)
+        => VirtualOrderContainerFacade.Create(field.Elements, field.ElementsOrdering);
 }

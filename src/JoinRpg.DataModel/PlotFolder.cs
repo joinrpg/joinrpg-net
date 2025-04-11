@@ -25,9 +25,12 @@ public class PlotFolder : IProjectEntity, IDeletableSubEntity
 
     public DateTime ModifiedDateTime { get; set; }
 
-    public virtual ICollection<CharacterGroup> RelatedGroups { get; set; }
-
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// TODO: not used yet
+    /// </summary>
+    public string? ElementsOrdering { get; set; }
 
     public bool Completed
       =>
