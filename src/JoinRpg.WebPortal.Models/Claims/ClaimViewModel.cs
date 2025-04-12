@@ -106,7 +106,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       IProblemValidator<Claim> problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
       IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
-      IEnumerable<AccommodationRequest>? accommodationRequests = null,
       IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
       IEnumerable<AccommodationInvite>? incomingInvite = null,
       IEnumerable<AccommodationInvite>? outgoingInvite = null)
@@ -139,7 +138,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         IncomingInvite = incomingInvite;
         OutgoingInvite = outgoingInvite;
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
-        HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
+        HasOtherApprovedClaim = claim.Character.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
             .Where(x => x.CanMoveClaimTo(claim))
             .Select(ToJoinSelectListItem)
@@ -182,11 +181,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         }
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
 
-        if (claim.Character != null)
-        {
             ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
                 claim.HasMasterAccess(currentUser.UserId));
-        }
 
         if (claim.IsApproved && claim.Character != null)
         {
@@ -211,7 +207,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         };
     }
 
-    public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
+    public static UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
     IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
     {
         var claimStatusChangeGroup = "";
@@ -280,7 +276,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         return subscrTooltip;
     }
 
-    public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
+    public static string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
       string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
       string moneyOperationGroup)
     {

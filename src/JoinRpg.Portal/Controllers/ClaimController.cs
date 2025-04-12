@@ -155,7 +155,6 @@ public class ClaimController(
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
             availableAccommodation,
-            requestForAccommodation,
             potentialNeighbors,
             incomingInvite,
             outgoingInvite);
@@ -170,7 +169,7 @@ public class ClaimController(
 
         var parents = claim.Character.GetParentGroupsToTop();
         claimViewModel.SubscriptionTooltip =
-          claimViewModel.GetFullSubscriptionTooltip(parents, currentUser.Subscriptions, claimViewModel.ClaimId);
+          ClaimViewModel.GetFullSubscriptionTooltip(parents, currentUser.Subscriptions, claimViewModel.ClaimId);
 
         return View("Edit", claimViewModel);
     }
@@ -524,14 +523,10 @@ public class ClaimController(
             return NotFound();
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-
-        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
-
         await claimService.SubscribeClaimToUser(projectid, claimid);
         var parents = claim.Character.GetParentGroupsToTop();
 
-        var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+        var tooltip = ClaimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimid);
 
         return Json(tooltip);
     }
@@ -547,15 +542,12 @@ public class ClaimController(
         {
             return NotFound();
         }
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-
-        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
 
 
         await claimService.UnsubscribeClaimToUser(projectid, claimid);
         var parents = claim.Character.GetParentGroupsToTop();
 
-        var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+        var tooltip = ClaimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimid);
 
         return Json(tooltip);
     }
