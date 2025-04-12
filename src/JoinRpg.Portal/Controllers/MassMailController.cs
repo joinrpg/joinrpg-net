@@ -23,9 +23,9 @@ public class MassMailController(
     MassMailManager massMailManager) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet]
-    public async Task<ActionResult> ForClaims(int projectid, string claimIds)
+    public async Task<ActionResult> ForClaims(int projectid, CompressedIntList claimIds)
     {
-        var claims = (await claimRepository.GetClaimsByIds(projectid, claimIds.UnCompressIdList())).ToList();
+        var claims = (await claimRepository.GetClaimsByIds(projectid, claimIds.List)).ToList();
         var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(projectid);
 
         if (!project.Active)
@@ -36,7 +36,7 @@ public class MassMailController(
         var filteredClaims = claims.Where(c => c.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
         return View(new MassMailViewModel
         {
-            AlsoMailToMasters = !claimIds.Any(),
+            AlsoMailToMasters = !claimIds.List.Any(),
             ProjectId = projectid,
             ProjectName = project.ProjectName,
             ClaimIds = filteredClaims.Select(c => c.ClaimId).CompressIdList(),

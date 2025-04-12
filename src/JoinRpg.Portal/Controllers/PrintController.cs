@@ -59,9 +59,9 @@ public class PrintController : Common.ControllerGameBase
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> CharacterList(int projectId, string characterIds)
+    public async Task<ActionResult> CharacterList(ProjectIdentification projectId, CompressedIntList characterIds)
     {
-        var characters = await ProjectRepository.LoadCharactersWithGroups(projectId, characterIds.UnCompressIdList());
+        var characters = await CharacterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
 
         var plotElements = (await PlotRepository.GetPlotsWithTargetAndText(projectId)).SelectMany(p => p.Elements).ToArray();
 
@@ -98,11 +98,11 @@ public class PrintController : Common.ControllerGameBase
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> Envelopes(int projectId, string characterids)
+    public async Task<ActionResult> Envelopes(ProjectIdentification projectId, CompressedIntList characterIds)
     {
-        var characters = await ProjectRepository.LoadCharactersWithGroups(projectId, characterids.UnCompressIdList());
+        var characters = await CharacterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var viewModel =
           characters.Select(

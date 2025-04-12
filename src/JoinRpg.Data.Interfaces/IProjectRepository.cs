@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Data.Interfaces;
 
@@ -33,9 +32,6 @@ public interface IProjectRepository : IDisposable
     Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);
 
     Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds);
-
-    Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId,
-         IReadOnlyCollection<int> characterIds);
 
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
 

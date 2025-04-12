@@ -4,9 +4,14 @@ namespace JoinRpg.Web.Models.CommonTypes;
 
 public static class IdListUrlExtensions
 {
+    //TODO вместо этого лучше CompressIdList.ToString()
     public static string CompressIdList(this IEnumerable<int> list) => list.OrderBy(l => l).DeltaCompress().MagicJoin();
 
-    public static IReadOnlyCollection<int> UnCompressIdList(this string compressedList) => compressedList.MagicUnJoin().DeltaUnCompress().ToList();
+    [Obsolete("Use CompressedIntList")]
+    public static IReadOnlyCollection<int> UnCompressIdList(this string compressedList) => compressedList.UnCompressIdListImpl();
+
+    //TODO перенести эти методы внутрь CompressIdList
+    internal static IReadOnlyCollection<int> UnCompressIdListImpl(this string compressedList) => compressedList.MagicUnJoin().DeltaUnCompress().ToList();
 
     private static IEnumerable<int> MagicUnJoin(this string str)
     {
