@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.WebPortal.Managers.Plots;

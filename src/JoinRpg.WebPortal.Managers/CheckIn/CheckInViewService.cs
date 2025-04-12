@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.CheckIn;
 
 namespace JoinRpg.WebPortal.Managers.CheckIn;

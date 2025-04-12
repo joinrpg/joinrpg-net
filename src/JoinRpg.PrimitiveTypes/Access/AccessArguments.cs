@@ -6,11 +6,14 @@ namespace JoinRpg.PrimitiveTypes.Access;
 /// <param name="PlayerAccessToCharacter">true if a user is logged in and he is assigned with the character</param>
 /// <param name="PlayerAccesToClaim"> true if a user is logged in and he is the owner of the claim</param>
 /// <param name="EditAllowed"></param>
+/// <param name="Published"></param>
 public record class AccessArguments(
         bool MasterAccess,
         bool PlayerAccessToCharacter,
         bool PlayerAccesToClaim,
-        bool EditAllowed)
+        bool EditAllowed,
+        bool Published
+        )
 {
 
     /// <summary>
@@ -22,6 +25,8 @@ public record class AccessArguments(
     /// true, if there is master or player access to the claim
     /// </summary>
     public bool AnyAccessToClaim { get; } = PlayerAccesToClaim || PlayerAccesToClaim;
+
+    public bool CharacterPlotAccess { get; } = Published || PlayerAccessToCharacter || MasterAccess;
 
     public AccessArguments WithoutMasterAccess() => this with { MasterAccess = false };
 

@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.WebPortal.Managers.Interfaces;
 
 /// <summary>
