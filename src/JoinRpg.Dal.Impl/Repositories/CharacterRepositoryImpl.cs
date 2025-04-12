@@ -159,4 +159,6 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
             .Include(c => c.ApprovedClaim)
             .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
+
+    public Task<Character> GetCharacterAsync(CharacterIdentification characterId) => GetCharacterAsync(characterId.ProjectId, characterId.CharacterId);
 }

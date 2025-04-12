@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Data.Interfaces;
@@ -18,6 +17,8 @@ public interface ICharacterRepository : IDisposable
     Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds);
 
     Task<Character> GetCharacterAsync(int projectId, int characterId);
+
+    Task<Character> GetCharacterAsync(CharacterIdentification characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
     Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId);
