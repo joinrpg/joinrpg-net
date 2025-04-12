@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain.Access;
@@ -13,7 +14,15 @@ public static class AccessArgumentsFactory
             MasterAccess: character.HasMasterAccess(userId),
             PlayerAccessToCharacter: character.HasPlayerAccess(userId),
             PlayerAccesToClaim: character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false,
-            EditAllowed: character.Project.Active);
+            EditAllowed: character.Project.Active,
+            Published: character.Project.Details.PublishPlot
+            );
+    }
+
+    public static AccessArguments Create(Character character, ICurrentUserAccessor user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        return Create(character, user?.UserIdOrDefault);
     }
 
     /// <summary>
@@ -28,7 +37,9 @@ public static class AccessArgumentsFactory
               // Not a "player visible", because it could be master that asks to view as player
               PlayerAccessToCharacter: character.HasAnyAccess(userId),
               PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(userId, ExtraAccessReason.Player) ?? false,
-              EditAllowed: character.Project.Active);
+              EditAllowed: character.Project.Active,
+              Published: character.Project.Details.PublishPlot
+              );
     }
 
     /// <summary>
@@ -40,7 +51,9 @@ public static class AccessArgumentsFactory
           character.HasMasterAccess(userId),
           PlayerAccessToCharacter: false,
           PlayerAccesToClaim: true,
-          EditAllowed: true);
+          EditAllowed: true,
+          Published: false
+          );
     }
 
     public static AccessArguments Create(Claim claim, int? userId)
@@ -51,6 +64,8 @@ public static class AccessArgumentsFactory
             MasterAccess: claim.HasMasterAccess(userId),
             PlayerAccessToCharacter: claim.Character?.HasPlayerAccess(userId) ?? false,
             PlayerAccesToClaim: claim.HasPlayerAccesToClaim(userId),
-            EditAllowed: claim.Project.Active);
+            EditAllowed: claim.Project.Active,
+            Published: claim.Project.Details.PublishPlot
+            );
     }
 }
