@@ -9,24 +9,14 @@ public static class VirtualOrderContainerFacade
 {
     //Factory function enable type inference
     public static VirtualOrderContainer<TChild>
-        Create<TChild>(IEnumerable<TChild> childs, string ordering)
+        Create<TChild>(IEnumerable<TChild> childs, string? ordering, bool preserveOrder = false)
         where TChild : class, IOrderableEntity
-        => new(ordering, childs);
-
-    public static VirtualOrderContainer<TChild>
-        Create<TChild>(IOrderedEnumerable<TChild> childs, string ordering)
-        where TChild : class, IOrderableEntity
-        => new(ordering, childs);
+        => new(ordering, childs, preserveOrder);
 
     public static Lazy<VirtualOrderContainer<TChild>>
-        CreateLazy<TChild>(IEnumerable<TChild> childs, string ordering)
+        CreateLazy<TChild>(IEnumerable<TChild> childs, string ordering, bool preserveOrder = false)
         where TChild : class, IOrderableEntity
-        => new(() => new(ordering, childs));
-
-    public static Lazy<VirtualOrderContainer<TChild>>
-        CreateLazy<TChild>(IOrderedEnumerable<TChild> childs, string ordering)
-        where TChild : class, IOrderableEntity
-        => new(() => new(ordering, childs));
+        => new(() => new(ordering, childs, preserveOrder));
 
 }
 
@@ -34,16 +24,13 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
 {
     private const char Separator = ',';
 
-
     private List<TItem> Items { get; } = [];
 
-    public VirtualOrderContainer(string? storedOrder, IOrderedEnumerable<TItem> entities)
+    public VirtualOrderContainer(string? storedOrder, IEnumerable<TItem> entities, bool preserveOrder)
     {
-        storedOrder ??= "";
-
         ArgumentNullException.ThrowIfNull(entities);
 
-        var list = entities.ToList(); // Copy 
+        List<TItem> list = preserveOrder ? [.. entities] : [.. entities.OrderBy(li => li.Id)];
 
         foreach (var virtualOrderItem in storedOrder.AsSpan().ParseToIntList())
         {
@@ -55,14 +42,6 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
         }
 
         Items.AddRange(list);
-    }
-
-
-    public VirtualOrderContainer(
-        string? storedOrder,
-        IEnumerable<TItem> entities) : this(storedOrder, entities.OrderBy(li => li.Id))
-    {
-
     }
 
     private static TItem? FindItem(List<TItem> list, int virtualOrderItem)
@@ -130,7 +109,7 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
     {
         if (direction != -1 && direction != 1)
         {
-            throw new ArgumentException(nameof(direction));
+            throw new ArgumentException("Direction should be up or down", nameof(direction));
         }
 
         var index = GetIndex(field);

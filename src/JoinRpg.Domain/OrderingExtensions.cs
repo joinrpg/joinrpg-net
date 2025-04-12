@@ -20,7 +20,7 @@ public static class OrderingExtensions
       => character.GetCharacterPlotContainer(elements).OrderedItems;
 
     public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
-      IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots.OrderBy(pe => pe.PlotFolderId), character.PlotElementOrderData);
+      IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots.OrderBy(pe => pe.PlotFolderId), character.PlotElementOrderData, preserveOrder: true);
 
     public static IReadOnlyList<ProjectFieldDropdownValue> GetOrderedValues(this ProjectField field)
       => field.GetFieldValuesContainer().OrderedItems;
