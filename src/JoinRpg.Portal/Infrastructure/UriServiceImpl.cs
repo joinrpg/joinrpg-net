@@ -5,7 +5,7 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Web.Helpers;
+namespace JoinRpg.Portal.Infrastructure;
 
 internal class UriServiceImpl(
     IHttpContextAccessor httpContextAccessor,
@@ -31,6 +31,9 @@ internal class UriServiceImpl(
             LinkType.ResultCharacterGroup => linkGenerator.GetPathByAction("Details",
                                 "GameGroups",
                                 new { CharacterGroupId = identification, ProjectId = projectId }),
+            LinkType.CharacterGroupRoles => linkGenerator.GetPathByAction("Index",
+                                "GameGroups",
+                                new { CharacterGroupId = identification, ProjectId = projectId }),
             LinkType.ResultCharacter => linkGenerator.GetPathByAction("Details",
                                 "Character",
                                 new { CharacterId = identification, ProjectId = projectId }),
@@ -49,10 +52,10 @@ internal class UriServiceImpl(
             LinkType.Project => linkGenerator.GetPathByAction("Details", "Game", new { ProjectId = projectId }),
 
             LinkType.PaymentSuccess when linkable is ILinkableClaim lc =>
-                                linkGenerator.GetPathByAction("ClaimPaymentSuccess", "Payments", new { projectId = projectId, claimId = lc.ClaimId }),
+                                linkGenerator.GetPathByAction("ClaimPaymentSuccess", "Payments", new { projectId, claimId = lc.ClaimId }),
 
             LinkType.PaymentFail when linkable is ILinkableClaim lc
-                                => linkGenerator.GetPathByAction("ClaimPaymentFail", "Payments", new { projectId = projectId, claimId = lc.ClaimId }),
+                                => linkGenerator.GetPathByAction("ClaimPaymentFail", "Payments", new { projectId, claimId = lc.ClaimId }),
 
             LinkType.PaymentUpdate when linkable is ILinkablePayment lp
                                 => linkGenerator.GetPathByAction("UpdateClaimPayment", "Payments", new { projectId = lp.ProjectId, claimId = lp.ClaimId, orderId = lp.OperationId }),
@@ -96,6 +99,6 @@ internal class UriServiceImpl(
 
         public Linkable(CharacterIdentification id) : this(LinkType.ResultCharacter, id) { }
 
-        public Linkable(CharacterGroupIdentification id) : this(LinkType.ResultCharacterGroup, id) { }
+        public Linkable(CharacterGroupIdentification id) : this(LinkType.CharacterGroupRoles, id) { }
     }
 }
