@@ -2,7 +2,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;

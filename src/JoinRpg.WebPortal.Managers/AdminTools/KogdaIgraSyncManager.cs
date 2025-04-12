@@ -1,8 +1,6 @@
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 internal class KogdaIgraSyncManager(

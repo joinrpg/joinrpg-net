@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 
