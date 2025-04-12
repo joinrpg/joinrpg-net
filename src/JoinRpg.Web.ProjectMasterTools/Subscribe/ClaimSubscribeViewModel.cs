@@ -1,6 +1,6 @@
-namespace JoinRpg.Domain;
+namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
-public class UserSubscriptionTooltip
+public class ClaimSubscribeViewModel
 {
     public string Tooltip { get; set; }
     public bool HasFullParentSubscription { get; set; }

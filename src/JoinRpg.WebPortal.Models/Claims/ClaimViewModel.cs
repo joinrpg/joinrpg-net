@@ -7,9 +7,9 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
@@ -88,14 +88,14 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     public IEnumerable<UserSubscription> Subscriptions { get; set; }
 
-    public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
+    public required ClaimSubscribeViewModel SubscriptionTooltip { get; set; }
 
 
     public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
     public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
     public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
     public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
-    public AccommodationRequest AccommodationRequest { get; set; }
+    public AccommodationRequest? AccommodationRequest { get; set; }
 
 
     public ClaimViewModel(User currentUser,
@@ -106,7 +106,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       IProblemValidator<Claim> problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
       IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
-      IEnumerable<AccommodationRequest>? accommodationRequests = null,
       IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
       IEnumerable<AccommodationInvite>? incomingInvite = null,
       IEnumerable<AccommodationInvite>? outgoingInvite = null)
@@ -133,13 +132,13 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         CharacterAutoCreated = claim.Character.AutoCreated;
         AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
           a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
-          claim.HasMasterAccess(currentUser.UserId)).ToList();
+          HasMasterAccess).ToList();
         PotentialNeighbors = potentialNeighbors;
         AccommodationRequest = claim.AccommodationRequest;
         IncomingInvite = incomingInvite;
         OutgoingInvite = outgoingInvite;
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
-        HasOtherApprovedClaim = claim.Character?.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
+        HasOtherApprovedClaim = claim.Character.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
             .Where(x => x.CanMoveClaimTo(claim))
             .Select(ToJoinSelectListItem)
@@ -182,11 +181,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         }
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
 
-        if (claim.Character != null)
-        {
-            ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-                claim.HasMasterAccess(currentUser.UserId));
-        }
+        ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
+            claim.HasMasterAccess(currentUser.UserId));
 
         if (claim.IsApproved && claim.Character != null)
         {
@@ -211,114 +207,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         };
     }
 
-    public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
-    IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
-    {
-        var claimStatusChangeGroup = "";
-        var commentsGroup = "";
-        var fieldChangeGroup = "";
-        var moneyOperationGroup = "";
 
-        var subscrTooltip = new UserSubscriptionTooltip()
-        {
-            HasFullParentSubscription = false,
-            Tooltip = "",
-            IsDirect = false,
-            ClaimStatusChange = false,
-            Comments = false,
-            FieldChange = false,
-            MoneyOperation = false,
-        };
-
-        subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == claimId) != null;
-
-        foreach (var par in parents)
-        {
-            foreach (var subscr in subscriptions)
-            {
-                if (par.CharacterGroupId == subscr.CharacterGroupId &&
-                    !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
-                      subscrTooltip.FieldChange && subscrTooltip.MoneyOperation))
-                {
-                    if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
-                        subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
-                    {
-                        break;
-                    }
-                    if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
-                    {
-                        subscrTooltip.ClaimStatusChange = true;
-                        claimStatusChangeGroup = par.CharacterGroupName;
-                    }
-                    if (subscr.Comments && !subscrTooltip.Comments)
-                    {
-                        subscrTooltip.Comments = true;
-                        commentsGroup = par.CharacterGroupName;
-                    }
-                    if (subscr.FieldChange && !subscrTooltip.FieldChange)
-                    {
-                        subscrTooltip.FieldChange = true;
-                        fieldChangeGroup = par.CharacterGroupName;
-                    }
-                    if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
-                    {
-                        subscrTooltip.MoneyOperation = true;
-                        moneyOperationGroup = par.CharacterGroupName;
-                    }
-                }
-            }
-        }
-
-        if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange &&
-            subscrTooltip.MoneyOperation)
-        {
-            subscrTooltip.HasFullParentSubscription = true;
-        }
-
-        subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, claimStatusChangeGroup,
-          commentsGroup, fieldChangeGroup, moneyOperationGroup);
-        return subscrTooltip;
-    }
-
-    public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
-      string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
-      string moneyOperationGroup)
-    {
-        string res;
-        if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
-        {
-            res = "Вы подписаны на эту заявку";
-        }
-        else if (!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments ||
-                   subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
-        {
-            res = "Вы не подписаны на эту заявку";
-        }
-        else
-        {
-            res = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br><ul>";
-
-            if (subscrTooltip.ClaimStatusChange)
-            {
-                res += "<li>Изменение статуса (группа \"" + claimStatusChangeGroup + "\")</li>";
-            }
-            if (subscrTooltip.Comments)
-            {
-                res += "<li>Комментарии (группа \"" + commentsGroup + "\")</li>";
-            }
-            if (subscrTooltip.FieldChange)
-            {
-                res += "<li>Изменение полей заявки (группа \"" + fieldChangeGroup + "\")</li>";
-            }
-            if (subscrTooltip.MoneyOperation)
-            {
-                res += "<li>Финансовые операции (группа \"" + moneyOperationGroup + "\")</li>";
-            }
-
-            res += "</ul>";
-        }
-        return res;
-    }
 
     public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }

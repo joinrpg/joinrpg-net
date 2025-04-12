@@ -13,6 +13,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -24,6 +25,7 @@ public class ClaimController(
     IProjectRepository projectRepository,
     IProjectService projectService,
     IClaimService claimService,
+    IGameSubscribeClient gameSubscribeClient,
     IPlotRepository plotRepository,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
@@ -155,10 +157,12 @@ public class ClaimController(
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
             availableAccommodation,
-            requestForAccommodation,
             potentialNeighbors,
             incomingInvite,
-            outgoingInvite);
+            outgoingInvite)
+        {
+            SubscriptionTooltip = await gameSubscribeClient.GetSubscribeForClaim(claim.ProjectId, claim.ClaimId),
+        };
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
         {
@@ -166,11 +170,6 @@ public class ClaimController(
               claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
                 claim.CommentDiscussion.Comments.Max(c => c.CommentId)).ConfigureAwait(false);
         }
-
-
-        var parents = claim.Character.GetParentGroupsToTop();
-        claimViewModel.SubscriptionTooltip =
-          claimViewModel.GetFullSubscriptionTooltip(parents, currentUser.Subscriptions, claimViewModel.ClaimId);
 
         return View("Edit", claimViewModel);
     }
@@ -513,49 +512,37 @@ public class ClaimController(
         }
     }
 
+    //TODO перенести эти операции в WebApi контроллер
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> Subscribe(int projectid, int claimid)
     {
-
-        var user = await GetCurrentUserAsync();
         var claim = await claimsRepository.GetClaim(projectid, claimid);
         if (claim == null)
         {
             return NotFound();
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-
-        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
-
         await claimService.SubscribeClaimToUser(projectid, claimid);
-        var parents = claim.Character.GetParentGroupsToTop();
 
-        var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+        var tooltip = await gameSubscribeClient.GetSubscribeForClaim(projectid, claimid);
 
         return Json(tooltip);
     }
 
+    //TODO перенести эти операции в WebApi контроллер
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
     {
-
-        var user = await GetCurrentUserAsync();
         var claim = await claimsRepository.GetClaim(projectid, claimid);
 
         if (claim == null)
         {
             return NotFound();
         }
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-
-        var claimViewModel = new ClaimViewModel(user, claim, [], uriService, projectInfo, claimValidator, paymentsService.GetExternalPaymentUrl);
-
 
         await claimService.UnsubscribeClaimToUser(projectid, claimid);
-        var parents = claim.Character.GetParentGroupsToTop();
 
-        var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+        var tooltip = await gameSubscribeClient.GetSubscribeForClaim(projectid, claimid);
 
         return Json(tooltip);
     }
