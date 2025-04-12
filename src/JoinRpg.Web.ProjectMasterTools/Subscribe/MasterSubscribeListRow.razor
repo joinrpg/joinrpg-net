@@ -1,25 +1,26 @@
 <tr>
-  <td>
-    <a asp-controller="GameSubscribe" asp-action="EditRedirect" asp-route-projectId="@Model.ProjectId" asp-route-subscriptionId="@Model.UserSubscriptionId">
-      <span class="glyphicon glyphicon-pushpin"></span>
-    </a>
-    <a href="@Model.Link">
-      @Model.Name
-    </a>
+    <td>
+        <a asp-controller="GameSubscribe" asp-action="EditRedirect" asp-route-projectId="@Model.ProjectId" asp-route-subscriptionId="@Model.UserSubscriptionId">
+            <span class="glyphicon glyphicon-pushpin"></span>
+        </a>
+        <a href="@Model.Link">
+            @Model.Name
+        </a>
 
-  </td>
-  <td>
-    @if (Model.Options.AllSet)
-    {
-       <JoinBadge Variation="VariationStyleEnum.Success">Любые изменения</JoinBadge>
-    }
-    else
-    {
-            <JoinBadge For="@Model.Options.ClaimStatusChange" Variation="@VariationStyleEnum.Success" />
-            <JoinBadge For="@Model.Options.Comments" Variation="@VariationStyleEnum.Success" />
-            <JoinBadge For="@Model.Options.FieldChange" Variation="@VariationStyleEnum.Success" />
-            <JoinBadge For="@Model.Options.MoneyOperation" Variation="@VariationStyleEnum.Success" />
-            <JoinBadge For="@Model.Options.AccommodationChange" Variation="@VariationStyleEnum.Success" />
+    </td>
+    <td>
+        @if (Model.Options.AllSet)
+        {
+            <JoinBadge Variation="VariationStyleEnum.Success">Любые изменения</JoinBadge>
+        }
+        else
+        {
+            var options = Model.Options;
+            <JoinBadge @bind-For="options.ClaimStatusChange" Variation="@VariationStyleEnum.Success" />
+            <JoinBadge @bind-For="options.Comments" Variation="@VariationStyleEnum.Success" />
+            <JoinBadge @bind-For="options.FieldChange" Variation="@VariationStyleEnum.Success" />
+            <JoinBadge @bind-For="options.MoneyOperation" Variation="@VariationStyleEnum.Success" />
+            <JoinBadge @bind-For="options.AccommodationChange" Variation="@VariationStyleEnum.Success" />
     }
   </td>
   <td>

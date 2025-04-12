@@ -52,5 +52,5 @@ public class GameSubscribeClient : IGameSubscribeClient
         }
     }
 
-
+    public Task<ClaimSubscribeViewModel> GetSubscribeForClaim(int projectId, int claimId) => throw new NotImplementedException();
 }

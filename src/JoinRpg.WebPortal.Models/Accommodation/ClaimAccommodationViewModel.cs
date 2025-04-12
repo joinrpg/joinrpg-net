@@ -12,6 +12,6 @@ public class ClaimAccommodationViewModel
     public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
     public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
     public CharacterNavigationViewModel Navigation;
-    public AccommodationRequest AccommodationRequest { get; set; }
+    public AccommodationRequest? AccommodationRequest { get; set; }
     public bool AccommodationEnabledForClaim { get; set; }
 }

@@ -6,4 +6,6 @@ public interface IGameSubscribeClient
     Task RemoveSubscription(int projectId, int userSubscriptionsId);
 
     Task SaveGroupSubscription(int projectId, EditSubscribeViewModel model);
+
+    Task<ClaimSubscribeViewModel> GetSubscribeForClaim(int projectId, int claimId);
 }
