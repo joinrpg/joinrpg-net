@@ -5,14 +5,15 @@ public static class CountHelper
     public static string DisplayCount(int count, string single, string multi1, string multi2)
     {
         var absCount = (uint)Math.Abs(count);
-        var mod = absCount % 10;
-        var selected = mod switch
+        var lastDigit = absCount % 10;
+        var digitBeforeLast = (absCount % 100 - lastDigit) / 10;
+        var selected = (digitBeforeLast, lastDigit) switch
         {
-            0 => multi2,
-            1 when absCount % 100 == 11 => multi2,
-            1 => single,
-            > 1 and < 5 => multi1,
-            >= 5 => multi2,
+            (_, 0) => multi2,
+            (1, _) => multi2,
+            (_, 1) => single,
+            (_, > 1 and < 5) => multi1,
+            (_, >= 5) => multi2,
         };
         return count + " " + @selected;
     }
