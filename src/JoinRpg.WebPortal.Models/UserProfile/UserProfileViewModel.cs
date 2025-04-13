@@ -28,14 +28,18 @@ public class UserProfileViewModel
     public required UserProfileDetailsViewModel Details { get; set; }
 
     [ReadOnly(true)]
-    public bool HasAdminAccess { get; set; }
+    public bool HasAdminAccess => Admin is not null;
 
     [ReadOnly(true)]
     public bool IsAdmin { get; set; }
 
     [ReadOnly(true)]
     public bool IsVerifiedUser => Details.IsVerifiedUser;
+
+    public required UserAdminOperationsViewModel? Admin { get; set; }
 }
+
+public record class UserAdminOperationsViewModel(Uri LogLink, bool IsAdmin);
 
 public class UserProfileDetailsViewModel
 {

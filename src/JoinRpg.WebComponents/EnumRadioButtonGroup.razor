@@ -1,4 +1,4 @@
-﻿@typeparam TValue where TValue:struct, Enum
+@typeparam TValue where TValue:struct, Enum
 @inject ILogger<EnumRadioButtonGroup<TValue>> logger
 @foreach (var enumValue in Enum.GetValues<TValue>())
 {
@@ -37,7 +37,7 @@
     {
         base.OnInitialized();
         fieldIdentifier = FieldIdentifier.Create(SelectedValueExpression);
-        logger.LogInformation("FieldName = {fieldName}", fieldIdentifier.FieldName);
+        logger.LogTrace("FieldName = {fieldName}", fieldIdentifier.FieldName);
         name ??= fieldIdentifier.FieldName;
     }
 

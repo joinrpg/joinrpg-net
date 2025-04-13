@@ -134,6 +134,9 @@ public class Startup
             // It will allow IP-spoofing, if Kestrel is directly exposed to end user
             // But it should never happen anyway (we always should be under at least one proxy)
         });
+
+
+        _ = services.AddTransient<YandexLogLink>();
     }
 
     /// <summary>
