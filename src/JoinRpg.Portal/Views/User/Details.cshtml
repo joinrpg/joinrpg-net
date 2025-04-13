@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Areas.Admin.Models
+@using JoinRpg.Web.Areas.Admin.Models
 @using JoinRpg.Web.Models
 @model UserProfileViewModel
 
@@ -100,6 +100,8 @@
 
                        }
                    }
+
+                   @(await Html.RenderComponentAsync<JoinButton>(RenderMode.Static, new {Label = "Логи", Title="Посмотреть логи действий пользователя на сайте", Link = Model.Admin.LogLink.AbsoluteUri }))
                </div>
            }
 

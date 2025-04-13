@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor) : Common.ControllerBase()
+public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, YandexLogLink yandexLogLink) : Common.ControllerBase()
 {
     public IUserRepository UserRepository { get; } = userRepository;
     public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
@@ -27,8 +28,8 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             ThisUserProjects = user.ProjectAcls.Select(p => p.Project).ToLinkViewModels().ToList(),
             UserId = user.UserId,
             Details = new UserProfileDetailsViewModel(user, currentUser),
-            HasAdminAccess = CurrentUserAccessor.IsAdmin,
             IsAdmin = user.Auth.IsAdmin,
+            Admin = CurrentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email), user.Auth.IsAdmin) : null,
         };
 
         if (currentUser != null)
