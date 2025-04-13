@@ -40,7 +40,6 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
                     Key = avatarName,
                     InputStream = memoryStream,
                     ContentType = contentType,
-                    ChecksumSHA256 = Convert.ToBase64String(hash),
                 };
 
                 try
