@@ -8,6 +8,8 @@ updates:
     # https://github.com/dependabot/dependabot-core/issues/11479
       - dependency-name: "Microsoft.NET.ILLink.Tasks"
       - dependency-name: "Microsoft.NET.Sdk.WebAssembly.Pack"
+    # https://github.com/aws/aws-sdk-net/issues/3610
+      - dependency-name: "AWSSDK.S3"
     groups:
       net: #I like to merge this groups, but it will cause dependabot to timeout
         patterns:
