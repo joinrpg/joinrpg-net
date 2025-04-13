@@ -11,6 +11,13 @@ public class IdentificationCommonTest
         type.IsAssignableTo(typeof(IParsable<>).MakeGenericType(type)).ShouldBeTrue();
     }
 
+    [Theory(Skip = "Не все поддерживает ISpanParsable, а должно")]
+    [ClassData(typeof(IdentificationDataSource))]
+    public void ShouldImplementISpanParsable(Type type)
+    {
+        type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)).ShouldBeTrue();
+    }
+
 
     [Theory]
     [ClassData(typeof(IdentificationDataSource))]
