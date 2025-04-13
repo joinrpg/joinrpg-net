@@ -9,6 +9,10 @@ internal static class S3ClientFactory
         var config = new AmazonS3Config()
         {
             ServiceURL = options.Endpoint,
+            // https://github.com/aws/aws-sdk-net/issues/3610
+            // Яндекс не поддерживает
+            RequestChecksumCalculation = Amazon.Runtime.RequestChecksumCalculation.WHEN_REQUIRED,
+            ResponseChecksumValidation = Amazon.Runtime.ResponseChecksumValidation.WHEN_REQUIRED,
         };
 
         return new AmazonS3Client(options.AccessKey, options.SecretKey, config);
