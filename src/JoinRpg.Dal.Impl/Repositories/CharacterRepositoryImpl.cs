@@ -30,10 +30,7 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
 
     public Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
-        if (characterIds.Select(c => c.ProjectId).Distinct().Count() > 1)
-        {
-            throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(characterIds));
-        }
+        EnsureSameProject(characterIds);
         return GetCharacters(characterIds.First().ProjectId, [.. characterIds.Select(c => c.CharacterId)]);
     }
 
@@ -161,4 +158,26 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
     }
 
     public Task<Character> GetCharacterAsync(CharacterIdentification characterId) => GetCharacterAsync(characterId.ProjectId, characterId.CharacterId);
+
+    public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds)
+    {
+        EnsureSameProject(characterIds);
+
+        if (characterIds.Count == 0)
+        {
+            return [];
+        }
+
+        var projectId = characterIds.First().ProjectId;
+        var characterIntIds = characterIds.Select(x => x.CharacterId).ToArray();
+
+        await LoadProjectGroups(projectId);
+        await LoadProjectClaimsAndComments(projectId);
+        await LoadMasters(projectId);
+        await LoadProjectFields(projectId);
+
+        return
+          await Ctx.Set<Character>()
+            .Where(e => characterIntIds.Contains(e.CharacterId) && e.ProjectId == projectId).ToListAsync();
+    }
 }

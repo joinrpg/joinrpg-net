@@ -25,6 +25,7 @@ public interface ICharacterRepository : IDisposable
     Task<IEnumerable<Character>> GetAvailableCharacters(int projectId);
     Task<IEnumerable<Character>> GetAllCharacters(int projectId);
     Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId);
+    Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds);
 }
 
 public record class CharacterWithProject(

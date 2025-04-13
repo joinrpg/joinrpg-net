@@ -111,7 +111,7 @@ public class TestIntListCompression
     private static void TestList(int[] list)
     {
         var compressed = list.CompressIdList();
-        var result = compressed.UnCompressIdList().ToArray();
+        var result = compressed.UnCompressIdListImpl().ToArray();
         result.ShouldBe(list);
     }
 }
