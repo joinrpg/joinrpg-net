@@ -18,4 +18,6 @@ public enum ButtonPreset
     Restore,
     Publish,
     Copy,
+    Up,
+    Down,
 }
