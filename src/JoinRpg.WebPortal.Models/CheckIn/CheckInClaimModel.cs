@@ -4,6 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;

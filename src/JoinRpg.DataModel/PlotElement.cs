@@ -1,8 +1,8 @@
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.DataModel;
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global — required by LINQ
 public class PlotElement : IProjectEntity, IDeletableSubEntity
 {
     public int PlotElementId { get; set; }
@@ -38,12 +38,6 @@ public class PlotElement : IProjectEntity, IDeletableSubEntity
     public PlotElementType ElementType { get; set; }
 
     public int? Published { get; set; }
-}
-
-public enum PlotElementType
-{
-    RegularPlot,
-    Handout,
 }
 
 //Sometimes we need to load bunch of plots w/o texts...
