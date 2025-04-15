@@ -144,6 +144,27 @@ public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
         return this;
     }
 
+    public VirtualOrderContainer<TItem> MoveAfter(int field, int? afterItem)
+    {
+        var index = Items.FindIndex(x => x.Id == field);
+        if (afterItem == null)
+        {
+            MoveToIndex(index, 0);
+        }
+        else
+        {
+            var targetIndex = Items.FindIndex(x => x.Id == afterItem) + 1;
+            if (targetIndex > index)
+            {
+                targetIndex--;
+            }
+
+            MoveToIndex(index, targetIndex);
+        }
+
+        return this;
+    }
+
     public void SortBy<TField>(Func<TItem, TField> selector) where TField : IComparable<TField>
     {
         Items.Sort(new SortByFieldComparer<TField>(selector));
