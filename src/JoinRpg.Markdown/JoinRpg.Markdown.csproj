@@ -14,6 +14,6 @@
     <PackageReference Include="Markdig" Version="0.40.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.4" />
     <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.0" /> <!-- Pin, because Vereyon.Web.HtmlSanitizer using older version -->
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.1" /> <!-- Pin, because Vereyon.Web.HtmlSanitizer using older version -->
   </ItemGroup>
 </Project>
