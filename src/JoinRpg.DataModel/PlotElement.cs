@@ -41,7 +41,7 @@ public class PlotElement : IProjectEntity, IDeletableSubEntity
 }
 
 //Sometimes we need to load bunch of plots w/o texts...
-public class PlotElementTexts
+public class PlotElementTexts : IOrderableEntity
 {
     public int PlotElementId { get; set; }
 
@@ -55,4 +55,6 @@ public class PlotElementTexts
     public virtual User AuthorUser { get; set; }
     public int? AuthorUserId { get; set; }
     public PlotElement PlotElement { get; set; }
+
+    int IOrderableEntity.Id => PlotElementId;
 }

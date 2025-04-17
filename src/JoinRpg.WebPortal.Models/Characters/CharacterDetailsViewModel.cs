@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
@@ -48,7 +49,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
     public CharacterDetailsViewModel(
         ICurrentUserAccessor currentUserId,
         Character character,
-        IReadOnlyCollection<PlotElement> plots,
+        IReadOnlyCollection<PlotTextDto> plots,
         IUriService uriService,
         ProjectInfo projectInfo)
     {
@@ -67,7 +68,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
             projectInfo,
             accessArguments
             );
-        Plot = PlotDisplayViewModel.Published(plots, currentUserId, character, uriService, projectInfo);
+        Plot = new PlotDisplayViewModel (plots, currentUserId, character, uriService, projectInfo);
 
         HasMasterAccess = accessArguments.MasterAccess;
         CreatedAt = character.CreatedAt;

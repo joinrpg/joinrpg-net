@@ -1,3 +1,4 @@
+using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -5,50 +6,31 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CheckIn;
-using JoinRpg.Web.Models.Masters;
+using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/checkin/[action]")]
 [MasterAuthorize()] //TODO specific permission
-public class CheckInController : ControllerGameBase
+public class CheckInController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IClaimsRepository claimsRepository,
+    IPlotRepository plotRepository,
+    IClaimService claimService,
+    ICharacterRepository characterRepository,
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository,
+    IProblemValidator<Claim> claimValidator,
+    CharacterPlotViewService characterPlotViewService
+        ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IProblemValidator<Claim> claimValidator;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private IClaimsRepository ClaimsRepository { get; }
-
-    private IPlotRepository PlotRepository { get; }
-
-    private IClaimService ClaimService { get; }
-
-    private ICharacterRepository CharacterRepository { get; }
-
-    public CheckInController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IClaimsRepository claimsRepository,
-        IPlotRepository plotRepository,
-        IClaimService claimService,
-        ICharacterRepository characterRepository,
-        IUserRepository userRepository,
-        IProjectMetadataRepository projectMetadataRepository,
-        IProblemValidator<Claim> claimValidator)
-      : base(projectRepository, projectService, userRepository)
-    {
-        ClaimsRepository = claimsRepository;
-        PlotRepository = plotRepository;
-        ClaimService = claimService;
-        CharacterRepository = characterRepository;
-        this.projectMetadataRepository = projectMetadataRepository;
-        this.claimValidator = claimValidator;
-    }
-
     [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
@@ -57,7 +39,7 @@ public class CheckInController : ControllerGameBase
         {
             return View("CheckInNotStarted");
         }
-        var claims = await ClaimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.ReadyForCheckIn);
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.ReadyForCheckIn);
         return View(new CheckInIndexViewModel(project, claims));
     }
 
@@ -94,7 +76,7 @@ public class CheckInController : ControllerGameBase
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(int projectId, int claimId)
     {
-        var claim = await ClaimsRepository.GetClaimWithDetails(projectId, claimId);
+        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -106,26 +88,29 @@ public class CheckInController : ControllerGameBase
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
-        return View("CheckIn", new CheckInClaimModel(claim, await GetCurrentUserAsync(),
-          claim.Character == null
-            ? null
-            : await PlotRepository.GetPlotsForCharacter(claim.Character),
-          claimValidator,
-          projectInfo
+        var characterId = claim.Character.GetId();
+        var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
+
+        return View("CheckIn",
+            new CheckInClaimModel(claim,
+            await GetCurrentUserAsync(),
+            handouts[characterId],
+            claimValidator,
+            projectInfo
           ));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<ActionResult> DoCheckIn(int projectId, int claimId, int money, Checkbox? feeAccepted)
+    public async Task<ActionResult> DoCheckIn(ProjectIdentification projectId, int claimId, int money, Checkbox? feeAccepted)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
         }
         try
         {
-            await ClaimService.CheckInClaim(projectId, claimId, feeAccepted == Checkbox.@on ? money : 0);
+            await claimService.CheckInClaim(projectId, claimId, feeAccepted == Checkbox.@on ? money : 0);
             return RedirectToAction("Index", new { projectId });
         }
         catch (Exception ex)
@@ -146,7 +131,7 @@ public class CheckInController : ControllerGameBase
 
     private async Task<ActionResult> ShowSecondRole(int projectId, int claimId)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
         {
             return NotFound();
@@ -156,7 +141,7 @@ public class CheckInController : ControllerGameBase
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
-        var characters = await CharacterRepository.GetAvailableCharacters(projectId);
+        var characters = await characterRepository.GetAvailableCharacters(projectId);
 
         return View(new SecondRoleViewModel(claim, characters, await GetCurrentUserAsync()));
     }
@@ -165,14 +150,14 @@ public class CheckInController : ControllerGameBase
     [HttpPost("~/{ProjectId}/claim/{ClaimId}/secondrole")]
     public async Task<ActionResult> SecondRole(SecondRoleViewModel model)
     {
-        var claim = await ClaimsRepository.GetClaim(model.ProjectId, model.ClaimId);
+        var claim = await claimsRepository.GetClaim(model.ProjectId, model.ClaimId);
         if (claim == null)
         {
             return NotFound();
         }
         try
         {
-            var newClaim = await ClaimService.MoveToSecondRole(model.ProjectId, model.ClaimId, model.CharacterId);
+            var newClaim = await claimService.MoveToSecondRole(model.ProjectId, model.ClaimId, model.CharacterId);
             return RedirectToAction("CheckIn", new { model.ProjectId, claimId = newClaim });
         }
         catch (Exception ex)

@@ -15,6 +15,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -27,7 +28,6 @@ public class ClaimController(
     IProjectService projectService,
     IClaimService claimService,
     IGameSubscribeClient gameSubscribeClient,
-    IPlotRepository plotRepository,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterRepository characterRepository,
@@ -40,7 +40,8 @@ public class ClaimController(
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
-    ICurrentUserAccessor currentUserAccessor
+    ICurrentUserAccessor currentUserAccessor,
+    CharacterPlotViewService characterPlotViewService
     ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -112,9 +113,7 @@ public class ClaimController(
 
         var currentUser = await GetCurrentUserAsync().ConfigureAwait(false);
 
-        var plots = claim.IsApproved && claim.Character != null
-          ? await plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
-          : [];
+        var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
         IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
         IEnumerable<AccommodationRequest>? requestForAccommodation = null;

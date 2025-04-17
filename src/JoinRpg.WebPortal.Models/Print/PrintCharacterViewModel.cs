@@ -1,10 +1,9 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
-using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
@@ -46,23 +45,21 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string? PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
-    public bool RegistrationOnHold => FeeDue > 0 || Plots.HasUnready;
+    public bool RegistrationOnHold => FeeDue > 0 || HasUnready;
+
+    public bool HasUnready { get; }
 
     public PrintCharacterViewModel
-      (ICurrentUserAccessor currentUser, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService, ProjectInfo projectInfo)
+      (ICurrentUserAccessor currentUser, Character character, IReadOnlyCollection<PlotTextDto> plots, IUriService uriService, ProjectInfo projectInfo, IReadOnlyCollection<PlotTextDto> handouts)
       : base(character, projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);
 
-        var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
-        Plots = PlotDisplayViewModel.Published(plotElements, currentUser, character, uriService, projectInfo);
+        var plotElements = plots;
+        HasUnready = !plotElements.All(x => x.Completed) || !handouts.All(x => x.Completed);
+        Plots = new PlotDisplayViewModel(plotElements, currentUser, character, uriService, projectInfo);
 
-        Handouts =
-          plotElements.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
-            .Select(e => e.PublishedVersion())
-            .WhereNotNull()
-            .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
-            .ToArray();
+        Handouts = [.. handouts.Select(e => new HandoutListItemViewModel(e))];
 
         PlayerPhoneNumber = character.ApprovedClaim?.Player.Extra?.PhoneNumber;
         Fields = new CustomFieldsViewModel(
@@ -70,12 +67,5 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
             projectInfo,
             AccessArgumentsFactory.CreateForPrint(character, currentUser.UserIdOrDefault) with { EditAllowed = false },
             wherePrintEnabled: true);
-    }
-}
-
-public class HandoutListItemViewModel : HandoutViewModelBase
-{
-    public HandoutListItemViewModel(string text, User master) : base(text, master)
-    {
     }
 }

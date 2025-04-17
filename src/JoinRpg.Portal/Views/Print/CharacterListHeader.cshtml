@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Domain
+@using JoinRpg.Domain
 @using JoinRpg.Web.Models.Plot
 @using JoinRpg.Helpers
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
@@ -67,7 +67,7 @@
                 {
                     <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
                 }
-                @if (Model.Plots.HasUnready)
+                @if (Model.HasUnready)
                 {
                     <li>
                         Часть загрузов помечены как не готовы!

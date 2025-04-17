@@ -387,12 +387,21 @@ public class PlotController(
     }
 
     [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
-    public async Task<RedirectToActionResult> Reorder(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
+    public async Task<RedirectToActionResult> ReorderFolder(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
     {
         var plotFolderId = PlotFolderIdentification.Parse(viewModel.ElementIdentification, provider: null);
         var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
         await plotService.ReorderPlots(plotFolderId, afterPlotFolderId);
         return RedirectToAction("Index", "PlotList", new { projectId = projectId.Value });
+    }
+
+    [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
+    public async Task<RedirectToActionResult> ReorderByCharacter(ProjectIdentification projectId, int characterId, ElementMoveCommandViewModel viewModel)
+    {
+        var targetId = PlotElementIdentification.Parse(viewModel.ElementIdentification, provider: null);
+        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        await plotService.ReorderPlotByChar(new CharacterIdentification(projectId, characterId), targetId, afterId);
+        return RedirectToAction("Details", "Character", new { projectId = projectId.Value, characterId });
     }
 
 }

@@ -1,5 +1,6 @@
 using System.Data.Entity;
 using System.Data.Entity.Validation;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -323,12 +324,36 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
 
     public async Task ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId)
     {
-        var target = await LoadProjectSubEntityAsync<PlotElement>(plotElementId);
-        var after = afterPlotElementId is not null ? await LoadProjectSubEntityAsync<PlotElement>(afterPlotElementId) : null;
+        var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
 
-        target.PlotFolder.ElementsOrdering
-            = target.PlotFolder.GetPlotElementsContainer().MoveAfter(target, after).GetStoredOrder();
+        targetFolder.ElementsOrdering = DomainMoveHelper.MoveAfter(plotElementId,
+            afterPlotElementId,
+            targetFolder.ElementsOrdering,
+            targetFolder.Elements.Select(x => new PlotElementIdentification(x.ProjectId, x.PlotFolderId, x.PlotElementId)),
+            preserveOrder: false);
 
         await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ReorderPlotByChar(CharacterIdentification characterId, PlotElementIdentification targetId, PlotElementIdentification? afterId)
+    {
+        var character = await CharactersRepository.GetCharacterAsync(characterId);
+
+        var plotTarget = ToTarget(character);
+
+        var plots = await PlotRepository.GetPlotsBySpecification(new PlotSpecification(plotTarget, PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot));
+
+        var resultOrder = DomainMoveHelper.MoveAfter(targetId, afterId, character.PlotElementOrderData, plots.Select(x => x.Id.PlotElementId), preserveOrder: true);
+        character.PlotElementOrderData = resultOrder;
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+
+    private static TargetsInfo ToTarget(Character character)
+    {
+        return new TargetsInfo(
+        [new(new(character.ProjectId, character.CharacterId), character.CharacterName)],
+            [.. character.GetParentGroupsToTop().Select(x => new GroupTarget(new CharacterGroupIdentification(x.ProjectId, x.CharacterGroupId), x.CharacterGroupName))]);
     }
 }

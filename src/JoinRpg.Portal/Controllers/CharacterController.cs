@@ -1,7 +1,7 @@
 using Joinrpg.AspNetCore.Helpers;
+using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -12,6 +12,7 @@ using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -22,13 +23,13 @@ namespace JoinRpg.Portal.Controllers;
 public class CharacterController(
     IProjectRepository projectRepository,
     IProjectService projectService,
-    IPlotRepository plotRepository,
     ICharacterRepository characterRepository,
     IUriService uriService,
     IUserRepository userRepository,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUser
+    ICurrentUserAccessor currentUser,
+    CharacterPlotViewService characterPlotViewService
         ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
 
@@ -43,20 +44,15 @@ public class CharacterController(
 
     private async Task<ActionResult> ShowCharacter(Character character)
     {
-        var plots = character.HasPlotViewAccess(CurrentUserIdOrDefault)
-            ? await ShowPlotsForCharacter(character)
-            : Enumerable.Empty<PlotElement>();
+        var plots = await characterPlotViewService.GetPlotsForCharacter(character.GetId());
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(character.ProjectId));
         return View("Details",
             new CharacterDetailsViewModel(currentUser,
                 character,
-                plots.ToList(),
+                plots,
                 uriService, projectInfo));
     }
-
-    private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character) =>
-        character.GetOrderedPlots(await plotRepository.GetPlotsForCharacter(character));
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterId)

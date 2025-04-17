@@ -8,6 +8,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Print;
+using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -24,12 +25,14 @@ public class PrintController(
     IUriService uriService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUserAccessor
+    ICurrentUserAccessor currentUserAccessor,
+    CharacterPlotViewService characterPlotViewService
     ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet]
     public async Task<IActionResult> Character(int projectId, int characterid)
     {
+        var characterId = new CharacterIdentification(projectId, characterid);
         var character = await characterRepository.GetCharacterWithGroups(projectId, characterid);
         if (character == null)
         {
@@ -41,23 +44,32 @@ public class PrintController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        var plots = await characterPlotViewService.GetPlotForCharacters([characterId], Domain.Access.CharacterAccessMode.Print);
 
-        return View(new PrintCharacterViewModel(currentUserAccessor, character, await plotRepository.GetPlotsForCharacter(character), uriService, projectInfo));
+        var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
+
+        return View(new PrintCharacterViewModel(currentUserAccessor, character, plots[characterId], uriService, projectInfo, handouts[characterId]));
     }
 
     [MasterAuthorize()]
     [HttpGet]
     public async Task<ActionResult> CharacterList(ProjectIdentification projectId, CompressedIntList characterIds)
     {
-        var characters = await CharacterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
+        IReadOnlyCollection<CharacterIdentification> characterIdsList = characterIds.ToCharacterIds(projectId);
+        var characters = await characterRepository.LoadCharactersWithGroups(characterIdsList);
 
-        var plotElements = (await plotRepository.GetPlotsWithTargetAndText(projectId)).SelectMany(p => p.Elements).ToArray();
+        var plots = await characterPlotViewService.GetPlotForCharacters(characterIdsList, Domain.Access.CharacterAccessMode.Print);
+        var handouts = await characterPlotViewService.GetHandoutsForCharacters(characterIdsList);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var viewModel =
           characters.Select(
-            c => new PrintCharacterViewModel(currentUserAccessor, c, plotElements, uriService, projectInfo)).ToArray();
+            c =>
+            {
+                var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
+                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], uriService, projectInfo, handouts[characterId]);
+            }).ToArray();
 
         return View(viewModel);
     }
@@ -88,7 +100,7 @@ public class PrintController(
     [HttpGet]
     public async Task<ActionResult> Envelopes(ProjectIdentification projectId, CompressedIntList characterIds)
     {
-        var characters = await CharacterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
+        var characters = await characterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 

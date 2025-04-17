@@ -1,8 +1,10 @@
 using System.ComponentModel;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -85,8 +87,29 @@ public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
 
         Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
           .Select(
-            p => new PlotElementViewModel(null, currentUser, linkRenderer, p.LastVersion(), uriService, projectInfo))
+            p => new PlotElementViewModel(null, currentUser, linkRenderer, p.GetDtoForLast(), uriService, projectInfo))
           .MarkFirstAndLast();
+    }
+}
+
+public static class PlotTextDtoBuilder
+{
+    public static PlotTextDto GetDtoForLast(this PlotElement element)
+    {
+        var version = element.LastVersion();
+        return new PlotTextDto()
+        {
+            Completed = element.GetStatus() == PlotStatus.Completed,
+            HasPublished = element.Published != null,
+            Latest = true,
+            Published = element.Published == version.Version,
+            Text = version,
+            Id = new PlotVersionIdentification(element.ProjectId, element.PlotFolderId, element.PlotElementId, version.Version),
+            IsActive = element.IsActive,
+            Target = new TargetsInfo(
+                    [.. element.TargetCharacters.Select(x => new CharacterTarget(x.GetId(), x.CharacterName))],
+                    [.. element.TargetGroups.Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))])
+        };
     }
 }
 
