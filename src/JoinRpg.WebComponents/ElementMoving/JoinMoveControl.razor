@@ -7,7 +7,7 @@
     @* Добавить сюда кнопочку "поместить после", которая вызывает диалог *@
     @if (showUp)
     {
-        <form method="post" action="@Endpoint">
+        <form method="post" action="@Endpoint" style="display:inline">
             <input type="hidden" name="MoveAfterIdentification" value="@targetIfUp" />
             <input type="hidden" name="ElementIdentification" value="@SelfId" />
             <AntiforgeryToken />
@@ -16,7 +16,7 @@
     }
     @if (showDown)
     {
-        <form method="post" action="@Endpoint">
+        <form method="post" action="@Endpoint" style="display:inline">
             <input type="hidden" name="MoveAfterIdentification" value="@targetIfDown" />
             <input type="hidden" name="ElementIdentification" value="@SelfId" />
             <AntiforgeryToken />

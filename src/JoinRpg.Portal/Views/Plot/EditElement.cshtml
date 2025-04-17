@@ -30,18 +30,11 @@
             <div class="col-md-10">
                 @if (!Model.HasManageAccess && Model.HasPublishedVersion)
                 {
-                    <b>Для</b>
-                    if (Model.TargetsForDisplay.Any())
-                    {
-                        foreach (var target in Model.TargetsForDisplay)
-                        {
-                            @Html.DisplayFor(model => target)
-                        }
-                    }
-                    else
-                    {
-                        <span>Не установлено</span>
-                    }
+                  <component
+                    type="typeof(PlotTargetDisplay)"
+                    render-mode="Static"
+                    param-Target="@Model.Target"
+                   />
                   <div class="help-block">Только редакторы сюжетов могут изменять привязку вводных, которые уже опубликованы.</div>
                 }
                 else

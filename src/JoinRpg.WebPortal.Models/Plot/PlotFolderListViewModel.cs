@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -101,9 +100,7 @@ public static class PlotTextDtoBuilder
             TodoField = version.TodoField,
             Id = new PlotVersionIdentification(element.ProjectId, element.PlotFolderId, element.PlotElementId, version.Version),
             IsActive = element.IsActive,
-            Target = new TargetsInfo(
-                    [.. element.TargetCharacters.Select(x => new CharacterTarget(x.GetId(), x.CharacterName))],
-                    [.. element.TargetGroups.Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))])
+            Target = element.ToTarget(),
         };
     }
 }

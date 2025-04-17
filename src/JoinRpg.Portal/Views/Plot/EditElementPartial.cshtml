@@ -1,5 +1,6 @@
 @using JoinRpg.Web.Models.Plot
 @using JoinRpg.Web.Plots
+@using JoinRpg.WebComponents.ElementMoving
 @model PlotElementListItemViewModel
 
 @if (!Model.HasMasterAccess && Model.Status != PlotStatus.Completed)
@@ -29,15 +30,15 @@
         }
 
         <component type="typeof(PlotElementTypeBadge)"
-                   render-mode="Static"
-                   param-ElementType="@Model.ElementType" />
+        render-mode="Static"
+        param-ElementType="@Model.ElementType" />
 
         @if (Model.HasMasterAccess)
         {
 
-          <component type="typeof(PlotTodoBadge)"
-                   render-mode="Static"
-                   param-Todo="@Model.TodoField" />
+            <component type="typeof(PlotTodoBadge)"
+            render-mode="Static"
+            param-Todo="@Model.TodoField" />
 
         }
         <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">
@@ -53,20 +54,17 @@
                     @Html.DisplayFor(model => model.Author)
                 }
             </span>
+            var orderElementsEndpoint = Url.Action("ReorderElements", "Plot", new { Model.ProjectId });
+            <component type="typeof(JoinMoveControl)"
+                       render-mode="Static"
+                       param-Endpoint="@orderElementsEndpoint"
+                       param-SelfId="@Model.PlotElementIdentification.ToString()"
+                       param-ItemIds="@Model.ItemsIds" />
         }
         <div>
-            <b>Для</b>
-            @if (Model.TargetsForDisplay.Any())
-            {
-                foreach (var target in Model.TargetsForDisplay)
-                {
-                    @Html.DisplayFor(model => target)
-                }
-            }
-            else
-            {
-                <span>Не установлено</span>
-            }
+            <component type="typeof(PlotTargetDisplay)"
+                       render-mode="Static"
+                       param-Target="@Model.Target" />
         </div>
         @if (Model.HasMasterAccess)
         {
@@ -77,7 +75,7 @@
         }
     </div>
     @{
-      var collapseClass = "collapse";
+        var collapseClass = "collapse";
         if (ViewBag.PlotElementUncollapse == Model.PlotElementId)
         {
             collapseClass = "";
@@ -91,8 +89,8 @@
                 if (Model.PublishedVersion < Model.CurrentVersion)
                 {
                     <a href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.PublishedVersion})"
-                       class="btn btn-default btn-sm"
-                       title="Предыдущая версия (опубликованная)">
+                    class="btn btn-default btn-sm"
+                    title="Предыдущая версия (опубликованная)">
                         <span class="glyphicon glyphicon-fast-backward"></span>
                         @Html.DisplayFor(model => model.PrevModifiedDateTime) — опубликованная версия
                     </a>
@@ -100,28 +98,28 @@
                 if (Model.PrevModifiedDateTime != null && (Model.PublishedVersion != Model.CurrentVersion - 1 || Model.PublishedVersion == null))
                 {
                     <a href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.CurrentVersion - 1})"
-                       class="btn btn-default btn-sm"
-                       title="Предыдущая версия">
+                    class="btn btn-default btn-sm"
+                    title="Предыдущая версия">
                         <span class="glyphicon glyphicon-step-backward"></span>
                         @Html.DisplayFor(model => model.PrevModifiedDateTime)
                     </a>
                 }
                 <a
-                  asp-action="ShowElementVersion"
-                  asp-controller="Plot"
-                  asp-route-ProjectId="@Model.ProjectId"
-                  asp-route-PlotFolderId="@Model.PlotFolderId"
-                  asp-route-PlotElementId="@Model.PlotElementId"
-                  asp-route-Version="@Model.CurrentVersion"
-                  asp-route-PrintMode="true"
-                  class="btn btn-default btn-sm">
+                asp-action="ShowElementVersion"
+                asp-controller="Plot"
+                asp-route-ProjectId="@Model.ProjectId"
+                asp-route-PlotFolderId="@Model.PlotFolderId"
+                asp-route-PlotElementId="@Model.PlotElementId"
+                asp-route-Version="@Model.CurrentVersion"
+                asp-route-PrintMode="true"
+                class="btn btn-default btn-sm">
                     <span class="glyphicon glyphicon-print"></span>
                     Печать
                 </a>
                 if (Model.NextModifiedDateTime == null)
                 {
                     <a class="btn btn-default btn-sm"
-                       href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">
+                    href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">
                         <span class="glyphicon glyphicon-pencil"></span>
                         Изменить
                     </a>
@@ -130,35 +128,35 @@
                     {
                         if (Model.HasEditAccess)
                         {
-                          if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any())
-                          {
-                              <button type="button"
-                                      class="btn btn-success btn-sm"
-                                      data-toggle="modal"
-                                      data-target="#publishElementModal"
-                                      data-element="@Model.PlotElementId"
-                                      data-version="@Model.CurrentVersion">
-                                  <span class="glyphicon glyphicon-share-alt"></span>
-                                  Опубликовать
-                              </button>
-                          }
-                          else
-                          {
-                              <button type="button"
-                                      class="btn btn-success btn-sm disabled"
-                                      disabled="disabled"
-                                      title="Невозможно опубликовать вводную. Убедитесь что: Все TODO закрыты и поле очищено; вводная привязана к чему-то.">
-                                  <span class="glyphicon glyphicon-share-alt"></span>
-                                  Опубликовать
-                              </button>
-                          }
+                            if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.Target.Any())
+                            {
+                                <button type="button"
+                                class="btn btn-success btn-sm"
+                                data-toggle="modal"
+                                data-target="#publishElementModal"
+                                data-element="@Model.PlotElementId"
+                                data-version="@Model.CurrentVersion">
+                                    <span class="glyphicon glyphicon-share-alt"></span>
+                                    Опубликовать
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                class="btn btn-success btn-sm disabled"
+                                disabled="disabled"
+                                title="Невозможно опубликовать вводную. Убедитесь что: Все TODO закрыты и поле очищено; вводная привязана к чему-то.">
+                                    <span class="glyphicon glyphicon-share-alt"></span>
+                                    Опубликовать
+                                </button>
+                            }
                         }
                         else
                         {
                             <button type="button"
-                                    class="btn btn-success btn-sm disabled"
-                                    disabled="disabled"
-                                    title="У вас должны быть права редактора сюжетов для этого">
+                            class="btn btn-success btn-sm disabled"
+                            disabled="disabled"
+                            title="У вас должны быть права редактора сюжетов для этого">
                                 <span class="glyphicon glyphicon-share-alt"></span>
                                 Опубликовать
                             </button>
@@ -168,10 +166,10 @@
                     if (Model.PublishedVersion != null && Model.HasEditAccess && Model.Status != PlotStatus.Deleted)
                     {
                         <button type="button"
-                                class="btn btn-info btn-sm"
-                                data-toggle="modal"
-                                data-target="#unpublishElementModal" data-element="@Model.PlotElementIdentification"
-                                title="Скрыть опубликованную версию от игроков">
+                        class="btn btn-info btn-sm"
+                        data-toggle="modal"
+                        data-target="#unpublishElementModal" data-element="@Model.PlotElementIdentification"
+                        title="Скрыть опубликованную версию от игроков">
                             <span class="glyphicon glyphicon-remove-sign"></span>
                             Скрыть
                         </button>
@@ -180,10 +178,10 @@
                     if (Model.HasEditAccess && Model.Status == PlotStatus.Deleted)
                     {
                         <button type="button"
-                                class="btn btn-success btn-sm"
-                                data-toggle="modal"
-                                data-target="#restoreElementModal" data-element="@Model.PlotElementIdentification"
-                                title="Восстановить удаленную вводную">
+                        class="btn btn-success btn-sm"
+                        data-toggle="modal"
+                        data-target="#restoreElementModal" data-element="@Model.PlotElementIdentification"
+                        title="Восстановить удаленную вводную">
                             Восстановить
                         </button>
                     }
@@ -191,33 +189,34 @@
                     if (Model.Status != PlotStatus.Deleted && Model.HasEditAccess)
                     {
                         <button type="button"
-                                class="btn btn-danger btn-sm"
-                                data-toggle="modal" data-target="#deleteElementModal"
-                                data-element="@Model.PlotElementId">
+                        class="btn btn-danger btn-sm"
+                        data-toggle="modal" data-target="#deleteElementModal"
+                        data-element="@Model.PlotElementId">
                             <span class="glyphicon glyphicon-trash"></span>
                             Удалить
                         </button>
 
                         var url = Url.Action("CreateElement", "Plot", new { Model.ProjectId, Model.PlotFolderId, copyFrom = Model.PlotElementIdentification });
                         <component
-                          type="typeof(JoinButton)"
-                          render-mode="Static"
-                          param-Link="@url"
-                          param-Preset="ButtonPreset.Copy"
-                          param-Size="SizeStyleEnum.Small"
-                          />
+                        type="typeof(JoinButton)"
+                        render-mode="Static"
+                        param-Link="@url"
+                        param-Preset="ButtonPreset.Copy"
+                        param-Size="SizeStyleEnum.Small"
+                        />
                     }
                 }
                 if (Model.NextModifiedDateTime != null)
                 {
 
                     <a href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.CurrentVersion + 1})"
-                       class="btn btn-default btn-sm"
-                       title="Следующая версия">
+                    class="btn btn-default btn-sm"
+                    title="Следующая версия">
                         @Html.DisplayFor(model => model.NextModifiedDateTime)
                         <span class="glyphicon glyphicon-forward"></span>
                     </a>
                 }
+                  
                 <hr />
                 if (!string.IsNullOrWhiteSpace(Model.TodoField))
                 {
