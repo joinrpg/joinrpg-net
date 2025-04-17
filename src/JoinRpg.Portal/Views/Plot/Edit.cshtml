@@ -13,7 +13,7 @@
 {
     foreach (var tagName in Model.TagNames)
     {
-        @Html.ActionLink("#" + tagName, "ByTag", "Plot", new { Model.ProjectId, tagName }, null)
+        @Html.ActionLink("#" + tagName, "ByTag", "PlotList", new { Model.ProjectId, tagName }, null)
         <text> </text>
     }
 }
