@@ -383,7 +383,7 @@ public class PlotController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
-            uriService, projectInfo, version, printMode));
+            uriService, projectInfo, itemIdsToParticipateInSort: null, version, printMode));
     }
 
     [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
@@ -393,6 +393,15 @@ public class PlotController(
         var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
         await plotService.ReorderPlots(plotFolderId, afterPlotFolderId);
         return RedirectToAction("Index", "PlotList", new { projectId = projectId.Value });
+    }
+
+    [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
+    public async Task<RedirectToActionResult> ReorderElements(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
+    {
+        var targetId = PlotElementIdentification.Parse(viewModel.ElementIdentification, provider: null);
+        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        await plotService.ReorderPlotElements(targetId, afterId);
+        return RedirectToAction("Edit", "Plot", new { projectId = projectId.Value, PlotFolderId = targetId.PlotFolderId.PlotFolderId });
     }
 
     [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]

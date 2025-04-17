@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
@@ -18,7 +19,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     public int PlotFolderId { get; set; }
 
     [ReadOnly(true)]
-    public IOrderedEnumerable<PlotElementListItemViewModel> Elements { get; private set; }
+    public IReadOnlyList<PlotElementListItemViewModel> Elements { get; private set; }
 
     [ReadOnly(true)]
     public bool HasEditAccess { get; private set; }
@@ -52,11 +53,14 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     }
 
     [MemberNotNull(nameof(TagNames))]
+    [MemberNotNull(nameof(Elements))]
     public void Fill(PlotFolder folder, int? currentUserId, IUriService uriService, ProjectInfo projectInfo)
     {
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
-        Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId, uriService, projectInfo)).OrderBy(e => e.Status);
+        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
+
+        Elements = [.. orderedElements.Select(e => new PlotElementListItemViewModel(e, currentUserId, uriService, projectInfo, [.. orderedElements.Select(x => x.GetId().ToString())]))];
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
         HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
         HasMasterAccess = folder.HasMasterAccess(currentUserId);
@@ -83,7 +87,7 @@ public class EditPlotElementViewModel : IProjectIdAware
         ElementType = (PlotElementTypeView)e.ElementType;
         HasManageAccess = hasManageAccess;
         HasPublishedVersion = e.Published != null;
-        TargetsForDisplay = e.GetTargetLinks().AsObjectLinks(uriService).ToList();
+        Target = e.ToTarget();
     }
 
     [ReadOnly(true)]
@@ -107,13 +111,19 @@ public class EditPlotElementViewModel : IProjectIdAware
     public PlotElementTypeView ElementType { get; }
     public bool HasManageAccess { get; }
     public bool HasPublishedVersion { get; }
-    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
+    public TargetsInfo Target { get; }
 }
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {
 
-    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, IUriService uriService, ProjectInfo projectInfo, int? currentVersion = null, bool printMode = false)
+    public PlotElementListItemViewModel(
+        PlotElement e,
+        int? currentUserId,
+        IUriService uriService,
+        ProjectInfo projectInfo,
+        string[]? itemIdsToParticipateInSort,
+        int? currentVersion = null, bool printMode = false)
     {
         CurrentVersion = currentVersion ?? e.LastVersion().Version;
 
@@ -130,7 +140,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
         PlotElementId = e.PlotElementId;
         PlotElementIdentification = new PlotElementIdentification(projectInfo.ProjectId, e.PlotFolderId, e.PlotElementId);
-        TargetsForDisplay = e.GetTargetLinks().AsObjectLinks(uriService).ToList();
+        Target = e.ToTarget();
         Content = currentVersionText.Content.ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
         ProjectId = e.PlotFolder.ProjectId;
@@ -150,6 +160,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
         PublishedVersion = e.Published;
         PrintMode = printMode;
+        ItemsIds = itemIdsToParticipateInSort;
     }
 
     [ReadOnly(true)]
@@ -185,12 +196,13 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public PlotStatus Status { get; }
 
     [ReadOnly(true)]
-    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
+    public TargetsInfo Target { get; }
 
     public PlotElementTypeView ElementType { get; }
     public bool HasEditAccess { get; }
 
     public bool HasMasterAccess { get; }
+    public bool ShowMoveControl { get; }
     public int CurrentVersion { get; }
 
     public int? PublishedVersion { get; }
@@ -199,4 +211,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public bool PrintMode { get; }
 
     public bool ThisPublished => CurrentVersion == PublishedVersion;
+
+    // Используется для упорядочивания
+    public string[]? ItemsIds { get; }
 }
