@@ -1,0 +1,28 @@
+@using JoinRpg.Web.ProjectCommon
+@if (Target is null)
+{
+    return;
+}
+<b>Для:</b>&nbsp;
+@if (Target.Any())
+{
+    foreach (var target in Target.CharacterTargets.Select(x => new CharacterLinkSlimViewModel(x.CharacterId, x.Name, IsActive: true, ViewMode.Show)))
+    {
+      <CharacterLink Model="target" />
+    }
+
+    foreach (var target in Target.GroupTargets.Select(x => new CharacterGroupLinkSlimViewModel(x.CharacterGroupId, x.Name, IsPublic: true, IsActive: true)))
+    {
+        <CharacterGroupLink Model="target" />
+    }
+}
+else
+{
+    <span>Не установлено</span>
+}
+
+@code{
+    [Parameter]
+    [EditorRequired]
+    public TargetsInfo? Target { get; set; } 
+}

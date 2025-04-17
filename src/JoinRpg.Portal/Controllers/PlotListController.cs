@@ -80,7 +80,6 @@ public class PlotListController(
             new PlotFolderFullListViewModel(
                 folders,
                 currentUser,
-                uriService,
                 projectInfo));
     }
 
@@ -91,7 +90,7 @@ public class PlotListController(
         var folders = (await plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View("FlatList",
-            new PlotFolderFullListViewModel(folders, currentUser, uriService, projectInfo, true));
+            new PlotFolderFullListViewModel(folders, currentUser, projectInfo, true));
     }
 
     private async Task<ActionResult> PlotList(ProjectIdentification projectId, Func<PlotFolder, bool> predicate)

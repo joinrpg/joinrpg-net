@@ -7,6 +7,7 @@
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
 @using JoinRpg.Web.Models.CharacterGroups
+@using JoinRpg.Web.Plots
 
 @{
   ViewBag.Title = Model.ProjectName + " —  заявка " + Model.Navigation.Name;
@@ -441,7 +442,12 @@ new { Model.CharacterId, Model.ProjectId }, null)
     </div>
   </div>
 
-  @await Html.PartialAsync("_PlotForCharacterPartial", Model.Plot)
+<component type="typeof(PlotElementsView)"
+           param-CharacterId="@Model.Plot.CharacterId"
+           param-PlotTexts="@Model.Plot.Elements"
+           param-ShowEditControls="@Model.Plot.ShowEditControls"
+           render-mode="Static" />
+
 
 
   @section scripts

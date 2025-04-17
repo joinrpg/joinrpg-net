@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
+@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 <div class="print-character-main">
     <h1>@Model.CharacterName</h1>
     <p class="print-character-gamename">@Model.ProjectName</p>
@@ -26,7 +26,7 @@
             @foreach (var plot in Model.Plots.Elements)
             {
                 <div class="print-character-plot-element">
-                    @plot.Content
+                    @Html.Raw(plot.Content.Value)
                 </div>
             }
         </div>

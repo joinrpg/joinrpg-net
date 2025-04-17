@@ -23,6 +23,8 @@ public record TargetsInfo(IReadOnlyCollection<CharacterTarget> CharacterTargets,
     public bool HasIntersections(TargetsInfo other) => CharacterTargets.Intersect(other.CharacterTargets).Any() || GroupTargets.Intersect(other.GroupTargets).Any();
 
     public IEnumerable<ILinkableWithName> AllLinks => CharacterTargets.Cast<ILinkableWithName>().Union(GroupTargets);
+
+    public bool Any() => CharacterTargets.Count != 0 || GroupTargets.Count != 0;
 }
 
 public static class TargetsExtensions

@@ -190,7 +190,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Plot = new PlotDisplayViewModel(plotElements,
             currentUserAccessor,
             claim.Character,
-            uriService, projectInfo);
+            projectInfo);
     }
 
     private static JoinSelectListItem ToJoinSelectListItem(Character x)

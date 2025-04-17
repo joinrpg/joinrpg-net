@@ -1,5 +1,6 @@
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Models.Plot
+@using JoinRpg.Web.Plots
 @model PlotFolderFullListViewModel
 
 @{
@@ -10,10 +11,13 @@
 
 @foreach (var item in Model.Folders)
 {
+  
     if (Model.InWorkOnly && !item.HasWorkTodo)
     {
         continue;
     }
+    var elements = item.Elements.Where(e => !Model.InWorkOnly || e.HasWorkTodo).Select(x => x.PlotText).ToArray();
+
     <div style="page-break-inside: avoid">
         <h2>@item.PlotFolderMasterTitle</h2>
         <p>@CountHelper.DisplayCount(item.ElementsCount, "вводная", "вводные", "вводных")</p>
@@ -22,12 +26,12 @@
         <p><b>Доделать</b>: @item.TodoField</p>
         }
 
+        @*TODO: Переключиться на тот же контрол показа вводных, что и в обычном просмотре сюжета, а тот использовать только для персонажей*@
 
         <p>@Html.DisplayFor(modelItem => item.Summary)</p>
-        @foreach (var plot in item.Elements.Where(e => !Model.InWorkOnly  || e.HasWorkTodo))
-        {
-            @await Html.PartialAsync("..//Plot//ShowElementPartial", plot)
-            <hr />
-        }
+        <component type="typeof(PlotElementsView)"
+                   param-PlotTexts="@elements"
+                   param-ShowEditControls="@Model.HasEditAccess"
+                   render-mode="Static" />
     </div>
 }

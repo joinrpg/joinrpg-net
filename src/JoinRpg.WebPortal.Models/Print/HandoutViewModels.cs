@@ -19,7 +19,7 @@ public class HandoutListItemViewModel(string text)
     [Display(Name = "Что раздавать")]
     public string Text { get; } = text;
 
-    public HandoutListItemViewModel(PlotTextDto plotTextDto) : this(plotTextDto.Text.Content.ToPlainText()) { }
+    public HandoutListItemViewModel(PlotTextDto plotTextDto) : this(plotTextDto.Content.ToPlainText()) { }
 }
 
 public class HandoutReportItemViewModel : HandoutListItemViewModel

@@ -68,7 +68,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
             projectInfo,
             accessArguments
             );
-        Plot = new PlotDisplayViewModel (plots, currentUserId, character, uriService, projectInfo);
+        Plot = new PlotDisplayViewModel(plots, currentUserId, character, projectInfo);
 
         HasMasterAccess = accessArguments.MasterAccess;
         CreatedAt = character.CreatedAt;

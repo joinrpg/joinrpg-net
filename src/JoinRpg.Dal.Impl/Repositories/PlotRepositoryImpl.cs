@@ -158,7 +158,8 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
                 Id = new PlotVersionIdentification(r.ProjectId, r.PlotFolderId, r.PlotElementId, r.Version),
                 Latest = r.Latest,
                 Published = r.Published,
-                Text = r.Text,
+                Content = r.Text.Content,
+                TodoField = r.Text.TodoField,
                 IsActive = r.IsActive,
                 Target = new TargetsInfo(
                     [.. r.TargetCharacters.Select(x => new CharacterTarget(x.GetId(), x.CharacterName))],

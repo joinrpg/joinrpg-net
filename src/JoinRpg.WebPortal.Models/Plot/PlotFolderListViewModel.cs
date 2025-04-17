@@ -8,7 +8,6 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Plots;
@@ -17,7 +16,7 @@ namespace JoinRpg.Web.Models.Plot;
 
 public abstract class PlotFolderListViewModelBase(ProjectInfo project, ICurrentUserAccessor currentUser)
 {
-    public bool HasEditAccess { get; } = project.HasMasterAccess(currentUser, Permission.CanManagePlots);
+    public bool HasEditAccess { get; } = project.HasMasterAccess(currentUser, Permission.CanManagePlots) && project.ProjectStatus != ProjectLifecycleStatus.Archived;
 
     public int ProjectId { get; } = project.ProjectId;
     public string ProjectName { get; } = project.ProjectName;
@@ -50,21 +49,17 @@ public class PlotFolderListViewModel : PlotFolderListViewModelBase, IPlotFolderL
     }
 }
 
-public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
+public class PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false) : PlotFolderListViewModelBase(projectInfo, currentUser)
 {
-    public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
-    public bool InWorkOnly { get; }
-
-    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo, bool inWorkOnly = false)
-      : base(projectInfo, currentUser)
-    {
-        InWorkOnly = inWorkOnly;
-        Folders =
+    //TODO правильная сортировка
+    public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; } =
           folders
-            .Select(f => new PlotFolderListFullItemViewModel(f, currentUser, uriService, projectInfo))
+            .Select(f => new PlotFolderListFullItemViewModel(f, currentUser, projectInfo))
             .OrderBy(pf => pf.Status)
             .ThenBy(pf => pf.PlotFolderMasterTitle);
-    }
+    public bool InWorkOnly { get; } = inWorkOnly;
+
+    public bool ShowEditorControls { get; } = projectInfo.HasMasterAccess(currentUser) && projectInfo.ProjectStatus != ProjectLifecycleStatus.Archived;
 }
 
 public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
@@ -73,7 +68,7 @@ public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
     public IEnumerable<PlotElementViewModel> Elements { get; }
     public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
 
-    public PlotFolderListFullItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo) : base(folder, currentUser)
+    public PlotFolderListFullItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo) : base(folder, currentUser)
     {
         Summary = folder.MasterSummary.ToHtmlString();
 
@@ -87,8 +82,7 @@ public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
 
         Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
           .Select(
-            p => new PlotElementViewModel(null, currentUser, linkRenderer, p.GetDtoForLast(), uriService, projectInfo))
-          .MarkFirstAndLast();
+            p => new PlotElementViewModel(null, p.GetDtoForLast().Render(linkRenderer, projectInfo, currentUser), projectInfo.HasMasterAccess(currentUser) && projectInfo.ProjectStatus != ProjectLifecycleStatus.Archived));
     }
 }
 
@@ -103,7 +97,8 @@ public static class PlotTextDtoBuilder
             HasPublished = element.Published != null,
             Latest = true,
             Published = element.Published == version.Version,
-            Text = version,
+            Content = version.Content,
+            TodoField = version.TodoField,
             Id = new PlotVersionIdentification(element.ProjectId, element.PlotFolderId, element.PlotElementId, version.Version),
             IsActive = element.IsActive,
             Target = new TargetsInfo(

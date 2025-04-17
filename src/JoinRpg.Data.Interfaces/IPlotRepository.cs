@@ -33,7 +33,8 @@ public enum PlotVersionFilter
 
 public class PlotTextDto : IOrderableEntity
 {
-    public required PlotElementTexts Text { get; set; }
+    public required MarkdownString Content { get; set; }
+    public required string TodoField { get; set; }
     public required bool Latest { get; set; }
     public required bool Published { get; set; }
 

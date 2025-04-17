@@ -1,0 +1,19 @@
+<JoinButton
+Preset="ButtonPreset.Edit"
+Link="@uri"
+Size="SizeStyleEnum.Small"
+/>
+@code
+{
+    private string uri = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public PlotElementIdentification Id { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        uri = $"/plots/{Id.ProjectId.Value}/edit?PlotFolderId={Id.PlotFolderId.PlotFolderId}#panelPlotElement{Id.PlotElementId}";
+    }
+}
