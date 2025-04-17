@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -14,6 +15,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -26,7 +28,6 @@ public class ClaimController(
     IProjectService projectService,
     IClaimService claimService,
     IGameSubscribeClient gameSubscribeClient,
-    IPlotRepository plotRepository,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterRepository characterRepository,
@@ -38,7 +39,10 @@ public class ClaimController(
     IUserRepository userRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Claim> claimValidator) : ControllerGameBase(projectRepository, projectService, userRepository)
+    IProblemValidator<Claim> claimValidator,
+    ICurrentUserAccessor currentUserAccessor,
+    CharacterPlotViewService characterPlotViewService
+    ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
@@ -109,9 +113,7 @@ public class ClaimController(
 
         var currentUser = await GetCurrentUserAsync().ConfigureAwait(false);
 
-        var plots = claim.IsApproved && claim.Character != null
-          ? await plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
-          : [];
+        var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
         IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
         IEnumerable<AccommodationRequest>? requestForAccommodation = null;
@@ -150,6 +152,7 @@ public class ClaimController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
         var claimViewModel = new ClaimViewModel(currentUser,
+            currentUserAccessor,
             claim,
             plots,
             uriService,

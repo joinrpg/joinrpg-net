@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
-using JoinRpg.Helpers;
-using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;
@@ -15,19 +13,13 @@ public class CheckInClaimModel : IProjectIdAware
 {
     public CheckInClaimModel(Claim claim,
         User currentUser,
-        IReadOnlyCollection<PlotElement>? plotElements,
+        IReadOnlyCollection<PlotTextDto> plotElements,
         IProblemValidator<Claim> claimValidator,
         ProjectInfo projectInfo)
     {
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
+        ArgumentNullException.ThrowIfNull(claim);
 
-        if (currentUser == null)
-        {
-            throw new ArgumentNullException(nameof(currentUser));
-        }
+        ArgumentNullException.ThrowIfNull(currentUser);
 
         Validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         CheckInTime = claim.CheckInDate;
@@ -39,12 +31,7 @@ public class CheckInClaimModel : IProjectIdAware
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
         Master = claim.ResponsibleMasterUser;
-        Handouts =
-          plotElements?.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
-            .Select(e => e.PublishedVersion())
-            .WhereNotNull()
-            .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
-            .ToArray() ?? Array.Empty<HandoutListItemViewModel>();
+        Handouts = [.. plotElements.Select(e => new HandoutListItemViewModel(e))];
         NotFilledFields = Validator.NotFilledFields
           .Select(frp => new NotFilledFieldViewModel(
             frp.Field.CanPlayerEdit

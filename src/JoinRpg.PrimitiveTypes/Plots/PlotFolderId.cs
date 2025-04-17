@@ -23,7 +23,7 @@ public record PlotFolderIdentification(ProjectIdentification ProjectId, int Plot
         };
     }
 
-    public override string ToString() => $"PlotFolder({PlotFolderId}, {ProjectId})";
+    public override string ToString() => $"PlotFolder({ProjectId.Value}-{PlotFolderId})";
     public static PlotFolderIdentification Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => TryParse(s, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(s));
 
     public static PlotFolderIdentification Parse(string s, IFormatProvider? provider) => TryParse(s.AsSpan(), provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(s));

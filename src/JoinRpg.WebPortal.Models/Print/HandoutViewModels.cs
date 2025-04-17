@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -13,26 +14,18 @@ public class HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnly
     public IEnumerable<HandoutReportItemViewModel> Handouts { get; } = elements.Select(e => new HandoutReportItemViewModel(e, characters));
 }
 
-public class HandoutViewModelBase
+public class HandoutListItemViewModel(string text)
 {
-    public HandoutViewModelBase(string text, User master)
-    {
-        Text = text;
-        Master = master;
-    }
-
     [Display(Name = "Что раздавать")]
-    public string Text { get; }
+    public string Text { get; } = text;
 
-    [Display(Name = "Мастер")]
-    public User Master { get; }
+    public HandoutListItemViewModel(PlotTextDto plotTextDto) : this(plotTextDto.Content.ToPlainText()) { }
 }
 
-public class HandoutReportItemViewModel : HandoutViewModelBase
+public class HandoutReportItemViewModel : HandoutListItemViewModel
 {
     public HandoutReportItemViewModel(PlotElement element, IReadOnlyCollection<Character> characters)
-      : base(element.LastVersion().Content.ToPlainText().WithDefaultStringValue("(пустой текст)"),
-          element.LastVersion().AuthorUser)
+      : base(element.LastVersion().Content.ToPlainText().WithDefaultStringValue("(пустой текст)"))
     {
         PlotElementId = element.PlotElementId;
         PlotFolderId = element.PlotFolderId;

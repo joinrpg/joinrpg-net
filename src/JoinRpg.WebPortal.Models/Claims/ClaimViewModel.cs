@@ -1,9 +1,11 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
@@ -99,8 +101,9 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
 
     public ClaimViewModel(User currentUser,
+        ICurrentUserAccessor currentUserAccessor,
       Claim claim,
-      IReadOnlyCollection<PlotElement> plotElements,
+      IReadOnlyCollection<PlotTextDto> plotElements,
       IUriService uriService,
       ProjectInfo projectInfo,
       IProblemValidator<Claim> problemValidator,
@@ -184,18 +187,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
             claim.HasMasterAccess(currentUser.UserId));
 
-        if (claim.IsApproved && claim.Character != null)
-        {
-            var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-            Plot = PlotDisplayViewModel.Published(readOnlyList,
-                currentUser.UserId,
-                claim.Character,
-                uriService, projectInfo);
-        }
-        else
-        {
-            Plot = PlotDisplayViewModel.Empty();
-        }
+        Plot = new PlotDisplayViewModel(plotElements,
+            currentUserAccessor,
+            claim.Character,
+            projectInfo);
     }
 
     private static JoinSelectListItem ToJoinSelectListItem(Character x)

@@ -41,6 +41,8 @@ public class ProjectDetails : IValidatableObject
 
     public string FieldsOrdering { get; set; }
 
+    public string? PlotFoldersOrdering { get; set; }
+
     [ForeignKey(nameof(DefaultTemplateCharacter))]
     public int? DefaultTemplateCharacterId { get; set; }
 
@@ -52,13 +54,13 @@ public class ProjectDetails : IValidatableObject
         {
             if (CharacterNameField.FieldType != ProjectFieldType.String || CharacterNameField.FieldBoundTo != FieldBoundTo.Character)
             {
-                yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterNameField) });
+                yield return new ValidationResult("Incorrect type of field", [nameof(CharacterNameField)]);
             }
         }
         if (CharacterDescription != null &&
             (CharacterDescription.FieldType != ProjectFieldType.Text || CharacterDescription.FieldBoundTo != FieldBoundTo.Character))
         {
-            yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterDescription) });
+            yield return new ValidationResult("Incorrect type of field", [nameof(CharacterDescription)]);
         }
     }
 }

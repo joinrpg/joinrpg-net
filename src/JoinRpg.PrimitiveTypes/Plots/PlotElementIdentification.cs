@@ -24,7 +24,7 @@ public record class PlotElementIdentification(PlotFolderIdentification PlotFolde
         => plotElementId is not null && plotFolderId is not null ? new PlotElementIdentification(plotFolderId, plotElementId.Value) : null;
 
     public override string ToString() => $"PlotElement({ProjectId.Value}-{PlotFolderId.PlotFolderId}-{PlotElementId})";
-    static PlotElementIdentification ISpanParsable<PlotElementIdentification>.Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
+    public static PlotElementIdentification Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
 
     static PlotElementIdentification IParsable<PlotElementIdentification>.Parse(string value, IFormatProvider? provider)

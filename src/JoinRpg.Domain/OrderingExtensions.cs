@@ -19,8 +19,14 @@ public static class OrderingExtensions
     public static IReadOnlyList<PlotElement> GetOrderedPlots(this Character character, IReadOnlyCollection<PlotElement> elements)
       => character.GetCharacterPlotContainer(elements).OrderedItems;
 
+    public static IReadOnlyList<PlotElementTexts> GetOrderedPlots(this Character character, IReadOnlyCollection<PlotElementTexts> elements)
+  => character.GetCharacterPlotContainer(elements).OrderedItems;
+
     public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
       IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots.OrderBy(pe => pe.PlotFolderId), character.PlotElementOrderData, preserveOrder: true);
+
+    public static VirtualOrderContainer<PlotElementTexts> GetCharacterPlotContainer(this Character character,
+  IReadOnlyCollection<PlotElementTexts> plots) => VirtualOrderContainerFacade.Create(plots, character.PlotElementOrderData, preserveOrder: true);
 
     public static IReadOnlyList<ProjectFieldDropdownValue> GetOrderedValues(this ProjectField field)
       => field.GetFieldValuesContainer().OrderedItems;
@@ -35,4 +41,12 @@ public static class OrderingExtensions
     public static VirtualOrderContainer<ProjectField> GetFieldsContainer(
       this Project field)
       => VirtualOrderContainerFacade.Create(field.ProjectFields, field.Details.FieldsOrdering);
+
+    public static VirtualOrderContainer<PlotFolder> GetPlotFoldersContainer(this Project field)
+        => VirtualOrderContainerFacade.Create(field.PlotFolders, field.Details.PlotFoldersOrdering);
+
+    public static IReadOnlyList<PlotFolder> GetOrderedPlotFolders(this Project field) => field.GetPlotFoldersContainer().OrderedItems;
+
+    public static VirtualOrderContainer<PlotElement> GetPlotElementsContainer(this PlotFolder field)
+        => VirtualOrderContainerFacade.Create(field.Elements, field.ElementsOrdering);
 }

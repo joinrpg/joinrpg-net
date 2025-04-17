@@ -14,6 +14,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Plots;
+using JoinRpg.WebComponents.ElementMoving;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
@@ -99,12 +100,12 @@ public class PlotController(
 
     #region Create elements & handouts
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> CreateElement(int projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
+    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
     {
         var folders = await plotRepository.GetPlots(projectId);
         if (folders.Count == 0)
         {
-            return RedirectToAction("Create", "Plot", new { projectId });
+            return RedirectToAction("Create", "Plot", new { projectId = projectId.Value });
         }
 
         PlotElement? originalElement = null;
@@ -116,11 +117,13 @@ public class PlotController(
                 originalElement = originalElementFolder.Elements.Single(e => e.PlotElementId == copyFrom.PlotElementId);
             }
         }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new AddPlotElementViewModel()
         {
             ProjectId = projectId,
             PlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId,
-            HasPlotEditAccess = folders.First().HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
+            HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             Content = originalElement?.LastVersion().Content.Contents ?? AddPlotElementViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersion().TodoField ?? "",
             Targets = originalElement?.GetElementBindingsForEdit() ?? [],
@@ -381,6 +384,24 @@ public class PlotController(
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
             uriService, projectInfo, version, printMode));
+    }
+
+    [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
+    public async Task<RedirectToActionResult> ReorderFolder(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
+    {
+        var plotFolderId = PlotFolderIdentification.Parse(viewModel.ElementIdentification, provider: null);
+        var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        await plotService.ReorderPlots(plotFolderId, afterPlotFolderId);
+        return RedirectToAction("Index", "PlotList", new { projectId = projectId.Value });
+    }
+
+    [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
+    public async Task<RedirectToActionResult> ReorderByCharacter(ProjectIdentification projectId, int characterId, ElementMoveCommandViewModel viewModel)
+    {
+        var targetId = PlotElementIdentification.Parse(viewModel.ElementIdentification, provider: null);
+        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        await plotService.ReorderPlotByChar(new CharacterIdentification(projectId, characterId), targetId, afterId);
+        return RedirectToAction("Details", "Character", new { projectId = projectId.Value, characterId });
     }
 
 }

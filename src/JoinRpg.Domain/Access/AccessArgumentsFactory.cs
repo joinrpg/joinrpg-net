@@ -4,6 +4,13 @@ using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain.Access;
 
+public enum CharacterAccessMode
+{
+    Usual,
+    Print,
+    SendClaim
+}
+
 public static class AccessArgumentsFactory
 {
     public static AccessArguments Create(Character character, int? userId)
@@ -19,10 +26,16 @@ public static class AccessArgumentsFactory
             );
     }
 
-    public static AccessArguments Create(Character character, ICurrentUserAccessor user)
+    public static AccessArguments Create(Character character, ICurrentUserAccessor user, CharacterAccessMode mode = CharacterAccessMode.Usual)
     {
-        ArgumentNullException.ThrowIfNull(user);
-        return Create(character, user?.UserIdOrDefault);
+        ArgumentNullException.ThrowIfNull(character);
+        return mode switch
+        {
+            CharacterAccessMode.Usual => Create(character, user?.UserIdOrDefault),
+            CharacterAccessMode.Print => CreateForPrint(character, user?.UserIdOrDefault),
+            CharacterAccessMode.SendClaim => CreateForAdd(character, user?.UserIdOrDefault),
+            _ => throw new NotImplementedException(),
+        };
     }
 
     /// <summary>

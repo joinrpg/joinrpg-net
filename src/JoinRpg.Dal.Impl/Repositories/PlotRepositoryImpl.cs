@@ -1,8 +1,11 @@
 using System.Data.Entity;
+using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -49,13 +52,14 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
           .Where(pf => pf.ProjectId == projectid)
           .ToListAsync();
 
-    public async Task<List<PlotFolder>> GetPlots(int project)
+    public async Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId)
     {
-        await LoadProjectGroups(project); //TODO[GroupsLoad] it's unclear why we need this
-        return await Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Elements)
-          .Where(pf => pf.ProjectId == project)
-          .ToListAsync();
+        var project = await Ctx.Set<Project>()
+          .Include(p => p.PlotFolders.Select(pf => pf.Elements))
+          .Include(p => p.Details)
+          .SingleAsync(pf => pf.ProjectId == projectId.Value);
+
+        return VirtualOrderContainerFacade.Create(project.PlotFolders, project.Details.PlotFoldersOrdering).OrderedItems;
     }
 
     public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)
@@ -99,4 +103,91 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
           .Where(pf => pf.ProjectId == projectid && pf.PlotTags.Any(tag => tag.TagName == tagname))
           .ToListAsync();
     }
+
+    public async Task<IReadOnlyCollection<PlotTextDto>> GetPlotsBySpecification(PlotSpecification plotSpecification)
+    {
+        Expression<Func<PlotElement, bool>> targetPredicate = GetTargetPredicate(plotSpecification.Targets);
+
+        var dataset = Ctx.Set<PlotElementTexts>()
+            .Include(e => e.PlotElement.TargetCharacters)
+            .Include(e => e.PlotElement.TargetGroups)
+            .Include(e => e.PlotElement.PlotFolder);
+
+        var query = from text in dataset.AsExpandable()
+                    let element = text.PlotElement
+                    where element.IsActive && element.ElementType == plotSpecification.PlotElementType
+                    where
+                      targetPredicate.Invoke(element)
+                    let maxVersion = element.Texts.Max(t => t.Version)
+                    select new
+                    {
+                        PlotElement = element,
+                        Text = text,
+                        Latest = text.Version == maxVersion,
+                        Published = element.Published == text.Version,
+                        HasPublished = element.Published != null,
+                        Completed = element.Published == maxVersion,
+                        element.ProjectId,
+                        element.PlotFolderId,
+                        element.PlotElementId,
+                        text.Version,
+                        element.IsActive,
+                        element.TargetGroups,
+                        element.TargetCharacters,
+                    };
+
+        var resultQuery = plotSpecification.VersionFilter switch
+        {
+            PlotVersionFilter.PublishedVersion => query.Where(x => x.Published),
+            PlotVersionFilter.LatestVersion => query.Where(x => x.Latest),
+            _ => throw new NotImplementedException(),
+        };
+        var result = await resultQuery.ToListAsync();
+
+
+        if (result.Count == 0)
+        {
+            return [];
+        }
+
+        var typedResult = result
+            .Select(r => new PlotTextDto()
+            {
+                Completed = r.Completed,
+                HasPublished = r.HasPublished,
+                Id = new PlotVersionIdentification(r.ProjectId, r.PlotFolderId, r.PlotElementId, r.Version),
+                Latest = r.Latest,
+                Published = r.Published,
+                Content = r.Text.Content,
+                TodoField = r.Text.TodoField,
+                IsActive = r.IsActive,
+                Target = new TargetsInfo(
+                    [.. r.TargetCharacters.Select(x => new CharacterTarget(x.GetId(), x.CharacterName))],
+                    [.. r.TargetGroups.Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))])
+            }
+            ).ToArray();
+
+        // Загружаем порядок
+        var projectId = typedResult.First().Id.ProjectId;
+        var folderOrdering = await Ctx.Set<Project>().Where(p => p.ProjectId == projectId).Select(p => p.Details.PlotFoldersOrdering).SingleAsync();
+        var elementOrderingDict = await Ctx.Set<PlotFolder>().Where(p => p.ProjectId == projectId)
+            .ToDictionaryAsync(x => x.PlotFolderId, x => x.ElementsOrdering);
+
+        return [..
+            typedResult
+            .GroupBy(e => e.Id.PlotFolderId.PlotFolderId)
+            .OrderByStoredOrder(e => e.Key, folderOrdering)
+            .SelectMany(f => f.OrderByStoredOrder(e => e.Id.PlotElementId.PlotElementId, elementOrderingDict[f.Key]))
+            ];
+    }
+
+    private Expression<Func<PlotElement, bool>> GetTargetPredicate(TargetsInfo targets)
+    {
+        var charIds = targets.CharacterTargets.Select(x => x.CharacterId.CharacterId).ToList();
+        var groupIds = targets.GroupTargets.Select(x => x.CharacterGroupId.CharacterGroupId).ToList();
+        return element => element.TargetCharacters.Any(ch => charIds.Contains(ch.CharacterId)) ||
+                      element.TargetGroups.Any(g => groupIds.Contains(g.CharacterGroupId));
+    }
+
+    public Task<IReadOnlyCollection<HandoutDto>> GetHandoutsPlotsBySpecification(PlotSpecification plotSpecification) => throw new NotImplementedException();
 }

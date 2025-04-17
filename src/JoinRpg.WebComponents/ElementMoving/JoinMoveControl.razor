@@ -1,0 +1,58 @@
+@if (RendererInfo.IsInteractive)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">Это компонент пока не поддерживает интерактивный рендеринг</JoinAlert>
+    return;
+}
+<div class="btn-group">
+    @* Добавить сюда кнопочку "поместить после", которая вызывает диалог *@
+    @if (showUp)
+    {
+        <form method="post" action="@Endpoint">
+            <input type="hidden" name="MoveAfterIdentification" value="@targetIfUp" />
+            <input type="hidden" name="ElementIdentification" value="@SelfId" />
+            <AntiforgeryToken />
+            <JoinButton Preset="ButtonPreset.Up" Size="SizeStyleEnum.Small" Title="Переместить вверх" Submit=true />
+        </form>
+    }
+    @if (showDown)
+    {
+        <form method="post" action="@Endpoint">
+            <input type="hidden" name="MoveAfterIdentification" value="@targetIfDown" />
+            <input type="hidden" name="ElementIdentification" value="@SelfId" />
+            <AntiforgeryToken />
+            <JoinButton Preset="ButtonPreset.Down" Size="SizeStyleEnum.Small" Title="Переместить вниз" Submit=true />
+        </form>
+    }
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string[] ItemIds { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public string SelfId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public string Endpoint { get; set; } = null!;
+
+    private string? targetIfUp, targetIfDown;
+
+    private bool showUp, showDown;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var idx = Array.IndexOf(ItemIds, SelfId);
+        if (idx == -1)
+        {
+            throw new InvalidOperationException("SelfId не найден в ItemIds");
+        }
+        targetIfUp = idx > 1 ? ItemIds[idx - 2] : null;
+        showUp = idx > 0;
+        targetIfDown = idx < (ItemIds.Length -1) ? ItemIds[idx + 1] : null;
+        showDown = idx < ItemIds.Length - 1;
+    }
+}

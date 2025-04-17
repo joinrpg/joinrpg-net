@@ -20,4 +20,5 @@ public enum ButtonPreset
     Copy,
     Up,
     Down,
+    Edit,
 }

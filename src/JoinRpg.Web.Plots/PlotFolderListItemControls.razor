@@ -1,0 +1,50 @@
+@using JoinRpg.WebComponents.ElementMoving;
+
+@if (List.HasMasterAccess && Item.Status != PlotStatus.Deleted)
+{
+    <div class="btn-group btn-group-sm" style="display: inline-block">
+
+        <JoinButton
+        Link="@createElementUri"
+        Preset="ButtonPreset.Add"
+        Label="Добавить вводную"
+        />
+        @if (List.HasEditAccess)
+        {
+            <JoinButton Link="@deletePlotUri"
+            Preset="ButtonPreset.Delete"
+            Label="Удалить" />
+        }
+    </div>
+    <text>&nbsp;</text>
+    @if (List.HasEditAccess)
+    {
+            @*Здесь нужна кнопка восстановить *@
+            <JoinMoveControl Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
+    }
+
+
+}
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public IPlotFolderListItemViewModel Item {get;set;}  = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public IPlotFolderListViewModel List { get; set; } = null!;
+
+    public string createElementUri = null!;
+    public string deletePlotUri = null!;
+    public string reorderPlotUri = null!;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        createElementUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/createelement?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
+        deletePlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/delete?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
+        reorderPlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/reorderfolder";
+    }
+}

@@ -1,0 +1,81 @@
+@using JoinRpg.Web
+@using JoinRpg.Web.Plots
+@using JoinRpg.WebComponents.ElementMoving
+
+@if (PlotTexts.Count == 0)
+{
+    return;
+}
+
+<JoinPanel>
+    <Header>
+        @if (ShowEditControls)
+        {
+            @CountHelper.DisplayCount(PlotTexts.Count, "загруз", "загруза", "загрузов")
+        }
+        else
+        {
+            <text>Загруз</text>
+        }
+    </Header>
+    <Body>
+        @foreach (var plotText in PlotTexts)
+        {
+            var hideClass = plotText.PlotStatus == PlotStatus.InWork ? "world-object-hidden" : "";
+            string id = @"pe" + plotText.PlotVersionId.PlotElementId.PlotElementId;
+
+            <div id="@id">
+                <div>
+                    <PlotStatusBadge Status="plotText.PlotStatus" />
+                    <PlotTargetDisplay Target="plotText.Target" />
+
+                    @if (ShowEditControls)
+                    {
+                        <EditPlotElementButton Id="plotText.PlotVersionId.PlotElementId" />
+                    }
+                    @if (ShowEditControls && CharacterId != null)
+                    {
+                        <JoinMoveControl Endpoint="@endpoint" SelfId="@plotText.PlotVersionId.PlotElementId.ToString()" ItemIds="@itemIds" />
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(plotText.Todo?.Value))
+                {
+                    <p><b>Доделать</b>: @plotText.Todo</p>
+                }
+
+                <div class="@hideClass">
+                    @plotText.Content
+                </div>
+            </div>
+        }
+    </Body>
+</JoinPanel>
+
+@code
+{
+    private string endpoint = null!;
+    private string[] itemIds = null!;
+
+    // TODO: Убрать использование в FlatList.cshtml и использовать только для персонажей
+    [Parameter]
+    public CharacterIdentification? CharacterId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<PlotRenderedTextViewModel> PlotTexts { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public bool ShowEditControls { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (CharacterId is not null)
+        {
+            endpoint = $"/{CharacterId.ProjectId.Value}/plot/ReorderByCharacter?characterId={CharacterId.CharacterId}";
+            itemIds = [..PlotTexts.Select(x => x.PlotVersionId.PlotElementId.ToString())];
+        }
+    }
+}

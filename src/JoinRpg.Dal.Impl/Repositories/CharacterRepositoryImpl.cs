@@ -30,8 +30,7 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
 
     public Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
-        EnsureSameProject(characterIds);
-        return GetCharacters(characterIds.First().ProjectId, [.. characterIds.Select(c => c.CharacterId)]);
+        return GetCharacters(characterIds.First().ProjectId, [.. characterIds.EnsureSameProject().Select(c => c.CharacterId)]);
     }
 
     public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
@@ -161,7 +160,7 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
 
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
-        EnsureSameProject(characterIds);
+        characterIds.EnsureSameProject();
 
         if (characterIds.Count == 0)
         {

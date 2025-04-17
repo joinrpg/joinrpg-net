@@ -1,4 +1,5 @@
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
 public record class ProjectInfo
@@ -87,5 +88,10 @@ public record class ProjectInfo
             throw new InvalidOperationException();
         }
         return UnsortedFields.Single(f => f.Id.ProjectFieldId == id.ProjectFieldId);
+    }
+
+    public bool HasMasterAccess(UserIdentification userId, Permission permission = Permission.None)
+    {
+        return Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(permission));
     }
 }
