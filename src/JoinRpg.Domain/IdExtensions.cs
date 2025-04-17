@@ -10,4 +10,6 @@ public static class IdExtensions
     public static PlotElementIdentification GetId(this PlotElement id) => new PlotElementIdentification(id.ProjectId, id.PlotFolderId, id.PlotElementId);
 
     public static CharacterGroupIdentification GetId(this CharacterGroup group) => new CharacterGroupIdentification(group.ProjectId, group.CharacterGroupId);
+
+    public static ProjectFieldVariantIdentification GetId(this ProjectFieldDropdownValue variant) => new(variant.ProjectId, variant.ProjectFieldId, variant.ProjectFieldDropdownValueId);
 }

@@ -272,7 +272,15 @@ internal class CloneProjectHelper(
                 {
                     continue; // Это поле было удалено, следовательно его значение мы не переносим.
                 }
-                setFieldsRequest.Add(newFieldId.ProjectFieldId, originalFieldValue.Value);
+
+                var value = originalFieldValue.Value;
+
+                if (originalFieldValue.Field.HasValueList)
+                {
+                    // Нам нужно смеппить старые значения на новые
+                    value = string.Join(",", originalFieldValue.GetDropdownValues().Select(x => VariantMapping[x.Id].ProjectFieldVariantId.ToString()));
+                }
+                setFieldsRequest.Add(newFieldId.ProjectFieldId, value);
             }
             List<CharacterGroupIdentification> parentCharacterGroupIds = [..
                 TryMapOriginalGroupIds(originalChar.ParentCharacterGroupIds)
