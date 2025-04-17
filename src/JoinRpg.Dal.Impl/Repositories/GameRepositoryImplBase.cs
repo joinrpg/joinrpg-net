@@ -1,7 +1,5 @@
 using System.Data.Entity;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -67,13 +65,5 @@ internal class GameRepositoryImplBase : RepositoryImplBase
           .Include(p => p.CharacterGroups)
           .Where(p => p.ProjectId == projectId)
           .LoadAsync();
-    }
-
-    protected static void EnsureSameProject(IReadOnlyCollection<IProjectEntityId> entityId, [CallerArgumentExpression(nameof(entityId))] string name = "entityId")
-    {
-        if (entityId.Select(c => c.ProjectId).Distinct().Count() > 1)
-        {
-            throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", name);
-        }
     }
 }
