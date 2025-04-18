@@ -120,7 +120,7 @@ public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderL
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
         ProjectId = folder.ProjectId;
         Status = folder.GetStatus();
-        ElementsCount = folder.Elements.Count;
+        ElementsCount = folder.Elements.Count(x => x.IsActive);
         TodoField = folder.TodoField;
         HasEditAccess = folder.HasMasterAccess(currentUser, Permission.CanManagePlots) && folder.Project.Active;
     }
