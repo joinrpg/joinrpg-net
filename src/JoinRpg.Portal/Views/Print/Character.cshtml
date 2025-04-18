@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
+@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 
 @{
     Layout = null;
@@ -11,10 +11,12 @@
     <title>@Model.ProjectName: @Model.CharacterName</title>
     <link href="~/css/print.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
+    <style>
+        @Html.Raw("@page { @top-center { content: 'Вводная " + Model.CharacterName + " (" + Model.ProjectName + ") , стр. ' counter(page) } } ")
+    </style>
 </head>
 <body>
 <div>
-    @await Html.PartialAsync("CharacterListHeader", Model)
     @await Html.PartialAsync("PrintCharacter", Model)
 </div>
 </body>
