@@ -159,8 +159,9 @@
             <div class="btn-group btn-group-sm" style="display: inline-block">
                 <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
                    class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
+            
+            @Html.MoveControl(model => item, "Move")
             </div>
-            @Html.MoveControl(model => item, "Move");
             }
         </td>
     </tr>
