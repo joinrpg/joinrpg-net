@@ -273,13 +273,7 @@ internal class CloneProjectHelper(
                     continue; // Это поле было удалено, следовательно его значение мы не переносим.
                 }
 
-                var value = originalFieldValue.Value;
-
-                if (originalFieldValue.Field.HasValueList)
-                {
-                    // Нам нужно смеппить старые значения на новые
-                    value = string.Join(",", originalFieldValue.GetDropdownValues().Select(x => VariantMapping[x.Id].ProjectFieldVariantId.ToString()));
-                }
+                var value = MapFieldValue(originalFieldValue);
                 setFieldsRequest.Add(newFieldId.ProjectFieldId, value);
             }
             List<CharacterGroupIdentification> parentCharacterGroupIds = [..
@@ -302,6 +296,27 @@ internal class CloneProjectHelper(
             everythingFine = false;
         }
 
+    }
+
+    private string? MapFieldValue(FieldWithValue originalFieldValue)
+    {
+        if (!originalFieldValue.Field.HasValueList)
+        {
+            return originalFieldValue.Value;
+        }
+
+        // Нам нужно смеппить старые значения на новые
+        List<ProjectFieldVariantIdentification> values = [];
+        foreach (var originalValue in originalFieldValue.GetDropdownValues())
+        {
+            var newFieldValue = VariantMapping.GetValueOrDefault(originalValue.Id);
+            if (newFieldValue is not null) // Если не нашли, значит этот вариант удалили, следовательно мы его не переносим
+            {
+                values.Add(newFieldValue);
+            }
+        }
+
+        return string.Join(",", values.Select(x => x.ProjectFieldVariantId.ToString()));
     }
 
     private async Task CopyPlot()
