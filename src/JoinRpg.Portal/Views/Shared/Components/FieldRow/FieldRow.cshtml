@@ -1,64 +1,68 @@
-﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models
 @using JoinRpg.Web.ProjectCommon.Fields
 @model JoinRpg.Web.Models.FieldSetup.GameFieldEditViewModel
 
 @{
     var item = Model;
 }
-    <tr>
-        <td>
-            <b class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Name)</b>@Html.DisplayFor(modelItem => item.MandatoryStatus)
-            <br />
-            @Html.DisplayFor(modelItem => item.FieldViewType)
-            <br />
-            @if (item.FieldBoundTo == FieldBoundToViewModel.Claim)
-            {
-              <span class="label label-primary">Привязано к заявке</span>
-            }
-        </td>
-        <td>
-            @if (item.IsPublic)
-            {
+<tr>
+    <td>
+        <b class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Name)</b>@Html.DisplayFor(modelItem => item.MandatoryStatus)
+        <br />
+        @Html.DisplayFor(modelItem => item.FieldViewType)
+        <br />
+        @if (item.FieldBoundTo == FieldBoundToViewModel.Claim)
+        {
+            <span class="label label-primary">Привязано к заявке</span>
+        }
+    </td>
+    <td>
+        @if (item.IsPublic)
+        {
             <span class="label label-success">Публичное</span>
-            }
-            else if (item.CanPlayerView)
-            {
+        }
+        else if (item.CanPlayerView)
+        {
             <span class="label label-info">Видно игроку</span>
-            }
-            else
-            {
+        }
+        else
+        {
             <span class="label label-default">Только мастерам</span>
-            }
-            <br />
-            @if (item.CanPlayerEdit)
-            {
+        }
+        <br />
+        @if (item.CanPlayerEdit)
+        {
             <span class="label label-warning">Игрок может менять</span>
-            }
-        </td>
-        <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
-        <td>@item.DescriptionDisplay @item.MasterDescriptionDisplay</td>
-        <td>
-            @if (item.HasValueList)
-            {
+        }
+    </td>
+    <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
+    <td>@item.DescriptionDisplay @item.MasterDescriptionDisplay</td>
+    <td>
+        @if (item.HasValueList)
+        {
             <ul>
                 @foreach (var value in item.DropdownValues)
-                    {
-                <li>
-                  @if (value.CharacterGroupId is not null)
-                  {
-                    <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@item.ProjectId" asp-route-CharacterGroupId="@value.CharacterGroupId">
-                      @if (!value.IsActive)
-                      {
-                        <del>@value.Label</del>
-                      }
-                      else
-                      {
-                        @value.Label
-                      }
+                {
+                    <li>
+                        @if (value.CharacterGroupId is not null)
+                        {
+                            <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@item.ProjectId" asp-route-CharacterGroupId="@value.CharacterGroupId">
+                                @if (!value.IsActive)
+                                {
+                                    <del>@value.Label</del>
+                                }
+                                else
+                                {
+                                    @value.Label
+                                }
 
-                    </a>
-                  }
-                </li>
+                            </a>
+                        }
+                        else
+                        {
+                            @value.Label
+                        }
+                    </li>
                     }
                 @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
                     {
