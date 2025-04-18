@@ -72,46 +72,30 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     public bool HasMasterAccess { get; private set; }
 }
 
-public class EditPlotElementViewModel : IProjectIdAware
+public class EditPlotElementViewModel(PlotElement e, bool hasManageAccess, int? version) : IProjectIdAware
 {
-
-    public EditPlotElementViewModel(PlotElement e, bool hasManageAccess, IUriService uriService)
-    {
-        PlotElementId = e.PlotElementId;
-        Targets = e.GetElementBindingsForEdit();
-        Content = e.LastVersion().Content.Contents ?? "";
-        TodoField = e.LastVersion().TodoField;
-        ProjectId = e.PlotFolder.ProjectId;
-        PlotFolderId = e.PlotFolderId;
-        Status = e.GetStatus();
-        ElementType = (PlotElementTypeView)e.ElementType;
-        HasManageAccess = hasManageAccess;
-        HasPublishedVersion = e.Published != null;
-        Target = e.ToTarget();
-    }
-
     [ReadOnly(true)]
-    public int ProjectId { get; }
+    public int ProjectId { get; } = e.PlotFolder.ProjectId;
     [ReadOnly(true)]
-    public int PlotFolderId { get; }
+    public int PlotFolderId { get; } = e.PlotFolderId;
     [ReadOnly(true)]
-    public int PlotElementId { get; }
+    public int PlotElementId { get; } = e.PlotElementId;
 
     [Display(Name = "Для кого")]
-    public IEnumerable<string> Targets { get; set; }
+    public IEnumerable<string> Targets { get; set; } = e.GetElementBindingsForEdit();
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
-    public string Content { get; set; }
+    public string Content { get; set; } = (version is null ? e.LastVersion() : e.SpecificVersion(version.Value))?.Content.Contents ?? "";
 
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
-    public string TodoField { get; set; }
+    public string TodoField { get; set; } = e.LastVersion().TodoField;
 
     [ReadOnly(true), Display(Name = "Статус")]
-    public PlotStatus Status { get; }
+    public PlotStatus Status { get; } = e.GetStatus();
 
-    public PlotElementTypeView ElementType { get; }
-    public bool HasManageAccess { get; }
-    public bool HasPublishedVersion { get; }
-    public TargetsInfo Target { get; }
+    public PlotElementTypeView ElementType { get; } = (PlotElementTypeView)e.ElementType;
+    public bool HasManageAccess { get; } = hasManageAccess;
+    public bool HasPublishedVersion { get; } = e.Published != null;
+    public TargetsInfo Target { get; } = e.ToTarget();
 }
 
 public class PlotElementListItemViewModel : IProjectIdAware

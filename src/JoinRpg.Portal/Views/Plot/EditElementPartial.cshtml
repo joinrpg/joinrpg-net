@@ -54,17 +54,21 @@
                     @Html.DisplayFor(model => model.Author)
                 }
             </span>
-            var orderElementsEndpoint = Url.Action("ReorderElements", "Plot", new { Model.ProjectId });
-            <component type="typeof(JoinMoveControl)"
-                       render-mode="Static"
-                       param-Endpoint="@orderElementsEndpoint"
-                       param-SelfId="@Model.PlotElementIdentification.ToString()"
-                       param-ItemIds="@Model.ItemsIds" />
+
+            @if (Model.ItemsIds is not null)
+            {
+                var orderElementsEndpoint = Url.Action("ReorderElements", "Plot", new { Model.ProjectId });
+                <component type="typeof(JoinMoveControl)"
+                  render-mode="Static"
+                  param-Endpoint="@orderElementsEndpoint"
+                  param-SelfId="@Model.PlotElementIdentification.ToString()"
+                  param-ItemIds="@Model.ItemsIds" />
+            }
         }
         <div>
             <component type="typeof(PlotTargetDisplay)"
-                       render-mode="Static"
-                       param-Target="@Model.Target" />
+            render-mode="Static"
+            param-Target="@Model.Target" />
         </div>
         @if (Model.HasMasterAccess)
         {
@@ -116,14 +120,29 @@
                     <span class="glyphicon glyphicon-print"></span>
                     Печать
                 </a>
+                string? editUrl;
+                string editLabel;
                 if (Model.NextModifiedDateTime == null)
                 {
-                    <a class="btn btn-default btn-sm"
-                    href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                        Изменить
-                    </a>
-
+                    editUrl = Url.Action("EditElement", "Plot", new { Model.ProjectId, elementId = Model.PlotElementIdentification }, null);
+                    editLabel = "Изменить";
+                }
+                else
+                {
+                    editUrl = Url.Action("EditElement", "Plot", new { Model.ProjectId, elementId = Model.PlotElementIdentification, Version = Model.CurrentVersion }, null);
+                    editLabel = "Вернуть эту версию";
+                    
+                }
+                <component
+                  type="typeof(JoinButton)"
+                  render-mode="Static"
+                  param-Link="@editUrl"
+                  param-Label="@editLabel"
+                           param-Preset="@ButtonPreset.Edit"
+                  param-Size="@SizeStyleEnum.Small"
+                  />
+                if (Model.NextModifiedDateTime == null)
+                {
                     if ((Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null))
                     {
                         if (Model.HasEditAccess)

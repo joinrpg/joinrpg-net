@@ -271,16 +271,22 @@ public class PlotController(
     private ActionResult ReturnToPlot(PlotFolderIdentification plotFolderId) => RedirectToAction("Edit", new { projectId = plotFolderId.ProjectId.Value, plotFolderId = plotFolderId.PlotFolderId });
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
+    public async Task<ActionResult> EditElement(ProjectIdentification projectId, PlotElementIdentification elementId, int? version)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
+        if (elementId.ProjectId != projectId)
+        {
+            return NotFound();
+        }
+        var folder = await plotRepository.GetPlotFolderAsync(elementId.PlotFolderId);
         if (folder == null)
         {
             return NotFound();
         }
-        var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid),
-          folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots),
-            uriService);
+        var viewModel = new EditPlotElementViewModel(
+            folder.Elements.Single(e => e.PlotElementId == elementId.PlotElementId),
+            folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots),
+            version
+            );
         return View(viewModel);
     }
 
