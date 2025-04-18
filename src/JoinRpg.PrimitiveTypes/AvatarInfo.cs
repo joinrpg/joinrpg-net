@@ -7,4 +7,6 @@ public record AvatarInfo(Uri Uri, int Height, int Width)
     {
 
     }
+
+    public static AvatarInfo? FromOptional(string? uri, int size) => uri is null ? null : new AvatarInfo(new Uri(uri), size);
 }
