@@ -12,7 +12,7 @@ internal class HotCharactersRepository(MyDbContext ctx) : RepositoryImplBase(ctx
     {
         var query = Ctx.ProjectsSet
             .AsExpandable()
-            .Where(ProjectPredicates.Active())
+            .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
             .SelectMany(c => c.Characters)
             .Where(CharacterPredicates.Hot())
             .Apply(pagination, c => c.CharacterId)
