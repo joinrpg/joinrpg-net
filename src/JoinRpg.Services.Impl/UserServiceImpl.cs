@@ -143,7 +143,7 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramId telegramId, AvatarInfo avatarInfo)
+    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramId telegramId, AvatarInfo? avatarInfo)
     {
         logger.LogInformation("About to link user: {userId} to {telegramId}", userId, telegramId);
         var user = await UserRepository.WithProfile(userId);
@@ -151,7 +151,10 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         user.Extra ??= new UserExtra();
         user.Extra.Telegram = string.IsNullOrWhiteSpace(telegramId.UserName?.Value) ? user.Extra.Telegram : telegramId.UserName;
 
-        await AddSocialAvatarImplAsync(avatarInfo, user, "telegram");
+        if (avatarInfo is not null)
+        {
+            await AddSocialAvatarImplAsync(avatarInfo, user, "telegram");
+        }
 
         await UnitOfWork.SaveChangesAsync();
     }

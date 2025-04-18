@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces;
 
@@ -22,7 +21,7 @@ public interface IUserService
     Task SetVkIfNotSetWithoutAccessChecks(int id, VkId vkId, AvatarInfo avatarInfo);
 
 
-    Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramId telegramId, AvatarInfo avatarInfo);
+    Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramId telegramId, AvatarInfo? avatarInfo);
     Task RemoveVkFromProfile(int id);
     Task RemoveTelegramFromProfile(int id);
 }
