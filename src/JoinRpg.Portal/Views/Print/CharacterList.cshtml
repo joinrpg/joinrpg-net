@@ -1,7 +1,7 @@
-﻿@model JoinRpg.Web.Models.Print.PrintCharacterViewModel[]
+@model JoinRpg.Web.Models.Print.PrintCharacterViewModel[]
 
 @{
-  Layout = null;
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -11,11 +11,13 @@
     <title>@Model.First().ProjectName</title>
     <link href="~/css/print.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
+    <style>
+      @Html.Raw("@page { @top-center { content: 'Загрузы игры " + Model.First().ProjectName + "'} } ")
+    </style>
 </head>
 <body>
     @foreach (var item in Model)
     {
-        @await Html.PartialAsync("CharacterListHeader", item)
         @await Html.PartialAsync("PrintCharacter", item)
     }
 

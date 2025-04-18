@@ -1,4 +1,4 @@
-﻿h1, h2, h3, h4, h5, h6, p, div, dt, dd {
+h1, h2, h3, h4, h5, h6, p, div, dt, dd {
   font-family: 'Roboto', sans-serif;
 }
 
@@ -78,6 +78,14 @@ div.print-character-list-box table {
 @page {
     padding: 0.5cm;
     margin: 1cm;
+}
+
+@page {
+  @bottom-right {
+    font-size: 50%;
+    font-style: italic;
+    content: 'Распечатано из joinrpg.ru'
+  }
 }
 
 .print-character-footer {
