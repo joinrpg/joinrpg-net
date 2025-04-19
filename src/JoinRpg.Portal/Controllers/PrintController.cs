@@ -76,9 +76,9 @@ public class PrintController(
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> Index(int projectId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
-        var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
+        var characters = (await characterRepository.LoadCharactersWithGroups(projectId)).Where(c => c.IsActive).ToList();
 
         return
           View(new PrintIndexViewModel(projectId, characters.Select(c => c.CharacterId).ToArray()));
@@ -86,12 +86,12 @@ public class PrintController(
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> HandoutReport(int projectid)
+    public async Task<ActionResult> HandoutReport(ProjectIdentification projectid)
     {
         var plotElements =
           await plotRepository.GetActiveHandouts(projectid);
 
-        var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
+        var characters = (await characterRepository.LoadCharactersWithGroups(projectid)).Where(c => c.IsActive).ToList();
 
         return View(new HandoutReportViewModel(plotElements, characters));
     }

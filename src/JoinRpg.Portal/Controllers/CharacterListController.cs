@@ -17,36 +17,38 @@ namespace JoinRpg.Portal.Controllers;
 
 [MasterAuthorize()]
 [Route("{projectId}/characters/[action]")]
-public class CharacterListController : ControllerGameBase
+public class CharacterListController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IExportDataService exportDataService,
+    IPlotRepository plotRepository,
+    IUriService uriService,
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository,
+    IProblemValidator<Character> problemValidator,
+    ICharacterRepository characterRepository
+    ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-    private readonly IProblemValidator<Character> problemValidator;
-
-    private IPlotRepository PlotRepository { get; }
-    private IUriService UriService { get; }
-    private IExportDataService ExportDataService { get; }
-
     [HttpGet]
-    public Task<ActionResult> Active(int projectid, string export)
+    public Task<ActionResult> Active(ProjectIdentification projectid, string export)
      => MasterCharacterList(projectid, (character, projectInfo) => character.IsActive, export, "Все персонажи");
 
     [HttpGet]
-    public Task<ActionResult> Deleted(int projectId, string export)
+    public Task<ActionResult> Deleted(ProjectIdentification projectId, string export)
       => MasterCharacterList(projectId, (character, projectInfo) => !character.IsActive, export, "Удаленные персонажи");
 
 
     [HttpGet]
-    public Task<ActionResult> Problems(int projectid, string export)
+    public Task<ActionResult> Problems(ProjectIdentification projectid, string export)
       => MasterCharacterList(projectid,
         (character, projectInfo) => character.IsActive && problemValidator.Validate(character, projectInfo).Any(), export,
         "Проблемные персонажи");
 
     [HttpGet]
-    public async Task<ActionResult> ByUnAssignedField(int projectfieldId, int projectId, string export)
+    public async Task<ActionResult> ByUnAssignedField(int projectfieldId, ProjectIdentification projectId, string export)
     {
-        var projectIdentification = new ProjectIdentification(projectId);
-        var pi = await projectMetadataRepository.GetProjectMetadata(projectIdentification);
-        var field = pi.GetFieldById(new ProjectFieldIdentification(projectIdentification, projectfieldId));
+        var pi = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var field = pi.GetFieldById(new ProjectFieldIdentification(projectId, projectfieldId));
 
         return await MasterCharacterList(projectId,
           (character, projectInfo) => character.IsActive && problemValidator.ValidateFieldOnly(character, projectInfo, field.Id).Any(),
@@ -54,10 +56,10 @@ public class CharacterListController : ControllerGameBase
           "Поле (непроставлено): " + field.Name);
     }
 
-    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, ProjectInfo, bool> predicate, string export, string title)
+    private async Task<ActionResult> MasterCharacterList(ProjectIdentification projectId, Func<Character, ProjectInfo, bool> predicate, string export, string title)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => predicate(c, projectInfo)).ToList();
+        var characters = (await characterRepository.LoadCharactersWithGroups(projectId)).Where(c => predicate(c, projectInfo)).ToList();
 
 #pragma warning disable CS0612 // Type or member is obsolete
         var project = await GetProjectFromList(projectId, characters);
@@ -75,26 +77,8 @@ public class CharacterListController : ControllerGameBase
         return Export(list, exportType.Value, projectInfo);
     }
 
-    public CharacterListController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IExportDataService exportDataService,
-        IPlotRepository plotRepository,
-        IUriService uriService,
-        IUserRepository userRepository,
-        IProjectMetadataRepository projectMetadataRepository,
-        IProblemValidator<Character> problemValidator)
-     : base(projectRepository, projectService, userRepository)
-    {
-        PlotRepository = plotRepository;
-        UriService = uriService;
-        this.projectMetadataRepository = projectMetadataRepository;
-        this.problemValidator = problemValidator;
-        ExportDataService = exportDataService;
-    }
-
     [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
-    public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
         var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
@@ -106,8 +90,8 @@ public class CharacterListController : ControllerGameBase
         var groupIds = characterGroup.GetChildrenGroupsIdRecursiveIncludingThis();
         var characters = (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
-        var plots = await PlotRepository.GetPlotsWithTargets(projectId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var plots = await plotRepository.GetPlotsWithTargets(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var list = new CharacterListByGroupViewModel(CurrentUserId,
           characters, characterGroup, projectInfo, problemValidator);
@@ -123,11 +107,10 @@ public class CharacterListController : ControllerGameBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> ByAssignedField(int projectfieldId, int projectId, string export)
+    public async Task<ActionResult> ByAssignedField(int projectfieldId, ProjectIdentification projectId, string export)
     {
-        var projectIdentification = new ProjectIdentification(projectId);
-        var pi = await projectMetadataRepository.GetProjectMetadata(projectIdentification);
-        var field = pi.GetFieldById(new ProjectFieldIdentification(projectIdentification, projectfieldId));
+        var pi = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var field = pi.GetFieldById(new ProjectFieldIdentification(projectId, projectfieldId));
 
         return await MasterCharacterList(
           projectId,
@@ -137,19 +120,19 @@ public class CharacterListController : ControllerGameBase
     }
 
     [HttpGet]
-    public Task<ActionResult> Vacant(int projectid, string export)
+    public Task<ActionResult> Vacant(ProjectIdentification projectid, string export)
       => MasterCharacterList(projectid, (character, projectInfo) => character.ApprovedClaim == null && character.IsActive, export, "Свободные персонажи");
 
     [HttpGet]
-    public Task<ActionResult> WithPlayers(int projectid, string export)
+    public Task<ActionResult> WithPlayers(ProjectIdentification projectid, string export)
       => MasterCharacterList(projectid, (character, projectInfo) => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
 
     private FileContentResult Export(CharacterListViewModel list, ExportType exportType, ProjectInfo projectInfo)
     {
-        var generator = ExportDataService.GetGenerator(
+        var generator = exportDataService.GetGenerator(
             exportType,
             list.Items,
-          new CharacterListItemViewModelExporter(projectInfo, UriService));
+          new CharacterListItemViewModelExporter(projectInfo, uriService));
 
         return GeneratorResultHelper.Result(list.ProjectName + ": " + list.Title, generator);
     }
