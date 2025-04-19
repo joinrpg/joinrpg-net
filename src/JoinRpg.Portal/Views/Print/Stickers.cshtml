@@ -1,0 +1,40 @@
+@using JoinRpg.Web.ProjectMasterTools.Print
+@model IEnumerable<EnvelopeViewModel>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html moznomarginboxes mozdisallowselectionprint>
+<head>
+    <title>Распечатка наклеек</title>
+    <link href="~/css/print.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/components.css" />
+    <style>
+        @@page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+<div>
+      @foreach (var card in Model)
+      {
+                <component type="typeof(EnvelopeInscription)"
+                           render-mode="Static"
+                       param-Model="@card" />
+      }
+</div>
+</body>
+</html>

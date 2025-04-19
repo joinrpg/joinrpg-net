@@ -6,41 +6,20 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Print;
 
-public class PrintCharacterViewModelSlim
+public class PrintCharacterViewModel
 {
     public string ProjectName { get; }
     public string CharacterName { get; }
     public int FeeDue { get; }
-    public IReadOnlyCollection<CharacterGroupWithDescViewModel> Groups { get; }
+    public IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups { get; }
     public User ResponsibleMaster { get; }
     public string? PlayerDisplayName { get; }
     public string? PlayerFullName { get; }
-
-    public PrintCharacterViewModelSlim(Character character, ProjectInfo projectInfo)
-    {
-        CharacterName = character.CharacterName;
-        FeeDue = character.ApprovedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0;
-        ProjectName = character.Project.ProjectName;
-
-        Groups =
-          character.GetParentGroupsToTop()
-            .Where(g => !g.IsSpecial && g.IsActive && g.IsPublic && !g.IsRoot)
-            .Distinct()
-            .Select(g => new CharacterGroupWithDescViewModel(g))
-            .ToArray();
-        ResponsibleMaster = character.GetResponsibleMasterOrDefault() ?? character.Project.GetDefaultResponsibleMaster();
-        PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName();
-        PlayerFullName = character.ApprovedClaim?.Player.FullName;
-    }
-}
-
-public class PrintCharacterViewModel : PrintCharacterViewModelSlim
-{
     public PlotDisplayViewModel Plots { get; }
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string? PlayerPhoneNumber { get; }
@@ -51,9 +30,20 @@ public class PrintCharacterViewModel : PrintCharacterViewModelSlim
 
     public PrintCharacterViewModel
       (ICurrentUserAccessor currentUser, Character character, IReadOnlyCollection<PlotTextDto> plots, IUriService uriService, ProjectInfo projectInfo, IReadOnlyCollection<PlotTextDto> handouts)
-      : base(character, projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);
+
+        CharacterName = character.CharacterName;
+        FeeDue = character.ApprovedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0;
+        ProjectName = character.Project.ProjectName;
+
+        Groups =
+          [.. character.GetIntrestingGroupsForDisplayToTop()
+            .Where(g => g.IsPublic)
+            .Select(g => g.ToCharacterGroupLinkSlimViewModel())];
+        ResponsibleMaster = character.GetResponsibleMaster();
+        PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName();
+        PlayerFullName = character.ApprovedClaim?.Player.FullName;
 
         var plotElements = plots;
         HasUnready = !plotElements.All(x => x.Completed) || !handouts.All(x => x.Completed);

@@ -45,20 +45,12 @@ public static class ResponsibleMasterExtensions
             .FirstOrDefault();
     }
 
-    public static User? GetResponsibleMasterOrDefault(this Character character)
+    public static User GetResponsibleMaster(this Character character)
     {
-        ArgumentNullException.ThrowIfNull(character);
-
         return
             character.ApprovedClaim?.ResponsibleMasterUser
-            ?? character.SelectResponsibleMaster();
-    }
-
-    public static User GetResponsibleMaster(this Character source)
-    {
-        return
-            source.SelectResponsibleMaster()
-            ?? source.Project.GetDefaultResponsibleMaster();
+            ?? character.SelectResponsibleMaster()
+            ?? character.Project.GetDefaultResponsibleMaster();
     }
 
     public static User GetDefaultResponsibleMaster(this Project project)
