@@ -19,7 +19,7 @@ public class SecondRoleViewModel
             {
                 Id = c.CharacterId,
                 Name = c.CharacterName,
-                Master = c.GetResponsibleMasterOrDefault()?.GetDisplayName() ?? "нет",
+                Master = c.GetResponsibleMaster().GetDisplayName(),
             });
     }
 

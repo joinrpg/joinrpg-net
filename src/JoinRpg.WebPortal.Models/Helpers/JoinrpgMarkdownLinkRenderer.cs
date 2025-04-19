@@ -43,13 +43,12 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
 
 
-        public static Column Groups = new Column("Группы", (character, _) => string.Join(", ", GetGroups(character).Select(g => GroupLinkImpl(g, ""))));
-        public static Column PublicGroups = new Column("Группы", (character, _) => string.Join(", ", GetGroups(character).Where(g => g.IsPublic).Select(g => GroupLinkImpl(g, ""))));
+        public static Column Groups =
+            new("Группы", (character, _) => string.Join(", ", character.GetIntrestingGroupsForDisplayToTop().Select(g => GroupLinkImpl(g, ""))));
+        public static Column PublicGroups =
+            new("Группы", (character, _) => string.Join(", ", character.GetIntrestingGroupsForDisplayToTop().Where(g => g.IsPublic).Select(g => GroupLinkImpl(g, ""))));
 
         public static Column CharacterName = new Column("Персонаж", (character, _) => CharacterLinkImpl(character));
-
-        private static IEnumerable<CharacterGroup> GetGroups(Character character) =>
-            character.GetParentGroupsToTop().Where(g => !g.IsRoot && g.IsActive && (!g.IsSpecial || g.ParentGroups.All(g => !g.IsRoot)));
     }
 
     private string ExperimentalTableFunc(int groupId, string extra, CharacterGroup group, IEnumerable<Character> characters)

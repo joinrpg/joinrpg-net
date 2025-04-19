@@ -80,7 +80,7 @@ public class CharacterListItemViewModel : ILinkable
     public CharacterParentGroupsViewModel Groups { get; }
 
     [Display(Name = "Ответственный мастер")]
-    public User? Responsible { get; }
+    public User Responsible { get; }
 
     public CharacterListItemViewModel(
         Character character,
@@ -114,7 +114,7 @@ public class CharacterListItemViewModel : ILinkable
         Groups = new CharacterParentGroupsViewModel(character,
             character.HasMasterAccess(currentUserId));
 
-        Responsible = character.GetResponsibleMasterOrDefault();
+        Responsible = character.GetResponsibleMaster();
     }
 
     [Display(Name = "Проблемы")]

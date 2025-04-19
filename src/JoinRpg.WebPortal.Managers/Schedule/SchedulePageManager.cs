@@ -14,30 +14,21 @@ using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.WebPortal.Managers.Schedule;
 
-public class SchedulePageManager
-{
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    public SchedulePageManager(
-        IProjectRepository project,
-        ICurrentProjectAccessor currentProject,
-        ICurrentUserAccessor currentUserAccessor,
-        IProjectMetadataRepository projectMetadataRepository
+public class SchedulePageManager(
+    IProjectRepository project,
+    ICurrentProjectAccessor currentProject,
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICharacterRepository characterRepository
         )
-    {
-        Project = project;
-        CurrentProject = currentProject;
-        CurrentUserAccessor = currentUserAccessor;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
-
+{
     public async Task<SchedulePageViewModel> GetSchedule()
     {
         (var project, var result) = await GetCompiledSchedule();
-        var hasMasterAccess = project.HasMasterAccess(CurrentUserAccessor);
+        var hasMasterAccess = project.HasMasterAccess(currentUserAccessor);
         var viewModel = new SchedulePageViewModel()
         {
-            ProjectId = CurrentProject.ProjectId,
+            ProjectId = currentProject.ProjectId,
             DisplayName = project.ProjectName,
             NotScheduledProgramItems = result.NotScheduled.ToViewModel(hasMasterAccess),
             Columns = result.Rooms.ToViewModel(),
@@ -79,12 +70,12 @@ public class SchedulePageManager
     private async Task<(Project, ScheduleResult)> GetCompiledSchedule()
     {
         var project =
-    (await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId))
-    ?? throw new JoinRpgEntityNotFoundException(CurrentProject.ProjectId, "project");
+    (await Project.GetProjectWithFieldsAsync(currentProject.ProjectId))
+    ?? throw new JoinRpgEntityNotFoundException(currentProject.ProjectId, "project");
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
 
-        var characters = await Project.GetCharacters(CurrentProject.ProjectId);
+        var characters = await characterRepository.LoadCharactersWithGroups(currentProject.ProjectId);
         var scheduleBuilder = new ScheduleBuilder(characters, projectInfo);
         return (project, scheduleBuilder.Build());
     }
@@ -92,7 +83,7 @@ public class SchedulePageManager
     private void BuildAppointments(Project project, SchedulePageViewModel viewModel)
     {
         var result = new List<AppointmentViewModel>(64);
-        var hasMasterAccess = project.HasMasterAccess(CurrentUserAccessor);
+        var hasMasterAccess = project.HasMasterAccess(currentUserAccessor);
 
         for (var i = 0; i < viewModel.Rows.Count; i++)
         {
@@ -237,11 +228,11 @@ public class SchedulePageManager
     /// <returns></returns>
     public async Task<IReadOnlyCollection<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
     {
-        var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+        var project = await Project.GetProjectWithFieldsAsync(currentProject.ProjectId);
         ProjectInfo projectInfo;
         try
         {
-            projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+            projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
         }
         catch (InvalidOperationException)
         {
@@ -259,11 +250,11 @@ public class SchedulePageManager
             {
                 return true;
             }
-            if (project.HasMasterAccess(CurrentUserAccessor))
+            if (project.HasMasterAccess(currentUserAccessor))
             {
                 return true;
             }
-            if (CurrentUserAccessor.UserIdOrDefault is int userId && project.Claims.OfUserApproved(userId).Any())
+            if (currentUserAccessor.UserIdOrDefault is int userId && project.Claims.OfUserApproved(userId).Any())
             {
                 return roomField.CanPlayerView;
             }
@@ -307,14 +298,12 @@ public class SchedulePageManager
 
     public async Task<ScheduleBuilder> GetBuilder()
     {
-        var characters = await Project.GetCharacters(CurrentProject.ProjectId);
+        var characters = await characterRepository.LoadCharactersWithGroups(currentProject.ProjectId);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
 
         return new ScheduleBuilder(characters, projectInfo);
     }
 
-    private IProjectRepository Project { get; }
-    private ICurrentProjectAccessor CurrentProject { get; }
-    private ICurrentUserAccessor CurrentUserAccessor { get; set; }
+    private IProjectRepository Project { get; } = project;
 }

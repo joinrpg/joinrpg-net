@@ -170,6 +170,11 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
         var projectId = characterIds.First().ProjectId;
         var characterIntIds = characterIds.Select(x => x.CharacterId).ToArray();
 
+        return await LoadCharactersWithGroupsImpl(projectId, e => characterIntIds.Contains(e.CharacterId));
+    }
+
+    private async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroupsImpl(ProjectIdentification projectId, Expression<Func<Character, bool>> predicate)
+    {
         await LoadProjectGroups(projectId);
         await LoadProjectClaimsAndComments(projectId);
         await LoadMasters(projectId);
@@ -177,6 +182,12 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
 
         return
           await Ctx.Set<Character>()
-            .Where(e => characterIntIds.Contains(e.CharacterId) && e.ProjectId == projectId).ToListAsync();
+            .Where(predicate)
+            .Where(e => e.ProjectId == projectId).ToListAsync();
+    }
+
+    public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId)
+    {
+        return await LoadCharactersWithGroupsImpl(projectId, e => true);
     }
 }

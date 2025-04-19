@@ -12,7 +12,10 @@
     <link href="~/css/print.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
     <style>
-        @Html.Raw("@page { @top-center { content: 'Вводная " + Model.CharacterName + " (" + Model.ProjectName + ") , стр. ' counter(page) } } ")
+      @@page {
+        size: C5;
+        margin: 0;
+      }
     </style>
 </head>
 <body>

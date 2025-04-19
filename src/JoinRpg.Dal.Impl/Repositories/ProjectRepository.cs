@@ -202,16 +202,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Include(p => p.FinanceOperations)
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
 
-    public async Task<ICollection<Character>> GetCharacters(int projectId)
-    {
-        await LoadProjectFields(projectId);
-        await LoadProjectCharactersAndGroups(projectId);
-        await LoadMasters(projectId);
-        await LoadProjectClaims(projectId);
-
-        return (await Ctx.Set<Project>().SingleOrDefaultAsync(p => p.ProjectId == projectId)).Characters;
-    }
-
     public async Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId)
     {
         var project1 = await Ctx.ProjectsSet

@@ -1,0 +1,54 @@
+@using JoinRpg.Web.ProjectMasterTools.Print
+@model IReadOnlyCollection<EnvelopeViewModel>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Печать на конвертах</title>
+    <link href="~/css/print.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/components.css" />
+    <style>
+        @@page {
+          size: C5 landscape;
+          margin: 0;
+        }
+        .c5page
+        {
+          break-after:page;
+            position: relative;
+            height: 162mm;
+            width: 229mm;
+        }
+
+        .c5page > div {
+            position: absolute;
+            top: 10mm; 
+            left: 10mm;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+        @foreach (var envelope in Model)
+        {
+            <div class="c5page">
+              <component
+                type="typeof(EnvelopeInscription)"
+                render-mode="Static"
+                param-Model="@envelope"
+                />
+            </div>
+        }
+</body>
+</html>

@@ -1,0 +1,34 @@
+<div class="inscription">
+    <div class="inscription-content">
+        @if (Model.FeeDue != 0)
+        {
+            <div class="feedue"><b>Взнос</b>: {v.FeeDue}₽ </div>
+        }
+        <b>Персонаж</b>: @Model.CharacterName
+        <br />
+        @if (Model.Groups.Count > 0)
+        {
+            <i> @string.Join(" • ", Model.Groups.Select(g => g.Name))</i>
+        }
+        <hr />
+        <b>Игрок</b>: @(Model.PlayerDisplayName?.DisplayName ?? "нет")
+        <br>
+        <b>ФИО</b>: @(Model.PlayerDisplayName?.FullName ?? "нет")
+        <br>
+        <b>Телефон:</b> @(Model.PlayerPhoneNumber ?? "нет")
+        <br>
+        <hr>
+        
+        <b>Мастер</b>: @Model.ResponsibleMaster.Name.DisplayName
+    </div>
+    <div class="inscription-footer">
+        @Model.ProjectName при помощи joinrpg.ru
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public EnvelopeViewModel Model { get; set; } = null!;
+}

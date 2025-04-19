@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -76,9 +75,9 @@ public class PrintController(
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> Index(int projectId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
-        var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
+        var characters = (await characterRepository.LoadCharactersWithGroups(projectId)).Where(c => c.IsActive).ToList();
 
         return
           View(new PrintIndexViewModel(projectId, characters.Select(c => c.CharacterId).ToArray()));
@@ -86,40 +85,39 @@ public class PrintController(
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> HandoutReport(int projectid)
+    public async Task<ActionResult> HandoutReport(ProjectIdentification projectid)
     {
         var plotElements =
           await plotRepository.GetActiveHandouts(projectid);
 
-        var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
+        var characters = (await characterRepository.LoadCharactersWithGroups(projectid)).Where(c => c.IsActive).ToList();
 
         return View(new HandoutReportViewModel(plotElements, characters));
     }
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> Envelopes(ProjectIdentification projectId, CompressedIntList characterIds)
+    public async Task<ActionResult> Stickers(ProjectIdentification projectId, CompressedIntList characterIds)
     {
         var characters = await characterRepository.LoadCharactersWithGroups(characterIds.ToCharacterIds(projectId));
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var viewModel =
-          characters.Select(
-            c => new PrintCharacterViewModelSlim(c, projectInfo)).ToArray();
+        var viewModel = characters.Select(c => c.ToEnvelopeViewModel(projectInfo)).ToArray();
 
-        var cards = viewModel.Select(v => new HtmlCardPrintResult($@"
-{GetFeeDueString(v)}
-<b>Игрок</b>: {v.PlayerDisplayName ?? "нет"}<br>
-<b>ФИО</b>: {v.PlayerFullName ?? "нет"}<br>
-<hr>
-<b>Персонаж</b>: {v.CharacterName ?? "нет"}<br>
-<b>Мастер</b>: {v.ResponsibleMaster?.GetDisplayName() ?? "нет"}<br>
-<hr>
-<i>{v.Groups.Select(g => g.Name).JoinStrings(" • ")}</i><br>
-", CardSize.A7));
-        return View("PrintCards", cards);
+        return View(viewModel);
     }
 
-    private static string GetFeeDueString(PrintCharacterViewModelSlim v) => v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
+    [MasterAuthorize()]
+    [HttpGet]
+    public async Task<ActionResult> EnvelopesC5(ProjectIdentification projectId)
+    {
+        var characters = await characterRepository.LoadCharactersWithGroups(projectId);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        var viewModel = characters.Select(c => c.ToEnvelopeViewModel(projectInfo)).ToArray();
+
+        return View(viewModel);
+    }
 }

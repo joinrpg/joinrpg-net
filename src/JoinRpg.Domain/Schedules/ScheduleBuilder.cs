@@ -7,34 +7,21 @@ namespace JoinRpg.Domain.Schedules;
 /// <summary>
 /// Builds schedule from program item data
 /// </summary>
-public class ScheduleBuilder
+public class ScheduleBuilder(IReadOnlyCollection<Character> characters, ProjectInfo projectInfo)
 {
-    private readonly ICollection<Character> characters;
-    private readonly ProjectInfo projectInfo;
+    private readonly IReadOnlyCollection<Character> characters = characters.Where(ch => ch.IsActive).ToList();
+    private readonly ProjectInfo projectInfo = projectInfo;
 
-    private ProjectFieldInfo TimeSlotField { get; }
+    private ProjectFieldInfo TimeSlotField { get; } = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
 
-    private ProjectFieldInfo RoomField { get; }
-
-    public ScheduleBuilder(ICollection<Character> characters, ProjectInfo projectInfo)
-    {
-        this.characters = characters.Where(ch => ch.IsActive).ToList();
-        RoomField = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
-        TimeSlotField = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
-        this.projectInfo = projectInfo;
-    }
+    private ProjectFieldInfo RoomField { get; } = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
 
     private HashSet<ProgramItem> NotScheduled { get; } = new HashSet<ProgramItem>();
 
-    public class ProgramItemSlot
+    public class ProgramItemSlot(TimeSlot slot, ScheduleRoom room)
     {
-        public ProgramItemSlot(TimeSlot slot, ScheduleRoom room)
-        {
-            Room = room;
-            TimeSlot = slot;
-        }
-        public ScheduleRoom Room { get; }
-        public TimeSlot TimeSlot { get; }
+        public ScheduleRoom Room { get; } = room;
+        public TimeSlot TimeSlot { get; } = slot;
         public ProgramItem? ProgramItem { get; set; } = null;
     }
 

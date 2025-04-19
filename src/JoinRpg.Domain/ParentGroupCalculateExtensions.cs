@@ -11,6 +11,9 @@ public static class ParentGroupCalculateExtensions
                    .Distinct() ?? [];
     }
 
+    public static IEnumerable<CharacterGroup> GetIntrestingGroupsForDisplayToTop(this Character character)
+        => character.GetParentGroupsToTop().Where(g => !g.IsRoot && g.IsActive && (!g.IsSpecial || g.ParentGroups.All(g => !g.IsRoot)));
+
     public static IEnumerable<CharacterGroup> GetChildrenGroupsRecursive(
         this CharacterGroup target)
     {
