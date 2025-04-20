@@ -1155,7 +1155,8 @@ public class PaymentsService(
             .Where(fo => fo.State != FinanceOperationState.Declined && fo.State != FinanceOperationState.Invalid);
         if (forPeriod.HasValue)
         {
-            query = query.Where(fo => fo.ReccurrentPaymentInstanceToken == FinanceOperation.MakeInstanceToken(forPeriod.Value));
+            var instanceToken = FinanceOperation.MakeInstanceToken(forPeriod.Value);
+            query = query.Where(fo => fo.ReccurrentPaymentInstanceToken == instanceToken);
         }
 
         if (ofStates?.Count == 1)
