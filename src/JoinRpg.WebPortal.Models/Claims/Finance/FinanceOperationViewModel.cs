@@ -102,6 +102,7 @@ public class FinanceOperationViewModel
                 Description = OperationState.GetShortName() ?? "";
                 break;
             case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Invalid:
+            case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Expired:
                 Description = OperationState.GetDisplayName();
                 break;
             case FinanceOperationTypeViewModel.Refund when source.State == FinanceOperationState.Approved:

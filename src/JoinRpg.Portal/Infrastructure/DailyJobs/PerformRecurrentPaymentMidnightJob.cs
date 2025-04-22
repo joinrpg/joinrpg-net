@@ -113,6 +113,7 @@ public class PerformRecurrentPaymentMidnightJob(IPaymentsService paymentsService
                         break;
                     case FinanceOperationState.Declined:
                     case FinanceOperationState.Invalid:
+                    case FinanceOperationState.Expired:
                         totalFailedPayments++;
                         subsequentFailedPayments++;
                         break;

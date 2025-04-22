@@ -201,6 +201,11 @@ public enum FinanceOperationState
     /// Operation is invalid (typically online payment that doesn't have a corresponding object on the bank side)
     /// </summary>
     Invalid,
+
+    /// <summary>
+    /// Operation has expired (user has entered the payment process but not finished until timeout)
+    /// </summary>
+    Expired,
 }
 
 /// <summary>

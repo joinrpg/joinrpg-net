@@ -21,6 +21,8 @@ public static class FinanceViewModelsExtensions
                 return "";
             case FinanceOperationState.Invalid:
                 return "unapprovedPayment";
+            case FinanceOperationState.Expired:
+                return "unapprovedPayment";
             default:
                 throw new ArgumentOutOfRangeException(nameof(self));
         }
