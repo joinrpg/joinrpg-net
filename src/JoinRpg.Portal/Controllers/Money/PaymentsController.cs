@@ -280,7 +280,9 @@ public class PaymentsController : Common.ControllerBase
             {
                 FinanceOperationState.Approved => Ok(),
                 FinanceOperationState.Proposed => StatusCode((int)HttpStatusCode.Accepted),
-                FinanceOperationState.Declined or FinanceOperationState.Invalid => StatusCode((int)HttpStatusCode.UnprocessableEntity),
+                FinanceOperationState.Declined
+                    or FinanceOperationState.Invalid
+                    or FinanceOperationState.Expired => StatusCode((int)HttpStatusCode.UnprocessableEntity),
                 _ => BadRequest(),
             };
         }

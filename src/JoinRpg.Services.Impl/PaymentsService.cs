@@ -550,14 +550,14 @@ public class PaymentsService(
 
             // User didn't do anything on payment page
             case PaymentStatus.Expired:
-                fo.State = FinanceOperationState.Invalid;
+                fo.State = FinanceOperationState.Expired;
                 fo.Changed = Now;
                 break;
 
             // Something went wrong
             case PaymentStatus.Cancelled:
-            case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
             case PaymentStatus.Rejected:
+            case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
                 fo.State = FinanceOperationState.Declined;
                 fo.Changed = Now;
                 break;
@@ -1152,7 +1152,7 @@ public class PaymentsService(
             .Take(pageSize)
             .Where(fo => fo.CommentId > afterId)
             .Where(fo => fo.RecurrentPaymentId == recurrentPaymentId)
-            .Where(fo => fo.State != FinanceOperationState.Declined && fo.State != FinanceOperationState.Invalid);
+            .Where(fo => fo.State == FinanceOperationState.Approved || fo.State == FinanceOperationState.Proposed);
         if (forPeriod.HasValue)
         {
             var instanceToken = FinanceOperation.MakeInstanceToken(forPeriod.Value);

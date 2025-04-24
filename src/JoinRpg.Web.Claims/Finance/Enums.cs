@@ -12,6 +12,8 @@ public enum FinanceOperationStateViewModel
     Declined,
     [Display(Name = "Отменено", ShortName = "Отменено")]
     Invalid,
+    [Display(Name = "Просрочено", ShortName = "Просрочено")]
+    Expired,
 }
 
 public enum MoneyTransferStateViewModel
