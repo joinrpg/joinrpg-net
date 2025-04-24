@@ -2,7 +2,7 @@
     <div class="inscription-content">
         @if (Model.FeeDue != 0)
         {
-            <div class="feedue"><b>Взнос</b>: {v.FeeDue}₽ </div>
+            <div class="feedue"><b>Взнос</b>: @Model.FeeDue₽ </div>
         }
         <b>Персонаж</b>: @Model.CharacterName
         <br />
