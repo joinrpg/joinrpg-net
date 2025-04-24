@@ -3,26 +3,39 @@
 {
     return;
 }
-<b>Для:</b>&nbsp;
+<b>Для:</b>
 @if (Target.Any())
 {
-    foreach (var target in Target.CharacterTargets.Select(x => new CharacterLinkSlimViewModel(x.CharacterId, x.Name, IsActive: true, ViewMode.Show)))
+    var counter = 0;
+
+    foreach (var target in CharacterTargets)
     {
-      <CharacterLink Model="target" />
+        @(RenderSeparator(counter))<CharacterLink Model="target" />
+        counter++;
     }
 
-    foreach (var target in Target.GroupTargets.Select(x => new CharacterGroupLinkSlimViewModel(x.CharacterGroupId, x.Name, IsPublic: true, IsActive: true)))
+    foreach (var target in GroupTargets)
     {
-        <CharacterGroupLink Model="target" />
+        @(RenderSeparator(counter))<CharacterGroupLink Model="target" />
+        counter++;
     }
 }
 else
 {
-    <span>Не установлено</span>
+    @("\n")<span>Не установлено</span>
 }
-
-@code{
+@("\n")
+@code
+{
     [Parameter]
     [EditorRequired]
-    public TargetsInfo? Target { get; set; } 
+    public TargetsInfo? Target { get; set; }
+
+    private IEnumerable<CharacterLinkSlimViewModel> CharacterTargets
+        => Target?.CharacterTargets.Select(static x => new CharacterLinkSlimViewModel(x.CharacterId, x.Name, IsActive: true, ViewMode.Show)) ?? [];
+
+    private IEnumerable<CharacterGroupLinkSlimViewModel> GroupTargets
+        => Target?.GroupTargets.Select(static x => new CharacterGroupLinkSlimViewModel(x.CharacterGroupId, x.Name, IsPublic: true, IsActive: true)) ?? [];
+
+    private string RenderSeparator(int counter) => counter > 0 ? ",\n" : "\n";
 }
