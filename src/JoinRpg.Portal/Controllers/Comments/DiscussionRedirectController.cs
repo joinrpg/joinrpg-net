@@ -22,6 +22,7 @@ public class DiscussionRedirectController : ControllerGameBase
     private readonly IForumRepository forumRepository;
 
     [HttpGet("discussion/{CommentDiscussionId}")]
+    [Authorize]
     public async Task<ActionResult> ToDiscussion(int projectId, int commentDiscussionId)
     {
         CommentDiscussion discussion = await forumRepository.GetDiscussion(projectId, commentDiscussionId);
