@@ -14,6 +14,6 @@ Size="SizeStyleEnum.Small"
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        uri = $"/plots/{Id.ProjectId.Value}/edit?PlotFolderId={Id.PlotFolderId.PlotFolderId}#panelPlotElement{Id.PlotElementId}";
+        uri = $"{Id.ProjectId.Value}/plot/edit?PlotFolderId={Id.PlotFolderId.PlotFolderId}#panelPlotElement{Id.PlotElementId}";
     }
 }
