@@ -41,7 +41,7 @@
                 <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">Изменить&hellip;</button>
           </div>
             <div class="help-block">
-                @Model.AccommodationRequest.AccommodationType.Description.ToHtmlString()
+                @Html.Raw(Model.AccommodationRequest.AccommodationType.Description.ToHtmlString())
             </div>
             if (Model.AccommodationRequest.Accommodation != null)
             {
