@@ -12,6 +12,9 @@ public static class ModelBuilders
         var respMasterId = character.GetResponsibleMaster().UserId;
         return new EnvelopeViewModel(
             FeeDue: character.ApprovedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0,
+            AccommodationName:
+                projectInfo.AccomodationEnabled ? character.ApprovedClaim?.AccommodationRequest?.Accommodation?.Name ?? "нет"
+                : null,
             CharacterId: character.GetId(),
             PlayerDisplayName: character.ApprovedClaim?.Player?.ExtractDisplayName(),
             CharacterName: character.CharacterName,

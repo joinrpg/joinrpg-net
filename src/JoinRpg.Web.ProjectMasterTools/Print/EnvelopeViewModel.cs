@@ -11,7 +11,7 @@ public record class EnvelopeViewModel
     ProjectMasterInfo ResponsibleMaster,
     IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups,
     string? PlayerPhoneNumber,
-    string ProjectName
-    )
+    string ProjectName,
+    string? AccommodationName)
 {
 }

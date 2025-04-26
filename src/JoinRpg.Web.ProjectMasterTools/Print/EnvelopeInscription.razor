@@ -17,6 +17,11 @@
         <br>
         <b>Телефон:</b> @(Model.PlayerPhoneNumber ?? "нет")
         <br>
+        @if (Model.AccommodationName is not null)
+        {
+            <b>Поселение:</b> @Model.AccommodationName
+            <br>
+        }
         <hr>
         
         <b>Мастер</b>: @Model.ResponsibleMaster.Name.DisplayName
