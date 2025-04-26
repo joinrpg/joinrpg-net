@@ -10,19 +10,20 @@ public static class ModelBuilders
     public static EnvelopeViewModel ToEnvelopeViewModel(this Character character, ProjectInfo projectInfo)
     {
         var respMasterId = character.GetResponsibleMaster().UserId;
+        Claim? approvedClaim = character.ApprovedClaim;
         return new EnvelopeViewModel(
-            FeeDue: character.ApprovedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0,
-            AccommodationName:
-                projectInfo.AccomodationEnabled ? character.ApprovedClaim?.AccommodationRequest?.Accommodation?.Name ?? "нет"
-                : null,
+            FeeDue: approvedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0,
+            AccommodationEnabled: projectInfo.AccomodationEnabled,
+            AccommodationTypeName: approvedClaim?.AccommodationRequest?.AccommodationType?.Name,
+            AccommodationName: approvedClaim?.AccommodationRequest?.Accommodation?.Name,
             CharacterId: character.GetId(),
-            PlayerDisplayName: character.ApprovedClaim?.Player?.ExtractDisplayName(),
+            PlayerDisplayName: approvedClaim?.Player?.ExtractDisplayName(),
             CharacterName: character.CharacterName,
             ResponsibleMaster: projectInfo.Masters.First(m => m.UserId == respMasterId),
             Groups: [.. character.GetIntrestingGroupsForDisplayToTop()
             .Where(g => g.IsPublic)
             .Select(g => g.ToCharacterGroupLinkSlimViewModel())],
-            PlayerPhoneNumber: character.ApprovedClaim?.Player.Extra?.PhoneNumber,
+            PlayerPhoneNumber: approvedClaim?.Player.Extra?.PhoneNumber,
             ProjectName: projectInfo.ProjectName
             );
     }

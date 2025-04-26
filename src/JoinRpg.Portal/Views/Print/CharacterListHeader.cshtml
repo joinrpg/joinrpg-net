@@ -1,58 +1,12 @@
 @using JoinRpg.Domain
 @using JoinRpg.Web.Models.Plot
 @using JoinRpg.Helpers
+@using JoinRpg.Web.ProjectMasterTools.Print
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 <div class="print-character-header">
-
-  <br>
-<div class="print-character-box">
-        <h1>
-            @if (Model.RegistrationOnHold)
-            {
-                <span class="print-character-holdalert">(Не готов)</span>
-            }
-            @Model.CharacterName
-
-        </h1>
-        <p class="print-character-gamename">@Model.ProjectName</p>
-    <table class="table">
-      @if (Model.Groups.Count > 0)
-      {
-        <tr>
-            <th>Группы</th>
-            <td>@Model.Groups.Select(g => g.Name).JoinStrings(" • ")</td>
-        </tr>
-      }
-        <tr>
-            <th>Мастер</th>
-            <td>@Model.ResponsibleMaster.GetDisplayName()</td>
-
-        </tr>
-        @if (Model.PlayerDisplayName != null)
-        {
-        <tr>
-            <th>Игрок</th>
-            <td>@Model.PlayerDisplayName</td>
-        </tr>
-        <tr>
-            <th>ФИО</th>
-            <td>@Model.PlayerFullName</td>
-        </tr>
-        <tr>
-            <th>Телефон</th>
-            <td>@Model.PlayerPhoneNumber</td>
-        </tr>
-        }
-        else
-        {
-        <tr>
-            <th>Игрок</th>
-            <td>Нет</td>
-        </tr>
-        }
-
-    </table>
-</div>
+        <component type="typeof(EnvelopeInscription)"
+                   render-mode="Static"
+                   param-Model="@Model.Envelope" />
 
     @if (Model.RegistrationOnHold)
     {
