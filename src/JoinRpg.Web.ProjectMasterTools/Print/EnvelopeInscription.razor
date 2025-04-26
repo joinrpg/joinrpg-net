@@ -17,9 +17,18 @@
         <br>
         <b>Телефон:</b> @(Model.PlayerPhoneNumber ?? "нет")
         <br>
-        @if (Model.AccommodationName is not null)
+        @if (Model.AccommodationEnabled)
         {
-            <b>Поселение:</b> @Model.AccommodationName
+            <text><b>Поселение</b>:
+            @if (Model.AccommodationTypeName is null)
+            {
+                <text> нет</text>
+            }
+            else
+            {
+              <text> @Model.AccommodationTypeName — @(Model.AccommodationName ?? "Неизвестно")</text>
+            }
+            </text>
             <br>
         }
         <hr>

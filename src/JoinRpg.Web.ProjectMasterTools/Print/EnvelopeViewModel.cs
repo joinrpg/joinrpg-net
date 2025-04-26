@@ -12,6 +12,8 @@ public record class EnvelopeViewModel
     IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups,
     string? PlayerPhoneNumber,
     string ProjectName,
+    bool AccommodationEnabled,
+    string? AccommodationTypeName,
     string? AccommodationName)
 {
 }

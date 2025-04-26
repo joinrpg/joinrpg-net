@@ -31,9 +31,11 @@
 <div>
       @foreach (var card in Model)
       {
+        <div style="float:left">
                 <component type="typeof(EnvelopeInscription)"
                            render-mode="Static"
                        param-Model="@card" />
+            </div>
       }
 </div>
 </body>

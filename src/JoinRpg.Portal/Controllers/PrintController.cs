@@ -3,7 +3,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Print;
@@ -21,7 +20,6 @@ public class PrintController(
     IProjectService projectService,
     IPlotRepository plotRepository,
     ICharacterRepository characterRepository,
-    IUriService uriService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
@@ -47,7 +45,7 @@ public class PrintController(
 
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
-        return View(new PrintCharacterViewModel(currentUserAccessor, character, plots[characterId], uriService, projectInfo, handouts[characterId]));
+        return View(new PrintCharacterViewModel(currentUserAccessor, character, plots[characterId], projectInfo, handouts[characterId]));
     }
 
     [MasterAuthorize()]
@@ -67,7 +65,7 @@ public class PrintController(
             c =>
             {
                 var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
-                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], uriService, projectInfo, handouts[characterId]);
+                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId]);
             }).ToArray();
 
         return View(viewModel);

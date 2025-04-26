@@ -16,15 +16,15 @@ dt {
     break-after: page;
 }
 
-.print-character-gamename {
-    font-style: italic;
-}
-
 .print-character-holdalert {
     text-decoration: underline;
 }
 
 .print-character-box, .print-character-registration-alert, .print-character-handout {
+  margin: 1em;
+}
+
+.print-character-registration-alert, .print-character-handout {
   margin: 1em;
   border: solid 5px;
 }
@@ -57,7 +57,7 @@ div.print-character-list-box table {
   border: black solid thick;
 }
 
-.print-character-main
+.print-character-all
 {
   break-after: page;
 }

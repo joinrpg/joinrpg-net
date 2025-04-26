@@ -7,7 +7,6 @@
   margin-top: 6mm;
   margin-bottom: 6mm;
   padding: 1mm;
-  float: left;
   page-break-inside: avoid;
   position: relative;
 }

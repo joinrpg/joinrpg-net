@@ -3,40 +3,35 @@
 <div class="print-character-all">
   @await Html.PartialAsync("CharacterListHeader", Model)
 
-  <div class="print-character-main">
-      <h1>@Model.CharacterName</h1>
-      <p class="print-character-gamename">@Model.ProjectName</p>
+    @if (Model.Fields.AnythingAccessible)
+    {
+        <div class="print-character-fields">
+            <h2>Поля персонажа</h2>
+            <dl>
+                @foreach (var field in Model.Fields.Fields.Where(f => f.HasValue && f.CanView))
+                {
+                    <dt>@field.FieldName</dt>
+                    <dd>@field.DisplayString</dd>
+                }
+            </dl>
+        </div>
+    }
 
-      @if (Model.Fields.AnythingAccessible)
-      {
-          <div class="print-character-fields">
-              <h2>Поля персонажа</h2>
-              <dl>
-                  @foreach (var field in Model.Fields.Fields.Where(f => f.HasValue && f.CanView))
-                  {
-                      <dt>@field.FieldName</dt>
-                      <dd>@field.DisplayString</dd>
-                  }
-              </dl>
-          </div>
-      }
-
-      @if (Model.Plots.Elements.Any())
-      {
-          <div class="print-character-plots">
-              <h2>Загрузы (@Model.Plots.Elements.Count()) </h2>
+    @if (Model.Plots.Elements.Any())
+    {
+        <div class="print-character-plots">
+            <h2>Загрузы (@Model.Plots.Elements.Count()) </h2>
 
 
-              @foreach (var plot in Model.Plots.Elements)
-              {
-                  <div class="print-character-plot-element">
-                      @Html.Raw(plot.Content.Value)
-                  </div>
-              }
-          </div>
-          <div class="print-character-footer">
-              создано при помощи joinrpg.ru
-          </div>
-      }
-  </div>
+            @foreach (var plot in Model.Plots.Elements)
+            {
+                <div class="print-character-plot-element">
+                    @Html.Raw(plot.Content.Value)
+                </div>
+            }
+        </div>
+        <div class="print-character-footer">
+            создано при помощи joinrpg.ru
+        </div>
+    }
 </div>
