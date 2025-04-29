@@ -16,7 +16,7 @@
     {
         continue;
     }
-    var elements = item.Elements.Where(e => !Model.InWorkOnly || e.HasWorkTodo).Select(x => x.PlotText).ToArray();
+    var elements = item.Elements.Where(e => !Model.InWorkOnly || e.HasWorkTodo).ToArray();
 
     <div style="page-break-inside: avoid">
         <h2>@item.PlotFolderMasterTitle</h2>
@@ -26,7 +26,7 @@
         <p><b>Доделать</b>: @item.TodoField</p>
         }
 
-        @*TODO: Переключиться на тот же контрол показа вводных, что и в обычном просмотре сюжета, а тот использовать только для персонажей*@
+        @*TODO: Переключиться на тот же контрол показа вводных, что и в обычном просмотре сюжета, а этот использовать только для персонажей*@
 
         <p>@Html.DisplayFor(modelItem => item.Summary)</p>
         <component type="typeof(PlotElementsView)"
