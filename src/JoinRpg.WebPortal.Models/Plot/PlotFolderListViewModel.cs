@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
@@ -57,14 +56,12 @@ public class PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, ICurre
             .OrderBy(pf => pf.Status)
             .ThenBy(pf => pf.PlotFolderMasterTitle);
     public bool InWorkOnly { get; } = inWorkOnly;
-
-    public bool ShowEditorControls { get; } = projectInfo.HasMasterAccess(currentUser) && projectInfo.ProjectStatus != ProjectLifecycleStatus.Archived;
 }
 
 public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
 {
     public JoinHtmlString Summary { get; }
-    public IEnumerable<PlotElementViewModel> Elements { get; }
+    public IReadOnlyCollection<PlotRenderedTextViewModel> Elements { get; }
     public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
 
     public PlotFolderListFullItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo) : base(folder, currentUser)
@@ -77,31 +74,10 @@ public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
             return;
         }
 
-        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Elements.First().Project, projectInfo);
+        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo);
 
-        Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
-          .Select(
-            p => new PlotElementViewModel(null, p.GetDtoForLast().Render(linkRenderer, projectInfo, currentUser), projectInfo.HasMasterAccess(currentUser) && projectInfo.ProjectStatus != ProjectLifecycleStatus.Archived));
-    }
-}
-
-public static class PlotTextDtoBuilder
-{
-    public static PlotTextDto GetDtoForLast(this PlotElement element)
-    {
-        var version = element.LastVersion();
-        return new PlotTextDto()
-        {
-            Completed = element.GetStatus() == PlotStatus.Completed,
-            HasPublished = element.Published != null,
-            Latest = true,
-            Published = element.Published == version.Version,
-            Content = version.Content,
-            TodoField = version.TodoField,
-            Id = new PlotVersionIdentification(element.ProjectId, element.PlotFolderId, element.PlotElementId, version.Version),
-            IsActive = element.IsActive,
-            Target = element.ToTarget(),
-        };
+        Elements = [.. folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
+          .Select(p => p.GetDtoForLast().Render(linkRenderer, projectInfo, currentUser))];
     }
 }
 
