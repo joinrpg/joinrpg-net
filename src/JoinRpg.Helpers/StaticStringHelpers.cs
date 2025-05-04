@@ -44,7 +44,8 @@ public static class StaticStringHelpers
         string prefix)
     {
         return number.StartsWith(prefix)
-            ? int.Parse(number[prefix.Length..])
+            && int.TryParse(number[prefix.Length..], out var result)
+            ? result
             : null;
     }
 
