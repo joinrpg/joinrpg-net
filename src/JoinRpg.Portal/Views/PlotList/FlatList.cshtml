@@ -12,10 +12,6 @@
 @foreach (var item in Model.Folders)
 {
   
-    if (Model.InWorkOnly && !item.HasWorkTodo)
-    {
-        continue;
-    }
     var elements = item.Elements.Where(e => !Model.InWorkOnly || e.HasWorkTodo).ToArray();
 
     <div style="page-break-inside: avoid">

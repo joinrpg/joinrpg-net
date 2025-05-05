@@ -8,7 +8,6 @@ public interface IPlotRepository : IDisposable
 {
 
     Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId);
-    Task<List<PlotFolder>> GetPlotsWithTargets(int project);
     Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId);
     Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character);
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
@@ -19,8 +18,6 @@ public interface IPlotRepository : IDisposable
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsByTag(int projectid, string tagname);
 
     Task<IReadOnlyCollection<PlotTextDto>> GetPlotsBySpecification(PlotSpecification plotSpecification);
-
-    Task<IReadOnlyCollection<HandoutDto>> GetHandoutsPlotsBySpecification(PlotSpecification plotSpecification);
 }
 
 public record PlotSpecification(TargetsInfo Targets, PlotVersionFilter VersionFilter, PlotElementType PlotElementType);
@@ -49,19 +46,4 @@ public class PlotTextDto : IOrderableEntity
     public required TargetsInfo Target { get; set; }
 
     int IOrderableEntity.Id => Id.PlotElementId.PlotElementId;
-}
-
-public class HandoutDto
-{
-    public required MarkdownString Handout { get; set; }
-    public required User Master { get; set; }
-
-    public required bool Latest { get; set; }
-    public required bool Published { get; set; }
-
-    public required bool HasPublished { get; set; }
-
-    public required bool Completed { get; set; }
-
-    public required PlotElement PlotElement { get; set; }
 }

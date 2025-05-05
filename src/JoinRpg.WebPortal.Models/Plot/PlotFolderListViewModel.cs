@@ -47,38 +47,46 @@ public class PlotFolderListViewModel : PlotFolderListViewModelBase, IPlotFolderL
     }
 }
 
-public class PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false) : PlotFolderListViewModelBase(projectInfo, currentUser)
+public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
 {
-    //TODO правильная сортировка
-    public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; } =
-          folders
-            .Select(f => new PlotFolderListFullItemViewModel(f, currentUser, projectInfo))
-            .OrderBy(pf => pf.Status)
-            .ThenBy(pf => pf.PlotFolderMasterTitle);
-    public bool InWorkOnly { get; } = inWorkOnly;
+
+    public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
+    public bool InWorkOnly { get; }
+
+    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false) : base(projectInfo, currentUser)
+    {
+        InWorkOnly = inWorkOnly;
+
+        if (folders.Count == 0)
+        {
+            Folders = [];
+        }
+        else
+        {
+            var linkRenderer = new JoinrpgMarkdownLinkRenderer(folders.First().Project, projectInfo);
+
+            //TODO правильная сортировка
+            Folders =
+              folders
+                .Select(f => new PlotFolderListFullItemViewModel(f, currentUser, projectInfo, linkRenderer))
+                .Where(f => !InWorkOnly || f.HasWorkTodo)
+                .OrderBy(pf => pf.Status)
+                .ThenBy(pf => pf.PlotFolderMasterTitle);
+
+        }
+    }
 }
 
-public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
+public class PlotFolderListFullItemViewModel
+    (PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    : PlotFolderListItemViewModel(folder, currentUser)
 {
-    public JoinHtmlString Summary { get; }
-    public IReadOnlyCollection<PlotRenderedTextViewModel> Elements { get; }
+    public JoinHtmlString Summary { get; } = folder.MasterSummary.ToHtmlString();
+    public IReadOnlyCollection<PlotRenderedTextViewModel> Elements { get; } = [.. folder.Elements
+            .Where(p => p.IsActive)
+            .Where(p => p.ElementType == PlotElementType.RegularPlot)
+            .Select(p => p.GetDtoForLast().Render(linkRenderer, projectInfo, currentUser))];
     public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
-
-    public PlotFolderListFullItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo) : base(folder, currentUser)
-    {
-        Summary = folder.MasterSummary.ToHtmlString();
-
-        if (folder.Elements.Count == 0)
-        {
-            Elements = [];
-            return;
-        }
-
-        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo);
-
-        Elements = [.. folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
-          .Select(p => p.GetDtoForLast().Render(linkRenderer, projectInfo, currentUser))];
-    }
 }
 
 public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderListItemViewModel
@@ -93,7 +101,7 @@ public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderL
     {
         PlotFolderId = new(folder.ProjectId, folder.PlotFolderId);
         PlotFolderMasterTitle = folder.MasterTitle;
-        TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
+        TagNames = [.. folder.PlotTags.Select(tag => tag.TagName).Order()];
         ProjectId = folder.ProjectId;
         Status = folder.GetStatus();
         ElementsCount = folder.Elements.Count(x => x.IsActive);
