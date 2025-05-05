@@ -90,7 +90,6 @@ public class CharacterListController(
         var groupIds = characterGroup.GetChildrenGroupsIdRecursiveIncludingThis();
         var characters = (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
-        var plots = await plotRepository.GetPlotsWithTargets(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var list = new CharacterListByGroupViewModel(CurrentUserId,

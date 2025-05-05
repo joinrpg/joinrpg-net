@@ -49,6 +49,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
           .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
           .Include(pf => pf.Elements.Select(e => e.TargetGroups))
           .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
+          .Where(pf => pf.IsActive)
           .Where(pf => pf.ProjectId == projectid)
           .ToListAsync();
 
@@ -61,14 +62,6 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 
         return VirtualOrderContainerFacade.Create(project.PlotFolders, project.Details.PlotFoldersOrdering).OrderedItems;
     }
-
-    public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)
-      =>
-        Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
-          .Include(pf => pf.Elements.Select(e => e.TargetGroups))
-          .Where(pf => pf.ProjectId == projectId)
-          .ToListAsync();
 
     public async Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid)
     {
@@ -188,6 +181,4 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
         return element => element.TargetCharacters.Any(ch => charIds.Contains(ch.CharacterId)) ||
                       element.TargetGroups.Any(g => groupIds.Contains(g.CharacterGroupId));
     }
-
-    public Task<IReadOnlyCollection<HandoutDto>> GetHandoutsPlotsBySpecification(PlotSpecification plotSpecification) => throw new NotImplementedException();
 }
