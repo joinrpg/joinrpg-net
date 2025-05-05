@@ -101,7 +101,7 @@ public class PrintController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var viewModel = characters.Select(c => c.ToEnvelopeViewModel(projectInfo)).ToArray();
+        var viewModel = characters.Where(c => c.IsActive).Select(c => c.ToEnvelopeViewModel(projectInfo)).ToArray();
 
         return View(viewModel);
     }
@@ -114,7 +114,7 @@ public class PrintController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var viewModel = characters.Select(c => c.ToEnvelopeViewModel(projectInfo)).ToArray();
+        var viewModel = characters.Where(c => c.IsActive).Select(c => c.ToEnvelopeViewModel(projectInfo)).ToArray();
 
         return View(viewModel);
     }
