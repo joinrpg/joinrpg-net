@@ -145,7 +145,7 @@ jobs:
     - name: Log in to Yandex Container Registry
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       id: login-cr
-      uses: yc-actions/yc-cr-login@v2
+      uses: yc-actions/yc-cr-login@v3
       with:
         yc-sa-json-credentials: ${{ secrets.YANDEX_CR_SA_KEY_JSON }}
 
