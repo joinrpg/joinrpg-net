@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.CheckIn.CheckInClaimModel
+@model JoinRpg.Web.Models.CheckIn.CheckInClaimModel
 
 @{
   ViewBag.Title = "Регистрация игрока";
@@ -52,18 +52,17 @@
     </div>
   </div>
   }
-  @if (Model.NotFilledFields.Any())
+  @if (Model.ProblemFields.Any())
   {
   <div class="alert alert-danger">
-    Не заполнены следующие обязательные поля.
-    Перейдите на @Html.ActionLink("заявку", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null) для их заполнения или вызовите ответственного мастера @Html.DisplayFor(model => model.Master)
+    Есть проблемы со следующими полями:
     <ul>
-      @foreach (var field in Model.NotFilledFields)
+      @foreach (var fieldProblem in Model.ProblemFields)
       {
-        <li><b>@field.FieldName</b> (заполняет @Html.DisplayFor(modelField => field.WhoWillFill))</li>
+        <li><b>@fieldProblem.FieldName</b> — @fieldProblem.ProblemType (@Html.DisplayFor(modelField => fieldProblem.WhoWillFill))</li>
       }
     </ul>
-
+   Перейдите на @Html.ActionLink("заявку", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null) для их заполнения или вызовите ответственного мастера @Html.DisplayFor(model => model.Master)
   </div>
   }
   @await Html.PartialAsync("..\\Print\\_CharacterHandout", Model.Handouts)
