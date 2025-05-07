@@ -22,7 +22,6 @@ public class CheckInController(
     IProjectRepository projectRepository,
     IProjectService projectService,
     IClaimsRepository claimsRepository,
-    IPlotRepository plotRepository,
     IClaimService claimService,
     ICharacterRepository characterRepository,
     IUserRepository userRepository,
@@ -111,7 +110,7 @@ public class CheckInController(
         try
         {
             await claimService.CheckInClaim(projectId, claimId, feeAccepted == Checkbox.@on ? money : 0);
-            return RedirectToAction("Index", new { projectId });
+            return RedirectToAction("Index", new { ProjectId = projectId.Value });
         }
         catch (Exception ex)
         {
