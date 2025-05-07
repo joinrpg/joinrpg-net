@@ -4,20 +4,8 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 
-public class ClaimCheckInValidator
-
+public class ClaimCheckInValidator(Claim claim, IProblemValidator<Claim> claimValidator, ProjectInfo projectInfo)
 {
-    private readonly Claim claim;
-    private readonly IProblemValidator<Claim> claimValidator;
-    private readonly ProjectInfo projectInfo;
-
-    public ClaimCheckInValidator(Claim claim, IProblemValidator<Claim> claimValidator, ProjectInfo projectInfo)
-    {
-        this.claim = claim ?? throw new ArgumentNullException(nameof(claim));
-        this.claimValidator = claimValidator;
-        this.projectInfo = projectInfo;
-    }
-
     public int FeeDue => claim.ClaimFeeDue(projectInfo);
 
     public bool NotCheckedInAlready => claim.CheckInDate == null &&
@@ -25,10 +13,9 @@ public class ClaimCheckInValidator
 
     public bool IsApproved => claim.ClaimStatus == Claim.Status.Approved;
 
-    public IReadOnlyCollection<FieldRelatedProblem> NotFilledFields => claimValidator.ValidateFieldsOnly(claim, projectInfo).ToList();
+    public IReadOnlyCollection<FieldRelatedProblem> FieldProblems { get; } = [.. claimValidator.ValidateFieldsOnly(claim, projectInfo)];
 
-    public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved &&
-                                         !NotFilledFields.Any();
+    public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved && FieldProblems.Count == 0;
 
     public bool CanCheckInNow => CanCheckInInPrinciple && FeeDue <= 0;
 }

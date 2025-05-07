@@ -32,16 +32,11 @@ public class CheckInClaimModel : IProjectIdAware
         ProjectId = claim.ProjectId;
         Master = claim.ResponsibleMasterUser;
         Handouts = [.. plotElements.Select(e => new HandoutListItemViewModel(e))];
-        NotFilledFields = Validator.NotFilledFields
-          .Select(frp => new NotFilledFieldViewModel(
-            frp.Field.CanPlayerEdit
-              ? NotFilledFieldViewModel.WhoWllFillEnum.Player
-              : NotFilledFieldViewModel.WhoWllFillEnum.Master, frp.Field.Name)).ToList();
+        ProblemFields = [.. Validator.FieldProblems.Select(frp => new NotFilledFieldViewModel(frp))];
 
         CurrentUserFullName = currentUser.FullName;
-
-
     }
+
     public ClaimCheckInValidator Validator { get; }
     [UIHint("EventTime")]
     public DateTime? CheckInTime { get; }
@@ -53,21 +48,15 @@ public class CheckInClaimModel : IProjectIdAware
     public int ProjectId { get; }
     [Display(Name = "Ответственный мастер")]
     public User Master { get; }
-    public IReadOnlyCollection<NotFilledFieldViewModel> NotFilledFields { get; }
+    public IReadOnlyCollection<NotFilledFieldViewModel> ProblemFields { get; }
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string CurrentUserFullName { get; }
 }
 
-public class NotFilledFieldViewModel
+public class NotFilledFieldViewModel(FieldRelatedProblem fieldRelatedProblem) : ProblemViewModel(fieldRelatedProblem)
 {
-    public NotFilledFieldViewModel(WhoWllFillEnum whoWillFill, string fieldName)
-    {
-        WhoWillFill = whoWillFill;
-        FieldName = fieldName;
-    }
-
-    public WhoWllFillEnum WhoWillFill { get; }
-    public string FieldName { get; }
+    public WhoWllFillEnum WhoWillFill { get; } = fieldRelatedProblem.Field.CanPlayerEdit ? WhoWllFillEnum.Player : WhoWllFillEnum.Master;
+    public string FieldName { get; } = fieldRelatedProblem.Field.Name;
 
     public enum WhoWllFillEnum
     {
