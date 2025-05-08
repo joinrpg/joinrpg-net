@@ -10,7 +10,7 @@
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.2.1" />
+    <PackageReference Include="Autofac" Version="8.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
