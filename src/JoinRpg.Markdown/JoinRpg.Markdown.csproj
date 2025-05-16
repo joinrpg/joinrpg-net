@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.41.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.5" />
     <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" /> <!-- Pin, because Vereyon.Web.HtmlSanitizer using older version -->
   </ItemGroup>
