@@ -1,4 +1,4 @@
-﻿function cachedScript(url, options) {
+function cachedScript(url, options) {
 
   // Allow user to set any option except for dataType, cache, and url
   options = $.extend(options || {}, {
@@ -36,4 +36,12 @@ export function getSelectedValues(ref) {
     }
   }
   return results;
+}
+
+export function showModal(dialog) {
+    dialog.showModal();
+}
+
+export function closeModal(dialog) {
+    dialog.close();
 }

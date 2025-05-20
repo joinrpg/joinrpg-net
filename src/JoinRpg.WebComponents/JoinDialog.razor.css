@@ -1,0 +1,55 @@
+.join-dialog-header {
+    padding: 15px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.join-dialog-body {
+    padding: 15px;
+}
+
+.join-dialog-footer {
+    padding: 15px;
+    text-align: right;
+    border-top: 1px solid #e5e5e5;
+}
+
+.join-dialog-footer button {
+    margin-bottom: 0;
+    margin-left: 5px;
+}
+
+dialog {
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #999;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+    outline: 0;
+}
+
+.join-close {
+    float: right;
+    font-size: 21px;
+    font-weight: bold;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    filter: opacity(20%);
+}  
+
+.join-close :hover,
+.join-close :focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    filter: opacity(50%);
+}
+
+button.join-close {
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    appearance: none;
+}
