@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using System.Data.Entity.Validation;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -24,7 +23,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
         }
 
         var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId.Value);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots).EnsureProjectActive();
         var startTimeUtc = DateTime.UtcNow;
         var plotFolder = new PlotFolder
         {
@@ -64,7 +63,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-        _ = folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+        _ = folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots).EnsureProjectActive();
 
         folder.TodoField = todoField;
         folder.IsActive = true; //Restore if deleted
@@ -81,7 +80,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
 
-        _ = folder.RequestMasterAccess(CurrentUserId);
+        _ = folder.RequestMasterAccess(CurrentUserId).EnsureProjectActive();
 
         var now = DateTime.UtcNow;
         var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
@@ -123,18 +122,15 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     public async Task DeleteFolder(int projectId, int plotFolderId)
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-        if (!folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
-        {
-            throw new DbEntityValidationException();
-        }
-        var now = DateTime.UtcNow;
+        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+
         _ = SmartDelete(folder);
         foreach (var element in folder.Elements)
         {
             element.IsActive = false;
-            element.ModifiedDateTime = now;
+            element.ModifiedDateTime = Now;
         }
-        folder.ModifiedDateTime = now;
+        folder.ModifiedDateTime = Now;
         await UnitOfWork.SaveChangesAsync();
     }
 
@@ -150,14 +146,14 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     private async Task<PlotElement> LoadElement(PlotElementIdentification plotElementId)
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
-        _ = folder.RequestMasterAccess(CurrentUserId);
+        _ = folder.RequestMasterAccess(CurrentUserId).EnsureProjectActive();
         return folder.Elements.Single(e => e.PlotElementId == plotElementId.PlotElementId);
     }
 
     private async Task<PlotElement> LoadElementForManage(PlotElementIdentification plotElementId)
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
-        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots);
+        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
         return folder.Elements.Single(e => e.PlotElementId == plotElementId.PlotElementId);
     }
 
@@ -228,7 +224,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
     {
         var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
-        _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+        _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles).EnsureProjectActive();
 
         var plots = await PlotRepository.GetPlotsForCharacter(character);
 
@@ -314,6 +310,8 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     public async Task ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId)
     {
         var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
+        _ = targetFolder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+
         var afterFolder = afterPlotFolderId is not null ? await LoadProjectSubEntityAsync<PlotFolder>(afterPlotFolderId) : null;
 
         targetFolder.Project.Details.PlotFoldersOrdering
@@ -326,6 +324,8 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
     {
         var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
 
+        _ = targetFolder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+
         targetFolder.ElementsOrdering = DomainMoveHelper.MoveAfter(plotElementId,
             afterPlotElementId,
             targetFolder.ElementsOrdering,
@@ -337,7 +337,10 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
 
     public async Task ReorderPlotByChar(CharacterIdentification characterId, PlotElementIdentification targetId, PlotElementIdentification? afterId)
     {
+
         var character = await CharactersRepository.GetCharacterAsync(characterId);
+
+        _ = character.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
 
         var plotTarget = ToTarget(character);
 
