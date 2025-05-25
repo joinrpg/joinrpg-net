@@ -24,7 +24,7 @@ public static class ProjectEntityExtensions
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserAccessor.UserId);
+        return currentUserAccessor.UserIdOrDefault is int userId && entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == userId);
     }
 
     [Pure]
@@ -38,26 +38,11 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
-    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Permission permission)
+    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserId);
-    }
-
-    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-
-        return entity.HasMasterAccess(currentUserId, acl => true);
-    }
-
-    public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        ArgumentNullException.ThrowIfNull(currentUserAccessor);
-
-        return entity.HasMasterAccess(currentUserAccessor.UserIdOrDefault, acl => true);
     }
 
     public static T RequestMasterAccess<T>([NotNull] this T? field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)

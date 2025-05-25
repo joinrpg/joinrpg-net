@@ -1,32 +1,32 @@
-﻿@using JoinRpg.Helpers
+@using JoinRpg.Helpers
 @model MainMenuViewModel
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("JoinRpg", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                      <li class="dropdown">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            @Html.ActionLink("JoinRpg", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
 
-                        @if (Model.CurrentProjectId is not null)
-                        {
+                    @if (Model.CurrentProjectId is not null)
+                    {
 
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">@Model.CurrentProjectName <span class="caret"></span></a>
-                        }
-                        else 
-                        {
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои проекты и заявки <span class="caret"></span></a>
-                        }
+                    }
+                    else 
+                    {
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои проекты и заявки <span class="caret"></span></a>
+                    }
 
-                        <ul class="dropdown-menu">
-                            @foreach (var project in Model.ProjectLinks.OrderBy(p => p.ProjectName))
-                            {
+                    <ul class="dropdown-menu">
+                        @foreach (var project in Model.ProjectLinks.OrderBy(p => p.ProjectName).Take(20))
+                        {
                             <li>
                                 @if (!project.IAmMaster)
                                 {
@@ -37,8 +37,13 @@
                                 {
                                     @Html.ActionLink(@project.ProjectName, "Details", "Game", new { ProjectId = project.ProjectId.Value, area = "" }, null)
                                 }
-                              </li>
-                            }
+                            </li>
+                        }
+
+                        @if (Model.ProjectLinks.Length > 20)
+                        {
+                            <li><a asp-action="BrowseGames" asp-controller="Home">...Еще игры</a></li>
+                        }
 
                             @if (Model.ProjectLinks.Length > 0)
                             {
