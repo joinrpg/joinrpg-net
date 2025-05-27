@@ -104,9 +104,12 @@
                         <li>@Html.ActionLink("Готовые", "Ready", "PlotList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Одним списком", "FlatList", "PlotList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Одним списком — доделать", "FlatListUnready", "PlotList", new { Model.ProjectId }, null)</li>
-                        <li>
-                            <a asp-controller="Plot" asp-action="CreateElement" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить вводную</a>
-                        </li>
+                        @if (Model.ProjectStatus != ProjectLifecycleStatus.Archived)
+                        {
+                            <li>
+                                <a asp-controller="Plot" asp-action="CreateElement" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить вводную</a>
+                            </li>
+                        }
                     </ul>
                 </li>
                 <li class="dropdown">
