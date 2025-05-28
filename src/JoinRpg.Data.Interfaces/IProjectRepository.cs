@@ -12,9 +12,6 @@ public interface IProjectRepository : IDisposable
 
     Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(int? userId);
 
-    Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId);
-
-    Task<IEnumerable<Project>> GetActiveProjectsWithSchedule();
     Task<Project> GetProjectAsync(int project);
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
@@ -55,10 +52,20 @@ public interface IProjectRepository : IDisposable
     /// <returns></returns>
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
-    Task<ProjectHeaderDto[]> GetMyProjects(UserIdentification userIdentification);
+    Task<ProjectHeaderDto[]> GetProjectsBySpecification(UserIdentification userIdentification, ProjectListSpecification projectListSpecification);
 
     Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId);
 }
+
+public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)
+{
+    public static ProjectListSpecification MyActiveProjects { get; } = new ProjectListSpecification(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: false);
+    public static ProjectListSpecification ForCloning { get; } = new ProjectListSpecification(ProjectListCriteria.ForCloning, LoadArchived: true);
+    public static ProjectListSpecification ActiveWithMyMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: false);
+    public static ProjectListSpecification ActiveProjectsWithSchedule { get; } = new ProjectListSpecification(ProjectListCriteria.HasSchedule, LoadArchived: false);
+}
+
+public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule };
 
 public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims) : ILinkableWithName
 {
