@@ -59,13 +59,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
-    public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
-      ActiveProjects.Where(ProjectPredicates.MyProjectPredicate(new(userInfoId))).ToListAsync();
-
-    public async Task<IEnumerable<Project>> GetActiveProjectsWithSchedule()
-        => await ActiveProjects.Where(project => project.Details.ScheduleEnabled)
-            .ToListAsync();
-
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
@@ -430,20 +423,19 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         return new ProjectMastersListInfo(projectId, project.ProjectName, masters.ToArray());
     }
-
-    async Task<ProjectHeaderDto[]> IProjectRepository.GetMyProjects(UserIdentification userIdentification)
+    async Task<ProjectHeaderDto[]> IProjectRepository.GetProjectsBySpecification(UserIdentification userIdentification, ProjectListSpecification projectListSpecification)
     {
-        var predicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var query = from project in ActiveProjects.AsExpandable()
-                    let master = project.ProjectAcls.Any(a => a.UserId == userIdentification.Value)
-                    let claims = project.Claims.Where(c => c.PlayerUserId == userIdentification.Value).Any(predicate.Compile())
-                    where master || claims
+        var filterPredicate = ProjectPredicates.BySpecification(userIdentification, projectListSpecification);
+        var masterPredicate = ProjectPredicates.MasterAccess(userIdentification);
+        var claimPredicate = ProjectPredicates.HasActiveClaim(userIdentification);
+        var query = from project in AllProjects.AsExpandable()
+                    where filterPredicate.Compile()(project)
                     select new
                     {
                         project.ProjectId,
                         project.ProjectName,
-                        IAmMaster = master,
-                        HasActiveClaims = claims,
+                        IAmMaster = masterPredicate.Compile()(project),
+                        HasActiveClaims = claimPredicate.Compile()(project),
                     };
 
         var result = await query.ToListAsync();

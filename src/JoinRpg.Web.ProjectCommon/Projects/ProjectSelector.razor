@@ -26,6 +26,8 @@ else
 
     [Parameter] public ProjectDto? Project { get; set; }
     [Parameter] public EventCallback<ProjectDto?> ProjectChanged { get; set; }
+    [EditorRequired]
+    [Parameter] public ProjectSelectionCriteria Criteria { get; set; }
 
     private int[] Selected { get; set; } = new int[0];
     private IntSelectListItem[] items = null!;
@@ -34,7 +36,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        sourceItems = await client.GetProjectsWithMyMasterAccess();
+        sourceItems = await client.GetProjects(Criteria);
         items = sourceItems
           .Select(i =>
             new IntSelectListItem(

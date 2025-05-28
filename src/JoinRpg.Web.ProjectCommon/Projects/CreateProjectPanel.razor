@@ -48,7 +48,7 @@
                     <JoinAlert Variation="VariationStyleEnum.Info">Все настройки можно будет изменить после создания проекта.</JoinAlert>
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.CopyFromProjectId)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
-                    <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" />
+                    <ProjectSelector @bind-ProjectId="Model.CopyFromProjectId" Criteria="ProjectSelectionCriteria.ForCloning" />
                 </FormRowFor>
                 <FormRowFor For="@(() => Model.CopySettings)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.CopySettings" />
