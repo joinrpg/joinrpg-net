@@ -13,11 +13,12 @@ public static class PlotRenderer
     public static PlotRenderedTextViewModel Render(this PlotTextDto self, ILinkRenderer linkRenderer, ProjectInfo projectInfo, ICurrentUserAccessor currentUser)
     {
         var masterAccess = projectInfo.HasMasterAccess(currentUser);
+        var masterOrPublishAccess = masterAccess || projectInfo.PublishPlot;
         return new PlotRenderedTextViewModel(
             self.Content.ToHtmlString(linkRenderer),
             masterAccess ? new MarkupString(self.TodoField) : null,
             self.Id,
-            masterAccess ? self.GetStatus() : null,
-            self.Target);
+            masterOrPublishAccess ? self.GetStatus() : null,
+            masterOrPublishAccess ? self.Target : null);
     }
 }
