@@ -20,7 +20,7 @@ internal class ProjectService(
     ILogger<ProjectService> logger
     ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
-    public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName)
+    public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom)
     {
         var rootGroup = new CharacterGroup()
         {
@@ -40,7 +40,7 @@ internal class ProjectService(
             ProjectName = projectName,
             CharacterGroups = [rootGroup,],
             ProjectAcls = [ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),],
-            Details = new ProjectDetails(),
+            Details = new ProjectDetails() { ClonedFromProjectId = cloneFrom?.Value, },
             ProjectFields = [],
         };
         MarkTreeModified(project);

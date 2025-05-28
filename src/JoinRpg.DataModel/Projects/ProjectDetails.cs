@@ -48,6 +48,12 @@ public class ProjectDetails : IValidatableObject
 
     public virtual Character? DefaultTemplateCharacter { get; set; }
 
+    public int? ClonedFromProjectId { get; set; }
+
+    public Project? ClonedFromProject { get; set; }
+
+    public ProjectCloneSettings ProjectCloneSettings { get; set; } = ProjectCloneSettings.CanBeClonedByMaster;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (CharacterNameField != null)

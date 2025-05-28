@@ -276,6 +276,12 @@ public class MyDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<KogdaIgraGame>()
             .HasMany(kig => kig.Projects)
             .WithMany(p => p.KogdaIgraGames);
+
+        modelBuilder.Entity<ProjectDetails>()
+            .HasOptional(pd => pd.ClonedFromProject)
+            .WithMany()
+            .HasForeignKey(pd => pd.ClonedFromProjectId)
+            .WillCascadeOnDelete(false);
     }
 
     private static void ConfigureMoneyTransfer(DbModelBuilder modelBuilder)

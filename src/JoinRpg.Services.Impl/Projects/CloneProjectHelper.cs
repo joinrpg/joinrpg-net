@@ -76,8 +76,8 @@ internal class CloneProjectHelper(
                 ProjectId = projectId,
                 ProjectName = cloneRequest.ProjectName,
                 PublishPlot = false,
-                DefaultTemplateCharacterId = original.DefaultTemplateCharacter is not null ? CharacterMapping.GetValueOrDefault(original.DefaultTemplateCharacter) : null,
                 // Если у проекта был шаблон по умолчанию, и мы его скопировали — указываем его.
+                DefaultTemplateCharacterId = original.DefaultTemplateCharacter is not null ? CharacterMapping.GetValueOrDefault(original.DefaultTemplateCharacter) : null
             });
 
         return everythingFine;
