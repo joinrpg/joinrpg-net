@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Accommodation;
@@ -13,47 +14,36 @@ namespace JoinRpg.Portal.Controllers;
 
 [MasterAuthorize()]
 [Route("{projectId}/rooms/report/")]
-public class AccommodationPrintController : Common.ControllerGameBase
+public class AccommodationPrintController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IExportDataService exportDataService,
+    IUriService uriService,
+    IAccommodationRepository accommodationRepository,
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository
+    ) : Common.ControllerGameBase(projectRepository,
+        projectService,
+        userRepository)
 {
-    private IAccommodationRepository AccommodationRepository { get; }
-    private IUriService UriService { get; }
-
-    private IExportDataService ExportDataService { get; }
-
-    public AccommodationPrintController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IExportDataService exportDataService,
-        IUriService uriService,
-        IAccommodationRepository accommodationRepository,
-        IUserRepository userRepository) : base(projectRepository,
-            projectService,
-            userRepository)
-    {
-        UriService = uriService;
-        AccommodationRepository = accommodationRepository;
-        ExportDataService = exportDataService;
-    }
-
     [HttpGet]
-    public async Task<ActionResult> MainReport(int projectId, string export)
+    public async Task<ActionResult> MainReport(ProjectIdentification projectId, string export)
     {
 
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId)
-            .ConfigureAwait(false);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         if (project == null)
         {
             return NotFound();
         }
 
-        if (!project.Details.EnableAccommodation)
+        if (!project.AccomodationEnabled)
         {
             return RedirectToAction("Edit", "Game");
         }
 
         var accommodations =
-            (await AccommodationRepository.GetClaimAccommodationReport(projectId)).Select(row => new AccomodationReportListItemViewModel
+            (await accommodationRepository.GetClaimAccommodationReport(projectId)).Select(row => new AccomodationReportListItemViewModel
             {
                 ProjectId = project.ProjectId,
                 ClaimId = row.ClaimId,
@@ -73,7 +63,7 @@ public class AccommodationPrintController : Common.ControllerGameBase
         }
         else
         {
-            var generator = ExportDataService.GetGenerator(exportType.Value, accommodations, new AccomodationReportExporter(UriService));
+            var generator = exportDataService.GetGenerator(exportType.Value, accommodations, new AccomodationReportExporter(uriService));
 
             return GeneratorResultHelper.Result(project.ProjectName + ": " + "Отчет по расселению", generator);
         }

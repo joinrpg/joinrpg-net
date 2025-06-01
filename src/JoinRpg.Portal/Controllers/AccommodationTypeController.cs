@@ -1,59 +1,49 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Accommodation;
-using JoinRpg.Web.Models.Masters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 [MasterAuthorize()]
 [Route("{projectId}/rooms/[action]")]
-public class AccommodationTypeController : Common.ControllerGameBase
+public class AccommodationTypeController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IAccommodationService accommodationService,
+    IAccommodationRepository accommodationRepository,
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor) : Common.ControllerGameBase(projectRepository,
+        projectService,
+        userRepository)
 {
-    private IAccommodationRepository AccommodationRepository { get; }
-    private readonly IAccommodationService _accommodationService;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    public AccommodationTypeController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IAccommodationService accommodationService,
-        IAccommodationRepository accommodationRepository,
-        IUserRepository userRepository,
-        IProjectMetadataRepository projectMetadataRepository)
-        : base(projectRepository,
-            projectService,
-            userRepository)
-    {
-        AccommodationRepository = accommodationRepository;
-        this.projectMetadataRepository = projectMetadataRepository;
-        _accommodationService = accommodationService;
-    }
 
     /// <summary>
     /// Shows list of registered room types
     /// </summary>
     [HttpGet("~/{projectId}/rooms/")]
-    public async Task<ActionResult> Index(int projectId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (project == null)
         {
             return NotFound($"Project {projectId} not found");
         }
 
-        if (!project.Details.EnableAccommodation)
+        if (!project.AccomodationEnabled)
         {
             return RedirectToAction("Edit", "Game");
         }
 
         return View(new AccommodationListViewModel(project,
-            await AccommodationRepository.GetRoomTypesForProject(projectId),
-            CurrentUserId));
+            await accommodationRepository.GetRoomTypesForProject(projectId),
+            currentUserAccessor));
     }
 
     /// <summary>
@@ -73,7 +63,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/edit")]
     public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
     {
-        var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
+        var entity = await accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
         if (entity == null || entity.ProjectId != projectId)
         {
             return Forbid();
@@ -91,7 +81,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/details")]
     public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
     {
-        var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId);
+        var entity = await accommodationService.GetRoomTypeAsync(roomTypeId);
         if (entity == null || entity.ProjectId != projectId)
         {
             return Forbid();
@@ -121,7 +111,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
 
             return View("EditRoomType", model);
         }
-        _ = await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
+        _ = await accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
         return RedirectToAction("Index", new { projectId = model.ProjectId });
     }
 
@@ -132,7 +122,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
     [HttpGet]
     public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
     {
-        await _accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
+        await accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
         return RedirectToAction("Index", new { ProjectId = projectId });
     }
 
@@ -148,7 +138,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
                 .ToList();
             if (ids.Count > 0)
             {
-                await _accommodationService.OccupyRoom(new OccupyRequest()
+                await accommodationService.OccupyRoom(new OccupyRequest()
                 {
                     AccommodationRequestIds = ids,
                     ProjectId = projectId,
@@ -170,15 +160,15 @@ public class AccommodationTypeController : Common.ControllerGameBase
 
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpGet]
-    public async Task<ActionResult> OccupyAll(int projectId)
+    public async Task<ActionResult> OccupyAll(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (project == null)
         {
             return NotFound($"Project {projectId} not found");
         }
 
-        if (!project.Details.EnableAccommodation)
+        if (!project.AccomodationEnabled)
         {
             return RedirectToAction("Edit", "Game");
         }
@@ -190,20 +180,20 @@ public class AccommodationTypeController : Common.ControllerGameBase
 
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpGet]
-    public async Task<ActionResult> UnOccupyAll(int projectId)
+    public async Task<ActionResult> UnOccupyAll(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (project == null)
         {
             return NotFound($"Project {projectId} not found");
         }
 
-        if (!project.Details.EnableAccommodation)
+        if (!project.AccomodationEnabled)
         {
             return RedirectToAction("Edit", "Game");
         }
 
-        await _accommodationService.UnOccupyAll(projectId);
+        await accommodationService.UnOccupyAll(projectId);
 
         return RedirectToAction("Index");
     }
@@ -214,7 +204,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
     {
         try
         {
-            await _accommodationService.UnOccupyRoom(new UnOccupyRequest()
+            await accommodationService.UnOccupyRoom(new UnOccupyRequest()
             {
                 ProjectId = projectId,
                 AccommodationRequestId = reqId,
@@ -237,7 +227,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
     {
         try
         {
-            await _accommodationService.UnOccupyRoomType(projectId, roomTypeId);
+            await accommodationService.UnOccupyRoomType(projectId, roomTypeId);
             return RedirectToAction("EditRoomTypeRooms", "AccommodationType",
                 new { ProjectId = projectId, RoomTypeId = roomTypeId });
         }
@@ -260,7 +250,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
     {
         try
         {
-            await _accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
+            await accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
             return Ok();
         }
         catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
@@ -281,7 +271,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
         {
             //TODO: Implement room names checking
             //TODO: Implement new rooms HTML returning
-            _ = await _accommodationService.AddRooms(projectId, roomTypeId, name);
+            _ = await accommodationService.AddRooms(projectId, roomTypeId, name);
             return StatusCode(201);
         }
         catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
@@ -305,7 +295,7 @@ public class AccommodationTypeController : Common.ControllerGameBase
         {
             if (int.TryParse(room, out var roomId))
             {
-                await _accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
+                await accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
                 return Ok();
             }
         }

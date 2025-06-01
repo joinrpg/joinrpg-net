@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
@@ -29,14 +31,14 @@ public class AccommodationListViewModel
 
     public bool IsInfinite { get; set; }
 
-    public AccommodationListViewModel(Project project,
+    public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
-        int userId)
+        ICurrentUserAccessor userId)
     {
         ProjectId = project.ProjectId;
         ProjectName = project.ProjectName;
-        CanManageRooms = project.HasMasterAccess(userId, acl => acl.CanManageAccommodation);
-        CanAssignRooms = project.HasMasterAccess(userId, acl => acl.CanSetPlayersAccommodations);
+        CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
+        CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
         RoomTypes = roomTypes.Select(rt => new RoomTypeListItemViewModel(rt, userId)).ToList();
 
         IsInfinite = RoomTypes.Any(rt => rt.IsInfinite);
@@ -59,7 +61,7 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
 
     public override int RoomsCount { get; }
 
-    public RoomTypeListItemViewModel(RoomTypeInfoRow row, int userId)
+    public RoomTypeListItemViewModel(RoomTypeInfoRow row, ICurrentUserAccessor userId)
     {
         var entity = row.RoomType;
         var project = row.RoomType.Project;
@@ -77,8 +79,8 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
         IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
         DescriptionView = entity.Description.ToHtmlString();
         ProjectId = project.ProjectId;
-        CanManageRooms = project.HasMasterAccess(userId, acl => acl.CanManageAccommodation);
-        CanAssignRooms = project.HasMasterAccess(userId, acl => acl.CanSetPlayersAccommodations);
+        CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
+        CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
 
         Occupied = row.Occupied;
         RoomsCount = row.RoomsCount;

@@ -21,8 +21,6 @@ public interface IProjectRepository : IDisposable
 
     Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
-    Task<CharacterGroup> GetRootGroupAsync(int projectId);
-
     Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
     Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);

@@ -105,19 +105,23 @@ public class CharacterController(
 
     [HttpGet("~/{ProjectId}/character/create")]
     [MasterAuthorize(Permission.CanEditRoles)]
-    public async Task<ActionResult> Create(int projectid, int? charactergroupid, bool continueCreating = false)
+    public async Task<ActionResult> Create(ProjectIdentification ProjectId, int? charactergroupid, bool continueCreating = false)
     {
-        CharacterGroup? characterGroup;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(ProjectId);
+
+        CharacterGroupIdentification targetGroupId;
+
         if (charactergroupid is null || charactergroupid == 0)
         {
-            characterGroup = await ProjectRepository.GetRootGroupAsync(projectid);
+            targetGroupId = projectInfo.RootCharacterGroupId;
         }
         else
         {
-            characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid.Value);
+            targetGroupId = new CharacterGroupIdentification(ProjectId, charactergroupid.Value);
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
+        CharacterGroup? characterGroup = await ProjectRepository.GetGroupAsync(targetGroupId);
+
 
         if (characterGroup == null)
         {
@@ -126,7 +130,7 @@ public class CharacterController(
 
         return View(new AddCharacterViewModel()
         {
-            ProjectId = projectid,
+            ProjectId = ProjectId,
             ProjectName = characterGroup.Project.ProjectName,
             ParentCharacterGroupIds = [characterGroup.CharacterGroupId],
             ContinueCreating = continueCreating,
