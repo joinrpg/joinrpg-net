@@ -46,19 +46,27 @@ internal static class ProjectIdExtractor
         {
             return null;
         }
-        var parts = path.Value.Split('/');
-        var secondPart = parts.Skip(1).FirstOrDefault();
-        if (secondPart != null && int.TryParse(secondPart, out var projectId))
+
+        var pathSpan = path.Value.AsSpan();
+        foreach (var segmentRange in pathSpan.Split('/'))
         {
-            return new(projectId);
-        }
-        else if (parts.Skip(2).FirstOrDefault() is string thirdPart && secondPart == "x-game-api" && int.TryParse(thirdPart, out var projectIdSecond))
-        {
-            return new(projectIdSecond);
-        }
-        else
-        {
+            if (segmentRange.Start.Value == 0 && segmentRange.End.Value == 0) // пропускаем первый пустой
+            {
+                continue;
+            }
+
+            if (ApiPathHelper.IsApiPathSegment(pathSpan[segmentRange]))
+            {
+                continue; // пропускаем префикс API
+            }
+
+            if (ProjectIdentification.TryParse(pathSpan[segmentRange], null, out var projectId))
+            {
+                return projectId;
+            }
             return null;
         }
+
+        return null;
     }
 }

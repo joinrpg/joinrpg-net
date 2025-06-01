@@ -65,7 +65,7 @@ internal static class Swagger
             foreach (var item in swaggerDoc.Paths.ToList())
             {
                 var key = item.Key.ToLower();
-                if (!key.IsApiPath())
+                if (!key.IsExternalApiPath())
                 {
                     _ = swaggerDoc.Paths.Remove(item.Key);
                 }
