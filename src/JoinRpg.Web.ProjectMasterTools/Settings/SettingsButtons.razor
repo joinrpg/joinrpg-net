@@ -1,0 +1,18 @@
+@using JoinRpg.PrimitiveTypes
+
+<JoinButtonGroup>
+    <JoinButton Preset="ButtonPreset.Setup" Link="@FieldsLink" Label="Настройки полей" />
+    <JoinButton Preset="ButtonPreset.Setup" Link="@CheckinSetupLink" Label="Настройки регистрации" />
+</JoinButtonGroup>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    public string FieldsLink => $"/{ProjectId.Value}/fields";
+    public string CheckinSetupLink => $"/{ProjectId.Value}/checkin/setup";
+
+
+
+}

@@ -1,16 +1,14 @@
-﻿
+@using JoinRpg.PrimitiveTypes
+
 @model JoinRpg.Web.Models.EditProjectViewModel
 
 @{
-  ViewBag.Title = "Игра «" + Model.OriginalName + "»";
+  ViewBag.Title = "Игра «" + Model.OriginalName + "»: Настройки";
 }
 
 <h2>@ViewBag.Title</h2>
 
-<div class="btn-group">
-    <a class="btn btn-default" href="@Url.Action("Index", "GameField", new {Model.ProjectId})"> Настройки полей</a>
-    <a class="btn btn-default" href="@Url.Action("Setup", "CheckIn", new {Model.ProjectId})"> Настройки регистрации</a>
-</div>
+<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.SettingsButtons)" render-mode="Static" param-ProjectId="new ProjectIdentification (Model.ProjectId)" />
 <hr/>
 @using (Html.BeginForm())
 {
