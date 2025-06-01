@@ -55,8 +55,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     public async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(
         int? userId)
         => await GetProjectWithClaimCounts(project => true, userId);
-
-    private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
@@ -87,14 +85,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
           await Ctx.Set<CharacterGroup>()
             .Include(cg => cg.Project)
             .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId.CharacterGroupId && cg.ProjectId == characterGroupId.ProjectId);
-    }
-
-    public Task<CharacterGroup> GetRootGroupAsync(int projectId)
-    {
-        return
-         Ctx.Set<CharacterGroup>()
-           .Include(cg => cg.Project)
-           .SingleOrDefaultAsync(cg => cg.IsRoot && cg.ProjectId == projectId);
     }
 
     public async Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
