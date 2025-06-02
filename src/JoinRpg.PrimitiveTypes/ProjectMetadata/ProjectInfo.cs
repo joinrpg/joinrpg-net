@@ -13,7 +13,7 @@ public record class ProjectInfo
     public IReadOnlyList<ProjectFieldInfo> SortedActiveFields => sortedActiveFieldsContainer.Value.OrderedItems;
 
     public ProjectIdentification ProjectId { get; }
-    public string ProjectName { get; }
+    public ProjectName ProjectName { get; }
     public IReadOnlyCollection<ProjectFieldInfo> UnsortedFields { get; }
     public ProjectFieldInfo? CharacterNameField { get; }
     public ProjectFieldInfo? CharacterDescriptionField { get; }
@@ -33,6 +33,7 @@ public record class ProjectInfo
     public string FieldsOrdering { get; }
 
     public bool PublishPlot { get; }
+    public ProjectCloneSettings CloneSettings { get; }
     public ProjectCheckInSettings ProjectCheckInSettings { get; }
 
     public ProjectLifecycleStatus ProjectStatus { get; }
@@ -40,7 +41,7 @@ public record class ProjectInfo
 
     public ProjectInfo(
         ProjectIdentification projectId,
-        string projectName,
+        ProjectName projectName,
         string ordering,
         IReadOnlyCollection<ProjectFieldInfo> unsortedFields,
         ProjectFieldSettings projectFieldSettings,
@@ -53,7 +54,8 @@ public record class ProjectInfo
         bool publishPlot,
         ProjectCheckInSettings projectCheckInSettings,
         ProjectLifecycleStatus projectStatus,
-        ProjectScheduleSettings projectScheduleSettings)
+        ProjectScheduleSettings projectScheduleSettings,
+        ProjectCloneSettings projectCloneSettings)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -79,6 +81,7 @@ public record class ProjectInfo
         ProjectCheckInSettings = projectCheckInSettings;
         ProjectStatus = projectStatus;
         ProjectScheduleSettings = projectScheduleSettings;
+        CloneSettings = projectCloneSettings;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
