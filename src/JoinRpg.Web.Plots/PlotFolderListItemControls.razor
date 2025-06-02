@@ -1,6 +1,6 @@
 @using JoinRpg.WebComponents.ElementMoving;
 
-@if (List.HasMasterAccess && Item.Status != PlotStatus.Deleted)
+@if (List.HasEditAccess && Item.Status != PlotStatus.Deleted)
 {
     <div class="btn-group btn-group-sm" style="display: inline-block">
 
@@ -9,7 +9,7 @@
         Preset="ButtonPreset.Add"
         Label="Добавить вводную"
         />
-        @if (List.HasEditAccess)
+        @if (List.HasPlotEditorAccess)
         {
             <JoinButton Link="@deletePlotUri"
             Preset="ButtonPreset.Delete"
@@ -17,7 +17,7 @@
         }
     </div>
     <text>&nbsp;</text>
-    @if (List.HasEditAccess)
+    @if (List.HasPlotEditorAccess)
     {
             @*Здесь нужна кнопка восстановить *@
             <JoinMoveControl Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />

@@ -37,6 +37,8 @@ public record class ProjectInfo
     public ProjectCheckInSettings ProjectCheckInSettings { get; }
 
     public ProjectLifecycleStatus ProjectStatus { get; }
+    public bool IsActive => ProjectStatus != ProjectLifecycleStatus.Archived;
+
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
 
     public ProjectInfo(

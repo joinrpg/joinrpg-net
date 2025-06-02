@@ -14,7 +14,7 @@ namespace JoinRpg.Web.Models.Plot;
 
 public abstract class PlotFolderListViewModelBase(ProjectInfo project, ICurrentUserAccessor currentUser)
 {
-    public bool HasEditAccess { get; } = project.HasMasterAccess(currentUser, Permission.CanManagePlots) && project.ProjectStatus != ProjectLifecycleStatus.Archived;
+    public bool HasPlotEditorAccess { get; } = project.HasMasterAccess(currentUser, Permission.CanManagePlots) && project.ProjectStatus != ProjectLifecycleStatus.Archived;
 
     public int ProjectId { get; } = project.ProjectId;
     public string ProjectName { get; } = project.ProjectName;
@@ -33,12 +33,16 @@ public class PlotFolderListViewModel : PlotFolderListViewModelBase, IPlotFolderL
     public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
     public bool HasMasterAccess { get; private set; }
 
+    public bool HasEditAccess { get; private set; }
+
     public IReadOnlyCollection<PlotFolderIdentification> FolderIds { get; private set; }
 
     public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo)
       : base(projectInfo, currentUser)
     {
         HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
+
+        HasEditAccess = projectInfo.HasMasterAccess(currentUser) && projectInfo.IsActive;
         Folders =
           folders
             .Select(f => new PlotFolderListItemViewModel(f, currentUser));
@@ -82,11 +86,9 @@ public class PlotFolderListFullItemViewModel
     : PlotFolderListItemViewModel(folder, currentUser)
 {
     public JoinHtmlString Summary { get; } = folder.MasterSummary.ToHtmlString();
-    public IReadOnlyCollection<PlotRenderedTextViewModel> Elements { get; } = [.. folder.Elements
-            .Where(p => p.IsActive)
-            .Where(p => p.ElementType == PlotElementType.RegularPlot)
-            .Select(p => p.GetDtoForLast().Render(linkRenderer, projectInfo, currentUser))];
-    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
+    public IReadOnlyCollection<PlotElementListItemViewModel> Elements { get; } = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
+
+    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.Status != PlotStatus.Completed);
 }
 
 public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderListItemViewModel
