@@ -1,7 +1,6 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.Web.Models.Masters;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,13 +9,8 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 [Route("/webapi/resp-master-rule/[action]")]
 [RequireMaster]
 [IgnoreAntiforgeryToken]
-public class ResponsibleMasterRuleController : ControllerBase
+public class ResponsibleMasterRuleController(IResponsibleMasterRuleClient responsibleMasterRuleClient) : ControllerBase
 {
-    private readonly IResponsibleMasterRuleClient responsibleMasterRuleClient;
-
-    public ResponsibleMasterRuleController(IResponsibleMasterRuleClient responsibleMasterRuleClient)
-        => this.responsibleMasterRuleClient = responsibleMasterRuleClient;
-
     [HttpGet]
     public async Task<ResponsibleMasterRuleListViewModel> GetList(int projectId)
         => await responsibleMasterRuleClient.GetResponsibleMasterRuleList(new ProjectIdentification(projectId));
