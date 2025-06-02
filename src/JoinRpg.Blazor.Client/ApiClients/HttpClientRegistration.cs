@@ -4,6 +4,7 @@ using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
+using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -27,6 +28,7 @@ public static class HttpClientRegistration
         return builder
                 .AddHttpClient<IProjectListClient, ProjectListClient>()
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
+                .AddHttpClient<IProjectSettingsClient, ProjectSettingsClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()
                 .AddHttpClient<IMasterClient, MasterClient>()
                 .AddHttpClient<IKogdaIgraSyncClient, KogdaIgraSyncClient>()

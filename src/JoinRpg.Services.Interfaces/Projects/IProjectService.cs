@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Interfaces.Projects;
 
@@ -30,10 +30,11 @@ public interface IProjectService
 
     Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate);
 
-    Task SetCheckInOptions(int projectId,
+    Task SetCheckInSettings(ProjectIdentification projectId,
         bool checkInProgress,
         bool enableCheckInModule,
         bool modelAllowSecondRoles);
 
     Task GrantAccessAsAdmin(int projectId);
+    Task SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled);
 }

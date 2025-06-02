@@ -5,6 +5,7 @@ public static class Registration
     public static IEnumerable<Type> GetTypes()
     {
         yield return typeof(Projects.ProjectListManager);
+        yield return typeof(Projects.ProjectSettingsViewService);
         yield return typeof(FieldSetupManager);
         yield return typeof(Schedule.SchedulePageManager);
         yield return typeof(Subscribe.SubscribeViewService);

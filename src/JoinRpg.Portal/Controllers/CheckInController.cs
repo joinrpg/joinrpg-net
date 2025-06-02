@@ -61,7 +61,7 @@ public class CheckInController(
         }
         try
         {
-            await ProjectService.SetCheckInOptions(model.ProjectId, model.CheckInProgress,
+            await ProjectService.SetCheckInSettings(new(model.ProjectId), model.CheckInProgress,
               model.EnableCheckInModule, model.AllowSecondRoles);
             return RedirectToAction("Setup", new { model.ProjectId });
         }

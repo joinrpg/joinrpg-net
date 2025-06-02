@@ -2,7 +2,6 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
-using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl.Projects;
 internal partial class CreateProjectService
@@ -69,7 +68,6 @@ internal partial class CreateProjectService
                 ProjectAnnounce = "",
                 ProjectId = projectId,
                 ProjectName = projectName,
-                PublishPlot = false,
                 DefaultTemplateCharacterId = defaultChar,
             });
     }

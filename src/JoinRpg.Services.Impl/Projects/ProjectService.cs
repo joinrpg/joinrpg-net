@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -147,19 +148,7 @@ internal class ProjectService(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SetCheckInOptions(int projectId,
-        bool checkInProgress,
-        bool enableCheckInModule,
-        bool modelAllowSecondRoles)
-    {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
 
-        project.Details.CheckInProgress = checkInProgress && enableCheckInModule;
-        project.Details.EnableCheckInModule = enableCheckInModule;
-        project.Details.AllowSecondRoles = modelAllowSecondRoles && enableCheckInModule;
-        await UnitOfWork.SaveChangesAsync();
-    }
 
     public async Task GrantAccessAsAdmin(int projectId)
     {
@@ -264,20 +253,47 @@ internal class ProjectService(
 
     public async Task EditProject(EditProjectRequest request)
     {
-        var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
+        await ChangeProjectProperties(request.ProjectId, project =>
+        {
+            project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
+            project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
+            project.Details.EnableManyCharacters = request.MultipleCharacters;
+            project.ProjectName = Required(request.ProjectName);
+            project.IsAcceptingClaims = request.IsAcceptingClaims && project.Active;
 
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+            project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
+            project.Details.EnableAccommodation = request.IsAccommodationEnabled;
+            project.Details.DefaultTemplateCharacterId = request.DefaultTemplateCharacterId?.CharacterId;
+        });
+    }
 
-        project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
-        project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
-        project.Details.EnableManyCharacters = request.MultipleCharacters;
-        project.Details.PublishPlot = request.PublishPlot && !project.Active;
-        project.ProjectName = Required(request.ProjectName);
-        project.IsAcceptingClaims = request.IsAcceptingClaims && project.Active;
+    async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
+    {
+        await ChangeProjectProperties(projectId, project =>
+        {
+            project.Details.PublishPlot = publishEnabled && !project.Active;
+            project.Details.ProjectCloneSettings = cloneSettings;
+        });
+    }
 
-        project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
-        project.Details.EnableAccommodation = request.IsAccommodationEnabled;
-        project.Details.DefaultTemplateCharacterId = request.DefaultTemplateCharacterId?.CharacterId;
+    public async Task SetCheckInSettings(ProjectIdentification projectId,
+       bool checkInProgress,
+       bool enableCheckInModule,
+       bool modelAllowSecondRoles)
+    {
+        await ChangeProjectProperties(projectId, project =>
+        {
+            project.Details.CheckInProgress = checkInProgress && enableCheckInModule;
+            project.Details.EnableCheckInModule = enableCheckInModule;
+            project.Details.AllowSecondRoles = modelAllowSecondRoles && enableCheckInModule;
+        });
+    }
+
+    private async Task ChangeProjectProperties(ProjectIdentification projectId, Action<Project> operation)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectId);
+
+        operation(project.RequestMasterAccess(CurrentUserId, Permission.CanChangeProjectProperties));
 
         await UnitOfWork.SaveChangesAsync();
     }

@@ -41,11 +41,6 @@ public class EditProjectViewModel
             "Если эта опция включена, при принятии заявки какого-то игрока на одну роль все другие заявки этого игрока будут автоматически отклонены.")]
     public bool StrictlyOneCharacter { get; set; }
 
-    [Display(Name = "Опубликовать сюжет всем",
-        Description =
-            "Cюжет игры будет раскрыт всем для всеобщего просмотра и послужит обмену опытом среди мастеров.")]
-    public bool PublishPlot { get; set; }
-
     [Display(Name = "Автоматически принимать заявки",
         Description = "Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
     public bool AutoAcceptClaims { get; set; }
