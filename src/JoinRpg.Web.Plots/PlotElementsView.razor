@@ -32,9 +32,6 @@
                     @if (ShowEditControls)
                     {
                         <EditPlotElementButton Id="plotText.PlotVersionId.PlotElementId" />
-                    }
-                    @if (ShowEditControls && CharacterId != null)
-                    {
                         <JoinMoveControl Endpoint="@endpoint" SelfId="@plotText.PlotVersionId.PlotElementId.ToString()" ItemIds="@itemIds" />
                     }
                 </div>
@@ -57,9 +54,9 @@
     private string endpoint = null!;
     private string[] itemIds = null!;
 
-    // TODO: Убрать использование в FlatList.cshtml и использовать только для персонажей
     [Parameter]
-    public CharacterIdentification? CharacterId { get; set; }
+    [EditorRequired]
+    public CharacterIdentification CharacterId { get; set; } = null!;
 
     [Parameter]
     [EditorRequired]
@@ -72,10 +69,7 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        if (CharacterId is not null)
-        {
-            endpoint = $"/{CharacterId.ProjectId.Value}/plot/ReorderByCharacter?characterId={CharacterId.CharacterId}";
-            itemIds = [..PlotTexts.Select(x => x.PlotVersionId.PlotElementId.ToString())];
-        }
+        endpoint = $"/{CharacterId.ProjectId.Value}/plot/ReorderByCharacter?characterId={CharacterId.CharacterId}";
+        itemIds = [.. PlotTexts.Select(x => x.PlotVersionId.PlotElementId.ToString())];
     }
 }

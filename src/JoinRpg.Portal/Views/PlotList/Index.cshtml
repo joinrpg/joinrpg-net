@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Models.Plot
+@using JoinRpg.Web.Models.Plot
 @model PlotFolderListViewModel
 
 @{
@@ -9,9 +9,16 @@
     <span  class="h2">
         @ViewBag.Title
 </span>
-    @if (Model.HasEditAccess)
+    @if (Model.HasPlotEditorAccess)
     {
-        <a href="@Url.Action("Create", "Plot", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
+      <span class="btn-group btn-group-sm" style="display: inline-block">
+        <component
+          type="typeof(JoinButton)"
+          render-mode="Static"
+          param-Preset="ButtonPreset.Add"
+          param-Label="@("Добавить сюжет...")"
+          param-Link="@Url.Action("Create", "Plot", new {Model.ProjectId})" />
+      </span>
     }
 </p>
 @await Html.PartialAsync("FolderList", Model)

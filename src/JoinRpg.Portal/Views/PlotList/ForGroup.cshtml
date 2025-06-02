@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.Plot.PlotFolderListViewModelForGroup
+@model JoinRpg.Web.Models.Plot.PlotFolderListViewModelForGroup
 
 @{
     ViewBag.Title = "Сюжеты группы";
@@ -10,7 +10,7 @@
     <span class="h2">
         @ViewBag.Title
     </span>
-    @if (Model.HasEditAccess)
+    @if (Model.HasPlotEditorAccess)
     {
     <a href="@Url.Action("Create", "Plot", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
     }

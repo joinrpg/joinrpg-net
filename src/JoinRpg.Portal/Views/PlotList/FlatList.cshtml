@@ -11,23 +11,21 @@
 
 @foreach (var item in Model.Folders)
 {
-  
-    var elements = item.Elements.Where(e => !Model.InWorkOnly || e.HasWorkTodo).ToArray();
+
+    var elements = item.Elements.Where(e => !Model.InWorkOnly || e.Status != PlotStatus.Completed).ToArray();
 
     <div style="page-break-inside: avoid">
         <h2>@item.PlotFolderMasterTitle</h2>
         <p>@CountHelper.DisplayCount(item.ElementsCount, "вводная", "вводные", "вводных")</p>
         @if (!string.IsNullOrWhiteSpace(item.TodoField) && item.HasEditAccess)
         {
-        <p><b>Доделать</b>: @item.TodoField</p>
+            <p><b>Доделать</b>: @item.TodoField</p>
         }
 
-        @*TODO: Переключиться на тот же контрол показа вводных, что и в обычном просмотре сюжета, а этот использовать только для персонажей*@
-
         <p>@Html.DisplayFor(modelItem => item.Summary)</p>
-        <component type="typeof(PlotElementsView)"
-                   param-PlotTexts="@elements"
-                   param-ShowEditControls="@Model.HasEditAccess"
-                   render-mode="Static" />
+        @foreach (var e in elements)
+        {
+            @await Html.PartialAsync("../Plot/EditElementPartial", e)
+        }
     </div>
 }

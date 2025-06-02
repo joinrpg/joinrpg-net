@@ -4,8 +4,10 @@ using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
@@ -25,13 +27,16 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     public bool HasEditAccess { get; private set; }
 
     [ReadOnly(true)]
+    public bool HasPlotEditorAccess { get; private set; }
+
+    [ReadOnly(true)]
     public IEnumerable<string> TagNames { get; private set; }
 
 
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
     public string PlotFolderTitleAndTags { get; set; }
 
-    public EditPlotFolderViewModel(PlotFolder folder, int? currentUserId, IUriService uriService, ProjectInfo projectInfo)
+    public EditPlotFolderViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         if (folder == null)
         {
@@ -41,7 +46,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         PlotFolderId = folder.PlotFolderId;
         TodoField = folder.TodoField;
         ProjectId = folder.ProjectId;
-        Fill(folder, currentUserId, uriService, projectInfo);
+        Fill(folder, currentUser, uriService, projectInfo);
         if (TagNames.Any())
         {
             PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
@@ -54,16 +59,20 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
     [MemberNotNull(nameof(TagNames))]
     [MemberNotNull(nameof(Elements))]
-    public void Fill(PlotFolder folder, int? currentUserId, IUriService uriService, ProjectInfo projectInfo)
+    public void Fill(PlotFolder folder, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
+
         var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
 
-        Elements = [.. orderedElements.Select(e => new PlotElementListItemViewModel(e, currentUserId, uriService, projectInfo, [.. orderedElements.Select(x => x.GetId().ToString())]))];
+        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo);
+        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
-        HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
-        HasMasterAccess = folder.HasMasterAccess(currentUserId);
+
+        HasEditAccess = folder.HasMasterAccess(currentUser) && folder.Project.Active;
+        HasPlotEditorAccess = folder.HasMasterAccess(currentUser, Permission.CanManagePlots) && folder.Project.Active;
+        HasMasterAccess = folder.HasMasterAccess(currentUser);
     }
 
     public EditPlotFolderViewModel() { } //For binding
@@ -100,14 +109,21 @@ public class EditPlotElementViewModel(PlotElement e, bool hasManageAccess, int? 
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {
+    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    {
+        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
+
+        return [.. orderedElements.Select(e => new PlotElementListItemViewModel(
+            e, currentUserAccessor.UserIdOrDefault, projectInfo, [.. orderedElements.Select(x => x.GetId().ToString())]))];
+    }
 
     public PlotElementListItemViewModel(
         PlotElement e,
         int? currentUserId,
-        IUriService uriService,
         ProjectInfo projectInfo,
         string[]? itemIdsToParticipateInSort,
-        int? currentVersion = null, bool printMode = false)
+        int? currentVersion = null,
+        bool printMode = false)
     {
         CurrentVersion = currentVersion ?? e.LastVersion().Version;
 
@@ -133,8 +149,11 @@ public class PlotElementListItemViewModel : IProjectIdAware
         ElementType = (PlotElementTypeView)e.ElementType;
         ShortContent = currentVersionText.Content.TakeWords(10)
             .ToPlainText(renderer).WithDefaultStringValue("***");
-        HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
+
+        HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(currentUserId, Permission.CanManagePlots) && e.Project.Active;
         HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
+        HasEditAccess = HasMasterAccess && e.Project.Active;
+
         ModifiedDateTime = currentVersionText.ModifiedDateTime;
         Author = currentVersionText.AuthorUser;
         PrevModifiedDateTime = prevVersionText?.ModifiedDateTime;
@@ -183,9 +202,10 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public TargetsInfo Target { get; }
 
     public PlotElementTypeView ElementType { get; }
-    public bool HasEditAccess { get; }
+    public bool HasPlotEditorAccess { get; }
 
     public bool HasMasterAccess { get; }
+    public bool HasEditAccess { get; }
     public bool ShowMoveControl { get; }
     public int CurrentVersion { get; }
 

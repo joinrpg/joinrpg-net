@@ -6,5 +6,7 @@ public interface IPlotFolderListViewModel
 
     bool HasEditAccess { get; }
 
+    bool HasPlotEditorAccess { get; }
+
     IReadOnlyCollection<PlotFolderIdentification> FolderIds { get; }
 }

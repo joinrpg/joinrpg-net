@@ -76,7 +76,7 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, uriService, projectInfo));
+        return View(new EditPlotFolderViewModel(folder, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
@@ -93,7 +93,7 @@ public class PlotController(
             ModelState.AddException(exception);
             var folder = await plotRepository.GetPlotFolderAsync(new(viewModel.ProjectId, viewModel.PlotFolderId));
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
-            viewModel.Fill(folder, CurrentUserId, uriService, projectInfo);
+            viewModel.Fill(folder, currentUserAccessor, uriService, projectInfo);
             return View(viewModel);
         }
     }
@@ -235,7 +235,7 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return View(new EditPlotFolderViewModel(folder, CurrentUserId, uriService, projectInfo));
+        return View(new EditPlotFolderViewModel(folder, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
@@ -389,7 +389,7 @@ public class PlotController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
-            uriService, projectInfo, itemIdsToParticipateInSort: null, version, printMode));
+            projectInfo, itemIdsToParticipateInSort: null, currentVersion: version, printMode: printMode));
     }
 
     [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
