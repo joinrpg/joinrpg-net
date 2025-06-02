@@ -1,0 +1,95 @@
+@inject IProjectSettingsClient settingsClient
+@implements IDisposable
+
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Настройки публикации сохранены</JoinAlert>
+}
+
+<JoinPanel>
+    <Header>Настройки публикации проекта</Header>
+    <Body>
+        @if (Model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        <EditForm FormName="ProjectPublishSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                <ValidationSummary />
+                <DataAnnotationsValidator />
+                @if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
+                {
+                    <FormRowFor For="@(() => Model.PublishEnabled)">
+                        <CheckboxInput @bind-Value="Model.PublishEnabled" />
+                    </FormRowFor>
+                }
+                <FormRowFor For="@(() => Model.CloneSettings)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.CloneSettings" />
+                </FormRowFor>
+                <FormRow>
+                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+@code {
+    private EditContext? editContext;
+    private bool saving;
+    private bool success;
+    private bool formInvalid = true;
+    private ValidationMessageStore? messageStore;
+
+
+    [Parameter]
+    [SupplyParameterFromForm]
+    public ProjectPublishSettingsViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= await settingsClient.GetPublishSettings(ProjectId);
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+        formInvalid = !editContext.Validate();
+        StateHasChanged();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            saving = true;
+            await settingsClient.SavePublishSettings(Model);
+            saving = false;
+            success = true;
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при создании проекта");
+            saving = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+}

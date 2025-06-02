@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
-[Route("/webapi/project/[action]")]
+[Route("/webapi/project-create/[action]")]
 [Authorize]
+[IgnoreAntiforgeryToken]
 public class ProjectCreateController(ILogger<ProjectCreateController> logger) : ControllerBase
 {
     [HttpPost]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Create([FromBody] ProjectCreateViewModel model, [FromServices] ICreateProjectService createProjectService)
     {
         if (!ModelState.IsValid)

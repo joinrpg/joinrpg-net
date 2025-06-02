@@ -56,7 +56,6 @@ public class GameController(
             ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,
             IsAcceptingClaims = project.IsAcceptingClaims,
-            PublishPlot = project.Details.PublishPlot,
             StrictlyOneCharacter = !project.Details.EnableManyCharacters,
             Active = project.Active,
             AutoAcceptClaims = project.Details.AutoAcceptClaims,
@@ -81,7 +80,6 @@ public class GameController(
                     MultipleCharacters = !viewModel.StrictlyOneCharacter,
                     ProjectAnnounce = viewModel.ProjectAnnounce,
                     ProjectName = viewModel.ProjectName,
-                    PublishPlot = viewModel.PublishPlot,
                     AutoAcceptClaims = viewModel.AutoAcceptClaims,
                     IsAccommodationEnabled = viewModel.EnableAccomodation,
                     DefaultTemplateCharacterId = CharacterIdentification.FromOptional(viewModel.ProjectId, viewModel.DefaultTemplateCharacterId)

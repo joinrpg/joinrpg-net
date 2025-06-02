@@ -27,7 +27,9 @@ internal partial class CreateProjectService
         {
             project = await projectService.AddProject(
                 request.ProjectName,
-                rootCharacterGroupName: "Все роли");
+                rootCharacterGroupName: "Все роли",
+                cloneFrom: request is CloneProjectRequest cpr ? cpr.CopyFromId : null
+                );
         }
         catch (Exception ex)
         {

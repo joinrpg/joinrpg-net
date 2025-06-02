@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Services.Interfaces;
 
 public class EditProjectRequest
@@ -10,7 +8,6 @@ public class EditProjectRequest
     public required string ProjectAnnounce { get; set; }
     public bool IsAcceptingClaims { get; set; }
     public required bool MultipleCharacters { get; set; }
-    public required bool PublishPlot { get; set; }
     public required bool AutoAcceptClaims { get; set; }
     public required bool IsAccommodationEnabled { get; set; }
 

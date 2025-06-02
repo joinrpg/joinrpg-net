@@ -1,0 +1,26 @@
+@using JoinRpg.PrimitiveTypes
+
+<JoinButtonGroup>
+    <JoinButton Preset="ButtonPreset.Setup" Link="@FieldsLink" Label="Настройки полей" />
+    <JoinButton Preset="ButtonPreset.Setup" Link="@CheckinSetupLink" Label="Настройки регистрации" />
+    @if (Active)
+    {
+        <JoinButton Preset="ButtonPreset.Delete" Link="@CloseLink" Label="Закрыть проект" />
+    }
+</JoinButtonGroup>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public bool Active { get; set; } 
+
+    public string FieldsLink => $"/{ProjectId.Value}/fields";
+    public string CheckinSetupLink => $"/{ProjectId.Value}/checkin/setup";
+    public string CloseLink => $"/{ProjectId.Value}/close";
+
+
+}

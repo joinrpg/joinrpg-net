@@ -294,7 +294,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         return new ProjectInfo(
             projectId,
-            project.ProjectName,
+            new(project.ProjectName),
             project.Details.FieldsOrdering,
             CreateFields(project, fieldSettings).ToList(),
             fieldSettings,
@@ -307,7 +307,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             publishPlot: project.Details.PublishPlot,
             new ProjectCheckInSettings(project.Details.EnableCheckInModule),
             status,
-            new ProjectScheduleSettings(project.Details.ScheduleEnabled)
+            new ProjectScheduleSettings(project.Details.ScheduleEnabled),
+            project.Details.ProjectCloneSettings
             );
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)

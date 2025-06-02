@@ -22,7 +22,7 @@ public class CharactersClient(HttpClient httpClient) : ICharactersClient
     public async Task<List<CharacterDto>> GetTemplateCharacters(int projectId)
     {
         return await httpClient.GetFromJsonAsync<List<CharacterDto>>(
-        $"/webapi/character-groups/GetTempalteCharacters?projectId={projectId}")
+        $"/webapi/characters/GetTemplateCharacters?projectId={projectId}")
         ?? throw new Exception("Couldn't get result from server");
     }
 }

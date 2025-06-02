@@ -9,6 +9,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.Settings;
 using MoreLinq;
 
 namespace JoinRpg.WebPortal.Models.Test;
@@ -51,6 +52,10 @@ public class EnumTests
     [Fact]
     public void ContactsAccessType()
         => EnumerationTestComparer.EnsureSame<ContactsAccessType, ContactsAccessTypeView>();
+
+    [Fact]
+    public void ProjectCloneSettings()
+    => EnumerationTestComparer.EnsureSame<ProjectCloneSettings, ProjectCloneSettingsView>();
 
     [Fact]
     public void MandatoryStatus() => EnumerationTestComparer.EnsureSame<MandatoryStatus, MandatoryStatusViewType>();

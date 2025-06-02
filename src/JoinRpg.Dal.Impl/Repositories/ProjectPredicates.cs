@@ -53,6 +53,8 @@ internal static class ProjectPredicates
 
     private static Expression<Func<Project, bool>> ForCloning(UserIdentification userInfoId)
     {
-        return project => MasterAccess(userInfoId).Compile()(project);
+        return project =>
+             project.Details.ProjectCloneSettings == ProjectCloneSettings.CanBeClonedByAnyone
+             || (project.Details.ProjectCloneSettings == ProjectCloneSettings.CanBeClonedByMaster && MasterAccess(userInfoId).Compile()(project));
     }
 }
