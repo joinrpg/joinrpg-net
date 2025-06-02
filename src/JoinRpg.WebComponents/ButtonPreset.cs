@@ -22,4 +22,5 @@ public enum ButtonPreset
     Down,
     Edit,
     Setup,
+    Save,
 }
