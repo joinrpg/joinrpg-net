@@ -37,6 +37,7 @@ public class MockedProject
             Claims = [],
             Details = new ProjectDetails(),
             PaymentTypes = [],
+            ProjectName = "Mocked project",
         };
 
         var rootGroup = CreateCharacterGroup();
