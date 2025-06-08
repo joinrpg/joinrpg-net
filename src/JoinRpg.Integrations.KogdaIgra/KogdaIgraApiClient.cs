@@ -23,7 +23,7 @@ public class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
         return ResultParser.ParseGameUpdateMarkers(strResult);
     }
 
-    public async Task<KogdaIgraGameInfo> GetGameInfo(int gameId)
+    public async Task<KogdaIgraGameInfo?> GetGameInfo(int gameId)
     {
         HttpResponseMessage result;
         try
