@@ -29,6 +29,8 @@ public class KogdaIgraGame
 
     public string Name { get; set; }
 
+    public bool Active { get; set; } = true;
+
     /// <summary>
     /// Привязанные проекты. Пусто = ничего не привязано.
     /// </summary>

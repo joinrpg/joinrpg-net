@@ -29,7 +29,14 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
                 var kiData = await apiClient.GetGameInfo(item.KogdaIgraGameId);
                 logger.LogInformation("Received game record from kogda-igra {kogdaIgraGameRecord}", kiData);
 
-                await UpsertItem(kiData);
+                if (kiData is null)
+                {
+                    await DeleteItem(item.KogdaIgraGameId);
+                }
+                else
+                {
+                    await UpsertItem(kiData);
+                }
             }
             catch (KogdaIgraParseException e)
             {
@@ -46,6 +53,8 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
         return status;
     }
 
+
+
     private async Task MarkUpdateRequested(KogdaIgraGameUpdateMarker[] updated)
     {
         foreach (var item in updated)
@@ -58,6 +67,7 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
                     KogdaIgraGameId = item.Id,
                     Name = "Загружается " + item.Id,
                     LastUpdatedAt = null,
+                    Active = true,
                 };
                 logger.LogInformation("New record from kogda-igra {kogdaIgraId}", item.Id);
                 dbRecord = unitOfWork.GetDbSet<KogdaIgraGame>().Add(dbRecord);
@@ -78,6 +88,20 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
         dbRecord.JsonGameData = kiData.GameData;
         dbRecord.LastUpdatedAt = kiData.UpdateDate;
         dbRecord.UpdateRequestedAt = kiData.UpdateDate;
+        dbRecord.Active = true;
+
+        await unitOfWork.SaveChangesAsync();
+        logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);
+    }
+
+    private async Task DeleteItem(int kogdaIgraGameId)
+    {
+        var dbRecord = await unitOfWork.GetDbSet<KogdaIgraGame>().FindAsync(kogdaIgraGameId);
+        logger.LogInformation("Deleting record from kogda-igra {kogdaIgraId}. Was {dbRecord}, will be deleted.", kogdaIgraGameId, dbRecord);
+        dbRecord.Name = "Удалено " + kogdaIgraGameId;
+        dbRecord.JsonGameData = "{}";
+        dbRecord.LastUpdatedAt = dbRecord.UpdateRequestedAt; // Когда игра не возвращает дату для удаления
+        dbRecord.Active = false;
 
         await unitOfWork.SaveChangesAsync();
         logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);

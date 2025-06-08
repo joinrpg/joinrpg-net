@@ -13,6 +13,6 @@ public static class Registration
 
         _ = services.AddTransient<IKogdaIgraSyncService, KogdaIgraSyncService>();
 
-        //services.AddDailyJob<SyncKogdaIgraJob>();
+        services.AddDailyJob<SyncKogdaIgraJob>();
     }
 }

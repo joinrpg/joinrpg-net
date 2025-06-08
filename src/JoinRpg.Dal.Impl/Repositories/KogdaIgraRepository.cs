@@ -14,17 +14,23 @@ internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), I
     public Task<KogdaIgraGame[]> GetNotUpdatedObjects() => GetNotUpdatedQuery().Take(100).ToArrayAsync();
     private IQueryable<KogdaIgraGame> GetNotUpdatedQuery()
     {
-        return Ctx.Set<KogdaIgraGame>()
+        return GetSet()
            .Where(UpdateRequestedPredicate())
            .OrderByDescending(e => e.UpdateRequestedAt)
            ;
     }
 
+    private IQueryable<KogdaIgraGame> GetSet()
+    {
+        return Ctx.Set<KogdaIgraGame>()
+                   .Include(ki => ki.Projects);
+    }
+
     private static System.Linq.Expressions.Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;
 
-    async Task<(int KogdaIgraId, string Name)[]> IKogdaIgraRepository.GetAll()
+    async Task<(int KogdaIgraId, string Name)[]> IKogdaIgraRepository.GetActive()
     {
-        var result = await Ctx.Set<KogdaIgraGame>().Select(ki => new { ki.KogdaIgraGameId, ki.Name }).ToListAsync();
+        var result = await GetSet().Where(ki => ki.Active).Select(ki => new { ki.KogdaIgraGameId, ki.Name }).ToListAsync();
         return [.. result.Select(x => (x.KogdaIgraGameId, x.Name))];
     }
 

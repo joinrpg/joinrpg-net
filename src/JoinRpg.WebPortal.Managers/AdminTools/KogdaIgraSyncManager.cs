@@ -11,7 +11,7 @@ internal class KogdaIgraSyncManager(
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
-        var items = await kogdaIgraRepository.GetAll();
+        var items = await kogdaIgraRepository.GetActive();
         return ToShortViewModels(items);
     }
 
