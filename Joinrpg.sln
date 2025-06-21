@@ -122,17 +122,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.JobService", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.Claims", "src\JoinRpg.Web.Claims\JoinRpg.Web.Claims.csproj", "{971478A6-DD20-47DA-8B9C-DFC7E19A9240}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Dal.CommonEfCore", "src\JoinRpg.Dal.CommonEfCore\JoinRpg.Dal.CommonEfCore.csproj", "{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.CommonEfCore", "src\JoinRpg.Dal.CommonEfCore\JoinRpg.Dal.CommonEfCore.csproj", "{A2E3883C-6DFB-4523-9F85-3F0FEC7CD79F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.Plots", "src\JoinRpg.Web.Plots\JoinRpg.Web.Plots.csproj", "{C6E4113C-2B71-4D70-9244-6FCA1991B642}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.Plots", "src\JoinRpg.Web.Plots\JoinRpg.Web.Plots.csproj", "{C6E4113C-2B71-4D70-9244-6FCA1991B642}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.PrimitiveTypes.Test", "src\JoinRpg.PrimitiveTypes.Test\JoinRpg.PrimitiveTypes.Test.csproj", "{0FBDEBD6-4D5F-474A-919C-D659ECA599EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.PrimitiveTypes.Test", "src\JoinRpg.PrimitiveTypes.Test\JoinRpg.PrimitiveTypes.Test.csproj", "{0FBDEBD6-4D5F-474A-919C-D659ECA599EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.AdminTools", "src\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj", "{56244087-1F2A-4885-9377-017927790DA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.AdminTools", "src\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj", "{56244087-1F2A-4885-9377-017927790DA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Integrations.KogdaIgra", "src\JoinRpg.Integrations.KogdaIgra\JoinRpg.Integrations.KogdaIgra.csproj", "{37E35417-0D6A-7D0D-A851-410A575E0788}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Integrations.KogdaIgra", "src\JoinRpg.Integrations.KogdaIgra\JoinRpg.Integrations.KogdaIgra.csproj", "{37E35417-0D6A-7D0D-A851-410A575E0788}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Integrations.KogdaIgra.Test", "src\JoinRpg.Integrations.KogdaIgra.Test\JoinRpg.Integrations.KogdaIgra.Test.csproj", "{70F947A5-5623-E77A-2FD8-6641C7F8CADB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Integrations.KogdaIgra.Test", "src\JoinRpg.Integrations.KogdaIgra.Test\JoinRpg.Integrations.KogdaIgra.Test.csproj", "{70F947A5-5623-E77A-2FD8-6641C7F8CADB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
