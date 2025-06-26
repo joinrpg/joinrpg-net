@@ -1,9 +1,8 @@
 using JoinRpg.DataModel;
-using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserRoleStore<JoinIdentityUser>
+internal partial class MyUserStore : IUserRoleStore<JoinIdentityUser>
 {
     Task IUserRoleStore<JoinIdentityUser>.AddToRoleAsync(JoinIdentityUser user, string roleName, CancellationToken cancellationToken) => throw new NotSupportedException();
 

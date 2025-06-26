@@ -1,9 +1,8 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserClaimStore<JoinIdentityUser>
+internal partial class MyUserStore : IUserClaimStore<JoinIdentityUser>
 {
     Task IUserClaimStore<JoinIdentityUser>.AddClaimsAsync(JoinIdentityUser user, IEnumerable<Claim> claims, CancellationToken ct) => throw new NotSupportedException();
 

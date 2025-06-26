@@ -189,11 +189,11 @@ public class AccountController(
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var callbackUrl = Url.Action("ConfirmEmail",
             "Account",
-            new { userId = user.UserId, code },
+            new { userId = user.Id, code },
             protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
         //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
-        var dbUser = await userRepository.GetById(user.UserId);
+        var dbUser = await userRepository.GetById(user.Id);
 
         await emailService.Email(new ConfirmEmail()
         { CallbackUrl = callbackUrl, Recipient = dbUser });
@@ -249,11 +249,11 @@ public class AccountController(
             var code = await userManager.GeneratePasswordResetTokenAsync(user);
             var callbackUrl = Url.Action("ResetPassword",
                 "Account",
-                new { userId = user.UserId, code },
+                new { userId = user.Id, code },
                 protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
             //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
-            var dbUser = await userRepository.GetById(user.UserId);
+            var dbUser = await userRepository.GetById(user.Id);
 
 
             await emailService.Email(new RemindPasswordEmail()
