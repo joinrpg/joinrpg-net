@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserEmailStore<JoinIdentityUser>
+internal partial class MyUserStore : IUserEmailStore<JoinIdentityUser>
 {
     async Task<JoinIdentityUser?> IUserEmailStore<JoinIdentityUser>.FindByEmailAsync(string normalizedEmail, CancellationToken ct)
     {

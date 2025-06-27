@@ -1,6 +1,5 @@
 using System.Text;
 using Joinrpg.Web.Identity;
-using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authentication;
@@ -11,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JoinRpg.Portal.Infrastructure;
+namespace JoinRpg.Portal.Infrastructure.Authentication;
 
 internal static class AuthenticationConfigurator
 {
@@ -21,14 +20,9 @@ internal static class AuthenticationConfigurator
         IConfigurationSection authSection)
     {
 
-        _ = services
-            .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
-            .AddDefaultTokenProviders()
-            .AddUserStore<MyUserStore>()
-            .AddRoleStore<MyUserStore>();
+        _ = services.AddJoinIdentity();
 
         _ = services
-            .AddTransient<ICustomLoginStore, MyUserStore>()
             .AddTransient<TelegramLoginValidator>();
 
         _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
@@ -80,16 +74,6 @@ internal static class AuthenticationConfigurator
 
             (options.ClientId, options.ClientSecret) = config;
         }
-    }
-
-
-    public static void ConfigureValidation(this PasswordOptions password)
-    {
-        password.RequiredLength = 8;
-        password.RequireLowercase = false;
-        password.RequireUppercase = false;
-        password.RequireNonAlphanumeric = false;
-        password.RequireDigit = false;
     }
 
     public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>

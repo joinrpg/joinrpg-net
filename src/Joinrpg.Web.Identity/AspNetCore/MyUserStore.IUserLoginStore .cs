@@ -1,11 +1,10 @@
 using System.Data.Entity;
 using Joinrpg.Web.Identity.AspNetCore;
 using JoinRpg.DataModel;
-using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomLoginStore
+internal partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomLoginStore
 {
     async Task ICustomLoginStore.AddCustomLoginAsync(JoinIdentityUser user, string key, string provider, CancellationToken ct)
     {

@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserSecurityStampStore<JoinIdentityUser>
+internal partial class MyUserStore : IUserSecurityStampStore<JoinIdentityUser>
 {
     async Task<string> IUserSecurityStampStore<JoinIdentityUser>.GetSecurityStampAsync(JoinIdentityUser user, CancellationToken cancellationToken)
     {

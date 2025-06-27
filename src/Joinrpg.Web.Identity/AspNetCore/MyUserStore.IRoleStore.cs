@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore :
+internal partial class MyUserStore :
     IRoleStore<string>
 {
     Task<IdentityResult> IRoleStore<string>.CreateAsync(string role, CancellationToken cancellationToken)

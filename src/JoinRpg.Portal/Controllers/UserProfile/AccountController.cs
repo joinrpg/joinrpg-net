@@ -20,8 +20,7 @@ namespace JoinRpg.Portal.Controllers;
 public class AccountController(
     ApplicationUserManager userManager,
     ApplicationSignInManager signInManager,
-    IAccountEmailService emailService,
-    IUserRepository userRepository,
+    IAccountEmailService<JoinIdentityUser> emailService,
     IOptions<RecaptchaOptions> recaptchaOptions,
     IRecaptchaVerificator recaptchaVerificator,
     ExternalLoginProfileExtractor externalLoginProfileExtractor,
@@ -189,14 +188,10 @@ public class AccountController(
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var callbackUrl = Url.Action("ConfirmEmail",
             "Account",
-            new { userId = user.UserId, code },
+            new { userId = user.Id, code },
             protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
-        //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
-        var dbUser = await userRepository.GetById(user.UserId);
-
-        await emailService.Email(new ConfirmEmail()
-        { CallbackUrl = callbackUrl, Recipient = dbUser });
+        await emailService.ConfirmEmail(user, callbackUrl);
     }
 
     //
@@ -249,15 +244,11 @@ public class AccountController(
             var code = await userManager.GeneratePasswordResetTokenAsync(user);
             var callbackUrl = Url.Action("ResetPassword",
                 "Account",
-                new { userId = user.UserId, code },
+                new { userId = user.Id, code },
                 protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
-            //TODO we need to reconsider interface for email service to unbound EmailService from User objects. 
-            var dbUser = await userRepository.GetById(user.UserId);
 
-
-            await emailService.Email(new RemindPasswordEmail()
-            { CallbackUrl = callbackUrl, Recipient = dbUser });
+            await emailService.ResetPasswordEmail(user, callbackUrl);
 
             return RedirectToAction("ForgotPasswordConfirmation", "Account");
         }

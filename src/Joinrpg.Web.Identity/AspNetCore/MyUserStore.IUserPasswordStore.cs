@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore : IUserPasswordStore<JoinIdentityUser>
+internal partial class MyUserStore : IUserPasswordStore<JoinIdentityUser>
 {
     Task<string> IUserPasswordStore<JoinIdentityUser>.GetPasswordHashAsync(JoinIdentityUser user, CancellationToken cancellationToken) => Task.FromResult(user.PasswordHash);
 

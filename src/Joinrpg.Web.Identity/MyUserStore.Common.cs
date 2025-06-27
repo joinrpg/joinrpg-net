@@ -7,10 +7,8 @@ using DbUser = JoinRpg.DataModel.User;
 
 namespace Joinrpg.Web.Identity;
 
-public partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
+internal partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
 {
-    private readonly ILogger<MyUserStore> logger = logger;
-
     /// <inheritedoc />
     void IDisposable.Dispose() => ctx?.Dispose();
 
