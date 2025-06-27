@@ -10,7 +10,11 @@ public static class IdentityConfigurator
     {
 
         _ = services
-            .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
+            .AddIdentity<JoinIdentityUser, string>(options =>
+            {
+                options.Password.ConfigureValidation();
+                options.SignIn.RequireConfirmedEmail = true;
+            })
             .AddDefaultTokenProviders()
             .AddUserStore<MyUserStore>()
             .AddRoleStore<MyUserStore>();
