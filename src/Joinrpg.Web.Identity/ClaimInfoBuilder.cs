@@ -14,7 +14,7 @@ internal static class ClaimInfoBuilder
         if (dbUser.SelectedAvatarId is not null)
         {
             //TODO: When we fix all avatars, it will be not required check
-            yield return new Claim(JoinClaimTypes.AvatarId, dbUser.SelectedAvatarId?.ToString());
+            yield return new Claim(JoinClaimTypes.AvatarId, dbUser.SelectedAvatarId.ToString()!);
         }
     }
 }

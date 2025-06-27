@@ -5,7 +5,6 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
 public class User
 {
     public int UserId { get; set; }
@@ -21,7 +20,7 @@ public class User
     public string UserName { get; set; }
     public string Email { get; set; }
 
-    public string PasswordHash { get; set; }
+    public string? PasswordHash { get; set; }
 
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; } = new HashSet<ProjectAcl>();
 

@@ -30,7 +30,7 @@ internal partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomL
     async Task<IList<UserLoginInfo>> IUserLoginStore<JoinIdentityUser>.GetLoginsAsync(JoinIdentityUser user, CancellationToken cancellationToken)
     {
         var dbUser = await LoadUser(user, cancellationToken);
-        return dbUser.ExternalLogins.Select(uel => uel.ToUserLoginInfoCore()).ToList();
+        return [.. dbUser.ExternalLogins.Select(uel => uel.ToUserLoginInfoCore())];
     }
 
     async Task IUserLoginStore<JoinIdentityUser>.RemoveLoginAsync(JoinIdentityUser user, string loginProvider, string providerKey, CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ internal partial class MyUserStore : IUserLoginStore<JoinIdentityUser>, ICustomL
         var el =
             dbUser.ExternalLogins.First(
                 externalLogin => externalLogin.Key == providerKey &&
-                                 externalLogin.Provider.ToLowerInvariant() == loginProvider.ToLowerInvariant());
+                                 externalLogin.Provider.Equals(loginProvider, StringComparison.InvariantCultureIgnoreCase));
         _ = ctx.Set<UserExternalLogin>().Remove(el);
         _ = await ctx.SaveChangesAsync(cancellationToken);
     }
