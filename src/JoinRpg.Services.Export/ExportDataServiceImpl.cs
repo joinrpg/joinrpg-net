@@ -4,7 +4,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export;
 
-public class ExportDataServiceImpl : IExportDataService
+internal class ExportDataServiceImpl : IExportDataService
 {
     public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend<T> frontend)
          where T : class

@@ -15,6 +15,7 @@ using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
+using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.Helpers;
@@ -139,7 +140,9 @@ public class Startup
 
         _ = services.AddTransient<YandexLogLink>();
 
-        _ = services.AddJoinDal();
+        _ = services
+            .AddJoinDal()
+            .AddJoinExportService();
     }
 
     /// <summary>
