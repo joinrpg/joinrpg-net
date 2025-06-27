@@ -28,7 +28,7 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
             ToRecipientData(user));
     }
 
-    private static RecepientData ToRecipientData(JoinIdentityUser user) => new RecepientData(user.DisplayName.DisplayName, user.UserName);
+    private static RecepientData ToRecipientData(JoinIdentityUser user) => new(user.DisplayName?.DisplayName ?? user.UserName, user.UserName);
 
     public Task ConfirmEmail(JoinIdentityUser user, string callbackUrl)
     {

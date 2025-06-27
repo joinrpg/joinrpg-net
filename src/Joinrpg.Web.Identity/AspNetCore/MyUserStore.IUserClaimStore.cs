@@ -9,7 +9,7 @@ internal partial class MyUserStore : IUserClaimStore<JoinIdentityUser>
     async Task<IList<Claim>> IUserClaimStore<JoinIdentityUser>.GetClaimsAsync(JoinIdentityUser user, CancellationToken ct)
     {
         var dbUser = await LoadUser(user, ct);
-        return dbUser.ToClaimsList().ToList();
+        return [.. dbUser.ToClaimsList()];
     }
 
     Task<IList<JoinIdentityUser>> IUserClaimStore<JoinIdentityUser>.GetUsersForClaimAsync(Claim claim, CancellationToken ct) => throw new NotSupportedException();

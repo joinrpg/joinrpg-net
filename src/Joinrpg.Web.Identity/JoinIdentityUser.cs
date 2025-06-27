@@ -5,7 +5,7 @@ namespace Joinrpg.Web.Identity;
 public class JoinIdentityUser
 {
     public int Id { get; internal set; }
-    public string UserName { get; set; }
+    public required string UserName { get; set; }
 
     public bool HasPassword { get; internal set; }
 
@@ -13,5 +13,5 @@ public class JoinIdentityUser
 
     public string? PasswordHash { get; internal set; }
 
-    public UserDisplayName DisplayName { get; internal set; }
+    public UserDisplayName? DisplayName { get; internal set; }
 }

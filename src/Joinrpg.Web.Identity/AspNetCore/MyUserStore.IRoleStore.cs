@@ -18,16 +18,16 @@ internal partial class MyUserStore :
     Task<string?> IRoleStore<string>.GetNormalizedRoleNameAsync(string role, CancellationToken cancellationToken)
         => CheckRole(role);
 
-    Task<string?> IRoleStore<string>.GetRoleIdAsync(string role, CancellationToken cancellationToken)
-        => CheckRole(role);
+    async Task<string> IRoleStore<string>.GetRoleIdAsync(string role, CancellationToken cancellationToken)
+        => await CheckRole(role) ?? throw new InvalidOperationException("роль не найдена");
 
     Task<string?> IRoleStore<string>.GetRoleNameAsync(string role, CancellationToken cancellationToken)
         => CheckRole(role);
 
-    Task IRoleStore<string>.SetNormalizedRoleNameAsync(string role, string normalizedName, CancellationToken cancellationToken)
+    Task IRoleStore<string>.SetNormalizedRoleNameAsync(string role, string? normalizedName, CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    Task IRoleStore<string>.SetRoleNameAsync(string role, string roleName, CancellationToken cancellationToken)
+    Task IRoleStore<string>.SetRoleNameAsync(string role, string? roleName, CancellationToken cancellationToken)
         => throw new NotSupportedException();
 
     Task<IdentityResult> IRoleStore<string>.UpdateAsync(string role, CancellationToken cancellationToken)

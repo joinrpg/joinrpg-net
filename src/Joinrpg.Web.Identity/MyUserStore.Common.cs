@@ -63,19 +63,25 @@ internal partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
         _ = await ctx.SaveChangesAsync(ct);
     }
 
-    private async Task<DbUser?> LoadUser(string userName, CancellationToken ct = default)
+    private async Task<DbUser?> TryLoadUser(string userName, CancellationToken ct = default)
     {
         logger.LogDebug("LoadUser = {username}", userName);
         return await LoadUserImpl(user => user.Email == userName, ct);
     }
 
-    private async Task<DbUser?> LoadUser(int userId, CancellationToken ct = default)
+    private async Task<DbUser?> TryLoadUser(int userId, CancellationToken ct = default)
     {
         logger.LogDebug("LoadUser = {userId}", userId);
         return await LoadUserImpl(user => user.UserId == userId, ct);
     }
 
-    private async Task<DbUser?> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default)
+    private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default)
+    {
+        logger.LogDebug("LoadUser = {userId}", joinIdentityUser.Id);
+        return (await LoadUserImpl(user => user.UserId == joinIdentityUser.Id, ct)) ?? throw new InvalidOperationException("Пользователь не найден");
+    }
+
+    private async Task<DbUser?> TryLoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default)
     {
         logger.LogDebug("LoadUser = {userId}", joinIdentityUser.Id);
         return await LoadUserImpl(user => user.UserId == joinIdentityUser.Id, ct);
