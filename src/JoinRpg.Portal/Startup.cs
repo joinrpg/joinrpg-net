@@ -2,6 +2,7 @@ using System.Globalization;
 using Autofac;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
+using JoinRpg.Dal.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
@@ -137,6 +138,8 @@ public class Startup
 
 
         _ = services.AddTransient<YandexLogLink>();
+
+        _ = services.AddJoinDal();
     }
 
     /// <summary>
