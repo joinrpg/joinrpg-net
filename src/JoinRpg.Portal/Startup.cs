@@ -2,6 +2,7 @@ using System.Globalization;
 using Autofac;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
+using JoinRpg.Dal.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
@@ -14,9 +15,11 @@ using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
+using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.Helpers;
+using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -137,6 +140,11 @@ public class Startup
 
 
         _ = services.AddTransient<YandexLogLink>();
+
+        _ = services
+            .AddJoinDal()
+            .AddJoinExportService()
+            .AddJoinManagers();
     }
 
     /// <summary>

@@ -3,12 +3,8 @@ using System.Diagnostics;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-internal class GameRepositoryImplBase : RepositoryImplBase
+internal abstract class GameRepositoryImplBase(MyDbContext ctx) : RepositoryImplBase(ctx)
 {
-    protected GameRepositoryImplBase(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     protected Task LoadMasters(int projectId)
     {
         Debug.WriteLine($"{nameof(LoadMasters)} started");

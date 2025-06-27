@@ -43,7 +43,7 @@ public class MockedProject
         var rootGroup = CreateCharacterGroup();
         rootGroup.IsRoot = true;
 
-        ProjectInfo = ProjectRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
+        ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
 
         MasterOnlyFieldInfo = CreateField("Master only", canPlayerEdit: false, showOnUnApprovedClaims: true, projectFieldVisibility: ProjectFieldVisibility.MasterOnly);
         CharacterFieldInfo = CreateField("Visible & Editorable field", canPlayerEdit: true, showOnUnApprovedClaims: true);
@@ -86,7 +86,7 @@ public class MockedProject
 
     public void ReInitProjectInfo()
     {
-        ProjectInfo = ProjectRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
+        ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
     }
 
     public CharacterGroup CreateCharacterGroup()
