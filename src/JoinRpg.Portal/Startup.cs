@@ -19,6 +19,7 @@ using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.Helpers;
+using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -142,7 +143,8 @@ public class Startup
 
         _ = services
             .AddJoinDal()
-            .AddJoinExportService();
+            .AddJoinExportService()
+            .AddJoinManagers();
     }
 
     /// <summary>

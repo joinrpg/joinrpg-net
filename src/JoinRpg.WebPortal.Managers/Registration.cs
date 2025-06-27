@@ -1,24 +1,36 @@
+using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.CheckIn;
+using JoinRpg.Web.Plots;
+using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
+using JoinRpg.Web.ProjectMasterTools.Settings;
+using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.WebPortal.Managers.CheckIn;
+using JoinRpg.WebPortal.Managers.Projects;
+using JoinRpg.WebPortal.Managers.Subscribe;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace JoinRpg.WebPortal.Managers;
 
 public static class Registration
 {
-    public static IEnumerable<Type> GetTypes()
+    public static IServiceCollection AddJoinManagers(this IServiceCollection services)
     {
-        yield return typeof(Projects.ProjectListManager);
-        yield return typeof(Projects.ProjectSettingsViewService);
-        yield return typeof(FieldSetupManager);
-        yield return typeof(Schedule.SchedulePageManager);
-        yield return typeof(Subscribe.SubscribeViewService);
-        yield return typeof(CharacterGroupList.CharacteGroupListViewService);
-        yield return typeof(CharacterGroupList.CharacterListViewService);
-        yield return typeof(CheckIn.CheckInViewService);
-        yield return typeof(ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService);
-        yield return typeof(ProjectMasterViewService);
-        yield return typeof(Projects.ProjectListViewService);
-        yield return typeof(MassMailManager);
-        yield return typeof(Plots.PlotViewService);
-        yield return typeof(AdminTools.KogdaIgraSyncManager);
-
-        yield return typeof(Plots.CharacterPlotViewService);
+        return services.AddScoped<ProjectListManager>()
+        .AddScoped<IProjectSettingsClient, ProjectSettingsViewService>()
+        .AddScoped<FieldSetupManager>()
+        .AddScoped<Schedule.SchedulePageManager>()
+        .AddScoped<IGameSubscribeClient, SubscribeViewService>()
+        .AddScoped<ICharacterGroupsClient, CharacterGroupList.CharacteGroupListViewService>()
+        .AddScoped<ICharactersClient, CharacterGroupList.CharacterListViewService>()
+        .AddScoped<ICheckInClient, CheckInViewService>()
+        .AddScoped<IResponsibleMasterRuleClient, ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService>()
+        .AddScoped<IMasterClient, ProjectMasterViewService>()
+        .AddScoped<IProjectListClient, ProjectListViewService>()
+        .AddScoped<MassMailManager>()
+        .AddScoped<IPlotClient, Plots.PlotViewService>()
+        .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
+        .AddScoped<Plots.CharacterPlotViewService>();
     }
 }
