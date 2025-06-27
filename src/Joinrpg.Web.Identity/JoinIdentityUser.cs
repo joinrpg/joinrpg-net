@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace Joinrpg.Web.Identity;
 
 public class JoinIdentityUser
@@ -10,4 +12,6 @@ public class JoinIdentityUser
     public bool EmaiLConfirmed { get; internal set; }
 
     public string? PasswordHash { get; internal set; }
+
+    public UserDisplayName DisplayName { get; internal set; }
 }

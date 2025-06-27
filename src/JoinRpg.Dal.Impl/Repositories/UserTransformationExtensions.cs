@@ -3,7 +3,7 @@ using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 //TODO: temporary duplication from domain
-internal static class UserTransformationExtensions
+public static class UserTransformationExtensions
 {
     public static UserFullName ExtractFullName(this User user)
     {

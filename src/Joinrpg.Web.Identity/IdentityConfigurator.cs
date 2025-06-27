@@ -1,3 +1,4 @@
+using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Joinrpg.Web.Identity;
@@ -13,7 +14,8 @@ public static class IdentityConfigurator
             .AddRoleStore<MyUserStore>();
 
         return services
-            .AddTransient<ICustomLoginStore, MyUserStore>();
+            .AddTransient<ICustomLoginStore, MyUserStore>()
+            .AddTransient<IAccountEmailService<JoinIdentityUser>, AccountServiceEmailImpl>();
     }
 
     private static void ConfigureValidation(this PasswordOptions password)

@@ -1,3 +1,4 @@
+using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.DataModel;
 
 namespace Joinrpg.Web.Identity;
@@ -12,5 +13,6 @@ internal static class Builders
             HasPassword = dbUser.PasswordHash != null,
             EmaiLConfirmed = dbUser.Auth.EmailConfirmed,
             PasswordHash = dbUser.PasswordHash,
+            DisplayName = dbUser.ExtractDisplayName(),
         };
 }
