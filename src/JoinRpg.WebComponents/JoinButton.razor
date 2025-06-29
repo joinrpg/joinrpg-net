@@ -20,6 +20,27 @@
         >
     @label
 </button>
+
+@if (HasAutoConfirmDialog)
+{
+    <JoinDialog @ref="confirmDialogRef"
+    ConfirmButtonLabel="@Label"
+    ConfirmButtonPreset="Preset"
+    HasCancelButton="true"
+    OnConfirmCallback="ConfirmHappened">
+        <Header><h2>@(Label ?? (Presets[Preset]?.Label.label))?</h2></Header>
+        <Body>
+            @if (title is not null)
+            {
+                @title
+            }
+            else
+            {
+                <text>Подтвердите операцию</text>
+            }
+        </Body>
+    </JoinDialog>
+}
 @code {
     [Parameter] public string? Link { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; }
@@ -33,7 +54,12 @@
     /// </summary>
     [Parameter] public string? DisabledTitle { get; set; } = null;
     [Parameter] public ButtonPreset Preset { get; set; } = ButtonPreset.None;
+    /// <summary>
+    /// Добавить автоматический диалог подтверждения
+    /// </summary>
+    [Parameter] public bool HasAutoConfirmDialog { get; set; } = false;
 
+    private JoinDialog? confirmDialogRef;
     private string buttonType => Submit ? "submit" : "button";
     private string style => BootstrapStyle.Build("btn", variationResult, Size);
     private bool operationInProgress = false;
@@ -53,7 +79,14 @@
     private async Task OnClickHappened(MouseEventArgs e)
     {
         if (disabled) { return; }
-        await ConfirmHappened(e);
+        if (HasAutoConfirmDialog)
+        {
+            confirmDialogRef?.ShowModal();
+        }
+        else
+        {
+            await ConfirmHappened(e);
+        }
     }
 
     private async Task ConfirmHappened(EventArgs e)
