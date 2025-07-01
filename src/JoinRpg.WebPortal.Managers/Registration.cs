@@ -31,6 +31,8 @@ public static class Registration
         .AddScoped<MassMailManager>()
         .AddScoped<IPlotClient, Plots.PlotViewService>()
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
-        .AddScoped<Plots.CharacterPlotViewService>();
+        .AddScoped<Plots.CharacterPlotViewService>()
+
+        ;
     }
 }

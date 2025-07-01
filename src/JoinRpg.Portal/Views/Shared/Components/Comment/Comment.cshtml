@@ -1,4 +1,4 @@
-﻿@using JoinRpg.DataModel
+@using JoinRpg.DataModel
 @using JoinRpg.Web.Models
 @model CommentViewModel
 
@@ -73,18 +73,28 @@
                             }
 
                     </div>
-                    @if (comment.Finance != null)
+                    @if (Model.Finance != null)
                         {
                             if (Model.Finance.FeeChange != 0)
                             {
                     <span><b>Изменение взноса</b>: @Model.Finance.FeeChange &#8381;</span>
                     <br />
                             }
-                            if (Model.Finance.MoneyAmount > 0)
+                        if (Model.Finance.MoneyAmount > 0 && Model.Finance.OperationType == FinanceOperationType.TransferFrom)
+                        {
+                            <span><b>Перевод денег от другого игрока</b>: @Model.Finance.MoneyAmount &#8381;</span>
+                            <br />
+                        }
+                            else if (Model.Finance.MoneyAmount > 0)
                             {
                     <span><b>Оплата денег игроком</b>: @Model.Finance.MoneyAmount &#8381;</span>
                     <br />
                             }
+                        else if (Model.Finance.MoneyAmount < 0 && Model.Finance.OperationType == FinanceOperationType.TransferTo)
+                        {
+                            <span><b>Перевод денег другому игроку</b>: @Model.Finance.MoneyAmount &#8381;</span>
+                            <br />
+                        }
                             else if (Model.Finance.MoneyAmount < 0)
                             {
                     <span><b>Возврат денег игроку</b>: @Model.Finance.MoneyAmount &#8381;</span>

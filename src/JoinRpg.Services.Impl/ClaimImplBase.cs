@@ -1,10 +1,10 @@
-using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -124,21 +124,33 @@ public abstract class ClaimImplBase : DbServiceImplBase
         }
     }
 
-    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
-        => LoadClaimAsMaster(request.ProjectIdentification, request.ClaimId, accessType, reason);
-
-    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, ExtraAccessReason reason = ExtraAccessReason.None)
-        => LoadClaimAsMaster(projectId, claimId, acl => true, reason);
-
-    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, ExtraAccessReason reason = ExtraAccessReason.None) => LoadClaimAsMaster(request, acl => true, reason);
+    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
+        => LoadClaimAsMaster(new ClaimIdentification(request.ProjectIdentification, request.ClaimId), permission, reason);
 
 
-    protected async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
+    protected async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ClaimIdentification claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId.Value, claimId);
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(projectId);
+        var claim = await ClaimsRepository.GetClaim(claimId);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
 
-        return (claim.RequestAccess(CurrentUserId, accessType, reason), projectInfo);
+        return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
+    }
+    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
+    {
+        return LoadClaimAsMaster(new ClaimIdentification(projectId, claimId), permission, reason);
+    }
+
+    protected async Task<(Claim, ProjectInfo)> LoadClaimAsPlayer(ClaimIdentification claimId)
+    {
+        var claim = await ClaimsRepository.GetClaim(claimId);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+
+        if (claim.PlayerUserId != CurrentUserId)
+        {
+            throw new PlayerOnlyException(claimId, CurrentUserId);
+        }
+
+        return (claim, projectInfo);
     }
 
     protected async Task<TEmail> CreateClaimEmail<TEmail>(

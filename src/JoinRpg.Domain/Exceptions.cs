@@ -21,9 +21,15 @@ public class MustBeAdminException : JoinRpgInvalidUserException
     }
 }
 
-public class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
+public abstract class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
 {
     public ProjectIdentification ProjectId { get; } = projectId;
+}
+
+public class PlayerOnlyException(ClaimIdentification claimId, int? currentUserId)
+    : JoinRpgProjectException(claimId.ProjectId, $"Нет доступа к заявке {claimId}, потому что ее отправил не UserId={currentUserId}")
+{
+    public ClaimIdentification ClaimId { get; } = claimId;
 }
 
 public abstract class JoinRpgProjectEntityException : JoinRpgProjectException
