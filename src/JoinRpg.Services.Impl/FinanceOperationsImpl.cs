@@ -8,6 +8,7 @@ using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -27,7 +28,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
-        var (claim, _) = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
+        var (claim, _) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
         var paymentType =
             claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == request.PaymentTypeId);
 
@@ -234,7 +235,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task ChangeFee(int projectId, int claimId, int feeValue)
     {
-        var (claim, _) = await LoadClaimAsMaster(new(projectId), claimId, acl => acl.CanManageMoney);
+        var (claim, _) = await LoadClaimAsMaster(new(projectId), claimId, Permission.CanManageMoney);
 
         _ = AddCommentImpl(claim,
             null,
@@ -270,7 +271,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task MarkPreferential(MarkPreferentialRequest request)
     {
-        var (claim, _) = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
+        var (claim, _) = await LoadClaimAsMaster(request, Permission.CanManageMoney);
 
         claim.PreferentialFeeUser = request.Preferential;
         await UnitOfWork.SaveChangesAsync();
@@ -278,7 +279,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
     public async Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request)
     {
-        var (claim, projectInfo) = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
 
         CheckOperationDate(request.OperationDate);
 
@@ -377,10 +378,10 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
         // Loading source claim
-        var (claimFrom, projectInfo) = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
+        var (claimFrom, projectInfo) = await LoadClaimAsMaster(request, Permission.CanManageMoney);
 
         // Loading destination claim
-        var (claimTo, _) = await LoadClaimAsMaster(request);
+        var (claimTo, _) = await LoadClaimAsMaster(new(request.ProjectId), request.ToClaimId);
 
         // Checking money amount
         var availableMoney = claimFrom.GetPaymentSum();

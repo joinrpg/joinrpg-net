@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -55,6 +56,8 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, ClaimPredicates.GetResponsible(userId));
 
     public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(e => e.ClaimId == claimId && e.ProjectId == projectId);
+
+    public Task<Claim> GetClaim(ClaimIdentification claimId) => GetClaim(projectId: claimId.ProjectId, claimId: claimId.ClaimId);
 
     public async Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec)
     {

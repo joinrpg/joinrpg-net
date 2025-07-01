@@ -7,7 +7,7 @@ public class SetFinanceSettingsRequest
     public int ProjectId { get; set; }
     public bool WarnOnOverPayment { get; set; }
     public bool PreferentialFeeEnabled { get; set; }
-    public string PreferentialFeeConditions { get; set; }
+    public required string PreferentialFeeConditions { get; set; }
 }
 
 public class CreateFeeSettingRequest
@@ -30,7 +30,7 @@ public class FeeAcceptedOperationRequest : IClaimOperationRequest
 {
     public int ProjectId { get; set; }
     public int ClaimId { get; set; }
-    public string Contents { get; set; }
+    public required string Contents { get; set; }
     public DateTime OperationDate { get; set; }
     public int FeeChange { get; set; }
     public int Money { get; set; }
@@ -41,7 +41,7 @@ public class MarkMeAsPreferentialFeeOperationRequest : IClaimOperationRequest
 {
     public int ProjectId { get; set; }
     public int ClaimId { get; set; }
-    public string Contents { get; set; }
+    public required string Contents { get; set; }
     public DateTime OperationDate { get; set; }
 }
 
@@ -52,7 +52,7 @@ public class CreateTransferRequest
     public int Receiver { get; set; }
     public int Amount { get; set; }
     public DateTime OperationDate { get; set; }
-    public string Comment { get; set; }
+    public required string Comment { get; set; }
 }
 
 public class ApproveRejectTransferRequest
@@ -70,7 +70,7 @@ public class CreatePaymentTypeRequest
     public int ProjectId { get; set; }
     public int? TargetMasterId { get; set; }
     public PaymentTypeKind TypeKind { get; set; }
-    public string Name { get; set; }
+    public required string? Name { get; set; }
 }
 
 /// <summary>

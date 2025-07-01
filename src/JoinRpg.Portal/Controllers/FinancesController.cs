@@ -146,6 +146,7 @@ public class FinancesController : ControllerGameBase
                 {
                     ProjectId = data.ProjectId,
                     TargetMasterId = data.MasterId,
+                    Name = null, // У них специальное имя
                     TypeKind = (PaymentTypeKind)data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
                 });
             }

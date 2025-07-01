@@ -8,6 +8,7 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -246,7 +247,7 @@ internal class ClaimServiceImpl(
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(new ClaimIdentification(projectId, claimId), Permission.None, ExtraAccessReason.Player);
 
         SetDiscussed(claim, isVisibleToPlayer);
 
@@ -652,7 +653,7 @@ internal class ClaimServiceImpl(
 
     public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
     {
-        var (claim, _) = await LoadClaimAsMaster(new(projectId), claimId, acl => false, ExtraAccessReason.Player);
+        var (claim, _) = await LoadClaimAsPlayer(new ClaimIdentification(projectId, claimId));
 
         claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
@@ -835,14 +836,14 @@ internal class ClaimServiceImpl(
 
     private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
     {
-        return await LoadClaimAsMaster(new(projectId), claimId, acl => acl.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
+        return await LoadClaimAsMaster(new(projectId), claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 
     public async Task SaveFieldsFromClaim(int projectId,
         int claimId,
         IReadOnlyDictionary<int, string?> newFieldValue)
     {
-        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, Permission.None, ExtraAccessReason.Player);
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue, projectInfo);
         if (updatedFields.Any(f => f.Field.BoundTo == FieldBoundTo.Character) && claim.Character != null)
