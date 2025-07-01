@@ -50,8 +50,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
             .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>();
 
-        _ = services.AddHttpClient();
-
         services.AddKogdaIgra();
 
         _ = services.AddRouting(options => options.LowercaseUrls = true);

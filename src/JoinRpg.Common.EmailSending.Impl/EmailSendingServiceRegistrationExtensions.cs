@@ -10,6 +10,7 @@ public static class EmailSendingServiceRegistrationExtensions
         _ = services.AddOptionsWithValidateOnStart<MailGunOptions>("MailGun");
 
         return services
+            .AddHttpClient()
             .AddSingleton<IValidateOptions<MailGunOptions>, MailGunOptionsValidator>()
             .AddScoped<MailGunEmailSendingService>()
             .AddScoped<StubEmailSendingService>()
