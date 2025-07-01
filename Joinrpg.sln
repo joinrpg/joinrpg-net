@@ -135,6 +135,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Integrations.KogdaI
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Integrations.KogdaIgra.Test", "src\JoinRpg.Integrations.KogdaIgra.Test\JoinRpg.Integrations.KogdaIgra.Test.csproj", "{70F947A5-5623-E77A-2FD8-6641C7F8CADB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.IdPortal", "src\JoinRpg.IdPortal\JoinRpg.IdPortal\JoinRpg.IdPortal.csproj", "{BD8B363A-67BA-4ED3-B437-16758A733B99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.IdPortal.Client", "src\JoinRpg.IdPortal\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj", "{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -349,6 +353,14 @@ Global
 		{70F947A5-5623-E77A-2FD8-6641C7F8CADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70F947A5-5623-E77A-2FD8-6641C7F8CADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70F947A5-5623-E77A-2FD8-6641C7F8CADB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD8B363A-67BA-4ED3-B437-16758A733B99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD8B363A-67BA-4ED3-B437-16758A733B99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD8B363A-67BA-4ED3-B437-16758A733B99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD8B363A-67BA-4ED3-B437-16758A733B99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
