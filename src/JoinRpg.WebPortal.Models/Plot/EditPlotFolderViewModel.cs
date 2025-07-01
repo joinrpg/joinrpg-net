@@ -33,7 +33,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     public IEnumerable<string> TagNames { get; private set; }
 
 
-    [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
+    [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: «Интриги Гэндальфа #мордор #гондор #костромская_область»")]
     public string PlotFolderTitleAndTags { get; set; }
 
     public EditPlotFolderViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
