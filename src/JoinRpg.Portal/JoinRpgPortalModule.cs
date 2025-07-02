@@ -17,7 +17,6 @@ internal class JoinRpgPortalModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        _ = builder.RegisterType<ApplicationUserManager>();
         _ = builder.RegisterType<ApplicationSignInManager>();
         _ = builder.RegisterType<UriServiceImpl>().AsImplementedInterfaces();
         _ = builder.RegisterType<ConfigurationAdapter>().AsImplementedInterfaces();

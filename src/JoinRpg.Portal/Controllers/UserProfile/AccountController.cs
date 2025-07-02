@@ -18,7 +18,7 @@ namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
 public class AccountController(
-    ApplicationUserManager userManager,
+    JoinUserManager userManager,
     ApplicationSignInManager signInManager,
     IAccountEmailService<JoinIdentityUser> emailService,
     IOptions<RecaptchaOptions> recaptchaOptions,

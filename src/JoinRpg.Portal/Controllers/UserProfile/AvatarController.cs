@@ -1,3 +1,4 @@
+using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
@@ -14,14 +15,14 @@ public class AvatarController : Controller
     private readonly ICurrentUserAccessor currentUserAccessor;
     private readonly IAvatarService avatarService;
     private readonly ApplicationSignInManager signInManager;
-    private readonly ApplicationUserManager userManager;
+    private readonly JoinUserManager userManager;
     private readonly Lazy<AvatarCacheDecoractor> avatarCacheDecoractor;
 
     public AvatarController(
         ICurrentUserAccessor currentUserAccessor,
         IAvatarService avatarService,
         ApplicationSignInManager signInManager,
-        ApplicationUserManager userManager,
+        JoinUserManager userManager,
         Lazy<AvatarCacheDecoractor> avatarCacheDecoractor)
     {
         this.currentUserAccessor = currentUserAccessor;

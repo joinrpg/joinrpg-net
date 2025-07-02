@@ -1,5 +1,5 @@
+using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Areas.Admin.Models;
@@ -12,9 +12,9 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 public class UsersController : JoinRpg.Portal.Controllers.Common.ControllerBase
 {
     private IUserService UserService { get; }
-    private ApplicationUserManager UserManager { get; }
+    private JoinUserManager UserManager { get; }
 
-    public UsersController(ApplicationUserManager userManager,
+    public UsersController(JoinUserManager userManager,
         IUserService userService,
         IUserRepository userRepository)
     {

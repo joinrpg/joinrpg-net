@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Joinrpg.Web.Identity;
-using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [ApiController]
-public class XApiLoginController(ApplicationUserManager userManager, IOptions<JwtBearerOptions> jwt, IOptions<JwtSecretOptions> secret) : ControllerBase
+public class XApiLoginController(JoinUserManager userManager, IOptions<JwtBearerOptions> jwt, IOptions<JwtSecretOptions> secret) : ControllerBase
 {
     private readonly JwtSecretOptions secret = secret.Value;
     private readonly JwtBearerOptions jwt = jwt.Value;

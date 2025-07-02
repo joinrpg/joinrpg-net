@@ -15,7 +15,8 @@ public static class IdentityConfigurator
 
         return services
             .AddTransient<ICustomLoginStore, MyUserStore>()
-            .AddTransient<IAccountEmailService<JoinIdentityUser>, AccountServiceEmailImpl>();
+            .AddTransient<IAccountEmailService<JoinIdentityUser>, AccountServiceEmailImpl>()
+            .AddScoped<JoinUserManager>();
     }
 
     private static void ConfigureValidation(this PasswordOptions password)
