@@ -1,0 +1,85 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<dialog @ref="dialogRef" @onclose="OnCloseCallback" @oncancel="OnCancelCallback">
+    @if (Header is not null)
+    {
+        <div class="join-dialog-heading">
+            <button type="button" class="join-close" aria-label="Close" @onclick="() => Close()"><span aria-hidden="true">×</span></button>
+            @Header
+        </div>
+    }
+    @if (Body is not null)
+    {
+        <div class="join-dialog-body">@Body</div>
+    }
+    @if (Footer is not null || HasCancelButton)
+    {
+
+        <div class="join-dialog-footer">
+            @if (Footer is not null)
+            {
+                @Footer
+            }
+            @if (ConfirmButtonLabel is not null)
+            {
+                <JoinButton Preset="@(ConfirmButtonPreset ?? ButtonPreset.None)" Label="@ConfirmButtonLabel" OnClick="ConfirmExecuted" />
+            }
+            @if (HasCancelButton)
+            {
+                <JoinButton Preset="ButtonPreset.Cancel" OnClick="() => Close()" />
+            }
+
+        </div>
+    }
+</dialog>
+
+@code{
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public bool HasCancelButton { get; set;  }
+    [Parameter] public string? ConfirmButtonLabel { get; set; }
+    [Parameter] public ButtonPreset? ConfirmButtonPreset { get; set; }
+
+    [Parameter] public EventCallback<EventArgs> OnCloseCallback { get; set; }
+    [Parameter] public EventCallback<EventArgs> OnConfirmCallback { get; set; }
+    [Parameter] public EventCallback<EventArgs> OnCancelCallback { get; set; }
+
+    private IJSObjectReference module = null!;
+    private ElementReference dialogRef;
+
+    public void ShowModal()
+    {
+        module.InvokeVoidAsync("showModal", dialogRef);
+    }
+
+    public void Close()
+    {
+        module.InvokeVoidAsync("closeModal", dialogRef);
+    }
+
+    public async Task ConfirmExecuted(EventArgs args)
+    {
+        await OnConfirmCallback.InvokeAsync(args);
+        Close();
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+
+}
