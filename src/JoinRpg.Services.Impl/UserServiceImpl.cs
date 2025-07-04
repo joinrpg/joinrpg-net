@@ -13,25 +13,16 @@ using Microsoft.Extensions.Logging;
 namespace JoinRpg.Services.Impl;
 
 /// <inheritdoc />
-public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
+/// <summary>
+/// ctor
+/// </summary>
+public class UserServiceImpl(
+    IUnitOfWork unitOfWork,
+    ICurrentUserAccessor currentUserAccessor,
+    ILogger<UserServiceImpl> logger,
+    Lazy<IAvatarStorageService> avatarStorageService
+        ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IUserService, IAvatarService
 {
-    private readonly ILogger<UserServiceImpl> logger;
-    private readonly Lazy<IAvatarStorageService> avatarStorageService;
-
-    /// <summary>
-    /// ctor
-    /// </summary>
-    public UserServiceImpl(
-        IUnitOfWork unitOfWork,
-        ICurrentUserAccessor currentUserAccessor,
-        ILogger<UserServiceImpl> logger,
-        Lazy<IAvatarStorageService> avatarStorageService
-        )
-        : base(unitOfWork, currentUserAccessor)
-    {
-        this.logger = logger;
-        this.avatarStorageService = avatarStorageService;
-    }
 
     /// <inheritdoc />
     public async Task UpdateProfile(int userId,
@@ -123,22 +114,17 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
     }
 
     /// <inheritdoc />
-    async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkId vkId, AvatarInfo avatarInfo)
+    async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkId vkId, AvatarInfo? avatarInfo)
     {
         logger.LogInformation("About to link user: {userId} to {vkId}", userId, vkId);
         var user = await UserRepository.WithProfile(userId);
 
         user.Extra ??= new UserExtra();
-        if (user.Extra.VkVerified)
-        {
-            logger.LogDebug("Skiping, because user already set VK");
-            return;
-        }
 
         user.Extra.Vk = $"id{vkId.Value}";
         user.Extra.VkVerified = true;
 
-        await AddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte");
+        await TryAddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte");
 
         await UnitOfWork.SaveChangesAsync();
     }
@@ -151,16 +137,17 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         user.Extra ??= new UserExtra();
         user.Extra.Telegram = string.IsNullOrWhiteSpace(telegramId.UserName?.Value) ? user.Extra.Telegram : telegramId.UserName;
 
-        if (avatarInfo is not null)
-        {
-            await AddSocialAvatarImplAsync(avatarInfo, user, "telegram");
-        }
+        await TryAddSocialAvatarImplAsync(avatarInfo, user, "telegram");
 
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private async Task AddSocialAvatarImplAsync(AvatarInfo avatarInfo, User user, string providerId)
+    private async Task TryAddSocialAvatarImplAsync(AvatarInfo? avatarInfo, User user, string providerId)
     {
+        if (avatarInfo is null)
+        {
+            return;
+        }
         if (
             user.Avatars.FirstOrDefault(ua => ua.IsActive && ua.ProviderId == providerId)
             is UserAvatar oldAvatar)
@@ -229,18 +216,24 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
     }
 
     /// <inheritdoc/>
-    async Task IAvatarService.AddGrAvatarIfRequired(int userId)
+    async Task<AvatarIdentification> IAvatarService.EnsureAvatarPresent(int userId)
     {
         logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
 
         var user = await UserRepository.WithProfile(userId);
 
+        if (user.SelectedAvatarId is int selectedAvatarId)
+        {
+            return new AvatarIdentification(selectedAvatarId);
+        }
+
         if (
-            user.Avatars.Any(fd => fd.AvatarSource == UserAvatar.Source.GrAvatar && fd.IsActive)
+            user.Avatars.FirstOrDefault(fd => fd.AvatarSource == UserAvatar.Source.GrAvatar && fd.IsActive) is UserAvatar grAvatar
             )
         {
-            logger.LogDebug("GrAvatar already set");
-            return;
+            user.SelectedAvatar = grAvatar;
+            await UnitOfWork.SaveChangesAsync();
+            return new(grAvatar.UserAvatarId);
         }
 
         // We do not need to cache avatar here — or GrAvatar will not be automatically updated 
@@ -258,6 +251,8 @@ public class UserServiceImpl : DbServiceImplBase, IUserService, IAvatarService
         user.SelectedAvatar ??= userAvatar;
 
         await UnitOfWork.SaveChangesAsync();
+
+        return new(userAvatar.UserAvatarId);
     }
 
     async Task IAvatarService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)

@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models
 @using Microsoft.AspNetCore.Identity
 @model UserProfileDetailsViewModel
 <table>
@@ -6,7 +6,6 @@
       <td style="vertical-align: top;padding-right:5px">
         <vc:avatar user-avatar-id-or-null="@Model.Avatar"
                    user-id="@Model.User.UserId"
-                   email="@Model.Email"
                    recommended-size="64" />
       </td>
         <td>

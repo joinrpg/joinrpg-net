@@ -11,12 +11,8 @@ namespace JoinRpg.Portal.Infrastructure.Authentication;
 /// <summary>
 /// Task of this class is to extract useful data from social logins
 /// </summary>
-public class ExternalLoginProfileExtractor
+public class ExternalLoginProfileExtractor(IUserService userService)
 {
-    private readonly IUserService userService;
-
-    public ExternalLoginProfileExtractor(IUserService userService) => this.userService = userService;
-
     public async Task TryExtractProfile(JoinIdentityUser user, ExternalLoginInfo loginInfo)
     {
         UserFullName userFullName = TryGetUserName(loginInfo);
@@ -24,13 +20,9 @@ public class ExternalLoginProfileExtractor
 
         if (TryGetVkId(loginInfo) is VkId vkId)
         {
-            var vkAvatar = loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl);
+            var avatar = AvatarInfo.FromOptional(loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl));
 
-            if (vkAvatar is not null)
-            {
-                await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vkId,
-                  new AvatarInfo(new Uri(vkAvatar), 50, 50));
-            }
+            await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vkId, avatar);
         }
     }
 
@@ -45,7 +37,7 @@ public class ExternalLoginProfileExtractor
 
         await userService.SetNameIfNotSetWithoutAccessChecks(user.Id, userFullName);
 
-        var avatar = AvatarInfo.FromOptional(loginInfo.GetValueOrDefault("photo_url"), 50);
+        var avatar = AvatarInfo.FromOptional(loginInfo.GetValueOrDefault("photo_url"));
 
         var telegramId = new TelegramId(long.Parse(loginInfo["id"]), prefferedName);
 

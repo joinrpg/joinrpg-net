@@ -173,7 +173,7 @@ public class AccountController(
             return View(model);
         }
 
-        await avatarService.AddGrAvatarIfRequired(user.Id);
+        await avatarService.EnsureAvatarPresent(user.Id);
 
         //We don't want to sign in user until he has email confirmed 
         //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
@@ -438,7 +438,7 @@ public class AccountController(
                     await signInManager.SignInAsync(user, isPersistent: true);
 
                     await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
-                    await avatarService.AddGrAvatarIfRequired(user.Id);
+                    await avatarService.EnsureAvatarPresent(user.Id);
                     return RedirectToLocal(model.ReturnUrl);
                 }
             }
