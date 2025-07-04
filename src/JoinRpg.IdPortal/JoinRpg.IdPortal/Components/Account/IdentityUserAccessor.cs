@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace JoinRpg.IdPortal.Components.Account;
-internal sealed class IdentityUserAccessor(UserManager<JoinIdentityUser> userManager, IdentityRedirectManager redirectManager)
+internal sealed class IdentityUserAccessor(JoinUserManager userManager, IdentityRedirectManager redirectManager)
 {
     public async Task<JoinIdentityUser> GetRequiredUserAsync(HttpContext context)
     {
