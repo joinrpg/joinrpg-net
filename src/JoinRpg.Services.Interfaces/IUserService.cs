@@ -18,10 +18,11 @@ public interface IUserService
     /// Set vk Link if not set already.
     /// All access check fortfeit (cause is method typically called during login, so ICurrentUserAccessor could be old).
     /// </summary>
-    Task SetVkIfNotSetWithoutAccessChecks(int id, VkId vkId, AvatarInfo avatarInfo);
+    Task SetVkIfNotSetWithoutAccessChecks(int id, VkId vkId, AvatarInfo? avatarInfo);
 
 
     Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramId telegramId, AvatarInfo? avatarInfo);
+
     Task RemoveVkFromProfile(int id);
     Task RemoveTelegramFromProfile(int id);
 }

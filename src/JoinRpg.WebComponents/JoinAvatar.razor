@@ -1,0 +1,19 @@
+
+<img style="border: 1px solid black"
+     width="@Size"
+     height="@Size"
+     src="@Uri.AbsoluteUri" />
+
+
+
+
+@code {
+  [Parameter]
+  [EditorRequired]
+    public Uri Uri { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public int Size { get; set; }
+
+}

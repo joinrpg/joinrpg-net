@@ -5,18 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 
-#nullable enable
-public class AvatarViewComponent : ViewComponent
+public class AvatarViewComponent(IAvatarLoader avatarProvider, IAvatarService avatarService) : ViewComponent
 {
-    private readonly IAvatarLoader avatarProvider;
-    private readonly IAvatarService avatarService;
-
-    public AvatarViewComponent(IAvatarLoader avatarProvider, IAvatarService avatarService)
-    {
-        this.avatarProvider = avatarProvider;
-        this.avatarService = avatarService;
-    }
-
     public async Task<IViewComponentResult> InvokeAsync(
         AvatarIdentification? userAvatarIdOrNull,
         string email,
@@ -33,7 +23,6 @@ public class AvatarViewComponent : ViewComponent
             _ = Task.Run(() => avatarService.AddGrAvatarIfRequired(userId));
             avatar = new AvatarInfo(
                 GravatarHelper.GetLink(email, recommendedSize),
-                recommendedSize,
                 recommendedSize);
         }
         return View("Avatar", avatar);
