@@ -1,12 +1,11 @@
 using System.Security.Claims;
-using Joinrpg.Web.Identity;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.PrimitiveTypes;
+using Microsoft.AspNetCore.Http;
 
-namespace JoinRpg.Web.Helpers;
+namespace Joinrpg.Web.Identity;
 
 /// <summary>
 /// Adapter to extract user data from HttpContext principal
@@ -17,7 +16,7 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
     {
         private ClaimsPrincipal User => httpContextAccessor.HttpContext?.User ?? throw new Exception("Should be inside http request");
 
-        int? ICurrentUserAccessor.UserIdOrDefault => User.GetUserIdOrDefault();
+        int? ICurrentUserAccessor.UserIdOrDefault => GetUserIdOrDefault(User);
 
         string ICurrentUserAccessor.DisplayName => User.FindFirst(JoinClaimTypes.DisplayName)!.Value;
 
@@ -29,6 +28,23 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
             => AvatarIdentification.FromOptional(
                 int.TryParse(User.FindFirstValue(JoinClaimTypes.AvatarId), out var avatarId) ? avatarId : null
             );
+
+        private static int? GetUserIdOrDefault(ClaimsPrincipal user)
+        {
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                return null;
+            }
+            if (int.TryParse(user.FindFirstValue("uid"), out var uid))  // JWT tokens
+            {
+                return uid;
+            }
+            if (int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id))  // Cookie
+            {
+                return id;
+            }
+            return null;
+        }
     }
 
     private class CurrentUserFromDomainUser(User user) : ICurrentUserAccessor
@@ -69,7 +85,7 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
     public void StopImpersonate() => stack.Pop();
 }
 
-internal interface ICurrentUserSetAccessor
+public interface ICurrentUserSetAccessor
 {
     void StartImpersonate(User user);
     void StopImpersonate();

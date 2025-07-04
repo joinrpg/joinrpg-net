@@ -1,3 +1,4 @@
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +17,11 @@ public static class IdentityConfigurator
         return services
             .AddTransient<ICustomLoginStore, MyUserStore>()
             .AddTransient<IAccountEmailService<JoinIdentityUser>, AccountServiceEmailImpl>()
-            .AddScoped<JoinUserManager>();
+            .AddScoped<JoinUserManager>()
+
+            .AddHttpContextAccessor()
+            .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
+            .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>();
     }
 
     private static void ConfigureValidation(this PasswordOptions password)
