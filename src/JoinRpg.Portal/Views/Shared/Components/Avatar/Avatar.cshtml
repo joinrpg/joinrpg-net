@@ -1,8 +1,5 @@
 @model JoinRpg.PrimitiveTypes.AvatarInfo
 
-<img style="border: 1px solid black"
-     width="@Model.Size"
-     height="@Model.Size"
-     src="@Model.Uri.AbsoluteUri" />
+<component type="typeof(JoinAvatar)" render-mode="Static" param-Uri="@Model.Uri" param-Size="@Model.Size" />
 
 

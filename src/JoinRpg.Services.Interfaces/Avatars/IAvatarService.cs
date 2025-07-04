@@ -8,7 +8,7 @@ public interface IAvatarService
     /// <summary>
     /// Ensures that is correct UserAvatar record for user
     /// </summary>
-    Task AddGrAvatarIfRequired(int userId);
+    Task<AvatarIdentification> EnsureAvatarPresent(int userId);
     /// <summary>
     /// Delete avatar
     /// </summary>

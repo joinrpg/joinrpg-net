@@ -208,7 +208,7 @@ public class ManageController : Common.ControllerBase
     [HttpGet]
     public async Task<ActionResult> SetupProfile([FromServices] IOptions<TelegramLoginOptions> options, bool checkContactsMessage = false, ManageMessageId? message = null)
     {
-        await avatarService.AddGrAvatarIfRequired(CurrentUserAccessor.UserId);
+        await avatarService.EnsureAvatarPresent(CurrentUserAccessor.UserId);
 
         var user = await UserRepository.WithProfile(CurrentUserAccessor.UserId);
         var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;

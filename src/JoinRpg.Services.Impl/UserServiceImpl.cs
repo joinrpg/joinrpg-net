@@ -216,18 +216,24 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc/>
-    async Task IAvatarService.AddGrAvatarIfRequired(int userId)
+    async Task<AvatarIdentification> IAvatarService.EnsureAvatarPresent(int userId)
     {
         logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
 
         var user = await UserRepository.WithProfile(userId);
 
+        if (user.SelectedAvatarId is int selectedAvatarId)
+        {
+            return new AvatarIdentification(selectedAvatarId);
+        }
+
         if (
-            user.Avatars.Any(fd => fd.AvatarSource == UserAvatar.Source.GrAvatar && fd.IsActive)
+            user.Avatars.FirstOrDefault(fd => fd.AvatarSource == UserAvatar.Source.GrAvatar && fd.IsActive) is UserAvatar grAvatar
             )
         {
-            logger.LogDebug("GrAvatar already set");
-            return;
+            user.SelectedAvatar = grAvatar;
+            await UnitOfWork.SaveChangesAsync();
+            return new(grAvatar.UserAvatarId);
         }
 
         // We do not need to cache avatar here — or GrAvatar will not be automatically updated 
@@ -245,6 +251,8 @@ public class UserServiceImpl(
         user.SelectedAvatar ??= userAvatar;
 
         await UnitOfWork.SaveChangesAsync();
+
+        return new(userAvatar.UserAvatarId);
     }
 
     async Task IAvatarService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)

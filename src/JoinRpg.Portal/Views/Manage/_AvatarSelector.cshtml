@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Interfaces
+@using JoinRpg.Interfaces
 @using JoinRpg.Web.Models.UserProfile
 @model UserAvatarListViewModel
 @inject ICurrentUserAccessor CurrentUserAccessor
@@ -14,7 +14,6 @@
     <tr>
       <td style="padding:5px">
         <vc:avatar user-avatar-id-or-null="@avatar.AvatarId"
-                   email="@Model.Email"
                    user-id="@Model.UserId"
                    recommended-size="64"></vc:avatar>
       </td>
