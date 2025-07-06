@@ -1,12 +1,9 @@
 using Autofac;
 using BitArmory.ReCaptcha;
-using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Helpers;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.WebPortal.Managers.Projects;
 using Microsoft.AspNetCore.Authorization;
 using CurrentProjectAccessor = JoinRpg.Portal.Infrastructure.CurrentProjectAccessor;
@@ -27,13 +24,6 @@ internal class JoinRpgPortalModule : Module
         _ = builder.RegisterType<RecaptchaVerificator>().AsImplementedInterfaces();
 
         _ = builder.RegisterType<ExternalLoginProfileExtractor>();
-
-        builder.RegisterType<AvatarLoader>().AsImplementedInterfaces();
-        builder.RegisterDecorator<AvatarCacheDecoractor, IAvatarLoader>();
-        builder.RegisterType<AvatarCacheDecoractor>().AsSelf();
-
-        builder.RegisterGeneric(typeof(PerRequestCache<,>)).AsSelf().InstancePerLifetimeScope();
-        builder.RegisterGeneric(typeof(SingletonCache<,>)).AsSelf().SingleInstance();
 
         builder.RegisterDecorator<ProjectMetadataRepositoryCacheDecorator, IProjectMetadataRepository>();
 

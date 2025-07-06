@@ -10,4 +10,6 @@ public class SingletonCache<TKey, TValue>
     public TValue? TryGet(TKey key) => cache.TryGetValue(key, out var value) ? value : null;
 
     public void Set(TKey key, TValue value) => _ = cache.AddOrUpdate(key, _ => value, (_, _) => value);
+
+    public TValue GetOrAdd(TKey key, Func<TKey, TValue> fabric) => cache.GetOrAdd(key, fabric);
 }

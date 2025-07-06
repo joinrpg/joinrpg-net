@@ -1,7 +1,6 @@
 using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.AspNetCore.Authorization;
@@ -10,28 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.UserProfile;
 
 [Authorize]
-public class AvatarController : Controller
+public class AvatarController(
+    ICurrentUserAccessor currentUserAccessor,
+    IAvatarService avatarService,
+    ApplicationSignInManager signInManager,
+    JoinUserManager userManager) : Controller
 {
-    private readonly ICurrentUserAccessor currentUserAccessor;
-    private readonly IAvatarService avatarService;
-    private readonly ApplicationSignInManager signInManager;
-    private readonly JoinUserManager userManager;
-    private readonly Lazy<AvatarCacheDecoractor> avatarCacheDecoractor;
-
-    public AvatarController(
-        ICurrentUserAccessor currentUserAccessor,
-        IAvatarService avatarService,
-        ApplicationSignInManager signInManager,
-        JoinUserManager userManager,
-        Lazy<AvatarCacheDecoractor> avatarCacheDecoractor)
-    {
-        this.currentUserAccessor = currentUserAccessor;
-        this.avatarService = avatarService;
-        this.signInManager = signInManager;
-        this.userManager = userManager;
-        this.avatarCacheDecoractor = avatarCacheDecoractor;
-    }
-
     [HttpPost("manage/avatars/choose")]
     public async Task<IActionResult> ChooseAvatar(int userAvatarId)
     {
@@ -61,7 +44,6 @@ public class AvatarController : Controller
             currentUserAccessor.UserIdentification,
             new AvatarIdentification(userAvatarId)
             );
-        avatarCacheDecoractor.Value.PurgeCache(new AvatarIdentification(userAvatarId));
         await RefreshUserProfile();
         return RedirectToAction("SetupProfile", "Manage");
     }
