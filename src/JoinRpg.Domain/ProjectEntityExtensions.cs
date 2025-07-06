@@ -38,32 +38,38 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
-    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Permission permission = Permission.None)
+    public static bool HasMasterAccess(this IProjectEntity entity, [NotNullWhen(true)] int? currentUserId, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserId);
     }
 
-    public static T RequestMasterAccess<T>([NotNull] this T? field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
+    public static T RequestMasterAccess<T>(this T field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
             where T : IProjectEntity
     {
         return field.RequestMasterAccess(currentUserAccessor.UserId, permission);
     }
 
-    public static T RequestMasterAccess<T>([NotNull] this T? field, int? currentUserId, Permission permission = Permission.None)
+    public static T RequestMasterAccess<T>(this T field, [NotNull] int? currentUserId, Permission permission = Permission.None)
         where T : IProjectEntity
     {
         return field.RequestMasterAccess(currentUserId, acl => permission.GetPermssionExpression()(acl));
     }
 
-    public static T RequestMasterAccess<T>([NotNull] this T? field,
+    public static T RequestMasterAccess<T>(this T field,
+        [NotNull]
         int? currentUserId,
         Expression<Func<ProjectAcl, bool>>? accessType)
     where T : IProjectEntity
     {
         ArgumentNullException.ThrowIfNull(field);
         ArgumentNullException.ThrowIfNull(field.Project);
+
+        if (currentUserId is null)
+        {
+            throw new NoAccessToProjectException(field.Project, currentUserId);
+        }
 
         if (accessType == null)
         {
