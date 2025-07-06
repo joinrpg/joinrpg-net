@@ -15,7 +15,6 @@ public static class DailyJobRegistration
         services.AddDailyJob<DoNothingMidnightJob>();
 
         _ = services
-            .AddDailyJob<ProjectWarnCloseJob>()
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<UpdatePaymentStatusJob>()
             ;
