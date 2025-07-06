@@ -28,18 +28,9 @@ using Serilog;
 
 namespace JoinRpg.Portal;
 
-public class Startup
+public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
 {
-    private readonly IWebHostEnvironment environment;
-    private S3StorageOptions s3StorageOptions;
-
-    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
-    {
-        Configuration = configuration;
-        this.environment = environment;
-    }
-
-    public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; } = configuration;
 
     public void ConfigureServices(IJoinServiceCollection services)
     {
@@ -54,8 +45,6 @@ public class Startup
             .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
-
-        s3StorageOptions = Configuration.GetSection("S3BlobStorage").Get<S3StorageOptions>()!;
 
         _ = services.AddHttpContextAccessor()
             .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
@@ -119,11 +108,6 @@ public class Startup
 
             .AddCheck<HealthCheckLoadProjects>("Project load", tags: ["ready"]);
 
-        if (s3StorageOptions.Configured)
-        {
-            healthChecks.AddCheck<HealthCheckS3Storage>("S3 storage");
-        }
-
         services.AddJoinEmailSendingService();
 
         services.Configure<ForwardedHeadersOptions>(options =>
@@ -144,7 +128,8 @@ public class Startup
         _ = services
             .AddJoinDal()
             .AddJoinExportService()
-            .AddJoinManagers();
+            .AddJoinManagers()
+            .AddJoinBlobStorage();
     }
 
     /// <summary>
@@ -154,8 +139,7 @@ public class Startup
     {
         _ = builder.RegisterModule(new JoinrpgMainModule())
             .RegisterModule(new JoinRpgDomainModule())
-            .RegisterModule(new JoinRpgPortalModule())
-            .RegisterModule(new BlobStorageModule(s3StorageOptions));
+            .RegisterModule(new JoinRpgPortalModule());
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

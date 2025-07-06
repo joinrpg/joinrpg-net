@@ -1,24 +1,14 @@
-using Amazon.S3;
+using Amazon.S3.Util;
 using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Infrastructure.HealthChecks;
+namespace JoinRpg.BlobStorage;
 
-public class HealthCheckS3Storage : IHealthCheck
+public class HealthCheckS3Storage(IAmazonS3 amazonS3,
+    ILogger<HealthCheckS3Storage> logger,
+    IOptions<S3StorageOptions> options) : IHealthCheck
 {
-    private readonly IAmazonS3 amazonS3;
-    private readonly ILogger<HealthCheckS3Storage> logger;
-    private readonly S3StorageOptions options;
-
-    public HealthCheckS3Storage(IAmazonS3 amazonS3,
-        ILogger<HealthCheckS3Storage> logger,
-        IOptions<S3StorageOptions> options)
-    {
-        this.amazonS3 = amazonS3;
-        this.logger = logger;
-        this.options = options.Value;
-    }
+    private readonly S3StorageOptions options = options.Value;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
@@ -29,7 +19,7 @@ public class HealthCheckS3Storage : IHealthCheck
         var data = new Dictionary<string, object> { { "bucket", options.BucketName ?? "null" } };
         try
         {
-            var exists = await amazonS3.DoesS3BucketExistAsync(options.BucketName);
+            var exists = await AmazonS3Util.DoesS3BucketExistV2Async(amazonS3, options.BucketName);
             if (exists)
             {
                 return HealthCheckResult.Healthy(data: data);

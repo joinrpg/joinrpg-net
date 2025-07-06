@@ -1,19 +1,8 @@
 using System.Buffers;
-using JoinRpg.Services.Interfaces.Avatars;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.BlobStorage;
-internal class AvatarDownloader
+internal class AvatarDownloader(IHttpClientFactory httpClientFactory, ILogger<AvatarDownloader> logger)
 {
-    private readonly ILogger<AvatarDownloader> logger;
-    private readonly IHttpClientFactory httpClientFactory;
-
-    public AvatarDownloader(IHttpClientFactory httpClientFactory, ILogger<AvatarDownloader> logger)
-    {
-        this.httpClientFactory = httpClientFactory;
-        this.logger = logger;
-    }
-
     internal async Task<(string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, Stream target, CancellationToken ct)
     {
         logger.LogInformation("Start downloading avatar for {avatarRemoteUri}", remoteUri);
