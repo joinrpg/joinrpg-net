@@ -1,6 +1,9 @@
 using System.Reflection;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Search;
+using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Services.Impl;
 
@@ -13,7 +16,6 @@ public static class Services
         yield return typeof(ClaimServiceImpl);
         yield return typeof(SearchServiceImpl);
         yield return typeof(PlotServiceImpl);
-        yield return typeof(UserServiceImpl);
         yield return typeof(FinanceOperationsImpl);
         yield return typeof(ForumServiceImpl);
         yield return typeof(FieldSetupServiceImpl);
@@ -32,5 +34,13 @@ public static class Services
         {
             yield return provider;
         }
+    }
+
+    [Obsolete("После того, как IdPortal заработает, убрать отсюда UserService в отдельную сборку в принципе")]
+    public static IServiceCollection AddUserServicesOnly(this IServiceCollection services)
+    {
+        return services
+            .AddTransient<IUserService, UserServiceImpl>()
+            .AddTransient<IAvatarService, UserServiceImpl>();
     }
 }
