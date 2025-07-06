@@ -1,8 +1,10 @@
+using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
 using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
 using JoinRpg.IdPortal.Components.Account;
+using JoinRpg.Services.Impl;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +25,11 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 
+builder.Services.AddUserServicesOnly();
+
 builder.Services
     .AddJoinIdentity()
+    .AddJoinBlobStorage()
     .AddJoinEmailSendingService();
 
 var app = builder.Build();

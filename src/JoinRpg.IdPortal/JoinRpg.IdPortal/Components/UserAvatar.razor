@@ -1,0 +1,41 @@
+@using JoinRpg.PrimitiveTypes
+@using JoinRpg.Services.Interfaces.Avatars
+@inject IAvatarLoader avatarProvider
+@inject IAvatarService avatarService
+
+@rendermode InteractiveServer
+
+@if (AvatarUri is not null)
+{
+
+  <JoinRpg.WebComponents.JoinAvatar Uri="@AvatarUri" Size=@Size />
+
+}
+
+
+@code {
+    // Этот компонент надо слить с порталом
+
+    [Parameter]
+    public AvatarIdentification? AvatarId{ get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    //Если аватарки нет, пытаемся ее загрузить. Вообще-то аватарка должна быть
+    public int UserId { get; set; }
+
+    [Parameter]
+    public int Size { get; set; } = 64;
+
+    private Uri AvatarUri = null!;
+
+    protected async override Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var userAvatarId = AvatarId ?? await avatarService.EnsureAvatarPresent(UserId);
+        var avatar = await avatarProvider.GetAvatar(userAvatarId, Size);
+        AvatarUri = avatar.Uri;
+    }
+
+}
