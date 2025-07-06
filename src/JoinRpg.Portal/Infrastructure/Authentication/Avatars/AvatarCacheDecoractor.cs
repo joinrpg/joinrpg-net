@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Joinrpg.Web.Identity;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;

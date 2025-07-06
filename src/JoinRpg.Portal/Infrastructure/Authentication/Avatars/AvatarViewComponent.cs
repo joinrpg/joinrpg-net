@@ -1,3 +1,4 @@
+using Joinrpg.Web.Identity;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.AspNetCore.Mvc;

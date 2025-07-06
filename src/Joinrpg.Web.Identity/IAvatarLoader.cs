@@ -1,8 +1,7 @@
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
+namespace Joinrpg.Web.Identity;
 
-#nullable enable
 public interface IAvatarLoader
 {
     Task<AvatarInfo> GetAvatar(AvatarIdentification userAvatarId, int recommendedSize);
