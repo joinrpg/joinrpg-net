@@ -1,9 +1,8 @@
-using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
+namespace Joinrpg.Web.Identity;
 
 public record AvatarCacheKey(AvatarIdentification Id, int Size) { }
 

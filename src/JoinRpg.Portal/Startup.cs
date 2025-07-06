@@ -1,17 +1,14 @@
 using System.Globalization;
 using Autofac;
-using Joinrpg.Web.Identity;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Integrations.KogdaIgra;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
@@ -129,12 +126,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinExportService()
             .AddJoinManagers()
             .AddJoinBlobStorage();
-
-
-        services
-            .AddScoped(typeof(PerRequestCache<,>))
-            .AddSingleton(typeof(SingletonCache<,>))
-            .AddTransient<IAvatarLoader, AvatarCachedLoader>();
     }
 
     /// <summary>
