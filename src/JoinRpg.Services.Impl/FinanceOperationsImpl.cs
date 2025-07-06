@@ -55,19 +55,15 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         // Checking access rights of the current user
         if (!IsCurrentUserAdmin)
         {
-            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
         }
 
         // Preparing master Id and checking if the same payment type already created
         int masterId;
         if (!request.TypeKind.IsOnline())
         {
-            if (request.TargetMasterId == null)
-            {
-                throw new ArgumentNullException(nameof(request.TargetMasterId), @"Target master must be specified");
-            }
-
             _ = project.RequestMasterAccess(request.TargetMasterId);
+
             // Cash payment could be only one
             if (request.TypeKind == PaymentTypeKind.Cash
                 && project.PaymentTypes.Any(pt => pt.UserId == request.TargetMasterId && pt.TypeKind == PaymentTypeKind.Cash))
@@ -87,18 +83,14 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
             masterId = _vpu.PaymentsUser.UserId;
         }
 
-        // Checking custom payment type name
-        if (request.TypeKind == PaymentTypeKind.Custom && string.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new ArgumentNullException(nameof(request.Name), "Custom payment type name must be specified");
-        }
-
         // Creating payment type
         var result = new PaymentType(request.TypeKind, request.ProjectId, masterId);
 
         // Configuring payment type
         if (result.TypeKind == PaymentTypeKind.Custom)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
+            // Checking custom payment type name
             result.Name = request.Name.Trim();
         }
 
