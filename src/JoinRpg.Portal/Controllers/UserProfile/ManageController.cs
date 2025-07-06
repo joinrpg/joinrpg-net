@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.PrimitiveTypes;
@@ -20,57 +19,33 @@ using Microsoft.Extensions.Options;
 namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
-public class ManageController : Common.ControllerBase
+public class ManageController(
+    ApplicationUserManager userManager,
+    ApplicationSignInManager signInManager,
+    IUserRepository userRepository,
+    IUserService userService,
+    ICurrentUserAccessor currentUserAccessor,
+    ExternalLoginProfileExtractor externalLoginProfileExtractor,
+    ILogger<ManageController> logger,
+    IAvatarService avatarService
+        ) : Common.ControllerBase
 {
-    private readonly IUserService _userService;
-    private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
-    private readonly ILogger<ManageController> logger;
-    private readonly IAvatarService avatarService;
-
-    private ApplicationUserManager UserManager { get; }
-
-    public ManageController(
-        ApplicationUserManager userManager,
-        ApplicationSignInManager signInManager,
-        IUserRepository userRepository,
-        IUserService userService,
-        ICurrentUserAccessor currentUserAccessor,
-        ConfigurationAdapter configurationAdapter,
-        ExternalLoginProfileExtractor externalLoginProfileExtractor,
-        ILogger<ManageController> logger,
-        IAvatarService avatarService
-        )
-    {
-        UserManager = userManager;
-        SignInManager = signInManager;
-        UserRepository = userRepository;
-        _userService = userService;
-        CurrentUserAccessor = currentUserAccessor;
-        ConfigurationAdapter = configurationAdapter;
-        this.externalLoginProfileExtractor = externalLoginProfileExtractor;
-        this.logger = logger;
-        this.avatarService = avatarService;
-    }
-
-    private ApplicationSignInManager SignInManager { get; }
-    public IUserRepository UserRepository { get; }
-    private ICurrentUserAccessor CurrentUserAccessor { get; }
-    private ConfigurationAdapter ConfigurationAdapter { get; }
+    public IUserRepository UserRepository { get; } = userRepository;
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
     {
-        var userId = CurrentUserAccessor.UserId;
-        var user = await UserManager.FindByIdAsync(userId.ToString());
+        var userId = currentUserAccessor.UserId;
+        var user = await userManager.FindByIdAsync(userId.ToString());
         ManageMessageId? message;
-        var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey);
+        var result = await userManager.RemoveLoginAsync(user, loginProvider, providerKey);
         await externalLoginProfileExtractor.CleanAfterLogin(user, loginProvider);
         if (result.Succeeded)
         {
             if (user != null)
             {
-                await SignInManager.SignInAsync(user, isPersistent: true);
+                await signInManager.SignInAsync(user, isPersistent: true);
             }
             message = ManageMessageId.RemoveLoginSuccess;
         }
@@ -98,12 +73,12 @@ public class ManageController : Common.ControllerBase
         {
             return View(model);
         }
-        var userId = CurrentUserAccessor.UserId;
-        var user = await UserManager.FindByIdAsync(userId.ToString());
-        var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+        var userId = currentUserAccessor.UserId;
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        var result = await userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         if (result.Succeeded)
         {
-            await SignInManager.SignInAsync(user, isPersistent: false);
+            await signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.ChangePasswordSuccess });
         }
         ModelState.AddErrors(result);
@@ -122,12 +97,12 @@ public class ManageController : Common.ControllerBase
     {
         if (ModelState.IsValid)
         {
-            var userId = CurrentUserAccessor.UserId;
-            var user = await UserManager.FindByIdAsync(userId.ToString());
-            var result = await UserManager.AddPasswordAsync(user, model.NewPassword);
+            var userId = currentUserAccessor.UserId;
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            var result = await userManager.AddPasswordAsync(user, model.NewPassword);
             if (result.Succeeded)
             {
-                await SignInManager.SignInAsync(user, isPersistent: false);
+                await signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SetPasswordSuccess });
             }
             ModelState.AddErrors(result);
@@ -146,7 +121,7 @@ public class ManageController : Common.ControllerBase
         var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
 
         var authenticationProperties =
-            SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, CurrentUserAccessor.UserId.ToString());
+            signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, currentUserAccessor.UserId.ToString());
         return Challenge(authenticationProperties, provider);
     }
 
@@ -154,16 +129,16 @@ public class ManageController : Common.ControllerBase
     // GET: /Manage/LinkLoginCallback
     public async Task<ActionResult> LinkLoginCallback()
     {
-        var loginInfo = await SignInManager.GetExternalLoginInfoAsync(ConfigurationAdapter.XsrfKey);
+        var loginInfo = await signInManager.GetExternalLoginInfoAsync();
         if (loginInfo == null)
         {
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
         }
 
-        var userId = CurrentUserAccessor.UserId;
-        var user = await UserManager.FindByIdAsync(userId.ToString());
+        var userId = currentUserAccessor.UserId;
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
-        var result = await UserManager.AddLoginAsync(user, loginInfo);
+        var result = await userManager.AddLoginAsync(user, loginInfo);
         if (!result.Succeeded)
         {
             if (result.Errors.Any(i => i.Code == "LoginAlreadyAssociated"))
@@ -187,8 +162,8 @@ public class ManageController : Common.ControllerBase
         var principal = new System.Security.Claims.ClaimsPrincipal();
 
 
-        var userId = CurrentUserAccessor.UserId;
-        var user = (await UserManager.FindByIdAsync(userId.ToString()))!;
+        var userId = currentUserAccessor.UserId;
+        var user = (await userManager.FindByIdAsync(userId.ToString()))!;
 
 
         var telegramUserId = dictionary["id"];
@@ -208,9 +183,9 @@ public class ManageController : Common.ControllerBase
     [HttpGet]
     public async Task<ActionResult> SetupProfile([FromServices] IOptions<TelegramLoginOptions> options, bool checkContactsMessage = false, ManageMessageId? message = null)
     {
-        await avatarService.EnsureAvatarPresent(CurrentUserAccessor.UserId);
+        _ = await avatarService.EnsureAvatarPresent(currentUserAccessor.UserId);
 
-        var user = await UserRepository.WithProfile(CurrentUserAccessor.UserId);
+        var user = await UserRepository.WithProfile(currentUserAccessor.UserId);
         var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
         var claimBeforeThat = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).Skip(1).FirstOrDefault() : null;
         if (claimBeforeThat != null && claimBeforeThat.CreateDate.AddMonths(3) > DateTime.Now && lastClaim != null)
@@ -254,7 +229,7 @@ public class ManageController : Common.ControllerBase
         try
         {
             await
-              _userService.UpdateProfile(viewModel.UserId,
+              userService.UpdateProfile(viewModel.UserId,
                 new UserFullName(
                     new PrefferedName(viewModel.PrefferedName),
                     new BornName(viewModel.BornName),
@@ -264,9 +239,9 @@ public class ManageController : Common.ControllerBase
                 viewModel.GroupNames, viewModel.Skype, viewModel.Livejournal,
                 (ContactsAccessType)viewModel.SocialNetworkAccess
               );
-            var userId = CurrentUserAccessor.UserId;
-            var user = await UserManager.FindByIdAsync(userId.ToString());
-            await SignInManager.RefreshSignInAsync(user);
+            var userId = currentUserAccessor.UserId;
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            await signInManager.RefreshSignInAsync(user);
             if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
             {
                 return RedirectToAction("SetupProfile");

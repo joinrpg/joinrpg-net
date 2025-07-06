@@ -8,24 +8,7 @@ namespace JoinRpg.Portal.Infrastructure;
 /// </summary>
 public class ConfigurationAdapter(IConfiguration configuration) : IJoinDbContextConfiguration, IBankSecretsProvider
 {
-    string IJoinDbContextConfiguration.ConnectionString
-    {
-        get
-        {
-
-            var connString = configuration.GetConnectionString("DefaultConnection");
-            /*       if (string.IsNullOrWhiteSpace(connString))
-                   {
-                       return System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString
-                           ?.Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey) + "\\App_Data") ?? "_";
-                   }*/
-            return connString;
-        }
-    }
-
-    // TODO inject this
-    internal string XsrfKey => configuration.GetValue<string>("XsrfKey");
-
+    string IJoinDbContextConfiguration.ConnectionString => configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     bool IBankSecretsProvider.Debug => configuration.GetValue<bool>("PaymentProviders:Pscb:Debug");
     bool IBankSecretsProvider.DebugOutput => configuration.GetValue<bool>("PaymentProviders:Pscb:DebugOutput");
     string IBankSecretsProvider.ApiEndpoint => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiEndpoint")!;

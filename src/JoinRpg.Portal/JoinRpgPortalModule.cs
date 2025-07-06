@@ -19,7 +19,7 @@ internal class JoinRpgPortalModule : Module
         _ = builder.RegisterType<ApplicationUserManager>();
         _ = builder.RegisterType<ApplicationSignInManager>();
         _ = builder.RegisterType<UriServiceImpl>().AsImplementedInterfaces();
-        _ = builder.RegisterType<ConfigurationAdapter>().AsSelf().AsImplementedInterfaces();
+        _ = builder.RegisterType<ConfigurationAdapter>().AsImplementedInterfaces();
 
         _ = builder.RegisterType<CurrentProjectAccessor>().AsImplementedInterfaces();
 
