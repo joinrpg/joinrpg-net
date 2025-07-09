@@ -20,7 +20,7 @@ public class UserServiceImpl(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     ILogger<UserServiceImpl> logger,
-    Lazy<IAvatarStorageService> avatarStorageService
+    IAvatarStorageService avatarStorageService
         ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IUserService, IAvatarService
 {
 
@@ -171,7 +171,7 @@ public class UserServiceImpl(
 
     private async Task<UserAvatar> UploadNewAvatar(Uri avatarUri, User user, string providerId)
     {
-        var cachedUri = await avatarStorageService.Value.StoreAvatar(avatarUri);
+        var cachedUri = await avatarStorageService.StoreAvatar(avatarUri);
 
         var userAvatar = new UserAvatar()
         {
@@ -317,7 +317,7 @@ public class UserServiceImpl(
             throw new JoinRpgEntityNotFoundException(avatarIdentification, "userAvatar");
         }
 
-        var cachedUri = await avatarStorageService.Value.StoreAvatar(new Uri(avatar.OriginalUri));
+        var cachedUri = await avatarStorageService.StoreAvatar(new Uri(avatar.OriginalUri));
 
         avatar.CachedUri = cachedUri?.AbsoluteUri;
 
