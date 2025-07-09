@@ -1,3 +1,4 @@
+using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.PrimitiveTypes;
 
