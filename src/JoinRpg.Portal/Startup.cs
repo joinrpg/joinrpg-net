@@ -19,7 +19,6 @@ using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
-using JoinRpg.Web.Helpers;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -46,10 +45,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
-
-        _ = services.AddHttpContextAccessor()
-            .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
-            .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>();
 
         services.AddKogdaIgra();
 

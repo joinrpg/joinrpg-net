@@ -8,7 +8,7 @@ namespace JoinRpg.Portal.Identity;
 public class ApplicationSignInManager : SignInManager<JoinIdentityUser>
 {
     public ApplicationSignInManager(
-        UserManager<JoinIdentityUser> userManager,
+        JoinUserManager userManager,
         IHttpContextAccessor contextAccessor,
         IUserClaimsPrincipalFactory<JoinIdentityUser> claimsFactory,
         IOptions<IdentityOptions> optionsAccessor,

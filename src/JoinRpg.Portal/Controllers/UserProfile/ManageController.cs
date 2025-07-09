@@ -20,7 +20,7 @@ namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
 public class ManageController(
-    ApplicationUserManager userManager,
+    JoinUserManager userManager,
     ApplicationSignInManager signInManager,
     IUserRepository userRepository,
     IUserService userService,

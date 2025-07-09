@@ -1,6 +1,6 @@
+using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
