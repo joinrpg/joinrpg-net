@@ -1,0 +1,8 @@
+.user-info a
+{
+    color: white;
+}
+.user-info {
+    display: flex;
+    place-items: center end;
+}
