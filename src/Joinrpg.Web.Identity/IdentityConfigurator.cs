@@ -1,3 +1,4 @@
+using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,11 @@ public static class IdentityConfigurator
 
             .AddHttpContextAccessor()
             .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
-            .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>();
+            .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>()
+
+            .AddScoped(typeof(PerRequestCache<,>))
+            .AddSingleton(typeof(SingletonCache<,>))
+            .AddTransient<IAvatarLoader, AvatarCachedLoader>();
     }
 
     private static void ConfigureValidation(this PasswordOptions password)
