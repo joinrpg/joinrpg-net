@@ -1,51 +1,47 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Joinrpg.Dal.Migrate;
+namespace JoinRpg.Dal.Migrate.EfCore;
 
 internal class MigrateEfCoreHostService<TContext>(
     TContext dbContext,
     ILogger<MigrateEfCoreHostService<TContext>> logger) : IMigratorService
     where TContext : DbContext
 {
-    private static readonly string contextName = typeof(TContext).Name!;
-    public async Task MigrateAsync(CancellationToken stoppingToken)
+    private static readonly string _contextName = typeof(TContext).Name;
+
+    public async Task MigrateAsync(CancellationToken ct)
     {
-        using var logScope = logger.BeginScope("Migration of {dbContext}", contextName);
-
-        logger.LogInformation("Start migration of {dbContext}", contextName);
-
-        var lastAppliedMigration = (await dbContext.Database.GetAppliedMigrationsAsync(stoppingToken)).LastOrDefault();
-        if (!string.IsNullOrEmpty(lastAppliedMigration))
-        {
-            logger.LogInformation("Last applied migration for {dbContext}: {LastAppliedMigration}", contextName, lastAppliedMigration);
-        }
-
-        if (stoppingToken.IsCancellationRequested)
-        {
-            return;
-        }
-
         if (dbContext.Database.HasPendingModelChanges())
         {
-            logger.LogError("There is pending changes in model!");
-            throw new InvalidOperationException("Pending changes in model");
+            throw new InvalidOperationException($"There are pending changes in model {_contextName}");
         }
 
-        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(stoppingToken);
-
-        foreach (var pm in pendingMigrations)
+        var lastAppliedMigration = (await dbContext.Database.GetAppliedMigrationsAsync(ct)).LastOrDefault();
+        if (lastAppliedMigration is null)
         {
-            logger.LogInformation("Pending migration for {dbContext}: {PendingMigration}", contextName, pm);
+            logger.LogWarning("There are no applied migrations or primary database connection failed.");
         }
-
-        if (stoppingToken.IsCancellationRequested)
+        else
         {
-            return;
+            logger.LogInformation(
+                "Last applied migration for the {DbContextName} database is {MigrationName}",
+                _contextName,
+                lastAppliedMigration);
         }
 
-        logger.LogInformation("Applying migrations for {dbContext} ...", contextName);
-        await dbContext.Database.MigrateAsync(stoppingToken);
-        logger.LogInformation("Database {dbContext} has been successfully migrated", contextName);
+        ct.ThrowIfCancellationRequested();
+
+        var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(ct)).ToArray();
+        if (pendingMigrations.Length > 0)
+        {
+            logger.LogInformation("Pending migrations are:\n{PendingMigrations}", string.Join("\n", pendingMigrations));
+            await dbContext.Database.MigrateAsync(ct);
+            logger.LogInformation("Database {dbContext} has been successfully migrated.", _contextName);
+        }
+        else
+        {
+            logger.LogInformation("No migrations were applied. The database is already up to date.");
+        }
     }
 }
