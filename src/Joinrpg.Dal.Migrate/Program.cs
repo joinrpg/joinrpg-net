@@ -1,10 +1,10 @@
+using JoinRpg.Dal.JobService;
+using JoinRpg.Dal.Migrate.Ef6;
+using JoinRpg.Dal.Migrate.EfCore;
+using JoinRpg.Portal.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using JoinRpg.Dal.JobService;
-using JoinRpg.Dal.Migrate.EfCore;
-using JoinRpg.Dal.Migrate.Ef6;
-using JoinRpg.Portal.Infrastructure;
 
 namespace JoinRpg.Dal.Migrate;
 
