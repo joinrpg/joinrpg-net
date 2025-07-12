@@ -59,7 +59,7 @@ internal class MigrationsLauncher(
         }
         catch (OperationCanceledException)
         {
-            logger.LogError("Migration process has been cancelled.");
+            logger.LogCritical("Migration process has been cancelled.");
             Environment.ExitCode = MigrationInterruptedErrorCode;
         }
         catch (Exception ex) when (Environment.ExitCode != MigrationInterruptedErrorCode)

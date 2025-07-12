@@ -9,4 +9,4 @@ WORKDIR /app
 
 COPY --chown=user:user ./bin/Release/net9.0/publish/ .
 
-ENTRYPOINT ["/app/JoinRpg.Dal.Migrate"]
+ENTRYPOINT ["/app/Joinrpg.Dal.Migrate"]
