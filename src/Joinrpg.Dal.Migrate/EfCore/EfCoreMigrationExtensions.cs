@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Joinrpg.Dal.Migrate.EfCore;
+namespace JoinRpg.Dal.Migrate.EfCore;
+
 internal static class EfCoreMigrationExtensions
 {
     internal static void RegisterMigrator<TContext>(this IServiceCollection services, string connectionString)

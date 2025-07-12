@@ -1,13 +1,12 @@
-using Joinrpg.Dal.Migrate.Ef6;
-using Joinrpg.Dal.Migrate.EfCore;
 using JoinRpg.Dal.JobService;
+using JoinRpg.Dal.Migrate.EfCore;
+using JoinRpg.Dal.Migrate.Ef6;
 using JoinRpg.Portal.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Joinrpg.Dal.Migrate;
+namespace JoinRpg.Dal.Migrate;
 
 internal class Program
 {
@@ -20,7 +19,7 @@ internal class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
-                _ = services.AddHostedService<OneTimeOperationHostedServiceBase>();
+                _ = services.AddHostedService<MigrationsLauncher>();
 
                 services.AddScoped<IMigratorService, MigrateMyDbContextService>();
 
