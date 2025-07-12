@@ -24,6 +24,7 @@ public class AccountController(
     IOptions<RecaptchaOptions> recaptchaOptions,
     IRecaptchaVerificator recaptchaVerificator,
     ExternalLoginProfileExtractor externalLoginProfileExtractor,
+    IHostEnvironment hostEnvironment,
     ILogger<AccountController> logger
     ) : Common.ControllerBase
 {
@@ -191,6 +192,12 @@ public class AccountController(
             new { userId = user.Id, code },
             protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
+        // We need this in local development as we normally do not send emails locally
+        if (hostEnvironment.IsDevelopment())
+        {
+            logger.LogDebug("Email confirmation link: {Url}", callbackUrl);
+        }
+
         await emailService.ConfirmEmail(user, callbackUrl);
     }
 
@@ -247,6 +254,11 @@ public class AccountController(
                 new { userId = user.Id, code },
                 protocol: Request.Scheme) ?? throw new InvalidOperationException();
 
+            // We need this in local development as we normally do not send emails locally
+            if (hostEnvironment.IsDevelopment())
+            {
+                logger.LogDebug("Password reset link: {Url}", callbackUrl);
+            }
 
             await emailService.ResetPasswordEmail(user, callbackUrl);
 
