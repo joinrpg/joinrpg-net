@@ -18,18 +18,13 @@ public class VirtualUsersService(Func<IUnitOfWork> uowResolver) : IVirtualUsersS
 
     private static User LoadUserByName(IUnitOfWork uow, string userName)
     {
-        var result = uow
-            .GetDbSet<User>()
-            .AsNoTracking()
-            .Include(u => u.Auth)
-            .Include(u => u.Allrpg)
-            .Include(u => u.Extra)
-            .SingleOrDefault(u => u.Email == userName);
-        if (result == null)
-        {
-            throw new DataException("Virtual payments manager user was not found");
-        }
-
-        return result;
+        return uow
+                .GetDbSet<User>()
+                .AsNoTracking()
+                .Include(u => u.Auth)
+                .Include(u => u.Allrpg)
+                .Include(u => u.Extra)
+                .SingleOrDefault(u => u.Email == userName)
+            ?? throw new DataException($"Virtual user {userName} not found");
     }
 }
