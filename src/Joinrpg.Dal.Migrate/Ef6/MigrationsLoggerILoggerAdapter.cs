@@ -1,13 +1,10 @@
 using System.Data.Entity.Migrations.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Joinrpg.Dal.Migrate.Ef6;
+namespace JoinRpg.Dal.Migrate.Ef6;
 
-internal class MigrationsLoggerILoggerAdapter : MigrationsLogger
+internal class MigrationsLoggerILoggerAdapter(ILogger logger) : MigrationsLogger
 {
-    private readonly ILogger logger;
-
-    public MigrationsLoggerILoggerAdapter(ILogger logger) => this.logger = logger;
     public override void Info(string message) => logger.LogInformation(message);
 
     public override void Verbose(string message) => logger.LogDebug(message);
