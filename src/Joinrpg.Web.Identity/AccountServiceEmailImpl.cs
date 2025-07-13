@@ -13,10 +13,15 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
     #region Account emails
     public Task ResetPasswordEmail(JoinIdentityUser user, string callbackUrl)
     {
+        // Эти и другие email должны читаться в plain text режиме. Для этого нужно, чтобы ссылки были отдельно от HTML и не были спрятаны
+        // Хорошо бы научить вырезалку markdown отображать URL корректно https://github.com/xoofx/markdig/issues/882
         var text = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}, 
 
 вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
-Если это вы, кликните <a href=""{callbackUrl}"">вот по этой ссылке</a>, и мы восстановим вам пароль. 
+Если это вы, кликните по ссылке ниже, чтобы восстановить пароль:
+
+{callbackUrl}
+
 Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его.
 
 --
@@ -34,7 +39,9 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
     {
         var text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
 
-Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{callbackUrl}"">вот по этой ссылке</a>.
+Пожалуйста, подтвердите свой аккаунт, кликнув по сссылке:
+
+{callbackUrl}
 
 Это необходимо для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
 

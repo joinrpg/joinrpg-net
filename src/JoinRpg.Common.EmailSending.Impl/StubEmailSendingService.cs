@@ -17,7 +17,7 @@ BODY:
 subject,
 sender,
 string.Join(", ", to.Select(s => s.ToString())),
-body.ToPlainText().ToString()
+body.ToPlainTextWithoutHtmlEscape()
 );
         return Task.CompletedTask;
     }

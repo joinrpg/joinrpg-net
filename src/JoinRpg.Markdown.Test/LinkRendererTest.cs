@@ -40,7 +40,10 @@ public class LinkRendererTest
     private readonly LinkRendererMock _mock = new();
 
     [Fact]
-    public void TestIgnoredIfDisabled() => new MarkdownString("%персонаж12").ToPlainText().ShouldBe("%персонаж12");
+    public void TestIgnoredIfDisabled() => new MarkdownString("%персонаж12").ToPlainTextAndEscapeHtml().Value.ShouldBe("%персонаж12");
+
+    [Fact]
+    public void TestIgnoredIfDisabled2() => new MarkdownString("%персонаж12").ToPlainTextWithoutHtmlEscape().ShouldBe("%персонаж12");
 
     [Fact]
     public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%персонаж12");
