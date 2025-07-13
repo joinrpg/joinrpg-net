@@ -1,7 +1,6 @@
 using JoinRpg.DataModel;
 using Markdig;
 using Microsoft.AspNetCore.Components;
-using Vereyon.Web;
 
 namespace JoinRpg.Markdown;
 
@@ -28,25 +27,40 @@ public static class MarkDownRendererFacade
     public static MarkupString ToHtmlString(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
-        => new MarkupString(PerformRender(markdownString,
-            renderer,
-            (text, writer, pipeline, context) => Markdig.Markdown.ToHtml(text, writer, pipeline, context),
-            HtmlSanitizers.Simple));
+        => new MarkupString(HtmlSanitizers.Simple.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToHtml)));
 
     /// <summary>
-    /// Converts markdown to plain text
+    /// Превращает Markdown в MarkupString, который можно вывести без дополнительного Escape HTML
     /// </summary>
-    public static string ToPlainText(
+    public static MarkupString ToPlainTextAndEscapeHtml(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
-        =>
-            PerformRender(markdownString,
-                renderer,
-                (text, writer, pipeline, context) => Markdig.Markdown.ToPlainText(text, writer, pipeline, context),
-                HtmlSanitizers.RemoveAll);
+        => new MarkupString(HtmlSanitizers.RemoveAll.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText)));
+
+    [Obsolete("Выберите ToPlainTextAndEscapeHtml/ToPlainTextWithoutHtmlEscape вместо этого")]
+    public static string ToPlainText(
+    this MarkdownString? markdownString,
+    ILinkRenderer? renderer = null)
+    => HtmlSanitizers.RemoveAll.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText));
+
+    /// <summary>
+    /// Превращает Markdown в строку, которую можно использовать только при гарантии, что ее не будут трактовать как HTML. При выводе в шаблон
+    /// ее необходимо будет экранировать (escape), но как правило это автоматически происходит
+    /// </summary>
+    public static string ToPlainTextWithoutHtmlEscape(
+    this MarkdownString? markdownString,
+    ILinkRenderer? renderer = null)
+    {
+        var result = PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText);
+        if (result[^1] == '\n')
+        {
+            return result[..^1];
+        }
+        return result;
+    }
 
     private static string PerformRender(MarkdownString? markdownString, ILinkRenderer? linkRenderer,
-        Action<string, TextWriter, MarkdownPipeline, MarkdownParserContext> renderMethod, IHtmlSanitizer sanitizer)
+        Func<string, MarkdownPipeline, MarkdownParserContext, string> renderMethod)
     {
         if (markdownString?.Contents == null)
         {
@@ -57,15 +71,8 @@ public static class MarkDownRendererFacade
 
         context.Properties.Add(nameof(ILinkRenderer), linkRenderer ?? DoNothingLinkRenderer.Instance);
 
-        var contents = sanitizer.Sanitize(markdownString.Contents);
+        return renderMethod(markdownString.Contents, markdownPipeline, context);
 
-        var writer = new StringWriter();
-
-        renderMethod(contents, writer, markdownPipeline, context);
-
-        var rendered = writer.ToString();
-
-        return sanitizer.Sanitize(rendered);
     }
 }
 

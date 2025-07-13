@@ -25,7 +25,7 @@ internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttp
         }
 
         var html = body.ToHtmlString();
-        var text = body.ToPlainText();
+        var text = body.ToPlainTextWithoutHtmlEscape(); // Экранировать HTML в plain text email не нужно
 
         foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
