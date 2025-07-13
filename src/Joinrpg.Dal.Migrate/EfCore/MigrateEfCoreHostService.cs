@@ -8,13 +8,13 @@ internal class MigrateEfCoreHostService<TContext>(
     ILogger<MigrateEfCoreHostService<TContext>> logger) : IMigratorService
     where TContext : DbContext
 {
-    private static readonly string _contextName = typeof(TContext).Name;
+    private static readonly string contextName = typeof(TContext).Name;
 
     public async Task MigrateAsync(CancellationToken ct)
     {
         if (dbContext.Database.HasPendingModelChanges())
         {
-            throw new InvalidOperationException($"There are pending changes in model {_contextName}");
+            throw new InvalidOperationException($"There are pending changes in model {contextName}");
         }
 
         var lastAppliedMigration = (await dbContext.Database.GetAppliedMigrationsAsync(ct)).LastOrDefault();
@@ -26,7 +26,7 @@ internal class MigrateEfCoreHostService<TContext>(
         {
             logger.LogInformation(
                 "Last applied migration for the {DbContextName} database is {MigrationName}",
-                _contextName,
+                contextName,
                 lastAppliedMigration);
         }
 
@@ -37,7 +37,7 @@ internal class MigrateEfCoreHostService<TContext>(
         {
             logger.LogInformation("Pending migrations are:\n{PendingMigrations}", string.Join("\n", pendingMigrations));
             await dbContext.Database.MigrateAsync(ct);
-            logger.LogInformation("Database {dbContext} has been successfully migrated.", _contextName);
+            logger.LogInformation("Database {dbContext} has been successfully migrated.", contextName);
         }
         else
         {

@@ -11,8 +11,8 @@ internal class MigrationsLauncher(
 {
     private const int MigrationInterruptedErrorCode = 1;
 
-    private readonly CancellationTokenSource _migrationCancellationTokenSource = new();
-    private readonly TaskCompletionSource _migrationCompletionTaskSource = new();
+    private readonly CancellationTokenSource migrationCancellationTokenSource = new();
+    private readonly TaskCompletionSource migrationCompletionTaskSource = new();
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
@@ -22,21 +22,21 @@ internal class MigrationsLauncher(
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken)
     {
-        _migrationCancellationTokenSource.Cancel();
+        migrationCancellationTokenSource.Cancel();
         // Defer completion promise, until our application has reported it is done.
-        return _migrationCompletionTaskSource.Task; //Should be non-null after Start
+        return migrationCompletionTaskSource.Task; //Should be non-null after Start
     }
 
     private void StartExecution()
     {
         try
         {
-            Task.Run(() => ExecuteMigrators(_migrationCancellationTokenSource.Token), applicationLifetime.ApplicationStopping);
+            Task.Run(() => ExecuteMigrators(migrationCancellationTokenSource.Token), applicationLifetime.ApplicationStopping);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error while starting launcher");
-            _migrationCompletionTaskSource.SetResult();
+            migrationCompletionTaskSource.SetResult();
             Environment.ExitCode = MigrationInterruptedErrorCode;
             applicationLifetime.StopApplication();
         }
@@ -69,7 +69,7 @@ internal class MigrationsLauncher(
         }
         finally
         {
-            _migrationCompletionTaskSource.SetResult();
+            migrationCompletionTaskSource.SetResult();
             applicationLifetime.StopApplication();
         }
     }
