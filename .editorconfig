@@ -143,6 +143,9 @@ csharp_prefer_system_threading_lock = true:suggestion
 # CA1872: Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'
 dotnet_diagnostic.CA1872.severity = suggestion
 
+# CA2254: Template should be a static expression
+dotnet_diagnostic.CA2254.severity = warning
+
 [*.{cs,vb}]
 #### Naming styles ####
 
