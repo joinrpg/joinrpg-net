@@ -15,7 +15,7 @@ internal class KogdaIgraSyncManager(
         return ToShortViewModels(items);
     }
 
-    private KogdaIgraShortViewModel[] ToShortViewModels((int KogdaIgraId, string Name)[] items)
+    private KogdaIgraShortViewModel[] ToShortViewModels((KogdaIgraIdentification KogdaIgraId, string Name)[] items)
         => items.Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name, new Uri(kograIgraOptions.Value.HostName + "game/" + i.KogdaIgraId))).ToArray();
     public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(int kogdaIgraId)
     {
