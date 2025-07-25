@@ -1,5 +1,10 @@
 @using Microsoft.JSInterop
-@inject IKogdaIgraSyncClient Client
+@using JoinRpg.Web.ProjectCommon.Projects;
+
+@inject IKogdaIgraSyncClient KogdaClient
+@inject IProjectListClient ProjectListClient
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
 
@@ -10,20 +15,15 @@
     </Body>
 </JoinPanel>
 
-@if (true)
-{
-    return;
-}
-
 @if (JoinCandidates is null || KogdaIgraCandidates is null)
 {
     <JoinLoadingMessage />
 }
 else
 {
-    foreach (var candidate in JoinCandidates)
+    foreach (var candidate in JoinCandidates.Take(1))
     {
-        <KogdaIgraCandidateCard JoinCandidate="@candidate" KogdaIgraCandidates="@KogdaIgraCandidates" />
+        <KogdaIgraCandidateCard ProjectDto="@candidate" KogdaIgraCandidates="@KogdaIgraCandidates" />
     }
 }
 
@@ -31,8 +31,16 @@ else
     [Parameter]
     public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
 
-    public JoinRpgSyncCandidateViewModel[]? JoinCandidates = null;
+    public ProjectDto[]? JoinCandidates = null;
 
     private KogdaIgraShortViewModel[]? KogdaIgraCandidates = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+      var joinTask = ProjectListClient.GetProjects(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
+        var kogdaTask = KogdaClient.GetKogdaIgraCandidates();
+        JoinCandidates = await joinTask;
+        KogdaIgraCandidates = await kogdaTask;
+    }
 
 }

@@ -10,7 +10,7 @@ public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncCli
         return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetKogdaIgraCandidates")
             ?? throw new Exception("Couldn't get result from server");
     }
-    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(int kogdaIgraId)
+    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId)
     {
         return await httpClient.GetFromJsonAsync<KogdaIgraCardViewModel>($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={kogdaIgraId}")
             ?? throw new Exception("Couldn't get result from server");

@@ -46,6 +46,7 @@ internal static class ProjectPredicates
             ProjectListCriteria.MasterOrActiveClaim => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userInfoId)).Or(MasterAccess(userInfoId))),
             ProjectListCriteria.ForCloning => predicate.And(ForCloning(userInfoId)),
             ProjectListCriteria.HasSchedule => predicate.And(project => project.Details.ScheduleEnabled),
+            ProjectListCriteria.NoKogdaIgra => predicate.And(project => project.KogdaIgraGames.Count == 0),
             _ => throw new NotImplementedException(),
         };
         return predicate;

@@ -7,14 +7,20 @@ internal class ProjectListViewService(IProjectRepository projectRepository, ICur
 {
     public async Task<ProjectDto[]> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
-        var spec = projectSelectionCriteria switch
-        {
-            ProjectSelectionCriteria.ForCloning => ProjectListSpecification.ForCloning,
-            ProjectSelectionCriteria.ActiveWithMyMasterAccess => ProjectListSpecification.ActiveWithMyMasterAccess,
-            _ => throw new NotImplementedException()
-        };
+        ProjectListSpecification spec = GetSpecification(projectSelectionCriteria);
 
         var projects = await projectRepository.GetProjectsBySpecification(currentUserAccessor.UserIdentification, spec);
         return [.. projects.Select(p => new ProjectDto(new ProjectIdentification(p.ProjectId), p.ProjectName))];
+    }
+
+    internal static ProjectListSpecification GetSpecification(ProjectSelectionCriteria projectSelectionCriteria)
+    {
+        return projectSelectionCriteria switch
+        {
+            ProjectSelectionCriteria.ForCloning => ProjectListSpecification.ForCloning,
+            ProjectSelectionCriteria.ActiveWithMyMasterAccess => ProjectListSpecification.ActiveWithMyMasterAccess,
+            ProjectSelectionCriteria.ActiveWithoutKogdaIgra => ProjectListSpecification.ActiveProjectsWithoutKogdaIgra,
+            _ => throw new NotImplementedException()
+        };
     }
 }

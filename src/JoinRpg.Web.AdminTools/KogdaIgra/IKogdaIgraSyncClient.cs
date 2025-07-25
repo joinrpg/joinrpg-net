@@ -14,5 +14,5 @@ public interface IKogdaIgraSyncClient
 
     Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated();
 
-    Task<KogdaIgraCardViewModel> GetKogdaIgraCard(int kogdaIgraId);
+    Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId);
 }

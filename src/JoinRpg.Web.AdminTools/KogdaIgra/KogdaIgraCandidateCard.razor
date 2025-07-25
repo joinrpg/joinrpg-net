@@ -1,38 +1,63 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IProjectInfoClient ProjectInfoClient
 <JoinPanel> 
-    <Header>@JoinCandidate.Name (@JoinCandidate.ProjectId)</Header>
+    <Header>@ProjectDto.ProjectName (@ProjectDto.ProjectId.Value)</Header>
   <Body>
-    Мастера:
-    <ul>
-      @foreach (var master in JoinCandidate.Masters)
-      {
-        <li><UserLink Model="master"></UserLink></li>
-      }
-    </ul>
-        Последний раз обновлено: @JoinCandidate.LastUpdatedAt
-        <br />
-        Описание: @JoinCandidate.Description
+    @if (ProjectInfo is not null)
+    {
+      <text>
+        Мастера:
+        <ul>
+          @foreach (var master in ProjectInfo.Masters)
+          {
+            <li><UserLink Model="master"></UserLink></li>
+          }
+        </ul>
+        @* Последний раз обновлено: @ProjectInfo.LastUpdatedAt <br /> *@
+        Описание: @ProjectInfo.DescriptionHtml
         <br />
         Игра на КогдаИгре:
-        <KogdaIgraGameSelector @bind-KogdaIgra="SelectedKogdaIgra" InitialList="KogdaIgraCandidates" />
-        @if (@SelectedKogdaIgra is not null)
-        {
-          <KogdaIgraCard KogdaIgraId="@SelectedKogdaIgra.KogdaIgraId" />
-          <JoinButton Label="Привязать" OnClick="BindClicked" Preset="ButtonPreset.Update" />
+          @foreach (var ki in ProjectInfo.KogdaIgraLinkedIds)
+          {
+                    <KogdaIgraCard KogdaIgraId="@ki" />
+                    <JoinButton Label="Отвязать" OnClick="() => UnBindClicked(ki)" Preset="ButtonPreset.Update" />
+          }
+
+                <KogdaIgraGameSelector @bind-KogdaIgra="SelectedKogdaIgra" InitialList="KogdaIgraCandidates" />
+                @if (@SelectedKogdaIgra is not null)
+                {
+                    <KogdaIgraCard KogdaIgraId="@SelectedKogdaIgra.KogdaIgraId" />
+                    <JoinButton Label="Привязать" OnClick="BindClicked" Preset="ButtonPreset.Update" />
+                }
+          </text>
         }
-  </Body>
+        else
+        {
+            <JoinLoadingMessage />
+        }
+        
+    </Body>
 </JoinPanel>
 @code {
     [Parameter]
     [EditorRequired]
-    public JoinRpgSyncCandidateViewModel JoinCandidate { get; set; } = null!;
+    public ProjectDto ProjectDto { get; set; } = null!;
 
     [Parameter]
     [EditorRequired]
     public KogdaIgraShortViewModel[] KogdaIgraCandidates { get; set; } = null!;
 
     [Parameter] public EventCallback<KogdaIgraShortViewModel> OnBind { get; set; }
+    [Parameter] public EventCallback<KogdaIgraIdentification> OnUnBind { get; set; }
+
+    private ProjectInfoViewModel? ProjectInfo { get; set; } = null;
 
     private KogdaIgraShortViewModel? SelectedKogdaIgra { get; set; } = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+        ProjectInfo = await ProjectInfoClient.GetProjectInfo(ProjectDto.ProjectId);
+    }
 
     private async Task BindClicked()
     {
@@ -41,5 +66,10 @@
             return;
         }
         await OnBind.InvokeAsync(SelectedKogdaIgra);
+    }
+
+    private async Task UnBindClicked(KogdaIgraIdentification kogdaIgraId)
+    {
+        await OnUnBind.InvokeAsync(kogdaIgraId);
     }
 }
