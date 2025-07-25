@@ -38,6 +38,7 @@ public class MockedProject
             Details = new ProjectDetails(),
             PaymentTypes = [],
             ProjectName = "Mocked project",
+            KogdaIgraGames = [],
         };
 
         var rootGroup = CreateCharacterGroup();
