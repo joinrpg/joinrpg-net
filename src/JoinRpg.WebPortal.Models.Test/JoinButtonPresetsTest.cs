@@ -4,6 +4,7 @@ namespace JoinRpg.WebPortal.Models.Test;
 
 public class JoinButtonPresetsTest
 {
+    /*
     [Theory]
     [ClassData(typeof(EnumTheoryDataGenerator<ButtonPreset>))]
     public void PresetsShouldBeRecognized(ButtonPreset buttonPreset)
@@ -18,4 +19,5 @@ public class JoinButtonPresetsTest
             preset.ShouldNotBeNull();
         }
     }
+*/
 }

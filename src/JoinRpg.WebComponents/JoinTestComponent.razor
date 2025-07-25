@@ -1,4 +1,103 @@
-﻿<JoinButton HasAutoConfirmDialog="true" Title="Auto Confirm"></JoinButton>
+﻿<h2>@nameof(JoinButton)</h2>
+
+<h3>Presets and styles</h3>
+
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <thead>
+    <tr>
+        <th>Style →<br/>↓ Preset</th>
+        <th><em>Undefined</em></th>
+        @foreach (var style in Enum.GetValues<VariationStyleEnum>())
+        {
+            <th>@style</th>
+        }
+        <th><em>Disabled</em></th>
+        <th><em>Progress</em></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><em>Undefined</em></td>
+        <td><JoinButton Label="My Button" /></td>
+        @foreach (var style in Enum.GetValues<VariationStyleEnum>())
+        {
+            <td><JoinButton Label="My Button" Variation="@style" /></td>
+        }
+        <td><JoinButton Label="Disabled Button" Disabled="@true" /></td>
+        <td><JoinButton Label="My Button" InProgress="@true" ProgressLabel="My Progress" /></td>
+    </tr>
+    @foreach (var preset in Enum.GetValues<ButtonPreset>())
+    {
+        var label = preset == ButtonPreset.None ? "My Button" : null;
+        <tr>
+            <td><strong>@preset</strong></td>
+            <td><JoinButton Label="@label" Preset="preset" /></td>
+            @foreach (var style in Enum.GetValues<VariationStyleEnum>())
+            {
+                <td><JoinButton Label="@label" Preset="@preset" Variation="@style" /></td>
+            }
+            <td><JoinButton Label="@label" Preset="@preset" Disabled="@true" /></td>
+            <td><JoinButton Label="@label" Preset="@preset" InProgress="@true" /></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Overrides</h3>
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        <td>Custom normal label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Label="Custom Normal Label" /></td>
+    </tr>
+    <tr>
+        <td>No normal label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Label="" /></td>
+    </tr>
+    <tr>
+        <td>Custom normal icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Icon="glyphicon-trash" /></td>
+    </tr>
+    <tr>
+        <td>No normal icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Icon="" /></td>
+    </tr>
+    <tr>
+        <td>Custom progress label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressLabel="Custom Progress Label" /></td>
+    </tr>
+    <tr>
+        <td>No progress label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressLabel="" /></td>
+    </tr>
+    <tr>
+        <td>Custom progress icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressIcon="glyphicon-alert" /></td>
+    </tr>
+    <tr>
+        <td>No progress icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressIcon="" /></td>
+    </tr>
+</table>
+
+<h3>Types</h3>
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        <td><JoinButton Label="Regular Button" /></td>
+        <td><JoinButton Label="Submit Button" Submit="@true" /></td>
+        <td><JoinButton Label="Link" Link="/" /></td>
+    </tr>
+</table>
+
+<h3>Sizes</h3>
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+            <td><JoinButton Label="Undefined size" /></td>
+        @foreach (var size in Enum.GetValues<SizeStyleEnum>())
+        {
+            <td><JoinButton Label="@size.ToString()" Size="size" /></td>
+        }
+    </tr>
+</table>
 
 @code {
 
