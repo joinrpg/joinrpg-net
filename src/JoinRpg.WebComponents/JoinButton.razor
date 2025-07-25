@@ -280,6 +280,7 @@ else
         { ButtonPreset.Logout, new("Выйти", "Выходим...", normalIcon: null, VariationStyleEnum.Danger) },
         { ButtonPreset.Login, new("Войти", "Входим...", normalIcon: null, VariationStyleEnum.Success) },
         { ButtonPreset.Vkontakte, new("ВКонтакте", "Входим...", normalIcon: null, VariationStyleEnum.Info) },
+        {ButtonPreset.Unlink, new("Отвязать","Отвязываем...", "glyphicon-remove-sign", VariationStyleEnum.Info)},
     }.ToFrozenDictionary();
 
     internal record struct ButtonContent(string? Label, string? Icon);
