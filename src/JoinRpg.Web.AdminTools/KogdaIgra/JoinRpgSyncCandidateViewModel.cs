@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.AdminTools.KogdaIgra;

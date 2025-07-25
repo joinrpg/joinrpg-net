@@ -5,15 +5,15 @@
     <JoinLoadingMessage />
     return;
 }
-Игра: <a href="@model.KogdaIgraUri"> @model.Name</a>
-Даты: @model.Begin — @model.End
-Регион: @model.RegionName
-МГ: @model.MasterGroupName
-Сайт: @model.SiteUri
+РРіСЂР°: <a href="@model.KogdaIgraUri"> @model.Name</a>
+Р”Р°С‚С‹: @model.Begin вЂ” @model.End
+Р РµРіРёРѕРЅ: @model.RegionName
+РњР“: @model.MasterGroupName
+РЎР°Р№С‚: @model.SiteUri
 @code {
     [Parameter]
     [EditorRequired]
-    public int KogdaIgraId { get; set; }
+    public KogdaIgraIdentification KogdaIgraId { get; set; }
 
     private KogdaIgraCardViewModel? model;
 

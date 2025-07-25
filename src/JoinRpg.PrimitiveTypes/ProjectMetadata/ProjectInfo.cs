@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 
@@ -40,6 +41,8 @@ public record class ProjectInfo
     public bool IsActive => ProjectStatus != ProjectLifecycleStatus.Archived;
 
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
+    public MarkdownString ProjectDescription { get; }
+    public IReadOnlyCollection<KogdaIgraIdentification> KogdaIgraLinkedIds { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -57,7 +60,9 @@ public record class ProjectInfo
         ProjectCheckInSettings projectCheckInSettings,
         ProjectLifecycleStatus projectStatus,
         ProjectScheduleSettings projectScheduleSettings,
-        ProjectCloneSettings projectCloneSettings)
+        ProjectCloneSettings projectCloneSettings,
+        MarkdownString projectDescription,
+        IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraLinkedIds)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -84,6 +89,8 @@ public record class ProjectInfo
         ProjectStatus = projectStatus;
         ProjectScheduleSettings = projectScheduleSettings;
         CloneSettings = projectCloneSettings;
+        ProjectDescription = projectDescription;
+        KogdaIgraLinkedIds = kogdaIgraLinkedIds;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
