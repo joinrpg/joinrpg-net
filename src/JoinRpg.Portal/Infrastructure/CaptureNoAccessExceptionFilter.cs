@@ -20,8 +20,7 @@ public class CaptureNoAccessExceptionFilter(IProjectMetadataRepository projectMe
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
             };
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(noAccessException.ProjectId);
-            var masters = await projectMetadataRepository.GetMastersList(noAccessException.ProjectId);
-            viewResult.ViewData.Model = new ErrorNoAccessToProjectViewModel(projectInfo, masters.Masters, noAccessException.Permission);
+            viewResult.ViewData.Model = new ErrorNoAccessToProjectViewModel(projectInfo, noAccessException.Permission);
             filterContext.Result = viewResult;
         }
     }

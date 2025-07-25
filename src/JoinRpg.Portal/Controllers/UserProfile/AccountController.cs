@@ -481,8 +481,7 @@ public class AccountController(
         if (projectId is int projectIdValue)
         {
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectIdValue));
-            var masters = await projectMetadataRepository.GetMastersList(new PrimitiveTypes.ProjectIdentification(projectIdValue));
-            return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(projectInfo, masters.Masters));
+            return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(projectInfo));
         }
         return View("AccessDenied", returnUrl);
     }

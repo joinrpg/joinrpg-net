@@ -8,20 +8,6 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 namespace JoinRpg.Dal.Impl.Repositories;
 internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepository
 {
-    async Task<ProjectMastersListInfo> IProjectMetadataRepository.GetMastersList(ProjectIdentification projectId)
-    {
-        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new InvalidOperationException($"Project with {projectId} not found");
-
-        var masters = project.ProjectAcls.Select(acl => new ProjectMasterInfo(
-            new UserIdentification(acl.User.UserId),
-            acl.User.ExtractDisplayName(),
-            new Email(acl.User.Email),
-            acl.GetPermissions())
-            );
-
-        return new ProjectMastersListInfo(projectId, project.ProjectName, masters.ToArray());
-    }
-
     public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache)
     {
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, ignoreCache) ?? throw new InvalidOperationException($"Project with {projectId} not found");

@@ -19,7 +19,7 @@ public static class ModelBuilders
             CharacterId: character.GetId(),
             PlayerDisplayName: approvedClaim?.Player?.ExtractDisplayName(),
             CharacterName: character.CharacterName,
-            ResponsibleMaster: projectInfo.Masters.First(m => m.UserId == respMasterId),
+            ResponsibleMaster: projectInfo.Masters.First(m => m.UserId == respMasterId).ToUserLinkViewModel(),
             Groups: [.. character.GetIntrestingGroupsForDisplayToTop()
             .Where(g => g.IsPublic)
             .Select(g => g.ToCharacterGroupLinkSlimViewModel())],

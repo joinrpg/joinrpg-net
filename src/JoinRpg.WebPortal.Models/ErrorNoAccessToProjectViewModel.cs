@@ -12,11 +12,11 @@ public class ErrorNoAccessToProjectViewModel
     public IEnumerable<UserLinkViewModel> CanGrantAccess { get; }
     public Permission Permission { get; }
 
-    public ErrorNoAccessToProjectViewModel(ProjectInfo project, IReadOnlyCollection<ProjectMasterInfo> masters, Permission permission = Permission.None)
+    public ErrorNoAccessToProjectViewModel(ProjectInfo project, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        CanGrantAccess = masters.Where(master => master.Permissions.Contains(Permission.CanGrantRights)).Select(master => master.ToUserLinkViewModel());
+        CanGrantAccess = project.Masters.Where(master => master.Permissions.Contains(Permission.CanGrantRights)).Select(master => master.ToUserLinkViewModel());
         ProjectId = project.ProjectId;
         ProjectName = project.ProjectName;
         Permission = permission;

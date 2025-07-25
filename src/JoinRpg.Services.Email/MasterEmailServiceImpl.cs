@@ -21,7 +21,7 @@ internal class MasterEmailServiceImpl(
 
     public async Task EmailProjectStale(ProjectStaleMail email)
     {
-        var metadata = await projectMetadataRepository.GetMastersList(email.ProjectId);
+        var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
         var subject = $"{metadata.ProjectName}: проект будет закрыт из-за неактивности";
 
@@ -46,7 +46,7 @@ internal class MasterEmailServiceImpl(
     {
         var initiator = await userRepository.GetById(email.Initiator.Value);
 
-        var metadata = await projectMetadataRepository.GetMastersList(email.ProjectId);
+        var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
@@ -60,7 +60,7 @@ internal class MasterEmailServiceImpl(
         await SendToAllMasters(messageService, metadata, body, subject, initiator.ToRecepientData());
     }
 
-    private static async Task SendToAllMasters(IEmailSendingService messageService, ProjectMastersListInfo metadata, string body, string subject, RecepientData initiator)
+    private static async Task SendToAllMasters(IEmailSendingService messageService, ProjectInfo metadata, string body, string subject, RecepientData initiator)
     {
         await messageService.SendEmails(
                     subject,
@@ -72,7 +72,7 @@ internal class MasterEmailServiceImpl(
 
     async Task IMasterEmailService.EmailProjectClosedStale(ProjectClosedStaleMail email)
     {
-        var metadata = await projectMetadataRepository.GetMastersList(email.ProjectId);
+        var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
@@ -85,27 +85,4 @@ internal class MasterEmailServiceImpl(
         var subject = $"{metadata.ProjectName}: проект закрыт";
         await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
     }
-
-    async Task IMasterEmailService.EmalProjectNotUsingSlots(ProjectNotUsingSlots email)
-    {
-        var metadata = await projectMetadataRepository.GetMastersList(email.ProjectId);
-
-        var subject = $"{metadata.ProjectName}: проект использует устаревший функционал";
-
-        var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
-
-Проект [{metadata.ProjectName}]({uriService.GetUri(email.ProjectId)}) использует устаревший функционал — заявки в группу. Он будет отключен в ноябре 2024 года. Вместо них сейчас используются шаблоны персонажей.
-Больше об этом можно почитать по ссылке https://docs.joinrpg.ru/ru/latest/characters/slots.html
-
-Вы можете автоматически сконвертировать все заявки в группу в шаблоны персонажей в Настройках проекта, или сконвертировать группы по одной в настройках. Никакие данные не потеряются.
-
-Если проект завершен или больше не нужен — вы можете закрыть его, и эти сообщения перестанут приходить.
-
---
-{joinRpgSender.DisplayName}
-
-";
-        await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
-    }
-
 }
