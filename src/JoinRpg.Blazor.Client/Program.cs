@@ -19,7 +19,7 @@ public class Program
         _ = typeof(MasterSubscribeList).ToString();
         _ = typeof(CharacterGroupSelector).ToString();
         _ = typeof(CharacterTypeSelector).ToString();
-        _ = typeof(PrimitiveTypes.CharacterTypeInfo).ToString();
+        _ = typeof(CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
         _ = typeof(ResponsibleMasterRulesList).ToString();
         _ = typeof(KogdaIgraSyncClient).ToString();

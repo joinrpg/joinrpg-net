@@ -1,5 +1,3 @@
-using System.Net.Http.Json;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
