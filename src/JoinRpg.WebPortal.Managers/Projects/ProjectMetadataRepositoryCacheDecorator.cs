@@ -17,6 +17,4 @@ public class ProjectMetadataRepositoryCacheDecorator(
 
         return projectInfo;
     }
-
-    Task<ProjectMastersListInfo> IProjectMetadataRepository.GetMastersList(ProjectIdentification projectId) => repository.GetMastersList(projectId);
 }

@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.ProjectMasterTools.Print;
@@ -8,7 +6,7 @@ public record class EnvelopeViewModel
     CharacterIdentification CharacterId,
     UserDisplayName? PlayerDisplayName,
     string CharacterName,
-    ProjectMasterInfo ResponsibleMaster,
+    UserLinkViewModel ResponsibleMaster,
     IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups,
     string? PlayerPhoneNumber,
     string ProjectName,
