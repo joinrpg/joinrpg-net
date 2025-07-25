@@ -5,11 +5,15 @@
     <JoinLoadingMessage />
     return;
 }
-Игра: <a href="@model.KogdaIgraUri"> @model.Name</a>
-Даты: @model.Begin — @model.End
-Регион: @model.RegionName
-МГ: @model.MasterGroupName
-Сайт: @model.SiteUri
+<JoinPanel>
+    <Header><a href="@model.KogdaIgraUri"> @model.Name</a></Header>
+  <Body>
+      Даты: @model.Begin — @model.End <br />
+      Регион: @model.RegionName <br />
+      МГ: @model.MasterGroupName<br />
+      Сайт: @model.SiteUri<br />
+  </Body>
+</JoinPanel>
 @code {
     [Parameter]
     [EditorRequired]
@@ -17,9 +21,9 @@
 
     private KogdaIgraCardViewModel? model;
 
-    protected async override Task OnInitializedAsync()
+    protected async override Task OnParametersSetAsync()
     {
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
         model = await client.GetKogdaIgraCard(KogdaIgraId);
     }
 }

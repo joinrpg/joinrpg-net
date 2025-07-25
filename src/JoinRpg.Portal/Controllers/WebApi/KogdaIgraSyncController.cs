@@ -1,4 +1,5 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,4 +21,7 @@ public class KogdaIgraSyncController(IKogdaIgraSyncClient client) : ControllerBa
 
     [HttpPost]
     public async Task<ResyncOperationResultsViewModel> Resync() => await client.ResyncKograIgra();
+
+    [HttpGet]
+    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId) => await client.GetKogdaIgraCard(kogdaIgraId);
 }
