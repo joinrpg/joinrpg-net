@@ -1,0 +1,13 @@
+﻿@page "/admin/cmp-tests"
+@model JoinRpg.Portal.Pages.Admin.ComponentTestPage
+@{
+  ViewBag.Title = "Страница экспериментов с компонентами";
+}
+<h3>@ViewBag.Title</h3>
+
+@(await Html.RenderComponentAsync<JoinTestComponent>(RenderMode.WebAssemblyPrerendered))
+
+@section Scripts {
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+}

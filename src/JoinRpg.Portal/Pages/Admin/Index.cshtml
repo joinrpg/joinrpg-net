@@ -1,5 +1,6 @@
 @page
 @model JoinRpg.Portal.Pages.Admin.IndexModel
+@inject IWebHostEnvironment environment
 @{
     ViewBag.Title = "Администрирование";
 }
@@ -11,4 +12,8 @@
     <li><a asp-page="/Admin/Jobs">Джобы</a></li>
     <li><a asp-page="/Admin/AdminHotRolesList">Горячие роли</a></li>
     <li><a asp-page="/Admin/SyncWithKogdaIgra">КогдаИгра</a></li>
+    @if (environment.IsDevelopment())
+    {
+        <li><a asp-page="/Admin/ComponentTestPage">Тесты компонентов</a></li>
+    }
 </ul>
