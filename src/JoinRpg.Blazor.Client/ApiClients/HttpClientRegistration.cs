@@ -26,6 +26,7 @@ public static class HttpClientRegistration
     public static WebAssemblyHostBuilder AddHttpClients(this WebAssemblyHostBuilder builder)
     {
         return builder
+                .AddHttpClient<IProjectInfoClient, ProjectInfoClient>()
                 .AddHttpClient<IProjectListClient, ProjectListClient>()
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IProjectSettingsClient, ProjectSettingsClient>()

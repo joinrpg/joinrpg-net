@@ -1,5 +1,3 @@
-using System.Net.Http.Json;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 
@@ -31,4 +29,10 @@ public class ProjectSettingsClient(HttpClient httpClient) : IProjectSettingsClie
         var response = await httpClient.PostAsJsonAsync($"/webapi/{model.ProjectId.Value}/project/SavePublishSettings", model);
         response.EnsureSuccessStatusCode();
     }
+}
+
+public class ProjectInfoClient(HttpClient httpClient) : IProjectInfoClient
+{
+    async Task<ProjectInfoViewModel> IProjectInfoClient.GetProjectInfo(ProjectIdentification projectId)
+        => await httpClient.GetFromJsonAsync<ProjectInfoViewModel>($"webapi/{projectId.Value}/project-info/GetProjectInfo") ?? throw new Exception("Couldn't get result from server");
 }

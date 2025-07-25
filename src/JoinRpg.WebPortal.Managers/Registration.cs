@@ -19,6 +19,7 @@ public static class Registration
     {
         return services.AddScoped<ProjectListManager>()
         .AddScoped<IProjectSettingsClient, ProjectSettingsViewService>()
+        .AddScoped<IProjectInfoClient, ProjectInfoViewService>()
         .AddScoped<FieldSetupManager>()
         .AddScoped<Schedule.SchedulePageManager>()
         .AddScoped<IGameSubscribeClient, SubscribeViewService>()
