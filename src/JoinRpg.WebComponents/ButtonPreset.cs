@@ -23,4 +23,8 @@ public enum ButtonPreset
     Edit,
     Setup,
     Save,
+    /// <summary>
+    /// Отвязать
+    /// </summary>
+    Unlink,
 }
