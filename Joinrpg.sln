@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -138,6 +138,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.IdPortal", "src\JoinRpg.IdPortal\JoinRpg.IdPortal\JoinRpg.IdPortal.csproj", "{BD8B363A-67BA-4ED3-B437-16758A733B99}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.IdPortal.Client", "src\JoinRpg.IdPortal\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj", "{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.WebPortal.Managers.Test", "src\JoinRpg.WebPortal.Managers.Test\JoinRpg.WebPortal.Managers.Test.csproj", "{5727C083-0EE6-4316-909C-2D7B5AC72597}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -361,6 +363,10 @@ Global
 		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -409,6 +415,7 @@ Global
 		{56244087-1F2A-4885-9377-017927790DA4} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{37E35417-0D6A-7D0D-A851-410A575E0788} = {4D578A76-DAE7-463A-9ABE-268E4D8488DA}
 		{70F947A5-5623-E77A-2FD8-6641C7F8CADB} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
+		{5727C083-0EE6-4316-909C-2D7B5AC72597} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}
