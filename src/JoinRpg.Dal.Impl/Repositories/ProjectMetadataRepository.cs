@@ -58,14 +58,20 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             financeSettings,
             project.Details.EnableAccommodation,
             CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
+
+            //TODO в этих двух полях LazyLoad
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
             rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId),
+            //TODO в этих двух полях LazyLoad
+
             masters: CreateMasterList(project),
             publishPlot: project.Details.PublishPlot,
-            new ProjectCheckInSettings(project.Details.EnableCheckInModule),
-            status,
-            new ProjectScheduleSettings(project.Details.ScheduleEnabled),
-            project.Details.ProjectCloneSettings
+            projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule),
+            projectStatus: status,
+            projectScheduleSettings: new ProjectScheduleSettings(project.Details.ScheduleEnabled),
+            projectCloneSettings: project.Details.ProjectCloneSettings,
+            projectDescription: project.Details.ProjectAnnounce,
+            kogdaIgraLinkedIds: [.. project.KogdaIgraGames.Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))]
             );
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
