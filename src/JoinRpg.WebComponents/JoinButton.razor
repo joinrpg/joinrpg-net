@@ -1,14 +1,18 @@
-@using Microsoft.AspNetCore.Components.Rendering
-@inject ILogger<JoinButton> Logger
+@using System.Collections.Frozen
+@using System.Diagnostics
+@using JoinRpg.WebComponents.Dialogs
 @if (Link is not null)
 {
-    <a href="@Link" class="@Style" type="@ButtonType" disabled="@RenderAsDisabled" title="@Title">@LabelContent</a>
+    <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" title="@Title">@LabelContent</a>
 }
 else
 {
-  <button class="@Style" type="@ButtonType" disabled="@RenderAsDisabled" title="@ActualTitle" @onclick="OnClickHappened">@LabelContent</button>
+    <button class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" title="@ActualTitle" @onclick="OnClickHappened">@LabelContent</button>
 }
-
+@if (AutoConfirm)
+{
+    <JoinDialog @ref="_confirmDialogRef" Buttons="DialogButtons.YesNo" Caption="@DialogCaption"><MessageDialogBody Type="MessageDialogType.Confirmation">@AutoConfirmMessage</MessageDialogBody></JoinDialog>
+}
 @code {
     /// <summary>
     /// Button link.
@@ -19,9 +23,18 @@ else
     /// <summary>
     /// Button style.
     /// </summary>
+    /// <remarks>This member is obsolete. Use <see cref="Style"/> instead.</remarks>
     /// <seealso cref="VariationStyleEnum"/>
     [Parameter]
-    public VariationStyleEnum? Variation { get; set; }
+    [Obsolete("Use Style instead")]
+    public VariationStyleEnum? Variation { get => Style; set => Style = value; }
+
+    /// <summary>
+    /// Button style.
+    /// </summary>
+    /// <seealso cref="VariationStyleEnum"/>
+    [Parameter]
+    public VariationStyleEnum? Style { get; set; }
 
     /// <summary>
     /// Button size.
@@ -58,12 +71,20 @@ else
     /// Preconfigured button type.
     /// </summary>
     /// <seealso cref="ButtonPreset"/>
-    [Parameter] public ButtonPreset Preset { get; set; } = ButtonPreset.None;
+    [Parameter]
+    public ButtonPreset Preset { get; set; } = ButtonPreset.None;
 
     /// <summary>
-    /// When true, the confirmation dialog will be shown and user has to confirm the action explicitly.
+    /// When true, the confirmation dialog appears when user clicks the button.
     /// </summary>
-    [Parameter] public bool HasAutoConfirmDialog { get; set; }
+    [Parameter]
+    public bool AutoConfirm { get; set; }
+
+    /// <summary>
+    /// Automatic confirmation dialog message. Required when <see cref="AutoConfirm"/> is true.
+    /// </summary>
+    [Parameter]
+    public string? AutoConfirmMessage { get; set; }
 
     /// <summary>
     /// Button label.
@@ -85,6 +106,16 @@ else
     [Parameter]
     public bool InProgress { get; set; }
 
+    /// <summary>
+    /// When true, button will be automatically switched into progress state when clicked by user.
+    /// </summary>
+    [Parameter]
+    public bool AutoProgress { get; set; } = true; // true is for backward compatibility here
+
+    /// <summary>
+    /// Button label to be used in progress state.
+    /// </summary>
+    /// <remarks>This member is obsolete. Use <see cref="ProgressLabel"/> instead.</remarks>
     [Parameter]
     [Obsolete("Use ProgressLabel instead")]
     public string? ProgressText { get => ProgressLabel; set => ProgressLabel = value; }
@@ -108,21 +139,16 @@ else
     public const string DefaultProgressIcon = "glyphicon-hourglass";
 
     /// <summary>
-    /// Identifies that no icon should be rendered.
-    /// </summary>
-    public const string NoIcon = "";
-
-    /// <summary>
     /// Invoked when user clicks a button somehow.
     /// </summary>
     [Parameter]
-    public EventCallback<EventArgs> OnClick { get; set; }
+    public EventCallback<ButtonClickEventArgs> OnClick { get; set; }
 
 
-    private JoinDialog? confirmDialogRef;
+    private JoinDialog? _confirmDialogRef;
 
     private string ButtonType => Submit ? "submit" : "button";
-    private string Style => BootstrapStyle.Build("btn", ActualVariation, Size);
+    private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size);
     private bool RenderAsDisabled => Disabled || InProgress;
     private string? ActualTitle => Disabled ? DisabledTitle ?? Title : Title;
 
@@ -130,28 +156,45 @@ else
 
     private RenderFragment NormalContent { get; set; } = null!;
     private RenderFragment ProgressContent { get; set; } = null!;
-    private VariationStyleEnum ActualVariation { get; set; }
+    private VariationStyleEnum ActualStyle { get; set; }
+    private string? DialogCaption { get; set; }
 
 
     private async Task OnClickHappened(MouseEventArgs e)
     {
-        if (RenderAsDisabled) { return; }
-        if (HasAutoConfirmDialog)
-        {
-            confirmDialogRef?.ShowModal();
-        }
-        else
-        {
-            await ConfirmHappened(e);
-        }
+        if (RenderAsDisabled)
+            return;
+        await DoClick(e);
     }
 
-    private async Task ConfirmHappened(EventArgs e)
+    private async Task DoClick(MouseEventArgs e)
     {
-        InProgress = true;
-        await OnClick.InvokeAsync(e);
+        if (AutoProgress)
+        {
+            InProgress = true;
+        }
+
+        if (AutoConfirm)
+        {
+            Debug.Assert(_confirmDialogRef is not null);
+            var result = await _confirmDialogRef.ShowModalAsync();
+            if (result.Equals(nameof(ButtonPreset.Cancel), StringComparison.OrdinalIgnoreCase))
+                return;
+        }
+
+        var args = new ButtonClickEventArgs { MouseEvent = e };
+        await OnClick.InvokeAsync(args);
         // TODO: Do we have to catch an error somehow and render button in some invalid operation result style?
-        InProgress = false;
+
+        if (AutoProgress || args.ExitProgressState is true)
+        {
+            InProgress = false;
+        }
+
+        if (args.EnterDisabledState)
+        {
+            Disabled = true;
+        }
     }
 
     protected override void OnParametersSet()
@@ -159,21 +202,25 @@ else
         base.OnParametersSet();
         if (Disabled)
         {
-            OnClick = EventCallback<EventArgs>.Empty;
+            OnClick = EventCallback<ButtonClickEventArgs>.Empty;
             Link = null;
         }
 
         if (Link is not null && OnClick.HasDelegate)
         {
-            throw new InvalidOperationException("Нельзя установить одновременно обработчик OnClick и ссылку");
+            throw new InvalidOperationException($"The {nameof(OnClick)} event handler and {nameof(Link)} property can not be both set in the same time");
+        }
+
+        if (AutoConfirm && string.IsNullOrWhiteSpace(AutoConfirmMessage))
+        {
+            throw new InvalidOperationException($"The {nameof(AutoConfirmMessage)} is required when {nameof(AutoConfirm)} is true");
         }
 
         var presetContent = Presets[Preset];
         NormalContent = FormatLabel(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon);
         ProgressContent = FormatLabel(ProgressLabel, presetContent.Progress.Label, ProgressIcon, presetContent.Progress.Icon);
-        ActualVariation = Variation ?? presetContent.Style;
-
-        Logger.LogInformation($"Preset: {Preset}; Progress: {InProgress}; NL: {presetContent.Normal.Label}; PL: {presetContent.Progress.Label}");
+        ActualStyle = Style ?? presetContent.Style;
+        DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";
     }
 
     private static RenderFragment FormatLabel(string? label, string? icon)
@@ -193,27 +240,31 @@ else
     }
 
     // for tests
-    internal readonly static Dictionary<ButtonPreset, ButtonPresetContent> Presets = new()
+    internal static readonly FrozenDictionary<ButtonPreset, ButtonPresetContent> Presets = new Dictionary<ButtonPreset, ButtonPresetContent>
     {
-      { ButtonPreset.Add, new("Добавить", "Добавляем...", "glyphicon-plus") },
-      { ButtonPreset.Cancel, new("Отменить", "Отменяем...") },
-      { ButtonPreset.Create, new("Создать", "Создаем...", "glyphicon-ok", VariationStyleEnum.Success) },
-      { ButtonPreset.Delete, new("Удалить", "Удаляем...", "glyphicon-trash", VariationStyleEnum.Danger) },
-      { ButtonPreset.Download, new("Скачать", "Скачиваем...", "glyphicon-cloud-download") },
-      { ButtonPreset.Update, new("Обновить", "Обновляем...", "glyphicon-refresh") },
-      { ButtonPreset.Hide, new("Скрыть", "Скрываем...", "glyphicon-remove-sign", VariationStyleEnum.Info) },
-      { ButtonPreset.Restore, new("Восстановить", "Восстанавливаем...", style: VariationStyleEnum.Success) },
-      { ButtonPreset.Print, new("Напечатать", "Печатаем...", "glyphicon-print") },
-      { ButtonPreset.Email, new("Написать", "Отправляем письмо...", "glyphicon-envelope") },
-      { ButtonPreset.Publish, new("Опубликовать", "Публикуем...", "glyphicon-share-alt", VariationStyleEnum.Success) },
-      { ButtonPreset.Copy, new("Копировать", "Копируем...", "glyphicon-duplicate") },
-      { ButtonPreset.Up, new("", null, "glyphicon-arrow-up") },
-      { ButtonPreset.Down, new("", null, "glyphicon-arrow-down") },
-      { ButtonPreset.Edit, new("Изменить", null, "glyphicon-pencil") },
-      { ButtonPreset.Setup, new("Настройки", null, "glyphicon-cog") },
-      { ButtonPreset.Save, new("Сохранить", "Сохраняем...", "glyphicon-ok", VariationStyleEnum.Success) },
-      { ButtonPreset.None, new(null, null) }
-    };
+        { ButtonPreset.None, new(null, null) },
+        { ButtonPreset.Add, new("Добавить", "Добавляем...", "glyphicon-plus") },
+        { ButtonPreset.Ok, new("Ok", null) },
+        { ButtonPreset.Yes, new("Да",  null) },
+        { ButtonPreset.No, new("Нет", null) },
+        { ButtonPreset.Cancel, new("Отменить", "Отменяем...") },
+        { ButtonPreset.Create, new("Создать", "Создаем...", "glyphicon-ok", VariationStyleEnum.Success) },
+        { ButtonPreset.Delete, new("Удалить", "Удаляем...", "glyphicon-trash", VariationStyleEnum.Danger) },
+        { ButtonPreset.Download, new("Скачать", "Скачиваем...", "glyphicon-cloud-download") },
+        { ButtonPreset.Update, new("Обновить", "Обновляем...", "glyphicon-refresh") },
+        { ButtonPreset.Hide, new("Скрыть", "Скрываем...", "glyphicon-remove-sign", VariationStyleEnum.Info) },
+        { ButtonPreset.Restore, new("Восстановить", "Восстанавливаем...", style: VariationStyleEnum.Success) },
+        { ButtonPreset.Print, new("Напечатать", "Печатаем...", "glyphicon-print") },
+        { ButtonPreset.Email, new("Написать", "Отправляем письмо...", "glyphicon-envelope") },
+        { ButtonPreset.Publish, new("Опубликовать", "Публикуем...", "glyphicon-share-alt", VariationStyleEnum.Success) },
+        { ButtonPreset.Copy, new("Копировать", "Копируем...", "glyphicon-duplicate") },
+        { ButtonPreset.Up, new(null, null, "glyphicon-arrow-up") },
+        { ButtonPreset.Down, new(null, null, "glyphicon-arrow-down") },
+        { ButtonPreset.Edit, new("Изменить", null, "glyphicon-pencil") },
+        { ButtonPreset.Setup, new("Настройки", null, "glyphicon-cog") },
+        { ButtonPreset.Save, new("Сохранить", "Сохраняем...", "glyphicon-ok", VariationStyleEnum.Success) },
+        { ButtonPreset.Understand, new("Понятно", null) },
+    }.ToFrozenDictionary();
 
     internal record struct ButtonContent(string? Label, string? Icon);
 

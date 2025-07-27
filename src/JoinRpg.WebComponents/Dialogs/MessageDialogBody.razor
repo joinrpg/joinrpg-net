@@ -1,0 +1,50 @@
+﻿@implements IDialogBody
+<div class="join-dialog-message">
+@if (Type != MessageDialogType.None)
+{
+    <span class="join-dialog-message-icon @DialogTypeStyle">@DialogTypeContent</span>
+}
+    <div class="join-dialog-message-content">@ChildContent</div>
+</div>
+@code {
+    /// <inheritdoc />
+    [CascadingParameter]
+    public IDialog? Dialog { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public MessageDialogType Type { get; set; }
+
+    private string? DialogTypeContent { get; set; }
+    private string? DialogTypeStyle { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        DialogTypeContent = Type switch
+        {
+            MessageDialogType.None => null,
+            MessageDialogType.Confirmation => "?",
+            MessageDialogType.Information => "i",
+            MessageDialogType.Success => "♥",
+            MessageDialogType.Alert => "!",
+            MessageDialogType.Fail => "×",
+            _ => throw new ArgumentOutOfRangeException(nameof(Type)),
+        };
+
+        DialogTypeStyle = Type switch
+        {
+            MessageDialogType.None => null,
+            MessageDialogType.Confirmation => "btn-info",
+            MessageDialogType.Information => "btn-info",
+            MessageDialogType.Success => "btn-success",
+            MessageDialogType.Alert => "btn-warning",
+            MessageDialogType.Fail => "btn-danger",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+}

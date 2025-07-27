@@ -1,84 +1,302 @@
-@inject IJSRuntime JS
+@inject IJSRuntime Js
+@inject ILogger<JoinDialog> Logger;
+@using System.Diagnostics
 @implements IAsyncDisposable
 
-<dialog @ref="dialogRef" @onclose="OnCloseCallback" @oncancel="OnCancelCallback">
-    @if (Header is not null)
+<dialog class="join-dialog" @ref="_dialogRef" @onclose="DialogCloseHandler" style="@_styles">
+    <div class="join-dialog-interior">
+    @if (Caption is not null || ShowCloseButton)
     {
-        <div class="join-dialog-heading">
-            <button type="button" class="join-close" aria-label="Close" @onclick="() => Close()"><span aria-hidden="true">×</span></button>
-            @Header
+        <div class="join-dialog-header">
+            @if (Caption is not null)
+            {
+                <span class="join-dialog-caption">@Caption</span>
+            }
+            @if (ShowCloseButton)
+            {
+                <button type="button" class="join-dialog-close" aria-label="Close" @onclick="CloseButtonClickHandler"><span aria-hidden="true">×</span></button>
+            }
         </div>
     }
-    @if (Body is not null)
+    <div class="join-dialog-body">
+        <div class="join-dialog-content">
+            @ChildContent
+        </div>
+    </div>
+    @if (_hasButtons)
     {
-        <div class="join-dialog-body">@Body</div>
-    }
-    @if (Footer is not null || HasCancelButton)
-    {
-
         <div class="join-dialog-footer">
-            @if (Footer is not null)
+            @if (_buttonsL is not null)
             {
-                @Footer
+                <ul class="join-dialog-footer-buttons join-dialog-footer-left">
+                    @foreach (var db in _buttonsL)
+                    {
+                        if (db.Preset != ButtonPreset.None)
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                        else
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                    }
+                </ul>
             }
-            @if (ConfirmButtonLabel is not null)
+            @if (_buttonsM is not null)
             {
-                <JoinButton Preset="@(ConfirmButtonPreset ?? ButtonPreset.None)" Label="@ConfirmButtonLabel" OnClick="ConfirmExecuted" />
+                <ul class="join-dialog-footer-buttons join-dialog-footer-middle">
+                    @foreach (var db in _buttonsM)
+                    {
+                        if (db.Preset != ButtonPreset.None)
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                        else
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                    }
+                </ul>
             }
-            @if (HasCancelButton)
+            @if (_buttonsR is not null)
             {
-                <JoinButton Preset="ButtonPreset.Cancel" OnClick="() => Close()" />
+                <ul class="join-dialog-footer-buttons join-dialog-footer-right">
+                    @foreach (var db in _buttonsR)
+                    {
+                        if (db.Preset != ButtonPreset.None)
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                        else
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                    }
+                </ul>
             }
-
         </div>
     }
+    </div>
 </dialog>
 
 @code{
-    [Parameter] public RenderFragment? Header { get; set; }
-    [Parameter] public RenderFragment? Body { get; set; }
-    [Parameter] public RenderFragment? Footer { get; set; }
-    [Parameter] public bool HasCancelButton { get; set;  }
-    [Parameter] public string? ConfirmButtonLabel { get; set; }
-    [Parameter] public ButtonPreset? ConfirmButtonPreset { get; set; }
 
-    [Parameter] public EventCallback<EventArgs> OnCloseCallback { get; set; }
-    [Parameter] public EventCallback<EventArgs> OnConfirmCallback { get; set; }
-    [Parameter] public EventCallback<EventArgs> OnCancelCallback { get; set; }
+    [Parameter]
+    public string? Caption { get; set; }
 
-    private IJSObjectReference module = null!;
-    private ElementReference dialogRef;
+    [Parameter]
+    public bool ShowCloseButton { get; set; }
+
+    [Parameter]
+    public RenderFragment? CaptionContent { get; set; }
+
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public IReadOnlyCollection<DialogButton>? Buttons { get; set; }
+
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    [Parameter]
+    public string? Width { get; set; }
+
+    [Parameter]
+    public string? MaxWidth { get; set; }
+
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
+
+
+    [Parameter]
+    public EventCallback<DialogCloseEventArgs> OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<DialogClosingEventArgs> OnClosing { get; set; }
+
+
+    private IJSObjectReference _module = null!;
+    private ElementReference _dialogRef;
+
+    private string? _styles;
+
+    private bool _hasButtons;
+    private IReadOnlyCollection<DialogButton>? _buttonsL;
+    private IReadOnlyCollection<DialogButton>? _buttonsR;
+    private IReadOnlyCollection<DialogButton>? _buttonsM;
+    private DialogButton? _cancelButton;
+
+    private bool _closing;
+    private DialogButton? _closingButton;
+    private TaskCompletionSource<string>? _resultTaskSource;
 
     public void ShowModal()
     {
-        module.InvokeVoidAsync("showModal", dialogRef);
+        if (_resultTaskSource is not null)
+            return;
+
+        _closing = false;
+        _closingButton = null;
+        _resultTaskSource = new TaskCompletionSource<string>();
+        _module.InvokeVoidAsync("showModal", _dialogRef);
+    }
+
+    /// <summary>
+    /// Displays dialog and waits until it be closed.
+    /// </summary>
+    /// <returns>
+    /// Result depends on configuration and user actions:
+    /// <br/>- when a button was clicked, value of its <see cref="DialogButton.Name"/> property;
+    /// <br/>- when Esc was pressed or dialog was closed by the close button, "Cancel" or value of cancellation button <see cref="DialogButton.Name"/> property.</returns>
+    public Task<string> ShowModalAsync()
+    {
+        if (_resultTaskSource is null)
+        {
+            ShowModal();
+            Debug.Assert(_resultTaskSource is not null);
+        }
+
+        return _resultTaskSource.Task;
     }
 
     public void Close()
     {
-        module.InvokeVoidAsync("closeModal", dialogRef);
+        if (_closing)
+            return;
+        _module.InvokeVoidAsync("closeModal", _dialogRef);
     }
 
-    public async Task ConfirmExecuted(EventArgs args)
+    protected virtual void CloseButtonClickHandler()
     {
-        await OnConfirmCallback.InvokeAsync(args);
         Close();
     }
 
+    protected virtual void DialogButtonClickHandler(DialogButton db)
+    {
+        _closingButton = db;
+        Close();
+    }
+
+    private void DialogCloseHandler()
+    {
+        if (_closing)
+            return;
+
+        _closing = true;
+        _closingButton ??= _cancelButton;
+        try
+        {
+            DoClose();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while handling dialog close event");
+        }
+
+        Debug.Assert(_resultTaskSource is not null);
+        _resultTaskSource.SetResult(_closingButton?.Name ?? nameof(ButtonPreset.Cancel));
+        _resultTaskSource = null;
+    }
+
+    /// <summary>
+    /// Called when it is necessary to fire <see cref="OnClose"/> event.
+    /// </summary>
+    protected virtual void DoClose()
+    {
+        OnClose.InvokeAsync(new DialogCloseEventArgs { ButtonName = _closingButton?.Name });
+    }
+
+    private IEnumerable<string> GetStyles()
+    {
+        if (!string.IsNullOrWhiteSpace(Width))
+            yield return $"width: {Width}";
+        if (!string.IsNullOrWhiteSpace(MaxWidth))
+            yield return $"max-width: {MaxWidth}";
+        if (!string.IsNullOrWhiteSpace(Height))
+            yield return $"height: {Height}";
+        if (!string.IsNullOrWhiteSpace(MaxHeight))
+            yield return $"max-height: {MaxHeight}";
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _styles = string.Join("; ", GetStyles());
+
+        if (Buttons?.Count > 0)
+        {
+            List<DialogButton>? buttonsL = null;
+            List<DialogButton>? buttonsR = null;
+            List<DialogButton>? buttonsM = null;
+
+            foreach (var button in Buttons)
+            {
+                switch (button.Alignment)
+                {
+                    case DialogButtonAlignment.Right:
+                        buttonsR ??= [];
+                        buttonsR.Add(button);
+                        break;
+                    case DialogButtonAlignment.Left:
+                        buttonsL ??= [];
+                        buttonsL.Add(button);
+                        break;
+                    case DialogButtonAlignment.Centered:
+                        buttonsM ??= [];
+                        buttonsM.Add(button);
+                        break;
+                }
+
+                // If a button was explicitly set as Cancel button it will be used in this role.
+                // Otherwise, the first button with Cancel or No preset will be automatically set as cancel button.
+
+                if (button.Cancel && _cancelButton?.Cancel is null or false)
+                {
+                    _cancelButton = button;
+                }
+
+                if (_cancelButton is null && button.Preset is ButtonPreset.Cancel or ButtonPreset.No)
+                {
+                    _cancelButton = button;
+                }
+            }
+
+            _hasButtons = true;
+
+            _buttonsL = buttonsL;
+            _buttonsR = buttonsR;
+            _buttonsM = buttonsM;
+
+            if (_buttonsM is not null)
+            {
+                // We want to keep all button blocks in their positions when M is present
+                if (_buttonsL is not null)
+                    _buttonsR ??= [];
+                if (_buttonsR is not null)
+                    _buttonsL ??= [];
+            }
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
+            _module = await Js.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
         }
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (module is not null)
+        if (_module is not null)
         {
-            await module.DisposeAsync();
+            await _module.DisposeAsync();
         }
     }
 

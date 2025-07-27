@@ -1,4 +1,6 @@
-﻿<h2>@nameof(JoinButton)</h2>
+﻿@using JoinRpg.WebComponents.Dialogs
+@inject ILogger<JoinTestComponent> Logger
+<h2>@nameof(JoinButton)</h2>
 
 <h3>Presets and styles</h3>
 
@@ -99,6 +101,80 @@
     </tr>
 </table>
 
+
+<h2>@nameof(JoinDialog)</h2>
+
+<h3>Main features</h3>
+
+<JoinButton Label="Show custom dialog" OnClick="ShowCustomDialog" />
+
+<JoinDialog @ref="_joinDialog1" ShowCloseButton="@true" Caption="Dialog Caption" Buttons="@_buttons" Width="500px" Height="500px">
+    <h2>Как это работает</h2>
+    <p>
+        Платежи осуществляются при помощи платежного сервиса «ПСКБ Онлайн» банковскими
+        картами системы Master Card, Visa или МИР. Для дополнительной идентификации держателя карты
+        может использоваться технология 3D Secure. Платежный сервис «ПСКБ Онлайн» производит обработку
+        данных банковских карт в соответствии с требованиями международного стандарта безопасности
+        PCI&nbsp;DSS&nbsp;3.0. Передача информации происходит с применением технологии шифрования SSL.
+    </p>
+    <p>
+        JoinRpg.Ru не осуществляет сбор, обработку и хранение данных банковских карт.
+        Конфиденциальность информации гарантирует <a target="_blank" href="https://pscb.ru">АО&nbsp;Банк&nbsp;«ПСКБ»</a>.
+    </p>
+    <p>
+        Каждый сданный взнос (проданный билет) автоматически отмечается в регистрационной заявке.
+        Ручная обработка со стороны Пользователя или Организатора не требуется.
+    </p>
+</JoinDialog>
+
+<h3>Message dialog</h3>
+
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        @foreach (var mdt in Enum.GetValues<MessageDialogType>())
+        {
+            var label = mdt == MessageDialogType.None ? "Custom" : mdt.ToString();
+            <td><JoinButton Label="@label" OnClick="() => ShowMessageDialog(mdt)" AutoProgress="@false" /></td>
+        }
+    </tr>
+</table>
+
+<JoinDialog @ref="_joinDialog2" ShowCloseButton="@true" Caption="Message Dialog" Buttons="@DialogButtons.YesNo">
+    <MessageDialogBody Type="@_joinDialog2Type">Some message dialog text</MessageDialogBody>
+</JoinDialog>
+
+
 @code {
+
+    private readonly DialogButton[] _buttons = [
+        new("CustomButton1", "Custom Button 1", alignment: DialogButtonAlignment.Left),
+        new("CustomButton2", "Custom Button 2", alignment: DialogButtonAlignment.Left),
+        ..DialogButtons.YesNo,
+        new(ButtonPreset.Email),
+        new(ButtonPreset.Add),
+        new(ButtonPreset.Publish),
+        new(ButtonPreset.Cancel, cancel: true)
+    ];
+
+    private async Task ShowCustomDialog()
+    {
+        var result = await _joinDialog1!.ShowModalAsync();
+        Logger.LogInformation($"Last message dialog result: {result}");
+    }
+
+
+    private JoinDialog? _joinDialog1;
+    private JoinDialog? _joinDialog2;
+
+    private MessageDialogType _joinDialog2Type;
+
+
+    private async Task ShowMessageDialog(MessageDialogType mdt)
+    {
+        _joinDialog2Type = mdt;
+
+        var result = await _joinDialog2!.ShowModalAsync();
+        Logger.LogInformation($"Last message dialog result: {result}");
+    }
 
 }
