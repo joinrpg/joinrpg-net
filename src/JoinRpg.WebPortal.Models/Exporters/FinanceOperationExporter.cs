@@ -1,15 +1,9 @@
-using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters;
 
-public class FinanceOperationExporter : CustomExporter<FinOperationListItemViewModel>
+public class FinanceOperationExporter(IUriService uriService) : CustomExporter<FinOperationListItemViewModel>(uriService)
 {
-    public FinanceOperationExporter(Project project, IUriService uriService) : base(
-        uriService) => Project = project;
-
-    private Project Project { get; }
-
     public override IEnumerable<ITableColumn> ParseColumns()
     {
         yield return IntColumn(x => x.FinanceOperationId);

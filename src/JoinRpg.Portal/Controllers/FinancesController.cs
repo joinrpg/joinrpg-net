@@ -95,7 +95,7 @@ public class FinancesController : ControllerGameBase
         }
         else
         {
-            var frontend = new FinanceOperationExporter(project, UriService);
+            var frontend = new FinanceOperationExporter(UriService);
 
             var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
 
