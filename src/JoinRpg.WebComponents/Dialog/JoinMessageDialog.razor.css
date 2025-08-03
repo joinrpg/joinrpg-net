@@ -7,18 +7,9 @@
 
 .join-dialog-message-icon {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: serif;
-    font-size: 2.5em;
-    font-weight: bold;
-    width: 1.5em;
-    height: 1.5em;
-    border-radius: 1em;
     line-height: 0;
     flex-shrink: 0;
     flex-grow: 0;
-    cursor: default;
 }
 
 .join-dialog-message-content {

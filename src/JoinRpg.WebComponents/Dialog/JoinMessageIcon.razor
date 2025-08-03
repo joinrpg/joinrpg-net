@@ -1,31 +1,21 @@
-﻿@implements IDialogBody
-<div class="join-dialog-message">
-@if (Type != MessageDialogType.None)
-{
-    <span class="join-dialog-message-icon @DialogTypeStyle">@DialogTypeContent</span>
-}
-    <div class="join-dialog-message-content">@ChildContent</div>
-</div>
+﻿<span class="join-message-icon @IconClassNames">@IconContent</span>
 @code {
-    /// <inheritdoc />
-    [CascadingParameter]
-    public IDialog? Dialog { get; set; }
 
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
-
+    /// <summary>
+    /// Message dialog type.
+    /// </summary>
     [Parameter]
     public MessageDialogType Type { get; set; }
 
-    private string? DialogTypeContent { get; set; }
-    private string? DialogTypeStyle { get; set; }
+    private string? IconContent { get; set; }
+    private string? IconClassNames { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        DialogTypeContent = Type switch
+        IconContent = Type switch
         {
             MessageDialogType.None => null,
             MessageDialogType.Confirmation => "?",
@@ -36,7 +26,7 @@
             _ => throw new ArgumentOutOfRangeException(nameof(Type)),
         };
 
-        DialogTypeStyle = Type switch
+        IconClassNames = Type switch
         {
             MessageDialogType.None => null,
             MessageDialogType.Confirmation => "btn-info",

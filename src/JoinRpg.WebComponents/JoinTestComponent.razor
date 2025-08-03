@@ -1,4 +1,5 @@
-﻿@using JoinRpg.WebComponents.Dialogs
+﻿@using System.Diagnostics
+@using JoinRpg.WebComponents.Dialog
 @inject ILogger<JoinTestComponent> Logger
 <h2>@nameof(JoinButton)</h2>
 
@@ -23,7 +24,7 @@
         <td><JoinButton Label="My Button" /></td>
         @foreach (var style in Enum.GetValues<VariationStyleEnum>())
         {
-            <td><JoinButton Label="My Button" Variation="@style" /></td>
+            <td><JoinButton Label="My Button" Style="@style" /></td>
         }
         <td><JoinButton Label="Disabled Button" Disabled="@true" /></td>
         <td><JoinButton Label="My Button" InProgress="@true" ProgressLabel="My Progress" /></td>
@@ -36,7 +37,7 @@
             <td><JoinButton Label="@label" Preset="preset" /></td>
             @foreach (var style in Enum.GetValues<VariationStyleEnum>())
             {
-                <td><JoinButton Label="@label" Preset="@preset" Variation="@style" /></td>
+                <td><JoinButton Label="@label" Preset="@preset" Style="@style" /></td>
             }
             <td><JoinButton Label="@label" Preset="@preset" Disabled="@true" /></td>
             <td><JoinButton Label="@label" Preset="@preset" InProgress="@true" /></td>
@@ -129,19 +130,57 @@
 
 <h3>Message dialog</h3>
 
+<h4>Automatic configuration by dialog type</h4>
+
 <table style="border-collapse: unset; border-spacing: 4px;">
     <tr>
         @foreach (var mdt in Enum.GetValues<MessageDialogType>())
         {
-            var label = mdt == MessageDialogType.None ? "Custom" : mdt.ToString();
-            <td><JoinButton Label="@label" OnClick="() => ShowMessageDialog(mdt)" AutoProgress="@false" /></td>
+            <td><JoinButton Label="@mdt.ToString()" OnClick="() => ShowMessageDialog(mdt, stdFunc: true)" AutoProgress="@false" /></td>
         }
     </tr>
 </table>
 
-<JoinDialog @ref="_joinDialog2" ShowCloseButton="@true" Caption="Message Dialog" Buttons="@DialogButtons.YesNo">
-    <MessageDialogBody Type="@_joinDialog2Type">Some message dialog text</MessageDialogBody>
-</JoinDialog>
+<h4>Custom configurations</h4>
+
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        <td>Custom all</td>
+        <td><JoinButton Label="Show" OnClick="() => _joinMessageDialog2!.ShowModalAsync()" /></td>
+    </tr>
+    <tr>
+        <td>Custom content</td>
+        <td><JoinButton Label="Show" OnClick="() => _joinMessageDialog3!.ShowModalAsync()" /></td>
+    </tr>
+</table>
+
+<h4>Button with auto-confirmation</h4>
+
+<JoinButton AutoConfirm="@true" AutoConfirmMessage="Удалить вообще все заявки?" AutoProgress="@true" Label="Удалить все…" OnClick="() => { }" />
+
+
+<JoinMessageDialog @ref="_joinMessageDialog" Type="@_joinDialog2Type">@_joinDialog2Message</JoinMessageDialog>
+
+<JoinMessageDialog
+    @ref="_joinMessageDialog2"
+    Caption="Странный вопрос"
+    Buttons="@_mdButtons2"
+    Type="MessageDialogType.Confirmation">Ну эта, того сего, типа эта?</JoinMessageDialog>
+
+<JoinMessageDialog
+    @ref="_joinMessageDialog3"
+    Caption="Хитрая верстка"
+    Type="MessageDialogType.Fail">
+    <div>
+        <div>Множество проблем с валидацией данных:</div>
+        <div style="max-height: 200px; overflow-y: scroll; margin-top: 1em;">
+            @for (var i = 1; i < 31; i++)
+            {
+                <div><b>Проблема @(i):</b> <span>Состав проблемы</span></div>
+            }
+        </div>
+    </div>
+</JoinMessageDialog>
 
 
 @code {
@@ -162,19 +201,38 @@
         Logger.LogInformation($"Last message dialog result: {result}");
     }
 
+    private readonly DialogButton[] _mdButtons2 = [
+        new("b1", "Да", alignment: DialogButtonAlignment.Centered),
+        new("b2", "Нет", alignment: DialogButtonAlignment.Centered),
+        new("b3", "Не знаю", alignment: DialogButtonAlignment.Centered),
+        new("b4", "Космонавт", alignment: DialogButtonAlignment.Centered)
+    ];
+
 
     private JoinDialog? _joinDialog1;
-    private JoinDialog? _joinDialog2;
 
-    private MessageDialogType _joinDialog2Type;
+    private JoinMessageDialog? _joinMessageDialog;
+    private JoinMessageDialog? _joinMessageDialog2;
+    private JoinMessageDialog? _joinMessageDialog3;
+
+    private MessageDialogType _joinDialog2Type = MessageDialogType.None;
+    private string _joinDialog2Message = "";
 
 
-    private async Task ShowMessageDialog(MessageDialogType mdt)
+    private async Task ShowMessageDialog(MessageDialogType mdt, bool stdFunc)
     {
-        _joinDialog2Type = mdt;
+        Debug.Assert(_joinMessageDialog is not null);
 
-        var result = await _joinDialog2!.ShowModalAsync();
-        Logger.LogInformation($"Last message dialog result: {result}");
+        if (stdFunc)
+        {
+            _joinDialog2Type = mdt;
+            _joinDialog2Message = $"Custom {mdt.ToString().ToUpper()} message";
+            await _joinMessageDialog.ShowModalAsync();
+        }
+        else
+        {
+
+        }
     }
 
 }

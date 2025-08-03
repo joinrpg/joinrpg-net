@@ -1,6 +1,7 @@
 @using System.Collections.Frozen
 @using System.Diagnostics
-@using JoinRpg.WebComponents.Dialogs
+@using JoinRpg.WebComponents.Dialog
+
 @if (Link is not null)
 {
     <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" title="@Title">@LabelContent</a>
@@ -11,7 +12,7 @@ else
 }
 @if (AutoConfirm)
 {
-    <JoinDialog @ref="_confirmDialogRef" Buttons="DialogButtons.YesNo" Caption="@DialogCaption"><MessageDialogBody Type="MessageDialogType.Confirmation">@AutoConfirmMessage</MessageDialogBody></JoinDialog>
+    <JoinMessageDialog @ref="_confirmDialogRef" Type="@MessageDialogType.Confirmation" Caption="@DialogCaption">@AutoConfirmMessage</JoinMessageDialog>
 }
 @code {
     /// <summary>
@@ -145,7 +146,7 @@ else
     public EventCallback<ButtonClickEventArgs> OnClick { get; set; }
 
 
-    private JoinDialog? _confirmDialogRef;
+    private JoinMessageDialog? _confirmDialogRef;
 
     private string ButtonType => Submit ? "submit" : "button";
     private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size);
@@ -174,19 +175,22 @@ else
             InProgress = true;
         }
 
+        var confirmed = true;
         if (AutoConfirm)
         {
             Debug.Assert(_confirmDialogRef is not null);
             var result = await _confirmDialogRef.ShowModalAsync();
-            if (result.Equals(nameof(ButtonPreset.Cancel), StringComparison.OrdinalIgnoreCase))
-                return;
+            confirmed = result.Equals(nameof(ButtonPreset.Yes), StringComparison.OrdinalIgnoreCase);
         }
 
         var args = new ButtonClickEventArgs { MouseEvent = e };
-        await OnClick.InvokeAsync(args);
-        // TODO: Do we have to catch an error somehow and render button in some invalid operation result style?
+        if (confirmed)
+        {
+            await OnClick.InvokeAsync(args);
+            // TODO: Do we have to catch an error somehow and render button in some invalid operation result style?
+        }
 
-        if (AutoProgress || args.ExitProgressState is true)
+        if (args.ExitProgressState is true || AutoProgress && !confirmed)
         {
             InProgress = false;
         }
@@ -218,7 +222,7 @@ else
 
         var presetContent = Presets[Preset];
         NormalContent = FormatLabel(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon);
-        ProgressContent = FormatLabel(ProgressLabel, presetContent.Progress.Label, ProgressIcon, presetContent.Progress.Icon);
+        ProgressContent = FormatLabel(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon);
         ActualStyle = Style ?? presetContent.Style;
         DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";
     }

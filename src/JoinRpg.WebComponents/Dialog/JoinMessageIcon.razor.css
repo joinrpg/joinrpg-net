@@ -1,0 +1,13 @@
+.join-message-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: serif;
+    font-size: 2.5em;
+    font-weight: bold;
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+    line-height: 0;
+    cursor: default;
+}
