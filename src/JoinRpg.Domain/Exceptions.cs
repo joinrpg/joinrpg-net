@@ -7,20 +7,6 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 
-public class JoinRpgInvalidUserException : JoinRpgBaseException
-{
-    public JoinRpgInvalidUserException(string message = "Cannot perform this operation for current user.") : base(message)
-    {
-    }
-}
-
-public class MustBeAdminException : JoinRpgInvalidUserException
-{
-    public MustBeAdminException() : base("Cannot perform this operation for non-admin user.")
-    {
-    }
-}
-
 public abstract class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
 {
     public ProjectIdentification ProjectId { get; } = projectId;
