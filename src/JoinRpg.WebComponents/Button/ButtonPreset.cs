@@ -4,6 +4,9 @@ public enum ButtonPreset
 {
     None,
     Add,
+    Ok,
+    Yes,
+    No,
     Cancel,
     Create,
     Delete,
@@ -23,4 +26,5 @@ public enum ButtonPreset
     Edit,
     Setup,
     Save,
+    Understand,
 }

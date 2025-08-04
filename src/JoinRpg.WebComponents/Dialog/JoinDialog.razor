@@ -1,0 +1,321 @@
+@inject IJSRuntime Js
+@inject ILogger<JoinDialog> Logger;
+@using System.Diagnostics
+@implements IAsyncDisposable
+
+<dialog class="join-dialog" @ref="_dialogRef" @onclose="DialogCloseHandler" style="@_styles">
+    <div class="join-dialog-interior">
+    @if (_hasHeader)
+    {
+        <div class="join-dialog-header">
+            @if (CaptionContent is not null)
+            {
+                <span class="join-dialog-caption">@CaptionContent</span>
+            }
+            @if (ShowCloseButton)
+            {
+                <button type="button" class="join-dialog-close" aria-label="Close" @onclick="CloseButtonClickHandler"><span aria-hidden="true">×</span></button>
+            }
+        </div>
+    }
+    <div class="join-dialog-body">
+        <div class="join-dialog-content">
+            @ChildContent
+        </div>
+    </div>
+    @if (_hasFooter)
+    {
+        <div class="join-dialog-footer">
+            @if (FooterContent is not null)
+            {
+                @FooterContent
+            }
+            else
+            {
+                if (_buttonsL is not null)
+                {
+                    <ul class="join-dialog-footer-buttons join-dialog-footer-left">
+                        @foreach (var db in _buttonsL)
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                    </ul>
+                }
+
+                if (_buttonsM is not null)
+                {
+                    <ul class="join-dialog-footer-buttons join-dialog-footer-middle">
+                        @foreach (var db in _buttonsM)
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                    </ul>
+                }
+
+                if (_buttonsR is not null)
+                {
+                    <ul class="join-dialog-footer-buttons join-dialog-footer-right">
+                        @foreach (var db in _buttonsR)
+                        {
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+    }
+    </div>
+</dialog>
+
+@code {
+    /// <summary>
+    /// When true, the close button will appear at top-right corner of the dialog.
+    /// </summary>
+    [Parameter]
+    public bool ShowCloseButton { get; set; } = true;
+
+    /// <inheritdoc />
+    [Parameter]
+    public string? Caption { get; set; }
+
+    /// <summary>
+    /// HTML markup for dialog caption. Has precedence over <see cref="Caption"/> property.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? CaptionContent { get; set; }
+
+    /// <summary>
+    /// HTML markup for child content.
+    /// </summary>
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    /// <inheritdoc />
+    [Parameter]
+    public IReadOnlyCollection<DialogButton>? Buttons { get; set; }
+
+    /// <summary>
+    /// HTML markup for dialog footer. Has precedence over <see cref="Buttons"/> property.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    [Parameter]
+    public string? Width { get; set; }
+
+    [Parameter]
+    public string? MaxWidth { get; set; }
+
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Fired when dialog has been closed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<DialogCloseEventArgs> OnClose { get; set; }
+
+
+    private IJSObjectReference _module = null!;
+    private ElementReference _dialogRef;
+
+    private string? _styles;
+
+    private bool _hasHeader;
+    private bool _hasFooter;
+    private IReadOnlyCollection<DialogButton>? _buttonsL;
+    private IReadOnlyCollection<DialogButton>? _buttonsR;
+    private IReadOnlyCollection<DialogButton>? _buttonsM;
+    private DialogButton? _cancelButton;
+
+    private bool _closing;
+    private DialogButton? _closingButton;
+    private TaskCompletionSource<string>? _resultTaskSource;
+
+    /// <summary>
+    /// Displays dialog.
+    /// </summary>
+    public void ShowModal()
+    {
+        if (_resultTaskSource is not null)
+            return;
+
+        _closing = false;
+        _closingButton = null;
+        _resultTaskSource = new TaskCompletionSource<string>();
+        _module.InvokeVoidAsync("showModal", _dialogRef);
+    }
+
+    /// <summary>
+    /// Displays dialog asynchronously.
+    /// </summary>
+    /// <returns>
+    /// <para>A task that completes when dialog is closed. Result of the task depends on dialog configuration and user actions.</para>
+    /// <ul>
+    /// <li><b>Button click</b>: value of its <see cref="DialogButton.Name"/> property will be returned.</li>
+    /// <li><b>Close button click</b>, <b>Esc key pressed</b>, <b>Close method invoked outside the dialog</b>:
+    /// when default cancellation button is configured value of its <see cref="DialogButton.Name"/> property will be returned,
+    /// otherwise <c>Cancel</c> string.</li>
+    /// </ul>
+    /// </returns>
+    /// <seealso cref="DialogButton"/>
+    /// <seealso cref="Buttons"/>
+    public Task<string> ShowModalAsync()
+    {
+        if (_resultTaskSource is null)
+        {
+            ShowModal();
+            Debug.Assert(_resultTaskSource is not null);
+        }
+
+        return _resultTaskSource.Task;
+    }
+
+    public void Close()
+    {
+        if (_closing)
+            return;
+        _module.InvokeVoidAsync("closeModal", _dialogRef);
+    }
+
+    protected virtual void CloseButtonClickHandler()
+    {
+        Close();
+    }
+
+    protected virtual void DialogButtonClickHandler(DialogButton db)
+    {
+        _closingButton = db;
+        Close();
+    }
+
+    private void DialogCloseHandler()
+    {
+        if (_closing)
+            return;
+
+        _closing = true;
+        _closingButton ??= _cancelButton;
+        try
+        {
+            DoClose();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while handling dialog close event");
+        }
+
+        Debug.Assert(_resultTaskSource is not null);
+        _resultTaskSource.SetResult(_closingButton?.Name ?? nameof(ButtonPreset.Cancel));
+        _resultTaskSource = null;
+    }
+
+    /// <summary>
+    /// Called when it is necessary to fire <see cref="OnClose"/> event.
+    /// </summary>
+    protected virtual void DoClose()
+    {
+        OnClose.InvokeAsync(new DialogCloseEventArgs { ButtonName = _closingButton?.Name });
+    }
+
+    private IEnumerable<string> GetStyles()
+    {
+        if (!string.IsNullOrWhiteSpace(Width))
+            yield return $"width: {Width}";
+        if (!string.IsNullOrWhiteSpace(MaxWidth))
+            yield return $"max-width: {MaxWidth}";
+        if (!string.IsNullOrWhiteSpace(Height))
+            yield return $"height: {Height}";
+        if (!string.IsNullOrWhiteSpace(MaxHeight))
+            yield return $"max-height: {MaxHeight}";
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _styles = string.Join("; ", GetStyles());
+
+        if (CaptionContent is null && Caption is not null)
+        {
+            CaptionContent = @<text>@Caption</text>;
+        }
+
+        _hasHeader = ShowCloseButton || CaptionContent is not null;
+
+        if (Buttons?.Count > 0)
+        {
+            List<DialogButton>? buttonsL = null;
+            List<DialogButton>? buttonsR = null;
+            List<DialogButton>? buttonsM = null;
+
+            foreach (var button in Buttons)
+            {
+                switch (button.Alignment)
+                {
+                    case DialogButtonAlignment.Right:
+                        buttonsR ??= [];
+                        buttonsR.Add(button);
+                        break;
+                    case DialogButtonAlignment.Left:
+                        buttonsL ??= [];
+                        buttonsL.Add(button);
+                        break;
+                    case DialogButtonAlignment.Centered:
+                        buttonsM ??= [];
+                        buttonsM.Add(button);
+                        break;
+                }
+
+                // If a button was explicitly set as Cancel button it will be used in this role.
+                // Otherwise, the first button with Cancel or No preset will be automatically set as cancel button.
+
+                if (button.Cancel && _cancelButton?.Cancel is null or false)
+                {
+                    _cancelButton = button;
+                }
+
+                if (_cancelButton is null && button.Preset is ButtonPreset.Cancel or ButtonPreset.No)
+                {
+                    _cancelButton = button;
+                }
+            }
+
+            _hasFooter = true;
+
+            _buttonsL = buttonsL;
+            _buttonsR = buttonsR;
+            _buttonsM = buttonsM;
+
+            if (_buttonsM is not null)
+            {
+                // We want to keep all button blocks in their positions when M is present
+                if (_buttonsL is not null)
+                    _buttonsR ??= [];
+                if (_buttonsR is not null)
+                    _buttonsL ??= [];
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await Js.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.DisposeAsync();
+        }
+    }
+
+}

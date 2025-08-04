@@ -1,0 +1,238 @@
+﻿@using System.Diagnostics
+@using JoinRpg.WebComponents.Dialog
+@inject ILogger<JoinTestComponent> Logger
+<h2>@nameof(JoinButton)</h2>
+
+<h3>Presets and styles</h3>
+
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <thead>
+    <tr>
+        <th>Style →<br/>↓ Preset</th>
+        <th><em>Undefined</em></th>
+        @foreach (var style in Enum.GetValues<VariationStyleEnum>())
+        {
+            <th>@style</th>
+        }
+        <th><em>Disabled</em></th>
+        <th><em>Progress</em></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><em>Undefined</em></td>
+        <td><JoinButton Label="My Button" /></td>
+        @foreach (var style in Enum.GetValues<VariationStyleEnum>())
+        {
+            <td><JoinButton Label="My Button" Style="@style" /></td>
+        }
+        <td><JoinButton Label="Disabled Button" Disabled="@true" /></td>
+        <td><JoinButton Label="My Button" InProgress="@true" ProgressLabel="My Progress" /></td>
+    </tr>
+    @foreach (var preset in Enum.GetValues<ButtonPreset>())
+    {
+        var label = preset == ButtonPreset.None ? "My Button" : null;
+        <tr>
+            <td><strong>@preset</strong></td>
+            <td><JoinButton Label="@label" Preset="preset" /></td>
+            @foreach (var style in Enum.GetValues<VariationStyleEnum>())
+            {
+                <td><JoinButton Label="@label" Preset="@preset" Style="@style" /></td>
+            }
+            <td><JoinButton Label="@label" Preset="@preset" Disabled="@true" /></td>
+            <td><JoinButton Label="@label" Preset="@preset" InProgress="@true" /></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Overrides</h3>
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        <td>Custom normal label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Label="Custom Normal Label" /></td>
+    </tr>
+    <tr>
+        <td>No normal label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Label="" /></td>
+    </tr>
+    <tr>
+        <td>Custom normal icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Icon="glyphicon-trash" /></td>
+    </tr>
+    <tr>
+        <td>No normal icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" Icon="" /></td>
+    </tr>
+    <tr>
+        <td>Custom progress label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressLabel="Custom Progress Label" /></td>
+    </tr>
+    <tr>
+        <td>No progress label</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressLabel="" /></td>
+    </tr>
+    <tr>
+        <td>Custom progress icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressIcon="glyphicon-alert" /></td>
+    </tr>
+    <tr>
+        <td>No progress icon</td>
+        <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressIcon="" /></td>
+    </tr>
+</table>
+
+<h3>Types</h3>
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        <td><JoinButton Label="Regular Button" /></td>
+        <td><JoinButton Label="Submit Button" Submit="@true" /></td>
+        <td><JoinButton Label="Link" Link="/" /></td>
+    </tr>
+</table>
+
+<h3>Sizes</h3>
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+            <td><JoinButton Label="Undefined size" /></td>
+        @foreach (var size in Enum.GetValues<SizeStyleEnum>())
+        {
+            <td><JoinButton Label="@size.ToString()" Size="size" /></td>
+        }
+    </tr>
+</table>
+
+
+<h2>@nameof(JoinDialog)</h2>
+
+<h3>Main features</h3>
+
+<JoinButton Label="Show custom dialog" OnClick="ShowCustomDialog" />
+
+<JoinDialog @ref="_joinDialog1" ShowCloseButton="@true" Caption="Dialog Caption" Buttons="@_buttons" Width="500px" Height="500px">
+    <h2>Как это работает</h2>
+    <p>
+        Платежи осуществляются при помощи платежного сервиса «ПСКБ Онлайн» банковскими
+        картами системы Master Card, Visa или МИР. Для дополнительной идентификации держателя карты
+        может использоваться технология 3D Secure. Платежный сервис «ПСКБ Онлайн» производит обработку
+        данных банковских карт в соответствии с требованиями международного стандарта безопасности
+        PCI&nbsp;DSS&nbsp;3.0. Передача информации происходит с применением технологии шифрования SSL.
+    </p>
+    <p>
+        JoinRpg.Ru не осуществляет сбор, обработку и хранение данных банковских карт.
+        Конфиденциальность информации гарантирует <a target="_blank" href="https://pscb.ru">АО&nbsp;Банк&nbsp;«ПСКБ»</a>.
+    </p>
+    <p>
+        Каждый сданный взнос (проданный билет) автоматически отмечается в регистрационной заявке.
+        Ручная обработка со стороны Пользователя или Организатора не требуется.
+    </p>
+</JoinDialog>
+
+<h3>Message dialog</h3>
+
+<h4>Automatic configuration by dialog type</h4>
+
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        @foreach (var mdt in Enum.GetValues<MessageDialogType>())
+        {
+            <td><JoinButton Label="@mdt.ToString()" OnClick="() => ShowMessageDialog(mdt, stdFunc: true)" AutoProgress="@false" /></td>
+        }
+    </tr>
+</table>
+
+<h4>Custom configurations</h4>
+
+<table style="border-collapse: unset; border-spacing: 4px;">
+    <tr>
+        <td>Custom all</td>
+        <td><JoinButton Label="Show" OnClick="() => _joinMessageDialog2!.ShowModalAsync()" /></td>
+    </tr>
+    <tr>
+        <td>Custom content</td>
+        <td><JoinButton Label="Show" OnClick="() => _joinMessageDialog3!.ShowModalAsync()" /></td>
+    </tr>
+</table>
+
+<h4>Button with auto-confirmation</h4>
+
+<JoinButton AutoConfirm="@true" AutoConfirmMessage="Удалить вообще все заявки?" AutoProgress="@true" Label="Удалить все…" OnClick="() => { }" />
+
+
+<JoinMessageDialog @ref="_joinMessageDialog" Type="@_joinDialog2Type">@_joinDialog2Message</JoinMessageDialog>
+
+<JoinMessageDialog
+    @ref="_joinMessageDialog2"
+    Caption="Странный вопрос"
+    Buttons="@_mdButtons2"
+    Type="MessageDialogType.Confirmation">Ну эта, того сего, типа эта?</JoinMessageDialog>
+
+<JoinMessageDialog
+    @ref="_joinMessageDialog3"
+    Caption="Хитрая верстка"
+    Type="MessageDialogType.Fail">
+    <div>
+        <div>Множество проблем с валидацией данных:</div>
+        <div style="max-height: 200px; overflow-y: scroll; margin-top: 1em;">
+            @for (var i = 1; i < 31; i++)
+            {
+                <div><b>Проблема @(i):</b> <span>Состав проблемы</span></div>
+            }
+        </div>
+    </div>
+</JoinMessageDialog>
+
+
+@code {
+
+    private readonly DialogButton[] _buttons = [
+        new("CustomButton1", "Custom Button 1", alignment: DialogButtonAlignment.Left),
+        new("CustomButton2", "Custom Button 2", alignment: DialogButtonAlignment.Left),
+        ..DialogButtons.YesNo,
+        new(ButtonPreset.Email),
+        new(ButtonPreset.Add),
+        new(ButtonPreset.Publish),
+        new(ButtonPreset.Cancel, cancel: true)
+    ];
+
+    private async Task ShowCustomDialog()
+    {
+        var result = await _joinDialog1!.ShowModalAsync();
+        Logger.LogInformation($"Last message dialog result: {result}");
+    }
+
+    private readonly DialogButton[] _mdButtons2 = [
+        new("b1", "Да", alignment: DialogButtonAlignment.Centered),
+        new("b2", "Нет", alignment: DialogButtonAlignment.Centered),
+        new("b3", "Не знаю", alignment: DialogButtonAlignment.Centered),
+        new("b4", "Космонавт", alignment: DialogButtonAlignment.Centered)
+    ];
+
+
+    private JoinDialog? _joinDialog1;
+
+    private JoinMessageDialog? _joinMessageDialog;
+    private JoinMessageDialog? _joinMessageDialog2;
+    private JoinMessageDialog? _joinMessageDialog3;
+
+    private MessageDialogType _joinDialog2Type = MessageDialogType.None;
+    private string _joinDialog2Message = "";
+
+
+    private async Task ShowMessageDialog(MessageDialogType mdt, bool stdFunc)
+    {
+        Debug.Assert(_joinMessageDialog is not null);
+
+        if (stdFunc)
+        {
+            _joinDialog2Type = mdt;
+            _joinDialog2Message = $"Custom {mdt.ToString().ToUpper()} message";
+            await _joinMessageDialog.ShowModalAsync();
+        }
+        else
+        {
+
+        }
+    }
+
+}

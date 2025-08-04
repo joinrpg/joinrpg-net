@@ -1,0 +1,18 @@
+﻿.join-dialog-message {
+    display: flex;
+    flex-direction: row;
+    column-gap: 1em;
+    align-items: center;
+}
+
+.join-dialog-message-icon {
+    display: inline-flex;
+    line-height: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.join-dialog-message-content {
+    flex-grow: 1;
+    position: relative;
+}

@@ -1,0 +1,40 @@
+﻿<span class="join-message-icon @IconClassNames">@IconContent</span>
+@code {
+
+    /// <summary>
+    /// Message dialog type.
+    /// </summary>
+    [Parameter]
+    public MessageDialogType Type { get; set; }
+
+    private string? IconContent { get; set; }
+    private string? IconClassNames { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        IconContent = Type switch
+        {
+            MessageDialogType.None => null,
+            MessageDialogType.Confirmation => "?",
+            MessageDialogType.Information => "i",
+            MessageDialogType.Success => "♥",
+            MessageDialogType.Alert => "!",
+            MessageDialogType.Fail => "×",
+            _ => throw new ArgumentOutOfRangeException(nameof(Type)),
+        };
+
+        IconClassNames = Type switch
+        {
+            MessageDialogType.None => null,
+            MessageDialogType.Confirmation => "btn-info",
+            MessageDialogType.Information => "btn-info",
+            MessageDialogType.Success => "btn-success",
+            MessageDialogType.Alert => "btn-warning",
+            MessageDialogType.Fail => "btn-danger",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+}

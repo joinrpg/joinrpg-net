@@ -1,0 +1,93 @@
+﻿@using System.Diagnostics
+<JoinDialog
+    @ref="@_dialogRef"
+    MaxWidth="50%"
+    MaxHeight="40%"
+    Caption="@ActualCaption"
+    Buttons="@ActualButtons">
+    <div class="join-dialog-message">
+        @if (Type != MessageDialogType.None)
+        {
+            <span class="join-dialog-message-icon"><JoinMessageIcon Type="@Type" /></span>
+        }
+        <div class="join-dialog-message-content">@ChildContent</div>
+    </div>
+</JoinDialog>
+@code {
+    /// <summary>
+    /// Caption of the message dialog. When null, caption is automatically chosen from <see cref="Type"/>.
+    /// </summary>
+    [Parameter]
+    public string? Caption { get; set; }
+
+    /// <summary>
+    /// HTML markup of message dialog message.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Message dialog type.
+    /// </summary>
+    [Parameter]
+    public MessageDialogType Type { get; set; }
+
+    /// <summary>
+    /// Collection of <see cref="DialogButton"/> with button definitions.
+    /// </summary>
+    /// <seealso cref="DialogButtons"/>
+    [Parameter]
+    public IReadOnlyCollection<DialogButton>? Buttons { get; set; }
+
+    private JoinDialog? _dialogRef;
+
+    private string? ActualCaption { get; set; }
+    private IReadOnlyCollection<DialogButton>? ActualButtons { get; set; }
+
+    private static string GetDefaultCaption(MessageDialogType type)
+        => type switch
+        {
+            MessageDialogType.None => "Сообщение",
+            MessageDialogType.Confirmation => "Необходимо подтверждение",
+            MessageDialogType.Information => "Информация",
+            MessageDialogType.Success => "Успех",
+            MessageDialogType.Alert => "Внимание",
+            MessageDialogType.Fail => "Ошибка",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+
+    private static IReadOnlyCollection<DialogButton> GetDefaultButtons(MessageDialogType type)
+        => type switch
+        {
+            MessageDialogType.None => DialogButtons.Understand,
+            MessageDialogType.Confirmation => DialogButtons.YesNo,
+            MessageDialogType.Information => DialogButtons.Understand,
+            MessageDialogType.Success => DialogButtons.Understand,
+            MessageDialogType.Alert => DialogButtons.Understand,
+            MessageDialogType.Fail => DialogButtons.Understand,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        ActualCaption = Caption ?? GetDefaultCaption(Type);
+        ActualButtons = Buttons ?? GetDefaultButtons(Type);
+
+        base.OnParametersSet();
+    }
+
+    /// <inheritdoc cref="JoinDialog.Close" />
+    public void Close()
+    {
+        Debug.Assert(_dialogRef is not null, $"{nameof(_dialogRef)} should be assigned at this point");
+        _dialogRef.Close();
+    }
+
+    /// <inheritdoc cref="JoinDialog.ShowModalAsync" />
+    public Task<string> ShowModalAsync()
+    {
+        Debug.Assert(_dialogRef is not null, $"{nameof(_dialogRef)} should be assigned at this point");
+        return _dialogRef.ShowModalAsync();
+    }
+}
