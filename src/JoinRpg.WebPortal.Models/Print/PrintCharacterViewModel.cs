@@ -41,7 +41,7 @@ public class PrintCharacterViewModel
         Fields = new CustomFieldsViewModel(
             character,
             projectInfo,
-            AccessArgumentsFactory.CreateForPrint(character, currentUser.UserIdOrDefault) with { EditAllowed = false },
+            AccessArgumentsFactory.Create(character, currentUser, CharacterAccessMode.Print) with { EditAllowed = false },
             wherePrintEnabled: true);
     }
 }

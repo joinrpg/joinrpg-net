@@ -111,8 +111,6 @@ public class ClaimController(
             return error;
         }
 
-        var currentUser = await GetCurrentUserAsync().ConfigureAwait(false);
-
         var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
         IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
@@ -151,8 +149,7 @@ public class ClaimController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
-        var claimViewModel = new ClaimViewModel(currentUser,
-            currentUserAccessor,
+        var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
             plots,
             uriService,

@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
@@ -100,9 +101,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public AccommodationRequest? AccommodationRequest { get; set; }
 
 
-    public ClaimViewModel(User currentUser,
-        ICurrentUserAccessor currentUserAccessor,
-      Claim claim,
+    public ClaimViewModel(ICurrentUserAccessor currentUser,
+        Claim claim,
       IReadOnlyCollection<PlotTextDto> plotElements,
       IUriService uriService,
       ProjectInfo projectInfo,
@@ -117,19 +117,19 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ClaimId = claim.ClaimId;
         CommentDiscussionId = claim.CommentDiscussionId;
         RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
-        HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
+        HasMasterAccess = claim.HasMasterAccess(currentUser);
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
-            acl => acl.CanManageClaims,
+            Permission.CanManageClaims,
             ExtraAccessReason.ResponsibleMaster);
         CanChangeRooms = claim.HasAccess(currentUser.UserId,
-            acl => acl.CanSetPlayersAccommodations,
+            Permission.CanSetPlayersAccommodations,
             ExtraAccessReason.PlayerOrResponsible);
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
         PlayerLink = UserLinks.Create(claim.Player, ViewMode.Show);
         ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
-        Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser.UserId));
+        Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser));
         CharacterId = claim.CharacterId;
         CharacterActive = claim.Character.IsActive;
         CharacterAutoCreated = claim.Character.AutoCreated;
@@ -160,7 +160,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 currentUser.UserId,
                 CharacterNavigationPage.Claim);
         Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
-        PlayerDetails = new UserProfileDetailsViewModel(claim.Player, currentUser);
+        PlayerDetails = new UserProfileDetailsViewModel(claim.Player, IsMyClaim ? AccessReason.ItsMe : AccessReason.Master);
         ProjectActive = claim.Project.Active;
         CheckInStarted = claim.Project.Details.CheckInProgress;
         CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
@@ -168,8 +168,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         AccommodationEnabled = claim.Project.Details.EnableAccommodation;
 
-        if (claim.HasAccess(currentUser.UserId,
-                acl => acl.CanManageMoney, ExtraAccessReason.Player))
+        if (claim.HasAccess(currentUser.UserId, Permission.CanManageMoney, ExtraAccessReason.Player))
         {
             // Finance admins can create any payment.
             // User also can create any payment, but it will be moderated
@@ -184,11 +183,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         }
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
 
-        ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-            claim.HasMasterAccess(currentUser.UserId));
+        ParentGroups = new CharacterParentGroupsViewModel(claim.Character, claim.HasMasterAccess(currentUser));
 
         Plot = new PlotDisplayViewModel(plotElements,
-            currentUserAccessor,
+            currentUser,
             claim.Character,
             projectInfo);
     }
