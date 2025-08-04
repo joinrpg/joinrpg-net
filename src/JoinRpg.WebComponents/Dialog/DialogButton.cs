@@ -1,53 +1,6 @@
 namespace JoinRpg.WebComponents;
 
-public interface IDialogButton
-{
-    /// <summary>
-    /// Standard button preset.
-    /// </summary>
-    /// <seealso cref="ButtonPreset"/>
-    ButtonPreset Preset { get; set; }
-
-    /// <summary>
-    /// true to render button as disabled.
-    /// </summary>
-    bool Disabled { get; set; }
-
-    /// <summary>
-    /// When true, this button will be considered as cancel button.
-    /// </summary>
-    bool Cancel { get; set; }
-
-    /// <summary>
-    /// Button alignment. By default, all buttons are right-aligned.
-    /// </summary>
-    DialogButtonAlignment Alignment { get; set; }
-
-    /// <summary>
-    /// Assigns a name to the button. The name is important to identify button across others.
-    /// When <see cref="Preset"/> is not <see cref="ButtonPreset.None"/>, the value of this
-    /// property is automatically set to the string equivalent of selected enum value.
-    /// </summary>
-    string Name { get; set; }
-
-    /// <summary>
-    /// Text to be displayed on a button. Transferred to the <see cref="JoinButton.Label"/> property.
-    /// </summary>
-    string? Label { get; set; }
-
-    /// <summary>
-    /// Icon to be displayed on a button. Transferred to the <see cref="JoinButton.Icon"/> property.
-    /// </summary>
-    string? Icon { get; set; }
-
-    /// <summary>
-    /// Button style. Transferred to the <see cref="JoinButton.Style"/> property.
-    /// </summary>
-    /// <seealso cref="VariationStyleEnum"/>
-    VariationStyleEnum? Style { get; set; }
-}
-
-public class DialogButton : IDialogButton
+public class DialogButton
 {
     /// <inheritdoc />
     public ButtonPreset Preset { get; set; }

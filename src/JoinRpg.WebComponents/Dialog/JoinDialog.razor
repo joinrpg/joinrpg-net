@@ -2,7 +2,6 @@
 @inject ILogger<JoinDialog> Logger;
 @using System.Diagnostics
 @implements IAsyncDisposable
-@implements IJoinDialog
 
 <dialog class="join-dialog" @ref="_dialogRef" @onclose="DialogCloseHandler" style="@_styles">
     <div class="join-dialog-interior">
