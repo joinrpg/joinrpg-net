@@ -41,7 +41,7 @@ public static class AccessArgumentsFactory
     /// <summary>
     /// Для печати мы используем режим показа от имени игрока, даже если у нас есть мастерские права
     /// </summary>
-    public static AccessArguments CreateForPrint(Character character, int? userId)
+    private static AccessArguments CreateForPrint(Character character, int? userId)
     {
         ArgumentNullException.ThrowIfNull(character);
 
@@ -81,4 +81,6 @@ public static class AccessArgumentsFactory
             Published: claim.Project.Details.PublishPlot
             );
     }
+
+    public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId) => Create(claim, userId.UserIdOrDefault);
 }
