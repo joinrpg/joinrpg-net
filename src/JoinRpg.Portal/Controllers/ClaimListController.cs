@@ -49,13 +49,10 @@ public class ClaimListController(
         else
         {
             var view = new ClaimListForExportViewModel(CurrentUserId, claims, projectInfo);
-#pragma warning disable CS0612 // Type or member is obsolete
-            var project = await GetProjectFromList(projectId, claims);
-#pragma warning restore CS0612 // Type or member is obsolete
 
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
-                        new ClaimListItemViewModelExporter(uriService, projectInfo), project.ProjectName);
+                        new ClaimListItemViewModelExporter(uriService, projectInfo), projectInfo.ProjectName);
         }
     }
 

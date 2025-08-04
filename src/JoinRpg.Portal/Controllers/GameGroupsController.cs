@@ -390,6 +390,9 @@ public class GameGroupsController : ControllerGameBase
         }
     }
 
+    private ActionResult RedirectToRoles(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToIndex(characterGroupId.ProjectId, characterGroupId.CharacterGroupId, action);
+
+
     private static T FillFromCharacterGroup<T>(T viewModel, CharacterGroup field)
       where T : CharacterGroupViewModelBase
     {
