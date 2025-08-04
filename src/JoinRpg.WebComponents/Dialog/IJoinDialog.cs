@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.WebComponents;
+namespace JoinRpg.WebComponents;
 
 /// <summary>
 /// Provides access to common dialog capabilities that could be managed from dialog body.

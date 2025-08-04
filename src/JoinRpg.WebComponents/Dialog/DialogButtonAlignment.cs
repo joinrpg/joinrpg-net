@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.WebComponents;
+namespace JoinRpg.WebComponents;
 
 /// <summary>
 /// Specifies how to align a button in the footer.
