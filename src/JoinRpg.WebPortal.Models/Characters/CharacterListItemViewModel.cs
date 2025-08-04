@@ -10,13 +10,13 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public class CharacterListByGroupViewModel(int currentUserId,
+public class CharacterListByGroupViewModel(UserIdentification currentUserId,
     IReadOnlyCollection<Character> characters,
     CharacterGroup group,
     ProjectInfo projectInfo,
     IProblemValidator<Character> problemValidator) :
 
-    CharacterListViewModel(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, group.Project, projectInfo, problemValidator), IOperationsAwareView
+    CharacterListViewModel(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, projectInfo, problemValidator), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } =
             new CharacterGroupDetailsViewModel(group,
@@ -29,10 +29,9 @@ public class CharacterListByGroupViewModel(int currentUserId,
 }
 
 public class CharacterListViewModel(
-    int currentUserId,
+    UserIdentification currentUserId,
     string title,
     IReadOnlyCollection<Character> characters,
-    Project project,
     ProjectInfo projectInfo,
     IProblemValidator<Character> problemValidator) : IOperationsAwareView
 {
@@ -47,7 +46,7 @@ public class CharacterListViewModel(
     public string ProjectName { get; } = projectInfo.ProjectName;
     public string Title { get; } = title;
 
-    public bool HasEditAccess { get; } = project.HasEditRolesAccess(currentUserId);
+    public bool HasEditAccess { get; } = projectInfo.HasEditRolesAccess(currentUserId);
 
     public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedActiveFields.Where(f => !f.IsName && !f.IsMultiLine).ToArray();
 

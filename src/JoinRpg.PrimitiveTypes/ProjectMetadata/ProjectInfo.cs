@@ -106,4 +106,9 @@ public record class ProjectInfo
     {
         return Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(permission));
     }
+
+    public bool HasEditRolesAccess(UserIdentification userId)
+    {
+        return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
+    }
 }

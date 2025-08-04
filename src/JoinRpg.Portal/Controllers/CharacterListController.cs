@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -21,12 +22,12 @@ public class CharacterListController(
     IProjectRepository projectRepository,
     IProjectService projectService,
     IExportDataService exportDataService,
-    IPlotRepository plotRepository,
     IUriService uriService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Character> problemValidator,
-    ICharacterRepository characterRepository
+    ICharacterRepository characterRepository,
+    ICurrentUserAccessor currentUserAccessor
     ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet]
@@ -61,11 +62,7 @@ public class CharacterListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         var characters = (await characterRepository.LoadCharactersWithGroups(projectId)).Where(c => predicate(c, projectInfo)).ToList();
 
-#pragma warning disable CS0612 // Type or member is obsolete
-        var project = await GetProjectFromList(projectId, characters);
-#pragma warning restore CS0612 // Type or member is obsolete
-
-        var list = new CharacterListViewModel(CurrentUserId, title, characters, project, projectInfo, problemValidator);
+        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -92,7 +89,7 @@ public class CharacterListController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var list = new CharacterListByGroupViewModel(CurrentUserId,
+        var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,
           characters, characterGroup, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
