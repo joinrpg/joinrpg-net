@@ -1,12 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>JoinRpg.Web.Models</RootNamespace>
-      <NoWarn>${NoWarn};1591</NoWarn>
+    <NoWarn>${NoWarn};1591</NoWarn>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />
@@ -19,13 +17,10 @@
     <ProjectReference Include="..\JoinRpg.Web.Plots\JoinRpg.Web.Plots.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
   </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="morelinq" Version="4.4.0" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="morelinq" />
+  </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-
 </Project>
