@@ -1,34 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
- 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Remove="libman.json" />
     <None Include="libman.json" />
     <None Update="libman.json" />
   </ItemGroup>
-
-	<ItemGroup>
-  	<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
-		<InternalsVisibleTo Include="JoinRpg.WebPortal.Models.Test" />
-	</ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <InternalsVisibleTo Include="JoinRpg.WebPortal.Models.Test" />
+  </ItemGroup>
 </Project>

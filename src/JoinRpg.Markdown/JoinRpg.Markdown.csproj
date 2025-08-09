@@ -11,10 +11,9 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.41.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.7" />
-  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
-    <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.1" /> <!-- Pin, because Vereyon.Web.HtmlSanitizer using older version -->
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Vereyon.Web.HtmlSanitizer" />
   </ItemGroup>
 </Project>
