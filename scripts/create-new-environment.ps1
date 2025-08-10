@@ -7,7 +7,7 @@ Creates new environment in cluster and produces kubeconfig with permissions to i
 param(
     [Parameter(Position = 0, Mandatory = $true)]
     [String]$namespace,
-    [Parameter(Mandatory = $false)]
+    [Parameter(Position = 1, Mandatory = $false)]
     [String]$ServiceAccountName
 )
 
