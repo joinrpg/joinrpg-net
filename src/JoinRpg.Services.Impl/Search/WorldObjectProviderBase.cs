@@ -13,22 +13,21 @@ internal class WorldObjectProviderBase
       Predicate<IWorldObject> wasFoundByIdPredicate,
       Predicate<IWorldObject> perfectMatchPredicte)
     {
-        return results.Where(cg => cg.IsVisible(currentUserId))
+        return [.. results.Where(cg => cg.IsVisible(currentUserId))
           .Select(result =>
             new SearchResultImpl
             {
                 LinkType = linkType,
                 Name = result.Name,
                 Description = wasFoundByIdPredicate(result)
-                ? new MarkdownString(GetFoundByIdDescription(result.Id))
+                ? SearchUtils.GetFoundByIdDescription(result.Id)
                 : result.Description,
                 Identification = result.Id.ToString(),
                 ProjectId = result.ProjectId,
                 IsPublic = result.IsPublic,
                 IsActive = result.IsActive,
                 IsPerfectMatch = perfectMatchPredicte(result),
-            })
-          .ToList();
+            })];
     }
 
     /// <summary>
@@ -43,6 +42,4 @@ internal class WorldObjectProviderBase
           entity.Id != searchedEntityId
           || entity.Project.HasMasterAccess(currentUserId);
     }
-
-    public static string GetFoundByIdDescription(int idToFind) => $"ID: {idToFind}";
 }

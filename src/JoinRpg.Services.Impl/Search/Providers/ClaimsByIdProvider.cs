@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -6,20 +5,12 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Search;
 
-namespace JoinRpg.Services.Impl.Search;
+namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class ClaimsByIdProvider : ISearchProvider
+internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
     //keep longer strings first to please Regexp
-    private static readonly string[] keysForPerfectMath =
-    {
-  "%заявка",
-  "заявка",
-};
-
-    private readonly IUnitOfWork unitOfWork;
-
-    public ClaimsByIdProvider(IUnitOfWork unitOfWork) => this.unitOfWork = unitOfWork;
+    private static readonly string[] keysForPerfectMath = ["%заявка", "заявка",];
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
@@ -28,7 +19,7 @@ internal class ClaimsByIdProvider : ISearchProvider
         if (idToFind == null)
         {
             //Only search by Id is valid for claims
-            return new ReadOnlyCollection<ISearchResult>(new List<ISearchResult>());
+            return [];
         }
 
         var results =
@@ -43,7 +34,7 @@ internal class ClaimsByIdProvider : ISearchProvider
           {
               LinkType = LinkType.Claim,
               Name = claim.Character.CharacterName,
-              Description = new MarkdownString(WorldObjectProviderBase.GetFoundByIdDescription(claim.ClaimId)),
+              Description = SearchUtils.GetFoundByIdDescription(claim.ClaimId),
               Identification = claim.ClaimId.ToString(),
               ProjectId = claim.ProjectId,
               IsPublic = false,
