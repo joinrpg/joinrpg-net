@@ -4,23 +4,12 @@ using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Search;
 
-namespace JoinRpg.Services.Impl.Search;
+namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class CharacterProvider : WorldObjectProviderBase, ISearchProvider
+internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBase, ISearchProvider
 {
-    private readonly IUnitOfWork unitOfWork;
-
-    public CharacterProvider(IUnitOfWork unitOfWork)
-    {
-        this.unitOfWork = unitOfWork;
-    }
-
     //keep longer strings first to please Regexp
-    private static readonly string[] keysForPerfectMath =
-    {
-  "%персонаж",
-  "персонаж",
-};
+    private static readonly string[] keysForPerfectMath = ["%персонаж", "персонаж",];
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {

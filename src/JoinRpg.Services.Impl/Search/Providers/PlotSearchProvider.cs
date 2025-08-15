@@ -6,14 +6,15 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
-internal class PlotSearchProvider : ISearchProvider
+internal class PlotSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
-    private readonly IUnitOfWork unitOfWork;
-
-    public PlotSearchProvider(IUnitOfWork unitOfWork) => this.unitOfWork = unitOfWork;
-
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
+        if (searchString.Length < 3)
+        {
+            return [];
+        }
+
         var results =
          await
             unitOfWork.GetDbSet<PlotFolder>()

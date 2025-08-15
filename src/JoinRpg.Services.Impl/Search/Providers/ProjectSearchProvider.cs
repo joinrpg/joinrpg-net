@@ -4,22 +4,20 @@ using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Search;
 
-namespace JoinRpg.Services.Impl.Search;
+namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class ProjectSearchProvider : ISearchProvider
+internal class ProjectSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
-    private readonly IUnitOfWork unitOfWork;
-
-    public ProjectSearchProvider(IUnitOfWork unitOfWork) => this.unitOfWork = unitOfWork;
-
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-
+        if (searchString.Length < 3)
+        {
+            return [];
+        }
         var results =
           await
             unitOfWork.GetDbSet<Project>()
-              .Where(pr =>
-                pr.Active == true && pr.ProjectName.Contains(searchString)
+              .Where(pr => pr.ProjectName.Contains(searchString)
 
               )
               .ToListAsync();
