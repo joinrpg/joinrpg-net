@@ -187,8 +187,7 @@ else
         if (AutoConfirm)
         {
             Debug.Assert(_confirmDialogRef is not null);
-            var result = await _confirmDialogRef.ShowModalAsync();
-            confirmed = result.Equals(nameof(ButtonPreset.Yes), StringComparison.OrdinalIgnoreCase);
+            confirmed = await _confirmDialogRef.ShowBoolModalAsync();
         }
 
         var args = new ButtonClickEventArgs { MouseEvent = e };
