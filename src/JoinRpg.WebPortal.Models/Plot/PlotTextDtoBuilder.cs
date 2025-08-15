@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
@@ -19,7 +18,7 @@ public static class PlotTextDtoBuilder
             Published = element.Published == version.Version,
             Content = version.Content,
             TodoField = version.TodoField,
-            Id = new PlotVersionIdentification(element.ProjectId, element.PlotFolderId, element.PlotElementId, version.Version),
+            Id = element.GetVersionId(version.Version),
             IsActive = element.IsActive,
             Target = element.ToTarget(),
         };

@@ -13,6 +13,7 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Plots;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models.Plot;
 
@@ -126,6 +127,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         bool printMode = false)
     {
         CurrentVersion = currentVersion ?? e.LastVersion().Version;
+        CurrentVersion2 = e.GetVersionId(CurrentVersion);
 
         var prevVersionText = e.SpecificVersion(CurrentVersion - 1);
         var currentVersionText = e.SpecificVersion(CurrentVersion);
@@ -139,7 +141,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         var renderer = new JoinrpgMarkdownLinkRenderer(e.Project, projectInfo);
 
         PlotElementId = e.PlotElementId;
-        PlotElementIdentification = new PlotElementIdentification(projectInfo.ProjectId, e.PlotFolderId, e.PlotElementId);
+        PlotElementIdentification = e.GetId();
         Target = e.ToTarget();
         Content = currentVersionText.Content.ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
@@ -147,8 +149,8 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotFolderId = e.PlotFolderId;
         Status = e.GetStatus();
         ElementType = (PlotElementTypeView)e.ElementType;
-        ShortContent = currentVersionText.Content.TakeWords(10)
-            .ToPlainText(renderer).WithDefaultStringValue("***");
+        ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***")
+            .ToPlainTextAndEscapeHtml(renderer);
 
         HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(currentUserId, Permission.CanManagePlots) && e.Project.Active;
         HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
@@ -162,6 +164,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotFolderMasterTitle = e.PlotFolder.MasterTitle;
 
         PublishedVersion = e.Published;
+        PubishedVersion2 = e.GetVersionId(e.Published);
         PrintMode = printMode;
         ItemsIds = itemIdsToParticipateInSort;
     }
@@ -179,7 +182,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
     public JoinHtmlString Content { get; }
 
-    public string ShortContent { get; }
+    public MarkupString ShortContent { get; }
 
     [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }
@@ -209,7 +212,11 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public bool ShowMoveControl { get; }
     public int CurrentVersion { get; }
 
+    public PlotVersionIdentification CurrentVersion2 { get; }
+
     public int? PublishedVersion { get; }
+
+    public PlotVersionIdentification? PubishedVersion2 { get; }
     public string PlotFolderMasterTitle { get; }
 
     public bool PrintMode { get; }

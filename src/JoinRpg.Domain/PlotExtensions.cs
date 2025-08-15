@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Domain;
 
@@ -44,4 +46,8 @@ public static class PlotExtensions
                             [.. element.TargetCharacters.Select(x => new CharacterTarget(x.GetId(), x.CharacterName))],
                             [.. element.TargetGroups.Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))]);
     }
+
+    [return: NotNullIfNotNull(nameof(version))]
+    public static PlotVersionIdentification? GetVersionId(this PlotElement element, int? version)
+        => version is null ? null : new(element.ProjectId, element.PlotFolderId, element.PlotElementId, version.Value);
 }

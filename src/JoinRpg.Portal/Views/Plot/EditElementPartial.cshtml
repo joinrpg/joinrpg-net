@@ -42,7 +42,7 @@
 
         }
         <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">
-            <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">@Model.ShortContent</a>
+            <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">@Model.ShortContent.Value</a>
         </span>
         @if (Model.HasMasterAccess)
         {
