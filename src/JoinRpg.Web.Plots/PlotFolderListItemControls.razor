@@ -2,8 +2,7 @@
 
 @if (List.HasEditAccess && Item.Status != PlotStatus.Deleted)
 {
-    <div class="btn-group btn-group-sm" style="display: inline-block">
-
+  <JoinButtonGroup Size="SizeStyleEnum.Small">
         <JoinButton
         Link="@createElementUri"
         Preset="ButtonPreset.Add"
@@ -14,16 +13,13 @@
             <JoinButton Link="@deletePlotUri"
             Preset="ButtonPreset.Delete"
             Label="Удалить" />
-        }
-    </div>
-    <text>&nbsp;</text>
-    @if (List.HasPlotEditorAccess)
-    {
+
             @*Здесь нужна кнопка восстановить *@
-            <JoinMoveControl Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
-    }
-
-
+            <JoinMoveControl
+              SkipGroup="true"
+              Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
+        }
+    </JoinButtonGroup>
 }
 
 @code
