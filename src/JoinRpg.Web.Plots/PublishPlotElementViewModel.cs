@@ -9,7 +9,7 @@ public class PublishPlotElementViewModel
 
     public required ProjectIdentification ProjectId { get; set; }
 
-    [Display(Name = "Отправить уведомление всем ассоциированным игрокам")]
+    [Display(Name = "Уведомить игроков")]
     public bool SendNotification { get; set; } = true;
 
     [Display(Name = "Комментарий")]

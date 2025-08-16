@@ -1,4 +1,4 @@
-﻿var tryNumber = 0;
+var tryNumber = 0;
 jQuery("input[type=submit]").click(function () {
     var self = $(this);
 
@@ -26,36 +26,6 @@ $(".datepicker").datepicker({
 });
 
 //TODO: merge this
-
-$("#deleteElementModal").on("show.bs.modal", function (event) {
-    var button = $(event.relatedTarget);
-    var plotElementId = button.data("element");
-    var modal = $(this);
-    modal.find("#deletePlotElementId").val(plotElementId);
-});
-
-$("#publishElementModal").on("show.bs.modal", function (event) {
-    var button = $(event.relatedTarget);
-    var plotElementId = button.data("element");
-    var version = button.data("version");
-    var modal = $(this);
-    modal.find("#publishPlotElementId").val(plotElementId);
-    modal.find("#publishVersionId").val(version);
-});
-
-$("#unpublishElementModal").on("show.bs.modal", function (event) {
-    var button = $(event.relatedTarget);
-    var plotElementId = button.data("element");
-    var modal = $(this);
-    modal.find("#publishPlotElementId").val(plotElementId);
-});
-
-$("#restoreElementModal").on("show.bs.modal", function (event) {
-    var button = $(event.relatedTarget);
-    var plotElementId = button.data("element");
-    var modal = $(this);
-    modal.find("#publishPlotElementId").val(plotElementId);
-});
 
 $(".modaldialogforid").on("show.bs.modal", function (event) {
     var modal = $(this);

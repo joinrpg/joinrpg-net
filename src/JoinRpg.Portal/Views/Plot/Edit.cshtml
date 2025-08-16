@@ -81,7 +81,7 @@
 
 @await Html.PartialAsync("_PlotElements", Model.Elements)
 
-@await Html.PartialAsync("_PublishPlotElementDlg", new PublishPlotElementViewModel(Model))
-@await Html.PartialAsync("_DeletePlotElementDlg", Model)
-@await Html.PartialAsync("_UnpublishPlotElementDlg", new ProjectIdentification (Model.ProjectId))
-@await Html.PartialAsync("_RestorePlotElementDlg", Model)
+@section Scripts {
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+}
