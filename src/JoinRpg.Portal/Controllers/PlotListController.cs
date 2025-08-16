@@ -5,7 +5,6 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
@@ -18,7 +17,6 @@ public class PlotListController(
     IProjectRepository projectRepository,
     IProjectService projectService,
     IPlotRepository plotRepository,
-    IUriService uriService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser
