@@ -93,8 +93,8 @@ jobs:
 
     - name: Publish & push portal
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --os linux --arch x64 -c Release --no-build /t:PublishContainer ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
     - name: Publish & push migrator
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --os linux --arch x64 -c Release --no-build /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
