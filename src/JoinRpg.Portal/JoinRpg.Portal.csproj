@@ -6,6 +6,10 @@
     <NoWarn>${NoWarn};CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
+    <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
+    <ContainerRegistry>cr.yandex</ContainerRegistry>
+    <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-portal</ContainerRepository>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Pages\GamePages\Groups\**" />
@@ -71,10 +75,5 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Dockerfile">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>
