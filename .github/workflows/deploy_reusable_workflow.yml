@@ -13,10 +13,10 @@ on:
         type: string
 env:
   APP_NAME: joinrpg-portal
-  APP_IMAGE_ID: "crp3fr717nr1rn78qeij/bastilia-rating"
+  APP_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-portal"
 
   MIGRATOR_NAME: joinrpg-dal-migrate
-  MIGRATOR_IMAGE_ID: "crp3fr717nr1rn78qeij/bastilia-rating-migrator"
+  MIGRATOR_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-dal-migrate"
   
   REGISTRY_HOST: cr.yandex
 
