@@ -120,4 +120,17 @@ public class DialogButton
         Style = style;
         Cancel = cancel;
     }
+
+    public static DialogButton FromJoinButton(JoinButton self)
+    {
+        if (self.Preset != ButtonPreset.None)
+        {
+            return new DialogButton(self.Preset, label: self.Label, style: self.Style);
+        }
+        else
+        {
+            return new DialogButton(name: "button", label: self.Label!, style: self.Style);
+        }
+
+    }
 }
