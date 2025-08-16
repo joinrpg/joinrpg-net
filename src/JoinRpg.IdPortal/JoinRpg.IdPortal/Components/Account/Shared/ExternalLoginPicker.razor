@@ -1,0 +1,24 @@
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<JoinIdentityUser> SignInManager
+@inject IdentityRedirectManager RedirectManager
+<h2>Cоциальные сети</h2>
+<hr />
+<div>
+    <form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
+        <div>
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+            <input type="hidden" name="provider" value="Vkontakte" />
+            <p>
+              <JoinButton Submit="true" Preset="ButtonPreset.Vkontakte" />
+            </p>
+        </div>
+    </form>
+</div>
+@code {
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+}

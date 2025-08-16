@@ -15,6 +15,7 @@ on:
 env:
   APP_PROJECT: ./src/JoinRpg.Portal/JoinRpg.Portal.csproj
   MIGRATOR_PROJECT: ./src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj
+  IDPORTAL_PROJECT: ./src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj
   
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -98,3 +99,7 @@ jobs:
     - name: Publish & push migrator
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+
+    - name: Publish & push id portal
+      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}

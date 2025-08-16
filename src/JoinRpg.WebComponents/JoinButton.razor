@@ -268,6 +268,9 @@ else
         { ButtonPreset.Setup, new("Настройки", null, "glyphicon-cog") },
         { ButtonPreset.Save, new("Сохранить", "Сохраняем...", "glyphicon-ok", VariationStyleEnum.Success) },
         { ButtonPreset.Understand, new("Понятно", null) },
+        { ButtonPreset.Logout, new("Выйти", "Выходим...", normalIcon: null, VariationStyleEnum.Danger) },
+        { ButtonPreset.Login, new("Войти", "Входим...", normalIcon: null, VariationStyleEnum.Success) },
+        { ButtonPreset.Vkontakte, new("ВКонтакте", "Входим...", normalIcon: null, VariationStyleEnum.Info) },
     }.ToFrozenDictionary();
 
     internal record struct ButtonContent(string? Label, string? Icon);

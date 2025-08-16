@@ -1,0 +1,44 @@
+@page "/"
+@using JoinRpg.IdPortal.Components.Account
+@using JoinRpg.Interfaces
+@using Microsoft.Extensions.Options
+@inject ICurrentUserAccessor CurrentUserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject IOptions<JoinRpgHostNamesOptions> Options
+
+<PageTitle>id.joinrpg.ru</PageTitle>
+
+
+
+<AuthorizeView>
+  <Authorized>
+    <h1>Добро пожаловать, @CurrentUserAccessor.DisplayName!</h1>
+    <ul>
+            <li><a href="https://@(Options.Value.MainHost)/user/me">Профиль</a></li>
+            <li><a href="https://@(Options.Value.MainHost)/manage/setupprofile">Настройки</a></li>
+            <li><a href="https://@(Options.Value.RatingHost)">Бастильский рейтинг</a></li>
+            <li><a href="https://@(Options.Value.KogdaIgraHost)">КогдаИгра</a></li>
+    </ul>
+    <form action="/Account/Logout" method="post">
+        <AntiforgeryToken />
+        <input type="hidden" value="" name="returnUrl" />
+        <p>
+            <JoinButton Submit="true" Preset="ButtonPreset.Logout" />
+            </p>
+    </form>
+    </Authorized>
+    <NotAuthorized>
+      <JoinButton Link="/Accout/Login" Preset="ButtonPreset.Login" />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        if (CurrentUserAccessor.UserIdOrDefault is null)
+        {
+            RedirectManager.RedirectTo("Account/Login");
+        }
+    }
+}

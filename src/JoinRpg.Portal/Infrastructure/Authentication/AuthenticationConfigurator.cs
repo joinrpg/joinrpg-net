@@ -5,7 +5,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -39,7 +38,6 @@ internal static class AuthenticationConfigurator
           .Build())
             .AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>()
             .AddAuthentication()
-            .ConfigureJoinExternalLogins(authSection)
             .AddJwtBearer(o =>
             {
                 o.RequireHttpsMetadata = !environment.IsDevelopment();
@@ -49,32 +47,10 @@ internal static class AuthenticationConfigurator
                 o.TokenValidationParameters.ValidIssuer = jwtSecretOptions.Issuer;
             });
 
-        return services;
+        return services.AddJoinExternalLogins(authSection);
     }
 
-    public static AuthenticationBuilder ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
-    {
-        var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
 
-        if (vkConfig is not null)
-        {
-            _ = authBuilder.AddVkontakte(options =>
-              {
-                  options.Scope.Add("email");
-
-                  SetCommonProperties(options, vkConfig);
-              });
-        }
-
-        return authBuilder;
-
-        static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)
-        {
-            options.SignInScheme = IdentityConstants.ExternalScheme;
-
-            (options.ClientId, options.ClientSecret) = config;
-        }
-    }
 
     public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>
     {

@@ -1,0 +1,12 @@
+@using JoinRpg.Interfaces
+@inject ICurrentUserAccessor CurrentUserAccessor
+
+@if (CurrentUserAccessor.UserIdOrDefault is null)
+{
+    return;
+}
+<div class="user-info">
+     
+    <UserAvatar AvatarId="CurrentUserAccessor.Avatar" UserId="CurrentUserAccessor.UserId" Size="32"/>
+    @CurrentUserAccessor.DisplayName
+</div>

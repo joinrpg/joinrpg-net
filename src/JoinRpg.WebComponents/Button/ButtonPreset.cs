@@ -27,4 +27,7 @@ public enum ButtonPreset
     Setup,
     Save,
     Understand,
+    Logout,
+    Login,
+    Vkontakte,
 }

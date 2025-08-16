@@ -1,6 +1,8 @@
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Joinrpg.Web.Identity;
@@ -10,10 +12,16 @@ public static class IdentityConfigurator
     {
 
         _ = services
-            .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
+            .AddIdentity<JoinIdentityUser, string>(options =>
+            {
+                options.Password.ConfigureValidation();
+                options.SignIn.RequireConfirmedEmail = true;
+            })
             .AddDefaultTokenProviders()
             .AddUserStore<MyUserStore>()
             .AddRoleStore<MyUserStore>();
+
+        services.AddOptions<JoinRpgHostNamesOptions>();
 
         return services
             .AddTransient<ICustomLoginStore, MyUserStore>()
@@ -36,5 +44,31 @@ public static class IdentityConfigurator
         password.RequireUppercase = false;
         password.RequireNonAlphanumeric = false;
         password.RequireDigit = false;
+    }
+
+    public static IServiceCollection AddJoinExternalLogins(this IServiceCollection services, IConfigurationSection configSection)
+    {
+        var authBuilder = services.AddAuthentication();
+
+        var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
+
+        if (vkConfig is not null)
+        {
+            _ = authBuilder.AddVkontakte(options =>
+            {
+                options.Scope.Add("email");
+
+                SetCommonProperties(options, vkConfig);
+            });
+        }
+
+        return services;
+
+        static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)
+        {
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+
+            (options.ClientId, options.ClientSecret) = config;
+        }
     }
 }
