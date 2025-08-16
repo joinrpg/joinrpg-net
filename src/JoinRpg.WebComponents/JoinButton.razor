@@ -12,7 +12,15 @@ else
 }
 @if (AutoConfirm)
 {
-    <JoinMessageDialog @ref="_confirmDialogRef" Type="@MessageDialogType.Confirmation" Caption="@DialogCaption">@AutoConfirmMessage</JoinMessageDialog>
+    DialogButton[] dialogButtons = [DialogButton.FromJoinButton(this), new DialogButton(ButtonPreset.Cancel)];
+    <JoinMessageDialog
+      @ref="_confirmDialogRef"
+      Type="@MessageDialogType.Confirmation"
+      Caption="@DialogCaption"
+      Buttons="dialogButtons"
+    >
+      @AutoConfirmMessage
+    </JoinMessageDialog>
 }
 @code {
     /// <summary>
@@ -179,8 +187,7 @@ else
         if (AutoConfirm)
         {
             Debug.Assert(_confirmDialogRef is not null);
-            var result = await _confirmDialogRef.ShowModalAsync();
-            confirmed = result.Equals(nameof(ButtonPreset.Yes), StringComparison.OrdinalIgnoreCase);
+            confirmed = await _confirmDialogRef.ShowBoolModalAsync();
         }
 
         var args = new ButtonClickEventArgs { MouseEvent = e };
@@ -214,6 +221,8 @@ else
         {
             throw new InvalidOperationException($"The {nameof(OnClick)} event handler and {nameof(Link)} property can not be both set in the same time");
         }
+
+        AutoConfirmMessage ??= Title;
 
         if (AutoConfirm && string.IsNullOrWhiteSpace(AutoConfirmMessage))
         {

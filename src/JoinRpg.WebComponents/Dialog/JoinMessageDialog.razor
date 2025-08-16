@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics
+@using System.Diagnostics
 <JoinDialog
     @ref="@_dialogRef"
     MaxWidth="50%"
@@ -89,5 +89,11 @@
     {
         Debug.Assert(_dialogRef is not null, $"{nameof(_dialogRef)} should be assigned at this point");
         return _dialogRef.ShowModalAsync();
+    }
+
+    public Task<bool> ShowBoolModalAsync()
+    {
+        Debug.Assert(_dialogRef is not null, $"{nameof(_dialogRef)} should be assigned at this point");
+        return _dialogRef.ShowBoolModalAsync();
     }
 }
