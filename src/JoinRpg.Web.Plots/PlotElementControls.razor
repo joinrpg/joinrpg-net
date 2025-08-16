@@ -1,0 +1,99 @@
+@using JoinRpg.Web.Plots
+@inject ILogger<PlotElementControls> logger
+@inject IPlotClient plotClient
+@inject NavigationManager NavigationManager
+
+<JoinButtonGroup>
+
+@if (Model.PublishedVersion != null && Model.PlotStatus != PlotStatus.Deleted)
+{
+    <JoinButton Size="SizeStyleEnum.Small" Preset="ButtonPreset.Hide"
+    Label="Скрыть" Title="Скрыть опубликованную версию от игроков"
+    Disabled="!Model.HasEditAccess"
+    DisabledTitle="Нужны права редактора сюжетов"
+    OnClick="UnpublishExecuted"
+    AutoConfirm="true"/>
+}
+
+
+@if (Model.PlotStatus == PlotStatus.Deleted)
+{
+    <JoinButton Size="SizeStyleEnum.Small" Preset="ButtonPreset.Restore"
+    Label="Восстановить" Title="Вводная будет восстановлена и скрыта от игроков"
+    Disabled="!Model.HasEditAccess"
+    DisabledTitle="Нужны права редактора сюжетов"
+    OnClick="RestoreExecuted"
+    AutoConfirm="true" />
+}
+else
+{
+    <JoinButton Size="SizeStyleEnum.Small" Preset="ButtonPreset.Delete"
+    Label="Удалить" Title="Удалить вводную"
+    Disabled="!Model.HasEditAccess"
+    DisabledTitle="Нужны права редактора сюжетов"
+    OnClick="DeleteExecuted"
+    AutoConfirm="true" />
+}
+
+@if ((Model.CurrentVersion.Version > Model.PublishedVersion?.Version || Model.PublishedVersion == null))
+{
+    var disabled = false;
+    string? disabledReason = null;
+    if (!Model.HasEditAccess)
+    {
+        (disabled, disabledReason) = (true, shouldHaveEditAccess);
+    }
+    if (Model.CouldBePublished)
+    {
+        (disabled, disabledReason) = (true, "Невозможно опубликовать вводную. Убедитесь что: Все TODO закрыты и поле очищено; вводная привязана к чему-то.");
+    }
+    <JoinButton Size="SizeStyleEnum.Small" Preset="ButtonPreset.Publish"
+    Title="Опубликовать вводную"
+    Disabled="disabled"
+    DisabledTitle="@disabledReason"
+    OnClick="OpenPublishDialog"
+    />
+}
+
+</JoinButtonGroup>
+
+<JoinPublishDialog @ref="publishDialogRef" PlotVersion="Model.CurrentVersion" />
+
+@code{
+    const string shouldHaveEditAccess = "У вас должны быть права редактора сюжетов для этого";
+    [Parameter]
+    [EditorRequired]
+    public PlotElementControlsViewModel Model { get; set; } = default!;
+
+    private JoinPublishDialog? publishDialogRef;
+
+    //TODO: Удалить рефреши отсюда, вместо них перерисовывать элемент.
+    private async Task UnpublishExecuted(EventArgs _)
+    {
+        await plotClient.UnPublishVersion(Model.CurrentVersion);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    private async Task RestoreExecuted(EventArgs _)
+    {
+        await plotClient.UnDeleteElement(Model.PlotElementId);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    private async Task DeleteExecuted(EventArgs _)
+    {
+        await plotClient.DeleteElement(Model.PlotElementId);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    private async Task OpenPublishDialog(EventArgs _)
+    {
+        var model = await publishDialogRef!.ShowModalAsync();
+        if (model is not null)
+        {
+            await plotClient.PublishVersion(model);
+        }
+        NavigationManager.Refresh(forceReload: true);
+    }
+}
+
