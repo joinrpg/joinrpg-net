@@ -3,7 +3,7 @@
     <JoinAlert Variation="VariationStyleEnum.Danger">Это компонент пока не поддерживает интерактивный рендеринг</JoinAlert>
     return;
 }
-<div class="btn-group">
+<JoinButtonGroup SkipGroup="SkipGroup">
     @* Добавить сюда кнопочку "поместить после", которая вызывает диалог *@
     @if (showUp)
     {
@@ -23,7 +23,8 @@
             <JoinButton Preset="ButtonPreset.Down" Size="SizeStyleEnum.Small" Title="Переместить вниз" Submit=true />
         </form>
     }
-</div>
+
+</JoinButtonGroup>
 
 @code {
     [Parameter]
@@ -37,6 +38,9 @@
     [Parameter]
     [EditorRequired]
     public string Endpoint { get; set; } = null!;
+
+    [Parameter]
+    public bool SkipGroup { get; set; } = false;
 
     private string? targetIfUp, targetIfDown;
 
