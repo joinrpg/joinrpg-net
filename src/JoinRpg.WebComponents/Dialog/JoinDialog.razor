@@ -37,7 +37,7 @@
                     <ul class="join-dialog-footer-buttons join-dialog-footer-left">
                         @foreach (var db in _buttonsL)
                         {
-                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@CalculateButtonDisabled(db)" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
                         }
                     </ul>
                 }
@@ -47,7 +47,7 @@
                     <ul class="join-dialog-footer-buttons join-dialog-footer-middle">
                         @foreach (var db in _buttonsM)
                         {
-                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@CalculateButtonDisabled(db)" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
                         }
                     </ul>
                 }
@@ -57,7 +57,7 @@
                     <ul class="join-dialog-footer-buttons join-dialog-footer-right">
                         @foreach (var db in _buttonsR)
                         {
-                            <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@db.Disabled" Label="@db.Label" Icon="@db.Icon" Style="@db.Style"/></li>
+                           <li><JoinButton OnClick="() => DialogButtonClickHandler(db)" AutoProgress="@false" Preset="@db.Preset" Disabled="@CalculateButtonDisabled(db)" Label="@db.Label" Icon="@db.Icon" Style="@db.Style" /></li>
                         }
                     </ul>
                 }
@@ -118,6 +118,11 @@
     [Parameter]
     public EventCallback<DialogCloseEventArgs> OnClose { get; set; }
 
+    /// <summary>
+    /// True отключает все кнопки, кроме Cancel. Можно использовать например, если форма не проходит валидацию.
+    /// </summary>
+    [Parameter]
+    public bool DisableSumbit { get; set; } = false;
 
     private IJSObjectReference _module = null!;
     private ElementReference _dialogRef;
@@ -174,6 +179,22 @@
         return _resultTaskSource.Task;
     }
 
+    public async Task<bool> ShowBoolModalAsync()
+    {
+        if (this.Buttons?.Count != 2)
+        {
+            throw new InvalidOperationException("Только для диалога с двумя кнопками");
+        }
+        if (_resultTaskSource is null)
+        {
+            ShowModal();
+            Debug.Assert(_resultTaskSource is not null);
+        }
+        var result = await _resultTaskSource.Task;
+
+        return result != nameof(ButtonPreset.Cancel);
+    }
+
     public void Close()
     {
         if (_closing)
@@ -190,6 +211,11 @@
     {
         _closingButton = db;
         Close();
+    }
+
+    private bool CalculateButtonDisabled(DialogButton db)
+    {
+        return db.Disabled || (!db.Cancel && DisableSumbit);
     }
 
     private void DialogCloseHandler()

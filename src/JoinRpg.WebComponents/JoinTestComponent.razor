@@ -1,5 +1,6 @@
-﻿@using System.Diagnostics
+@using System.Diagnostics
 @using JoinRpg.WebComponents.Dialog
+@using System.ComponentModel.DataAnnotations
 @inject ILogger<JoinTestComponent> Logger
 <h2>@nameof(JoinButton)</h2>
 
@@ -183,7 +184,43 @@
 </JoinMessageDialog>
 
 
+<h4>Диалог с формочкой</h4>
+
+<JoinButton Preset="ButtonPreset.Publish" OnClick="async () => await formDialog.ShowModalAsync()" />
+
+<JoinFormDialog Caption="Диалог с формочкой вводную"
+                SubmitButtonPreset="ButtonPreset.Publish"
+                Model="@someDialogModel"
+                FormName="PublishForm"
+                @ref="formDialog">
+    <FormRowFor For="@(() => someDialogModel.SendNotification)">
+        <CheckboxInput @bind-Value="someDialogModel.SendNotification" />
+    </FormRowFor>
+    <FormRowFor For="@(() => someDialogModel.CommentText)" hidden="@(!someDialogModel.SendNotification)">
+        <JoinTextInput @bind-Value="someDialogModel.CommentText" />
+    </FormRowFor>
+
+</JoinFormDialog>
+
+
 @code {
+    private class SomeDialogModel
+    {
+
+        public required int ProjectId { get; set; }
+
+        [Display(Name = "Уведомить игроков")]
+        public bool SendNotification { get; set; } = true;
+
+        [Display(Name = "Комментарий")]
+        [UIHint("MarkdownString")]
+        [DataType(DataType.MultilineText)]
+        public string? CommentText { get; set; }
+    }
+
+    private JoinFormDialog<SomeDialogModel> formDialog = null!;
+
+    private readonly SomeDialogModel someDialogModel = new SomeDialogModel { ProjectId = 1 };
 
     private readonly DialogButton[] _buttons = [
         new("CustomButton1", "Custom Button 1", alignment: DialogButtonAlignment.Left),
