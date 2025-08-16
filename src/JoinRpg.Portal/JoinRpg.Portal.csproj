@@ -27,7 +27,6 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <PackageReference Include="BitArmory.ReCaptcha" />

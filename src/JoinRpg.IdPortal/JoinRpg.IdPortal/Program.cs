@@ -6,6 +6,7 @@ using JoinRpg.IdPortal.Components;
 using JoinRpg.IdPortal.Components.Account;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
+using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,7 @@ builder.Services.AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>
 
 builder.Services
     .Configure<JoinRpgHostNamesOptions>(builder.Configuration.GetSection("JoinRpgHostNames"))
+    .Configure<S3StorageOptions>(builder.Configuration.GetSection("S3BlobStorage"))
     .Configure<NotificationsOptions>(builder.Configuration.GetSection("Notifications"));
 
 builder.Services.AddJoinExternalLogins(builder.Configuration.GetSection("Authentication"));
@@ -61,6 +63,8 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(JoinRpg.IdPortal.Client._Imports).Assembly);
+
+app.MapJoinHealthChecks();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();

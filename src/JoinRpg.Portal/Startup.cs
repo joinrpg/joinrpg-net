@@ -1,5 +1,6 @@
 using System.Globalization;
 using Autofac;
+using Joinrpg.Web.Identity;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
