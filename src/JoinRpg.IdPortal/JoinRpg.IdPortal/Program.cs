@@ -4,6 +4,7 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
 using JoinRpg.IdPortal.Components.Account;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -24,6 +25,12 @@ builder.Services.AddJoinDal();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
+
+builder.Services
+    .Configure<JoinRpgHostNamesOptions>(builder.Configuration.GetSection("JoinRpgHostNames"))
+    .Configure<NotificationsOptions>(builder.Configuration.GetSection("Notifications"));
+
+builder.Services.AddJoinExternalLogins(builder.Configuration.GetSection("Authentication"));
 
 builder.Services.AddUserServicesOnly();
 
