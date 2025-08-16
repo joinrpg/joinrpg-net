@@ -33,6 +33,25 @@ patchesJson6902:
       - op: add
         path: "/metadata/annotations/nginx.ingress.kubernetes.io~1from-to-www-redirect"
         value: true
+  
+  - target:
+      kind: Ingress
+      group: networking.k8s.io
+      version: v1
+      name: joinrpg-idportal
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: id.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: id.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: id-joinrpg-ru-tls
+      - op: add
+        path: "/metadata/annotations/nginx.ingress.kubernetes.io~1from-to-www-redirect"
+        value: true
 
   - target:
       group: apps
@@ -51,6 +70,15 @@ patchesJson6902:
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/memory
         value: 2048Mi
+
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: joinrpg-idportal
+    patch: |-
+      - op: remove #Remove CPU limits to reduce latency
+        path: /spec/template/spec/containers/0/resources/limits/cpu
 
   - target:
       group: policy

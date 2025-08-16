@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-JoinRpg.IdPortal-6b487ee5-6ae0-4a0a-9266-5afcd5e971f4</UserSecretsId>
+    <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
+    <ContainerRegistry>cr.yandex</ContainerRegistry>
+    <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-idportal</ContainerRepository>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

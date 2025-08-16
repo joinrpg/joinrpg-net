@@ -29,6 +29,22 @@ patchesJson6902:
         value: dev-joinrpg-ru-tls
 
   - target:
+      kind: Ingress
+      group: networking.k8s.io
+      version: v1
+      name: joinrpg-idportal
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: devid.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: devid.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: devid-joinrpg-ru-tls
+
+  - target:
       group: apps
       version: v1
       kind: Deployment
@@ -52,6 +68,16 @@ patchesJson6902:
       version: v1
       kind: PodDisruptionBudget
       name: joinrpg-portal
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 0
+        
+  - target:
+      group: policy
+      version: v1
+      kind: PodDisruptionBudget
+      name: joinrpg-idportal
     patch: |-
       - op: replace
         path: /spec/minAvailable

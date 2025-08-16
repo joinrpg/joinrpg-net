@@ -4,6 +4,10 @@ resources:
   - ingress.yaml
   - pdp.yaml
   - db-migration-job.yaml
+  - id-portal-deployment.yaml
+  - id-portal-ingress.yaml
+  - id-portal-pdp.yaml
+  - id-portal-service.yaml
 
 namespace: override-me
 
