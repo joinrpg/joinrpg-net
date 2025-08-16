@@ -1,0 +1,80 @@
+@typeparam TViewModel where TViewModel: class
+@using JoinRpg.WebComponents.Dialog
+
+@if (editContext is not null)
+{
+
+    <JoinDialog @ref="dialogRef"
+                Buttons="@buttons"
+                Caption="@Caption"
+                DisableSumbit="formInvalid"
+                MaxWidth="700px"
+                Width="80%"
+    >
+        <EditForm FormName="@FormName" EditContext="@editContext">
+            <FormHorizontal>
+              @ChildContent
+            </FormHorizontal>
+        </EditForm>
+    </JoinDialog>
+
+}
+@code
+{
+    [Parameter]
+    public string? Caption { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string FormName { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ButtonPreset SubmitButtonPreset { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public TViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Тело формы
+    /// </summary>
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    private JoinDialog dialogRef = default!;
+    private EditContext? editContext;
+    private bool formInvalid;
+
+    private IReadOnlyCollection<DialogButton> buttons = null!;
+
+    public async Task<TViewModel?> ShowModalAsync()
+    {
+        var result = await dialogRef.ShowBoolModalAsync();
+        editContext = null;
+        if (result)
+        {
+            return Model;
+        }
+        return null;
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            // TODO если нужно добавить доп. валидацию, это тут
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        buttons = [new DialogButton(SubmitButtonPreset), new DialogButton(ButtonPreset.Cancel, cancel: true)];
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        formInvalid = !editContext.Validate();
+        return base.OnParametersSetAsync();
+    }
+}
