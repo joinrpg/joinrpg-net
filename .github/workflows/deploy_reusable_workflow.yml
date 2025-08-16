@@ -13,7 +13,12 @@ on:
         type: string
 env:
   APP_NAME: joinrpg-portal
+  APP_IMAGE_ID: "crp3fr717nr1rn78qeij/bastilia-rating"
+
   MIGRATOR_NAME: joinrpg-dal-migrate
+  MIGRATOR_IMAGE_ID: "crp3fr717nr1rn78qeij/bastilia-rating-migrator"
+  
+  REGISTRY_HOST: cr.yandex
 
 jobs:
   deploy:
@@ -26,31 +31,24 @@ jobs:
     runs-on: ubuntu-24.04
     permissions: read-all
     steps:
+      - name: Log in to Yandex Container Registry
+        id: login-cr
+        uses: yc-actions/yc-cr-login@v3
+        with:
+            yc-sa-json-credentials: ${{ secrets.YANDEX_CR_SA_KEY_JSON }}
+
       - name: Check images existence and fill images related env vars
         id: check_existence
         run: |
           set -euxo pipefail
 
-          APP_REPOSITORY_ID=$(echo ${{ github.repository_owner }}/${APP_NAME}  | tr '[A-Z]' '[a-z]')
-          APP_IMAGE_ID=$(echo ghcr.io/${APP_REPOSITORY_ID}| tr '[A-Z]' '[a-z]')
-
-          MIGRATOR_REPOSITORY_ID=$(echo ${{ github.repository_owner }}/${MIGRATOR_NAME}  | tr '[A-Z]' '[a-z]')
-          MIGRATOR_IMAGE_ID=$(echo ghcr.io/${MIGRATOR_REPOSITORY_ID}| tr '[A-Z]' '[a-z]')
-
           COMMON_IMAGE_VERSION=$(echo ${{ inputs.deployVersion }} | tr '[A-Z]' '[a-z]')
 
-          REPOSITORY_TOKEN=$(curl -u ${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }} https://ghcr.io/token\?scope\="repository:${APP_REPOSITORY_ID}:pull" | jq -r .token)
+          docker pull --quiet ${REGISTRY_HOST}/${APP_IMAGE_ID}:${COMMON_IMAGE_VERSION} > /dev/null
+          APP_IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${REGISTRY_HOST}/${APP_IMAGE_ID}:${COMMON_IMAGE_VERSION} | cut -d@ -f2)
 
-          #Check app image existence and save it's digest
-          APP_IMAGE_DIGEST=$(curl --head --fail -H "Authorization: Bearer ${REPOSITORY_TOKEN}" https://ghcr.io/v2/${APP_IMAGE_ID}/manifests/${COMMON_IMAGE_VERSION} \
-          | grep -i ^docker-content-digest: | cut -d: -f2- | xargs)
-
-          #Check migrator image existence and save it's digest
-          MIGRATOR_IMAGE_DIGEST=$(curl --head --fail -H "Authorization: Bearer ${REPOSITORY_TOKEN}" https://ghcr.io/v2/${MIGRATOR_IMAGE_ID}/manifests/${COMMON_IMAGE_VERSION} \
-          | grep -i ^docker-content-digest: | cut -d: -f2- | xargs)
-
-          echo "APP_IMAGE_ID=${APP_IMAGE_ID}" >> $GITHUB_ENV
-          echo "MIGRATOR_IMAGE_ID=${MIGRATOR_IMAGE_ID}" >> $GITHUB_ENV
+           docker pull --quiet ${REGISTRY_HOST}/${MIGRATOR_IMAGE_ID}:${COMMON_IMAGE_VERSION} > /dev/null
+          MIGRATOR_IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${REGISTRY_HOST}/${MIGRATOR_IMAGE_ID}:${COMMON_IMAGE_VERSION} | cut -d@ -f2)
 
           #Having digest with version provides google/k8s-digester like experience and helps to avoid common pitfalls with "latest" tag
           echo "APP_IMAGE_VERSION_WITH_DIGEST=${COMMON_IMAGE_VERSION}@${APP_IMAGE_DIGEST}" >> $GITHUB_ENV
@@ -93,11 +91,11 @@ jobs:
 
             images:
             - name: ${APP_NAME}
-              newName: ${{ env.APP_IMAGE_ID }}
+              newName: ${REGISTRY_HOST}/${{ env.APP_IMAGE_ID }}
               newTag: ${{ env.APP_IMAGE_VERSION_WITH_DIGEST }}
 
             - name: ${MIGRATOR_NAME}
-              newName: ${{ env.MIGRATOR_IMAGE_ID }}
+              newName: ${REGISTRY_HOST}/${{ env.MIGRATOR_IMAGE_ID }}
               newTag: ${{ env.MIGRATOR_IMAGE_VERSION_WITH_DIGEST }}
 
             EOF
