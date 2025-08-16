@@ -15,11 +15,8 @@
     <ProjectReference Include="..\..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
   </ItemGroup>
 
 </Project>
