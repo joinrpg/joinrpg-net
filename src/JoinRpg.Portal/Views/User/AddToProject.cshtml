@@ -1,4 +1,4 @@
-﻿
+
 @using JoinRpg.Web.Models
 @model UserProfileViewModel
 
@@ -10,7 +10,7 @@
     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
         @foreach (var project in Model.ProjectsToAdd)
         {
-            <li><a asp-action="Add" asp-controller="Acl" asp-route-projectId="@project.ProjectId" asp-route-userId="@Model.UserId">@project.ProjectName</a></li>
+            <li><a asp-action="Add" asp-controller="Acl" asp-route-projectId="@project.ProjectId.Value" asp-route-userId="@Model.UserId">@project.ProjectName</a></li>
         }
     </ul>
 </div>

@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.ProjectAccess;
@@ -29,9 +30,9 @@ public class AclController(
 {
     [HttpGet("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Add(int projectId, int userId) => await ShowAddPage(projectId, userId);
+    public async Task<ActionResult> Add(ProjectIdentification projectId, int userId) => await ShowAddPage(projectId, userId);
 
-    private async Task<ActionResult> ShowAddPage(int projectId, int userId)
+    private async Task<ActionResult> ShowAddPage(ProjectIdentification projectId, int userId)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
         var currentUser = await UserRepository.GetById(currentUserAccessor.UserId);
@@ -65,7 +66,7 @@ public class AclController(
         catch (Exception exception)
         {
             ModelState.AddException(exception);
-            return await ShowAddPage(viewModel.ProjectId, viewModel.UserId);
+            return await ShowAddPage(new(viewModel.ProjectId), viewModel.UserId);
         }
 
         return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });

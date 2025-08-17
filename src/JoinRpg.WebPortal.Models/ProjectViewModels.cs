@@ -4,17 +4,16 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
-
-public record ProjectLinkViewModel(int ProjectId, string ProjectName);
 
 public static class ProjectLinkViewModelBuilder
 {
     public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
         this IEnumerable<Project> projects) =>
-        projects.Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName));
+        projects.Select(p => new ProjectLinkViewModel(new(p.ProjectId), p.ProjectName));
 }
 
 public class EditProjectViewModel

@@ -5,12 +5,12 @@ using JoinRpg.Web.ProjectCommon.Projects;
 namespace JoinRpg.WebPortal.Managers.Projects;
 internal class ProjectListViewService(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : IProjectListClient
 {
-    public async Task<ProjectDto[]> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
+    public async Task<ProjectLinkViewModel[]> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
         ProjectListSpecification spec = GetSpecification(projectSelectionCriteria);
 
         var projects = await projectRepository.GetProjectsBySpecification(currentUserAccessor.UserIdentification, spec);
-        return [.. projects.Select(p => new ProjectDto(new ProjectIdentification(p.ProjectId), p.ProjectName))];
+        return [.. projects.Select(p => new ProjectLinkViewModel(new ProjectIdentification(p.ProjectId), p.ProjectName))];
     }
 
     internal static ProjectListSpecification GetSpecification(ProjectSelectionCriteria projectSelectionCriteria)
