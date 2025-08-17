@@ -1,0 +1,10 @@
+@inject IUriLocator<ProjectLinkViewModel> linkLocator
+<a href="@TargetUri">@Model.ProjectName</a>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectLinkViewModel Model { get; set; } = null!;
+
+    public Uri TargetUri => linkLocator.GetUri(Model);
+}
