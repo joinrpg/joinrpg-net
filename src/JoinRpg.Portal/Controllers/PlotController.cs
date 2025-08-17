@@ -220,12 +220,6 @@ public class PlotController(
     }
     #endregion
 
-    #region private methods
-
-
-
-    #endregion
-
     [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
@@ -251,21 +245,6 @@ public class PlotController(
             return await Delete(projectId, plotFolderId);
         }
     }
-
-    [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
-    public async Task<ActionResult> DeleteElement(int plotelementid, int plotFolderId, int projectId)
-    {
-        try
-        {
-            await plotService.DeleteElement(new PlotElementIdentification(projectId, plotFolderId, plotelementid));
-            return ReturnToPlot(projectId, plotFolderId);
-        }
-        catch (Exception)
-        {
-            return await Edit(projectId, plotFolderId);
-        }
-    }
-
     private ActionResult ReturnToPlot(int projectId, int plotFolderId) => RedirectToAction("Edit", new { projectId, plotFolderId });
 
     private ActionResult ReturnToPlot(PlotFolderIdentification plotFolderId) => RedirectToAction("Edit", new { projectId = plotFolderId.ProjectId.Value, plotFolderId = plotFolderId.PlotFolderId });
@@ -337,44 +316,6 @@ public class PlotController(
         catch
         {
             return RedirectToAction("Details", "Character", new { projectId = projectid, characterId = parentObjectId });
-        }
-    }
-
-
-    [HttpPost]
-    [MasterAuthorize(Permission.CanManagePlots)]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> PublishElement(PublishPlotElementViewModel model)
-    {
-        try
-        {
-            await plotService.PublishElementVersion(
-                model.GetVersionId(),
-                model.SendNotification,
-                model.CommentText);
-            return ReturnToPlot(model.ProjectId, model.PlotFolderId);
-        }
-        catch (Exception)
-        {
-            throw;
-            // return await Edit(model.ProjectId, model.PlotFolderId);
-        }
-    }
-
-    [HttpPost()]
-    [MasterAuthorize(Permission.CanManagePlots)]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> UnPublishElement([FromForm] PlotElementIdentification elementId)
-    {
-        try
-        {
-            await plotService.UnPublishElement(elementId);
-            return ReturnToPlot(elementId.PlotFolderId);
-        }
-        catch (Exception)
-        {
-            throw;
-            //return await Edit(model.ProjectId, model.PlotFolderId);
         }
     }
 

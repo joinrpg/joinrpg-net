@@ -1,0 +1,43 @@
+@using JoinRpg.Web.Plots
+@using JoinRpg.WebComponents.Dialog
+@inject ILogger<JoinPublishDialog> Logger
+
+<JoinFormDialog
+    Caption="Опубликовать вводную"
+    SubmitButtonPreset="ButtonPreset.Publish"
+    Model="@Model"
+    FormName="PublishForm"
+    @ref="formDialog"
+>
+    <FormRowFor For="@(() => Model.SendNotification)">
+        <CheckboxInput @bind-Value="Model.SendNotification" />
+    </FormRowFor>
+    <FormRowFor For="@(() => Model.CommentText)" hidden="@(!Model.SendNotification)">
+        <JoinTextInput @bind-Value="Model.CommentText" />
+    </FormRowFor>
+
+</JoinFormDialog>
+
+@code
+{
+    private JoinFormDialog<PublishPlotElementViewModel> formDialog = default!;
+
+    [Parameter]
+    [EditorRequired]
+    public PlotVersionIdentification PlotVersion { get; set; } = default!;
+
+    private PublishPlotElementViewModel Model { get; set; } = default!;
+
+    public Task<PublishPlotElementViewModel?> ShowModalAsync() => formDialog.ShowModalAsync();
+
+
+    protected override Task OnParametersSetAsync()
+    {
+      Model ??= new()
+            {
+                PlotVersionId = PlotVersion,
+                ProjectId = PlotVersion.ProjectId,
+            };
+        return base.OnParametersSetAsync();
+    }
+}
