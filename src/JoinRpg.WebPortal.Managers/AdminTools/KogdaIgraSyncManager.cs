@@ -7,7 +7,9 @@ internal class KogdaIgraSyncManager(
     IKogdaIgraSyncService kogdaIgraSyncService,
     ILogger<KogdaIgraSyncManager> logger,
     IKogdaIgraRepository kogdaIgraRepository,
-    IOptions<KogdaIgraOptions> kograIgraOptions) : IKogdaIgraSyncClient
+    IOptions<KogdaIgraOptions> kograIgraOptions,
+    IKogdaIgraBindService kogdaIgraBindService
+    ) : IKogdaIgraSyncClient, IKogdaIgraBindClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
@@ -54,4 +56,11 @@ internal class KogdaIgraSyncManager(
             }
         }
     }
+
+    public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
+    {
+        await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications);
+    }
+
+    Task<KogdaIgraCardViewModel> IKogdaIgraSyncClient.GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId) => throw new NotImplementedException();
 }

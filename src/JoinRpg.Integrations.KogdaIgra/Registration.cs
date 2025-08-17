@@ -11,7 +11,9 @@ public static class Registration
         _ = services.AddHttpClient<IKogdaIgraApiClient, KogdaIgraApiClient>(
             (s, c) => c.BaseAddress = s.GetRequiredService<IOptions<KogdaIgraOptions>>().Value.HostName);
 
-        _ = services.AddTransient<IKogdaIgraSyncService, KogdaIgraSyncService>();
+        _ = services
+            .AddTransient<IKogdaIgraSyncService, KogdaIgraSyncService>()
+            .AddTransient<IKogdaIgraBindService, KogdaIgraSyncService>();
 
         services.AddDailyJob<SyncKogdaIgraJob>();
     }

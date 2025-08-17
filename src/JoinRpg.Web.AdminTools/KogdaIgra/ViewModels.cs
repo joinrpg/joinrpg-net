@@ -13,6 +13,9 @@ public record class KogdaIgraCardViewModel(
     string RegionName,
     string MasterGroupName,
     Uri SiteUri);
+public record class KogdaIgraBindViewModel(
+    ProjectIdentification ProjectId,
+    KogdaIgraIdentification[] KogdaIgraIdentifications);
 
 public record class KogdaIgraShortViewModel(KogdaIgraIdentification KogdaIgraId, string Name, Uri KogdaIgraLink);
 

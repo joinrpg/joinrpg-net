@@ -16,3 +16,8 @@ public interface IKogdaIgraSyncClient
 
     Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId);
 }
+
+public interface IKogdaIgraBindClient
+{
+    Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command);
+}

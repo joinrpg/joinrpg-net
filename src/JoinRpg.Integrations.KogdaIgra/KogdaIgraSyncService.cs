@@ -1,6 +1,7 @@
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
+using JoinRpg.PrimitiveTypes;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Integrations.KogdaIgra;
@@ -105,5 +106,16 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
 
         await unitOfWork.SaveChangesAsync();
         logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);
+    }
+    public async Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications)
+    {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
+        var project = await projectRepository.GetProjectAsync(projectId);
+        var games = await kogdaIgraRepository.GetByIds(kogdaIgraIdentifications);
+        project.KogdaIgraGames.AssignLinksList(games);
+        await unitOfWork.SaveChangesAsync();
     }
 }

@@ -2,8 +2,8 @@ using JoinRpg.Web.AdminTools.KogdaIgra;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
-public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncClient> logger, CsrfTokenProvider csrfTokenProvider)
-    : IKogdaIgraSyncClient
+public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> logger, CsrfTokenProvider csrfTokenProvider)
+    : IKogdaIgraSyncClient, IKogdaIgraBindClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
@@ -55,4 +55,14 @@ public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncCli
             }
         }
     }
+
+    public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
+
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsJsonAsync($"webapi/kogdaigra/UpdateBindings", command);
+
+        _ = response.EnsureSuccessStatusCode();
+    }
+
 }
