@@ -30,4 +30,8 @@ public enum ButtonPreset
     Logout,
     Login,
     Vkontakte,
+    /// <summary>
+    /// Отвязать
+    /// </summary>
+    Unlink,
 }
