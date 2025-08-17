@@ -9,4 +9,10 @@ public interface IKogdaIgraBindService
 {
     Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications);
 }
+
+public interface IKogdaIgraInfoService
+{
+    Task<KogdaIgraGameInfo> GetGame(KogdaIgraIdentification id);
+}
+
 public record class SyncStatus(int CountOfGames, DateTimeOffset LastUpdated, int PendingGamesCount) { }

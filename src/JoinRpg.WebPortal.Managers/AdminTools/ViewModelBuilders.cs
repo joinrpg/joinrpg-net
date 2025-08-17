@@ -1,6 +1,6 @@
-using JoinRpg.DataModel.Projects;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
@@ -8,14 +8,16 @@ internal static class ViewModelBuilders
 {
     public static SyncStatusViewModel ToViewModel(this SyncStatus status) => new(status.CountOfGames, status.LastUpdated, status.PendingGamesCount);
 
-    public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGame game) =>
-        new KogdaIgraCardViewModel(
-            KogdaIgraUri: new Uri($"https://kogda-igra.ru/game/{game.KogdaIgraGameId}/"),
+    public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGameInfo game, KogdaIgraOptions options)
+    {
+        return new KogdaIgraCardViewModel(
+            KogdaIgraUri: new Uri($"{options.HostName}/game/{game.Id}/"),
             Name: game.Name,
-            Begin: DateTimeOffset.UtcNow,
-            End: DateTimeOffset.UtcNow,
-            RegionName: "region",
-            MasterGroupName: "mg",
-            SiteUri: new Uri("http://bastilia.ru/")
+            Begin: game.Begin,
+            End: game.End,
+            RegionName: game.RegionName,
+            MasterGroupName: game.MasterGroupName,
+            SiteUri: string.IsNullOrWhiteSpace(game.SiteUri) ? null : new Uri(game.SiteUri)
             );
+    }
 }

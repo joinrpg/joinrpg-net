@@ -1,9 +1,11 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace JoinRpg.Integrations.KogdaIgra;
 
 internal static class ResultParser
 {
+    private static JsonSerializerOptions serializerOptions = new() { NumberHandling = JsonNumberHandling.AllowReadingFromString };
     internal static KogdaIgraGameUpdateMarker[] ParseGameUpdateMarkers(string strResult)
     {
         var deserializeResult = JsonSerializer.Deserialize<kogda_igra_game_marker[]>(strResult) ?? throw new Exception("Failed to parse JSON");
@@ -12,8 +14,18 @@ internal static class ResultParser
 
     internal static KogdaIgraGameInfo? ParseGameInfo(int gameId, string strResult)
     {
-        var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult) ?? throw new Exception("Failed to parse result");
-        var ret = new KogdaIgraGameInfo(parsedResult.id, parsedResult.name, strResult, parsedResult.update_date ?? DateTimeOffset.Now);
+
+        var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions) ?? throw new Exception("Failed to parse result");
+        var ret = new KogdaIgraGameInfo(
+            parsedResult.id,
+            parsedResult.name,
+            strResult,
+            parsedResult.update_date ?? DateTimeOffset.Now,
+            parsedResult.begin,
+            parsedResult.begin.AddDays(parsedResult.time),
+            parsedResult.sub_region_disp_name,
+            parsedResult.mg,
+            parsedResult.uri);
         if (ret.Id == 0)
         {
             return null;
@@ -26,7 +38,8 @@ internal static class ResultParser
     }
 
 #pragma warning disable IDE1006 // Naming Styles
-    private record class kogda_igra_game_data(int id, string name, DateTimeOffset? update_date)
+    private record class kogda_igra_game_data(int id, string name, DateTimeOffset? update_date,
+        DateOnly begin, int time, string mg, string sub_region_disp_name, string uri)
     {
 
     }

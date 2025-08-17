@@ -9,6 +9,7 @@ public class GameDataParserTest
             """;
 
         var gameInfo = ResultParser.ParseGameInfo(440, str);
+        gameInfo.ShouldNotBeNull();
         gameInfo.Id.ShouldBe(440);
         gameInfo.GameData.ShouldBe(str);
         gameInfo.Name.ShouldBe("Battlestar Galactica: В поисках дома");
@@ -23,9 +24,14 @@ public class GameDataParserTest
             """;
 
         var gameInfo = ResultParser.ParseGameInfo(440, str);
+        gameInfo.ShouldNotBeNull();
         gameInfo.Id.ShouldBe(440);
         gameInfo.GameData.ShouldBe(str);
         gameInfo.Name.ShouldBe("Battlestar Galactica: В поисках дома");
+        gameInfo.MasterGroupName.ShouldBe("МТГ «Бастилия»");
+        gameInfo.RegionName.ShouldBe("СПб");
+        gameInfo.Begin.ShouldBe(new DateOnly(2010, 09, 03));
+        gameInfo.End.ShouldBe(new DateOnly(2010, 09, 06));
         gameInfo.UpdateDate.ShouldBe(new DateTimeOffset(2013, 03, 17, 23, 56, 21, TimeSpan.FromHours(0)));
     }
 }

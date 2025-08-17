@@ -10,11 +10,15 @@ internal class KogdaIgraSyncService(
     IUnitOfWork unitOfWork,
     IKogdaIgraApiClient apiClient,
     ILogger<KogdaIgraSyncService> logger,
-    ICurrentUserAccessor currentUserAccessor,
-    ) : IKogdaIgraSyncService, IKogdaIgraBindService
+    ICurrentUserAccessor currentUserAccessor)
+    : IKogdaIgraSyncService, IKogdaIgraBindService
 {
     public async Task<SyncStatus> GetSyncStatus()
     {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
         var count = await unitOfWork.GetDbSet<KogdaIgraGame>().CountAsync();
         var lastUpdated = await unitOfWork.GetDbSet<KogdaIgraGame>().MaxAsync(kig => (DateTimeOffset?)kig.UpdateRequestedAt);
         var pending = await unitOfWork.GetKogdaIgraRepository().GetNotUpdatedCount();
@@ -22,6 +26,10 @@ internal class KogdaIgraSyncService(
     }
     public async Task<SyncStatus> PerformSync()
     {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
         var status = await GetSyncStatus();
         logger.LogInformation("Sync status is {syncStatus}", status);
         var updated = await apiClient.GetChangedGamesSince(status.LastUpdated);

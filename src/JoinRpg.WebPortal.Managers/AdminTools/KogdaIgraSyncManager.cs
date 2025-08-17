@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 internal class KogdaIgraSyncManager(
@@ -19,10 +20,11 @@ internal class KogdaIgraSyncManager(
 
     private KogdaIgraShortViewModel[] ToShortViewModels((KogdaIgraIdentification KogdaIgraId, string Name)[] items)
         => items.Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name, new Uri(kograIgraOptions.Value.HostName + "game/" + i.KogdaIgraId))).ToArray();
-    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId)
+
+    public async Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds)
     {
-        var item = await kogdaIgraRepository.GetById(kogdaIgraId);
-        return item.ToViewModel();
+        var item = await kogdaIgraRepository.GetByIds(kogdaIgraIds);
+        return [.. item.Select(x => x.ToViewModel())];
     }
 
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated()

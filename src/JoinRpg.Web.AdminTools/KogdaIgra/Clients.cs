@@ -1,3 +1,5 @@
+using JoinRpg.Web.ProjectCommon.Projects;
+
 namespace JoinRpg.Web.AdminTools.KogdaIgra;
 
 public interface IKogdaIgraSyncClient
@@ -14,7 +16,7 @@ public interface IKogdaIgraSyncClient
 
     Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated();
 
-    Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId);
+    Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds);
 }
 
 public interface IKogdaIgraBindClient

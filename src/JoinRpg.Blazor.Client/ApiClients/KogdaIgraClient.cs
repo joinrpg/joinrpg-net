@@ -1,4 +1,5 @@
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
@@ -10,9 +11,9 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetKogdaIgraCandidates")
             ?? throw new Exception("Couldn't get result from server");
     }
-    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId)
+    public async Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds)
     {
-        return await httpClient.GetFromJsonAsync<KogdaIgraCardViewModel>($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={kogdaIgraId}")
+        return await httpClient.GetFromJsonAsync<KogdaIgraCardViewModel[]>($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={string.Join(",", kogdaIgraIds.Select(x => x.ToString()))}")
             ?? throw new Exception("Couldn't get result from server");
     }
 
