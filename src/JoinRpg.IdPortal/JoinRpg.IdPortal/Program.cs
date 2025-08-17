@@ -34,6 +34,8 @@ builder.Services
 
 builder.Services.AddJoinExternalLogins(builder.Configuration.GetSection("Authentication"));
 
+builder.Services.ConfigureForwardedHeaders();
+
 builder.Services.AddUserServicesOnly();
 
 builder.Services
@@ -42,6 +44,8 @@ builder.Services
     .AddJoinEmailSendingService();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
