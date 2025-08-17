@@ -34,4 +34,5 @@ public enum ButtonPreset
     /// Отвязать
     /// </summary>
     Unlink,
+    Link,
 }
