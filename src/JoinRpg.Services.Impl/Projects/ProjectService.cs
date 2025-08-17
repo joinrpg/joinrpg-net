@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -291,9 +290,9 @@ internal class ProjectService(
 
     private async Task ChangeProjectProperties(ProjectIdentification projectId, Action<Project> operation)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
 
-        operation(project.RequestMasterAccess(CurrentUserId, Permission.CanChangeProjectProperties));
+        operation(project);
 
         await UnitOfWork.SaveChangesAsync();
     }
