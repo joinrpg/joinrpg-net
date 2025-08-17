@@ -8,5 +8,5 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 public class ProjectListController(IProjectListClient client) : ControllerBase
 {
     [HttpGet]
-    public async Task<ProjectDto[]> GetProjects(ProjectSelectionCriteria criteria) => await client.GetProjects(criteria);
+    public async Task<ProjectLinkViewModel[]> GetProjects(ProjectSelectionCriteria criteria) => await client.GetProjects(criteria);
 }

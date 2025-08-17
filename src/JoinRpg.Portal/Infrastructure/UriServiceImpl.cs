@@ -2,6 +2,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebComponents;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +14,8 @@ internal class UriServiceImpl(
     IOptions<NotificationsOptions> notificationOptions) : IUriService,
     IUriLocator<UserLinkViewModel>,
     IUriLocator<CharacterGroupLinkSlimViewModel>,
-    IUriLocator<CharacterLinkSlimViewModel>
+    IUriLocator<CharacterLinkSlimViewModel>,
+    IUriLocator<ProjectLinkViewModel>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -89,6 +91,7 @@ internal class UriServiceImpl(
          GetUri(new Linkable(target.CharacterGroupId));
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
+    Uri IUriLocator<ProjectLinkViewModel>.GetUri(ProjectLinkViewModel target) => GetUri(new Linkable(target.ProjectId));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {
@@ -98,6 +101,8 @@ internal class UriServiceImpl(
         }
 
         public Linkable(CharacterIdentification id) : this(LinkType.ResultCharacter, id) { }
+
+        public Linkable(ProjectIdentification id) : this(LinkType.Project, id.Value, Identification: null) { }
 
         public Linkable(CharacterGroupIdentification id) : this(LinkType.CharacterGroupRoles, id) { }
     }

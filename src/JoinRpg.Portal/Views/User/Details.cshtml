@@ -20,7 +20,7 @@
                 @foreach (var master in Model.ThisUserProjects)
                 {
                     <li>
-                        @Html.ActionLink(@master.ProjectName, "Details", "Game", new {master.ProjectId}, null)
+                        @Html.ActionLink(@master.ProjectName, "Details", "Game", new {ProjectId = master.ProjectId.Value}, null)
                     </li>
                 }
 

@@ -1,38 +1,35 @@
+@using JoinRpg.Web.ProjectCommon.Projects
 @using Microsoft.JSInterop
 @inject IKogdaIgraSyncClient Client
+@inject IProjectListClient ProjectListClient
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
 
-<JoinPanel Variation="VariationStyleEnum.Warning">
-    <Header>Функционал не реализован</Header>
-    <Body>
-        Здесь будет инструмент привязки проектов джойна к играм на КогдаИгре.
-    </Body>
-</JoinPanel>
-
-@if (true)
-{
-    return;
-}
-
-@if (JoinCandidates is null || KogdaIgraCandidates is null)
+@if (JoinCandidates is null)
 {
     <JoinLoadingMessage />
 }
 else
 {
-    foreach (var candidate in JoinCandidates)
-    {
-        <KogdaIgraCandidateCard JoinCandidate="@candidate" KogdaIgraCandidates="@KogdaIgraCandidates" />
-    }
+  <JoinPanelWithList Items="JoinCandidates">
+    <Header>Игры без привязки</Header>
+      <ItemTemplate>
+            <ProjectLink Model="context" />
+  </ItemTemplate>
+  </JoinPanelWithList>
 }
 
 @code {
     [Parameter]
     public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
 
-    public JoinRpgSyncCandidateViewModel[]? JoinCandidates = null;
+    public ProjectLinkViewModel[]? JoinCandidates = null;
 
-    private KogdaIgraShortViewModel[]? KogdaIgraCandidates = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        JoinCandidates = await ProjectListClient.GetProjects(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
+        await base.OnParametersSetAsync();
+    }
+
 
 }

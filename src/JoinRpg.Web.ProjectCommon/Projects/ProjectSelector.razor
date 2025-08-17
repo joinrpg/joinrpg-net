@@ -24,14 +24,14 @@ else
     [Parameter] public EventCallback<ProjectIdentification?> ProjectIdChanged { get; set; }
     [Parameter] public Expression<Func<ProjectIdentification?>>? ProjectIdExpression { get; set; }
 
-    [Parameter] public ProjectDto? Project { get; set; }
-    [Parameter] public EventCallback<ProjectDto?> ProjectChanged { get; set; }
+    [Parameter] public ProjectLinkViewModel? Project { get; set; }
+    [Parameter] public EventCallback<ProjectLinkViewModel?> ProjectChanged { get; set; }
     [EditorRequired]
     [Parameter] public ProjectSelectionCriteria Criteria { get; set; }
 
     private int[] Selected { get; set; } = new int[0];
     private IntSelectListItem[] items = null!;
-    private ProjectDto[] sourceItems = null!;
+    private ProjectLinkViewModel[] sourceItems = null!;
     private FieldIdentifier? fieldIdentifier = null;
 
     protected override async Task OnInitializedAsync()

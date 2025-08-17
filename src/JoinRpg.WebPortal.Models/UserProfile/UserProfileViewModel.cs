@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
@@ -16,7 +17,7 @@ public class UserProfileViewModel
     public required IEnumerable<ProjectLinkViewModel> ThisUserProjects { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = Array.Empty<ProjectLinkViewModel>();
+    public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = [];
     public int UserId { get; set; }
 
     public IEnumerable<ProjectLinkViewModel> ProjectsToAdd
