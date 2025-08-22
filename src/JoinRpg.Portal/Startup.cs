@@ -157,10 +157,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         app.MapJoinHealthChecks();
 
-        if (!env.IsDevelopment())
-        {
-            _ = app.UseHttpsRedirection();
-        }
+        //if (!env.IsDevelopment())
+        //{
+        //    _ = app.UseHttpsRedirection();
+        //}
 
         _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
