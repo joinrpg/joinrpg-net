@@ -70,7 +70,7 @@ else
 
 app.Use(async (context, next) =>
 {
-    var logger = context.RequestServices.GetRequiredService<Microsoft.Extensions.Logging.ILogger>();
+    var logger = context.RequestServices.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
     logger.LogInformation("Scheme: {scheme}", context.Request.Scheme);
     logger.LogInformation("Host: " + context.Request.Host);
     foreach (var header in context.Request.Headers)
