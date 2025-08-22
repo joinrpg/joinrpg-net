@@ -4,15 +4,8 @@ using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Exporters;
 
-public class ClaimListItemViewModelExporter : CustomExporter<ClaimListItemForExportViewModel>
+public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo projectInfo) : CustomExporter<ClaimListItemForExportViewModel>(uriService)
 {
-    private readonly ProjectInfo projectInfo;
-
-    public ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo projectInfo) : base(uriService)
-    {
-        this.projectInfo = projectInfo;
-    }
-
     public override IEnumerable<ITableColumn> ParseColumns()
     {
         yield return StringColumn(x => x.Name);
@@ -21,6 +14,10 @@ public class ClaimListItemViewModelExporter : CustomExporter<ClaimListItemForExp
         yield return EnumColumn(x => x.ClaimFullStatusView.ClaimDenialStatus);
         yield return DateTimeColumn(x => x.UpdateDate);
         yield return DateTimeColumn(x => x.CreateDate);
+        if (projectInfo.ProjectCheckInSettings.CheckInModuleEnabled)
+        {
+            yield return DateTimeColumn(x => x.CheckInDate);
+        }
         yield return IntColumn(x => x.TotalFee);
         yield return IntColumn(x => x.FeeDue);
         yield return IntColumn(x => x.FeePaid);
