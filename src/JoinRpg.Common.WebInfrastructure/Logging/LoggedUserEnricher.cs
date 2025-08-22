@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace JoinRpg.Portal.Infrastructure.Logging;
+namespace JoinRpg.Common.WebInfrastructure.Logging;
 
 internal class LoggedUserEnricher(IHttpContextAccessor httpContextAccessor) : ILogEventEnricher
 {

@@ -3,6 +3,8 @@ using Autofac;
 using Joinrpg.Web.Identity;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
+using JoinRpg.Common.WebInfrastructure.Logging;
+using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DI;
 using JoinRpg.Domain;
@@ -24,7 +26,6 @@ using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 
 namespace JoinRpg.Portal;
 
@@ -59,6 +60,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 options.Filters.Add<RedirectAntiforgeryValidationFailedResultFilter>();
                 options.Filters.Add<SerilogMvcFilter>();
                 options.Filters.Add<SerilogRazorPagesFilter>();
+                options.Filters.Add<SerilogProjectMvcFilter>();
+                options.Filters.Add<SerilogProjectRazorPagesFilter>();
                 options.Filters.Add(new SetIsProductionFilterAttribute());
                 options.Filters.Add(new AddFullUriFilter());
 
@@ -145,11 +148,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = app.UseExceptionHandler("/error");
         _ = app.UseStatusCodePagesWithReExecute("/error/{0}");
 
-        _ = app.UseSerilogRequestLogging(opts =>
-        {
-            opts.EnrichDiagnosticContext = SerilogWebRequestHelper.EnrichFromRequest;
-            opts.GetLevel = SerilogWebRequestHelper.ExcludeHealthChecks;
-        });
+        _ = app.UseJoinRequestLogging();
 
         _ = app
             .UseSwagger(Swagger.Configure)

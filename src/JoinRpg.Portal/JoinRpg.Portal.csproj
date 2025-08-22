@@ -43,17 +43,13 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
-    <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.AspNetCore" />
-    <PackageReference Include="Serilog.Expressions" />
-    <PackageReference Include="Serilog.Sinks.Console" />
-    <PackageReference Include="Serilog.Enrichers.Environment" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj" />
     <ProjectReference Include="..\JoinRpg.Blazor.Client\JoinRpg.Blazor.Client.csproj" />
     <ProjectReference Include="..\JoinRpg.BlobStorage\JoinRpg.BlobStorage.csproj" />
     <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
+    <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
     <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />

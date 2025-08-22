@@ -1,5 +1,6 @@
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
+using JoinRpg.Common.WebInfrastructure.Logging;
 using JoinRpg.Dal.Impl;
 using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
@@ -8,8 +9,16 @@ using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, _, configuration) =>
+{
+    var loggerOptions = context.Configuration.GetSection("Logging").Get<SerilogOptions>();
+    configuration.ConfigureLogger(loggerOptions!, "JoinRpg.IdPortal");
+});
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -61,7 +70,7 @@ else
 
 app.Use(async (context, next) =>
 {
-    var logger = context.RequestServices.GetRequiredService<ILogger>();
+    var logger = context.RequestServices.GetRequiredService<Microsoft.Extensions.Logging.ILogger>();
     logger.LogInformation("Scheme: {scheme}", context.Request.Scheme);
     logger.LogInformation("Host: " + context.Request.Host);
     foreach (var header in context.Request.Headers)
@@ -70,6 +79,8 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
+app.UseJoinRequestLogging();
 
 
 app.UseAntiforgery();

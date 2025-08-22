@@ -1,9 +1,9 @@
 using Serilog.Core;
 using Serilog.Events;
 
-namespace JoinRpg.Portal.Infrastructure.Logging;
+namespace JoinRpg.Common.WebInfrastructure.Logging;
 
-public class YcLevelEnricher : ILogEventEnricher
+internal class YcLevelEnricher : ILogEventEnricher
 {
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {

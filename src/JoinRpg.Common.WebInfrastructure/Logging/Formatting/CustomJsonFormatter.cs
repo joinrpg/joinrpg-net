@@ -2,7 +2,7 @@ using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Serilog.Parsing;
 
-namespace JoinRpg.Portal.Infrastructure.Logging.Formatting;
+namespace JoinRpg.Common.WebInfrastructure.Logging.Formatting;
 
 internal class CustomJsonFormatter : ElasticsearchJsonFormatter
 {

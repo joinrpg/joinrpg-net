@@ -1,4 +1,5 @@
-using JoinRpg.Portal.Infrastructure.Logging.Formatting;
+using JoinRpg.Common.WebInfrastructure.Logging.Formatting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Core;
 using Serilog.Debugging;
@@ -6,11 +7,11 @@ using Serilog.Extensions.Logging;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
 
-namespace JoinRpg.Portal.Infrastructure.Logging;
+namespace JoinRpg.Common.WebInfrastructure.Logging;
 
 public static class SerilogExtensions
 {
-    public static void ConfigureLogger(this LoggerConfiguration loggerConfiguration, SerilogOptions serilogOptions)
+    public static void ConfigureLogger(this LoggerConfiguration loggerConfiguration, SerilogOptions serilogOptions, string appName)
     {
         serilogOptions.LogLevel.TryAdd("Default", LogLevel.Information);
         serilogOptions.LogLevel.TryAdd("Microsoft", LogLevel.Information);
@@ -25,7 +26,7 @@ public static class SerilogExtensions
             .Enrich.With<YcLevelEnricher>()
             .Enrich.With<LoggedUserEnricher>()
             .Enrich.With<ActivityTagsEnricher>()
-            .Enrich.WithProperty("AppName", "JoinRpg.Portal");
+            .Enrich.WithProperty("AppName", appName);
 
         foreach (var (@namespace, logLevel) in serilogOptions.LogLevel)
         {
