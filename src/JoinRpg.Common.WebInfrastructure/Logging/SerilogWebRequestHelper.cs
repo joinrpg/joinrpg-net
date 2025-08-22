@@ -1,11 +1,21 @@
+using Microsoft.AspNetCore.Builder;
 using Serilog;
 using Serilog.Events;
 
-namespace JoinRpg.Portal.Infrastructure.Logging;
+namespace JoinRpg.Common.WebInfrastructure.Logging;
 
 public static class SerilogWebRequestHelper
 {
-    public static void EnrichFromRequest(IDiagnosticContext diagnosticContext, HttpContext httpContext)
+    public static IApplicationBuilder UseJoinRequestLogging(this IApplicationBuilder app)
+    {
+        return app.UseSerilogRequestLogging(opts =>
+        {
+            opts.EnrichDiagnosticContext = EnrichFromRequest;
+            opts.GetLevel = ExcludeHealthChecks;
+        });
+    }
+
+    private static void EnrichFromRequest(IDiagnosticContext diagnosticContext, HttpContext httpContext)
     {
         var request = httpContext.Request;
 
@@ -42,7 +52,7 @@ public static class SerilogWebRequestHelper
         return false;
     }
 
-    public static LogEventLevel ExcludeHealthChecks(HttpContext ctx, double _, Exception? ex) =>
+    private static LogEventLevel ExcludeHealthChecks(HttpContext ctx, double _, Exception? ex) =>
         ex != null
             ? LogEventLevel.Error
             : ctx.Response.StatusCode > 499

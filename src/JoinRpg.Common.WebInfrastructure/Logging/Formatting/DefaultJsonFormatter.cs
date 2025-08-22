@@ -8,14 +8,14 @@ using Serilog.Formatting;
 using Serilog.Formatting.Json;
 using Serilog.Parsing;
 
-namespace JoinRpg.Portal.Infrastructure.Logging.Formatting;
+namespace JoinRpg.Common.WebInfrastructure.Logging.Formatting;
 
 /// <summary>
 /// Formats log events in a simple JSON structure. Instances of this class
 /// are safe for concurrent access by multiple threads.
 /// </summary>
 /// <remarks>Migrated from the original Serilog.Formatting.Json.JsonFormatter implementation.</remarks>
-public abstract class DefaultJsonFormatter : ITextFormatter
+internal abstract class DefaultJsonFormatter : ITextFormatter
 {
     readonly bool _omitEnclosingObject;
     readonly string _closingDelimiter;

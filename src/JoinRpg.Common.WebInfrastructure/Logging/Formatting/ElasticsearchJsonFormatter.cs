@@ -6,17 +6,17 @@ using System.Globalization;
 using System.Reflection;
 #if !NO_SERIALIZATION
 using System.Runtime.Serialization;
-
-#endif
 using Serilog.Events;
 using Serilog.Parsing;
 
-namespace JoinRpg.Portal.Infrastructure.Logging.Formatting;
+#endif
+
+namespace JoinRpg.Common.WebInfrastructure.Logging.Formatting;
 
 /// <summary>
 /// Custom Json formatter that respects the configured property name handling and forces 'Timestamp' to @timestamp
 /// </summary>
-public class ElasticsearchJsonFormatter : DefaultJsonFormatter
+internal class ElasticsearchJsonFormatter : DefaultJsonFormatter
 {
     readonly bool _inlineFields;
     readonly bool _formatStackTraceAsArray;

@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -139,6 +140,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.IdPortal.Client", "src\JoinRpg.IdPortal\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj", "{DAF3CBDD-AC63-484D-8906-B3120D8BB2E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.WebPortal.Managers.Test", "src\JoinRpg.WebPortal.Managers.Test\JoinRpg.WebPortal.Managers.Test.csproj", "{5727C083-0EE6-4316-909C-2D7B5AC72597}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Common.WebInfrastructure", "src\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj", "{58533BEE-3B89-4374-8979-2E6B96405D2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -366,6 +369,10 @@ Global
 		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5727C083-0EE6-4316-909C-2D7B5AC72597}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58533BEE-3B89-4374-8979-2E6B96405D2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58533BEE-3B89-4374-8979-2E6B96405D2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58533BEE-3B89-4374-8979-2E6B96405D2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58533BEE-3B89-4374-8979-2E6B96405D2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -415,6 +422,7 @@ Global
 		{37E35417-0D6A-7D0D-A851-410A575E0788} = {4D578A76-DAE7-463A-9ABE-268E4D8488DA}
 		{70F947A5-5623-E77A-2FD8-6641C7F8CADB} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{5727C083-0EE6-4316-909C-2D7B5AC72597} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
+		{58533BEE-3B89-4374-8979-2E6B96405D2F} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}

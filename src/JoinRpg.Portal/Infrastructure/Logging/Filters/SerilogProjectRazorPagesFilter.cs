@@ -3,9 +3,9 @@ using Serilog;
 
 namespace JoinRpg.Portal.Infrastructure.Logging.Filters;
 
-public class SerilogProjectMvcFilter(IDiagnosticContext diagnosticContext) : IActionFilter
+public class SerilogProjectRazorPagesFilter(IDiagnosticContext diagnosticContext) : IPageFilter
 {
-    public void OnActionExecuting(ActionExecutingContext context)
+    public void OnPageHandlerSelected(PageHandlerSelectedContext context)
     {
         if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectId))
         {
@@ -14,5 +14,6 @@ public class SerilogProjectMvcFilter(IDiagnosticContext diagnosticContext) : IAc
     }
 
     // Required by the interface
-    public void OnActionExecuted(ActionExecutedContext context) { }
+    public void OnPageHandlerExecuted(PageHandlerExecutedContext context) { }
+    public void OnPageHandlerExecuting(PageHandlerExecutingContext context) { }
 }

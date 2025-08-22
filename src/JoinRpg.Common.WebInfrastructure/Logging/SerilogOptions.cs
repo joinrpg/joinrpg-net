@@ -1,4 +1,6 @@
-namespace JoinRpg.Portal.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
+
+namespace JoinRpg.Common.WebInfrastructure.Logging;
 
 public class SerilogOptions
 {
