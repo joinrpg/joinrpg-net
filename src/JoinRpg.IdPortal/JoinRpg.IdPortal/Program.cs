@@ -66,21 +66,11 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
-//app.UseHttpsRedirection();
-
-app.Use(async (context, next) =>
-{
-    var logger = context.RequestServices.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
-    logger.LogInformation("Scheme: {scheme}", context.Request.Scheme);
-    logger.LogInformation("Host: " + context.Request.Host);
-    foreach (var header in context.Request.Headers)
-    {
-        logger.LogInformation($"{header.Key}: {header.Value}");
-    }
-    await next();
-});
+app.UseRouting();
 
 app.UseJoinRequestLogging();
+
+app.UseAuthentication().UseAuthorization();
 
 
 app.UseAntiforgery();
