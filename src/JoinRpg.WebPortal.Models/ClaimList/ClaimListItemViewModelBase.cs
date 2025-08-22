@@ -26,6 +26,9 @@ public abstract class ClaimListItemViewModelBase : ILinkable
     [Display(Name = "Создана"), UIHint("EventTime")]
     public DateTime? CreateDate { get; set; }
 
+    [Display(Name = "Дата заезда")]
+    public DateTime? CheckInDate { get; set; }
+
     [Display(Name = "Ответственный")]
     public User Responsible { get; set; }
 
@@ -53,6 +56,7 @@ public abstract class ClaimListItemViewModelBase : ILinkable
 
         UpdateDate = lastModifiedAt;
         CreateDate = claim.CreateDate;
+        CheckInDate = claim.CheckInDate;
         Responsible = claim.ResponsibleMasterUser;
         LastModifiedBy = lastModifiedBy;
 
