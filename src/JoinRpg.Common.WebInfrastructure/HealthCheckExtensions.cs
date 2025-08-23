@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Routing;
 
-namespace Joinrpg.Web.Identity;
+namespace JoinRpg.Common.WebInfrastructure;
 
 public static class HealthCheckExtensions
 {

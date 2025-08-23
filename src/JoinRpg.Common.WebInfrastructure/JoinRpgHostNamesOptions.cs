@@ -1,4 +1,4 @@
-namespace Joinrpg.Web.Identity;
+namespace JoinRpg.Common.WebInfrastructure;
 public class JoinRpgHostNamesOptions
 {
     public required string MainHost { get; set; }

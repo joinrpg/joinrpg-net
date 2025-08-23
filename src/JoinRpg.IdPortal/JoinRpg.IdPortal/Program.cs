@@ -1,6 +1,6 @@
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
-using JoinRpg.Common.WebInfrastructure.Logging;
+using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Dal.Impl;
 using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
@@ -9,15 +9,10 @@ using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, _, configuration) =>
-{
-    var loggerOptions = context.Configuration.GetSection("Logging").Get<SerilogOptions>();
-    configuration.ConfigureLogger(loggerOptions!, "JoinRpg.IdPortal");
-});
+builder.Host.UseJoinSerilog("JoinRpg.IdPortal");
 
 
 // Add services to the container.
