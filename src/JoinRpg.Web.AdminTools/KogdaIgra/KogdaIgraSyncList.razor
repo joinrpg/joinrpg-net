@@ -1,6 +1,9 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon.Projects
 @using Microsoft.JSInterop
-@inject IKogdaIgraSyncClient Client
+@using System.ComponentModel.DataAnnotations
+@using System.ComponentModel
+@inject IKogdaIgraSyncClient KogdaIgraClient
 @inject IProjectListClient ProjectListClient
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
@@ -9,14 +12,25 @@
 {
     <JoinLoadingMessage />
 }
+else if (JoinCandidates.Count == 0)
+{
+    <JoinAlert>Игр без привязки нет</JoinAlert>
+}
 else
 {
   <JoinPanelWithList Items="JoinCandidates">
     <Header>Игры без привязки</Header>
       <ItemTemplate>
             <ProjectLink Model="context" />
+            <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args, context)" />
   </ItemTemplate>
   </JoinPanelWithList>
+
+  <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
+    <FormRowFor For="@(() => model.KogdaIgraId)">
+            <KogdaIgraGameSelector @bind-KogdaIgraId="model.KogdaIgraId" InitialList="KogdaIgraCandidates" />
+    </FormRowFor>
+  </JoinFormDialog>
 }
 
 @code {
@@ -24,11 +38,50 @@ else
     public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
 
     public List<ProjectLinkViewModel>? JoinCandidates = null;
+    public List<ProjectLinkViewModel>? JoinCandidatesFull = null;
+
+    private BindToKiModel model = null!;
+    private JoinFormDialog<BindToKiModel> dialog = null!;
+
+    public KogdaIgraShortViewModel[]? KogdaIgraCandidates = [];
 
     protected override async Task OnParametersSetAsync()
     {
-        JoinCandidates = await ProjectListClient.GetProjects(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
+        JoinCandidatesFull = await ProjectListClient.GetProjects(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
+        JoinCandidates = JoinCandidatesFull.Count > 50 ? JoinCandidatesFull.Take(50).ToList() : JoinCandidatesFull;
+        JoinCandidatesFull = JoinCandidatesFull.Except(JoinCandidates).ToList();
+        if (JoinCandidates.Count > 0)
+        {
+            model = new BindToKiModel { JoinProject = JoinCandidates.First() };
+        }
+        KogdaIgraCandidates = await KogdaIgraClient.GetKogdaIgraCandidates();
         await base.OnParametersSetAsync();
+    }
+
+    private async Task OpenBindDialogAsync(ButtonClickEventArgs args, ProjectLinkViewModel project)
+    {
+        model = new BindToKiModel { JoinProject = project };
+        var result = dialog.ShowModalAsync();
+        if (result is not null)
+        {
+            JoinCandidates!.Remove(project);
+            if (JoinCandidatesFull!.Count > 0)
+            {
+                JoinCandidates.Add(JoinCandidatesFull[0]);
+                JoinCandidatesFull.RemoveAt(0);
+            }
+        }
+        args.ExitProgressState = true;
+    }
+
+    private class BindToKiModel
+    {
+        [Required]
+        [Display(Name = "Игра на КИ")]
+        public KogdaIgraIdentification? KogdaIgraId { get; set; }
+
+        [ReadOnly(true)]
+        public required ProjectLinkViewModel JoinProject { get; set; }
     }
 
 
