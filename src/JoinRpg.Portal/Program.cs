@@ -1,6 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using JoinRpg.Common.WebInfrastructure.Logging;
+using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Portal.Infrastructure;
 using Serilog;
 
@@ -22,14 +22,10 @@ public class Program
 
             startup.ConfigureServices(new JoinServiceCollectionProxy(builder.Services));
 
-            builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-            builder.Host.ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
-
-            builder.Host.UseSerilog((context, _, configuration) =>
-             {
-                 var loggerOptions = context.Configuration.GetSection("Logging").Get<SerilogOptions>();
-                 configuration.ConfigureLogger(loggerOptions!, "JoinRpg.Portal");
-             });
+            _ = builder.Host
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                .ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer)
+                .UseJoinSerilog("JoinRpg.Portal");
 
             var app = builder.Build();
 

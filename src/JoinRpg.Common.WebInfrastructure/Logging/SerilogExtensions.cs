@@ -9,9 +9,9 @@ using Serilog.Templates.Themes;
 
 namespace JoinRpg.Common.WebInfrastructure.Logging;
 
-public static class SerilogExtensions
+internal static class SerilogExtensions
 {
-    public static void ConfigureLogger(this LoggerConfiguration loggerConfiguration, SerilogOptions serilogOptions, string appName)
+    internal static void ConfigureLogger(this LoggerConfiguration loggerConfiguration, SerilogOptions serilogOptions, string appName)
     {
         serilogOptions.LogLevel.TryAdd("Default", LogLevel.Information);
         serilogOptions.LogLevel.TryAdd("Microsoft", LogLevel.Information);

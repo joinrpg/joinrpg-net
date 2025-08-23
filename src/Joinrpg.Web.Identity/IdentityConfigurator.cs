@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
