@@ -56,8 +56,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             projectStatus: status,
             projectScheduleSettings: new ProjectScheduleSettings(project.Details.ScheduleEnabled),
             projectCloneSettings: project.Details.ProjectCloneSettings,
-            projectDescription: project.Details.ProjectAnnounce,
-            kogdaIgraLinkedIds: [.. project.KogdaIgraGames.Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))]
+            createDate: DateOnly.FromDateTime(project.CreatedDate)
             );
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
@@ -150,4 +149,12 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         }
     }
 
+    public async Task<PrimitiveTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
+    {
+        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new InvalidOperationException($"Project with {projectId} not found");
+
+        return new PrimitiveTypes.ProjectMetadata.ProjectDetails(
+            project.Details.ProjectAnnounce,
+            [.. project.KogdaIgraGames.Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))]);
+    }
 }

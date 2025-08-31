@@ -13,6 +13,7 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(int? userId);
 
     Task<Project> GetProjectAsync(int project);
+    [Obsolete]
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
 

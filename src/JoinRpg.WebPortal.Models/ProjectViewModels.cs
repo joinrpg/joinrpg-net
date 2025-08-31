@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebComponents;
 
@@ -11,8 +11,9 @@ namespace JoinRpg.Web.Models;
 
 public static class ProjectLinkViewModelBuilder
 {
+    [Obsolete("Не надо для этих целей грузить проект, можно например ProjectHeaderDto")]
     public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
-        this IEnumerable<Project> projects) =>
+        this IEnumerable<DataModel.Project> projects) =>
         projects.Select(p => new ProjectLinkViewModel(new(p.ProjectId), p.ProjectName));
 }
 
@@ -70,19 +71,18 @@ public class CloseProjectViewModel
     public bool IsMaster { get; set; }
 }
 
-//TODO: Make this use ProjectInfo
-public class ProjectDetailsViewModel(Project project, IReadOnlyCollection<ClaimWithPlayer> claims)
+public class ProjectDetailsViewModel(ProjectInfo project, ProjectDetails details, IReadOnlyCollection<ClaimWithPlayer> claims)
 {
     public int ProjectId { get; } = project.ProjectId;
 
     [Display(Name = "Проект активен?")]
-    public bool IsActive { get; } = project.Active;
+    public bool IsActive { get; } = project.IsActive;
     [Display(Name = "Дата создания")]
-    public DateTime CreatedDate { get; } = project.CreatedDate;
-    public IEnumerable<UserLinkViewModel> Masters { get; } = project.ProjectAcls.Select(acl => UserLinks.Create(acl.User));
+    public DateOnly CreatedDate { get; } = project.CreateDate;
+    public IEnumerable<UserLinkViewModel> Masters { get; } = project.Masters.Select(acl => acl.ToUserLinkViewModel());
 
     [DisplayName("Анонс проекта")]
-    public JoinHtmlString ProjectAnnounce { get; } = project.Details.ProjectAnnounce.ToHtmlString();
+    public JoinHtmlString ProjectAnnounce { get; } = details.ProjectDescription.ToHtmlString();
 
     public bool HasMyClaims { get; } = claims.Count > 0;
 
@@ -90,7 +90,7 @@ public class ProjectDetailsViewModel(Project project, IReadOnlyCollection<ClaimW
     public string ProjectName { get; } = project.ProjectName;
 
     [Display(Name = "Заявки открыты?")]
-    public bool IsAcceptingClaims { get; } = project.IsAcceptingClaims;
+    public bool IsAcceptingClaims { get; } = project.ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen;
 }
 
 public class ProjectListItemViewModel(ProjectWithClaimCount p)

@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories;
 internal static class ProjectLoaderCommon
 {
+    // TODO не грузить тут лишнего, в частности в Details
     public static async Task<Project?> GetProjectWithFieldsAsync(MyDbContext ctx, int project, bool skipCache)
     {
         var query = skipCache ? ctx.ProjectsSet.AsNoTracking() : ctx.ProjectsSet;

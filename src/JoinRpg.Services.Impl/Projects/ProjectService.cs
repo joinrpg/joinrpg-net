@@ -40,7 +40,7 @@ internal class ProjectService(
             ProjectName = projectName,
             CharacterGroups = [rootGroup,],
             ProjectAcls = [ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),],
-            Details = new ProjectDetails() { ClonedFromProjectId = cloneFrom?.Value, },
+            Details = new DataModel.ProjectDetails() { ClonedFromProjectId = cloneFrom?.Value, },
             ProjectFields = [],
         };
         MarkTreeModified(project);

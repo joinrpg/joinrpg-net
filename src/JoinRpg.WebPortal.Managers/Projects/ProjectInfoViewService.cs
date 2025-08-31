@@ -9,12 +9,13 @@ internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadata
     async Task<ProjectInfoViewModel> IProjectInfoClient.GetProjectInfo(ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
         return new ProjectInfoViewModel(
             ProjectId: project.ProjectId,
             Name: project.ProjectName,
             Masters: [.. project.Masters.Select(m => m.ToUserLinkViewModel())],
-            DescriptionHtml: project.ProjectDescription.ToHtmlString(),
-            KogdaIgraLinkedIds: [.. project.KogdaIgraLinkedIds]
+            DescriptionHtml: details.ProjectDescription.ToHtmlString(),
+            KogdaIgraLinkedIds: [.. details.KogdaIgraLinkedIds]
             );
     }
 }
