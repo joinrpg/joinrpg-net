@@ -309,34 +309,6 @@ tr.unapprovedPayment td:last-child {
     margin-right: 0.3em;
 }
 
-.join-users-h {
-    list-style-type: none;
-    display: block;
-    column-count: 3;
-}
-
-@media screen and (max-width: 1300px)
-{
-    .join-users-h
-    {
-        column-count: 2;
-    }
-}
-
-@media screen and (max-width: 800px)
-{
-    .join-users-h
-    {
-        column-count: 1;
-    }
-}
-
-.join-users-h li
-{
-    margin: 0.2em;
-    display: block;
-}
-
 #availRequestsList {
     max-height: 200px;
     overflow-y: scroll;

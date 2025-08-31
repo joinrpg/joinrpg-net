@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -37,7 +38,7 @@ public class GameController(
             return NotFound();
         }
 
-        return View(new ProjectDetailsViewModel(project, details, claims));
+        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims));
     }
 
     [Authorize]

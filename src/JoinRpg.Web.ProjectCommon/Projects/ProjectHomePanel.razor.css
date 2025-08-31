@@ -1,0 +1,20 @@
+.join-users-h {
+  list-style-type: none;
+  column-count: 3;
+}
+
+@media screen and (max-width: 1300px) {
+  .join-users-h {
+    column-count: 2;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .join-users-h {
+    column-count: 1;
+  }
+}
+
+.join-users-h li {
+  display: block;
+}
