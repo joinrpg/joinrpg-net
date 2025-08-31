@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 
@@ -40,9 +39,9 @@ public record class ProjectInfo
     public ProjectLifecycleStatus ProjectStatus { get; }
     public bool IsActive => ProjectStatus != ProjectLifecycleStatus.Archived;
 
+    public DateOnly CreateDate { get; }
+
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
-    public MarkdownString ProjectDescription { get; }
-    public IReadOnlyCollection<KogdaIgraIdentification> KogdaIgraLinkedIds { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -61,8 +60,7 @@ public record class ProjectInfo
         ProjectLifecycleStatus projectStatus,
         ProjectScheduleSettings projectScheduleSettings,
         ProjectCloneSettings projectCloneSettings,
-        MarkdownString projectDescription,
-        IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraLinkedIds)
+        DateOnly createDate)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -89,8 +87,7 @@ public record class ProjectInfo
         ProjectStatus = projectStatus;
         ProjectScheduleSettings = projectScheduleSettings;
         CloneSettings = projectCloneSettings;
-        ProjectDescription = projectDescription;
-        KogdaIgraLinkedIds = kogdaIgraLinkedIds;
+        CreateDate = createDate;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -110,5 +107,15 @@ public record class ProjectInfo
     public bool HasEditRolesAccess(UserIdentification userId)
     {
         return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
+    }
+
+    public ProjectInfo WithAddedField(ProjectFieldInfo field)
+    {
+        ProjectFieldInfo[] fields = [field, .. UnsortedFields];
+
+        return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
+            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, DefaultTemplateCharacter,
+            AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate);
     }
 }

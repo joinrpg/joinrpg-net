@@ -18,14 +18,17 @@ namespace JoinRpg.Portal.Controllers;
 public class GameController(
     IProjectService projectService,
     IProjectRepository projectRepository,
-    IUserRepository userRepository) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
+    IUserRepository userRepository,
+    IProjectMetadataRepository projectMetadataRepository
+    ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
     public async Task<IActionResult> Details(ProjectIdentification projectId, [FromServices] IClaimsRepository claimsRepository, [FromServices] ICurrentUserAccessor currentUserAccessor)
     {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
         var claims = currentUserAccessor.UserIdOrDefault is int userId
             ? await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId)
             : [];
@@ -34,7 +37,7 @@ public class GameController(
             return NotFound();
         }
 
-        return View(new ProjectDetailsViewModel(project, claims));
+        return View(new ProjectDetailsViewModel(project, details, claims));
     }
 
     [Authorize]

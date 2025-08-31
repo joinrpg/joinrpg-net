@@ -17,4 +17,6 @@ public class ProjectMetadataRepositoryCacheDecorator(
 
         return projectInfo;
     }
+
+    Task<ProjectDetails> IProjectMetadataRepository.GetProjectDetails(ProjectIdentification projectId) => repository.GetProjectDetails(projectId);
 }
