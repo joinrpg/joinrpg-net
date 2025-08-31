@@ -8,8 +8,10 @@
                 Buttons="@buttons"
                 Caption="@Caption"
                 DisableSumbit="formInvalid"
-                MaxWidth="700px"
-                Width="80%"
+                MaxWidth="@MaxWidth"
+                Width="@Width"
+                Height="@Height"
+                MaxHeight="@MaxHeight"
     >
         <EditForm FormName="@FormName" EditContext="@editContext">
             <FormHorizontal>
@@ -35,6 +37,18 @@
     [EditorRequired]
     [Parameter]
     public TViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public string? Width { get; set; } = "700px";
+
+    [Parameter]
+    public string? MaxWidth { get; set; } = "80%";
+
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
 
     /// <summary>
     /// Тело формы
