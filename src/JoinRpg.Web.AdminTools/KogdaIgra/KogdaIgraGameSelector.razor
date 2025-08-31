@@ -18,8 +18,8 @@ else
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter] public int? KogdaIgraId { get; set; }
-    [Parameter] public EventCallback<int?> KogdaIgraIdChanged { get; set; }
+    [Parameter] public KogdaIgraIdentification? KogdaIgraId { get; set; }
+    [Parameter] public EventCallback<KogdaIgraIdentification?> KogdaIgraIdChanged { get; set; }
 
     [Parameter] public KogdaIgraShortViewModel? KogdaIgra { get; set; }
     [Parameter] public EventCallback<KogdaIgraShortViewModel?> KogdaIgraChanged { get; set; }
@@ -59,7 +59,7 @@ else
     {
         int? id = values.Length == 0 ? null : values.Single();
         var item = itemModels.SingleOrDefault(m => m.KogdaIgraId == id);
-        await KogdaIgraIdChanged.InvokeAsync(id);
+        await KogdaIgraIdChanged.InvokeAsync(KogdaIgraIdentification.FromOptional(id));
         await KogdaIgraChanged.InvokeAsync(item);
     }
 }

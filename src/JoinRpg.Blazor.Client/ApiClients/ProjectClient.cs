@@ -5,9 +5,9 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 
 public class ProjectListClient(HttpClient httpClient) : IProjectListClient
 {
-    public async Task<ProjectLinkViewModel[]> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
+    public async Task<List<ProjectLinkViewModel>> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
-        return await httpClient.GetFromJsonAsync<ProjectLinkViewModel[]>($"webapi/projects/GetProjects?criteria={projectSelectionCriteria}") ?? throw new Exception("Couldn't get result from server");
+        return await httpClient.GetFromJsonAsync<List<ProjectLinkViewModel>>($"webapi/projects/GetProjects?criteria={projectSelectionCriteria}") ?? throw new Exception("Couldn't get result from server");
     }
 }
 
