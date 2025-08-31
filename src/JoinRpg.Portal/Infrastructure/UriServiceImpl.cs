@@ -15,7 +15,8 @@ internal class UriServiceImpl(
     IUriLocator<UserLinkViewModel>,
     IUriLocator<CharacterGroupLinkSlimViewModel>,
     IUriLocator<CharacterLinkSlimViewModel>,
-    IUriLocator<ProjectLinkViewModel>
+    IUriLocator<ProjectLinkViewModel>,
+    IProjectUriLocator
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -68,6 +69,13 @@ internal class UriServiceImpl(
         {
             throw new InvalidOperationException($"Failed to create link to {linkable}");
         }
+        Uri baseDomain = GetBaseDomain();
+
+        return new Uri(baseDomain, link);
+    }
+
+    private Uri GetBaseDomain()
+    {
         Uri baseDomain;
         if (httpContextAccessor.HttpContext?.Request is HttpRequest request)
         {
@@ -80,7 +88,7 @@ internal class UriServiceImpl(
             baseDomain = notificationOptions.Value.BaseDomain;
         }
 
-        return new Uri(baseDomain, link);
+        return baseDomain;
     }
 
     public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
@@ -92,6 +100,8 @@ internal class UriServiceImpl(
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
     Uri IUriLocator<ProjectLinkViewModel>.GetUri(ProjectLinkViewModel target) => GetUri(new Linkable(target.ProjectId));
+    Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("MyClaim", "Claim", new { ProjectId = projectId.Value }));
+    Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForGroup", "Claim", new { ProjectId = projectId.Value }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

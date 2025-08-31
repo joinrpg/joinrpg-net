@@ -282,6 +282,7 @@ else
         { ButtonPreset.Vkontakte, new("ВКонтакте", "Входим...", normalIcon: null, VariationStyleEnum.Info) },
         { ButtonPreset.Unlink, new("Отвязать","Отвязываем...", "glyphicon-remove-sign", VariationStyleEnum.Info)},
         { ButtonPreset.Link, new("Привязать","Привязываем...", "glyphicon-plus", VariationStyleEnum.Info)},
+        { ButtonPreset.Claim, new("Заявка",null, "glyphicon-file", VariationStyleEnum.Info)},
     }.ToFrozenDictionary();
 
     internal record struct ButtonContent(string? Label, string? Icon);

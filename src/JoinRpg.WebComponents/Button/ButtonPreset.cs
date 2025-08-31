@@ -35,4 +35,8 @@ public enum ButtonPreset
     /// </summary>
     Unlink,
     Link,
+    /// <summary>
+    /// Заявка
+    /// </summary>
+    Claim
 }
