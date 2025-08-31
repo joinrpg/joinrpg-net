@@ -46,4 +46,10 @@ internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), I
     }
 
     public Task<int> GetNotUpdatedCount() => GetNotUpdatedQuery().CountAsync();
+
+    async Task<ICollection<KogdaIgraGame>> IKogdaIgraRepository.GetByIds(KogdaIgraIdentification[] kogdaIgraIdentifications)
+    {
+        var ids = kogdaIgraIdentifications.Select(x => x.Value).ToArray();
+        return await Ctx.Set<KogdaIgraGame>().Where(ki => ids.Contains(ki.KogdaIgraGameId)).ToListAsync();
+    }
 }

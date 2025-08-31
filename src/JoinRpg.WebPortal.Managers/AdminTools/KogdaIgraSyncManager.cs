@@ -61,6 +61,4 @@ internal class KogdaIgraSyncManager(
     {
         await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications);
     }
-
-    Task<KogdaIgraCardViewModel> IKogdaIgraSyncClient.GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId) => throw new NotImplementedException();
 }

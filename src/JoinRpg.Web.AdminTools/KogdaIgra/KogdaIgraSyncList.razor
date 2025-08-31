@@ -5,6 +5,7 @@
 @using System.ComponentModel
 @inject IKogdaIgraSyncClient KogdaIgraClient
 @inject IProjectListClient ProjectListClient
+@inject IKogdaIgraBindClient BindClient
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
 
@@ -60,18 +61,26 @@ else
 
     private async Task OpenBindDialogAsync(ButtonClickEventArgs args, ProjectLinkViewModel project)
     {
-        model = new BindToKiModel { JoinProject = project };
-        var result = dialog.ShowModalAsync();
-        if (result is not null)
+        try
         {
-            JoinCandidates!.Remove(project);
-            if (JoinCandidatesFull!.Count > 0)
+            model = new BindToKiModel { JoinProject = project };
+            var result = await dialog.ShowModalAsync();
+            if (result is not null)
             {
-                JoinCandidates.Add(JoinCandidatesFull[0]);
-                JoinCandidatesFull.RemoveAt(0);
+                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, [result.KogdaIgraId]));
+                JoinCandidates!.Remove(project);
+                if (JoinCandidatesFull!.Count > 0)
+                {
+                    JoinCandidates.Add(JoinCandidatesFull[0]);
+                    JoinCandidatesFull.RemoveAt(0);
+                }
             }
+            
         }
-        args.ExitProgressState = true;
+        finally
+        {
+            args.ExitProgressState = true;
+        }
     }
 
     private class BindToKiModel
