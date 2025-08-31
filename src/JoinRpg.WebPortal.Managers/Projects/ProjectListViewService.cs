@@ -5,7 +5,7 @@ using JoinRpg.Web.ProjectCommon.Projects;
 namespace JoinRpg.WebPortal.Managers.Projects;
 internal class ProjectListViewService(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : IProjectListClient
 {
-    public async Task<ProjectLinkViewModel[]> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
+    public async Task<List<ProjectLinkViewModel>> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
         ProjectListSpecification spec = GetSpecification(projectSelectionCriteria);
 

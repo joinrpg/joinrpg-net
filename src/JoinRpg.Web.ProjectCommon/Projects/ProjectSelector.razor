@@ -31,7 +31,7 @@ else
 
     private int[] Selected { get; set; } = new int[0];
     private IntSelectListItem[] items = null!;
-    private ProjectLinkViewModel[] sourceItems = null!;
+    private List<ProjectLinkViewModel> sourceItems = null!;
     private FieldIdentifier? fieldIdentifier = null;
 
     protected override async Task OnInitializedAsync()

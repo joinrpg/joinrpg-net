@@ -23,7 +23,7 @@ else
     [Parameter]
     public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
 
-    public ProjectLinkViewModel[]? JoinCandidates = null;
+    public List<ProjectLinkViewModel>? JoinCandidates = null;
 
     protected override async Task OnParametersSetAsync()
     {
