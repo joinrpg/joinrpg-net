@@ -1,0 +1,43 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+<h2>@Model.Title</h2>
+
+<JoinAlert Variation="VariationStyleEnum.Info">
+  <CalendarIcon /> Дата создания: <strong>@Model.CreatedDate.ToShortDateString()</strong>
+</JoinAlert>
+
+@if (Model.Status== ProjectLifecycleStatus.Archived)
+{
+    <JoinAlert Variation="VariationStyleEnum.Warning"><RemoveIcon /> Проект <strong>закрыт</strong></JoinAlert>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ProjectAnnounce.Value))
+{
+  <JoinPanel>
+    <Header>Анонс</Header>
+    <Body>
+      @Model.ProjectAnnounce
+    </Body>
+  </JoinPanel>
+}
+
+<div style="text-align:center; margin-bottom:1em">
+    <MyClaimButton ProjectId="@Model.ProjectId" HasMyClaims="@Model.HasMyClaims" ProjectStatus="Model.Status" Size="SizeStyleEnum.Large"/>
+</div>
+
+<JoinPanel>
+  <Header>Мастера</Header>
+  <Body>
+        <ul class="join-users-h">
+            @foreach (var master in Model.Masters)
+            {
+                <li><UserLink Model="master" /></li>
+            }
+        </ul>
+  </Body>
+</JoinPanel>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectDetailsViewModel Model { get; set; }
+
+}

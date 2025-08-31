@@ -1,20 +1,20 @@
-﻿@model JoinRpg.Web.Models.ProjectListItemViewModel
+@model JoinRpg.Web.Models.ProjectListItemViewModel
 <div class="col-sm-6 col-md-4">
     <div class="thumbnail">
         <div class="caption">
             <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@Model.ProjectName">
-                <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)">@Model.ProjectName</a>
+                <a href="@Url.Action("Details", "Game", new {ProjectId = Model.ProjectId.Value, area = ""}, null)">@Model.ProjectName</a>
             </h4>
             <p>
                 @if (Model.IsMaster)
                 {
-                    <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)"
+                    <a href="@Url.Action("Details", "Game", new { ProjectId = Model.ProjectId.Value, area = "" }, null)"
                        class="btn btn-info btn-sm"
                        role="button"
                        title="У меня есть права мастера на этой игре">Мой проект</a>
                 }
 
-                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId, area = ""}, null)"
+                <a href="@Url.Action("Index", "GameGroups", new { ProjectId = Model.ProjectId.Value, area = "" }, null)"
                    class="btn btn-primary btn-sm"
                    role="button"
                    title="Сетка ролей">
@@ -23,28 +23,21 @@
 
                 @if (!Model.IsMaster && Model.PublishPlot)
                 {
-                <a href="@Url.Action("Index", "Plot", new {Model.ProjectId, area = ""}, null)"
+                    <a href="@Url.Action("Index", "Plot", new { ProjectId = Model.ProjectId.Value, area = "" }, null)"
                    class="btn btn-info btn-sm"
                    role="button">
                      Материалы
                 </a>
                 }
-                @if (Model.HasMyClaims)
+
+                @if (Model.HasMyClaims || Model.IsAcceptingClaims)
                 {
-                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
-                       class="btn btn-success btn-sm"
-                       role="button"
-                       title="Моя заявка">
-                        Моя заявка
-                    </a>
-                }
-                else if (Model.IsAcceptingClaims)
-                {
-                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"
-                       class="btn btn-info btn-sm"
-                       role="button">
-                        Заявиться
-                    </a>
+                    <component type="typeof(JoinRpg.Web.ProjectCommon.Projects.MyClaimButton)"
+                               param-ProjectId="@Model.ProjectId"
+                               param-HasMyClaims="@Model.HasMyClaims"
+                               param-ProjectStatus="@Model.Status"
+                               param-Size="@SizeStyleEnum.Small"
+                               render-mode="Static" />
                 }
             </p>
         </div>

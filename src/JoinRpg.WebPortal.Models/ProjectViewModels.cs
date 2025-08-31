@@ -1,11 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
 
@@ -71,37 +69,22 @@ public class CloseProjectViewModel
     public bool IsMaster { get; set; }
 }
 
-public class ProjectDetailsViewModel(ProjectInfo project, ProjectDetails details, IReadOnlyCollection<ClaimWithPlayer> claims)
-{
-    public int ProjectId { get; } = project.ProjectId;
-
-    [Display(Name = "Проект активен?")]
-    public bool IsActive { get; } = project.IsActive;
-    [Display(Name = "Дата создания")]
-    public DateOnly CreatedDate { get; } = project.CreateDate;
-    public IEnumerable<UserLinkViewModel> Masters { get; } = project.Masters.Select(acl => acl.ToUserLinkViewModel());
-
-    [DisplayName("Анонс проекта")]
-    public JoinHtmlString ProjectAnnounce { get; } = details.ProjectDescription.ToHtmlString();
-
-    public bool HasMyClaims { get; } = claims.Count > 0;
-
-    [DisplayName("Название проекта")]
-    public string ProjectName { get; } = project.ProjectName;
-
-    [Display(Name = "Заявки открыты?")]
-    public bool IsAcceptingClaims { get; } = project.ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen;
-}
-
 public class ProjectListItemViewModel(ProjectWithClaimCount p)
 {
     public bool IsMaster { get; } = p.HasMasterAccess;
     public bool IsActive { get; } = p.Active;
+    public ProjectLifecycleStatus Status => (p.Active, p.IsAcceptingClaims) switch
+    {
+        (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
+        (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
+        (false, false) => ProjectLifecycleStatus.Archived,
+        (false, true) => throw new InvalidOperationException()
+    };
     public int ClaimCount { get; } = p.ActiveClaimsCount;
 
     public bool PublishPlot { get; } = p.PublishPlot;
 
-    public int ProjectId { get; set; } = p.ProjectId;
+    public ProjectIdentification ProjectId { get; set; } = new(p.ProjectId);
 
     [DisplayName("Название проекта"), Required]
     public string ProjectName { get; set; } = p.ProjectName;
