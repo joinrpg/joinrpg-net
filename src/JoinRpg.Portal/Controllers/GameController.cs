@@ -9,6 +9,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
+using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +27,10 @@ public class GameController(
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
-    public async Task<IActionResult> Details(ProjectIdentification projectId, [FromServices] IClaimsRepository claimsRepository, [FromServices] ICurrentUserAccessor currentUserAccessor)
+    public async Task<IActionResult> Details(ProjectIdentification projectId,
+        [FromServices] IClaimsRepository claimsRepository,
+        [FromServices] ICurrentUserAccessor currentUserAccessor,
+        [FromServices] IKogdaIgraSyncClient kiClient)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         var details = await projectMetadataRepository.GetProjectDetails(projectId);
@@ -38,7 +42,9 @@ public class GameController(
             return NotFound();
         }
 
-        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims));
+        var list = await kiClient.GetKogdaIgraCards(details.KogdaIgraLinkedIds);
+
+        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims, list));
     }
 
     [Authorize]

@@ -11,7 +11,7 @@ internal class KogdaIgraSyncService(
     IKogdaIgraApiClient apiClient,
     ILogger<KogdaIgraSyncService> logger,
     ICurrentUserAccessor currentUserAccessor)
-    : IKogdaIgraSyncService, IKogdaIgraBindService
+    : IKogdaIgraSyncService, IKogdaIgraBindService, IKogdaIgraInfoService
 {
     public async Task<SyncStatus> GetSyncStatus()
     {
@@ -132,5 +132,11 @@ internal class KogdaIgraSyncService(
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(kogdaIgraIdentifications);
         project.KogdaIgraGames.AssignLinksList(games);
         await unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<KogdaIgraGameInfo[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
+    {
+        var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(ids);
+        return [.. games.Select(g => ResultParser.ParseGameInfo(g.JsonGameData))];
     }
 }

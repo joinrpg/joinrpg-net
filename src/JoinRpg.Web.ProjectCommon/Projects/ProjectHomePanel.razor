@@ -9,6 +9,11 @@
 {
     <JoinAlert Variation="VariationStyleEnum.Warning"><RemoveIcon /> Проект <strong>закрыт</strong></JoinAlert>
 }
+
+@foreach (var ki in Model.KogdaIgras)
+{
+    <KogdaIgraCard Model="ki" />
+}
 @if (!string.IsNullOrWhiteSpace(Model.ProjectAnnounce.Value))
 {
   <JoinPanel>

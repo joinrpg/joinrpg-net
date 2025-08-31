@@ -14,6 +14,7 @@ public static class Registration
         _ = services
             .AddTransient<IKogdaIgraSyncService, KogdaIgraSyncService>()
             .AddTransient<IKogdaIgraBindService, KogdaIgraSyncService>()
+            .AddTransient<IKogdaIgraInfoService, KogdaIgraSyncService>()
             ;
         services.AddDailyJob<SyncKogdaIgraJob>();
     }

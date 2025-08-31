@@ -12,9 +12,8 @@ internal static class ResultParser
         return deserializeResult.Select(x => x.ToMarker()).WhereNotNull().ToArray();
     }
 
-    internal static KogdaIgraGameInfo? ParseGameInfo(int gameId, string strResult)
+    internal static KogdaIgraGameInfo ParseGameInfo(string strResult)
     {
-
         var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions) ?? throw new Exception("Failed to parse result");
         var ret = new KogdaIgraGameInfo(
             parsedResult.id,
@@ -26,14 +25,6 @@ internal static class ResultParser
             parsedResult.sub_region_disp_name,
             parsedResult.mg,
             parsedResult.uri);
-        if (ret.Id == 0)
-        {
-            return null;
-        }
-        if (ret.Id != gameId && string.IsNullOrWhiteSpace(ret.Name))
-        {
-            throw new KogdaIgraParseException(gameId, "Incorrect record");
-        }
         return ret;
     }
 

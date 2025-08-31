@@ -12,7 +12,7 @@ public interface IKogdaIgraBindService
 
 public interface IKogdaIgraInfoService
 {
-    Task<KogdaIgraGameInfo> GetGame(KogdaIgraIdentification id);
+    Task<KogdaIgraGameInfo[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> id);
 }
 
 public record class SyncStatus(int CountOfGames, DateTimeOffset LastUpdated, int PendingGamesCount) { }

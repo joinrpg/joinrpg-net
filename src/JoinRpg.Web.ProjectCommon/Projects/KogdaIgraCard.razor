@@ -1,0 +1,17 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+
+<JoinPanel>
+    <Header><CalendarIcon Title="Данные с КогдаИгры" /> Игра: <a href="@Model.KogdaIgraUri"> @Model.Name</a></Header>
+    <Body>
+        Даты: @Model.Begin — @Model.End <br />
+        Регион: @Model.RegionName <br />
+        МГ: @Model.MasterGroupName <br />
+        Сайт: @Model.SiteUri <br />
+    </Body>
+</JoinPanel>
+@code {
+    [Parameter]
+    [EditorRequired]
+    public KogdaIgraCardViewModel Model { get; set; }
+
+}
