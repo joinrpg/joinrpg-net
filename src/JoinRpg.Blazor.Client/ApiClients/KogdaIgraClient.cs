@@ -1,18 +1,19 @@
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
-public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncClient> logger, CsrfTokenProvider csrfTokenProvider)
-    : IKogdaIgraSyncClient
+public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> logger, CsrfTokenProvider csrfTokenProvider)
+    : IKogdaIgraSyncClient, IKogdaIgraBindClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
         return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetKogdaIgraCandidates")
             ?? throw new Exception("Couldn't get result from server");
     }
-    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId)
+    public async Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds)
     {
-        return await httpClient.GetFromJsonAsync<KogdaIgraCardViewModel>($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={kogdaIgraId}")
+        return await httpClient.GetFromJsonAsync<KogdaIgraCardViewModel[]>($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={string.Join(",", kogdaIgraIds.Select(x => x.ToString()))}")
             ?? throw new Exception("Couldn't get result from server");
     }
 
@@ -55,4 +56,14 @@ public class KogdaIgraSyncClient(HttpClient httpClient, ILogger<KogdaIgraSyncCli
             }
         }
     }
+
+    public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
+
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsJsonAsync($"webapi/kogdaigra/UpdateBindings", command);
+
+        _ = response.EnsureSuccessStatusCode();
+    }
+
 }

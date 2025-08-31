@@ -31,7 +31,12 @@ internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), I
 
     async Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> IKogdaIgraRepository.GetActive()
     {
-        var result = await GetSet().Where(ki => ki.Active).Select(ki => new { ki.KogdaIgraGameId, ki.Name }).ToListAsync();
+        var result = await GetSet()
+            .Where(ki => ki.Active)
+            .Where(ki => ki.LastUpdatedAt!.Value.Year > (DateTimeOffset.Now.Year - 2))
+            .Where(ki => ki.Name.Length > 0)
+            .Select(ki => new { ki.KogdaIgraGameId, ki.Name })
+            .ToListAsync();
         return [.. result.Select(x => (new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name))];
     }
 
@@ -41,4 +46,10 @@ internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), I
     }
 
     public Task<int> GetNotUpdatedCount() => GetNotUpdatedQuery().CountAsync();
+
+    async Task<ICollection<KogdaIgraGame>> IKogdaIgraRepository.GetByIds(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIdentifications)
+    {
+        var ids = kogdaIgraIdentifications.Select(x => x.Value).ToArray();
+        return await Ctx.Set<KogdaIgraGame>().Where(ki => ids.Contains(ki.KogdaIgraGameId)).ToListAsync();
+    }
 }

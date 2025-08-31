@@ -12,5 +12,11 @@ public record class KogdaIgraGameUpdateMarker(int Id, DateTimeOffset UpdateDate)
 
 public record class KogdaIgraGameInfo(int Id, string Name, string GameData,
     [property: JsonPropertyName("update_date")]
-    DateTimeOffset UpdateDate)
+    DateTimeOffset UpdateDate,
+    DateOnly Begin,
+    DateOnly End,
+    string RegionName,
+    string MasterGroupName,
+    string SiteUri
+    )
 { }

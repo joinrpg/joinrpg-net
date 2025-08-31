@@ -1,13 +1,24 @@
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
+using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Integrations.KogdaIgra;
-internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient apiClient, ILogger<KogdaIgraSyncService> logger) : IKogdaIgraSyncService
+internal class KogdaIgraSyncService(
+    IUnitOfWork unitOfWork,
+    IKogdaIgraApiClient apiClient,
+    ILogger<KogdaIgraSyncService> logger,
+    ICurrentUserAccessor currentUserAccessor)
+    : IKogdaIgraSyncService, IKogdaIgraBindService, IKogdaIgraInfoService
 {
     public async Task<SyncStatus> GetSyncStatus()
     {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
         var count = await unitOfWork.GetDbSet<KogdaIgraGame>().CountAsync();
         var lastUpdated = await unitOfWork.GetDbSet<KogdaIgraGame>().MaxAsync(kig => (DateTimeOffset?)kig.UpdateRequestedAt);
         var pending = await unitOfWork.GetKogdaIgraRepository().GetNotUpdatedCount();
@@ -15,6 +26,10 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
     }
     public async Task<SyncStatus> PerformSync()
     {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
         var status = await GetSyncStatus();
         logger.LogInformation("Sync status is {syncStatus}", status);
         var updated = await apiClient.GetChangedGamesSince(status.LastUpdated);
@@ -105,5 +120,23 @@ internal class KogdaIgraSyncService(IUnitOfWork unitOfWork, IKogdaIgraApiClient 
 
         await unitOfWork.SaveChangesAsync();
         logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);
+    }
+
+    public async Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications)
+    {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
+        var project = await unitOfWork.GetProjectRepository().GetProjectAsync(projectId);
+        var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(kogdaIgraIdentifications);
+        project.KogdaIgraGames.AssignLinksList(games);
+        await unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<KogdaIgraGameInfo[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
+    {
+        var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(ids);
+        return [.. games.Select(g => ResultParser.ParseGameInfo(g.JsonGameData))];
     }
 }

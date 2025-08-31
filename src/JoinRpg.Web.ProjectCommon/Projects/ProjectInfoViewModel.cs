@@ -15,7 +15,16 @@ public record class ProjectInfoViewModel(
 {
 }
 
-public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimWithPlayer> claims)
+public record class KogdaIgraCardViewModel(
+    Uri KogdaIgraUri,
+    string Name,
+    DateOnly Begin,
+    DateOnly End,
+    string RegionName,
+    string MasterGroupName,
+    Uri? SiteUri);
+
+public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimWithPlayer> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras)
 {
 
     public ProjectLifecycleStatus Status { get; set; } = project.ProjectStatus;
@@ -34,4 +43,6 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public string ProjectName { get; } = project.ProjectName;
 
     public string Title => "Игра «" + ProjectName + "»";
+
+    public IReadOnlyCollection<KogdaIgraCardViewModel> KogdaIgras { get; set; } = kogdaIgras;
 }

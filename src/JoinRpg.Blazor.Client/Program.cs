@@ -22,7 +22,7 @@ public class Program
         _ = typeof(CharacterTypeInfo).ToString();
         _ = typeof(CheckInStats).ToString();
         _ = typeof(ResponsibleMasterRulesList).ToString();
-        _ = typeof(KogdaIgraSyncClient).ToString();
+        _ = typeof(KogdaIgraClient).ToString();
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

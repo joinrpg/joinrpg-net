@@ -1,13 +1,17 @@
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 internal class KogdaIgraSyncManager(
     IKogdaIgraSyncService kogdaIgraSyncService,
     ILogger<KogdaIgraSyncManager> logger,
     IKogdaIgraRepository kogdaIgraRepository,
-    IOptions<KogdaIgraOptions> kograIgraOptions) : IKogdaIgraSyncClient
+    IOptions<KogdaIgraOptions> kograIgraOptions,
+    IKogdaIgraBindService kogdaIgraBindService,
+    IKogdaIgraInfoService kogdaIgraInfoService
+    ) : IKogdaIgraSyncClient, IKogdaIgraBindClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
@@ -17,10 +21,12 @@ internal class KogdaIgraSyncManager(
 
     private KogdaIgraShortViewModel[] ToShortViewModels((KogdaIgraIdentification KogdaIgraId, string Name)[] items)
         => items.Select(i => new KogdaIgraShortViewModel(i.KogdaIgraId, i.Name, new Uri(kograIgraOptions.Value.HostName + "game/" + i.KogdaIgraId))).ToArray();
-    public async Task<KogdaIgraCardViewModel> GetKogdaIgraCard(KogdaIgraIdentification kogdaIgraId)
+
+    public async Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds)
     {
-        var item = await kogdaIgraRepository.GetById(kogdaIgraId);
-        return item.ToViewModel();
+        var item = await kogdaIgraInfoService.GetGames(kogdaIgraIds);
+
+        return [.. item.Select(x => x.ToViewModel(kograIgraOptions.Value))];
     }
 
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated()
@@ -53,5 +59,10 @@ internal class KogdaIgraSyncManager(
                 return (null, $"Error during sync: {ex.Message}");
             }
         }
+    }
+
+    public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
+    {
+        await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications);
     }
 }

@@ -35,6 +35,15 @@ public class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
             throw new KogdaIgraConnectException(e);
         }
         var strResult = await result.Content.ReadAsStringAsync();
-        return ResultParser.ParseGameInfo(gameId, strResult);
+        var ret = ResultParser.ParseGameInfo(strResult);
+        if (ret.Id == 0)
+        {
+            return null;
+        }
+        if (ret.Id != gameId && string.IsNullOrWhiteSpace(ret.Name))
+        {
+            throw new KogdaIgraParseException(gameId, "Incorrect record");
+        }
+        return ret;
     }
 }
