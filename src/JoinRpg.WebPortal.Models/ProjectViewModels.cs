@@ -97,11 +97,18 @@ public class ProjectListItemViewModel(ProjectWithClaimCount p)
 {
     public bool IsMaster { get; } = p.HasMasterAccess;
     public bool IsActive { get; } = p.Active;
+    public ProjectLifecycleStatus Status => (p.Active, p.IsAcceptingClaims) switch
+    {
+        (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
+        (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
+        (false, false) => ProjectLifecycleStatus.Archived,
+        (false, true) => throw new InvalidOperationException()
+    };
     public int ClaimCount { get; } = p.ActiveClaimsCount;
 
     public bool PublishPlot { get; } = p.PublishPlot;
 
-    public int ProjectId { get; set; } = p.ProjectId;
+    public ProjectIdentification ProjectId { get; set; } = new(p.ProjectId);
 
     [DisplayName("Название проекта"), Required]
     public string ProjectName { get; set; } = p.ProjectName;
