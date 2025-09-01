@@ -14,6 +14,17 @@ public class CharacterPlotViewService(
     ICurrentUserAccessor currentUser
     )
 {
+    public async Task<IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>> GetHandoutsForActiveCharacters(ProjectIdentification projectId, PlotVersionFilter version)
+    {
+        var plotInfo = await LoadPlotInfoForActiveCharacters(projectId, CharacterAccessMode.Print);
+
+        var specification = new PlotSpecification(plotInfo.Values.Select(x => x.Targets).UnionAll(), version, PlotElementType.Handout);
+
+        var plots = await plotRepository.GetPlotsBySpecification(specification);
+
+        return MapPlotToTargets(plotInfo, plots);
+    }
+
     public async Task<IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>> GetHandoutsForCharacters(
         IReadOnlyCollection<CharacterIdentification> characterIdList)
     {
@@ -80,6 +91,16 @@ public class CharacterPlotViewService(
     {
         //TODO introduce method that loads only required data
         var characters = await characterRepository.GetCharacters(characterIdList);
+
+        characters = [.. characters.Where(c => AccessArgumentsFactory.Create(c, currentUser, characterAccessMode).CharacterPlotAccess)];
+
+        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x), x.PlotElementOrderData));
+    }
+
+    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode)
+    {
+        //TODO introduce method that loads only required data
+        var characters = await characterRepository.GetAllCharacters(projectId);
 
         characters = [.. characters.Where(c => AccessArgumentsFactory.Create(c, currentUser, characterAccessMode).CharacterPlotAccess)];
 
