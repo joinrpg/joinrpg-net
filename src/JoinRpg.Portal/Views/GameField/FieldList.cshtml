@@ -1,4 +1,4 @@
-﻿
+
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Dialogs
 @using JoinRpg.Web.Models.FieldSetup
@@ -9,8 +9,7 @@
 }
 @if (firstItem != null)
 {
-    <div class="table-responsive" style="margin-top: 1em">
-        <table class="table">
+        <table class="table table-responsive">
             <tr>
                 <th>Поле</th>
                 <th>Видимость</th>
@@ -25,7 +24,6 @@
                 <vc:field-row field="@item"></vc:field-row>
             }
         </table>
-    </div>
 
     <a asp-controller="GameField" asp-action="Create" asp-route-ProjectId="@Model.Navigation.ProjectId" class="btn btn-success">
         <span class="glyphicon glyphicon-plus"></span>Добавить новое поле
