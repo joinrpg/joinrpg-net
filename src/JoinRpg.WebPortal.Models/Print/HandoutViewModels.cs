@@ -1,44 +1,50 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Print;
 
-public class HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnlyCollection<Character> characters)
+public class HandoutReportViewModel
 {
-    public IEnumerable<HandoutReportItemViewModel> Handouts { get; } = elements.Select(e => new HandoutReportItemViewModel(e, characters));
-}
-
-public class HandoutListItemViewModel(string text)
-{
-    [Display(Name = "Что раздавать")]
-    public string Text { get; } = text;
-
-    public HandoutListItemViewModel(PlotTextDto plotTextDto) : this(plotTextDto.Content.ToPlainText()) { }
-}
-
-public class HandoutReportItemViewModel : HandoutListItemViewModel
-{
-    public HandoutReportItemViewModel(PlotElement element, IReadOnlyCollection<Character> characters)
-      : base(element.LastVersion().Content.ToPlainText().WithDefaultStringValue("(пустой текст)"))
+    public HandoutReportViewModel(IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>> handoutsDict)
     {
-        PlotElementId = element.PlotElementId;
-        PlotFolderId = element.PlotFolderId;
-        ProjectId = element.ProjectId;
-        Count = element.CountCharacters(characters);
-        Status = element.GetStatus();
+        var dict = new Dictionary<PlotTextDto, int>();
+        foreach (var pair in handoutsDict)
+        {
+            foreach (var handout in pair.Value)
+            {
+                if (dict.TryGetValue(handout, out var value))
+                {
+                    dict[handout] = value + 1;
+                }
+                else
+                {
+                    dict[handout] = 1;
+                }
+
+            }
+        }
+        Handouts = dict.Select(pair => new HandoutReportItemViewModel(pair.Key, pair.Value));
     }
 
+    public IEnumerable<HandoutReportItemViewModel> Handouts { get; }
+}
 
-    public int PlotElementId { get; }
-    public int PlotFolderId { get; }
-    public int ProjectId { get; }
+public class HandoutListItemViewModel(PlotTextDto plotTextDto)
+{
+    [Display(Name = "Что раздавать")]
+    public string Text { get; } = plotTextDto.Content.ToPlainTextWithoutHtmlEscape();
+}
+
+public class HandoutReportItemViewModel(PlotTextDto element, int count)
+    : HandoutListItemViewModel(element)
+{
+    public PlotElementIdentification PlotElementId { get; } = element.Id.PlotElementId;
     [Display(Name = "Количество")]
-    public int Count { get; }
-    public PlotStatus Status { get; }
+    public int Count { get; } = count;
+    public PlotStatus Status { get; } = element.GetStatus();
 }

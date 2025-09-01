@@ -85,12 +85,10 @@ public class PrintController(
     [HttpGet]
     public async Task<ActionResult> HandoutReport(ProjectIdentification projectid)
     {
-        var plotElements =
-          await plotRepository.GetActiveHandouts(projectid);
+        var handoutsDict = await characterPlotViewService.GetHandoutsForActiveCharacters(projectid, PlotVersionFilter.LatestVersion);
 
-        var characters = (await characterRepository.LoadCharactersWithGroups(projectid)).Where(c => c.IsActive).ToList();
 
-        return View(new HandoutReportViewModel(plotElements, characters));
+        return View(new HandoutReportViewModel(handoutsDict));
     }
 
     [MasterAuthorize()]

@@ -63,17 +63,6 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
         return VirtualOrderContainerFacade.Create(project.PlotFolders, project.Details.PlotFoldersOrdering).OrderedItems;
     }
 
-    public async Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid)
-    {
-        return await Ctx.Set<PlotElement>()
-          .Where(pf => pf.ProjectId == projectid)
-          .Include(pf => pf.TargetCharacters)
-          .Include(e => e.TargetGroups)
-          .Include(e => e.Texts)
-          .Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
-          .ToListAsync();
-    }
-
     public Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds)
     {
         return Ctx.Set<PlotFolder>()

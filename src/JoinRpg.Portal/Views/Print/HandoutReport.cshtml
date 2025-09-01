@@ -14,7 +14,7 @@
     @foreach (var item in Model.Handouts)
     {
         <tr><td>
-            <a href="@Url.Action("EditElement", "Plot", new {item.ProjectId, item.PlotFolderId, item.PlotElementId}, null)">
+            <a href="@Url.Action("EditElement", "Plot", new {ProjectId = item.PlotElementId.ProjectId.Value, ElementId = item.PlotElementId}, null)">
                 @item.Text
             </a>
             @if (item.Status != PlotStatus.Completed)

@@ -11,8 +11,8 @@ public interface IPlotRepository : IDisposable
     Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId);
     Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character);
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
-    Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid);
 
+    [Obsolete]
     Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds);
 
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsByTag(int projectid, string tagname);
