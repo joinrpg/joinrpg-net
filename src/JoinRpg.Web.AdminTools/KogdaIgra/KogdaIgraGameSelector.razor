@@ -8,21 +8,21 @@ else
 {
   <IntSelector
                Name="@Name"
-               SelectedValues="@Selected"
+                 SelectedValues="@Selected"
                SelectedValuesChanged="@HandleSelectedChanged"
                PossibleValues="items"
-               Multiple="false"
+               Multiple="true"
                />
 }
 
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter] public KogdaIgraIdentification? KogdaIgraId { get; set; }
-    [Parameter] public EventCallback<KogdaIgraIdentification?> KogdaIgraIdChanged { get; set; }
+    [Parameter] public KogdaIgraIdentification[] KogdaIgraIds { get; set; } = [];
+    [Parameter] public EventCallback<KogdaIgraIdentification[]> KogdaIgraIdsChanged { get; set; }
 
-    [Parameter] public KogdaIgraShortViewModel? KogdaIgra { get; set; }
-    [Parameter] public EventCallback<KogdaIgraShortViewModel?> KogdaIgraChanged { get; set; }
+    [Parameter] public KogdaIgraShortViewModel[] KogdaIgras { get; set; } = [];
+    [Parameter] public EventCallback<KogdaIgraShortViewModel[]> KogdaIgrasChanged { get; set; }
     [Parameter] public KogdaIgraShortViewModel[]? InitialList { get; set; }
 
     private int[] Selected { get; set; } = new int[0];
@@ -45,21 +45,12 @@ else
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        if (KogdaIgraId is not null)
-        {
-            Selected = new int[] { KogdaIgraId.Value };
-        }
-        else if (KogdaIgra is not null)
-        {
-            Selected = new int[] { KogdaIgra.KogdaIgraId };
-        }
+        Selected = [.. KogdaIgraIds.Select(x => x.Value)];
     }
 
     private async Task HandleSelectedChanged(int[] values)
     {
-        int? id = values.Length == 0 ? null : values.Single();
-        var item = itemModels.SingleOrDefault(m => m.KogdaIgraId == id);
-        await KogdaIgraIdChanged.InvokeAsync(KogdaIgraIdentification.FromOptional(id));
-        await KogdaIgraChanged.InvokeAsync(item);
+        await KogdaIgraIdsChanged.InvokeAsync([.. values.Select(x => new KogdaIgraIdentification(x))]);
+        await KogdaIgrasChanged.InvokeAsync([.. itemModels.Where(m => values.Contains(m.KogdaIgraId.Value))]);
     }
 }

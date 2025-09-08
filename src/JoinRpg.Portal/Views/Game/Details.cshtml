@@ -1,6 +1,25 @@
+@using JoinRpg.Interfaces
+@using JoinRpg.Web.AdminTools
 @using JoinRpg.Web.ProjectCommon.Projects
+@inject ICurrentUserAccessor currentUserAccessor 
 @model ProjectDetailsViewModel
 @{
     ViewBag.Title = Model.Title;
 }
+
 <component type="typeof(ProjectHomePanel)" render-mode="Static" param-Model="@Model" />
+
+@if (currentUserAccessor.IsAdmin)
+{
+    var link = new ProjectAdminControlViewModel(Model.ProjectId, Model.ProjectName, [.. Model.KogdaIgras.Select(x => x.KogdaIgraId)]);
+    <component type="typeof(ProjectAdminControlPanel)" render-mode="WebAssembly" param-Model="@link" />
+}
+
+@section Scripts {
+    @if (currentUserAccessor.IsAdmin)
+    {
+        <script src="/_framework/blazor.webassembly.js"></script>
+        <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    }
+
+}
