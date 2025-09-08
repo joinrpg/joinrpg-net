@@ -61,7 +61,13 @@
           <div style="margin-top: 1em;">
             @if (roomFreeSpace > 0 || neighbours.Any())
             {
-                  <div><strong>Соседи по комнате:</strong></div>
+                  <div><strong>Соседи по комнате
+                    @if (roomFreeSpace == 0)
+                    {
+                      <text> (полностью заполнена)</text>
+                    }
+                            :
+                  </strong></div>
               <div style="display: flex; flex-direction: row; align-items: center">
                 <ul style="margin-bottom: 0;">
                   @foreach (var neighbor in neighbours)
@@ -84,13 +90,6 @@
                       }
                   </form>
                 }
-              </div>
-            }
-
-            @if (roomFreeSpace == 0)
-            {
-              <div style="margin-top: 1em;">
-                <strong>Ваша комната полностью занята, послать новые приглашения невозможно!</strong>
               </div>
             }
 
