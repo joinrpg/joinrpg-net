@@ -31,7 +31,6 @@ public class ClaimController(
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterRepository characterRepository,
-    IUriService uriService,
     IAccommodationRequestRepository accommodationRequestRepository,
     IAccommodationRepository accommodationRepository,
     IAccommodationInviteService accommodationInviteService,
@@ -113,58 +112,18 @@ public class ClaimController(
 
         var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
-        IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
-        IEnumerable<AccommodationRequest>? requestForAccommodation = null;
-        IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null;
-        IEnumerable<AccommodationInvite>? incomingInvite = null;
-        IEnumerable<AccommodationInvite>? outgoingInvite = null;
 
-
-        if (claim.Project.Details.EnableAccommodation)
-        {
-            availableAccommodation = await
-                accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
-            requestForAccommodation = await accommodationRequestRepository
-                .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
-            var acceptedRequest = requestForAccommodation
-                .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
-
-            incomingInvite = await accommodationInviteRepository.GetIncomingInviteForClaim(claim);
-            outgoingInvite = await accommodationInviteRepository.GetOutgoingInviteForClaim(claim);
-
-            if (acceptedRequest != null)
-            {
-                var sameRequest = (await
-                    accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
-                        acceptedRequest.AccommodationTypeId).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
-                    .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType));
-                var noRequest = (await
-                    accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
-                var currentNeighbors = (await
-                   accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
-                        acceptedRequest.Id)).Select(c => c.ClaimId);
-                potentialNeighbors = sameRequest.Union(noRequest).Where(element => !currentNeighbors.Contains(element.ClaimId));
-
-                incomingInvite = incomingInvite.Where(i => !currentNeighbors.Contains(i.FromClaimId)).ToList();
-                outgoingInvite = outgoingInvite.Where(i => !currentNeighbors.Contains(i.ToClaimId)).ToList();
-            }
-
-
-        }
+        var accommodationModel = claim.Project.Details.EnableAccommodation ? await ShowAccommodationModel(claim) : null;
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
             plots,
-            uriService,
             projectInfo,
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
-            availableAccommodation,
-            potentialNeighbors,
-            incomingInvite,
-            outgoingInvite)
+            accommodationModel)
         {
             SubscriptionTooltip = await gameSubscribeClient.GetSubscribeForClaim(claim.ProjectId, claim.ClaimId),
         };
@@ -177,6 +136,50 @@ public class ClaimController(
         }
 
         return View("Edit", claimViewModel);
+    }
+
+    private async Task<ClaimAccommodationViewModel> ShowAccommodationModel(Claim claim)
+    {
+        var availableAccommodation = await
+            accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
+        var requestForAccommodation = await accommodationRequestRepository
+            .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
+        var acceptedRequest = requestForAccommodation
+            .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
+
+        var incomingInvite = await accommodationInviteRepository.GetIncomingInviteForClaim(claim);
+        var outgoingInvite = await accommodationInviteRepository.GetOutgoingInviteForClaim(claim);
+
+        IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null;
+
+        if (acceptedRequest != null)
+        {
+            var sameRequest = (await
+                accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
+                    acceptedRequest.AccommodationTypeId).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
+                .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType));
+            var noRequest = (await
+                accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
+            var currentNeighbors = (await
+               accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
+                    acceptedRequest.Id)).Select(c => c.ClaimId);
+            potentialNeighbors = sameRequest.Union(noRequest).Where(element => !currentNeighbors.Contains(element.ClaimId));
+
+            incomingInvite = incomingInvite.Where(i => !currentNeighbors.Contains(i.FromClaimId)).ToList();
+            outgoingInvite = outgoingInvite.Where(i => !currentNeighbors.Contains(i.ToClaimId)).ToList();
+        }
+        else
+        {
+            potentialNeighbors = [];
+        }
+
+        var claimAccommodationViewModel = new ClaimAccommodationViewModel(availableAccommodation,
+        potentialNeighbors,
+        incomingInvite,
+        outgoingInvite,
+        claim,
+        currentUserAccessor);
+        return claimAccommodationViewModel;
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]

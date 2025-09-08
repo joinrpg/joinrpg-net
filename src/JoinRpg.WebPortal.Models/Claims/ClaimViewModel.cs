@@ -8,7 +8,7 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
@@ -89,29 +89,15 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; }
 
-    public IEnumerable<UserSubscription> Subscriptions { get; set; }
-
     public required ClaimSubscribeViewModel SubscriptionTooltip { get; set; }
-
-
-    public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
-    public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
-    public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
-    public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
-    public AccommodationRequest? AccommodationRequest { get; set; }
-
 
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
       IReadOnlyCollection<PlotTextDto> plotElements,
-      IUriService uriService,
       ProjectInfo projectInfo,
       IProblemValidator<Claim> problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
-      IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
-      IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
-      IEnumerable<AccommodationInvite>? incomingInvite = null,
-      IEnumerable<AccommodationInvite>? outgoingInvite = null)
+      ClaimAccommodationViewModel? accommodationModel)
     {
         AllowToSetGroups = projectInfo.AllowToSetGroups;
         ClaimId = claim.ClaimId;
@@ -133,13 +119,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         CharacterId = claim.CharacterId;
         CharacterActive = claim.Character.IsActive;
         CharacterAutoCreated = claim.Character.AutoCreated;
-        AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
-          a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
-          HasMasterAccess).ToList();
-        PotentialNeighbors = potentialNeighbors;
-        AccommodationRequest = claim.AccommodationRequest;
-        IncomingInvite = incomingInvite;
-        OutgoingInvite = outgoingInvite;
+
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = claim.Character.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
@@ -189,6 +169,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             currentUser,
             claim.Character,
             projectInfo);
+        AccommodationModel = accommodationModel;
     }
 
     private static JoinSelectListItem ToJoinSelectListItem(Character x)
@@ -208,4 +189,5 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public ClaimCheckInValidator Validator { get; }
     public bool AccommodationEnabled { get; }
     public string ProjectName { get; set; }
+    public ClaimAccommodationViewModel? AccommodationModel { get; }
 }
