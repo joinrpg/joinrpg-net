@@ -16,7 +16,8 @@ internal class UriServiceImpl(
     IUriLocator<CharacterGroupLinkSlimViewModel>,
     IUriLocator<CharacterLinkSlimViewModel>,
     IUriLocator<ProjectLinkViewModel>,
-    IProjectUriLocator
+    IProjectUriLocator,
+    ICharacterUriLocator
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -102,6 +103,8 @@ internal class UriServiceImpl(
     Uri IUriLocator<ProjectLinkViewModel>.GetUri(ProjectLinkViewModel target) => GetUri(new Linkable(target.ProjectId));
     Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("MyClaim", "Claim", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForGroup", "Claim", new { ProjectId = projectId.Value }));
+    public Uri GetDetailsUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Details", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
+    public Uri GetAddClaimUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForCharacter", "Claim", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

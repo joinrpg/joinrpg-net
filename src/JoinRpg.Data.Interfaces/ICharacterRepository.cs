@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Data.Interfaces;
 
@@ -29,16 +28,6 @@ public interface ICharacterRepository : IDisposable
 
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId);
 }
-
-public record class CharacterWithProject(
-    CharacterIdentification CharacterId,
-    string CharacterName,
-    bool IsPublic,
-    bool IsActive,
-    ProjectName ProjectName,
-    MarkdownString CharacterDesc,
-    MarkdownString ProjectDesc)
-{ }
 
 public class CharacterView : IFieldContainter
 {
