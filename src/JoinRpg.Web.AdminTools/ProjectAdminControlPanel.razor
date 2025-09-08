@@ -1,0 +1,73 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@using JoinRpg.Web.AdminTools.KogdaIgra
+@using JoinRpg.Web.ProjectCommon.Projects
+@using Microsoft.JSInterop
+@using System.ComponentModel.DataAnnotations
+@using System.ComponentModel
+@inject IKogdaIgraSyncClient KogdaIgraClient
+@inject IProjectListClient ProjectListClient
+@inject IKogdaIgraBindClient BindClient
+@inject NavigationManager NavigationManager
+
+
+@if (model is not null)
+{
+  <JoinPanel>
+    <Header>Привязка к КогдаИгре</Header>
+    <Body>
+          <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args)" />
+           <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
+            <FormRowFor For="@(() => model.KogdaIgraIds)">
+              <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" />
+            </FormRowFor>
+           </JoinFormDialog>
+    </Body>
+  </JoinPanel>
+}
+
+@* TODO Добавить сюда кнопки поставить доступ и закрыть проект *@
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectAdminControlViewModel Model { get; set; }
+
+
+    private BindToKiModel model = null!;
+    private JoinFormDialog<BindToKiModel> dialog = null!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        model = new BindToKiModel { JoinProject = new ProjectLinkViewModel(Model.ProjectId, Model.ProjectName), KogdaIgraIds = Model.KogdaIgraLinkedIds };
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task OpenBindDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            var result = await dialog.ShowModalAsync();
+            if (result is not null)
+            {
+                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(Model.ProjectId, result.KogdaIgraIds));
+                NavigationManager.Refresh(forceReload: true);
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private class BindToKiModel
+    {
+        [Required]
+        [Display(Name = "Игры на КИ")]
+        public required KogdaIgraIdentification[] KogdaIgraIds { get; set; }
+
+        [ReadOnly(true)]
+        public required ProjectLinkViewModel JoinProject { get; set; }
+    }
+
+
+}

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Microsoft.AspNetCore.Components;
@@ -16,17 +17,17 @@ public record class ProjectInfoViewModel(
 }
 
 public record class KogdaIgraCardViewModel(
+    KogdaIgraIdentification KogdaIgraId,
     Uri KogdaIgraUri,
     string Name,
     DateOnly Begin,
     DateOnly End,
     string RegionName,
-    string MasterGroupName,
-    Uri? SiteUri);
+    string MasterGroupName, Uri? SiteUri);
 
+[method: JsonConstructor]
 public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimWithPlayer> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras)
 {
-
     public ProjectLifecycleStatus Status { get; set; } = project.ProjectStatus;
     public ProjectIdentification ProjectId { get; } = project.ProjectId;
 
@@ -40,7 +41,7 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public bool HasMyClaims { get; } = claims.Count > 0;
 
     [DisplayName("Название проекта")]
-    public string ProjectName { get; } = project.ProjectName;
+    public ProjectName ProjectName { get; } = project.ProjectName;
 
     public string Title => "Игра «" + ProjectName + "»";
 

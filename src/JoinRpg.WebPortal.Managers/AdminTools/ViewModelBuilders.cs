@@ -11,6 +11,7 @@ internal static class ViewModelBuilders
     public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGameInfo game, KogdaIgraOptions options)
     {
         return new KogdaIgraCardViewModel(
+            new(game.Id),
             KogdaIgraUri: new Uri(options.HostName, $"/game/{game.Id}/"),
             Name: game.Name,
             Begin: game.Begin,
