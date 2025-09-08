@@ -61,7 +61,13 @@
           <div style="margin-top: 1em;">
             @if (roomFreeSpace > 0 || neighbours.Any())
             {
-                  <div><strong>Соседи по комнате:</strong></div>
+                  <div><strong>Соседи по комнате
+                    @if (roomFreeSpace == 0)
+                    {
+                      <text> (полностью заполнена)</text>
+                    }
+                            :
+                  </strong></div>
               <div style="display: flex; flex-direction: row; align-items: center">
                 <ul style="margin-bottom: 0;">
                   @foreach (var neighbor in neighbours)
@@ -87,13 +93,6 @@
               </div>
             }
 
-            @if (roomFreeSpace == 0)
-            {
-              <div style="margin-top: 1em;">
-                <strong>Ваша комната полностью занята, послать новые приглашения невозможно!</strong>
-              </div>
-            }
-
             @if (!Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
             {
               <div style="margin-top: 1em;">
@@ -110,7 +109,7 @@
                   @{
                       var alreadyGroupedNeighbors = Model.PotentialNeighbors
                       .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
-                      .GroupBy(neighbor => neighbor.AccommodationRequestId.Value)
+                      .GroupBy(neighbor => neighbor.AccommodationRequestId!.Value)
                       .Where(group => group.Count() <= roomFreeSpace)
                       .Select(neighborGroup =>
                         new JoinSelectListItem()
@@ -118,7 +117,7 @@
                         Value = -neighborGroup.Key,
                         Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
                         ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
-                        Subtext = neighborGroup.Count() > 1 ? "<br/>(группа проживающих)" : ""
+                        Subtext = neighborGroup.Count() > 1 ? "(группа проживающих)" : ""
                       });
 
                       var unGroupedNeighbors = Model.PotentialNeighbors
@@ -129,7 +128,7 @@
                         Value = neighbor.ClaimId,
                         Text = neighbor.UserName,
                         ExtraSearch = neighbor.ClaimName,
-                        Subtext = "<br/>еще не выбрал тип проживания"
+                        Subtext = "еще не выбрал тип проживания"
                       });
 
 

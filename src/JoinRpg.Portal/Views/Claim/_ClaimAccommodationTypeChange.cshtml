@@ -42,7 +42,7 @@
                   <strong>@accommodationType.Name</strong>
                   <text>(@CountHelper.DisplayCount(accommodationType.Capacity, "место", "места", "мест") в номере, @accommodationType.Cost&nbsp;&#8381;)</text>
                 </div>
-                <div>@accommodationType.Description.ToHtmlString()</div>
+                <div>@Html.Raw(accommodationType.Description.ToHtmlString().Value)</div>
               </label>
             </div>
           }

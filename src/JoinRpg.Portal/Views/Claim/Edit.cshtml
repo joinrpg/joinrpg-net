@@ -392,24 +392,13 @@ new { Model.CharacterId, Model.ProjectId }, null)
 
     @if (Model.Status.IsAlreadyApproved() && Model.AccommodationEnabled)
     {
-        var accommodationModel = new ClaimAccommodationViewModel
-                {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
-                    IncomingInvite = Model.IncomingInvite,
-                    OutgoingInvite = Model.OutgoingInvite,
-                    PotentialNeighbors = Model.PotentialNeighbors,
-                    AccommodationRequest = Model.AccommodationRequest,
-                    AccommodationEnabledForClaim = Model.AccommodationEnabled
-                };
         if (Model.CanChangeRooms && Model.Status.ClaimStatus == ClaimStatusView.Approved)
         {
-            @await Html.PartialAsync("_ClaimAccommodation", accommodationModel);
+            @await Html.PartialAsync("_ClaimAccommodation", Model.AccommodationModel);
         }
         else
         {
-            @await Html.PartialAsync("_ClaimAccommodationReadOnly", accommodationModel)
+            @await Html.PartialAsync("_ClaimAccommodationReadOnly", Model.AccommodationModel)
             ;
         }
     }
