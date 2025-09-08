@@ -26,6 +26,7 @@ internal class HotCharactersRepository(MyDbContext ctx) : RepositoryImplBase(ctx
                 ProjectDesc = c.Project.Details.ProjectAnnounce,
                 c.IsActive,
                 c.IsPublic,
+                KogdaIgraIds = c.Project.KogdaIgraGames.Select(k => k.KogdaIgraGameId)
             });
 
         return [..(await query.ToListAsync())
@@ -36,6 +37,8 @@ internal class HotCharactersRepository(MyDbContext ctx) : RepositoryImplBase(ctx
                 c.IsActive,
                 new ProjectName(c.ProjectName),
                 c.CharacterDesc,
-                c.ProjectDesc))];
+                c.ProjectDesc,
+                [..c.KogdaIgraIds.Select(k => new KogdaIgraIdentification(k))]
+                ))];
     }
 }

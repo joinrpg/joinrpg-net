@@ -3,10 +3,7 @@
 <JoinPanel>
     <Header><CalendarIcon Title="Данные с КогдаИгры" /> Игра: <a href="@Model.KogdaIgraUri"> @Model.Name</a></Header>
     <Body>
-        Даты: @Model.Begin — @Model.End <br />
-        Регион: @Model.RegionName <br />
-        МГ: @Model.MasterGroupName <br />
-        Сайт: @Model.SiteUri <br />
+      <KogdaIgraDetails Model="Model" />
     </Body>
 </JoinPanel>
 @code {

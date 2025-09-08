@@ -1,8 +1,17 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject ICharacterUriLocator linkLocator
 <JoinPanel>
-  <Header><CharacterLink Model="Model.CharacterLink" /> из проекта @Model.ProjectName</Header>
+  <Header><CharacterLink Model="Model.CharacterLink" /> из проекта <ProjectLink Model="Model.ProjectLink" /></Header>
   <Body>
-    @Model.CharacterDesc
-    <p>@Model.ProjectDesc</p>
+        <h4>@Model.CharacterLink.Name</h4>
+        @linkLocator.GetAddClaimUri(Model.CharacterLink.CharacterId)
+        <p>@Model.CharacterDesc</p>
+        <h4>@Model.ProjectLink.ProjectName</h4>
+        @if (Model.KogdaIgraCard is not null)
+        {
+            <p><KogdaIgraDetails Model="Model.KogdaIgraCard" /></p>
+        }
+        <p>@Model.ProjectDesc</p>
   </Body>
 </JoinPanel>
 @code {

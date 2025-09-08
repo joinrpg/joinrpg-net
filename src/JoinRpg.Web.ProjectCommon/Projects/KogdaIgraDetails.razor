@@ -1,0 +1,11 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+
+    Даты: @Model.Begin — @Model.End <br />
+    Регион: @Model.RegionName <br />
+    МГ: @Model.MasterGroupName <br />
+    Сайт: @Model.SiteUri <br />
+@code {
+    [Parameter]
+    [EditorRequired]
+    public KogdaIgraCardViewModel Model { get; set; }
+}
