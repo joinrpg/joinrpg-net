@@ -70,7 +70,7 @@ public class GameController(
             Active = project.Active,
             AutoAcceptClaims = project.Details.AutoAcceptClaims,
             EnableAccomodation = project.Details.EnableAccommodation,
-            DefaultTemplateCharacterId = project.Details.DefaultTemplateCharacterId,
+            DefaultTemplateCharacterId = CharacterIdentification.FromOptional(project.ProjectId, project.Details.DefaultTemplateCharacterId),
         });
     }
 
@@ -92,7 +92,7 @@ public class GameController(
                     ProjectName = viewModel.ProjectName,
                     AutoAcceptClaims = viewModel.AutoAcceptClaims,
                     IsAccommodationEnabled = viewModel.EnableAccomodation,
-                    DefaultTemplateCharacterId = CharacterIdentification.FromOptional(viewModel.ProjectId, viewModel.DefaultTemplateCharacterId)
+                    DefaultTemplateCharacterId = viewModel.DefaultTemplateCharacterId,
                 });
 
             return RedirectTo(new(project.ProjectId));
