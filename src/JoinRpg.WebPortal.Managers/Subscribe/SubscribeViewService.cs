@@ -10,7 +10,7 @@ using JoinRpg.Web.ProjectMasterTools.Subscribe;
 
 namespace JoinRpg.WebPortal.Managers.Subscribe;
 
-public class SubscribeViewService(IUriService uriService,
+internal class SubscribeViewService(IUriService uriService,
     IUserSubscribeRepository userSubscribeRepository,
     IUserRepository userRepository,
     IFinanceReportRepository financeReportRepository,
