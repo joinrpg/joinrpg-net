@@ -1,24 +1,8 @@
 @using JoinRpg.Web.Models.Plot
+@using JoinRpg.Web.Plots
 @model PlotFolderListViewModel
 
 @{
-    ViewBag.Title = "Сюжеты";
+    ViewBag.Title = Model.Title;
 }
-
-<p>
-    <span  class="h2">
-        @ViewBag.Title
-</span>
-    @if (Model.HasPlotEditorAccess)
-    {
-      <span class="btn-group btn-group-sm" style="display: inline-block">
-        <component
-          type="typeof(JoinButton)"
-          render-mode="Static"
-          param-Preset="ButtonPreset.Add"
-          param-Label="@("Добавить сюжет...")"
-          param-Link="@Url.Action("Create", "Plot", new {Model.ProjectId})" />
-      </span>
-    }
-</p>
-@await Html.PartialAsync("FolderList", Model)
+<component type="typeof(JoinRpg.Web.Plots.PlotFolderListPanel)" render-mode="Static" param-Model="@Model" />

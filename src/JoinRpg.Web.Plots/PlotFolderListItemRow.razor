@@ -1,0 +1,74 @@
+@using JoinRpg.WebComponents.ElementMoving;
+
+ <tr>
+            <td>
+                <PlotFolderLink Model="Item" />
+                @if (List.HasMasterAccess)
+                {
+                    <span>&nbsp;</span><PlotTodoBadge Todo="@Item.TodoField" />
+                }
+                @if (Item.TagNames.Any())
+                {
+                    <br />
+                    foreach (var tagName in Item.TagNames)
+                    {
+                        <a href="@("/" + Item.PlotFolderId.ProjectId.Value.ToString() + "/plot/bytag?tagName=" + tagName)">#@tagName</a>
+                        <text> </text>
+                    }
+                }
+            </td>
+            @if (List.HasMasterAccess)
+            {
+                <td>
+                  <PlotStatusBadge Status="Item.Status" />
+                </td>
+            }
+            <td>
+        @CountHelper.DisplayCount(Item.ElementsCount, "вводная", "вводные", "вводных")
+            </td>
+            <td>
+              @if (List.HasEditAccess && Item.Status != PlotStatus.Deleted)
+              {
+                  <JoinButtonGroup Size="SizeStyleEnum.Small">
+                      <JoinButton Link="@createElementUri"
+                                  Preset="ButtonPreset.Add"
+                                  Label="Добавить вводную" />
+                      @if (List.HasPlotEditorAccess)
+                      {
+                          <JoinButton Link="@deletePlotUri"
+                                      Preset="ButtonPreset.Delete"
+                                      Label="Удалить" />
+
+                          @*Здесь нужна кнопка восстановить *@
+                          <JoinMoveControl SkipGroup="true"
+                                           Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
+                      }
+                  </JoinButtonGroup>
+              }
+            </td>
+        </tr>
+
+
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public PlotFolderListItemViewModel Item { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public IPlotFolderListViewModel List { get; set; } = null!;
+
+    public string createElementUri = null!;
+    public string deletePlotUri = null!;
+    public string reorderPlotUri = null!;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        createElementUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/createelement?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
+        deletePlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/delete?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
+        reorderPlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/reorderfolder";
+    }
+}

@@ -1,0 +1,42 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IProjectUriLocator projectUriLocator
+
+<div>
+    <span  class="h2">@Model.Title</span> 
+    @if (Model.PlotAccessArguments.HasPlotEditorAccess)
+    {
+       <span>&nbsp;</span>   <JoinButton Preset="ButtonPreset.Add" Label="Добавить сюжет" Link="@projectUriLocator.GetCreatePlotUri(Model.ProjectId).AbsoluteUri" />
+    }
+</div>
+<br />
+<table class="table">
+    <tr>
+        <th>
+            Название сюжета
+        </th>
+        @if (Model.HasMasterAccess)
+        {
+            <th>
+                Статус
+            </th>
+        }
+        <th>Вводные</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model.Folders.Where(f => f.Status != PlotStatus.Deleted))
+    {
+       <PlotFolderListItemRow Item="@item" List="@Model" />
+    }
+    @foreach (var item in Model.Folders.Where(f => f.Status == PlotStatus.Deleted))
+    {
+       <PlotFolderListItemRow Item="@item" List="@Model" />
+    }
+</table>
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public PlotFolderListViewModel Model { get; set; }
+}

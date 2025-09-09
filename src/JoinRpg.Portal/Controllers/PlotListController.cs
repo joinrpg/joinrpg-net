@@ -42,7 +42,7 @@ public class PlotListController(
     {
         var allFolders = await plotRepository.GetPlotsByTag(projectid, tagname);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        return View("Index", new PlotFolderListViewModel(allFolders, currentUser, projectInfo));
+        return View("Index", PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(allFolders, currentUser, projectInfo, "Сюжеты по тегу «" + tagname + "»"));
     }
 
 
@@ -65,7 +65,9 @@ public class PlotListController(
         var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return View("ForGroup", new PlotFolderListViewModelForGroup(folders, currentUser, groupNavigation, projectInfo));
+        var list = PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(folders, currentUser, projectInfo, "Сюжеты группы «" + group.CharacterGroupName + "»");
+
+        return View("ForGroup", new PlotFolderListViewModelForGroup(list, groupNavigation));
     }
 
     [RequireMasterOrPublish]
@@ -96,13 +98,7 @@ public class PlotListController(
         var allFolders = await plotRepository.GetPlots(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        if (allFolders.Count == 0)
-        {
-            return View("Index", new PlotFolderListViewModel([], currentUser, projectInfo));
-        }
-
-        var order = allFolders.First().GetPlotElementsContainer();
-        var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
-        return View("Index", new PlotFolderListViewModel(folders, currentUser, projectInfo));
+        var folders = allFolders.Where(predicate).ToList(); // TODO перенести эту фильтрацию на фронт
+        return View("Index", PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(folders, currentUser, projectInfo, "Сюжеты"));
     }
 }
