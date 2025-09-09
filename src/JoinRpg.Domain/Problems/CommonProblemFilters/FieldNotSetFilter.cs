@@ -1,6 +1,4 @@
 using System.Diagnostics.Contracts;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 

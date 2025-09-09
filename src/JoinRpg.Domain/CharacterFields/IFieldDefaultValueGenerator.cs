@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Domain.CharacterFields;
 
 public interface IFieldDefaultValueGenerator

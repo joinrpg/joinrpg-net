@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
 {

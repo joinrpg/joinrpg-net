@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Domain;

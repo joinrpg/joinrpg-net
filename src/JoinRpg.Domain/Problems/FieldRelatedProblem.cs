@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Domain.Problems;
 
 public class FieldRelatedProblem(ClaimProblemType problemType, ProblemSeverity severity, ProjectFieldInfo field, string? extraInfo = null)

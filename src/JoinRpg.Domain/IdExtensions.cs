@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Domain;

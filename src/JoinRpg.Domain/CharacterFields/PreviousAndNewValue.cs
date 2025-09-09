@@ -1,6 +1,3 @@
-
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Domain.CharacterFields;
 
 public class PreviousAndNewValue

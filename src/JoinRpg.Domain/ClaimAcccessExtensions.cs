@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;

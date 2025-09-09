@@ -3,7 +3,7 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 
 namespace JoinRpg.Domain;
-public class JoinRpgDomainModule : Autofac.Module
+public class JoinRpgDomainModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
