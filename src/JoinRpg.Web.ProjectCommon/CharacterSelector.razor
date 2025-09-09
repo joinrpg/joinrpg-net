@@ -26,7 +26,7 @@ else
 
     [Parameter] public CharacterIdentification[] SelectedCharacterIds { get; set; } = [];
     [Parameter] public EventCallback<CharacterIdentification[]> SelectedCharacterIdsChanged { get; set; }
-    [Parameter] public Expression<Func<CharacterIdentification?>>? SelectedCharacterIdsExpression { get; set; }
+    [Parameter] public Expression<Func<CharacterIdentification[]?>>? SelectedCharacterIdsExpression { get; set; }
 
     [Parameter] public EventCallback<CharacterDto[]> SelectedCharactersChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;

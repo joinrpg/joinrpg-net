@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.ProjectCommon.Fields;
 
 namespace JoinRpg.Web.Models.FieldSetup;
@@ -31,7 +32,9 @@ public abstract class GameFieldViewModelBase : IValidatableObject, IFieldNavigat
     public MandatoryStatusViewType MandatoryStatus { get; set; }
 
     [Display(Name = "Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
-    public ICollection<string> ShowForGroups { get; set; } = new List<string>();
+    public CharacterGroupIdentification[] ShowForGroups { get; set; } = [];
+
+    public int[] ShowForGroupsInts { get; set; } = [];
 
     [Display(Name = "Доступно NPC", Description = "Доступно для персонажей-NPC")]
     public bool ValidForNpc { get; set; }

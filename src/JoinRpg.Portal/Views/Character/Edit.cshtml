@@ -1,4 +1,4 @@
-﻿
+
 @model JoinRpg.Web.Models.Characters.EditCharacterViewModel
 @section Scripts {
   <script src="~/Scripts/claim.js"></script>
@@ -57,7 +57,7 @@
                 <div class="col-md-10">
                   <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                              param-ProjectId="Model.ProjectId"
-                             param-Name="@("ParentCharacterGroupIds")"
+                             param-Name="@("ParentCharacterGroupIdInts")"
                              param-SelectedGroupIds="@(Model.ParentCharacterGroupIds)"
                              render-mode="WebAssembly" />
                 </div>

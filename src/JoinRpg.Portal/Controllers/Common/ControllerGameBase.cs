@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,6 +33,8 @@ public abstract class ControllerGameBase : LegacyJoinControllerBase
     protected ActionResult RedirectToIndex(Project project) => RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
 
     protected ActionResult RedirectToIndex(int projectId, int characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
+
+    protected ActionResult RedirectToIndex(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { characterGroupId.ProjectId, characterGroupId.CharacterGroupId, area = "" });
 
     protected async Task<ActionResult> RedirectToProject(int projectId)
     {

@@ -8,7 +8,6 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
 using JoinRpg.WebPortal.Managers;
@@ -113,7 +112,7 @@ public class GameFieldController(
                 viewModel.IsPublic,
                 (FieldBoundTo)viewModel.FieldBoundTo,
                 (MandatoryStatus)viewModel.MandatoryStatus,
-                viewModel.ShowForGroups.GetUnprefixedGroups(new ProjectIdentification(viewModel.ProjectId)),
+                CharacterGroupIdentification.FromList(viewModel.ShowForGroupsInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
                 viewModel.ValidForNpc,
                 viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
                 viewModel.ShowForUnApprovedClaim,
@@ -164,7 +163,7 @@ public class GameFieldController(
                 viewModel.CanPlayerView,
                 viewModel.IsPublic,
                 (MandatoryStatus)viewModel.MandatoryStatus,
-                viewModel.ShowForGroups.GetUnprefixedGroups(new ProjectIdentification(project.ProjectId)),
+                 CharacterGroupIdentification.FromList(viewModel.ShowForGroupsInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
                 viewModel.ValidForNpc,
                 viewModel.IncludeInPrint,
                 viewModel.ShowForUnApprovedClaim,

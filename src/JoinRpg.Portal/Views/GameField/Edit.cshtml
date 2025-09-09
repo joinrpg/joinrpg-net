@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Models.FieldSetup
+@using JoinRpg.Web.Models.FieldSetup
 @using JoinRpg.Web.Models
 @model GameFieldEditViewModel
 
@@ -111,7 +111,11 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                @Html.MagicSelectBindGroups(model => model.ShowForGroups)
+                <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
+                   param-ProjectId="Model.ProjectId"
+                   param-Name="@("ShowForGroupsInts")"
+                   param-SelectedGroupIds="@(Model.ShowForGroups)"
+                   render-mode="WebAssembly" />
                 @Html.ValidationMessageFor(model => model.ShowForGroups, "", new { @class = "text-danger" })
                 <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
             </div>
@@ -248,8 +252,14 @@
             </div>
           </form>
         </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div>
-  }
+    </div><!-- /.modal-dialog -->
+</div>
+}
 }
 
+@section Scripts {
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+  <script src="/Scripts/blazor-interop.js"></script>
+
+}

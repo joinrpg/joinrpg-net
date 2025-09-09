@@ -1,4 +1,4 @@
-﻿@using JoinRpg.PrimitiveTypes
+@using JoinRpg.PrimitiveTypes
 @using JoinRpg.Web.ProjectCommon
 @inject IResponsibleMasterRuleClient Client
 @inject ILogger<ResponsibleMasterRulesList> logger
@@ -90,7 +90,7 @@
         _model!.Items.Insert(
           0,
           new ResponsibleMasterRuleViewModel(
-            model.Group.CharacterGroupId,
+            model.Group.CharacterGroupId.CharacterGroupId,
             model.Group.Name,
             model.Master.ToUserLinkViewModel()
           ));
@@ -98,7 +98,7 @@
         try
         {
 
-            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, model.Group.CharacterGroupId, model.Master.MasterId);
+            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, model.Group.CharacterGroupId.CharacterGroupId, model.Master.MasterId);
         }
         catch (Exception exc)
         {

@@ -30,7 +30,7 @@ internal class CharacterGroupListGenerator
         {
             return;
         }
-        var vm = new CharacterGroupDto(characterGroup.CharacterGroupId, characterGroup.CharacterGroupName, pathToTop.Skip(1).Select(cg => cg.CharacterGroupName).ToArray(), characterGroup.IsPublic);
+        var vm = new CharacterGroupDto(characterGroup.GetId(), characterGroup.CharacterGroupName, pathToTop.Skip(1).Select(cg => cg.CharacterGroupName).ToArray(), characterGroup.IsPublic);
 
         Results.Add(vm);
 

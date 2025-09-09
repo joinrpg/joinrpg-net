@@ -9,7 +9,7 @@ namespace JoinRpg.Portal;
 
 public static class MagicControlHtmlHelpers
 {
-
+    [Obsolete]
     public static IHtmlContent MagicSelectParent<TModel>(this IHtmlHelper<TModel> self,
         Expression<Func<TModel, IEnumerable<string>>> expression)
         where TModel : IProjectIdAware
@@ -23,19 +23,7 @@ public static class MagicControlHtmlHelpers
             ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value, false);
     }
 
-    public static IHtmlContent MagicSelectBindGroups<TModel>(this IHtmlHelper<TModel> self,
-        Expression<Func<TModel, IEnumerable<string>>> expression)
-        where TModel : IProjectIdAware
-    {
-        var container = (IProjectIdAware)self.GetModel();
-
-        var value = self.GetValue(expression).ToList();
-        var metadata = self.GetMetadataFor(expression);
-
-        return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
-            ShowImplicitGroups.Children, MagicControlStrategy.NonChanger, metadata.PropertyName, value, true);
-    }
-
+    [Obsolete]
     public static IHtmlContent MagicSelectGroupParent<TModel>(this IHtmlHelper<TModel> self,
         Expression<Func<TModel, IEnumerable<string>>> expression)
         where TModel : EditCharacterGroupViewModel
@@ -49,6 +37,7 @@ public static class MagicControlHtmlHelpers
             false);
     }
 
+    [Obsolete]
     public static IHtmlContent MagicSelectBind<TModel>(this IHtmlHelper<TModel> self,
         Expression<Func<TModel, IEnumerable<string>>> expression)
         where TModel : IProjectIdAware

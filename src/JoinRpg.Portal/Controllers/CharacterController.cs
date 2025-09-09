@@ -55,11 +55,11 @@ public class CharacterController(
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
-    public async Task<ActionResult> Edit(int projectId, int characterId)
+    public async Task<ActionResult> Edit(ProjectIdentification projectId, int characterId)
     {
         var field = await characterRepository.GetCharacterWithDetails(projectId, characterId);
         var view = await characterRepository.GetCharacterViewAsync(projectId, characterId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new EditCharacterViewModel()
         {
             ProjectId = field.ProjectId,
@@ -67,7 +67,7 @@ public class CharacterController(
             ProjectName = field.Project.ProjectName,
             CharacterTypeInfo = view.CharacterTypeInfo,
             Name = field.CharacterName,
-            ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(),
+            ParentCharacterGroupIds = CharacterGroupIdentification.FromList(field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(), projectId).ToArray(),
         }.Fill(field, CurrentUserId, projectInfo));
     }
 
@@ -88,7 +88,7 @@ public class CharacterController(
             await characterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                    ParentCharacterGroupIds: [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIds, new(viewModel.ProjectId))],
+                    ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix))
                 );
@@ -132,7 +132,7 @@ public class CharacterController(
         {
             ProjectId = ProjectId,
             ProjectName = characterGroup.Project.ProjectName,
-            ParentCharacterGroupIds = [characterGroup.CharacterGroupId],
+            ParentCharacterGroupIds = [characterGroup.GetId()],
             ContinueCreating = continueCreating,
             CharacterTypeInfo = CharacterTypeInfo.Default(),
         }.Fill(characterGroup, CurrentUserId, projectInfo));
@@ -149,13 +149,13 @@ public class CharacterController(
             await characterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: new(viewModel.ProjectId),
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                ParentCharacterGroupIds: [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIds, new(viewModel.ProjectId))],
+                ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
                 FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
             ));
 
             if (viewModel.ContinueCreating)
             {
-                if (characterGroupId != 0)
+                if (characterGroupId != null)
                 {
                     return RedirectToAction("Create",
                         new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
@@ -165,25 +165,25 @@ public class CharacterController(
                     return RedirectToAction("Create", new { viewModel.ProjectId, viewModel.ContinueCreating });
                 }
             }
-            else if (characterGroupId == 0)
+            else if (characterGroupId == null)
             {
                 return RedirectToAction("Active", "CharacterList", new { viewModel.ProjectId });
             }
 
-            return RedirectToIndex(viewModel.ProjectId, characterGroupId);
+            return RedirectToIndex(characterGroupId);
         }
         catch (Exception exception)
         {
             ModelState.AddException(exception);
             CharacterGroup? characterGroup;
-            if (characterGroupId == 0)
+            if (characterGroupId == null)
             {
                 characterGroup = (await ProjectRepository.GetProjectAsync(viewModel.ProjectId))
                     .RootGroup;
             }
             else
             {
-                characterGroup = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, characterGroupId);
+                characterGroup = await ProjectRepository.GetGroupAsync(characterGroupId);
                 if (characterGroup is null)
                 {
                     return NotFound();

@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Portal;
+@using JoinRpg.Portal;
 @using JoinRpg.PrimitiveTypes; 
 @model JoinRpg.Web.Models.Characters.AddCharacterViewModel
 
@@ -31,7 +31,7 @@
       <div class="col-md-10">
         <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                    param-ProjectId="Model.ProjectId"
-                   param-Name="@("ParentCharacterGroupIds")"
+                   param-Name="@("ParentCharacterGroupIdInts")"
                    param-SelectedGroupIds="@(Model.ParentCharacterGroupIds)"
                    render-mode="WebAssemblyPrerendered" />
       </div>
