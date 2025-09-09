@@ -23,7 +23,7 @@ internal class MasterEmailServiceImpl(
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
-        var subject = $"{metadata.ProjectName}: проект будет закрыт из-за неактивности";
+        var subject = $"{metadata.ProjectName.Value}: проект будет закрыт из-за неактивности";
 
         var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
 
@@ -56,7 +56,7 @@ internal class MasterEmailServiceImpl(
 {initiator.GetDisplayName()}
 
 ";
-        var subject = $"{metadata.ProjectName}: проект закрыт";
+        var subject = $"{metadata.ProjectName.Value}: проект закрыт";
         await SendToAllMasters(messageService, metadata, body, subject, initiator.ToRecepientData());
     }
 
