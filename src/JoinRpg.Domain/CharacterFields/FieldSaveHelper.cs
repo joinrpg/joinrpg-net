@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Domain.CharacterFields;

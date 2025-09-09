@@ -1,11 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Domain;
 

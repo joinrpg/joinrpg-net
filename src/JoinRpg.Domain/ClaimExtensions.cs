@@ -1,6 +1,4 @@
 using System.Diagnostics.Contracts;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain;
 
@@ -19,23 +17,23 @@ public static class ClaimExtensions
         {
             return false;
         }
-        if (claim.Character.CharacterType == PrimitiveTypes.CharacterType.Slot)
+        if (claim.Character.CharacterType == CharacterType.Slot)
         {
             return false;
         }
         return claim.Character.Claims.Any(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive());
     }
 
-    public static bool IsPartOfAnyOfGroups(this Character claimSource, IReadOnlyCollection<CharacterGroupIdentification> groups)
+    public static bool IsPartOfAnyOfGroups(this Character character, IReadOnlyCollection<CharacterGroupIdentification> groups)
     {
         //TODO we can do faster than this
-        return CharacterGroupIdentification.FromList(claimSource.GetParentGroupsToTop().Select(x => x.CharacterGroupId), new ProjectIdentification(claimSource.ProjectId)).Intersect(groups).Any();
+        return CharacterGroupIdentification.FromList(character.GetParentGroupsToTop().Select(x => x.CharacterGroupId), new ProjectIdentification(character.ProjectId)).Intersect(groups).Any();
     }
 
-    public static bool IsPartOfGroup(this Character claimSource, int characterGroupId)
+    public static bool IsPartOfGroup(this Character character, int characterGroupId)
     {
         //TODO we can do faster than this
-        return claimSource.GetParentGroupsToTop().Any(g => g.CharacterGroupId == characterGroupId);
+        return character.GetParentGroupsToTop().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
     public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)

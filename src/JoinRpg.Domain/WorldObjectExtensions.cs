@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Domain;
 
 public static class WorldObjectExtensions

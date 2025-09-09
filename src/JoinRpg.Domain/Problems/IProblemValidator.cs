@@ -1,7 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Domain.Problems;
 public interface IProblemValidator<TObject> where TObject : IFieldContainter
 {

@@ -1,6 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class BrokenClaimsAndCharacters : IProblemFilter<Claim>

@@ -1,6 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Domain;
 
 public static class FieldExtensions
@@ -19,7 +16,7 @@ public static class FieldExtensions
     {
         ArgumentNullException.ThrowIfNull(field);
 
-        var isNpc = target?.CharacterType == PrimitiveTypes.CharacterType.NonPlayer;
+        var isNpc = target?.CharacterType == CharacterType.NonPlayer;
 
         return field.IsActive
           && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
