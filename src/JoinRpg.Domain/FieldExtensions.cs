@@ -23,6 +23,17 @@ public static class FieldExtensions
           && (field.GroupsAvailableForIds.Count == 0 || (target?.IsPartOfAnyOfGroups(field.GroupsAvailableForIds) ?? false));
     }
 
+    public static bool IsAvailableForTarget(this ProjectFieldInfo field, CharacterItem target)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+
+        var isNpc = target.Character.CharacterType == CharacterType.NonPlayer;
+
+        return field.IsActive
+          && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
+          && (field.GroupsAvailableForIds.Count == 0 || target.ParentGroups.Intersect(field.GroupsAvailableForIds).Any());
+    }
+
     public static bool CanHaveValue(this ProjectField projectField) => projectField.FieldType != ProjectFieldType.Header;
 
     public static ProjectFieldDropdownValue? GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)

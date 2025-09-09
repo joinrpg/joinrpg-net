@@ -5,6 +5,7 @@ internal class ProblemValidator<TObject>(
     ) : IProblemValidator<TObject> where TObject : IFieldContainter
 {
     private readonly IProblemFilter<TObject>[] filters = ProblemValidator<TObject>.ShouldBeNotEmpty(filters);
+    private readonly CharacterBulkLoader characterBulkLoader = new();
 
     public IEnumerable<ClaimProblem> Validate(TObject claim, ProjectInfo projectInfo, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
     {
@@ -37,7 +38,7 @@ internal class ProblemValidator<TObject>(
 
     private IEnumerable<FieldRelatedProblem> ValidateFieldsInternal(TObject obj, FieldWithValue[] fieldWithValues)
     {
-        var target = GetClaimSource(obj);
+        var target = characterBulkLoader.LoadCharacter(GetClaimSource(obj));
 
         foreach (var fieldWithValue in fieldWithValues)
         {
@@ -48,7 +49,7 @@ internal class ProblemValidator<TObject>(
         }
     }
 
-    private IEnumerable<FieldRelatedProblem> ValidateField(Character target, FieldWithValue fieldWithValue)
+    private IEnumerable<FieldRelatedProblem> ValidateField(CharacterItem target, FieldWithValue fieldWithValue)
     {
         foreach (var filter in fieldFilters)
         {
