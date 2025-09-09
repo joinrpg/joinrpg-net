@@ -1,7 +1,7 @@
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
 {
-    public IEnumerable<FieldRelatedProblem> CheckField(Character target, FieldWithValue fieldWithValue)
+    public IEnumerable<FieldRelatedProblem> CheckField(CharacterItem target, FieldWithValue fieldWithValue)
     {
         foreach (var variant in fieldWithValue.GetDropdownValues())
         {

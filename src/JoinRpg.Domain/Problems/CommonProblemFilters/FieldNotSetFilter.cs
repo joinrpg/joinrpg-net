@@ -4,7 +4,7 @@ namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
 internal class FieldNotSetFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
 {
-    public IEnumerable<FieldRelatedProblem> CheckField(Character target, FieldWithValue fieldWithValue)
+    public IEnumerable<FieldRelatedProblem> CheckField(CharacterItem target, FieldWithValue fieldWithValue)
     {
         if (!fieldWithValue.Field.CanHaveValue)
         {
