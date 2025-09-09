@@ -82,4 +82,12 @@ public static class AccessArgumentsFactory
     }
 
     public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId) => Create(claim, userId.UserIdOrDefault);
+
+    public static PlotAccessArguments CreatePlot(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor)
+    {
+        var permissions = currentUserAccessor.UserIdOrDefault == null ? [] : projectInfo.GetMasterAccess(currentUserAccessor.UserIdentification);
+        return new PlotAccessArguments(permissions, projectInfo.PublishPlot, projectInfo.ProjectStatus);
+    }
+
+
 }

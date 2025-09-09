@@ -1,5 +1,6 @@
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -17,7 +18,8 @@ internal class UriServiceImpl(
     IUriLocator<CharacterLinkSlimViewModel>,
     IUriLocator<ProjectLinkViewModel>,
     IProjectUriLocator,
-    ICharacterUriLocator
+    ICharacterUriLocator,
+    IUriLocator<PlotFolderIdentification>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -105,6 +107,8 @@ internal class UriServiceImpl(
     Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForGroup", "Claim", new { ProjectId = projectId.Value }));
     public Uri GetDetailsUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Details", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
     public Uri GetAddClaimUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForCharacter", "Claim", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
+    Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Plot", new { ProjectId = projectId.Value }));
+    public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {
@@ -118,5 +122,7 @@ internal class UriServiceImpl(
         public Linkable(ProjectIdentification id) : this(LinkType.Project, id.Value, Identification: null) { }
 
         public Linkable(CharacterGroupIdentification id) : this(LinkType.CharacterGroupRoles, id) { }
+
+        public Linkable(PlotFolderIdentification id) : this(LinkType.Plot, id) { }
     }
 }

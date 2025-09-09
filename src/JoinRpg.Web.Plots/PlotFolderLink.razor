@@ -1,0 +1,10 @@
+@inject IUriLocator<PlotFolderIdentification> linkLocator
+<a href="@TargetUri">@Model.Name</a>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IPlotFolderLink Model { get; set; } = null!;
+
+    public Uri TargetUri => linkLocator.GetUri(Model.PlotFolderId);
+}

@@ -1,19 +1,9 @@
 @model JoinRpg.Web.Models.Plot.PlotFolderListViewModelForGroup
 
 @{
-    ViewBag.Title = "Сюжеты группы";
+    ViewBag.Title = Model.FolderViewModel.Title;
 }
 
 @Html.DisplayFor(model => model.GroupNavigation)
 
-<p>
-    <span class="h2">
-        @ViewBag.Title
-    </span>
-    @if (Model.HasPlotEditorAccess)
-    {
-    <a href="@Url.Action("Create", "Plot", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
-    }
-</p>
-
-@await Html.PartialAsync("FolderList", Model)
+<component type="typeof(JoinRpg.Web.Plots.PlotFolderListPanel)" render-mode="Static" param-Model="@Model.FolderViewModel" />

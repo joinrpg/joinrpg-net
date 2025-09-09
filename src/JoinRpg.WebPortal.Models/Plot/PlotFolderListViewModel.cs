@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
@@ -12,53 +11,18 @@ using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
 
-public abstract class PlotFolderListViewModelBase(ProjectInfo project, ICurrentUserAccessor currentUser)
+public record class PlotFolderListViewModelForGroup(PlotFolderListViewModel FolderViewModel, CharacterGroupDetailsViewModel GroupNavigation);
+
+public class PlotFolderFullListViewModel
 {
-    public bool HasPlotEditorAccess { get; } = project.HasMasterAccess(currentUser, Permission.CanManagePlots) && project.ProjectStatus != ProjectLifecycleStatus.Archived;
-
-    public int ProjectId { get; } = project.ProjectId;
-    public string ProjectName { get; } = project.ProjectName;
-
-}
-
-[ReadOnly(true)]
-public class PlotFolderListViewModelForGroup(IEnumerable<PlotFolder> folders, ICurrentUserAccessor currentUser, CharacterGroupDetailsViewModel groupNavigation, ProjectInfo projectInfo) : PlotFolderListViewModel(folders, currentUser, projectInfo)
-{
-    public CharacterGroupDetailsViewModel GroupNavigation { get; } = groupNavigation;
-}
-
-[ReadOnly(true)]
-public class PlotFolderListViewModel : PlotFolderListViewModelBase, IPlotFolderListViewModel
-{
-    public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
-    public bool HasMasterAccess { get; private set; }
-
-    public bool HasEditAccess { get; private set; }
-
-    public IReadOnlyCollection<PlotFolderIdentification> FolderIds { get; private set; }
-
-    public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo)
-      : base(projectInfo, currentUser)
-    {
-        HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
-
-        HasEditAccess = projectInfo.HasMasterAccess(currentUser) && projectInfo.IsActive;
-        Folders =
-          folders
-            .Select(f => new PlotFolderListItemViewModel(f, currentUser));
-
-        FolderIds = [.. Folders.Select(f => f.PlotFolderId)];
-    }
-}
-
-public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
-{
-
     public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
     public bool InWorkOnly { get; }
 
-    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false) : base(projectInfo, currentUser)
+    public string ProjectName { get; }
+
+    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false)
     {
+        ProjectName = projectInfo.ProjectName;
         InWorkOnly = inWorkOnly;
 
         if (folders.Count == 0)
@@ -81,25 +45,20 @@ public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
     }
 }
 
-public class PlotFolderListFullItemViewModel
-    (PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
-    : PlotFolderListItemViewModel(folder, currentUser)
+public class PlotFolderListFullItemViewModel : PlotFolderViewModelBase, IPlotFolderListItemViewModel
 {
-    public JoinHtmlString Summary { get; } = folder.MasterSummary.ToHtmlString();
-    public IReadOnlyCollection<PlotElementListItemViewModel> Elements { get; } = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
+    public JoinHtmlString Summary { get; }
+    public IReadOnlyCollection<PlotElementListItemViewModel> Elements { get; }
 
     public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.Status != PlotStatus.Completed);
-}
 
-public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderListItemViewModel
-{
     public PlotFolderIdentification PlotFolderId { get; }
     public int ElementsCount { get; }
     public bool HasEditAccess { get; }
 
     public IEnumerable<string> TagNames { get; }
 
-    public PlotFolderListItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser)
+    public PlotFolderListFullItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
     {
         PlotFolderId = new(folder.ProjectId, folder.PlotFolderId);
         PlotFolderMasterTitle = folder.MasterTitle;
@@ -109,5 +68,7 @@ public class PlotFolderListItemViewModel : PlotFolderViewModelBase, IPlotFolderL
         ElementsCount = folder.Elements.Count(x => x.IsActive);
         TodoField = folder.TodoField;
         HasEditAccess = folder.HasMasterAccess(currentUser, Permission.CanManagePlots) && folder.Project.Active;
+        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
+        Summary = folder.MasterSummary.ToHtmlString();
     }
 }
