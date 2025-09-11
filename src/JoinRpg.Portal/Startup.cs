@@ -4,7 +4,6 @@ using Joinrpg.Web.Identity;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Common.WebInfrastructure.Logging;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DI;

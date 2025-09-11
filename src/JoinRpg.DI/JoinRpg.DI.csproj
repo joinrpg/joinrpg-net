@@ -7,11 +7,8 @@
     <PackageReference Include="Autofac" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj" />
-    <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
-    <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />
   </ItemGroup>
 </Project>
