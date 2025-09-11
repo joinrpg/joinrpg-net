@@ -33,7 +33,13 @@
         @if (item.CanPlayerEdit)
         {
             <span class="label label-warning">Игрок может менять</span>
+            <br />
         }
+        <component
+          type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.FieldConditionBadge)"
+          Param-GroupNames="item.GroupNames"
+          render-mode="Static"
+          />
     </td>
     <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
     <td>@item.DescriptionDisplay @item.MasterDescriptionDisplay</td>

@@ -5,10 +5,10 @@
 {
     return;
 }
-<label @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
+<span @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
   @TryGetLabel()
   @ChildContent
-</label>
+</span>
 
 @code {
     [Parameter]

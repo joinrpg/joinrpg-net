@@ -30,8 +30,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
     [ReadOnly(true)]
     public bool WasEverUsed { get; set; }
 
-    [ReadOnly(true)]
-    public bool IsTimeField { get; set; }
+    public string[] GroupNames { get; set; }
 
     public GameFieldEditViewModel(ProjectField field, int currentUserId)
     {
@@ -50,6 +49,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
             .GroupsAvailableFor
             .Select(c => c.GetId())
             .ToArray();
+        GroupNames = field.GroupsAvailableFor.Select(c => c.CharacterGroupName).ToArray();
         IncludeInPrint = field.IncludeInPrint;
         ValidForNpc = field.ValidForNpc;
         ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
@@ -71,7 +71,6 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         WasEverUsed = field.WasEverUsed;
         CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
         CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
-        IsTimeField = field.IsTimeSlot();
         SupportsMassAdding = field.SupportsMassAdding();
 
     }
