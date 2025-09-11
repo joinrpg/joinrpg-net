@@ -1,4 +1,5 @@
-﻿@inject ICharactersClient client
+@using System.Linq.Expressions
+@inject ICharactersClient client
 
 @if (items is null)
 {
@@ -6,9 +7,10 @@
 }
 else
 {
+  int[] initial = SelectedCharacterIds is not null ? [..SelectedCharacterIds.Select(x => x.CharacterId)] : [];
   <IntSelector
                Name="@Name"
-               SelectedValues="SelectedCharacterIds"
+               SelectedValues="initial"
                SelectedValuesChanged="SelectedValuesChanged"
                PossibleValues="items"
                Multiple="@Multiple"
@@ -18,11 +20,15 @@ else
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] [EditorRequired] public int ProjectId { get; set; }
-    [Parameter] public int[] SelectedCharacterIds { get; set; } = [];
-    [Parameter] public EventCallback<int[]> SelectedIdsChanged { get; set; }
-    [Parameter] public EventCallback<CharacterDto[]> SelectedChanged { get; set; }
+
+    [Parameter] public CharacterIdentification[] SelectedCharacterIds { get; set; } = [];
+    [Parameter] public EventCallback<CharacterIdentification[]> SelectedCharacterIdsChanged { get; set; }
+    [Parameter] public Expression<Func<CharacterIdentification?>>? SelectedCharacterIdsExpression { get; set; }
+
+    [Parameter] public EventCallback<CharacterDto[]> SelectedCharactersChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;
     [Parameter] public bool TemplateOnly { get; set; } = false;
     [Parameter] public bool AllowEmpty { get; set; } = false;
@@ -31,6 +37,7 @@ else
 
     private IntSelectListItem[] items = null!;
     private List<CharacterDto> chars = null!;
+    private FieldIdentifier? fieldIdentifier = null;
 
     private async Task SelectedValuesChanged(int[] values)
     {
@@ -38,8 +45,13 @@ else
 
         var selectedItems = chars.Where(item => values.Contains(item.CharacterId.CharacterId)).ToArray();
         RefreshSelectedNames(selectedItems);
-        await SelectedIdsChanged.InvokeAsync(values);
-        await SelectedChanged.InvokeAsync(selectedItems);
+        await SelectedCharacterIdsChanged.InvokeAsync(selectedItems.Select(x => x.CharacterId).ToArray());
+        await SelectedCharactersChanged.InvokeAsync(selectedItems);
+
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 
     private void RefreshSelectedNames(CharacterDto[] val)
@@ -54,12 +66,12 @@ else
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         chars = TemplateOnly
           ? await client.GetTemplateCharacters(ProjectId) 
           : await client.GetCharacters(ProjectId);
-        var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId.CharacterId)).ToArray();
+        var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId)).ToArray();
         if (AllowEmpty)
         {
             var empty = new IntSelectListItem(-1, "(нет)");
@@ -69,6 +81,12 @@ else
             items = [.. chars.Select(ToSelectListItem)];
         }
         RefreshSelectedNames(selectedItems);
+
+        if (SelectedCharacterIdsExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(SelectedCharacterIdsExpression);
+            Name ??= fieldIdentifier.Value.FieldName;
+        }
     }
 
     private static IntSelectListItem ToSelectListItem(CharacterDto item)
