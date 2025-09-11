@@ -4,7 +4,7 @@ using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroupList;
 
-public class CharacteGroupListViewService(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : ICharacterGroupsClient
+internal class CharacteGroupListViewService(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : ICharacterGroupsClient
 {
     public async Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId)
     {
