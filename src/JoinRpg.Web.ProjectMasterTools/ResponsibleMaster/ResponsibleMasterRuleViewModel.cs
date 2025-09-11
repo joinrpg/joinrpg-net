@@ -1,5 +1,3 @@
-using JoinRpg.WebComponents;
-
 namespace JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 public record ResponsibleMasterRuleViewModel

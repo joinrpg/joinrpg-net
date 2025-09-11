@@ -35,7 +35,11 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     public CustomFieldsViewModel Fields { get; set; }
 
     [DisplayName("Является частью групп")]
-    public int[] ParentCharacterGroupIds { get; set; } = [];
+    public CharacterGroupIdentification[] ParentCharacterGroupIds { get; set; } = [];
+
+
+    [DisplayName("Является частью групп")]
+    public int[] ParentCharacterGroupIdInts { get; set; } = [];
 
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; set; }

@@ -34,7 +34,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
     public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
     {
-        _ = (await ProjectRepository.GetGroupAsync(request.ProjectId, request.CharacterGroupId))
+        _ = (await ProjectRepository.GetGroupAsync(request.CharacterGroupId))
             .RequestMasterAccess(CurrentUserId)
             .EnsureActive();
 
@@ -45,7 +45,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
         var direct =
-            user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == request.CharacterGroupId);
+            user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == request.CharacterGroupId.CharacterGroupId);
 
         if (request.SubscriptionOptions.AnySet)
         {
@@ -54,8 +54,8 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
                 direct = new UserSubscription()
                 {
                     UserId = CurrentUserId,
-                    CharacterGroupId = request.CharacterGroupId,
-                    ProjectId = request.ProjectId,
+                    CharacterGroupId = request.CharacterGroupId.CharacterGroupId,
+                    ProjectId = request.CharacterGroupId.ProjectId,
                 };
                 _ = user.Subscriptions.Add(direct);
             }

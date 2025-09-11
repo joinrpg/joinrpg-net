@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.ProjectCommon.Fields;
 
 namespace JoinRpg.Web.Models.FieldSetup;
@@ -50,9 +48,8 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         MandatoryStatus = (MandatoryStatusViewType)field.MandatoryStatus;
         ShowForGroups = field
             .GroupsAvailableFor
-            .Select(c => c.CharacterGroupId)
-            .PrefixAsGroups()
-            .ToList();
+            .Select(c => c.GetId())
+            .ToArray();
         IncludeInPrint = field.IncludeInPrint;
         ValidForNpc = field.ValidForNpc;
         ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;

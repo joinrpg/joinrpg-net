@@ -15,28 +15,14 @@ namespace JoinRpg.Portal.Controllers;
 [DiscoverProjectFilter]
 [RequireMaster]
 [Route("{projectId}/subscribe/[action]")]
-public class GameSubscribeController : Controller
+public class GameSubscribeController(
+    IUserSubscribeRepository userSubscribeRepository,
+    IUserRepository userRepository,
+    IUriService uriService,
+    IGameSubscribeClient subscribeClient,
+    ICurrentUserAccessor currentUserAccessor
+        ) : Controller
 {
-    private readonly IUserSubscribeRepository userSubscribeRepository;
-    private readonly IUserRepository userRepository;
-    private readonly IUriService uriService;
-    private readonly IGameSubscribeClient subscribeClient;
-    private readonly ICurrentUserAccessor currentUserAccessor;
-
-    public GameSubscribeController(
-        IUserSubscribeRepository userSubscribeRepository,
-        IUserRepository userRepository,
-        IUriService uriService,
-        IGameSubscribeClient subscribeClient,
-        ICurrentUserAccessor currentUserAccessor
-        )
-    {
-        this.userSubscribeRepository = userSubscribeRepository;
-        this.userRepository = userRepository;
-        this.uriService = uriService;
-        this.subscribeClient = subscribeClient;
-        this.currentUserAccessor = currentUserAccessor;
-    }
 
 #pragma warning disable ASP0023 // Route conflict detected between controller actions There is no one because of [action]
     [HttpGet("{masterId}")]

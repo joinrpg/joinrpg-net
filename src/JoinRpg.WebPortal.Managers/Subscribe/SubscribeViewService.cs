@@ -46,7 +46,6 @@ internal class SubscribeViewService(IUriService uriService,
     {
         await gameSubscribeService.UpdateSubscribeForGroup(new SubscribeForGroupRequest()
         {
-            ProjectId = projectId,
             CharacterGroupId = model.GroupId,
             SubscriptionOptions = model.Options.ToOptions(),
             MasterId = model.MasterId,
