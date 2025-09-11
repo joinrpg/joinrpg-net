@@ -1,0 +1,20 @@
+@if (GroupNames.Length > 0)
+{
+    <Tooltip Title="@tooltip">
+      <JoinBadge Variation="VariationStyleEnum.Info" Size="SizeStyleEnum.Small">Условное</JoinBadge>
+    </Tooltip>
+}
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public string[] GroupNames { get; set; } = null!;
+
+    private string tooltip = "";
+
+    protected override void OnParametersSet()
+    {
+        tooltip = "Для групп: " + string.Join(", ", GroupNames);
+        base.OnParametersSet();
+    }
+}
