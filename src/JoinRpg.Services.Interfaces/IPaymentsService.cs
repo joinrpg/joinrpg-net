@@ -1,7 +1,5 @@
-using System.Collections.Immutable;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.Helpers;
 using PscbApi;
 using PscbApi.Models;
 
@@ -134,7 +132,7 @@ public class PaymentResultContext
 
 public class FastPaymentsSystemBank : FpsBank
 {
-    public static readonly ImmutableArray<string> ParasitePrefixes = ["Банк ", "АК ", "АБ ", "АКБ ", "ПНКО ", "КБ ", "НКО ", "СКБ ", "УКБ ", "РНКО ", "ИКБР "];
+    private static readonly string[] ParasitePrefixes = ["Банк ", "АК ", "АБ ", "АКБ ", "ПНКО ", "КБ ", "НКО ", "СКБ ", "УКБ ", "РНКО ", "ИКБР "];
 
     public string Id { get; }
 
@@ -165,23 +163,24 @@ public class FastPaymentsSystemBank : FpsBank
 
 public class FastPaymentsSystemMobilePaymentContext
 {
-    public string QrCodeUrl { get; set; }
+    public required string? QrCodeUrl { get; set; }
 
-    public int Amount { get; set; }
+    public required int Amount { get; set; }
 
-    public string Details { get; set; }
+    public required string Details { get; set; }
 
-    public int ProjectId { get; set; }
+    public required int ProjectId { get; set; }
 
-    public int ClaimId { get; set; }
+    public required int ClaimId { get; set; }
 
-    public int OperationId { get; set; }
+    public required int OperationId { get; set; }
 
-    public FpsPlatform ExpectedPlatform { get; set; }
+    public required FpsPlatform ExpectedPlatform { get; set; }
 
     public IReadOnlyCollection<FastPaymentsSystemBank> TopBanks { get; }
 
     public IReadOnlyCollection<FastPaymentsSystemBank> AllBanks { get; }
+    public required bool ContinuePayment { get; set; }
 
     public FastPaymentsSystemMobilePaymentContext(ICollection<FpsBank>? banks, int top = 5)
     {
