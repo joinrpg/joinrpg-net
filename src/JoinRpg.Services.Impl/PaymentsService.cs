@@ -108,39 +108,59 @@ public class PaymentsService(
 
         var pi = await api.GetPaymentInfoAsync(fo.GetOrderId());
 
+        bool continuePayment;
+
         if (pi.Status != PaymentInfoQueryStatus.Success)
         {
             logger.LogError("Failed to get payment {financeOperationId} for claim {claimId} to project {projectId} because {bankError}", fo.CommentId, claimId, projectId, pi.ErrorDescription);
             throw new PaymentException(fo.Project, $"Failed to initiate Fast Payments System mobile payment");
         }
 
-        if (pi.Payment?.Status == PaymentStatus.Expired)
+        switch (pi.Payment?.Status)
         {
-            logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment is expired", fo.CommentId, claimId, projectId);
-            await UpdateFinanceOperationAsync(fo, pi);
-            throw new PaymentException(fo.Project, "Unable to continue payment that is expired");
-        }
+            case PaymentStatus.AwaitingForPayment:
+                // Все хорошо, продолжаем
+                continuePayment = true;
+                break;
+            case PaymentStatus.Expired:
+            case PaymentStatus.Paid:
+                // Что-то пошло не так, и ожидание либо истекло, либо этот счет уже оплачен. Просто возвращаем «не продолжать»
+                continuePayment = false;
+                logger.LogInformation("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment is {bankPaymentState}",
+                    fo.CommentId,
+                    claimId,
+                    projectId,
+                    pi.Payment.Status
+                    );
+                await UpdateFinanceOperationAsync(fo, pi);
+                break;
+            default:
+                // Непонятный статус, как мы здесь оказались?
+                logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment state is {bankPaymentState}", fo.CommentId, claimId, projectId, pi.Payment.Status);
+                await UpdateFinanceOperationAsync(fo, pi);
+                throw new PaymentException(fo.Project, "Unable to continue payment that doesn't awaits payment");
 
-        if (pi.Payment?.Status != PaymentStatus.AwaitingForPayment)
-        {
-            logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment state is {bankPaymentState}", fo.CommentId, claimId, projectId, pi.Payment.Status);
-            await UpdateFinanceOperationAsync(fo, pi);
-            throw new PaymentException(fo.Project, "Unable to continue payment that doesn't awaits payment");
-        }
-
-        if (fo.BankDetails?.QrCodeMeta is null || fo.BankDetails?.QrCodeLink is null)
-        {
-            logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} that is not continuable", fo.CommentId, claimId, projectId);
-            throw new PaymentException(fo.Project, "Unable to continue payment that doesn't awaits payment");
         }
 
         ICollection<FpsBank>? banks = null;
-        if (platform != FpsPlatform.Desktop)
+
+        if (continuePayment)
         {
-            banks = await _lazyFpsApi.Value.GetFastPaymentsSystemBanks(
-                platform,
-                fo.Claim.Player.Extra?.PhoneNumber ?? fo.Claim.Player.FullName,
-                fo.BankDetails.QrCodeMeta);
+
+            if (fo.BankDetails?.QrCodeMeta is null || fo.BankDetails?.QrCodeLink is null)
+            {
+                logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} that is not continuable", fo.CommentId, claimId, projectId);
+                throw new PaymentException(fo.Project, "Unable to continue payment that doesn't awaits payment");
+            }
+
+            if (platform != FpsPlatform.Desktop)
+            {
+                banks = await _lazyFpsApi.Value.GetFastPaymentsSystemBanks(
+                    platform,
+                    fo.Claim.Player.Extra?.PhoneNumber ?? fo.Claim.Player.FullName,
+                    fo.BankDetails.QrCodeMeta);
+            }
+
         }
 
         var result = new FastPaymentsSystemMobilePaymentContext(banks)
@@ -150,8 +170,9 @@ public class PaymentsService(
             ClaimId = claimId,
             ProjectId = projectId,
             OperationId = operationId,
-            QrCodeUrl = fo.BankDetails.QrCodeLink,
+            QrCodeUrl = fo.BankDetails?.QrCodeLink,
             ExpectedPlatform = platform,
+            ContinuePayment = continuePayment,
         };
 
         return result;
@@ -276,6 +297,7 @@ public class PaymentsService(
             OperationId = comment.CommentId,
             QrCodeUrl = invoice.Payment.QrCodeImageUrl!,
             ExpectedPlatform = platform,
+            ContinuePayment = true,
         };
 
         return result;
