@@ -4,11 +4,15 @@
 
 @if (Link is not null)
 {
-    <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" title="@Title">@LabelContent</a>
+  <Tooltip Title="@Title">
+    <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled">@LabelContent</a>
+  </Tooltip>
 }
 else
 {
-    <button class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" title="@ActualTitle" @onclick="OnClickHappened">@LabelContent</button>
+  <Tooltip Title="@ActualTitle">
+    <button class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" @onclick="OnClickHappened">@LabelContent</button>
+  </Tooltip>
 }
 @if (AutoConfirm)
 {
