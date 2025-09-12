@@ -26,6 +26,10 @@
 
             <div id="@id">
                 <div>
+                  @if (ShowEditControls)
+                    {
+                        <hr />
+                    }
                     <PlotStatusBadge Status="plotText.PlotStatus" />
                     <PlotTargetDisplay Target="plotText.Target" />
 
