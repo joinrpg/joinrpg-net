@@ -1,6 +1,9 @@
 @using JoinRpg.WebComponents.ElementMoving;
-
- <tr>
+@if (!List.HasMasterAccess && (Item.ElementsCount == 0 || Item.Status == PlotStatus.Deleted))
+{
+    @* Пропускать удаленные сюжеты или те сюжеты, где нет ничего опубликованного*@
+}
+<tr>
             <td>
                 <PlotFolderLink Model="Item" />
                 @if (List.HasMasterAccess)
@@ -58,7 +61,7 @@
 
     [Parameter]
     [EditorRequired]
-    public IPlotFolderListViewModel List { get; set; } = null!;
+    public PlotFolderListViewModel List { get; set; } = null!;
 
     public string createElementUri = null!;
     public string deletePlotUri = null!;

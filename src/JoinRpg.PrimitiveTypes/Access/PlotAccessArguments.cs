@@ -7,4 +7,6 @@ public record class PlotAccessArguments(Permission[] Permissions, bool Published
 
     public bool HasMasterAccess => Permissions.Contains(Permission.None);
     public bool HasPlotEditorAccess => Permissions.Contains(Permission.CanManagePlots) && ProjectLifecycleStatus != ProjectLifecycleStatus.Archived;
+
+    public bool HasViewAccess => Permissions.Contains(Permission.None) || Published;
 }

@@ -21,10 +21,21 @@ public static class PlotFolderListViewModelBuilder
 
     private static PlotFolderListItemViewModel CreateItem(PlotFolder folder, PlotAccessArguments plotAccessArguments)
     {
+        int elementsCount;
+        if (plotAccessArguments.HasMasterAccess)
+        {
+            elementsCount = folder.Elements.Count(x => x.IsActive);
+        }
+        else
+        {
+            // Если нет мастерского доступа, показываем только опубликованные вводные
+            elementsCount = folder.Elements.Count(x => x.Published != null && x.IsActive);
+        }
+
         return new PlotFolderListItemViewModel(
             folder.GetId(),
             folder.MasterTitle,
-            folder.Elements.Count(x => x.IsActive),
+            elementsCount,
             folder.TodoField,
             [.. folder.PlotTags.Select(tag => tag.TagName).Order()],
             folder.GetStatus(),
