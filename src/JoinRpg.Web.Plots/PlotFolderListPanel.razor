@@ -26,11 +26,17 @@
 
     @foreach (var item in Model.Folders.Where(f => f.Status != PlotStatus.Deleted))
     {
-       <PlotFolderListItemRow Item="@item" List="@Model" />
+        if (Model.HasMasterAccess || item.ElementsCount > 0) 
+        {
+            <PlotFolderListItemRow Item="@item" List="@Model" />
+        }
     }
     @foreach (var item in Model.Folders.Where(f => f.Status == PlotStatus.Deleted))
     {
-       <PlotFolderListItemRow Item="@item" List="@Model" />
+       if (Model.HasMasterAccess || item.ElementsCount > 0)
+        {
+            <PlotFolderListItemRow Item="@item" List="@Model" />
+        }
     }
 </table>
 
