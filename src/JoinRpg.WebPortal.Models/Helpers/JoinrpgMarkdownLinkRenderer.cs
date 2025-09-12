@@ -35,20 +35,20 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         LinkTypesToMatch = [.. matches.Keys.OrderByDescending(c => c.Length)];
     }
 
-    private record class Column(string Name, Func<Character, Dictionary<ProjectFieldIdentification, FieldWithValue>, string> Getter)
+    private record class Column(string Name, Func<Character, ProjectInfo, Dictionary<ProjectFieldIdentification, FieldWithValue>, string> Getter)
     {
-        public static Column Player = new Column("Игрок", (character, fieldDict) => GetPlayerString(character, showContacts: false));
-        public static Column Contacts = new Column("Игрок", (character, fieldDict) => GetPlayerString(character, showContacts: true));
-        public static Column FromField(ProjectFieldInfo f) => new Column(f.Name, (character, fieldDict) => fieldDict[f.Id].DisplayString);
+        public static Column Player = new Column("Игрок", (character, projectInfo, fieldDict) => GetPlayerString(character, projectInfo, showContacts: false));
+        public static Column Contacts = new Column("Игрок", (character, projectInfo, fieldDict) => GetPlayerString(character, projectInfo, showContacts: true));
+        public static Column FromField(ProjectFieldInfo f) => new Column(f.Name, (character, _, fieldDict) => fieldDict[f.Id].DisplayString);
 
 
 
         public static Column Groups =
-            new("Группы", (character, _) => string.Join(", ", character.GetIntrestingGroupsForDisplayToTop().Select(g => GroupLinkImpl(g, ""))));
+            new("Группы", (character, _, _) => string.Join(", ", character.GetIntrestingGroupsForDisplayToTop().Select(g => GroupLinkImpl(g, ""))));
         public static Column PublicGroups =
-            new("Группы", (character, _) => string.Join(", ", character.GetIntrestingGroupsForDisplayToTop().Where(g => g.IsPublic).Select(g => GroupLinkImpl(g, ""))));
+            new("Группы", (character, _, _) => string.Join(", ", character.GetIntrestingGroupsForDisplayToTop().Where(g => g.IsPublic).Select(g => GroupLinkImpl(g, ""))));
 
-        public static Column CharacterName = new Column("Персонаж", (character, _) => CharacterLinkImpl(character));
+        public static Column CharacterName = new Column("Персонаж", (character, _, _) => CharacterLinkImpl(character));
     }
 
     private string ExperimentalTableFunc(int groupId, string extra, CharacterGroup group, IEnumerable<Character> characters)
@@ -117,7 +117,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
             foreach (var column in columns)
             {
-                builder.AppendLine($"<td>{column.Getter(character, fieldsDict)}</td>");
+                builder.AppendLine($"<td>{column.Getter(character, projectInfo, fieldsDict)}</td>");
             }
             builder.AppendLine("</tr>");
         }
@@ -159,11 +159,16 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     private string CharacterImpl(Character character, string extra = "")
     {
-        return $"<span>{CharacterLinkImpl(character, extra)}&nbsp;({GetPlayerString(character, showContacts: true)})</span>";
+        return $"<span>{CharacterLinkImpl(character, extra)}&nbsp;({GetPlayerString(character, projectInfo, showContacts: true)})</span>";
     }
 
-    private static string GetPlayerString(Character character, bool showContacts)
+    private static string GetPlayerString(Character character, ProjectInfo projectInfo, bool showContacts)
     {
+        if (projectInfo.ProjectStatus == ProjectLifecycleStatus.Archived)
+        {
+            // Для архивных проектов не показывать контакты
+            showContacts = false;
+        }
         return (character.CharacterType, character.ApprovedClaim?.Player) switch
         {
             (CharacterType.NonPlayer, _) => "NPC",
@@ -174,7 +179,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             _ => throw new NotImplementedException(),
         };
 
-        string GetPlayerContacts(User player)
+        static string GetPlayerContacts(User player)
         {
             var contacts = new[] { GetEmailLinkImpl(player), GetVKLinkImpl(player), GetTelegramLinkImpl(player) };
             return $"{player.GetDisplayName()}: {contacts.JoinIfNotNullOrWhitespace(", ")}";
