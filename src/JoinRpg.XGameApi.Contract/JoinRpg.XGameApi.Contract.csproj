@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>disable</Nullable>
     <LangVersion>13</LangVersion>

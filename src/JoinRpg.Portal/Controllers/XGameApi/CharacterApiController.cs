@@ -1,15 +1,12 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
-using GroupHeader = JoinRpg.XGameApi.Contract.GroupHeader;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
@@ -60,8 +57,8 @@ public class CharacterApiController(
                 IsActive = character.IsActive,
                 InGame = character.InGame,
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
-                Groups = ToGroupHeaders(character.DirectGroups),
-                AllGroups = ToGroupHeaders(character.AllGroups),
+                Groups = ApiInfoBuilder.ToGroupHeaders(character.DirectGroups),
+                AllGroups = ApiInfoBuilder.ToGroupHeaders(character.AllGroups),
                 Fields = character.GetFields(projectInfo).Where(field => field.HasViewableValue)
                     .Select(field => new FieldValue
                     {
@@ -74,8 +71,7 @@ public class CharacterApiController(
 #pragma warning restore CS0612 // Type or member is obsolete
                 CharacterDescription = character.Description,
                 CharacterName = character.Name,
-                PlayerInfo = character.ApprovedClaim is null ? null :
-                    CreatePlayerInfo(character.ApprovedClaim, projectInfo),
+                PlayerInfo = ApiInfoBuilder.CreatePlayerInfo(character.ApprovedClaim, projectInfo),
             };
     }
 
@@ -93,33 +89,6 @@ public class CharacterApiController(
     {
         await characterService.SetFields(new CharacterIdentification(projectId, characterId), fieldValues);
         return "ok";
-    }
-
-    private static IOrderedEnumerable<GroupHeader> ToGroupHeaders(
-        IReadOnlyCollection<Data.Interfaces.GroupHeader> characterDirectGroups)
-    {
-        return characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)
-            .Select(
-                group => new GroupHeader
-                {
-                    CharacterGroupId = group.CharacterGroupId,
-                    CharacterGroupName = group.CharacterGroupName,
-                })
-            .OrderBy(group => group.CharacterGroupId);
-    }
-
-    private static CharacterPlayerInfo CreatePlayerInfo(Claim claim, ProjectInfo projectInfo)
-    {
-        return new CharacterPlayerInfo(
-                                    claim.PlayerUserId,
-                                    claim.ClaimFeeDue(projectInfo) <= 0,
-                                    claim.Player.ExtractDisplayName().DisplayName,
-                                    new PlayerContacts(
-                                        claim.Player.Email,
-                                        claim.Player.Extra?.PhoneNumber,
-                                        claim.Player.Extra?.VkVerified == true ? claim.Player.Extra?.Vk : null,
-                                        claim.Player.Extra?.Telegram)
-                                    );
     }
 
 }

@@ -53,7 +53,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
 
         if (feeChange != 0 || money < 0)
         {
-            _ = claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
         }
         var state = FinanceOperationState.Approved;
 
@@ -66,7 +66,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
             }
             else
             {
-                _ = claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+                _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
             }
         }
 
