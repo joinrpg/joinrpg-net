@@ -42,7 +42,7 @@ public class CharacterView : IFieldContainter
     public required IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
     public required string JsonData { get; set; }
     public required string Name { get; set; }
-    public string? Description { get; set; }
+    public required string Description { get; set; }
 }
 
 public class GroupHeader : IEquatable<GroupHeader>
