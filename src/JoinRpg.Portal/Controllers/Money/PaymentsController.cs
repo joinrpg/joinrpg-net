@@ -395,6 +395,12 @@ public class PaymentsController : Common.ControllerBase
                     orderId,
                     platform ?? FpsPlatform.Desktop);
 
+            if (!paymentContext.ContinuePayment)
+            {
+                // Нам нужно вернуться к заявке, продолжать тут нечего. Вероятно все уже оплачено (или истекло).
+                return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+            }
+
             return View("FastPaymentsSystemPayment", paymentContext);
         }
         catch (Exception e)
