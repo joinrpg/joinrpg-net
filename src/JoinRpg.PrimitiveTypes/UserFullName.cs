@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.PrimitiveTypes;
 
+[method: JsonConstructor]
 public record UserFullName(PrefferedName? PrefferedName, BornName? BornName, SurName? SurName, FatherName? FatherName)
 {
     public string? FullName

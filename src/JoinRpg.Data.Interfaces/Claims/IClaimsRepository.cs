@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Data.Interfaces.Claims;
 
@@ -25,4 +26,8 @@ public interface IClaimsRepository : IDisposable
     Task<IReadOnlyCollection<Claim>> GetClaimsForMoneyTransfersListAsync(int projectId, ClaimStatusSpec claimStatusSpec);
 
     Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
+
+    Task<IReadOnlyCollection<UpdatedClaimDto>> GetUpdatedClaimsSince(DateTimeOffset since);
 }
+
+public record class UpdatedClaimDto(ClaimIdentification ClaimId, UserIdentification UserId, ProjectName ProjectName, string CharacterName);
