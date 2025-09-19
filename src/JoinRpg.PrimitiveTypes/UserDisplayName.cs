@@ -1,14 +1,12 @@
 namespace JoinRpg.PrimitiveTypes;
 
-// How to put attr on primary ctor??? [method:System.Text.Json.Serialization.JsonConstructor]
+[method: System.Text.Json.Serialization.JsonConstructor]
 public record UserDisplayName(
     string DisplayName,
     string? FullName)
 {
-    // Cant make this constructor, or JSON deserializer fails to find primary ctor
-    public static UserDisplayName Create(UserFullName fullName, Email email)
+    public UserDisplayName(UserFullName fullName, Email email) : this(GetDisplayName(fullName, email), fullName?.FullName)
     {
-        return new(GetDisplayName(fullName, email), fullName?.FullName);
     }
 
     private static string GetDisplayName(UserFullName fullName, Email email)

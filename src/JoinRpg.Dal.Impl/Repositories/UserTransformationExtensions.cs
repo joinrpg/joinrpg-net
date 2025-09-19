@@ -14,8 +14,5 @@ public static class UserTransformationExtensions
             FatherName.FromOptional(user.FatherName));
     }
 
-    public static UserDisplayName ExtractDisplayName(this User user)
-    {
-        return UserDisplayName.Create(user.ExtractFullName(), new Email(user.Email));
-    }
+    public static UserDisplayName ExtractDisplayName(this User user) => new UserDisplayName(user.ExtractFullName(), new Email(user.Email));
 }
