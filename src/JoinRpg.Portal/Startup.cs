@@ -120,6 +120,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinExportService()
             .AddJoinManagers()
             .AddJoinNotificationServices()
+            .AddJoinTelegram()
             .AddJoinBlobStorage();
     }
 

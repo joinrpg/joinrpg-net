@@ -1,5 +1,6 @@
 using System.Reflection;
 using JoinRpg.Interfaces;
+using JoinRpg.Services.Impl.Notifications;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
@@ -42,6 +43,7 @@ public static class Services
     {
         return
             services
+            .AddDailyJob<DailyChangedPlayerClaimsNotificationJob>()
             .AddDailyJob<ProjectPerformCloseJob>();
     }
 
