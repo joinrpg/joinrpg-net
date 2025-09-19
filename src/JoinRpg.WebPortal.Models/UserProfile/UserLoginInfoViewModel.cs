@@ -14,13 +14,13 @@ public abstract record ProviderDescViewModel(string ProviderId, string FriendlyN
     public abstract Uri? GetProfileUri(string? providerKey);
 }
 
-public record VkDescViewModel() : ProviderDescViewModel("Vkontakte", "ВК")
+public record VkDescViewModel() : ProviderDescViewModel(UserExternalLogin.VkProvider, "ВК")
 {
     [return: NotNullIfNotNull(nameof(providerKey))]
     public override Uri? GetProfileUri(string? providerKey) => providerKey is null ? null : new Uri($"https://vk.com/{providerKey}");
 }
 
-public record TelegramDescViewModel() : ProviderDescViewModel(ProviderId: "telegram", "Телеграм")
+public record TelegramDescViewModel() : ProviderDescViewModel(ProviderId: UserExternalLogin.TelegramProvider, "Телеграм")
 {
     [return: NotNullIfNotNull(nameof(providerKey))]
     public override Uri? GetProfileUri(string? providerKey) => providerKey is null ? null : new Uri($"https://t.me/{providerKey}");
