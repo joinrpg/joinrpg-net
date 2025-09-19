@@ -6,6 +6,8 @@ using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl.Notifications;
+
+[JobDelay(7)] // UTC 7 часов = Москва 10 утра
 internal class DailyChangedPlayerClaimsNotificationJob(
     IClaimsRepository claimsRepository,
     ILogger<DailyChangedPlayerClaimsNotificationJob> logger,
