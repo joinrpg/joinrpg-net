@@ -53,7 +53,7 @@ public static class UserExtensions
 
     public static UserDisplayName ExtractDisplayName(this User user)
     {
-        return UserDisplayName.Create(user.ExtractFullName(), new Email(user.Email));
+        return new UserDisplayName(user.ExtractFullName(), new Email(user.Email));
     }
 
     /// <summary>
