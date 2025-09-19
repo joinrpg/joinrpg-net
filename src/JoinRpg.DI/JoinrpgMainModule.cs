@@ -1,5 +1,4 @@
 using Autofac;
-using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 
@@ -10,10 +9,6 @@ public class JoinrpgMainModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         _ = builder.RegisterTypes(Services.Impl.Services.GetTypes().ToArray()).AsImplementedInterfaces().AsSelf();
-
-
-
-        _ = builder.RegisterTypes(NotificationRegistration.GetTypes().ToArray()).AsImplementedInterfaces();
 
         _ = builder.RegisterType<VirtualUsersService>().As<IVirtualUsersService>().SingleInstance();
 
