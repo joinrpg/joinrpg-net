@@ -107,8 +107,12 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     }
 
     [Pure]
-    protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User?>> func)
+    protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User?>> func, ProjectInfo projectInfo)
     {
+        if (projectInfo.ProjectStatus == ProjectLifecycleStatus.Archived)
+        {
+            return [ShortUserColumn(func)];
+        }
         return ComplexColumn(
                 func,
                 u => u.GetDisplayName(),
@@ -116,14 +120,14 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
                 u => u.FatherName,
                 u => u.BornName,
                 u => u.Email)
-            .Union(new[]
-            {
+            .Union(
+            [
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Skype),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Telegram),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.PhoneNumber),
-            });
+            ]);
     }
 
     [Pure]

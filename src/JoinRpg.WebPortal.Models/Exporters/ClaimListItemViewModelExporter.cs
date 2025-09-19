@@ -33,7 +33,7 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
 
         yield return ShortUserColumn(x => x.LastModifiedBy);
         yield return ShortUserColumn(x => x.Responsible);
-        foreach (var c in UserColumn(x => x.Player))
+        foreach (var c in UserColumn(x => x.Player, projectInfo))
         {
             yield return c;
         }

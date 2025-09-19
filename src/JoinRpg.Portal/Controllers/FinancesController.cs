@@ -95,7 +95,8 @@ public class FinancesController : ControllerGameBase
         }
         else
         {
-            var frontend = new FinanceOperationExporter(UriService);
+            var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+            var frontend = new FinanceOperationExporter(UriService, metadata);
 
             var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
 

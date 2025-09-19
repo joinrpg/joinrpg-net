@@ -1,8 +1,9 @@
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters;
 
-public class FinanceOperationExporter(IUriService uriService) : CustomExporter<FinOperationListItemViewModel>(uriService)
+public class FinanceOperationExporter(IUriService uriService, ProjectInfo projectInfo) : CustomExporter<FinOperationListItemViewModel>(uriService)
 {
     public override IEnumerable<ITableColumn> ParseColumns()
     {
@@ -15,7 +16,7 @@ public class FinanceOperationExporter(IUriService uriService) : CustomExporter<F
         yield return DateTimeColumn(x => x.OperationDate);
         yield return StringColumn(x => x.Claim);
         yield return UriColumn(x => x);
-        foreach (var c in UserColumn(x => x.Player))
+        foreach (var c in UserColumn(x => x.Player, projectInfo))
         {
             yield return c;
         }
