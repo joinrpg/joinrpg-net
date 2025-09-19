@@ -18,8 +18,7 @@ internal class DailyChangedPlayerClaimsNotificationJob(
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {
-        await Task.Delay(TimeSpan.FromHours(8), cancellationToken); //UTC 8 утра = Москва 11 утра
-        var sinceTime = DateTime.UtcNow.AddHours(-25);
+        var sinceTime = DateTime.UtcNow.AddHours(-24).AddMinutes(-20);
         // Интервалы будут частично перекрываться, чтобы это предотвратить, нужно записывать какие конкретно изменения были отправлены
         var updates = await claimsRepository.GetUpdatedClaimsSince(sinceTime);
         logger.LogInformation("Найдено {updatedClaimsCount} обновлений {since}", updates.Count, sinceTime);
