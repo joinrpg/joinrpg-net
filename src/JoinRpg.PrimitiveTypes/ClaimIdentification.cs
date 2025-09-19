@@ -4,9 +4,15 @@ namespace JoinRpg.PrimitiveTypes;
 [method: JsonConstructor]
 public record ClaimIdentification(
     ProjectIdentification ProjectId,
-    int ClaimId) : IProjectEntityId
+    int ClaimId) : IProjectEntityId, ILinkable
 {
     public int Id => ClaimId;
+
+    public LinkType LinkType => LinkType.Claim;
+
+    public string? Identification => ClaimId.ToString();
+
+    int? ILinkable.ProjectId => ProjectId;
 
     public ClaimIdentification(int projectId, int claimId) : this(new(projectId), claimId)
     {

@@ -9,4 +9,7 @@ public class UserExternalLogin
     public virtual User User { get; set; }
     public string Provider { get; set; }
     public string Key { get; set; }
+
+    public const string TelegramProvider = "telegram";
+    public const string VkProvider = "Vkontakte";
 }

@@ -3,6 +3,7 @@ using Autofac;
 using Joinrpg.Web.Identity;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
+using JoinRpg.Common.Telegram;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
@@ -12,7 +13,6 @@ using JoinRpg.Integrations.KogdaIgra;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
@@ -120,6 +120,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinExportService()
             .AddJoinManagers()
             .AddJoinNotificationServices()
+            .AddJoinTelegram()
             .AddJoinBlobStorage();
     }
 
@@ -136,7 +137,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
-        app.MapStaticAssets();
+        app.MapStaticAssets().ShortCircuit();
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
         _ = app.UseForwardedHeaders();

@@ -1,3 +1,4 @@
+using System.Reflection;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
 using Microsoft.Extensions.Options;
@@ -18,8 +19,11 @@ public class MidnightJobBackgroundService<TJob>(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await WaitUntilMidnight(stoppingToken);
-            logger.LogInformation("We are at midnight (special one)");
+            var delay = typeof(TJob).GetCustomAttribute<JobDelayAttribute>()?.Delay;
+
+            await WaitUntilMidnight(stoppingToken, delay);
+
+            logger.LogInformation("Время запуска джобы... ");
             stoppingToken.ThrowIfCancellationRequested();
 
             using var scope = serviceProvider.CreateScope();
@@ -50,7 +54,7 @@ public class MidnightJobBackgroundService<TJob>(
             }
         }
     }
-    private async Task WaitUntilMidnight(CancellationToken stoppingToken)
+    private async Task WaitUntilMidnight(CancellationToken stoppingToken, TimeSpan? delay)
     {
         if (skipWait)
         {
@@ -58,12 +62,12 @@ public class MidnightJobBackgroundService<TJob>(
             skipWait = false;
             return;
         }
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var midnight = now
             .Date.AddDays(1) // next midnight
-            .AddSeconds(5) // 5 seconds later — do not start anything at midnight
+            .Add(delay ?? TimeSpan.FromSeconds(5)) // Если ничего нет, запускаем через 5 секунд
             .AddSeconds(Random.Shared.Next(5)); //let's different pods to start daily jobs at different times
-        logger.LogDebug("Special midnight will be for us at {specialMidnight}", midnight);
+        logger.LogDebug("Время запуска джобы для нас будет {specialMidnight}", midnight);
         await Task.Delay(midnight - now, stoppingToken);
     }
 }

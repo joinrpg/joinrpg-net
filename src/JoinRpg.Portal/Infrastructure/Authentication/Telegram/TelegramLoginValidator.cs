@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using JoinRpg.Common.Telegram;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Telegram;

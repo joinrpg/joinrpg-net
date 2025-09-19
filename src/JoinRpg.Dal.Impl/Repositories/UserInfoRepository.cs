@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -85,4 +86,36 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         => ctx.Set<User>()
             .SelectMany(user => user.Avatars)
             .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
+    public async Task<UserInfo?> GetUserInfo(UserIdentification userId)
+    {
+        var userQuery =
+            from user in ctx.Set<User>()
+            where user.UserId == userId.Value
+            select new
+            {
+                user.UserId,
+                user.PrefferedName,
+                user.FatherName,
+                user.SurName,
+                user.BornName,
+                user.Email,
+                user.ExternalLogins,
+                user.Extra!.Telegram,
+            };
+
+        var result = await userQuery.SingleOrDefaultAsync();
+        if (result is null)
+        {
+            return null;
+        }
+
+        var telegramId = TelegramId.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram));
+
+        return new UserInfo(new UserIdentification(result.UserId), new UserDisplayName(
+            new UserFullName(
+                PrefferedName.FromOptional(result.PrefferedName),
+            BornName.FromOptional(result.BornName),
+            SurName.FromOptional(result.SurName),
+            FatherName.FromOptional(result.FatherName)), new Email(result.Email)), new UserSocialNetworks(telegramId));
+    }
 }

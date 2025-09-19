@@ -49,6 +49,7 @@
     <ProjectReference Include="..\JoinRpg.Blazor.Client\JoinRpg.Blazor.Client.csproj" />
     <ProjectReference Include="..\JoinRpg.BlobStorage\JoinRpg.BlobStorage.csproj" />
     <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
+    <ProjectReference Include="..\JoinRpg.Common.Telegram\JoinRpg.Common.Telegram.csproj" />
     <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />

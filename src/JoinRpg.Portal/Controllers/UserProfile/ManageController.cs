@@ -1,4 +1,5 @@
 using Joinrpg.Web.Identity;
+using JoinRpg.Common.Telegram;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;

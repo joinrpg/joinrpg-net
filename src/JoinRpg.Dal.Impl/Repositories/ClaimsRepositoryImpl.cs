@@ -181,4 +181,15 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
         return query.ToDictionaryAsync(x => x.CommentDiscussionId, x => x.UnreadCommentsCount);
     }
+
+    public async Task<IReadOnlyCollection<UpdatedClaimDto>> GetUpdatedClaimsSince(DateTimeOffset since)
+    {
+        var query =
+            from claim in Ctx.Set<Claim>()
+            where claim.CommentDiscussion.Comments.Any(comment => comment.LastEditTime > since.UtcDateTime)
+            select new { claim.ClaimId, claim.ProjectId, claim.Project.ProjectName, claim.Character.CharacterName, claim.PlayerUserId };
+        var result = await query.ToListAsync();
+        return [.. result.Select(x =>
+        new UpdatedClaimDto(new ClaimIdentification(x.ProjectId, x.ClaimId), new UserIdentification(x.PlayerUserId), new(x.ProjectName), x.CharacterName))];
+    }
 }
