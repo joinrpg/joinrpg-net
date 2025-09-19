@@ -21,7 +21,7 @@ public class CharacterListItemViewModelExporter(ProjectInfo projectInfo, IUriSer
         }
 
 
-        foreach (var tableColumn in UserColumn(x => x.Player))
+        foreach (var tableColumn in UserColumn(x => x.Player, projectInfo))
         {
             yield return tableColumn;
         }
