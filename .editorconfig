@@ -146,6 +146,9 @@ dotnet_diagnostic.CA1872.severity = suggestion
 # CA2254: Template should be a static expression
 dotnet_diagnostic.CA2254.severity = warning
 
+# CA2016: Forward the 'CancellationToken' parameter to methods
+dotnet_diagnostic.CA2016.severity = warning
+
 [*.{cs,vb}]
 #### Naming styles ####
 
