@@ -15,4 +15,7 @@
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="About\" />
+  </ItemGroup>
 </Project>
