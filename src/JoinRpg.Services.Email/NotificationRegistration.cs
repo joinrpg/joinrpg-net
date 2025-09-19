@@ -1,9 +1,13 @@
+using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace JoinRpg.Services.Email;
 public static class NotificationRegistration
 {
-    public static IEnumerable<Type> GetTypes()
+    public static IServiceCollection AddJoinNotificationServices(this IServiceCollection services)
     {
-        yield return typeof(EmailServiceImpl);
-        yield return typeof(MasterEmailServiceImpl);
+        return services
+            .AddTransient<IEmailService, EmailServiceImpl>()
+            .AddTransient<IMasterEmailService, MasterEmailServiceImpl>();
     }
 }

@@ -18,6 +18,7 @@ using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
+using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
@@ -82,6 +83,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         services.AddJoinDailyJob(Configuration, environment);
 
+        services.AddJoinDomainServices();
+
         if (environment.IsDevelopment())
         {
             services.AddDatabaseDeveloperPageExceptionFilter();
@@ -116,6 +119,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinDal()
             .AddJoinExportService()
             .AddJoinManagers()
+            .AddJoinNotificationServices()
             .AddJoinBlobStorage();
     }
 

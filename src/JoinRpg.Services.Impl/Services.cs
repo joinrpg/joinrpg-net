@@ -1,4 +1,5 @@
 using System.Reflection;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
@@ -11,6 +12,7 @@ public static class Services
 {
     public static IEnumerable<Type> GetTypes()
     {
+        //TODO переместить все отсюда в AddJoinDomainServices
         yield return typeof(ProjectService);
         yield return typeof(CreateProjectService);
         yield return typeof(ClaimServiceImpl);
@@ -34,6 +36,13 @@ public static class Services
         {
             yield return provider;
         }
+    }
+
+    public static IJoinServiceCollection AddJoinDomainServices(this IJoinServiceCollection services)
+    {
+        return
+            services
+            .AddDailyJob<ProjectPerformCloseJob>();
     }
 
     [Obsolete("После того, как IdPortal заработает, убрать отсюда UserService в отдельную сборку в принципе")]

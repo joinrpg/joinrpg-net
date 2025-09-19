@@ -5,7 +5,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl.Projects;
-public class ProjectPerformCloseJob(
+internal class ProjectPerformCloseJob(
     IProjectRepository projectRepository,
     ILogger<ProjectPerformCloseJob> logger,
     IProjectService projectService,
