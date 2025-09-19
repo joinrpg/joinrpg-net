@@ -68,7 +68,7 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
 
 public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, NoKogdaIgra };
 
-public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims) : ILinkableWithName
+public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims, int ClaimsCount) : ILinkableWithName
 {
     string ILinkableWithName.Name => ProjectName;
 
