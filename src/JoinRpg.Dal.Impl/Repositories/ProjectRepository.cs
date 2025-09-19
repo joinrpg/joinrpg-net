@@ -268,11 +268,16 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                         project.ProjectName,
                         IAmMaster = masterPredicate.Compile()(project),
                         HasActiveClaims = claimPredicate.Compile()(project),
+                        ClaimsCount = project.Claims.Count(),
                     };
 
         var result = await query.ToListAsync();
 
-        return result.Select(x => new ProjectHeaderDto(new(x.ProjectId), x.ProjectName, x.IAmMaster, x.HasActiveClaims)).ToArray();
+        return result.Select(x => new ProjectHeaderDto(new(x.ProjectId), x.ProjectName, x.IAmMaster, x.HasActiveClaims, x.ClaimsCount))
+            .OrderByDescending(x => x.IAmMaster)
+            .ThenByDescending(x => x.HasActiveClaims)
+            .ThenByDescending(x => x.ClaimsCount)
+            .ToArray();
     }
 }
 
