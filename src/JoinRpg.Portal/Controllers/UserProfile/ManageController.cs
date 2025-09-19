@@ -1,13 +1,13 @@
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.Telegram;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Web.Helpers;

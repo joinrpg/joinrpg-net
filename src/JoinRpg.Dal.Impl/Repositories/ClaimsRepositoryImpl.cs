@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -26,21 +27,28 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl(int projectId, ClaimStatusSpec status, Expression<Func<Claim, bool>> predicate)
     {
         await LoadProjectFields(projectId);
-        await LoadProjectCharactersAndGroups(projectId);
+        await LoadProjectGroups(projectId);
         await LoadMasters(projectId);
 
+        var predicateBuilder = PredicateBuilder.New<Claim>()
+            .And(claim => claim.ProjectId == projectId)
+            .And(predicate)
+            .And(ClaimPredicates.GetClaimStatusPredicate(status));
+
+        return await GetClaimsImpl(predicateBuilder);
+    }
+
+    private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl(Expression<Func<Claim, bool>> predicate)
+    {
         Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
         return await Ctx
           .ClaimSet
           .Include(c => c.AccommodationRequest)
           .Include(c => c.Player)
           .Include(c => c.FinanceOperations)
-          .Where(ClaimPredicates.GetClaimStatusPredicate(status))
+          .Include(c => c.Character)
           .Where(predicate)
-          .Where(
-            c =>
-              c.ProjectId == projectId
-          ).ToListAsync();
+          .ToListAsync();
     }
 
     public async Task<IEnumerable<Claim>> GetClaimsByIds(int projectid, IReadOnlyCollection<int> claimindexes)
@@ -107,7 +115,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     {
         await LoadProjectFields(projectId);
         await LoadMasters(projectId);
-        await LoadProjectCharactersAndGroups(projectId);
+        await LoadProjectGroups(projectId);
         await LoadProjectClaims(projectId);
 
         return
@@ -116,6 +124,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
               .Include(c => c.AccommodationRequest)
+              .Include(c => c.Character)
               .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 
@@ -191,5 +200,22 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         var result = await query.ToListAsync();
         return [.. result.Select(x =>
         new UpdatedClaimDto(new ClaimIdentification(x.ProjectId, x.ClaimId), new UserIdentification(x.PlayerUserId), new(x.ProjectName), x.CharacterName))];
+    }
+
+    public async Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status)
+    {
+        var predicateBuilder = PredicateBuilder.New<Claim>()
+        .And(claim => claim.PlayerUserId == userId.Value)
+        .And(ClaimPredicates.GetClaimStatusPredicate(status));
+
+        return await Ctx
+          .ClaimSet
+          .Include(c => c.AccommodationRequest)
+          .Include(c => c.Player)
+          .Include(c => c.FinanceOperations)
+          .Include(c => c.Character)
+          .Include(c => c.Project)
+          .Where(predicateBuilder)
+          .ToListAsync();
     }
 }

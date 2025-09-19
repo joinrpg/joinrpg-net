@@ -44,12 +44,12 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
     }
     public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)
     {
-        await LoadProjectCharactersAndGroups(projectId);
-        await LoadProjectClaims(projectId);
-        await LoadProjectFields(projectId);
+        await LoadProjectGroups(projectId);
 
         return
-          await Ctx.Set<Character>().Include(ch => ch.ApprovedClaim)
+          await Ctx.Set<Character>()
+            .Include(ch => ch.ApprovedClaim)
+            .Include(ch => ch.Claims)
             .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 

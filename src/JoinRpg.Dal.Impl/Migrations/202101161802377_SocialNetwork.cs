@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations;
 
 using System.Data.Entity.Migrations;
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Users;
 
 public partial class SocialNetwork : DbMigration
 {

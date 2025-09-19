@@ -1,17 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models.CheckIn;
 
 public class SecondRoleViewModel
 {
-    public SecondRoleViewModel(Claim claim, IEnumerable<Character> characters, User currentUser)
+    public SecondRoleViewModel(Claim claim, IEnumerable<Character> characters, User currentUser, ProjectInfo projectInfo)
     {
         Master = claim.ResponsibleMasterUser;
         Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None);
-        PlayerDetails = new UserProfileDetailsViewModel(claim.Player, currentUser);
+        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo);
         ClaimId = claim.ClaimId;
         Characters =
           characters.Select(

@@ -1,0 +1,57 @@
+@model           JoinRpg.Web.Models.ClaimList.MyClaimListViewModel
+
+@{
+    var firstItem = Model.Items.FirstOrDefault();
+}
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => firstItem!.Name)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => firstItem!.ProjectName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => firstItem!.ClaimFullStatusView)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => firstItem!.UpdateDate)
+        </th>
+    </tr>
+
+    @foreach (var item in Model.Items.OrderByDescending(c => c.UpdateDate))
+    {
+        <tr>
+            <td>
+                <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
+                    @item.Name
+                    @if (item.UnreadCommentsCount > 0)
+                    {
+                        <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+                    }
+                </a>
+            </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectName)
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClaimFullStatusView)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdateDate)
+                @if (item.LastCommentByPlayer)
+                {
+                        <text>игроком</text>
+                }
+                else 
+                {
+                    <text>мастером</text>
+                }
+            </td>
+
+        </tr>
+    }
+
+</table>

@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -19,11 +18,11 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/masters")]
 public class AclController(
     IProjectRepository projectRepository,
+    IProjectMetadataRepository projectMetadataRepository,
     IProjectService projectService,
     IClaimsRepository claimRepository,
     IUriService uriService,
     IUserRepository userRepository,
-    ICurrentUserAccessor currentUserAccessor,
     IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
     IProjectAccessService projectAccessService
     ) : ControllerGameBase(projectRepository, projectService, userRepository)
@@ -34,11 +33,10 @@ public class AclController(
 
     private async Task<ActionResult> ShowAddPage(ProjectIdentification projectId, int userId)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-        var currentUser = await UserRepository.GetById(currentUserAccessor.UserId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         var targetUser = await UserRepository.GetById(userId);
 
-        return View(new AclViewModel(project, targetUser, currentUser, PermissionExtensions.GetEmptyPermissionViewModels(project)));
+        return View(new AclViewModel(project, targetUser, PermissionExtensions.GetEmptyPermissionViewModels(project)));
     }
 
     [HttpPost("add/{userId}")]
@@ -74,19 +72,20 @@ public class AclController(
 
     [RequireMasterOrAdmin()]
     [HttpGet]
-    public async Task<ActionResult> Index(int projectId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
         var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
-        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(new(projectId));
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(projectId);
         var currentUser = await GetCurrentUserAsync();
 
-        return View(new MastersListViewModel(project, claims, groups, currentUser, uriService));
+        return View(new MastersListViewModel(project, claims, groups, currentUser, uriService, projectInfo));
     }
 
     [HttpGet("delete")]
     [MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Delete(int projectId, int projectaclid)
+    public async Task<ActionResult> Delete(ProjectIdentification projectId, int projectaclid)
     {
         AclViewModel innerModel = await GetAclViewModel(projectId, projectaclid);
 
@@ -113,7 +112,7 @@ public class AclController(
         }
         catch
         {
-            viewModel.InnerModel = await GetAclViewModel(viewModel.ProjectId, viewModel.ProjectAclId);
+            viewModel.InnerModel = await GetAclViewModel(new(viewModel.ProjectId), viewModel.ProjectAclId);
             return View(viewModel);
         }
         if (viewModel.UserId == CurrentUserId)
@@ -127,7 +126,7 @@ public class AclController(
 
     [HttpGet("leave")]
     [RequireMaster()]
-    public async Task<ActionResult> RemoveYourself(int projectId, int projectAclId) => await Delete(projectId, projectAclId);
+    public async Task<ActionResult> RemoveYourself(ProjectIdentification projectId, int projectAclId) => await Delete(projectId, projectAclId);
 
     [HttpPost("leave")]
     [ValidateAntiForgeryToken, RequireMaster()]
@@ -136,12 +135,12 @@ public class AclController(
 
     [HttpGet("edit")]
     [MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Edit(int projectId, int projectaclid)
+    public async Task<ActionResult> Edit(ProjectIdentification projectId, int projectaclid)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
 
-        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
+        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(projectId, new(projectAcl.UserId));
 
         var currentUser = await GetCurrentUserAsync();
         return View(await GetAclViewModel(projectId, projectaclid));
@@ -190,13 +189,14 @@ public class AclController(
         return RedirectToAction("Details", "Game", new { projectId });
     }
 
-    private async Task<AclViewModel> GetAclViewModel(int projectId, int projectaclid)
+    private async Task<AclViewModel> GetAclViewModel(ProjectIdentification projectId, int projectaclid)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
         var claims = await claimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
-        var innerModel = new AclViewModel(projectAcl, await GetCurrentUserAsync(), claims.Count, groups, uriService);
+        var innerModel = new AclViewModel(projectAcl, claims.Count, groups, uriService, projectInfo);
         return innerModel;
     }
 }

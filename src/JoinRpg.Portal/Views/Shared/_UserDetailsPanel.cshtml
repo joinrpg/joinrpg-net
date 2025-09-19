@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models
 @model UserProfileDetailsViewModel
 <div class="col-md-5">
   <div class="panel panel-default" style="max-width:400px">
@@ -6,12 +6,12 @@
               @Html.DisplayFor(model => model)
 
           </div>
-          @if (Model.HasAccess)
+          @if (Model.Reason != AccessReasonView.NoAccess)
           {
               <div class="panel-footer" title="Почему я вижу этот профиль?">
 
                   @Html.DisplayFor(model => model.Reason)
-                  @if (Model.Reason == AccessReason.ItsMe)
+                @if (Model.IsMine)
                   {
                       <text>[ @Html.ActionLink("Настроить", "SetupProfile", "Manage") ]</text>
                   }

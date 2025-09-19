@@ -1,5 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
 using MoreLinq;
@@ -30,7 +32,7 @@ public class MoneyInfoForUserViewModel
             .OrderBy(f => f.Id)
             .Select(f => new MoneyTransferListItemViewModel(f, currentUserId)).ToArray();
         ProjectId = project.ProjectId;
-        UserDetails = new UserProfileDetailsViewModel(master, AccessReason.CoMaster);
+        UserDetails = new UserProfileDetailsViewModel(master.GetUserInfo(), UserProfileAccessReason.CoMaster);
 
         Operations = new FinOperationListViewModel(project, urlHelper, operations);
 

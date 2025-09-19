@@ -64,9 +64,13 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
     public static ProjectListSpecification ActiveProjectsWithSchedule { get; } = new ProjectListSpecification(ProjectListCriteria.HasSchedule, LoadArchived: false);
 
     public static ProjectListSpecification ActiveProjectsWithoutKogdaIgra { get; } = new ProjectListSpecification(ProjectListCriteria.NoKogdaIgra, LoadArchived: false);
+
+    public static ProjectListSpecification AllProjectsWithMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: true);
+
+    public static ProjectListSpecification ActiveProjectsWithGrantMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterGrantAccess, LoadArchived: true);
 }
 
-public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, NoKogdaIgra };
+public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, NoKogdaIgra, MasterGrantAccess };
 
 public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims, int ClaimsCount) : ILinkableWithName
 {

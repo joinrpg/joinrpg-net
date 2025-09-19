@@ -13,6 +13,10 @@ public static class ProjectLinkViewModelBuilder
     public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
         this IEnumerable<DataModel.Project> projects) =>
         projects.Select(p => new ProjectLinkViewModel(new(p.ProjectId), p.ProjectName));
+
+    public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
+    this IEnumerable<ProjectHeaderDto> projects) =>
+    projects.Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName));
 }
 
 public class EditProjectViewModel

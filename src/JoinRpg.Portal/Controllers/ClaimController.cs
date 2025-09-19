@@ -561,7 +561,7 @@ public class ClaimController(
         {
             return NotFound();
         }
-        if (!claim.HasAccess(CurrentUserId, ExtraAccessReason.Player))
+        if (!claim.HasAccess(CurrentUserId, Permission.None, ExtraAccessReason.Player))
         {
             return NoAccesToProjectView(claim.Project);
         }

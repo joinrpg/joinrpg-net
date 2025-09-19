@@ -1,11 +1,13 @@
 using System.Data.Entity;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Users;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -88,8 +90,10 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
     public async Task<UserInfo?> GetUserInfo(UserIdentification userId)
     {
+        var activeclaimsPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var activeProjectsPredicate = ProjectPredicates.MasterAccess(userId);
         var userQuery =
-            from user in ctx.Set<User>()
+            from user in ctx.Set<User>().AsExpandable()
             where user.UserId == userId.Value
             select new
             {
@@ -101,6 +105,17 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Email,
                 user.ExternalLogins,
                 user.Extra!.Telegram,
+                Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId }),
+                Projects = user.ProjectAcls.Where(acl => activeProjectsPredicate.Invoke(acl.Project)).Select(acl => new { acl.ProjectId, acl.Project.Active }),
+                user.Auth.IsAdmin,
+                user.Extra!.Skype,
+                user.Extra!.Livejournal,
+                AllRpgInfoId = user.Allrpg.Sid,
+                user.Extra.Vk,
+                user.Extra.SocialNetworksAccess,
+                user.SelectedAvatarId,
+                user.VerifiedProfileFlag,
+                user.Extra.PhoneNumber
             };
 
         var result = await userQuery.SingleOrDefaultAsync();
@@ -111,11 +126,24 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
 
         var telegramId = TelegramId.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram));
 
-        return new UserInfo(new UserIdentification(result.UserId), new UserDisplayName(
+        var userFullName =
             new UserFullName(
                 PrefferedName.FromOptional(result.PrefferedName),
             BornName.FromOptional(result.BornName),
             SurName.FromOptional(result.SurName),
-            FatherName.FromOptional(result.FatherName)), new Email(result.Email)), new UserSocialNetworks(telegramId));
+            FatherName.FromOptional(result.FatherName));
+        return new UserInfo(
+            new UserIdentification(result.UserId),
+            new UserSocialNetworks(telegramId, result.Skype, result.Livejournal, result.AllRpgInfoId, result.Vk, result.SocialNetworksAccess),
+            result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
+            result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            result.IsAdmin,
+            AvatarIdentification.FromOptional(result.SelectedAvatarId),
+            new Email(result.Email),
+            userFullName,
+            result.VerifiedProfileFlag,
+            result.PhoneNumber
+            );
     }
 }

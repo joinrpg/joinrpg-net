@@ -18,7 +18,6 @@ namespace JoinRpg.Portal.Controllers;
 public class PrintController(
     IProjectRepository projectRepository,
     IProjectService projectService,
-    IPlotRepository plotRepository,
     ICharacterRepository characterRepository,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
