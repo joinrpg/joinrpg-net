@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;
@@ -15,6 +16,7 @@ public enum ExtraAccessReason
 
 public static class ClaimAcccessExtensions
 {
+    [Obsolete]
     public static Claim RequestAccess(
         this Claim claim,
         int currentUserId,
@@ -37,7 +39,7 @@ public static class ClaimAcccessExtensions
     public static Claim RequestAccess(
         this Claim claim,
         int currentUserId,
-        Permission permission,
+        Permission permission = Permission.None,
         ExtraAccessReason reasons = ExtraAccessReason.None)
     {
         if (claim?.Project == null)
@@ -52,11 +54,7 @@ public static class ClaimAcccessExtensions
         return claim;
     }
 
-    public static Claim RequestAccess(
-        this Claim claim,
-        int currentUserId,
-        ExtraAccessReason reasons = ExtraAccessReason.None) => claim.RequestAccess(currentUserId, acl => true, reasons);
-
+    [Obsolete]
     public static bool HasAccess(this Claim claim,
         int? userId,
         Expression<Func<ProjectAcl, bool>> permission,
@@ -86,7 +84,7 @@ public static class ClaimAcccessExtensions
 
     public static bool HasAccess(this Claim claim,
         int? userId,
-        Permission permission,
+        Permission permission = Permission.None,
         ExtraAccessReason reasons = ExtraAccessReason.None)
     {
         ArgumentNullException.ThrowIfNull(claim);
@@ -110,6 +108,7 @@ public static class ClaimAcccessExtensions
     }
 
     public static bool HasAccess(this Claim claim,
-        int? userId,
-        ExtraAccessReason reasons = ExtraAccessReason.None) => claim.HasAccess(userId, acl => true, reasons);
+    ICurrentUserAccessor userId,
+    Permission permission = Permission.None,
+    ExtraAccessReason reasons = ExtraAccessReason.None) => claim.HasAccess(userId.UserIdOrDefault, Permission.None, reasons);
 }

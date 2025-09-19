@@ -32,14 +32,14 @@ internal class DailyChangedPlayerClaimsNotificationJob(
                 continue;
             }
             logger.LogInformation("У пользователя {userId} {userName} было {userUpdatedClaimsCount} обновлений в заявках. Телеграм подключен: {telegramConnected}. Обновления включены: {telegramEnabled}",
-                user.UserIdentification, user.Name, userUpdatesList.Count, user.Social.TelegramId is not null, user.NotificationSettings.TelegramDigestEnabled);
+                user.UserId, user.DisplayName, userUpdatesList.Count, user.Social.TelegramId is not null, user.NotificationSettings.TelegramDigestEnabled);
 
             if (user.Social.TelegramId is null || !user.NotificationSettings.TelegramDigestEnabled)
             {
                 return;
             }
 
-            var message = $@"Привет, {user.Name.DisplayName}!
+            var message = $@"Привет, {user.DisplayName.DisplayName}!
 Твои заявки на игры были обновлены за последний день:
 {string.Join("\n", userUpdatesList.Select(update => $"<a href=\"{GetClaimUri(update).AbsoluteUri}\">{update.CharacterName}</a>  на игру {update.ProjectName.Value}"))}
 ";

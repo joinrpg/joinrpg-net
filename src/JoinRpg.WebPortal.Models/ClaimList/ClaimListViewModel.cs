@@ -1,33 +1,37 @@
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
-public abstract class ClaimListViewModel : IOperationsAwareView
+public class ClaimListViewModel : IOperationsAwareView
 {
-    public string? InlineTitle { get; private set; }
+    public string InlineTitle { get; private set; }
+
     bool IOperationsAwareView.ShowCharacterCreateButton => false;
 
     public IReadOnlyCollection<ClaimListItemViewModel> Items { get; }
 
-    public int? ProjectId { get; }
+    public ProjectIdentification ProjectId { get; }
     public IReadOnlyCollection<int> ClaimIds { get; }
     public IReadOnlyCollection<int> CharacterIds { get; }
 
-    public bool ShowCount { get; }
-    public abstract bool ShowUserColumn { get; }
-
     public string? CountString => CountHelper.DisplayCount(Items.Count, "заявка", "заявки", "заявок");
+
+    int? IOperationsAwareView.ProjectId => ProjectId;
 
     public ClaimListViewModel(
        int currentUserId,
        IReadOnlyCollection<Claim> claims,
-       int? projectId,
+       ProjectIdentification projectId,
        Dictionary<int, int> unreadComments,
-       string? title,
-       bool showCount = true)
+       string title,
+       ProjectInfo projectInfo,
+       IProblemValidator<Claim> claimValidator)
     {
         Items = claims
           .Select(c =>
@@ -35,44 +39,60 @@ public abstract class ClaimListViewModel : IOperationsAwareView
                 c,
                 currentUserId,
                 unreadComments.GetValueOrDefault(c.CommentDiscussionId),
-                ValidateClaim(c))
+                claimValidator.Validate(c, projectInfo))
             )
           .ToList();
         ClaimIds = claims.Select(c => c.ClaimId).ToArray();
         CharacterIds = claims.Select(c => c.CharacterId).ToArray();
         ProjectId = projectId;
-        ShowCount = showCount;
         InlineTitle = title;
     }
 
-    protected abstract IEnumerable<ClaimProblem> ValidateClaim(Claim c);
 }
 
-public class RegularClaimListViewModel(
-   int currentUserId,
-   IReadOnlyCollection<Claim> claims,
-   int? projectId,
-   Dictionary<int, int> unreadComments,
-   IProblemValidator<Claim> claimValidator,
-   ProjectInfo projectInfo,
-   string title
-       ) : ClaimListViewModel(currentUserId, claims, projectId, unreadComments, title, showCount: true)
+public class MyClaimListViewModel(IReadOnlyCollection<Claim> claims)
 {
-    protected override IEnumerable<ClaimProblem> ValidateClaim(Claim c) => claimValidator.Validate(c, projectInfo);
+    public IReadOnlyCollection<ItemViewModel> Items { get; } = claims.Select(c => new ItemViewModel(c, 0)).ToList();
 
-    public override bool ShowUserColumn => true;
-}
+    public class ItemViewModel
+    {
+        public int UnreadCommentsCount { get; }
 
-public class MyClaimListViewModel : ClaimListViewModel
-{
-    public MyClaimListViewModel(
-      int currentUserId,
-      IReadOnlyCollection<Claim> claims,
-      Dictionary<int, int> unreadComments,
-      string? title)
-     : base(currentUserId, claims, projectId: null, unreadComments: unreadComments, title: title) { }
+        public ItemViewModel(Claim claim, int unreadCommentsCount)
+        {
+            UnreadCommentsCount = unreadCommentsCount;
 
-    public override bool ShowUserColumn => false;
+            ArgumentNullException.ThrowIfNull(claim);
 
-    protected override IEnumerable<ClaimProblem> ValidateClaim(Claim c) => [];
+            LastCommentByPlayer = (claim.LastPlayerCommentAt ?? claim.CreateDate) > claim.LastVisibleMasterCommentAt;
+
+            ClaimId = claim.ClaimId;
+
+            ClaimFullStatusView = new ClaimFullStatusView(claim, AccessArguments.None);
+            Name = claim.Character.CharacterName;
+
+            UpdateDate = claim.LastUpdateDateTime;
+
+            ProjectId = claim.ProjectId;
+            ProjectName = claim.Project.ProjectName;
+        }
+
+        public bool LastCommentByPlayer { get; }
+
+        [Display(Name = "Имя")]
+        public string Name { get; set; }
+
+        [Display(Name = "Игра")]
+        public string ProjectName { get; set; }
+
+        [Display(Name = "Статус")]
+        public ClaimFullStatusView ClaimFullStatusView { get; set; }
+
+        [Display(Name = "Обновлена"), UIHint("EventTime")]
+        public DateTime? UpdateDate { get; set; }
+
+        public int ProjectId { get; }
+
+        public int ClaimId { get; }
+    }
 }

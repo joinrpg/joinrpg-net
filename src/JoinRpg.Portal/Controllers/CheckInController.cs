@@ -126,11 +126,12 @@ public class CheckInController(
     }
 
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/secondrole")]
-    public async Task<ActionResult> SecondRole(int projectId, int claimId) => await ShowSecondRole(projectId, claimId);
+    public async Task<ActionResult> SecondRole(ProjectIdentification projectId, int claimId) => await ShowSecondRole(projectId, claimId);
 
-    private async Task<ActionResult> ShowSecondRole(int projectId, int claimId)
+    private async Task<ActionResult> ShowSecondRole(ProjectIdentification projectId, int claimId)
     {
         var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (claim == null)
         {
             return NotFound();
@@ -142,7 +143,7 @@ public class CheckInController(
 
         var characters = await characterRepository.GetAvailableCharacters(projectId);
 
-        return View(new SecondRoleViewModel(claim, characters, await GetCurrentUserAsync()));
+        return View(new SecondRoleViewModel(claim, characters, await GetCurrentUserAsync(), projectInfo));
     }
 
     [ValidateAntiForgeryToken]
@@ -162,7 +163,7 @@ public class CheckInController(
         catch (Exception ex)
         {
             ModelState.AddException(ex);
-            return await ShowSecondRole(model.ProjectId, model.ClaimId);
+            return await ShowSecondRole(new(model.ProjectId), model.ClaimId);
         }
     }
 

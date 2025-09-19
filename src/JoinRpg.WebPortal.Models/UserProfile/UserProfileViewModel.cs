@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -20,11 +20,10 @@ public class UserProfileViewModel
     public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = [];
     public int UserId { get; set; }
 
-    public IEnumerable<ProjectLinkViewModel> ProjectsToAdd
-      => CanGrantAccessProjects.Where(acl => ThisUserProjects.All(acl1 => acl1.ProjectId != acl.ProjectId));
+    public IEnumerable<ProjectLinkViewModel> ProjectsToAdd => CanGrantAccessProjects.Except(ThisUserProjects);
 
     [ReadOnly(true)]
-    public ClaimListViewModel? Claims { get; set; }
+    public MyClaimListViewModel? Claims { get; set; }
 
     public required UserProfileDetailsViewModel Details { get; set; }
 
@@ -65,48 +64,51 @@ public class UserProfileDetailsViewModel
     [Editable(false)]
     public UserLinkViewModel User { get; }
 
-    public AccessReason Reason { get; }
+    public AccessReasonView Reason { get; }
 
     public bool IsVerifiedUser { get; }
     public bool IsAdmin { get; }
 
     public ContactsAccessTypeView SocialNetworkAccess { get; }
 
-    public UserProfileDetailsViewModel(User user, User? currentUser)
-        : this(user, (AccessReason)user.GetProfileAccess(currentUser))
-    {
+    public bool IsMine => Reason == AccessReasonView.ItsMe;
 
-    }
-    public UserProfileDetailsViewModel(User user, AccessReason reason)
+    public UserProfileDetailsViewModel(UserInfo user, UserInfo? currentUser)
+        : this(user, user.GetAccess(currentUser)) { }
+
+    public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject)
+    : this(user, user.GetAccess(currentProject)) { }
+
+    public UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason)
     {
         User = UserLinks.Create(user, ViewMode.Show);
-        Reason = reason;
-        SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess();
-        Avatar = AvatarIdentification.FromOptional(user.SelectedAvatarId);
+        Reason = (AccessReasonView)accessReason;
+        SocialNetworkAccess = (ContactsAccessTypeView)user.Social.SocialNetworksAccess;
+        Avatar = user.SelectedAvatarId;
 
-        if (HasAccess)
+        if (Reason != AccessReasonView.NoAccess)
         {
             Email = user.Email;
-            FullName = user.FullName;
-            Skype = user.Extra?.Skype;
-            Telegram = user.Extra?.Telegram?.TrimStart('@');
-            Livejournal = user.Extra?.Livejournal;
-            PhoneNumber = user.Extra?.PhoneNumber ?? "";
+            FullName = user.UserFullName.FullName;
+            PhoneNumber = user.PhoneNumber;
             IsVerifiedUser = user.VerifiedProfileFlag;
-            IsAdmin = user.Auth.IsAdmin;
+            IsAdmin = user.IsAdmin;
         }
-        if (HasAccess || user.Extra?.SocialNetworksAccess == ContactsAccessType.Public)
+        if (Reason != AccessReasonView.NoAccess || user.Social.SocialNetworksAccess == ContactsAccessType.Public)
         {
-            Vk = user.Extra?.Vk;
-            AllrpgId = user.Allrpg?.Sid;
+            Vk = user.Social.VkId;
+            AllrpgId = user.Social.AllrpgInfoId;
+            Skype = user.Social.Skype;
+            Telegram = user.Social.TelegramId?.UserName?.Value;
+            Livejournal = user.Social.LiveJournal;
+            HasSocialAccess = true;
         }
     }
 
-    public bool HasAccess => Reason != AccessReason.NoAccess;
-
+    public bool HasSocialAccess { get; }
 }
 
-public enum AccessReason
+public enum AccessReasonView
 {
     NoAccess,
     [Display(Name = "Это мой профиль")]

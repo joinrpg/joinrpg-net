@@ -43,7 +43,7 @@
                 <br />
                 <a href="https://www.allrpg.info/people/@Model.AllrpgId/">Профиль на allrpg</a>
             }
-            @if (Model.SocialNetworkAccess == ContactsAccessTypeView.OnlyForMasters && !Model.HasAccess)
+            @if (!Model.HasSocialAccess)
             {
               <p>Игрок предпочитает сохранять анонимность.</p>
             }

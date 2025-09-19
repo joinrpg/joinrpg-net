@@ -220,19 +220,12 @@ public static class FinanceExtensions
 
     public static bool CanAcceptCash(
         this Project project,
-        User user)
+        UserIdentification userId)
     {
-        if (project == null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(userId);
 
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-
-        return GetCashPaymentType(project, user.UserId)?.IsActive ?? false;
+        return GetCashPaymentType(project, userId.Value)?.IsActive ?? false;
     }
 
     public static IEnumerable<MoneyTransfer> Approved(

@@ -1,46 +1,61 @@
+using JoinRpg.PrimitiveTypes.Users;
+
 namespace JoinRpg.Domain;
 
 public static class UserExtensions
 {
-    public static IEnumerable<Project> GetProjects(this User user, Func<ProjectAcl, bool> predicate) => user.ProjectAcls.Where(predicate).Select(acl => acl.Project);
-
-    public static AccessReason GetProfileAccess(this User user, User? currentUser)
+    public static UserProfileAccessReason GetProfileAccess(this User user, User? currentUser)
     {
         ArgumentNullException.ThrowIfNull(user);
 
         if (currentUser == null)
         {
-            return AccessReason.NoAccess;
+            return UserProfileAccessReason.NoAccess;
         }
         if (user.UserId == currentUser.UserId)
         {
-            return AccessReason.ItsMe;
+            return UserProfileAccessReason.ItsMe;
         }
         if (user.Claims.Any(claim => claim.HasAccess(currentUser.UserId) && claim.ClaimStatus != Claim.Status.AddedByMaster))
         {
-            return AccessReason.Master;
+            return UserProfileAccessReason.Master;
         }
         if (user.ProjectAcls.Any(acl => acl.Project.HasMasterAccess(currentUser.UserId)))
         {
-            return AccessReason.CoMaster;
+            return UserProfileAccessReason.CoMaster;
         }
         if (currentUser.Auth.IsAdmin == true)
         {
-            return AccessReason.Administrator;
+            return UserProfileAccessReason.Administrator;
         }
-        return AccessReason.NoAccess;
+        return UserProfileAccessReason.NoAccess;
     }
+
+    public static UserIdentification GetId(this User user) => new UserIdentification(user.UserId);
+
+    public static UserInfo GetUserInfo(this User user)
+    {
+        var telegramId = TelegramId.FromOptional(user.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(user.Extra?.Telegram));
+
+        var userFullName = user.ExtractFullName();
+        return new UserInfo(
+            user.GetId(),
+            new UserSocialNetworks(telegramId, user.Extra?.Skype, user.Extra?.Livejournal, user.Allrpg.Sid, user.Extra?.Vk, user.Extra?.SocialNetworksAccess ?? ContactsAccessType.Public),
+            user.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
+            user.ProjectAcls.Where(p => p.Project.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            user.ProjectAcls.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            user.Auth.IsAdmin,
+            AvatarIdentification.FromOptional(user.SelectedAvatarId),
+            new Email(user.Email),
+            userFullName,
+            user.VerifiedProfileFlag,
+            user.Extra?.PhoneNumber
+            );
+    }
+
+    public static UserInfo GetUserInfo(this Claim claim) => claim.Player.GetUserInfo();
 
     public static ContactsAccessType GetSocialNetworkAccess(this User user) => user.Extra?.SocialNetworksAccess ?? ContactsAccessType.OnlyForMasters;
-
-    public enum AccessReason
-    {
-        NoAccess,
-        ItsMe,
-        Master,
-        CoMaster,
-        Administrator,
-    }
 
     public static UserFullName ExtractFullName(this User user)
     {
@@ -62,21 +77,5 @@ public static class UserExtensions
     public static string GetDisplayName(this User user)
     {
         return user.ExtractDisplayName().DisplayName;
-    }
-
-    /// <summary>
-    /// Returns hint for a user
-    /// </summary>
-    public static string GetHint(this User user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-
-        var result = "";
-        if (user.VerifiedProfileFlag)
-        {
-            result += "Подтвержденный пользователь";
-        }
-
-        return result;
     }
 }

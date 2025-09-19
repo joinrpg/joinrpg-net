@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes.Users;
+
 namespace JoinRpg.DataModel;
 
 public class UserExtra

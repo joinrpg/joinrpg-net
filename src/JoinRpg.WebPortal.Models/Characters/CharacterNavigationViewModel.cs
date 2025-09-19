@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -31,7 +32,7 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
     {
         int? claimId;
 
-        if (character.ApprovedClaim?.HasAccess(currentUserId, ExtraAccessReason.Player) == true
+        if (character.ApprovedClaim?.HasAccess(currentUserId, Permission.None, ExtraAccessReason.Player) == true
         ) //If Approved Claim exists and we have access to it, so be it.
         {
             claimId = character.ApprovedClaim.ClaimId;

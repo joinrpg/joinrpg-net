@@ -1,15 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models.Masters;
 
-public class AclViewModel(Project project, User targetUser, User currentUser, PermissionBadgeViewModel[] bagdes)
+public class AclViewModel(ProjectInfo project, User targetUser, PermissionBadgeViewModel[] bagdes)
 {
     [Display(Name = "Мастер")]
-    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(targetUser, currentUser);
+    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(targetUser.GetUserInfo(), project);
 
     public IReadOnlyCollection<GameObjectLinkViewModel> ResponsibleFor { get; } = [];
 
@@ -30,11 +32,11 @@ public class AclViewModel(Project project, User targetUser, User currentUser, Pe
     public bool CanGrantRights => Badges.Single(b => b.Permission == Permission.CanGrantRights).Value;
 
     public AclViewModel(ProjectAcl acl,
-        User currentUser,
         int claimsCount,
         IEnumerable<CharacterGroup> groups,
-        IUriService uriService)
-        : this(acl.Project, acl.User, currentUser, acl.GetPermissionViewModels())
+        IUriService uriService,
+        ProjectInfo projectInfo)
+        : this(projectInfo, acl.User, acl.GetPermissionViewModels())
     {
         ProjectAclId = acl.ProjectAclId;
         ClaimsCount = claimsCount;

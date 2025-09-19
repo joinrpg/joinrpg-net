@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Claims.Finance;
@@ -23,7 +23,7 @@ public class EnumTests
     public void ProjectCreateType() => EnumerationTestComparer.EnsureSame<ProjectTypeViewModel, ProjectTypeDto>();
 
     [Fact]
-    public void AccessReason() => EnumerationTestComparer.EnsureSame<UserExtensions.AccessReason, AccessReason>();
+    public void AccessReason() => EnumerationTestComparer.EnsureSame<AccessReasonView, UserProfileAccessReason>();
 
     [Fact]
     public void ProjectFieldType() => EnumerationTestComparer.EnsureSame<ProjectFieldViewType, ProjectFieldType>();

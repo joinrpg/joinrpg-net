@@ -12,29 +12,17 @@
         <th>
             @Html.DisplayNameFor(model => firstItem!.Name)
         </th>
-        @if (Model.ShowUserColumn)
-        {
             <th>
                 @Html.DisplayNameFor(model => firstItem!.Player)
             </th>
-        }
-        @if (Model.ProjectId == null) //We need to differentiate by project
-        {
-            <th>
-                @Html.DisplayNameFor(model => firstItem!.ProjectName)
-            </th>
-        }
         <th>
             @Html.DisplayNameFor(model => firstItem!.ClaimFullStatusView)
         </th>
         <th>
             @Html.DisplayNameFor(model => firstItem!.UpdateDate)
         </th>
-        @if (ViewBag.MasterAccessColumn == true)
-        {
             <th>@Html.DisplayNameFor(model => firstItem!.Responsible)</th>
             <th>@Html.DisplayNameFor(model => firstItem!.Problems)</th>
-        }
     </tr>
 
     @foreach (var item in Model.Items.OrderByDescending(c => c.UpdateDate))
@@ -49,21 +37,12 @@
                     }
                 </a>
             </td>
-            @if (Model.ShowUserColumn)
-            {
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
                     @if (item.Player != null && !string.IsNullOrWhiteSpace(item.Player.FullName))
                     {<text><br /> @item.Player.FullName </text>
                 }
                 </td>
-            }
-            @if (Model.ProjectId == null)
-            {
-                <td>
-                    @Html.DisplayFor(modelItem => item.ProjectName)
-                </td>
-            }
             <td>
                 @Html.DisplayFor(modelItem => item.ClaimFullStatusView)
             </td>
@@ -89,8 +68,7 @@
                     }
                 }
             </td>
-            @if (ViewBag.MasterAccessColumn == true)
-            {
+
                 <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
                 <td>
                     @foreach (var pr in item.Problems)
@@ -98,8 +76,6 @@
                         @Html.DisplayFor(modelItem => pr)
                     }
                 </td>
-            }
-
         </tr>
     }
 

@@ -108,7 +108,7 @@
         
     @if (Model.Claims != null && Model.Claims.Items.Any())
     {
-        @await Html.PartialAsync("..\\ClaimList\\_ClaimList", Model.Claims, new ViewDataDictionary(ViewData) {{"HideUserColumn", true}, {"HideOperations", true}})
+        @await Html.PartialAsync("..\\ClaimList\\_MyClaimsList", Model.Claims)
     }
     
 

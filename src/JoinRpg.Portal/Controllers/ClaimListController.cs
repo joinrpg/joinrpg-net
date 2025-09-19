@@ -3,7 +3,6 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
-using JoinRpg.Helpers;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -13,7 +12,6 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Exporters;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
@@ -34,16 +32,15 @@ public class ClaimListController(
 
     #region implementation
 
-    private async Task<ActionResult> ___ShowMasterClaimList(int projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
+    private async Task<ActionResult> ___ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
         if (exportType == null)
         {
-            ViewBag.MasterAccessColumn = true;
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new RegularClaimListViewModel(CurrentUserId, claims, projectId, unreadComments, claimValidator, projectInfo, title);
+            var view = new ClaimListViewModel(CurrentUserId, claims, projectId, unreadComments, title, projectInfo, claimValidator);
             return View("Index", view);
         }
         else
@@ -56,13 +53,13 @@ public class ClaimListController(
         }
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
     {
 
         return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec);
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, ClaimStatusSpec claimStatusSpec)
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec)
     {
         var claims = await claimsRepository.GetClaims(projectId, claimStatusSpec);
 
@@ -70,7 +67,7 @@ public class ClaimListController(
 
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId)
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId)
     {
         var claims = await claimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
 
@@ -78,7 +75,7 @@ public class ClaimListController(
 
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<Claim, ProjectInfo, bool> predicate)
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<Claim, ProjectInfo, bool> predicate)
     {
         var claims = await claimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
@@ -103,7 +100,6 @@ public class ClaimListController(
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
             var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
-            ViewBag.MasterAccessColumn = true;
             return View("ByGroup", view);
         }
         else
@@ -119,7 +115,7 @@ public class ClaimListController(
     #endregion
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ForPlayer(int projectId, int userId, string export)
+    public async Task<ActionResult> ForPlayer(ProjectIdentification projectId, int userId, string export)
     {
         var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Active, userId);
 
@@ -128,12 +124,12 @@ public class ClaimListController(
 
     [HttpGet("~/{ProjectId}/claims/without-roomtype")]
     [MasterAuthorize()]
-    public Task<ActionResult> ListWithoutRoomType(int projectId, string export) =>
+    public Task<ActionResult> ListWithoutRoomType(ProjectIdentification projectId, string export) =>
         ListForRoomType(projectId, null, export);
 
     [HttpGet("~/{ProjectId}/claims/by-roomtype/{roomTypeId?}")]
     [MasterAuthorize()]
-    public async Task<ActionResult> ListForRoomType(int projectId, int? roomTypeId, string export)
+    public async Task<ActionResult> ListForRoomType(ProjectIdentification projectId, int? roomTypeId, string export)
     {
         var claims = await claimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId);
 
@@ -176,7 +172,7 @@ public class ClaimListController(
     }
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> DiscussingForGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
         var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
         if (group == null)
@@ -193,22 +189,22 @@ public class ClaimListController(
     #region Responsible
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ResponsibleDiscussing(int projectid, int responsibleMasterId, string export)
+    public async Task<ActionResult> ResponsibleDiscussing(ProjectIdentification projectid, int responsibleMasterId, string export)
         => await ShowMasterClaimList(projectid, export, "Обсуждаемые заявки на мастере", ClaimStatusSpec.Discussion, responsibleMasterId);
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
+    public async Task<ActionResult> ResponsibleOnHold(ProjectIdentification projectid, int responsiblemasterid, string export)
         => await ShowMasterClaimList(projectid, export, "Лист ожидания на мастере", ClaimStatusSpec.OnHold, responsiblemasterid);
 
     [HttpGet("~/{ProjectId}/claims/for-master/{ResponsibleMasterId}")]
     [MasterAuthorize()]
 
-    public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
+    public async Task<ActionResult> Responsible(ProjectIdentification projectid, int responsibleMasterId, string export)
         => await ShowMasterClaimList(projectid, export, "Заявки на мастере", ClaimStatusSpec.Active, responsibleMasterId);
 
     [HttpGet("~/{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}")]
     [MasterAuthorize()]
-    public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
+    public async Task<ActionResult> ResponsibleProblems(ProjectIdentification projectId, int responsibleMasterId, string export)
         => await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", ClaimStatusSpec.Any, responsibleMasterId,
             (claim, projectInfo) => claimValidator.Validate(claim, projectInfo, ProblemSeverity.Warning).Any());
     #endregion
@@ -216,20 +212,20 @@ public class ClaimListController(
     #region By Status
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ActiveList(int projectId, string export) => await ShowMasterClaimList(projectId, export, "Активные заявки", ClaimStatusSpec.Active);
+    public async Task<ActionResult> ActiveList(ProjectIdentification projectId, string export) => await ShowMasterClaimList(projectId, export, "Активные заявки", ClaimStatusSpec.Active);
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> DeclinedList(int projectId, string export) => await ShowMasterClaimList(projectId, export, "Отклоненные/отозванные заявки", ClaimStatusSpec.InActive);
+    public async Task<ActionResult> DeclinedList(ProjectIdentification projectId, string export) => await ShowMasterClaimList(projectId, export, "Отклоненные/отозванные заявки", ClaimStatusSpec.InActive);
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> Discussing(int projectId, string export) => await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки", ClaimStatusSpec.Discussion);
+    public async Task<ActionResult> Discussing(ProjectIdentification projectId, string export) => await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки", ClaimStatusSpec.Discussion);
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> OnHoldList(int projectid, string export) => await ShowMasterClaimList(projectid, export, "Лист ожидания", ClaimStatusSpec.OnHold);
+    public async Task<ActionResult> OnHoldList(ProjectIdentification projectid, string export) => await ShowMasterClaimList(projectid, export, "Лист ожидания", ClaimStatusSpec.OnHold);
     #endregion
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> WaitingForFee(int projectid, string export)
+    public async Task<ActionResult> WaitingForFee(ProjectIdentification projectid, string export)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
 
@@ -242,7 +238,7 @@ public class ClaimListController(
     }
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> SomeFieldsToFill(int projectid, string export)
+    public async Task<ActionResult> SomeFieldsToFill(ProjectIdentification projectid, string export)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
         var playerEditableFields = projectInfo.UnsortedFields.Where(p => p.CanPlayerEdit).Select(c => c.Id).ToList();
@@ -256,46 +252,10 @@ public class ClaimListController(
     }
 
     [HttpGet("~/my/claims")]
-    [Authorize]
-    public async Task<ActionResult> My(string? export)
-    {
-        var user = await GetCurrentUserAsync();
-        var title = "Мои заявки";
-
-        var exportType = ExportTypeNameParserHelper.ToExportType(export);
-
-        var claims = user.Claims.ToList();
-        var projectInfos = new List<ProjectInfo>();
-        foreach (var projectId in claims.Select(c => c.ProjectId).Distinct())
-        {
-            projectInfos.Add(await projectMetadataRepository.GetProjectMetadata(new(projectId)));
-        }
-
-        if (exportType == null)
-        {
-            var viewModel = new MyClaimListViewModel(
-                CurrentUserId,
-                claims,
-                title: "Мои заявки",
-                unreadComments: new Dictionary<int, int>()); ; //TODO Pass unread info here
-            return base.View("Index", viewModel);
-        }
-        else
-        {
-            var viewModel = new ClaimListForExportViewModel(
-                CurrentUserId,
-                claims.Select(c => (c, projectInfos.Single(pi => pi.ProjectId.Value == c.ProjectId))).ToList());
-            return ExportWithCustomFrontend(
-                viewModel.Items,
-                title,
-                exportType.Value,
-                new MyClaimListItemViewModelExporter(uriService),
-                user.GetDisplayName());
-        }
-    }
+    public ActionResult My() => RedirectToActionPermanent("Me", "User");
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> Problems(int projectId, string export)
+    public async Task<ActionResult> Problems(ProjectIdentification projectId, string export)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         var claims =
@@ -308,7 +268,7 @@ public class ClaimListController(
 
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> PaidDeclined(int projectid, string export)
+    public async Task<ActionResult> PaidDeclined(ProjectIdentification projectid, string export)
     {
         var claims =
             (await claimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive))
@@ -319,11 +279,11 @@ public class ClaimListController(
     }
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    public async Task<ActionResult> ByAssignedField(int projectfieldid, ProjectIdentification projectid, string export)
     {
         var claims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        var fieldId = new ProjectFieldIdentification(new(projectid), projectfieldid);
+        var fieldId = new ProjectFieldIdentification(projectid, projectfieldid);
         var field = projectInfo.GetFieldById(fieldId);
 
         return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.Name, claims.Where(c => c.GetSingleField(projectInfo, fieldId)!.HasEditableValue)
@@ -333,11 +293,11 @@ public class ClaimListController(
     }
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
+    public async Task<ActionResult> ByUnAssignedField(int projectfieldid, ProjectIdentification projectid, string export)
     {
         var claims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        var fieldId = new ProjectFieldIdentification(new(projectid), projectfieldid);
+        var fieldId = new ProjectFieldIdentification(projectid, projectfieldid);
         var field = projectInfo.GetFieldById(fieldId);
 
         return await ShowMasterClaimList(projectid, export, "Поле (непроставлено): " + field.Name, claims.Where(c => !c.GetSingleField(projectInfo, fieldId)!.HasEditableValue)

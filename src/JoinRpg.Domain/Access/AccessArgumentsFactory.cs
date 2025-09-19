@@ -48,7 +48,7 @@ public static class AccessArgumentsFactory
               MasterAccess: false,
               // Not a "player visible", because it could be master that asks to view as player
               PlayerAccessToCharacter: character.HasAnyAccess(userId),
-              PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(userId, ExtraAccessReason.Player) ?? false,
+              PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(userId, Permission.None, ExtraAccessReason.Player) ?? false,
               EditAllowed: character.Project.Active,
               Published: character.Project.Details.PublishPlot
               );

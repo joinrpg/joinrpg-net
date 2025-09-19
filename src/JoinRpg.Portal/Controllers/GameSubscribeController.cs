@@ -3,6 +3,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
@@ -27,12 +28,12 @@ public class GameSubscribeController(
 #pragma warning disable ASP0023 // Route conflict detected between controller actions There is no one because of [action]
     [HttpGet("{masterId}")]
 #pragma warning restore ASP0023 // Route conflict detected between controller actions
-    public async Task<ActionResult> ByMaster(int projectId, int masterId)
+    public async Task<ActionResult> ByMaster(int projectId, UserIdentification masterId)
     {
         var subscribeViewModel = await subscribeClient.GetSubscribeForMaster(projectId, masterId);
 
-        var user = await userRepository.GetById(masterId);
-        var currentUser = await userRepository.GetById(currentUserAccessor.UserId);
+        var user = await userRepository.GetUserInfo(masterId) ?? throw new JoinRpgEntityNotFoundException(masterId, "user");
+        var currentUser = await userRepository.GetUserInfo(currentUserAccessor.UserIdentification);
 
 
         return View(
