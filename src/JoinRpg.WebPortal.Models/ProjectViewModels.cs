@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -9,14 +8,8 @@ namespace JoinRpg.Web.Models;
 
 public static class ProjectLinkViewModelBuilder
 {
-    [Obsolete("Не надо для этих целей грузить проект, можно например ProjectHeaderDto")]
-    public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
-        this IEnumerable<DataModel.Project> projects) =>
-        projects.Select(p => new ProjectLinkViewModel(new(p.ProjectId), p.ProjectName));
-
-    public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
-    this IEnumerable<ProjectHeaderDto> projects) =>
-    projects.Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName));
+    public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(this IEnumerable<ProjectShortInfo> projects)
+        => projects.OrderByDisplayPriority().Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName));
 }
 
 public class EditProjectViewModel
@@ -73,18 +66,11 @@ public class CloseProjectViewModel
     public bool IsMaster { get; set; }
 }
 
-public class ProjectListItemViewModel(ProjectWithClaimCount p)
+public class ProjectListItemViewModel(ProjectShortInfo p)
 {
-    public bool IsMaster { get; } = p.HasMasterAccess;
+    public bool IsMaster { get; } = p.HasMyMasterAccess;
     public bool IsActive { get; } = p.Active;
-    public ProjectLifecycleStatus Status => (p.Active, p.IsAcceptingClaims) switch
-    {
-        (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
-        (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
-        (false, false) => ProjectLifecycleStatus.Archived,
-        (false, true) => throw new InvalidOperationException()
-    };
-    public int ClaimCount { get; } = p.ActiveClaimsCount;
+    public ProjectLifecycleStatus Status = p.ProjectLifecycleStatus;
 
     public bool PublishPlot { get; } = p.PublishPlot;
 
@@ -97,14 +83,4 @@ public class ProjectListItemViewModel(ProjectWithClaimCount p)
     public bool IsAcceptingClaims { get; } = p.IsAcceptingClaims;
 
     public bool HasMyClaims { get; } = p.HasMyClaims;
-
-    public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(
-        IEnumerable<T> collectionToSort,
-        Func<T, ProjectListItemViewModel?> getProjectFunc)
-    {
-        return collectionToSort
-            .OrderByDescending(p => getProjectFunc(p)?.IsActive)
-            .ThenByDescending(p => getProjectFunc(p)?.IsMaster)
-            .ThenByDescending(p => getProjectFunc(p)?.ClaimCount);
-    }
 }

@@ -1,30 +1,36 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-public class SearchController : Common.LegacyJoinControllerBase
+public class SearchController(
+    ISearchService searchService,
+    IProjectRepository projectRepository,
+    IUriService uriService,
+    ICurrentUserAccessor currentUserAccessor) : Common.ControllerBase
 {
-    private readonly ISearchService _searchService;
-    private readonly IProjectRepository _projectRepository;
-    private IUriService UriService { get; }
-
     public async Task<ActionResult> Index(string? searchString)
     {
         var searchResults =
             string.IsNullOrEmpty(searchString)
                 ? []
-                : await _searchService.SearchAsync(CurrentUserIdOrDefault, searchString);
+                : await searchService.SearchAsync(currentUserAccessor.UserIdOrDefault, searchString);
 
         if (searchResults.Count == 1)
         {
-            return Redirect(UriService.Get(searchResults.Single()));
+            return Redirect(uriService.Get(searchResults.Single()));
         }
 
+
+
         var projectDetails =
-            (await _projectRepository.GetAllProjectsWithClaimCount(CurrentUserIdOrDefault))
+            (await projectRepository.GetProjectsByIds(currentUserAccessor.UserIdentificationOrDefault,
+            [.. searchResults.Select(x => ProjectIdentification.FromOptional(x.ProjectId)).WhereNotNull()]))
             .ToDictionary(
                 p => p.ProjectId,
                 p => new ProjectListItemViewModel(p));
@@ -34,17 +40,6 @@ public class SearchController : Common.LegacyJoinControllerBase
                 searchString ?? "",
                 searchResults,
                 projectDetails,
-                UriService));
-    }
-
-    public SearchController(
-        ISearchService searchService,
-        IProjectRepository projectRepository,
-        IUriService uriService,
-        IUserRepository userRepository) : base(userRepository)
-    {
-        _searchService = searchService;
-        _projectRepository = projectRepository;
-        UriService = uriService;
+                uriService));
     }
 }

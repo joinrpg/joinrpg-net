@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,29 +9,18 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 
 [AdminAuthorize]
 [Area("Admin")]
-public class ProjectListController : JoinRpg.Portal.Controllers.Common.ControllerBase
+public class ProjectListController(
+    IProjectRepository projectRepository,
+    ICurrentUserAccessor currentUserAccessor) : JoinRpg.Portal.Controllers.Common.ControllerBase
 {
-    public ICurrentUserAccessor CurrentUserAccessor { get; }
-    private readonly IProjectRepository _projectRepository;
+    public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
 
     public async Task<IActionResult> Index()
     {
-        var allProjects = await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserAccessor.UserId);
+        var allProjects = await projectRepository.GetProjectsBySpecification(CurrentUserAccessor.UserIdentification, ProjectListSpecification.All);
 
-        var projects =
-            allProjects
-                .Select(p => new ProjectListItemViewModel(p))
-                .OrderByDescending(p => p.ClaimCount)
-                .ToList();
+        var projects = allProjects.OrderByDisplayPriority().Select(p => new ProjectListItemViewModel(p)).ToList();
 
         return View(projects);
-    }
-
-    public ProjectListController(
-        IProjectRepository projectRepository,
-        ICurrentUserAccessor currentUserAccessor)
-    {
-        CurrentUserAccessor = currentUserAccessor;
-        _projectRepository = projectRepository;
     }
 }

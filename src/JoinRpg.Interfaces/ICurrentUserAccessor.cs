@@ -16,7 +16,9 @@ public interface ICurrentUserAccessor
     /// </summary>
     AvatarIdentification? Avatar { get; }
 
-    UserIdentification UserIdentification => new UserIdentification(UserId);
+    UserIdentification UserIdentification => UserIdentificationOrDefault ?? throw new Exception("Authorization required here");
+
+    UserIdentification? UserIdentificationOrDefault => UserIdentification.FromOptional(UserIdOrDefault);
 
     int UserId => UserIdOrDefault ?? throw new Exception("Authorization required here");
 }

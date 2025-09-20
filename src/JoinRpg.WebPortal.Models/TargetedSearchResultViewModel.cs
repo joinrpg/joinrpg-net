@@ -12,9 +12,11 @@ namespace JoinRpg.Web.Models;
 /// </summary>
 public class TargetedSearchResultViewModel(ISearchResult searchResult,
     string searchTarget,
-    IUriService uriService)
+    IUriService uriService,
+    ProjectListItemViewModel? projectViewModel)
 {
     private string SearchTarget { get; } = searchTarget ?? throw new ArgumentNullException(nameof(searchTarget));
+    public ProjectListItemViewModel? ProjectViewModel { get; } = projectViewModel;
     public ISearchResult SearchResult { get; } = searchResult ?? throw new ArgumentNullException(nameof(searchResult));
     public GameObjectLinkType LinkType => SearchResult.LinkType.AsViewModel();
     public Uri Url { get; } = uriService.GetUri(searchResult);
@@ -22,7 +24,7 @@ public class TargetedSearchResultViewModel(ISearchResult searchResult,
     public JoinHtmlString GetFormattedDescription(int maxLengthToShow)
     {
         var descriptionToShow = TruncateString(
-            SearchResult.Description.ToPlainText(),
+            SearchResult.Description.ToPlainTextAndEscapeHtml().Value,
             SearchTarget,
             maxLengthToShow);
 
@@ -43,7 +45,7 @@ public class TargetedSearchResultViewModel(ISearchResult searchResult,
     {
         if (targetText.Length > maxLength)
         {
-            targetText = targetText.Substring(0, maxLength);
+            targetText = targetText[..maxLength];
         }
         if (stringToTruncate.Length <= maxLength)
         {

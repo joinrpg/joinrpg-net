@@ -13,46 +13,6 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx), IProjectRepository
 {
-    private Expression<Func<Project, ProjectWithClaimCount>> GetProjectWithClaimCountBuilder(
-        int? userId)
-    {
-        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var activeOrOnHoldClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var myClaim = userId == null ? claim => false : ClaimPredicates.GetForUser(userId.Value);
-        return project => new ProjectWithClaimCount()
-        {
-            ProjectId = project.ProjectId,
-            Active = project.Active,
-            PublishPlot = project.Details.PublishPlot,
-            ProjectName = project.ProjectName,
-            IsAcceptingClaims = project.IsAcceptingClaims,
-            ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
-            HasMyClaims = project.Claims.Where(claim => activeOrOnHoldClaimPredicate.Invoke(claim)).Any(claim => myClaim.Invoke(claim)),
-            HasMasterAccess = project.ProjectAcls.Any(acl => acl.UserId == userId),
-        };
-    }
-
-    public async Task<IReadOnlyCollection<ProjectWithClaimCount>>
-        GetActiveProjectsWithClaimCount(int? userId) => await GetProjectWithClaimCounts(ProjectPredicates.Active(), userId);
-
-    private async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetProjectWithClaimCounts(
-        Expression<Func<Project, bool>> condition,
-        int? userId)
-    {
-        var builder = GetProjectWithClaimCountBuilder(userId);
-        return await AllProjects
-            .AsExpandable()
-            .Where(condition)
-            .Select(builder).ToListAsync();
-    }
-
-    public async Task<IReadOnlyCollection<ProjectWithClaimCount>>
-        GetArchivedProjectsWithClaimCount(int? userId)
-        => await GetProjectWithClaimCounts(ProjectPredicates.Status(ProjectLifecycleStatus.Archived), userId);
-
-    public async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(
-        int? userId)
-        => await GetProjectWithClaimCounts(project => true, userId);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
@@ -253,31 +213,50 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
     }
 
-
-
-    async Task<ProjectHeaderDto[]> IProjectRepository.GetProjectsBySpecification(UserIdentification userIdentification, ProjectListSpecification projectListSpecification)
+    async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)
     {
-        var filterPredicate = ProjectPredicates.BySpecification(userIdentification, projectListSpecification);
-        var masterPredicate = ProjectPredicates.MasterAccess(userIdentification);
-        var claimPredicate = ProjectPredicates.HasActiveClaim(userIdentification);
+        var filterPredicate = ProjectPredicates.BySpecification(userId, projectListSpecification);
+        return await GetProjectListInternal(userId, filterPredicate);
+    }
+
+    Task<ProjectShortInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
+    {
+        var idArray = ids.Select(id => id.Value).ToArray();
+        return GetProjectListInternal(userId, project => idArray.Contains(project.ProjectId));
+    }
+    private async Task<ProjectShortInfo[]> GetProjectListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
+    {
+        var masterPredicate = userId is null ? project => false : ProjectPredicates.MasterAccess(userId);
+        var claimPredicate = userId is null ? project => false : ProjectPredicates.HasActiveClaim(userId);
+
+        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var activeOrOnHoldClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.ActiveOrOnHold);
+
+
         var query = from project in AllProjects.AsExpandable()
                     where filterPredicate.Compile()(project)
                     select new
                     {
                         project.ProjectId,
                         project.ProjectName,
+                        project.IsAcceptingClaims,
+                        project.Details.PublishPlot,
+                        project.Active,
                         IAmMaster = masterPredicate.Compile()(project),
-                        HasActiveClaims = claimPredicate.Compile()(project),
-                        ClaimsCount = project.Claims.Count(),
+                        HasMyClaims = claimPredicate.Compile()(project),
+                        ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
                     };
 
         var result = await query.ToListAsync();
 
-        return result.Select(x => new ProjectHeaderDto(new(x.ProjectId), x.ProjectName, x.IAmMaster, x.HasActiveClaims, x.ClaimsCount))
-            .OrderByDescending(x => x.IAmMaster)
-            .ThenByDescending(x => x.HasActiveClaims)
-            .ThenByDescending(x => x.ClaimsCount)
-            .ToArray();
+        return [.. result.Select(x => new ProjectShortInfo(
+            new(x.ProjectId),
+            ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
+            x.PublishPlot,
+            new(x.ProjectName),
+            x.ActiveClaimsCount,
+            x.HasMyClaims,
+            x.IAmMaster
+            ))];
     }
 }
-

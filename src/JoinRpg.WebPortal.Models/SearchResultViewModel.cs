@@ -1,27 +1,19 @@
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Web.Models;
 
-public class SearchResultViewModel
+public class SearchResultViewModel(string searchString, IEnumerable<ISearchResult> results, IReadOnlyDictionary<ProjectIdentification, ProjectListItemViewModel> projectDetails, IUriService uriService)
 {
-    public string SearchString { get; }
-    public IOrderedEnumerable<IGrouping<int?, TargetedSearchResultViewModel>> ResultsByProject { get; }
-    public IReadOnlyDictionary<int, ProjectListItemViewModel> ProjectDetails { get; }
-
-    public SearchResultViewModel(string searchString, IEnumerable<ISearchResult> results, IReadOnlyDictionary<int, ProjectListItemViewModel> projectDetails, IUriService uriService)
-    {
-        SearchString = searchString;
-
-        var targetedResults = results.Select(r =>
-          new TargetedSearchResultViewModel(r, searchString, uriService));
-
-        ResultsByProject = ProjectListItemViewModel
-          .OrderByDisplayPriority(
-            targetedResults.GroupBy(r => r.SearchResult.ProjectId),
-            g => g.Key == null ? null : projectDetails[g.Key.Value])
-          .OrderByDescending(x => x.Key == null);
-
-        ProjectDetails = projectDetails;
-    }
+    public string SearchString { get; } = searchString;
+    public List<IGrouping<ProjectListItemViewModel?, TargetedSearchResultViewModel>> ResultsByProject { get; } = results.Select(r =>
+          new TargetedSearchResultViewModel(r, searchString, uriService, r.ProjectId == null ? null : projectDetails[new(r.ProjectId.Value)]))
+            .GroupBy(r => r.ProjectViewModel)
+            .OrderByDescending(r => r.Key is null)
+            .ThenByDescending(r => r.Key?.IsActive)
+            .ThenByDescending(r => r.Key?.IsMaster)
+            .ThenByDescending(r => r.Key?.HasMyClaims)
+            .ThenByDescending(r => r.Key?.IsActive)
+            .ToList();
 }

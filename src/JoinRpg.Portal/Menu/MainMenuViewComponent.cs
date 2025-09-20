@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Models;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu;
@@ -13,7 +14,7 @@ public class MainMenuViewComponent(
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        var projectLinks = await GetProjectLinks();
+        var projectLinks = (await GetProjectLinks()).OrderByDisplayPriority().ToArray();
         int? currentProjectId = ViewBag.ProjectId is int x ? x : null;
         string? currentProjectName = null;
         if (currentProjectId is not null)
@@ -46,7 +47,7 @@ public class MainMenuViewComponent(
         return View("MainMenu", viewModel);
     }
 
-    private async Task<ProjectHeaderDto[]> GetProjectLinks()
+    private async Task<ProjectShortInfo[]> GetProjectLinks()
     {
         var user = currentUserAccessor.UserIdOrDefault;
         if (user == null)
