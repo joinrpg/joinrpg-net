@@ -13,7 +13,7 @@ public class HealthCheckLoadProjects : IHealthCheck
     {
         try
         {
-            var x = await projectRepository.GetActiveProjectsWithClaimCount(userId: null);
+            var x = await projectRepository.GetProjectsBySpecification(userId: null, ProjectListSpecification.Active);
             return HealthCheckResult.Healthy();
         }
         catch (Exception exception)

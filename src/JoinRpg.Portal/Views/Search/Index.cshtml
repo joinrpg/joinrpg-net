@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models
 @model SearchResultViewModel
 @{
   ViewBag.Title = "Результаты поиска";
@@ -13,13 +13,14 @@
 
         foreach (var resultsForProject in Model.ResultsByProject)
         {
+            var projectInfoModel = resultsForProject.Key;
             <div class="panel panel-default">
-                @if (resultsForProject.Key != null)
+                @if (projectInfoModel != null)
                 {
                     <div
                         class="panel-heading"
-                        style="@(Model.ProjectDetails[resultsForProject.Key.Value].IsActive ? "" : "text-decoration: line-through")">
-                        @Model.ProjectDetails[resultsForProject.Key.Value].ProjectName
+                         style="@(projectInfoModel.IsActive ? "" : "text-decoration: line-through")">
+                        @projectInfoModel.ProjectName
                     </div>
                 }
 

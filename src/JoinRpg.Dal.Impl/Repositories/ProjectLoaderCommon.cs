@@ -1,5 +1,6 @@
 using System.Data.Entity;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 internal static class ProjectLoaderCommon
@@ -15,5 +16,16 @@ internal static class ProjectLoaderCommon
          .Include(p => p.PaymentTypes)
          .Include(p => p.KogdaIgraGames)
          .SingleOrDefaultAsync(p => p.ProjectId == project);
+    }
+
+    public static ProjectLifecycleStatus CreateStatus(bool active, bool isAcceptingClaims)
+    {
+        return (active, isAcceptingClaims) switch
+        {
+            (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
+            (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
+            (false, false) => ProjectLifecycleStatus.Archived,
+            (false, true) => throw new InvalidOperationException()
+        };
     }
 }

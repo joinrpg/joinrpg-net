@@ -28,7 +28,7 @@
                         @foreach (var project in Model.ProjectLinks.OrderBy(p => p.ProjectName).Take(20))
                         {
                             <li>
-                                @if (!project.IAmMaster)
+                                @if (!project.HasMyMasterAccess)
                                 {
                                     @Html.ActionLink(@project.ProjectName, "MyClaim", "Claim", new { ProjectId = project.ProjectId.Value, area = "" }, null)
 

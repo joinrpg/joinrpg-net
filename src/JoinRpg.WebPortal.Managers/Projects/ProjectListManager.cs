@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
@@ -7,38 +8,25 @@ namespace JoinRpg.WebPortal.Managers.Projects;
 /// <summary>
 /// Shows project list
 /// </summary>
-public class ProjectListManager
+/// <remarks>
+/// ctor
+/// </remarks>
+public class ProjectListManager(IProjectRepository projectRepository, ICurrentUserAccessor currentUser)
 {
-    private ICurrentUserAccessor CurrentUser { get; }
-    private readonly IProjectRepository _projectRepository;
-
-    /// <summary>
-    /// ctor
-    /// </summary>
-    public ProjectListManager(IProjectRepository projectRepository, ICurrentUserAccessor currentUser)
-    {
-        CurrentUser = currentUser;
-        _projectRepository = projectRepository;
-    }
-
     public async Task<HomeViewModel> LoadModel(bool showInactive = false, int maxProjects = int.MaxValue)
     {
-        var allProjects = showInactive
-            ? await _projectRepository.GetArchivedProjectsWithClaimCount(CurrentUser.UserIdOrDefault)
-            : await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUser.UserIdOrDefault);
+        var allProjects = await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault,
+            showInactive ? ProjectListSpecification.All : ProjectListSpecification.Active);
 
         var projects =
             allProjects
-                .Select(p => new ProjectListItemViewModel(p))
-                .Where(p => showInactive && p.ClaimCount > 0 || p.IsMaster || p.HasMyClaims || p.IsAcceptingClaims)
+                .Where(p => (showInactive && p.ActiveClaimsCount > 0) || p.HasMyMasterAccess || p.HasMyClaims || p.IsAcceptingClaims)
+                .OrderByDisplayPriority()
                 .ToList();
 
-        var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(
-            projects.Where(p => p.IsMaster || p.HasMyClaims), p => p).ToList();
+        var alwaysShowProjects = allProjects.Where(p => p.HasMyMasterAccess || p.HasMyClaims).OrderByDisplayPriority().ToList();
 
-        var projectListItemViewModels = alwaysShowProjects.UnionUntilTotalCount(projects.OrderByDescending(p => p.ClaimCount), maxProjects);
-
-        var finalProjects = projectListItemViewModels.ToList();
+        var finalProjects = alwaysShowProjects.UnionUntilTotalCount(projects, maxProjects).Select(p => new ProjectListItemViewModel(p)).ToList();
 
         return new HomeViewModel
         {

@@ -1,17 +1,10 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Data.Interfaces;
 
 public interface IProjectRepository : IDisposable
 {
-    Task<IReadOnlyCollection<ProjectWithClaimCount>> GetActiveProjectsWithClaimCount(
-        int? userId);
-
-    Task<IReadOnlyCollection<ProjectWithClaimCount>> GetArchivedProjectsWithClaimCount(
-        int? userId);
-
-    Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(int? userId);
-
     Task<Project> GetProjectAsync(int project);
     [Obsolete]
     Task<Project> GetProjectWithDetailsAsync(int project);
@@ -51,7 +44,17 @@ public interface IProjectRepository : IDisposable
     /// <returns></returns>
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
-    Task<ProjectHeaderDto[]> GetProjectsBySpecification(UserIdentification userIdentification, ProjectListSpecification projectListSpecification);
+    /// <summary>
+    /// Проекты грузятся всегда относительно какого-то пользователя.
+    /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
+    /// </summary>
+    Task<ProjectShortInfo[]> GetProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification);
+
+    /// <summary>
+    /// Проекты грузятся всегда относительно какого-то пользователя.
+    /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
+    /// </summary>
+    Task<ProjectShortInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
 
     Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId);
 }
@@ -68,20 +71,13 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
     public static ProjectListSpecification AllProjectsWithMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: true);
 
     public static ProjectListSpecification ActiveProjectsWithGrantMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterGrantAccess, LoadArchived: true);
+
+    public static ProjectListSpecification All { get; } = new ProjectListSpecification(ProjectListCriteria.All, LoadArchived: true);
+
+    public static ProjectListSpecification Active { get; } = new ProjectListSpecification(ProjectListCriteria.All, LoadArchived: false);
 }
 
-public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, NoKogdaIgra, MasterGrantAccess };
-
-public record ProjectHeaderDto(ProjectIdentification ProjectId, string ProjectName, bool IAmMaster, bool HasActiveClaims, int ClaimsCount) : ILinkableWithName
-{
-    string ILinkableWithName.Name => ProjectName;
-
-    LinkType ILinkable.LinkType => LinkType.Project;
-
-    string? ILinkable.Identification => null;
-
-    int? ILinkable.ProjectId => ProjectId.Value;
-}
+public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, NoKogdaIgra, MasterGrantAccess, All };
 
 public record CharacterGroupHeaderDto(CharacterGroupIdentification CharacterGroupId, string Name, bool IsActive, bool IsPublic) : ILinkableWithName
 {

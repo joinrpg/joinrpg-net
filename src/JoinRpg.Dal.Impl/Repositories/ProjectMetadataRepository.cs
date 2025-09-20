@@ -27,13 +27,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             project.Details.PreferentialFeeEnabled,
             project.PaymentTypes.Select(pt => new PaymentTypeInfo(pt.TypeKind, pt.IsActive, pt.UserId)).ToArray());
 
-        var status = (project.Active, project.IsAcceptingClaims) switch
-        {
-            (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
-            (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
-            (false, false) => ProjectLifecycleStatus.Archived,
-            (false, true) => throw new InvalidOperationException()
-        };
+        ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
         return new ProjectInfo(
             projectId,
