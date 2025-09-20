@@ -43,6 +43,8 @@ public record class ProjectInfo
 
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
 
+    public ProjectProfileRequirementSettings ProfileRequirementSettings { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         ProjectName projectName,
@@ -60,7 +62,8 @@ public record class ProjectInfo
         ProjectLifecycleStatus projectStatus,
         ProjectScheduleSettings projectScheduleSettings,
         ProjectCloneSettings projectCloneSettings,
-        DateOnly createDate)
+        DateOnly createDate,
+        ProjectProfileRequirementSettings profileRequirementSettings)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -88,6 +91,7 @@ public record class ProjectInfo
         ProjectScheduleSettings = projectScheduleSettings;
         CloneSettings = projectCloneSettings;
         CreateDate = createDate;
+        ProfileRequirementSettings = profileRequirementSettings;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -118,6 +122,12 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, DefaultTemplateCharacter,
             AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
-            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate);
+            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings);
     }
 }
+
+public record ProjectProfileRequirementSettings(
+    MandatoryStatus RequireRealName,
+    MandatoryStatus RequireTelegram,
+    MandatoryStatus RequireVkontakte,
+    MandatoryStatus RequirePhone);
