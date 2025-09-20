@@ -44,7 +44,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         return await Ctx
           .ClaimSet
           .Include(c => c.AccommodationRequest)
-          .Include(c => c.Player)
+          .Include(c => c.Player.Extra)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)
           .Where(predicate)

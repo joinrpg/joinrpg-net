@@ -25,6 +25,10 @@ public class ProblemViewModel(ClaimProblem problem)
       {ClaimProblemType.NoParentGroup, "Персонаж не принадлежит ни к одной группе"},
       {ClaimProblemType.GroupIsBroken, "Группа сломана"},
       {ClaimProblemType.InActiveVariant, "Выбран удаленный вариант значения" },
+      {ClaimProblemType.MissingRealname, "В профиле нет ФИО" },
+      {ClaimProblemType.MissingPhone, "В профиле нет телефона" },
+      {ClaimProblemType.MissingTelegram, "Не привязан телеграмм" },
+      {ClaimProblemType.MissingVkontakte, "Не привязан ВК" },
     };
 
     public string ProblemType { get; } = Types[problem.ProblemType];
