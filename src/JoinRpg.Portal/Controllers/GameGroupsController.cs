@@ -17,30 +17,24 @@ using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using MoreLinq;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/roles/{characterGroupId}/[action]")]
-public class GameGroupsController : ControllerGameBase
+public class GameGroupsController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IUserRepository userRepository,
+    IUriService uriService,
+    IUriLocator<UserLinkViewModel> userLinkLocator,
+    IProjectMetadataRepository projectMetadataRepository
+    ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
-    private readonly IUriService uriService;
-    private readonly IUriLocator<UserLinkViewModel> userLinkLocator;
-
-    public GameGroupsController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IUserRepository userRepository,
-        IUriService uriService, IUriLocator<UserLinkViewModel> userLinkLocator)
-        : base(projectRepository, projectService, userRepository)
-    {
-        this.uriService = uriService;
-        this.userLinkLocator = userLinkLocator;
-    }
-
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
     [AllowAnonymous]
-    public async Task<ActionResult> Index(int projectId, int? characterGroupId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId, int? characterGroupId)
     {
         var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
@@ -49,6 +43,8 @@ public class GameGroupsController : ControllerGameBase
             return NotFound();
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
         return View(
           new GameRolesViewModel
           {
@@ -56,7 +52,7 @@ public class GameGroupsController : ControllerGameBase
               ProjectName = field.Project.ProjectName,
               ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
               HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
-              Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault),
+              Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault, projectInfo),
               Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Roles),
           });
     }
@@ -109,21 +105,22 @@ public class GameGroupsController : ControllerGameBase
             return NotFound();
         }
 
-        var hotRoles = GetHotCharacters(field).Shuffle().Take(maxCount ?? int.MaxValue);
+        var hotRoles = (await GetHotCharacters(field)).Shuffle().Take(maxCount ?? int.MaxValue);
 
         return ReturnJson(hotRoles.Select(ConvertCharacterToJson));
     }
 
-    private IEnumerable<CharacterViewModel> GetHotCharacters(CharacterGroup field)
+    private async Task<IEnumerable<CharacterViewModel>> GetHotCharacters(CharacterGroup field)
     {
-        return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(field.GetId().ProjectId);
+        return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault, projectInfo)
           .SelectMany(
             g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
     [HttpGet("~/{projectId}/roles/{characterGroupId}/indexjson")]
     [AllowAnonymous]
-    public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
+    public async Task<ActionResult> IndexJson(ProjectIdentification projectId, int characterGroupId)
     {
         var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
         if (field == null)
@@ -132,13 +129,15 @@ public class GameGroupsController : ControllerGameBase
 
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
         var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
         return ReturnJson(new
         {
             field.Project.ProjectId,
             field.Project.ProjectName,
             ShowEditControls = hasMasterAccess,
-            Groups = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault).Select(
+            Groups = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault, projectInfo).Select(
                 g =>
                   new
                   {
@@ -158,12 +157,12 @@ public class GameGroupsController : ControllerGameBase
     }
 
     [HttpGet("~/{projectId}/roles/json_full")]
-    public Task<ActionResult> Json_Full(int projectId) => AllGroupsJson(projectId, includeSpecial: true);
+    public Task<ActionResult> Json_Full(ProjectIdentification projectId) => AllGroupsJson(projectId, includeSpecial: true);
 
     [HttpGet("~/{projectId}/roles/json_real")]
-    public Task<ActionResult> Json_Real(int projectId) => AllGroupsJson(projectId, includeSpecial: false);
+    public Task<ActionResult> Json_Real(ProjectIdentification projectId) => AllGroupsJson(projectId, includeSpecial: false);
 
-    private async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
+    private async Task<ActionResult> AllGroupsJson(ProjectIdentification projectId, bool includeSpecial)
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
         var cached = CheckCache(project.CharacterTreeModifiedAt);
@@ -171,6 +170,8 @@ public class GameGroupsController : ControllerGameBase
         {
             return NotModified();
         }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var field = await ProjectRepository.LoadGroupWithTreeSlimAsync(projectId);
         if (field == null)
@@ -181,7 +182,7 @@ public class GameGroupsController : ControllerGameBase
         {
             field.Project.ProjectId,
             Groups =
-            new CharacterTreeBuilder(field, CurrentUserId).Generate()
+            new CharacterTreeBuilder(field, CurrentUserId, projectInfo).Generate()
               .Where(g => includeSpecial || !g.IsSpecial)
               .Select(
                 g =>

@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -8,7 +9,7 @@ namespace JoinRpg.Web.Models.Characters;
 /// <summary>
 /// TODO: LEO describe the meaning of this tricky class properly
 /// </summary>
-public class CharacterNavigationViewModel(Character character, int? currentUserId)
+public class CharacterNavigationViewModel(Character character, int? currentUserId, ProjectInfo projectInfo)
 {
     public CharacterNavigationPage Page { get; private set; }
     public bool HasMasterAccess { get; } = character.HasMasterAccess(currentUserId);
@@ -28,7 +29,7 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
 
     public static CharacterNavigationViewModel FromCharacter(Character character,
         CharacterNavigationPage page,
-        int? currentUserId)
+        int? currentUserId, ProjectInfo projectInfo)
     {
         int? claimId;
 
@@ -43,9 +44,9 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
                 .TrySelectSingleClaim()?.ClaimId;
         }
 
-        var vm = new CharacterNavigationViewModel(character, currentUserId)
+        var vm = new CharacterNavigationViewModel(character, currentUserId, projectInfo)
         {
-            CanAddClaim = character.IsAcceptingClaims(),
+            CanAddClaim = character.IsAcceptingClaims(projectInfo),
             ClaimId = claimId,
             Page = page,
         };
@@ -64,11 +65,11 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
     public static CharacterNavigationViewModel FromClaim(
         Claim claim,
         int currentUserId,
-        CharacterNavigationPage characterNavigationPage)
+        CharacterNavigationPage characterNavigationPage, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claim);
 
-        var vm = new CharacterNavigationViewModel(claim.Character, currentUserId)
+        var vm = new CharacterNavigationViewModel(claim.Character, currentUserId, projectInfo)
         {
             CanAddClaim = false,
             ClaimId = claim.ClaimId,

@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
@@ -19,7 +20,7 @@ public class AddClaimValidationRulesTest
     }
 
     [Fact]
-    public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
+    public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(userInfo: null, Mock.ProjectInfo).ShouldBeEmpty();
 
     [Fact]
     public void CantSendClaimIfProjectClaimsClosed()
@@ -107,8 +108,8 @@ public class AddClaimValidationRulesTest
     }
 
     private void ShouldBeAllowed(Character mockCharacter)
-        => mockCharacter.ValidateIfCanAddClaim(Mock.Player.UserId).ShouldBeEmpty();
+        => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo).ShouldBeEmpty();
 
     private void ShouldBeNotAllowed(Character claimSource, AddClaimForbideReason reason)
-        => claimSource.ValidateIfCanAddClaim(Mock.Player.UserId).ShouldContain(reason);
+        => claimSource.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo).ShouldContain(reason);
 }

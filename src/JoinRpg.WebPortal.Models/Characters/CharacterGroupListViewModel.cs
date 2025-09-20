@@ -2,42 +2,31 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Characters;
 
 public static class CharacterGroupListViewModel
 {
-    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId)
-        => new CharacterGroupHierarchyBuilder(field, currentUserId).Generate().WhereNotNull();
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId, ProjectInfo projectInfo)
+        => new CharacterGroupHierarchyBuilder(field, currentUserId, projectInfo).Generate().WhereNotNull();
 
     //TODO: unit tests
-    private class CharacterGroupHierarchyBuilder
+    private class CharacterGroupHierarchyBuilder(CharacterGroup root, int? currentUserId, ProjectInfo projectInfo)
     {
-        private CharacterGroup Root { get; }
-
         private IList<int> AlreadyOutputedChars { get; } = [];
 
         private IList<CharacterGroupListItemViewModel> Results { get; } = [];
 
-        private int? CurrentUserId { get; }
-
-        public CharacterGroupHierarchyBuilder(CharacterGroup root, int? currentUserId)
-        {
-            Root = root;
-            HasEditRolesAccess = root.HasEditRolesAccess(currentUserId);
-            CurrentUserId = currentUserId;
-        }
-
         public IList<CharacterGroupListItemViewModel> Generate()
         {
-            _ = GenerateFrom(Root, 0, []);
+            _ = GenerateFrom(root, 0, []);
             return Results;
         }
 
         private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroup characterGroup, int deepLevel, List<CharacterGroup> pathToTop)
         {
-            if (!characterGroup.IsVisible(CurrentUserId))
+            if (!characterGroup.IsVisible(currentUserId))
             {
                 return null;
             }
@@ -59,10 +48,10 @@ public static class CharacterGroupListViewModel
                 IsSpecial = characterGroup.IsSpecial,
                 IsRootGroup = characterGroup.IsRoot,
                 ProjectId = characterGroup.ProjectId,
-                RootGroupId = Root.CharacterGroupId,
+                RootGroupId = root.CharacterGroupId,
             };
 
-            if (Root == characterGroup)
+            if (root == characterGroup)
             {
                 vm.First = true;
                 vm.Last = true;
@@ -86,7 +75,7 @@ public static class CharacterGroupListViewModel
                 return vm;
             }
 
-            var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g => g.IsActive && g.IsVisible(CurrentUserId)).ToList();
+            var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g => g.IsActive && g.IsVisible(currentUserId)).ToList();
             var pathForChildren = pathToTop.Union([characterGroup]).ToList();
 
             vm.ChildGroups = childGroups
@@ -103,14 +92,14 @@ public static class CharacterGroupListViewModel
 
         private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroup characterGroup)
         {
-            var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(CurrentUserId)).ToArray();
+            var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(currentUserId)).ToArray();
 
             return characters.Select(character => GenerateCharacter(character, characterGroup, characters));
         }
 
         private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, IReadOnlyList<Character> siblings)
         {
-            var acceptingClaims = arg.IsAcceptingClaims();
+            var acceptingClaims = arg.IsAcceptingClaims(projectInfo);
             var vm = new CharacterViewModel
             {
                 CharacterId = arg.CharacterId,
@@ -122,13 +111,13 @@ public static class CharacterGroupListViewModel
                 IsPublic = arg.IsPublic,
                 IsActive = arg.IsActive,
                 ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
-                PlayerLink = arg.GetCharacterPlayerLinkViewModel(CurrentUserId),
+                PlayerLink = arg.GetCharacterPlayerLinkViewModel(currentUserId),
                 HasEditRolesAccess = HasEditRolesAccess,
                 ProjectId = arg.ProjectId,
                 FirstInGroup = siblings[0] == arg,
                 LastInGroup = siblings[^1] == arg,
                 ParentCharacterGroupId = group.CharacterGroupId,
-                RootGroupId = Root.CharacterGroupId,
+                RootGroupId = root.CharacterGroupId,
                 IsHot = arg.IsHot && acceptingClaims,
             };
             if (vm.IsFirstCopy)
@@ -138,6 +127,6 @@ public static class CharacterGroupListViewModel
             return vm;
         }
 
-        private bool HasEditRolesAccess { get; }
+        private bool HasEditRolesAccess { get; } = root.HasEditRolesAccess(currentUserId);
     }
 }

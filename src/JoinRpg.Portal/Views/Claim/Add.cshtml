@@ -1,8 +1,10 @@
-﻿@using JoinRpg.CommonUI.Models
+@using JoinRpg.CommonUI.Models
 @using JoinRpg.Domain
+@using JoinRpg.PrimitiveTypes
+@using JoinRpg.Web.Claims
 @model JoinRpg.Web.Models.AddClaimViewModel
 
-<script src="~/Scripts/claim.js" >
+<script src="~/Scripts/claim.js">
 
 </script>
 
@@ -14,140 +16,100 @@
 
 
 <form asp-controller="Claim" asp-action="add" method="post" asp-route-ProjectId="@Model.ProjectId">
-  @Html.HiddenFor(model => model.ProjectId)
+    @Html.HiddenFor(model => model.ProjectId)
 
-  <div class="form-horizontal">
+    <div class="form-horizontal">
 
-    @foreach (var validation in Model.ValidationStatus)
-    {
-      switch (validation)
-      {
-        case AddClaimForbideReason.ProjectNotActive:
-          <div class="alert alert-warning">
-            Проект находится в архиве, отослать новую заявку невозможно.
-          </div>
-          break;
-        case AddClaimForbideReason.ProjectClaimsClosed:
-          <div class="alert alert-warning">
-            Заявки на проект закрыты, отослать заявку невозможно.
-          </div>
-          break;
-        case AddClaimForbideReason.SlotsExhausted:
-          <div class="alert alert-warning">
-            Места в группе «@Model.TargetName» закончились.
-            Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-          </div>
-          break;
-        case AddClaimForbideReason.Npc:
-        case AddClaimForbideReason.CharacterInactive:
-          <div class="alert alert-warning">
-            Заявки на роль «@Model.TargetName» не принимаются.
-            Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-          </div>
-          break;
-        case AddClaimForbideReason.Busy:
-          <div class="alert alert-warning">
-            Роль «@Model.TargetName» уже занята.
-            Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-          </div>
-          break;
-        case AddClaimForbideReason.AlreadySent:
-          <div class="alert alert-danger">
-            У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на эту роль.
-            Невозможно отправить еще одну.
-          </div>
-          break;
-        case AddClaimForbideReason.OnlyOneCharacter:
-          <div class="alert alert-danger">
-            У вас уже есть утвержденная <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект.
-            Невозможно иметь более одной утвержденной заявки
-          </div>
-          break;
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
-    }
+        @foreach (var validation in Model.ValidationStatus)
+        {
+            <component type="typeof(AddClaimForbideReasonMessage)"
+                       render-mode="Static"
+                       param-Reason="validation"
+                       param-ProjectId="Model.ProjectIdentification"
+                       param-CharacterName="Model.TargetName"
+                       param-ProjectLifecycleStatus="Model.ProjectLifecycleStatus" />
+        }
 
-    @if (Model.IsProjectRelatedReason)
-    {
-      return;
-    }
+        @if (Model.IsProjectRelatedReason)
+        {
+            return;
+        }
 
-    @if (Model.WarnForAnotherClaim && Model.CanSendClaim())
-    {
-      if (Model.ProjectAllowsMultipleCharacters)
-      {
-        <div class="alert alert-info">
-          У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
+        @if (Model.WarnForAnotherClaim && Model.CanSendClaim())
+        {
+            if (Model.ProjectAllowsMultipleCharacters)
+            {
+                <div class="alert alert-info">
+                    У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
+                </div>
+            }
+        }
+
+        @if (Model.HasMasterAccess)
+        {
+            <div class="alert alert-info">
+                Несмотря на то, что у вас есть мастерские права, форма заявки показывается так, как ее видят игроки (мастерские поля не видны).
+            </div>
+        }
+
+        @if (Model.ClaimApplyRules != null)
+        {
+            <div>@Model.ClaimApplyRules</div>
+        }
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TargetName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DisplayFor(model => model.TargetName, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
         </div>
-      }
-      else
-      {
-        <div class="alert alert-warning">
-          У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
-        </div>
-      }
-    }
 
-    @if (Model.HasMasterAccess)
-    {
-      <div class="alert alert-info">
-          Несмотря на то, что у вас есть мастерские права, форма заявки показывается так, как ее видят игроки (мастерские поля не видны).
-      </div>
-    }
+        @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
 
-    @if (Model.ClaimApplyRules != null)
-    {
-      <div>@Model.ClaimApplyRules</div>
-    }
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Model.Description
+                </div>
+            </div>
+        }
 
-      <div class="form-group">
-        @Html.LabelFor(model => model.TargetName, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-          @Html.DisplayFor(model => model.TargetName, new { htmlAttributes = new { @class = "form-control" } })
-        </div>
-      </div>
+        @if (Model.CanSendClaim())
+        {
+            ViewBag.HideCharacterClaimFieldsIcon = true;
 
-    @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-    {
-      <div class="form-group">
-        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-          @Model.Description
-        </div>
-      </div>
-    }
+            @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
-    @if (Model.CanSendClaim())
-    {
-      ViewBag.HideCharacterClaimFieldsIcon = true;
+            if (Model.Fields.Fields.Any(f => f.HasPrice))
+            {
+                @await Html.PartialAsync("_ClaimFieldsSubtotal", 0)
+            }
 
-      @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="form-group">
+                @Html.LabelFor(model => model.ClaimText, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ClaimText, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ClaimText, "", new { @class = "text-danger" })
+                    @Html.DescriptionFor(model => model.ClaimText)
+                </div>
+            </div>
 
-      @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
+            @Html.HiddenFor(model => model.CharacterId)
 
-      if (Model.Fields.Fields.Any(f => f.HasPrice))
-      {
-        @await Html.PartialAsync("_ClaimFieldsSubtotal", 0);
-      }
-
-      <div class="form-group">
-        @Html.LabelFor(model => model.ClaimText, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-          @Html.EditorFor(model => model.ClaimText, new { htmlAttributes = new { @class = "form-control" } })
-          @Html.ValidationMessageFor(model => model.ClaimText, "", new { @class = "text-danger" })
-          @Html.DescriptionFor(model => model.ClaimText)
-        </div>
-      </div>
-
-      @Html.HiddenFor(model => model.CharacterId)
-
-      <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-          <input type="submit" value="Отправить заявку" class="btn btn-success" />
-        </div>
-      </div>
-    }
-  </div>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Отправить заявку" class="btn btn-success" />
+                </div>
+            </div>
+        }
+    </div>
 </form>

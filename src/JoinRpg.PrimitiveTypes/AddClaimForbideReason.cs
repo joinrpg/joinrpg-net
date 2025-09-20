@@ -1,4 +1,4 @@
-namespace JoinRpg.Domain;
+namespace JoinRpg.PrimitiveTypes;
 
 public enum AddClaimForbideReason
 {
@@ -11,5 +11,9 @@ public enum AddClaimForbideReason
     OnlyOneCharacter,
     ApprovedClaimMovedToGroupOrSlot,
     CheckedInClaimCantBeMoved,
-    CharacterInactive
+    CharacterInactive,
+    RealNameMissing,
+    PhoneMissing,
+    TelegramMissing,
+    VkontakteMissing
 }

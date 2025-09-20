@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 

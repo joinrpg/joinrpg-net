@@ -15,7 +15,7 @@ public class CharacterTreeBuilderTest
                 CharacterGroups = [],
             }
         };
-        var builder = new CharacterTreeBuilder(root, currentUserId: null);
+        var builder = new CharacterTreeBuilder(root, currentUserId: null, projectInfo: TODO);
         var result = builder.Generate();
         result.First().FirstCopy.ShouldBeTrue();
     }

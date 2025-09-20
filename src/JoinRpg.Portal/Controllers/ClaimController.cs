@@ -45,17 +45,19 @@ public class ClaimController(
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForCharacter(int projectId, int characterid)
+    public async Task<ActionResult> AddForCharacter(ProjectIdentification projectId, int characterid)
     {
         var field = await characterRepository.GetCharacterAsync(projectId, characterid);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
         if (field == null)
         {
             return NotFound();
         }
 
-        return View("Add", AddClaimViewModel.Create(field, CurrentUserId, projectInfo));
+        return View("Add", AddClaimViewModel.Create(field, userInfo, projectInfo));
     }
 
     [HttpGet("/{projectid}/apply")]
@@ -88,9 +90,10 @@ public class ClaimController(
         catch (Exception exception)
         {
             ModelState.AddException(exception);
+            var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
             var source = await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
-            viewModel.Fill(source, CurrentUserId, projectInfo, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+            viewModel.Fill(source, userInfo, projectInfo, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
             return base.View(viewModel);
         }
     }
@@ -98,8 +101,8 @@ public class ClaimController(
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId).ConfigureAwait(false);
-        return await ShowClaim(claim).ConfigureAwait(false);
+        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId);
+        return await ShowClaim(claim);
     }
 
     private async Task<ActionResult> ShowClaim(Claim claim)
@@ -117,13 +120,16 @@ public class ClaimController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
+        var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
+
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
             plots,
             projectInfo,
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
-            accommodationModel)
+            accommodationModel,
+            userInfo)
         {
             SubscriptionTooltip = await gameSubscribeClient.GetSubscribeForClaim(claim.ProjectId, claim.ClaimId),
         };

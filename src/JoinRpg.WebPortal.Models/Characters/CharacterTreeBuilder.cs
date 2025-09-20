@@ -1,25 +1,18 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public class CharacterTreeBuilder
+public class CharacterTreeBuilder(CharacterGroup root, int? currentUserId, ProjectInfo projectInfo)
 {
-    private CharacterGroup Root { get; }
+    private readonly Dictionary<int, CharacterLinkViewModel> alreadyOutputedChars = [];
 
-    private readonly Dictionary<int, CharacterLinkViewModel> alreadyOutputedChars = new();
-
-    private IList<CharacterTreeItem> Results { get; } = new List<CharacterTreeItem>();
-
-    public CharacterTreeBuilder(CharacterGroup root, int? currentUserId)
-    {
-        Root = root;
-        CurrentUserId = currentUserId;
-    }
+    private IList<CharacterTreeItem> Results { get; } = [];
 
     public IList<CharacterTreeItem> Generate()
     {
-        _ = GenerateFrom(Root, 0, new List<CharacterGroup>());
+        _ = GenerateFrom(root, 0, new List<CharacterGroup>());
         return Results;
     }
 
@@ -31,7 +24,7 @@ public class CharacterTreeBuilder
         {
             DeepLevel = deepLevel,
             FirstCopy = prevCopy is null,
-            Characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(CurrentUserId)).Select(GenerateCharacter).ToList(),
+            Characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(currentUserId)).Select(GenerateCharacter).ToList(),
             Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
             IsSpecial = characterGroup.IsSpecial,
             ChildGroups = prevCopy?.ChildGroups!, //Will be set later
@@ -48,7 +41,7 @@ public class CharacterTreeBuilder
 
         IEnumerable<CharacterTreeItem> CreateChilds()
         {
-            foreach (var childGroup in characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(c => c.IsActive && c.IsVisible(CurrentUserId)))
+            foreach (var childGroup in characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(c => c.IsActive && c.IsVisible(currentUserId)))
             {
                 var characterGroups = pathToTop.Union(new[] { characterGroup }).ToList();
                 yield return GenerateFrom(childGroup, deepLevel + 1, characterGroups);
@@ -56,15 +49,13 @@ public class CharacterTreeBuilder
         }
     }
 
-    private int? CurrentUserId { get; }
-
     private CharacterLinkViewModel GenerateCharacter(Character arg)
     {
         if (alreadyOutputedChars.TryGetValue(arg.CharacterId, out var prevCopy))
         {
             return prevCopy;
         }
-        var vm = new CharacterLinkViewModel(arg);
+        var vm = new CharacterLinkViewModel(arg, projectInfo);
         alreadyOutputedChars.Add(arg.CharacterId, vm);
 
         return vm;

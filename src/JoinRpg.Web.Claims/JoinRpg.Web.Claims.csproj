@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
   </ItemGroup>

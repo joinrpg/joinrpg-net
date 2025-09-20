@@ -10,7 +10,7 @@ public class AddClaimViewModelTest
     [Fact]
     public void AddClaimAllowedCharacter()
     {
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeTrue();
     }
 
@@ -19,7 +19,7 @@ public class AddClaimViewModelTest
     {
         var inactive = Mock.CreateCharacter("inactive");
         inactive.IsActive = false;
-        var vm = AddClaimViewModel.Create(inactive, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(inactive, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
     }
 
@@ -27,7 +27,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimIfProjectDisabled()
     {
         Mock.Project.IsAcceptingClaims = false;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeTrue();
 
@@ -37,7 +37,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimToNPC()
     {
         Mock.Character.CharacterType = PrimitiveTypes.CharacterType.NonPlayer;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -47,7 +47,7 @@ public class AddClaimViewModelTest
     {
         Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = null;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeTrue();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -57,7 +57,7 @@ public class AddClaimViewModelTest
     {
         Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = 0;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -66,7 +66,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimToSameCharacter()
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -76,7 +76,7 @@ public class AddClaimViewModelTest
     {
         Mock.Project.Details.EnableManyCharacters = true;
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
     }
@@ -88,7 +88,7 @@ public class AddClaimViewModelTest
         var value = new FieldWithValue(Mock.PublicFieldInfo, "xxx");
         Mock.Character.JsonData = new[] { value }.SerializeFields();
 
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId, Mock.ProjectInfo);
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         var fieldView = vm.Fields.Field(Mock.PublicFieldInfo);
         _ = fieldView.ShouldNotBeNull();
         fieldView.ShouldBeVisible();

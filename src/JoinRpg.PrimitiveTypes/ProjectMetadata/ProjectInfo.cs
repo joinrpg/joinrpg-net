@@ -44,6 +44,7 @@ public record class ProjectInfo
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
 
     public ProjectProfileRequirementSettings ProfileRequirementSettings { get; }
+    public bool AllowManyClaims { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -63,7 +64,8 @@ public record class ProjectInfo
         ProjectScheduleSettings projectScheduleSettings,
         ProjectCloneSettings projectCloneSettings,
         DateOnly createDate,
-        ProjectProfileRequirementSettings profileRequirementSettings)
+        ProjectProfileRequirementSettings profileRequirementSettings,
+        bool allowManyClaims)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -92,6 +94,7 @@ public record class ProjectInfo
         CloneSettings = projectCloneSettings;
         CreateDate = createDate;
         ProfileRequirementSettings = profileRequirementSettings;
+        AllowManyClaims = allowManyClaims;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -122,7 +125,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, DefaultTemplateCharacter,
             AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
-            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings);
+            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, AllowManyClaims);
     }
 }
 

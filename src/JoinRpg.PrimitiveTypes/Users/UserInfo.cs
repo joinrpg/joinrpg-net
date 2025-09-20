@@ -4,7 +4,7 @@ namespace JoinRpg.PrimitiveTypes.Users;
 public record class UserInfo(
     UserIdentification UserId,
     UserSocialNetworks Social,
-    IReadOnlyCollection<ClaimIdentification> ActiveClaims,
+    IReadOnlyCollection<ClaimIdentification> ActiveClaims, // Для заявок хорошо бы иметь статусы
     IReadOnlyCollection<ProjectIdentification> ActiveProjects,
     IReadOnlyCollection<ProjectIdentification> AllProjects,
     bool IsAdmin,

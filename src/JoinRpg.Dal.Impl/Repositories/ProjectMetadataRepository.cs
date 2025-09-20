@@ -51,8 +51,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             projectScheduleSettings: new ProjectScheduleSettings(project.Details.ScheduleEnabled),
             projectCloneSettings: project.Details.ProjectCloneSettings,
             createDate: DateOnly.FromDateTime(project.CreatedDate),
-            new ProjectProfileRequirementSettings(project.Details.RequireRealName, project.Details.RequireTelegram, project.Details.RequireVkontakte, project.Details.RequirePhone)
-            );
+            profileRequirementSettings: new ProjectProfileRequirementSettings(project.Details.RequireRealName, project.Details.RequireTelegram, project.Details.RequireVkontakte, project.Details.RequirePhone),
+            allowManyClaims: project.Details.EnableManyCharacters);
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {

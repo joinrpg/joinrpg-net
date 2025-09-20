@@ -1,32 +1,33 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Domain;
 
 public static class ClaimAcceptOrMoveValidationExtensions
 {
-    public static bool IsAcceptingClaims(this Character character)
-        => !ValidateIfCanAddClaim(character, playerUserId: null).Any();
+    public static bool IsAcceptingClaims(this Character character, ProjectInfo projectInfo)
+        => !ValidateIfCanAddClaim(character, userInfo: null, projectInfo).Any();
 
     public static IEnumerable<AddClaimForbideReason> ValidateIfCanAddClaim(
         this Character claimSource,
-        int? playerUserId)
-        => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
+        UserInfo? userInfo, ProjectInfo projectInfo)
+        => ValidateImpl(claimSource, userInfo, existingClaim: null, projectInfo).ToList();
 
-    public static bool CanMoveClaimTo(this Character character, Claim claim) => !ValidateIfCanMoveClaim(character, claim).Any();
+    public static bool CanMoveClaimTo(this Character character, Claim claim, UserInfo userInfo, ProjectInfo projectInfo) => !ValidateIfCanMoveClaim(character, claim, userInfo, projectInfo).Any();
 
-    public static IEnumerable<AddClaimForbideReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim)
-        => ValidateImpl(claimSource, claim.PlayerUserId, claim);
+    public static IEnumerable<AddClaimForbideReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
+        => ValidateImpl(claimSource, userInfo, claim, projectInfo);
 
-    public static void EnsureCanAddClaim([NotNull] this Character claimSource, int currentUserId)
+    public static void EnsureCanAddClaim([NotNull] this Character claimSource, UserInfo userInfo, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
-        ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(userInfo, projectInfo), claim: null);
     }
 
-    public static void EnsureCanMoveClaim([NotNull] this Character claimSource, Claim claim)
+    public static void EnsureCanMoveClaim([NotNull] this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
-        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim, userInfo, projectInfo), claim);
     }
 
     private static void ThrowIfValidationFailed(
@@ -53,6 +54,8 @@ public static class ClaimAcceptOrMoveValidationExtensions
             AddClaimForbideReason.OnlyOneCharacter => new OnlyOneApprovedClaimException(),
 
             AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot or AddClaimForbideReason.CheckedInClaimCantBeMoved => new ClaimWrongStatusException(claim!),
+            AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
+            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => throw new InsufficientContactsException(),
             _ => new ArgumentOutOfRangeException(nameof(reason), reason, message: null),
         };
     }
@@ -64,22 +67,16 @@ public static class ClaimAcceptOrMoveValidationExtensions
     /// <param name="playerUserId">User</param>
     /// <param name="existingClaim">If we already have claim (move), that's it</param>
     /// <returns></returns>
-    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, int? playerUserId, Claim? existingClaim)
+    /// <param name="projectInfo"></param>
+    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, UserInfo? playerUserId, Claim? existingClaim, ProjectInfo projectInfo)
     {
         var project = character.Project;
 
-        if (!project.Active)
+        if (ValidateProjectImpl(projectInfo) is AddClaimForbideReason projectReason)
         {
-            yield return AddClaimForbideReason.ProjectNotActive;
+            yield return projectReason;
             yield break;
         }
-
-        if (!project.IsAcceptingClaims)
-        {
-            yield return AddClaimForbideReason.ProjectClaimsClosed;
-            yield break;
-        }
-
 
         if (character.ApprovedClaimId != null)
         {
@@ -104,11 +101,13 @@ public static class ClaimAcceptOrMoveValidationExtensions
                     yield return AddClaimForbideReason.SlotsExhausted;
                 }
 
-                if (existingClaim?.IsApproved == true)
-                {
-                    yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
-                }
+
                 break;
+        }
+
+        if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
+        {
+            yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
         }
 
 
@@ -117,19 +116,55 @@ public static class ClaimAcceptOrMoveValidationExtensions
             yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
         }
 
-        if (playerUserId is int playerId)
+        if (playerUserId is UserInfo userInfo)
         {
-            if (character.Claims.OfUserActive(playerId).Any())
+            if (character.Claims.OfUserActive(userInfo.UserId.Value).Any())
             {
                 yield return AddClaimForbideReason.AlreadySent;
             }
 
-            if (!project.Details.EnableManyCharacters &&
-                project.Claims.OfUserApproved(playerId).Except([existingClaim]).Any())
+            // TODO вот здесь бы проверять по UserInfo
+            if (!projectInfo.AllowManyClaims &&
+                project.Claims.OfUserApproved(userInfo.UserId.Value).Except([existingClaim]).Any())
             {
                 yield return AddClaimForbideReason.OnlyOneCharacter;
+            }
+
+            foreach (var r in ValidateContacts(projectInfo, userInfo))
+            {
+                yield return r;
             }
         }
     }
 
+    private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
+    {
+        if (projectInfo.ProfileRequirementSettings.RequireVkontakte == MandatoryStatus.Required && userInfo.Social.VkId is null)
+        {
+            yield return AddClaimForbideReason.VkontakteMissing;
+        }
+        if (projectInfo.ProfileRequirementSettings.RequireTelegram == MandatoryStatus.Required && userInfo.Social.TelegramId is null)
+        {
+            yield return AddClaimForbideReason.TelegramMissing;
+        }
+        if (projectInfo.ProfileRequirementSettings.RequireRealName == MandatoryStatus.Required && userInfo.UserFullName.FullName?.Length < 5)
+        {
+            yield return AddClaimForbideReason.RealNameMissing;
+        }
+        if (projectInfo.ProfileRequirementSettings.RequirePhone == MandatoryStatus.Required && userInfo.PhoneNumber?.Length < 5)
+        {
+            yield return AddClaimForbideReason.PhoneMissing;
+        }
+    }
+
+    private static AddClaimForbideReason? ValidateProjectImpl(ProjectInfo project)
+    {
+        return project.ProjectStatus switch
+        {
+            ProjectLifecycleStatus.ActiveClaimsOpen => null,
+            ProjectLifecycleStatus.Archived => AddClaimForbideReason.ProjectNotActive,
+            ProjectLifecycleStatus.ActiveClaimsClosed => AddClaimForbideReason.ProjectClaimsClosed,
+            _ => throw new NotImplementedException(),
+        };
+    }
 }
