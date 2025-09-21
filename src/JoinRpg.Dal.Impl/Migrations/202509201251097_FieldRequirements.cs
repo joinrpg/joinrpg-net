@@ -1,14 +1,13 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
     using System.Data.Entity.Migrations;
-    using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
     public partial class FieldRequirements : DbMigration
     {
         public override void Up()
         {
             AddColumn("dbo.ProjectDetails", "RequireRealName", c => c.Int(nullable: false));
-            AddColumn("dbo.ProjectDetails", "RequireTelegram", c => c.Int(nullable: false, defaultValue: (int)MandatoryStatus.Recommended));
+            AddColumn("dbo.ProjectDetails", "RequireTelegram", c => c.Int(nullable: false));
             AddColumn("dbo.ProjectDetails", "RequireVkontakte", c => c.Int(nullable: false));
             AddColumn("dbo.ProjectDetails", "RequirePhone", c => c.Int(nullable: false));
         }

@@ -133,4 +133,7 @@ public record ProjectProfileRequirementSettings(
     MandatoryStatus RequireRealName,
     MandatoryStatus RequireTelegram,
     MandatoryStatus RequireVkontakte,
-    MandatoryStatus RequirePhone);
+    MandatoryStatus RequirePhone)
+{
+    public static readonly ProjectProfileRequirementSettings AllNotRequired = new ProjectProfileRequirementSettings(false, false, false, false);
+}

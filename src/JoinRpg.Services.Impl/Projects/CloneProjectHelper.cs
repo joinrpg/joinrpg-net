@@ -79,6 +79,9 @@ internal class CloneProjectHelper(
                 DefaultTemplateCharacterId = original.DefaultTemplateCharacter is not null ? CharacterMapping.GetValueOrDefault(original.DefaultTemplateCharacter) : null
             });
 
+        await projectService.SetPublishSettings(projectId, ProjectCloneSettings.CloneDisabled, publishEnabled: false);
+        await projectService.SetContactSettings(projectId, original.ProfileRequirementSettings);
+
         return everythingFine;
     }
 

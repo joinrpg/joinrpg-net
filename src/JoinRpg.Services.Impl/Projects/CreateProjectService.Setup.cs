@@ -20,6 +20,8 @@ internal partial class CreateProjectService
         await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
         _ = await CreateField(projectId, "Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField, fieldHint: "Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
         _ = await CreateField(projectId, "Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
+
+        await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
     }
 
     private async Task SetupConventionParticipant(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
@@ -47,7 +49,7 @@ internal partial class CreateProjectService
             IsAutoFilledAccommodation = false,
         });
 
-
+        await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Recommended });
     }
 
     private async Task SetupLarp(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
@@ -58,5 +60,7 @@ internal partial class CreateProjectService
         var defaultChar = await CreateTopLevelCharacterSlot(projectId, rootCharacterGroupId, "Хочу на игру", name);
 
         await SetProjectSettings(projectId, request.ProjectName, defaultChar, autoAcceptClaims: false, enableAccomodation: false);
+
+        await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
     }
 }
