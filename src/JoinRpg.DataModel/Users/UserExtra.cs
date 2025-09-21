@@ -14,8 +14,6 @@ public class UserExtra
     }
 
     public string PhoneNumber { get; set; }
-    public string Skype { get; set; }
-
     public string? Vk { get; set; }
     public bool VkVerified { get; set; }
     public string? Livejournal { get; set; }

@@ -40,7 +40,7 @@ public static class UserExtensions
         var userFullName = user.ExtractFullName();
         return new UserInfo(
             user.GetId(),
-            new UserSocialNetworks(telegramId, user.Extra?.Skype, user.Extra?.Livejournal, user.Allrpg?.Sid, user.Extra?.Vk, user.Extra?.SocialNetworksAccess ?? ContactsAccessType.Public),
+            new UserSocialNetworks(telegramId, user.Extra?.Livejournal, user.Allrpg?.Sid, user.Extra?.Vk, user.Extra?.SocialNetworksAccess ?? ContactsAccessType.Public),
             user.Claims.Select(c => c.GetId()).ToList(),
             user.ProjectAcls.Where(p => p.Project.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             user.ProjectAcls.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),

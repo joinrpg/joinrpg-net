@@ -30,9 +30,6 @@ public class EditUserProfileViewModel
     [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber)]
     public string PhoneNumber { get; set; }
 
-    [Display(Name = "Skype")]
-    public string Skype { get; set; }
-
     [Display(Name = "ЖЖ")]
     public string Livejournal { get; set; }
 
@@ -68,4 +65,13 @@ public class EditUserProfileViewModel
 
     [ReadOnly(true)]
     public string TelegramBotName { get; set; } = null!;
+
+    [Display(Name = "Паспортные данные")]
+    [UIHint("MultilineText")]
+    public required string PassportData { get; set; }
+
+
+    [Display(Name = "Адрес регистрации данные")]
+    [UIHint("MultilineText")]
+    public required string RegistrationAddress { get; set; }
 }

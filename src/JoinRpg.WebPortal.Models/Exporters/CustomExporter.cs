@@ -123,7 +123,6 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
             .Union(
             [
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk),
-            ComplexElementMemberColumn(func, u => u.Extra, e => e.Skype),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Telegram),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.PhoneNumber),

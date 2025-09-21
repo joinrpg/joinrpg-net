@@ -11,7 +11,7 @@ public class MockedProject
     public Project Project { get; }
     public CharacterGroup Group { get; }
     public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>() };
-    public UserInfo PlayerInfo = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("player@example.com"), new UserFullName(new PrefferedName("Player"), null, null, null), false, null);
+    public UserInfo PlayerInfo = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("player@example.com"), new UserFullName(new PrefferedName("Player"), null, null, null), false, null);
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
 
     public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }

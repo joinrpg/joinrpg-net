@@ -98,7 +98,6 @@ public class UserProfileDetailsViewModel
         {
             Vk = user.Social.VkId;
             AllrpgId = user.Social.AllrpgInfoId;
-            Skype = user.Social.Skype;
             Telegram = user.Social.TelegramId?.UserName?.Value;
             Livejournal = user.Social.LiveJournal;
             HasSocialAccess = true;

@@ -16,10 +16,6 @@ public class MoneySummaryByMasterExporter : CustomExporter<MasterBalanceViewMode
             x => x.Extra,
             x => x.PhoneNumber,
             "Телефон");
-        yield return ComplexElementMemberColumn(x => x.Master,
-            x => x.Extra,
-            x => x.Skype,
-            "Skype");
         yield return IntColumn(x => x.Total);
         yield return IntColumn(x => x.ReceiveBalance);
         yield return IntColumn(x => x.SendBalance);
