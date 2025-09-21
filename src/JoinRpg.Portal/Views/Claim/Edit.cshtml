@@ -111,6 +111,17 @@
                         }
                     }
                 </dd>
+                @if (Model.HasSensitiveDataAccess)
+                {
+                    <dt>Паспортные данные</dt>
+                    <dd>
+                      @Model.PassportData
+                    </dd>
+                    <dt>Адрес регистрации</dt>
+                    <dd>
+                      @Model.RegistrationAddress
+                    </dd>
+                }
             </dl>
         </div>
     </div>

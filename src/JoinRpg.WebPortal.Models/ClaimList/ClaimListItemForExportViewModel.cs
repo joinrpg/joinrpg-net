@@ -29,6 +29,9 @@ public class ClaimListItemForExportViewModel : ClaimListItemViewModelBase
     [Display(Name = "Льготник")]
     public bool PreferentialFeeUser { get; }
 
+    public string? PassportData { get; }
+    public string? RegistrationAddress { get; }
+
     public ClaimListItemForExportViewModel(Claim claim, int currentUserId, ProjectInfo projectInfo) : base(claim, currentUserId)
     {
         Fields = claim.GetFields(projectInfo);
@@ -42,5 +45,12 @@ public class ClaimListItemForExportViewModel : ClaimListItemViewModelBase
 
         AccomodationType = claim.AccommodationRequest?.AccommodationType.Name;
         RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+
+
+        if (claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
+        {
+            PassportData = claim.Player.Extra?.PassportData;
+            RegistrationAddress = claim.Player.Extra?.RegistrationAddress;
+        }
     }
 }

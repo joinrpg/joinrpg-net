@@ -38,6 +38,12 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
             yield return c;
         }
 
+        if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired && projectInfo.IsActive)
+        {
+            yield return StringColumn(x => x.PassportData);
+            yield return StringColumn(x => x.RegistrationAddress);
+        }
+
         foreach (var projectField in projectInfo.SortedFields.Where(f => f.CanHaveValue))
         {
             yield return FieldColumn(projectField, x => x.Fields);

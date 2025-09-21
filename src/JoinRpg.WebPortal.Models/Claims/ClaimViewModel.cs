@@ -35,8 +35,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [Display(Name = "Статус заявки")]
     public ClaimFullStatusView Status { get; set; }
 
-    public IReadOnlyCollection<ProblemViewModel> ClaimProblems { get; }
-
     public bool IsMyClaim { get; }
 
     public bool HasMasterAccess { get; }
@@ -95,6 +93,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; }
+
+    public bool HasSensitiveDataAccess { get; }
+    public string? PassportData { get; }
+    public string? RegistrationAddress { get; }
 
     public required ClaimSubscribeViewModel SubscriptionTooltip { get; set; }
 
@@ -177,6 +179,13 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             claim.Character,
             projectInfo);
         AccommodationModel = accommodationModel;
+
+        HasSensitiveDataAccess = claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+        if (HasSensitiveDataAccess)
+        {
+            PassportData = claim.Player.Extra?.PassportData;
+            RegistrationAddress = claim.Player.Extra?.RegistrationAddress;
+        }
     }
 
     private static JoinSelectListItem ToJoinSelectListItem(Character x)
