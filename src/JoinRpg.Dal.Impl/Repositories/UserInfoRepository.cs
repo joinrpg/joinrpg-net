@@ -108,14 +108,13 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId }),
                 Projects = user.ProjectAcls.Where(acl => activeProjectsPredicate.Invoke(acl.Project)).Select(acl => new { acl.ProjectId, acl.Project.Active }),
                 user.Auth.IsAdmin,
-                user.Extra!.Skype,
                 user.Extra!.Livejournal,
-                AllRpgInfoId = user.Allrpg.Sid,
+                AllRpgInfoId = user.Allrpg!.Sid,
                 user.Extra.Vk,
                 user.Extra.SocialNetworksAccess,
                 user.SelectedAvatarId,
                 user.VerifiedProfileFlag,
-                user.Extra.PhoneNumber
+                user.Extra.PhoneNumber,
             };
 
         var result = await userQuery.SingleOrDefaultAsync();
@@ -134,7 +133,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             FatherName.FromOptional(result.FatherName));
         return new UserInfo(
             new UserIdentification(result.UserId),
-            new UserSocialNetworks(telegramId, result.Skype, result.Livejournal, result.AllRpgInfoId, result.Vk, result.SocialNetworksAccess),
+            new UserSocialNetworks(telegramId, result.Livejournal, result.AllRpgInfoId, result.Vk, result.SocialNetworksAccess),
             result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
             result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),

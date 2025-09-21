@@ -55,9 +55,12 @@ public class ProjectDetails : IValidatableObject
     public ProjectCloneSettings ProjectCloneSettings { get; set; } = ProjectCloneSettings.CanBeClonedByMaster;
 
     public MandatoryStatus RequireRealName { get; set; } = MandatoryStatus.Optional;
-    public MandatoryStatus RequireTelegram { get; set; } = MandatoryStatus.Recommended;
+    public MandatoryStatus RequireTelegram { get; set; } = MandatoryStatus.Optional;
     public MandatoryStatus RequireVkontakte { get; set; } = MandatoryStatus.Optional;
     public MandatoryStatus RequirePhone { get; set; } = MandatoryStatus.Optional;
+
+    public MandatoryStatus RequirePassport { get; set; } = MandatoryStatus.Optional;
+    public MandatoryStatus RequireRegistrationAddress { get; set; } = MandatoryStatus.Optional;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

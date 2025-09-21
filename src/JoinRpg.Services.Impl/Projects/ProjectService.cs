@@ -296,6 +296,8 @@ internal class ProjectService(
             project.Details.RequirePhone = settings.RequirePhone;
             project.Details.RequireVkontakte = settings.RequireVkontakte;
             project.Details.RequireTelegram = settings.RequireTelegram;
+            project.Details.RequirePassport = settings.RequirePassport;
+            project.Details.RequireRegistrationAddress = settings.RequireRegistrationAddress;
         });
     }
 

@@ -1,0 +1,11 @@
+@namespace JoinRpg.WebComponents
+
+<Tooltip Title="@Title">
+    <span class="glyphicon glyphicon-exclamation-sign">&nbsp;</span>
+</Tooltip>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = null!;
+}
+

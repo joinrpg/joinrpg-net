@@ -1,0 +1,32 @@
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.ProjectCommon.Projects
+<JoinPanel Variation="VariationStyleEnum.Warning">
+    <Header>Не заполнен профиль</Header>
+    <Body>
+        Мастера требуют от игроков заполнить следующие поля профиля:
+        <ul>
+            @foreach (var problem in ClaimProblems.Where(p => p.ProfileRelated))
+            {
+                <li><ProblemBadge Model="problem" /></li>
+            }
+        </ul>
+        <JoinButtonGroup>
+            <JoinProfileButton />
+            @if (ClaimProblems.Any(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed))
+            {
+                <AllowSensitiveDataButton ProjectId="ProjectId" />
+            }
+        </JoinButtonGroup>
+    </Body>
+</JoinPanel>
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<ProblemViewModel> ClaimProblems { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+}

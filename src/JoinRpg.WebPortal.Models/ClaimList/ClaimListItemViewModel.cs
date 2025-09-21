@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain.Problems;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 

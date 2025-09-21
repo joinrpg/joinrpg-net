@@ -15,3 +15,13 @@ public enum MandatoryContactsView
     Required,
 }
 
+public enum MandatorySenstiveContactsView
+{
+    [Display(Name = "Не запрашивать", Description = "Игрока не будут просить предоставить доступ к этим данным. ")]
+    Optional,
+
+    [Display(Name = "Запросить",
+        Description = "Попросить игрока предоставить доступ к этим данным. При незаполненном поле профиля заявка будет помечаться как проблемная.")]
+    Request,
+}
+

@@ -1,0 +1,23 @@
+<JoinBadge Variation="GetVariation()">
+  @if (Model.Severity == ProblemSeverity.Fatal)
+    {
+        <ExclamationIcon Title="Обратитесь в техподдержку сайта" />
+    }
+    @Model.ProblemTypeText<EventTime Model="Model.ProblemTime"/>@if (!string.IsNullOrWhiteSpace(Model.Extra))
+    {
+        <text>: @Model.Extra</text>
+    }
+</JoinBadge>
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public ProblemViewModel Model { get; set; } = null!;
+
+    private VariationStyleEnum GetVariation() => Model.Severity switch
+    {
+        ProblemSeverity.Hint => VariationStyleEnum.Info,
+        ProblemSeverity.Warning => VariationStyleEnum.Warning,
+        _ => VariationStyleEnum.Danger,
+    };
+}

@@ -59,7 +59,7 @@
     <ul>
       @foreach (var fieldProblem in Model.ProblemFields)
       {
-        <li><b>@fieldProblem.FieldName</b> — @fieldProblem.ProblemType (@Html.DisplayFor(modelField => fieldProblem.WhoWillFill))</li>
+        <li><b>@fieldProblem.FieldName</b> — @fieldProblem.ProblemTypeText (@Html.DisplayFor(modelField => fieldProblem.WhoWillFill))</li>
       }
     </ul>
    Перейдите на @Html.ActionLink("заявку", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null) для их заполнения или вызовите ответственного мастера @Html.DisplayFor(model => model.Master)

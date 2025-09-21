@@ -5,7 +5,7 @@ namespace JoinRpg.Services.Interfaces;
 
 public interface IUserService
 {
-    Task UpdateProfile(int userId, UserFullName userFullName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string livejournal, ContactsAccessType socialNetworkAccess);
+    Task UpdateProfile(int userId, UserFullName userFullName, Gender gender, string phoneNumber, string nicknames, string groupNames, string livejournal, ContactsAccessType socialNetworkAccess, string passportData, string registrationAddress);
     Task SetAdminFlag(int userId, bool administratorFlag);
     Task SetVerificationFlag(int userId, bool verificationFlag);
     /// <summary>

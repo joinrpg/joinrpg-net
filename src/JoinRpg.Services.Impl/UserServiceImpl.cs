@@ -31,9 +31,9 @@ public class UserServiceImpl(
         string phoneNumber,
         string nicknames,
         string groupNames,
-        string skype,
         string livejournal,
-        ContactsAccessType socialAccessType)
+        ContactsAccessType socialAccessType,
+        string passportData, string registrationAddress)
     {
         if (CurrentUserId != userId)
         {
@@ -41,15 +41,19 @@ public class UserServiceImpl(
         }
         var user = await UserRepository.WithProfile(userId);
 
+        user.Extra ??= new UserExtra();
+
         if (!user.VerifiedProfileFlag)
         {
             user.SurName = userFullName.SurName?.Value;
             user.FatherName = userFullName.FatherName?.Value;
             user.BornName = userFullName.BornName?.Value;
+            user.Extra.PassportData = passportData;
+            user.Extra.RegistrationAddress = registrationAddress;
         }
         user.PrefferedName = userFullName.PrefferedName?.Value;
 
-        user.Extra ??= new UserExtra();
+
         user.Extra.Gender = gender;
 
         if (!user.VerifiedProfileFlag)
@@ -58,7 +62,7 @@ public class UserServiceImpl(
         }
         user.Extra.Nicknames = nicknames;
         user.Extra.GroupNames = groupNames;
-        user.Extra.Skype = skype;
+
         string[] tokensToRemove = ["http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",];
         user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
 

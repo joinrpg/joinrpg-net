@@ -7,7 +7,8 @@ public interface IClaimService
     Task AddClaimFromUser(int projectId,
         int characterId,
         string claimText,
-        IReadOnlyDictionary<int, string?> fields);
+        IReadOnlyDictionary<int, string?> fields,
+        bool SensitiveDataAllowed);
 
     Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
@@ -47,6 +48,7 @@ public interface IClaimService
     Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId);
 
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
+    Task AllowSensitiveData(ClaimIdentification projectId);
 }
 
 public enum FinanceOperationAction

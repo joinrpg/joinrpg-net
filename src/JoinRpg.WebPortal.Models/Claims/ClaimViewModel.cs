@@ -6,9 +6,11 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -20,8 +22,10 @@ namespace JoinRpg.Web.Models;
 
 public class ClaimViewModel : IEntityWithCommentsViewModel
 {
-    public int ClaimId { get; set; }
-    public int ProjectId { get; set; }
+    public int ClaimId => ClaimIdentification.ClaimId;
+    public int ProjectId => ClaimIdentification.ProjectId;
+
+    public ClaimIdentification ClaimIdentification { get; }
 
     [DisplayName("Игрок")]
     public User Player { get; set; }
@@ -90,6 +94,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; }
 
+    public bool HasSensitiveDataAccess { get; }
+    public string? PassportData { get; }
+    public string? RegistrationAddress { get; }
+
     public required ClaimSubscribeViewModel SubscriptionTooltip { get; set; }
 
     public ClaimViewModel(ICurrentUserAccessor currentUser,
@@ -101,8 +109,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       ClaimAccommodationViewModel? accommodationModel,
       UserInfo playerInfo)
     {
+        ClaimIdentification = claim.GetId();
         AllowToSetGroups = projectInfo.AllowToSetGroups;
-        ClaimId = claim.ClaimId;
         CommentDiscussionId = claim.CommentDiscussionId;
         RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
         HasMasterAccess = claim.HasMasterAccess(currentUser);
@@ -115,7 +123,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
         PlayerLink = UserLinks.Create(playerInfo, ViewMode.Show);
-        ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
         Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser));
         CharacterId = claim.CharacterId;
@@ -172,6 +179,13 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             claim.Character,
             projectInfo);
         AccommodationModel = accommodationModel;
+
+        HasSensitiveDataAccess = claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+        if (HasSensitiveDataAccess)
+        {
+            PassportData = claim.Player.Extra?.PassportData;
+            RegistrationAddress = claim.Player.Extra?.RegistrationAddress;
+        }
     }
 
     private static JoinSelectListItem ToJoinSelectListItem(Character x)

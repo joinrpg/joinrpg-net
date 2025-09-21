@@ -3,7 +3,9 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;
 
@@ -53,7 +55,7 @@ public class CheckInClaimModel : IProjectIdAware
     public string CurrentUserFullName { get; }
 }
 
-public class NotFilledFieldViewModel(FieldRelatedProblem fieldRelatedProblem) : ProblemViewModel(fieldRelatedProblem)
+public record class NotFilledFieldViewModel(FieldRelatedProblem fieldRelatedProblem) : ProblemViewModel(fieldRelatedProblem)
 {
     public WhoWllFillEnum WhoWillFill { get; } = fieldRelatedProblem.Field.CanPlayerEdit ? WhoWllFillEnum.Player : WhoWllFillEnum.Master;
     public string FieldName { get; } = fieldRelatedProblem.Field.Name;

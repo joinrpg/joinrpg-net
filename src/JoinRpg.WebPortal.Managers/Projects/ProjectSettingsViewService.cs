@@ -18,6 +18,8 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             Phone = (MandatoryContactsView)project.ProfileRequirementSettings.RequirePhone,
             Telegram = (MandatoryContactsView)project.ProfileRequirementSettings.RequireTelegram,
             Vkontakte = (MandatoryContactsView)project.ProfileRequirementSettings.RequireVkontakte,
+            Passport = project.ProfileRequirementSettings.RequirePassport == MandatoryStatus.Optional ? MandatorySenstiveContactsView.Optional : MandatorySenstiveContactsView.Request,
+            RegistrationAddress = project.ProfileRequirementSettings.RequireRegistrationAddress == MandatoryStatus.Optional ? MandatorySenstiveContactsView.Optional : MandatorySenstiveContactsView.Request,
         };
     }
 
@@ -36,7 +38,13 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
 
     async Task IProjectSettingsClient.SaveContactSettings(ProjectContactsSettingsViewModel model)
     {
-        var settings = new ProjectProfileRequirementSettings((MandatoryStatus)model.Fio, (MandatoryStatus)model.Telegram, (MandatoryStatus)model.Vkontakte, (MandatoryStatus)model.Phone);
+        var settings = new ProjectProfileRequirementSettings((MandatoryStatus)model.Fio,
+            (MandatoryStatus)model.Telegram,
+            (MandatoryStatus)model.Vkontakte,
+            (MandatoryStatus)model.Phone,
+            model.Passport == MandatorySenstiveContactsView.Request ? MandatoryStatus.Recommended : MandatoryStatus.Optional,
+            model.RegistrationAddress == MandatorySenstiveContactsView.Request ? MandatoryStatus.Recommended : MandatoryStatus.Optional
+            );
         await projectService.SetContactSettings(model.ProjectId, settings);
     }
 

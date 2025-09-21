@@ -154,7 +154,12 @@ public record ProjectProfileRequirementSettings(
     MandatoryStatus RequireRealName,
     MandatoryStatus RequireTelegram,
     MandatoryStatus RequireVkontakte,
-    MandatoryStatus RequirePhone)
+    MandatoryStatus RequirePhone,
+    MandatoryStatus RequirePassport,
+    MandatoryStatus RequireRegistrationAddress)
 {
-    public static readonly ProjectProfileRequirementSettings AllNotRequired = new ProjectProfileRequirementSettings(MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional);
+    public static readonly ProjectProfileRequirementSettings AllNotRequired
+        = new(MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional);
+
+    public bool SensitiveDataRequired => RequirePassport != MandatoryStatus.Optional || RequireRegistrationAddress != MandatoryStatus.Optional;
 }

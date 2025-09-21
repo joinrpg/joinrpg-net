@@ -208,7 +208,6 @@ public class ManageController(
             Nicknames = user.Extra?.Nicknames ?? "",
             GroupNames = user.Extra?.GroupNames ?? "",
             Livejournal = user.Extra?.Livejournal ?? "",
-            Skype = user.Extra?.Skype ?? "",
             LastClaimId = lastClaim?.ClaimId,
             LastClaimProjectId = lastClaim?.ProjectId,
             IsVerifiedFlag = user.VerifiedProfileFlag,
@@ -219,6 +218,8 @@ public class ManageController(
             Avatars = new UserAvatarListViewModel(user),
             Message = message,
             TelegramBotName = options.Value.BotName,
+            PassportData = user.Extra?.PassportData ?? "",
+            RegistrationAddress = user.Extra?.RegistrationAddress ?? "",
         };
 
         return base.View(model);
@@ -237,9 +238,8 @@ public class ManageController(
                     new SurName(viewModel.SurName),
                     new FatherName(viewModel.FatherName)),
                 viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
-                viewModel.GroupNames, viewModel.Skype, viewModel.Livejournal,
-                (ContactsAccessType)viewModel.SocialNetworkAccess
-              );
+                viewModel.GroupNames, viewModel.Livejournal, (ContactsAccessType)viewModel.SocialNetworkAccess,
+                viewModel.PassportData, viewModel.RegistrationAddress);
             var userId = currentUserAccessor.UserId;
             var user = await userManager.FindByIdAsync(userId.ToString());
             await signInManager.RefreshSignInAsync(user);

@@ -59,7 +59,6 @@ public record class UserInfo(
 
 public record class UserSocialNetworks(
     TelegramId? TelegramId,
-    string? Skype,
     string? LiveJournal,
     int? AllrpgInfoId,
     string? VkId,

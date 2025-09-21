@@ -4,6 +4,7 @@
 <script src="~/Scripts/ua-parser.min.js"></script>
 <script src="~/Scripts/platform.js"></script>
 
+@using JoinRpg.Web.Claims
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
 @using JoinRpg.Web.Models.CharacterGroups
@@ -110,6 +111,17 @@
                         }
                     }
                 </dd>
+                @if (Model.HasSensitiveDataAccess)
+                {
+                    <dt>Паспортные данные</dt>
+                    <dd>
+                      @Model.PassportData
+                    </dd>
+                    <dt>Адрес регистрации</dt>
+                    <dd>
+                      @Model.RegistrationAddress
+                    </dd>
+                }
             </dl>
         </div>
     </div>
@@ -398,9 +410,12 @@ new { Model.CharacterId, Model.ProjectId }, null)
         }
         else
         {
-            @await Html.PartialAsync("_ClaimAccommodationReadOnly", Model.AccommodationModel)
-            ;
+            @await Html.PartialAsync("_ClaimAccommodationReadOnly", Model.AccommodationModel);
         }
+    }
+    @if (Model.Problems.Any(x => x.ProfileRelated) && Model.IsMyClaim)
+    {
+        <component type="typeof(ClaimContactRequirements)" render-mode="WebAssemblyPrerendered" param-ClaimProblems="@Model.Problems" param-ProjectId="Model.ClaimIdentification.ProjectId" />
     }
     @if (Model.Fields.AnythingAccessible)
     {
@@ -450,6 +465,9 @@ new { Model.CharacterId, Model.ProjectId }, null)
   @section scripts
 {
     <script src="https://oos.pscb.ru/s/widget/pscb_oos_pay.min.js"></script>
+
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
     <script type="text/javascript">
       $(function () {
