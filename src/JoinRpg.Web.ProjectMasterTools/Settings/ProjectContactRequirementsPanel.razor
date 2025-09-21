@@ -1,0 +1,106 @@
+@inject IProjectSettingsClient settingsClient
+@implements IDisposable
+
+@if (Model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Настройки публикации сохранены</JoinAlert>
+}
+
+@if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
+{
+    return;
+}
+
+<JoinPanel>
+    <Header>Настройки требований к контактам</Header>
+    <Body>
+        <EditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                <ValidationSummary />
+                <DataAnnotationsValidator />
+                <FormRowFor For="@(() => Model.Telegram)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Telegram" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.Vkontakte)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Vkontakte" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.Fio)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Fio" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.Phone)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Phone" />
+                </FormRowFor>
+
+                <FormRow>
+                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+                    <button type="submit" disabled="@formInvalid">Submit</button>
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+@code {
+    private EditContext? editContext;
+    private bool saving;
+    private bool success;
+    private bool formInvalid = true;
+    private ValidationMessageStore? messageStore;
+
+
+    [Parameter]
+    [SupplyParameterFromForm]
+    public ProjectContactsSettingsViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= await settingsClient.GetContactSettings(ProjectId);
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+        formInvalid = !editContext.Validate();
+        StateHasChanged();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            saving = true;
+            await settingsClient.SaveContactSettings(Model);
+            saving = false;
+            success = true;
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
+            saving = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+}

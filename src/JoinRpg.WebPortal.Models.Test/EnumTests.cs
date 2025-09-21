@@ -60,6 +60,9 @@ public class EnumTests
     [Fact]
     public void MandatoryStatus() => EnumerationTestComparer.EnsureSame<MandatoryStatus, MandatoryStatusViewType>();
 
+    [Fact]
+    public void MandatoryStatus2() => EnumerationTestComparer.EnsureSame<MandatoryStatus, MandatoryContactsView>();
+
     [Theory]
     [ClassData(typeof(EnumTheoryDataGenerator<ProjectFieldViewType>))]
     public void FieldViewTypeHasCorrectDisplay(ProjectFieldViewType projectFieldType)

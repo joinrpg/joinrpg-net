@@ -6,6 +6,21 @@ using JoinRpg.Web.ProjectMasterTools.Settings;
 namespace JoinRpg.WebPortal.Managers.Projects;
 internal class ProjectSettingsViewService(IProjectMetadataRepository projectMetadataRepository, IProjectService projectService) : IProjectSettingsClient
 {
+    async Task<ProjectContactsSettingsViewModel> IProjectSettingsClient.GetContactSettings(ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new ProjectContactsSettingsViewModel()
+        {
+            ProjectId = projectId,
+            ProjectName = project.ProjectName,
+            ProjectStatus = project.ProjectStatus,
+            Fio = (MandatoryContactsView)project.ProfileRequirementSettings.RequireRealName,
+            Phone = (MandatoryContactsView)project.ProfileRequirementSettings.RequirePhone,
+            Telegram = (MandatoryContactsView)project.ProfileRequirementSettings.RequireTelegram,
+            Vkontakte = (MandatoryContactsView)project.ProfileRequirementSettings.RequireVkontakte,
+        };
+    }
+
     async Task<ProjectPublishSettingsViewModel> IProjectSettingsClient.GetPublishSettings(ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
@@ -18,6 +33,13 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             PublishEnabled = project.PublishPlot,
         };
     }
+
+    async Task IProjectSettingsClient.SaveContactSettings(ProjectContactsSettingsViewModel model)
+    {
+        var settings = new ProjectProfileRequirementSettings((MandatoryStatus)model.Fio, (MandatoryStatus)model.Telegram, (MandatoryStatus)model.Vkontakte, (MandatoryStatus)model.Phone);
+        await projectService.SetContactSettings(model.ProjectId, settings);
+    }
+
     async Task IProjectSettingsClient.SavePublishSettings(ProjectPublishSettingsViewModel model)
     {
         await projectService.SetPublishSettings(model.ProjectId, (ProjectCloneSettings)model.CloneSettings, model.PublishEnabled);

@@ -11,6 +11,6 @@ public enum MandatoryStatusViewType
     Recommended,
 
     [Display(Name = "Обязательное",
-        Description = "Сохранение с незаполенным полем будет невозможно.")]
+        Description = "Сохранение с незаполненным полем будет невозможно.")]
     Required,
 }
