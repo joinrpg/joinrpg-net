@@ -929,5 +929,13 @@ internal class ClaimServiceImpl(
             throw new JoinRpgConcealCommentException();
         }
     }
+
+    public async Task AllowSensitiveData(ClaimIdentification claimId)
+    {
+        var (claim, _) = await LoadClaimAsPlayer(claimId);
+
+        claim.PlayerAllowedSenstiveData = true;
+        await UnitOfWork.SaveChangesAsync();
+    }
 }
 

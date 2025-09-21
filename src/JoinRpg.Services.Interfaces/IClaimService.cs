@@ -48,6 +48,7 @@ public interface IClaimService
     Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId);
 
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
+    Task AllowSensitiveData(ClaimIdentification projectId);
 }
 
 public enum FinanceOperationAction

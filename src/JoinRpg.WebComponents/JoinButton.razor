@@ -172,6 +172,9 @@ else
     private VariationStyleEnum ActualStyle { get; set; }
     private string? DialogCaption { get; set; }
 
+    [CascadingParameter]
+    public EditContext? CascadingEditContext { get; set; }
+
 
     private async Task OnClickHappened(MouseEventArgs e)
     {
@@ -238,6 +241,16 @@ else
         ProgressContent = FormatLabel(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon);
         ActualStyle = Style ?? presetContent.Style;
         DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";
+
+        if (CascadingEditContext is not null)
+        {
+            CascadingEditContext.OnValidationStateChanged += EditContextValidationStateChanged;
+        }
+    }
+
+    public void EditContextValidationStateChanged(object? sender, ValidationStateChangedEventArgs? _)
+    {
+        InProgress = false; // Валидация закончилась, значит сабмит прошел
     }
 
     private static RenderFragment FormatLabel(string? label, string? icon)
@@ -287,6 +300,7 @@ else
         { ButtonPreset.Unlink, new("Отвязать","Отвязываем...", "glyphicon-remove-sign", VariationStyleEnum.Info)},
         { ButtonPreset.Link, new("Привязать","Привязываем...", "glyphicon-plus", VariationStyleEnum.Info)},
         { ButtonPreset.Claim, new("Заявка",null, "glyphicon-file", VariationStyleEnum.Info)},
+        { ButtonPreset.Profile, new("Профиль",null, "glyphicon-user", VariationStyleEnum.Info)},
     }.ToFrozenDictionary();
 
     internal record struct ButtonContent(string? Label, string? Icon);
@@ -302,4 +316,5 @@ else
             : this(new(normalLabel, normalIcon), new(progressLabel, progressIcon ?? normalIcon), style)
         { }
     }
+
 }

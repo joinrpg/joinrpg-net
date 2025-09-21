@@ -55,7 +55,7 @@ public class CheckInClaimModel : IProjectIdAware
     public string CurrentUserFullName { get; }
 }
 
-public class NotFilledFieldViewModel(FieldRelatedProblem fieldRelatedProblem) : ProblemViewModel(fieldRelatedProblem)
+public record class NotFilledFieldViewModel(FieldRelatedProblem fieldRelatedProblem) : ProblemViewModel(fieldRelatedProblem)
 {
     public WhoWllFillEnum WhoWillFill { get; } = fieldRelatedProblem.Field.CanPlayerEdit ? WhoWllFillEnum.Player : WhoWllFillEnum.Master;
     public string FieldName { get; } = fieldRelatedProblem.Field.Name;

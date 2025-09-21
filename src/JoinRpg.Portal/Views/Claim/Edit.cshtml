@@ -404,7 +404,7 @@ new { Model.CharacterId, Model.ProjectId }, null)
     }
     @if (Model.Problems.Any(x => x.ProfileRelated) && Model.IsMyClaim)
     {
-        <component type="typeof(ClaimContactRequirements)" render-mode="Static" param-ClaimProblems="@Model.Problems" />
+        <component type="typeof(ClaimContactRequirements)" render-mode="WebAssemblyPrerendered" param-ClaimProblems="@Model.Problems" param-ProjectId="Model.ClaimIdentification.ProjectId" />
     }
     @if (Model.Fields.AnythingAccessible)
     {
@@ -454,6 +454,9 @@ new { Model.CharacterId, Model.ProjectId }, null)
   @section scripts
 {
     <script src="https://oos.pscb.ru/s/widget/pscb_oos_pay.min.js"></script>
+
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
     <script type="text/javascript">
       $(function () {

@@ -1,6 +1,5 @@
 @using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Projects
-@inject IProjectUriLocator ProjectUriLocator
 <JoinPanel Variation="VariationStyleEnum.Warning">
     <Header>Не заполнен профиль</Header>
     <Body>
@@ -11,11 +10,13 @@
                 <li><ProblemBadge Model="problem" /></li>
             }
         </ul>
-        <JoinProfileButton />
-        @if (ClaimProblems.Any(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed))
-        {
-          <AllowSensitiveDataButton ProjectId="ProjectId" />
-        }
+        <JoinButtonGroup>
+            <JoinProfileButton />
+            @if (ClaimProblems.Any(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed))
+            {
+                <AllowSensitiveDataButton ProjectId="ProjectId" />
+            }
+        </JoinButtonGroup>
     </Body>
 </JoinPanel>
 
@@ -27,5 +28,5 @@
 
     [Parameter]
     [EditorRequired]
-    public ProjectIdentification ProjectId {get;set;}
+    public ProjectIdentification ProjectId { get; set; }
 }

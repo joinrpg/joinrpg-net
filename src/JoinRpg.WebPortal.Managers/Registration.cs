@@ -1,5 +1,6 @@
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CheckIn;
+using JoinRpg.Web.Claims;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -7,6 +8,7 @@ using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebPortal.Managers.CheckIn;
+using JoinRpg.WebPortal.Managers.Claims;
 using JoinRpg.WebPortal.Managers.Projects;
 using JoinRpg.WebPortal.Managers.Subscribe;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +36,7 @@ public static class Registration
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<IKogdaIgraBindClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<Plots.CharacterPlotViewService>()
+        .AddScoped<IClaimClient, ClaimsViewService>()
 
         ;
     }

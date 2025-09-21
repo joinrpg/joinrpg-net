@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Claims;
 
-public class ProblemViewModel(ClaimProblem problem)
+[method: JsonConstructor]
+public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType ProblemType, DateTime? ProblemTime, ProblemSeverity Severity, bool ProfileRelated, string? Extra)
 {
     //Mass usage of Display(Name) turns out too slow...
     private static readonly Dictionary<ClaimProblemType, string> Types = new()
@@ -34,16 +36,9 @@ public class ProblemViewModel(ClaimProblem problem)
       {ClaimProblemType.SensitiveDataNotAllowed, "Не разрешен доступ к паспортным данным" },
     };
 
-    public string ProblemTypeText { get; } = Types[problem.ProblemType];
+    public ProblemViewModel(ClaimProblem problem) : this(Types[problem.ProblemType], problem.ProblemType, problem.ProblemTime, problem.Severity, problem is ProfileRelatedProblem, problem.ExtraInfo)
+    {
 
-    public ClaimProblemType ProblemType { get; } = problem.ProblemType;
-
-    public DateTime? ProblemTime { get; } = problem.ProblemTime;
-
-    public ProblemSeverity Severity { get; } = problem.Severity;
-
-    public string? Extra { get; } = problem.ExtraInfo;
-
-    public bool ProfileRelated { get; } = problem is ProfileRelatedProblem;
+    }
 }
 
