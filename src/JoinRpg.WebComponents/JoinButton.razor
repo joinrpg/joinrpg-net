@@ -5,13 +5,13 @@
 @if (Link is not null)
 {
   <Tooltip Title="@Title">
-    <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled">@LabelContent</a>
+        <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled">@LabelContent</a>
   </Tooltip>
 }
 else
 {
   <Tooltip Title="@ActualTitle">
-    <button class="@RenderedStyle" type="@ButtonType" disabled="@RenderAsDisabled" @onclick="OnClickHappened">@LabelContent</button>
+    <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @onclick="OnClickHappened">@LabelContent</button>
   </Tooltip>
 }
 @if (AutoConfirm)
@@ -162,7 +162,7 @@ else
 
     private string ButtonType => Submit ? "submit" : "button";
     private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size);
-    private bool RenderAsDisabled => Disabled || InProgress;
+    private bool PreventSubmit => Disabled || InProgress;
     private string? ActualTitle => Disabled ? DisabledTitle ?? Title : Title;
 
     private RenderFragment LabelContent => InProgress ? ProgressContent : NormalContent;
@@ -175,7 +175,7 @@ else
 
     private async Task OnClickHappened(MouseEventArgs e)
     {
-        if (RenderAsDisabled)
+        if (PreventSubmit)
             return;
         await DoClick(e);
     }
