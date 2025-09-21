@@ -4,13 +4,18 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Web.Models;
 
 public class AddClaimViewModel : IProjectIdAware
 {
     public int ProjectId { get; set; }
+
+    public ProjectIdentification ProjectIdentification => new ProjectIdentification(ProjectId);
+    public ProjectLifecycleStatus ProjectLifecycleStatus { get; private set; }
 
     public string ProjectName { get; set; }
 
@@ -40,12 +45,12 @@ public class AddClaimViewModel : IProjectIdAware
 
     public bool WarnForAnotherClaim { get; private set; }
 
-    public static AddClaimViewModel Create(Character character, int playerUserId, ProjectInfo projectInfo)
-        => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, playerUserId, projectInfo);
+    public static AddClaimViewModel Create(Character character, UserInfo userInfo, ProjectInfo projectInfo)
+        => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, userInfo, projectInfo);
 
-    public AddClaimViewModel Fill(Character claimSource, int playerUserId, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
+    public AddClaimViewModel Fill(Character claimSource, UserInfo userInfo, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
-        var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId).ToList();
+        var disallowReasons = claimSource.ValidateIfCanAddClaim(userInfo, projectInfo).ToList();
 
         IsProjectRelatedReason = disallowReasons.Intersect(
             [
@@ -54,9 +59,9 @@ public class AddClaimViewModel : IProjectIdAware
             ])
             .Any();
 
+        ProjectLifecycleStatus = projectInfo.ProjectStatus;
 
-
-        WarnForAnotherClaim = claimSource.Project.Claims.OfUserActive(playerUserId).Any();
+        WarnForAnotherClaim = claimSource.Project.Claims.OfUserActive(userInfo.UserId.Value).Any();
 
         ValidationStatus = disallowReasons;
         ProjectAllowsMultipleCharacters = claimSource.Project.Details.EnableManyCharacters;
@@ -66,7 +71,7 @@ public class AddClaimViewModel : IProjectIdAware
         TargetName = claimSource.CharacterName;
         Description = claimSource.Description.ToHtmlString();
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
-        var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, playerUserId);
+        var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, userInfo.UserId);
         HasMasterAccess = accessArguments.MasterAccess;
 
         Fields = new CustomFieldsViewModel(claimSource, projectInfo, accessArguments.WithoutMasterAccess(), overrideValues: overrideValues);

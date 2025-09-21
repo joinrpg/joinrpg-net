@@ -49,6 +49,8 @@ public class EditProjectViewModel
 
     [Display(Name = "Шаблон персонажа по умолчанию", Description = "Кнопка «заявиться» будет идти именно на этот шаблон")]
     public CharacterIdentification? DefaultTemplateCharacterId { get; set; }
+
+    public int? DefaultTemplateCharacterIdInt { get; set; }
 }
 
 public class CloseProjectViewModel

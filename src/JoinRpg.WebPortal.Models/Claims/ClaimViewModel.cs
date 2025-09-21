@@ -8,6 +8,7 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -97,7 +98,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       ProjectInfo projectInfo,
       IProblemValidator<Claim> problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
-      ClaimAccommodationViewModel? accommodationModel)
+      ClaimAccommodationViewModel? accommodationModel,
+      UserInfo playerInfo)
     {
         AllowToSetGroups = projectInfo.AllowToSetGroups;
         ClaimId = claim.ClaimId;
@@ -112,7 +114,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             ExtraAccessReason.PlayerOrResponsible);
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
-        PlayerLink = UserLinks.Create(claim.Player, ViewMode.Show);
+        PlayerLink = UserLinks.Create(playerInfo, ViewMode.Show);
         ProjectId = claim.ProjectId;
         ProjectName = claim.Project.ProjectName;
         Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser));
@@ -123,7 +125,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = claim.Character.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
         PotentialCharactersToMove = claim.Project.Characters
-            .Where(x => x.CanMoveClaimTo(claim))
+            .Where(x => x.CanMoveClaimTo(claim, playerInfo, projectInfo))
             .Select(ToJoinSelectListItem)
             .ToList();
         OtherClaimsFromThisPlayerCount =
@@ -138,7 +140,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Navigation =
             CharacterNavigationViewModel.FromClaim(claim,
                 currentUser.UserId,
-                CharacterNavigationPage.Claim);
+                CharacterNavigationPage.Claim, projectInfo);
         Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
         PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo);
         ProjectActive = claim.Project.Active;

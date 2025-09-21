@@ -61,7 +61,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess);
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
-            currentUserId.UserIdOrDefault);
+            currentUserId.UserIdOrDefault, projectInfo);
 
         Fields = new CustomFieldsViewModel(
             character,

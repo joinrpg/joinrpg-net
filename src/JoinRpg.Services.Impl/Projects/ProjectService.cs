@@ -288,6 +288,17 @@ internal class ProjectService(
         });
     }
 
+    public async Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings)
+    {
+        await ChangeProjectProperties(projectId, project =>
+        {
+            project.Details.RequireRealName = settings.RequireRealName;
+            project.Details.RequirePhone = settings.RequirePhone;
+            project.Details.RequireVkontakte = settings.RequireVkontakte;
+            project.Details.RequireTelegram = settings.RequireTelegram;
+        });
+    }
+
     private async Task ChangeProjectProperties(ProjectIdentification projectId, Action<Project> operation)
     {
         var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
@@ -296,5 +307,7 @@ internal class ProjectService(
 
         await UnitOfWork.SaveChangesAsync();
     }
+
+
 }
 

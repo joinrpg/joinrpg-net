@@ -15,7 +15,7 @@ public record CharacterIdentification(
 
     public static CharacterIdentification? FromOptional(int ProjectId, int? CharacterId)
     {
-        if (CharacterId is null || CharacterId == -1)
+        if (CharacterId is null || CharacterId == -1 || CharacterId == 0)
         {
             return null;
         }

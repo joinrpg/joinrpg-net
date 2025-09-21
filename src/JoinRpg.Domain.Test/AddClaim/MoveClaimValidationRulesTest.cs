@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
@@ -51,8 +52,8 @@ public class MoveClaimValidationRulesTest
         ShouldAllowMove(claim, Mock.CreateCharacter("another"));
     }
 
-    private static void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(claim).ShouldBeEmpty();
+    private void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBeEmpty();
 
-    private static void ShouldDisAllowMove(Claim claim, Character character, AddClaimForbideReason reason)
-        => character.ValidateIfCanMoveClaim(claim).ShouldBe([reason]);
+    private void ShouldDisAllowMove(Claim claim, Character character, AddClaimForbideReason reason)
+        => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBe([reason]);
 }

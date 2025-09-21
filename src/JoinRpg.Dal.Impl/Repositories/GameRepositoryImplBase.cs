@@ -27,7 +27,7 @@ internal abstract class GameRepositoryImplBase(MyDbContext ctx) : RepositoryImpl
           .ProjectsSet
           .Include(p => p.Claims.Select(c => c.CommentDiscussion.Comments.Select(cm => cm.Finance)))
           .Include(p => p.Claims.Select(c => c.CommentDiscussion.Watermarks))
-          .Include(p => p.Claims.Select(c => c.Player))
+          .Include(p => p.Claims.Select(c => c.Player.Extra))
           .Include(p => p.Claims.Select(c => c.FinanceOperations))
           .Where(c => c.ProjectId == projectId).LoadAsync();
     }

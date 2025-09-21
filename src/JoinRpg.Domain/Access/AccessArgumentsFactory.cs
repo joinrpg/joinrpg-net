@@ -30,9 +30,9 @@ public static class AccessArgumentsFactory
         ArgumentNullException.ThrowIfNull(character);
         return mode switch
         {
-            CharacterAccessMode.Usual => Create(character, user?.UserIdOrDefault),
-            CharacterAccessMode.Print => CreateForPrint(character, user?.UserIdOrDefault),
-            CharacterAccessMode.SendClaim => CreateForAdd(character, user?.UserIdOrDefault),
+            CharacterAccessMode.Usual => Create(character, user.UserIdOrDefault),
+            CharacterAccessMode.Print => CreateForPrint(character, user.UserIdOrDefault),
+            CharacterAccessMode.SendClaim => CreateForAdd(character, user.UserIdentification),
             _ => throw new NotImplementedException(),
         };
     }
@@ -57,7 +57,7 @@ public static class AccessArgumentsFactory
     /// <summary>
     /// Для добавления заявки нужен особый режим, где у пользователя нет доступа к персонажу (точно), а вот доступ к заявке есть, несмотря на то что заявки нет
     /// </summary>
-    public static AccessArguments CreateForAdd(Character character, int? userId)
+    public static AccessArguments CreateForAdd(Character character, UserIdentification userId)
     {
         return new AccessArguments(
           character.HasMasterAccess(userId),

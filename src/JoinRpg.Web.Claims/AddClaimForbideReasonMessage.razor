@@ -1,0 +1,90 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IProjectUriLocator ProjectUriLocator
+
+@switch (Reason)
+{
+    case AddClaimForbideReason.ProjectNotActive:
+        <JoinAlert Variation="VariationStyleEnum.Warning">Проект находится в архиве, отослать новую заявку невозможно.</JoinAlert>
+        break;
+    case AddClaimForbideReason.ProjectClaimsClosed:
+        <JoinAlert Variation="VariationStyleEnum.Warning">Заявки на проект закрыты, отослать заявку невозможно.</JoinAlert>
+        break;
+    case AddClaimForbideReason.SlotsExhausted:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Места в персонажах «@CharacterName» закончились.
+            Возможно, выбрать другую роль из <a href="@ProjectUriLocator.GetRolesListUri(ProjectId)">сетки ролей</a>?
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.Npc:
+    case AddClaimForbideReason.CharacterInactive:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Заявки на роль «@CharacterName» не принимаются.
+            Возможно, выбрать другую роль из <a href="@ProjectUriLocator.GetRolesListUri(ProjectId)">сетки ролей</a>?
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.Busy:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Роль «@CharacterName» уже занята.
+            Возможно, выбрать другую роль из <a href="@ProjectUriLocator.GetRolesListUri(ProjectId)">сетки ролей</a>?
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.AlreadySent:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            У вас уже есть заявка на эту роль.
+            Невозможно отправить еще одну.
+            <MyClaimButton HasMyClaims="true" ProjectId="ProjectId" ProjectStatus="ProjectLifecycleStatus" />
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.OnlyOneCharacter:
+        <JoinAlert Variation="VariationStyleEnum.Danger">
+            У вас уже есть утвержденная заявка на проект.
+            Невозможно иметь более одной утвержденной заявки
+            <MyClaimButton HasMyClaims="true" ProjectId="ProjectId" ProjectStatus="ProjectLifecycleStatus" />
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.RealNameMissing:
+        <JoinAlert  Variation="VariationStyleEnum.Warning">
+          Мастера требуют заполнить настоящее ФИО, чтобы подать заявку на проект. Обычно это связано с нуждами поселения.
+          <br /><JoinButton Label="Перейти в профиль" Link="/manage/setupprofile" />
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.PhoneMissing:
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+            Мастера требуют заполнить телефон, чтобы подать заявку на проект. Обычно это необходимо, чтобы связаться с вами.
+            <br /><JoinButton Label="Перейти в профиль" Link="/manage/setupprofile" />
+    </JoinAlert>
+        break;
+    case AddClaimForbideReason.TelegramMissing:
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+            Мастера требуют привязать ваш профиль к аккаунту в телеграмм, чтобы подать заявку на проект. Обычно это необходимо, чтобы связаться с вами.
+            <br /><JoinButton Label="Перейти в профиль" Link="/manage/setupprofile" />
+    </JoinAlert>
+        break;
+    case AddClaimForbideReason.VkontakteMissing:
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+            Мастера требуют привязать ваш профиль к аккаунту ВКонтакте, чтобы подать заявку на проект. Обычно это необходимо, чтобы связаться с вами.
+            <br /><JoinButton Label="Перейти в профиль" Link="/manage/setupprofile" />
+    </JoinAlert>
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public AddClaimForbideReason Reason { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string CharacterName { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectLifecycleStatus ProjectLifecycleStatus { get; set; }
+}

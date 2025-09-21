@@ -25,4 +25,19 @@ public class ProjectOperationsController : ControllerBase
         await client.SavePublishSettings(model);
         return Ok();
     }
+
+    [HttpGet]
+    public async Task<ActionResult<ProjectContactsSettingsViewModel>> GetContactSettings(ProjectIdentification projectId, [FromServices] IProjectSettingsClient client)
+        => Ok(await client.GetContactSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> SaveContactSettings(
+        ProjectIdentification projectId,
+        ProjectContactsSettingsViewModel model,
+        [FromServices] IProjectSettingsClient client)
+    {
+        model.ProjectId = projectId;
+        await client.SaveContactSettings(model);
+        return Ok();
+    }
 }

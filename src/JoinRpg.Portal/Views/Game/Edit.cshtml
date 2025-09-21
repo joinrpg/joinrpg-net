@@ -78,7 +78,7 @@ param-Active="Model.Active" />
                 <div class="col-md-10">
                     <component type="typeof(JoinRpg.Web.ProjectCommon.SingleCharacterSelector)"
                     param-ProjectId="Model.ProjectId"
-                    param-Name="@("DefaultTemplateCharacterId")"
+                    param-Name="@("DefaultTemplateCharacterIdInt")"
                     param-SelectedCharacterId="@(Model.DefaultTemplateCharacterId)"
                     param-TemplateOnly="true"
                     param-AllowEmpty="true"
@@ -107,6 +107,9 @@ param-Active="Model.Active" />
 
 <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectPublishSettingsPanel)" render-mode="WebAssembly"
            param-ProjectId="new ProjectIdentification (Model.ProjectId)" />
+
+<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectContactRequirementsPanel)" render-mode="WebAssembly"
+           param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
 @section Scripts {
     <script src="/_framework/blazor.webassembly.js"></script>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>

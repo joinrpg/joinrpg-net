@@ -159,7 +159,6 @@ internal class ClaimServiceImpl(
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        // ReSharper disable once UnusedVariable TODO decide if we should send email if FieldDefaultValueGenerator changes something
         var updatedFields =
           fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(), projectInfo);
 
@@ -184,8 +183,9 @@ internal class ClaimServiceImpl(
 
         var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(projectId));
+        var user = await UserRepository.GetRequiredUserInfo(new(CurrentUserId));
 
-        source.EnsureCanAddClaim(CurrentUserId);
+        source.EnsureCanAddClaim(user, projectInfo);
 
         User responsibleMaster = source.GetResponsibleMaster();
 
@@ -725,11 +725,15 @@ internal class ClaimServiceImpl(
     {
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
         var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
+        var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
 
         //Grab subscribtions before change
         var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
-        source.EnsureCanMoveClaim(claim);
+
+
+        source.EnsureCanMoveClaim(claim, userInfo, projectInfo);
 
         MarkCharacterChangedIfApproved(claim); // before move
 

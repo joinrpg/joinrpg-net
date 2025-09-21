@@ -28,7 +28,7 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
     {
         Navigation = CharacterNavigationViewModel.FromCharacter(field,
             CharacterNavigationPage.Editing,
-            currentUserId);
+            currentUserId, projectInfo);
         FillFields(field, currentUserId, projectInfo);
 
         ActiveClaimsCount = field.Claims.Count(claim => claim.ClaimStatus.IsActive());

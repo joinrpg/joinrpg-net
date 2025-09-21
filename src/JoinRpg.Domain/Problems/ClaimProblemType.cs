@@ -22,4 +22,8 @@ public enum ClaimProblemType
     NoParentGroup,
     GroupIsBroken,
     InActiveVariant,
+    MissingTelegram,
+    MissingVkontakte,
+    MissingPhone,
+    MissingRealname,
 }

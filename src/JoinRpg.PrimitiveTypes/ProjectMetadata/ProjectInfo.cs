@@ -43,6 +43,9 @@ public record class ProjectInfo
 
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
 
+    public ProjectProfileRequirementSettings ProfileRequirementSettings { get; }
+    public bool AllowManyClaims { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         ProjectName projectName,
@@ -60,7 +63,9 @@ public record class ProjectInfo
         ProjectLifecycleStatus projectStatus,
         ProjectScheduleSettings projectScheduleSettings,
         ProjectCloneSettings projectCloneSettings,
-        DateOnly createDate)
+        DateOnly createDate,
+        ProjectProfileRequirementSettings profileRequirementSettings,
+        bool allowManyClaims)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -88,6 +93,8 @@ public record class ProjectInfo
         ProjectScheduleSettings = projectScheduleSettings;
         CloneSettings = projectCloneSettings;
         CreateDate = createDate;
+        ProfileRequirementSettings = profileRequirementSettings;
+        AllowManyClaims = allowManyClaims;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -111,13 +118,43 @@ public record class ProjectInfo
         return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
     }
 
-    public ProjectInfo WithAddedField(ProjectFieldInfo field)
+    // For tests
+    internal ProjectInfo WithAddedField(ProjectFieldInfo field)
     {
         ProjectFieldInfo[] fields = [field, .. UnsortedFields];
 
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, DefaultTemplateCharacter,
             AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
-            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate);
+            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, AllowManyClaims);
     }
+
+    internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
+    {
+        return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
+            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
+            DefaultTemplateCharacter,
+            AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot,
+            ProjectCheckInSettings,
+            projectLifecycleStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, AllowManyClaims);
+    }
+
+    internal ProjectInfo WithAllowManyClaims(bool allowManyClaims)
+    {
+        return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
+            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
+            DefaultTemplateCharacter,
+            AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot,
+            ProjectCheckInSettings,
+            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, allowManyClaims);
+    }
+}
+
+public record ProjectProfileRequirementSettings(
+    MandatoryStatus RequireRealName,
+    MandatoryStatus RequireTelegram,
+    MandatoryStatus RequireVkontakte,
+    MandatoryStatus RequirePhone)
+{
+    public static readonly ProjectProfileRequirementSettings AllNotRequired = new ProjectProfileRequirementSettings(MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional);
 }

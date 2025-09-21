@@ -11,7 +11,7 @@ public class SecondRoleViewModel
     public SecondRoleViewModel(Claim claim, IEnumerable<Character> characters, User currentUser, ProjectInfo projectInfo)
     {
         Master = claim.ResponsibleMasterUser;
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None);
+        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None, projectInfo);
         PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo);
         ClaimId = claim.ClaimId;
         Characters =

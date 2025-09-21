@@ -14,4 +14,9 @@ public interface IUserRepository
     Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId);
 
     Task<UserInfo?> GetUserInfo(UserIdentification userId);
+
+    async Task<UserInfo> GetRequiredUserInfo(UserIdentification userId)
+    {
+        return await GetUserInfo(userId) ?? throw new JoinRpgEntityNotFoundException(userId, "user");
+    }
 }

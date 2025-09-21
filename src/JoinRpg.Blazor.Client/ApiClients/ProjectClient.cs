@@ -29,6 +29,14 @@ public class ProjectSettingsClient(HttpClient httpClient) : IProjectSettingsClie
         var response = await httpClient.PostAsJsonAsync($"/webapi/{model.ProjectId.Value}/project/SavePublishSettings", model);
         response.EnsureSuccessStatusCode();
     }
+
+    async Task<ProjectContactsSettingsViewModel> IProjectSettingsClient.GetContactSettings(ProjectIdentification projectId)
+    => await httpClient.GetFromJsonAsync<ProjectContactsSettingsViewModel>($"webapi/{projectId.Value}/project/GetContactSettings") ?? throw new Exception("Couldn't get result from server");
+    async Task IProjectSettingsClient.SaveContactSettings(ProjectContactsSettingsViewModel model)
+    {
+        var response = await httpClient.PostAsJsonAsync($"/webapi/{model.ProjectId.Value}/project/SaveContactSettings", model);
+        response.EnsureSuccessStatusCode();
+    }
 }
 
 public class ProjectInfoClient(HttpClient httpClient) : IProjectInfoClient

@@ -176,6 +176,8 @@ public class ClaimTargetIsNotAcceptingClaims : JoinRpgBaseException
     public ClaimTargetIsNotAcceptingClaims() : base("This character or group does not accept claims.") { }
 }
 
+public class InsufficientContactsException() : JoinRpgBaseException("Для отправки заявки необходимы контакты");
+
 public class MasterHasResponsibleException : JoinRpgProjectEntityException
 {
     public User Master { get; }
