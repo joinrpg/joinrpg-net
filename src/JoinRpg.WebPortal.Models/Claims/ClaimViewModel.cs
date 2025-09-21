@@ -9,6 +9,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -30,6 +31,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     [Display(Name = "Статус заявки")]
     public ClaimFullStatusView Status { get; set; }
+
+    public IReadOnlyCollection<ProblemViewModel> ClaimProblems { get; }
 
     public bool IsMyClaim { get; }
 

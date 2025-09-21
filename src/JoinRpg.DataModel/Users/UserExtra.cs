@@ -30,7 +30,7 @@ public class UserExtra
 
     public ContactsAccessType SocialNetworksAccess { get; set; }
 
-    public bool EnableTelegramPlayerDigestNotification { get; set; }
+    public bool EnableTelegramPlayerDigestNotification { get; set; } = true;
 
     public string? PassportData { get; set; }
     public string? RegistrationAddress { get; set; }

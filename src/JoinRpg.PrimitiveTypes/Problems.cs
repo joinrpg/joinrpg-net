@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
+
 namespace JoinRpg.PrimitiveTypes;
 public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? ProblemTime, string? ExtraInfo, ProblemSeverity Severity)
 {
@@ -56,3 +58,11 @@ public enum ProblemSeverity
     Error,
     Fatal,
 }
+
+public record class FieldRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity Severity, ProjectFieldInfo Field, string? ExtraInfo = null)
+    : ClaimProblem(ProblemType, Severity, Field.Name + ExtraInfo ?? "")
+{
+    public ProjectFieldInfo Field { get; } = Field ?? throw new ArgumentNullException(nameof(Field));
+}
+
+public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity ProblemSeverity) : ClaimProblem(ProblemType, ProblemSeverity);

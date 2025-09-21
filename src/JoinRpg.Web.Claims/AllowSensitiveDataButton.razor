@@ -1,0 +1,20 @@
+@inject IClaimClient ClaimClient;
+@inject NavigationManager NavigationManager;
+<JoinButton
+  Preset="ButtonPreset.Profile"
+  Label="Разрешить доступ к паспортным данным"
+  AutoConfirm="true"
+  AutoConfirmMessage="Мастера игры получат доступ к паспортным данным и адресу регистрации, которые хранятся в вашем профиле, пока проект активен и ваша заявка не отозвана"
+  OnClick="OnClick"
+  />
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private async void OnClick(ButtonClickEventArgs args)
+    {
+        await ClaimClient.AllowSensitiveData(ProjectId);
+        NavigationManager.Refresh(forceReload: true);
+    }
+}

@@ -1,6 +1,6 @@
 using JoinRpg.PrimitiveTypes;
 
-namespace JoinRpg.Web.Models;
+namespace JoinRpg.Web.Claims;
 
 public class ProblemViewModel(ClaimProblem problem)
 {
@@ -29,14 +29,21 @@ public class ProblemViewModel(ClaimProblem problem)
       {ClaimProblemType.MissingPhone, "В профиле нет телефона" },
       {ClaimProblemType.MissingTelegram, "Не привязан телеграмм" },
       {ClaimProblemType.MissingVkontakte, "Не привязан ВК" },
+      {ClaimProblemType.MissingPassport, "В профиле нет паспортных данных" },
+      {ClaimProblemType.MissingRegistrationAddress, "В профиле нет адреса регистрации" },
+      {ClaimProblemType.SensitiveDataNotAllowed, "Не разрешен доступ к паспортным данным" },
     };
 
-    public string ProblemType { get; } = Types[problem.ProblemType];
+    public string ProblemTypeText { get; } = Types[problem.ProblemType];
+
+    public ClaimProblemType ProblemType { get; } = problem.ProblemType;
 
     public DateTime? ProblemTime { get; } = problem.ProblemTime;
 
     public ProblemSeverity Severity { get; } = problem.Severity;
 
     public string? Extra { get; } = problem.ExtraInfo;
+
+    public bool ProfileRelated { get; } = problem is ProfileRelatedProblem;
 }
 

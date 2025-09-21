@@ -1,34 +1,6 @@
 @using JoinRpg.Domain.Problems
 @using JoinRpg.PrimitiveTypes
-@model JoinRpg.Web.Models.ProblemViewModel
-@{
-  var style = "";
-  switch (Model.Severity)
-  {
-      case ProblemSeverity.Hint:
-          style = "label-info";
-          break;
-      case ProblemSeverity.Warning:
-          style = "label-warning";
-          break;
-      case ProblemSeverity.Error:
-      case ProblemSeverity.Fatal:
-          style = "label-danger";
-          break;
-      default:
-          throw new ArgumentOutOfRangeException();
-  }
-}
-<div class="label @style">
-    @if (Model.Severity == ProblemSeverity.Fatal)
-    {
-      <span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
-    }
-    @Model.ProblemType@if (Model.ProblemTime != null)
-    {
-        <text> @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")</text>
-    }
-    @if (!string.IsNullOrWhiteSpace(Model.Extra))
-    {<text>: @Model.Extra</text>
-    }
-</div><br/>
+@using JoinRpg.Web.Claims
+@model ProblemViewModel
+<component type="typeof(ProblemBadge)" render-mode="Static" param-Model="@Model" />
+<br />

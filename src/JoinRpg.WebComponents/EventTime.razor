@@ -1,0 +1,66 @@
+@using JoinRpg.Helpers
+@{
+    if (Model == null)
+    {
+        return;
+    }
+    var val = Model.Value;
+    var now = DateTimeOffset.UtcNow;
+
+    if (val > now)
+    {
+        @val.Date.ToShortDateString()
+        return;
+    }
+    var span = now.Subtract(val);
+    if (span.Days > 180)
+    {
+        @val.Date.ToShortDateString()
+    }
+    else if (span.Days > 7 && val.Year != now.Year)
+    {
+        @val.Date.ToShortDateString()
+    }
+    else if (span.Days > 7)
+    {
+        @val.ToString("dd MMMM")
+    }
+    else if (span.Days > 1)
+    {
+        <text>@CountHelper.DisplayCount(span.Days, "день", "дня", "дней") назад @*(@val.ToString("dddd"))*@ </text>
+    }
+    else if (span.Days == 1)
+    {
+        <text>позавчера</text>
+    }
+    else if (span.Hours > 5 && val.Day != now.Day)
+    {
+        <text>вчера</text>
+    }
+    else if (span.Hours > 0)
+    {
+        @CountHelper.DisplayCount(span.Hours, "час", "часа", "часов")
+
+        <text> назад</text>
+    }
+    else if (span.Minutes > 0)
+    {
+        @CountHelper.DisplayCount(span.Minutes, "минуту", "минуты", "минут")
+
+        <text> назад</text>
+    }
+    else if (span.Seconds > 20)
+    {
+        <text>меньше минуты назад</text>
+    }
+    else
+    {
+        <text>только что</text>
+    }
+}
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public DateTimeOffset? Model { get; set; }
+}

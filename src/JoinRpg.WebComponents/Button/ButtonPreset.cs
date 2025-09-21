@@ -38,5 +38,6 @@ public enum ButtonPreset
     /// <summary>
     /// Заявка
     /// </summary>
-    Claim
+    Claim,
+    Profile,
 }

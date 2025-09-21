@@ -4,6 +4,7 @@
 <script src="~/Scripts/ua-parser.min.js"></script>
 <script src="~/Scripts/platform.js"></script>
 
+@using JoinRpg.Web.Claims
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
 @using JoinRpg.Web.Models.CharacterGroups
@@ -398,9 +399,12 @@ new { Model.CharacterId, Model.ProjectId }, null)
         }
         else
         {
-            @await Html.PartialAsync("_ClaimAccommodationReadOnly", Model.AccommodationModel)
-            ;
+            @await Html.PartialAsync("_ClaimAccommodationReadOnly", Model.AccommodationModel);
         }
+    }
+    @if (Model.Problems.Any(x => x.ProfileRelated) && Model.IsMyClaim)
+    {
+        <component type="typeof(ClaimContactRequirements)" render-mode="Static" param-ClaimProblems="@Model.Problems" />
     }
     @if (Model.Fields.AnythingAccessible)
     {

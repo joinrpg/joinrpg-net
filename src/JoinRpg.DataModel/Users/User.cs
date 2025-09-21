@@ -36,7 +36,7 @@ public class User
 
     public virtual UserAuthDetails Auth { get; set; }
 
-    public virtual AllrpgUserDetails Allrpg { get; set; }
+    public virtual AllrpgUserDetails? Allrpg { get; set; }
 
     public virtual UserExtra? Extra { get; set; }
 
