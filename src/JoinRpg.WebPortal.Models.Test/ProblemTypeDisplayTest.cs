@@ -1,5 +1,5 @@
-using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.WebPortal.Models.Test;
 

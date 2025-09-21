@@ -1,4 +1,4 @@
-using JoinRpg.Domain.Problems;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Models;
 
