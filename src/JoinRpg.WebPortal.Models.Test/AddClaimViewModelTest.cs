@@ -27,7 +27,9 @@ public class AddClaimViewModelTest
     public void CantSendClaimIfProjectDisabled()
     {
         Mock.Project.IsAcceptingClaims = false;
-        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
+        var projectInfo = Mock.ProjectInfo.WithChangedStatus(PrimitiveTypes.ProjectMetadata.ProjectLifecycleStatus.ActiveClaimsClosed);
+
+        var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, projectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeTrue();
 

@@ -49,7 +49,7 @@ internal partial class CreateProjectService
             IsAutoFilledAccommodation = false,
         });
 
-        await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Recommended });
+        await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Required });
     }
 
     private async Task SetupLarp(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
