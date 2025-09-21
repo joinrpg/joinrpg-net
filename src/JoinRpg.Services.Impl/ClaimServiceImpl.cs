@@ -176,7 +176,7 @@ internal class ClaimServiceImpl(
     public async Task AddClaimFromUser(int projectId,
         int characterId,
         string claimText,
-        IReadOnlyDictionary<int, string?> fields)
+        IReadOnlyDictionary<int, string?> fields, bool SensitiveDataAllowed)
     {
 
         logger.LogDebug("About to add claim to character {characterId}", characterId);
@@ -200,6 +200,7 @@ internal class ClaimServiceImpl(
             ResponsibleMasterUserId = responsibleMaster.UserId,
             ResponsibleMasterUser = responsibleMaster,
             LastUpdateDateTime = Now,
+            PlayerAllowedSenstiveData = SensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired,
             CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = projectId },
         };
 
@@ -232,7 +233,9 @@ internal class ClaimServiceImpl(
 
         await EmailService.Email(claimEmail);
 
-        if (claim.Project.Details.AutoAcceptClaims)
+        if (claim.Project.Details.AutoAcceptClaims &&
+            (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
+        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
         {
             StartImpersonate(claim.ResponsibleMasterUserId);
             //TODO[Localize]

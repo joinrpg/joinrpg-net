@@ -30,5 +30,10 @@ public class UserExtra
 
     public ContactsAccessType SocialNetworksAccess { get; set; }
 
+    public bool EnableTelegramPlayerDigestNotification { get; set; }
+
+    public string? PassportData { get; set; }
+    public string? RegistrationAddress { get; set; }
+
     public override string ToString() => $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate}, Telegram: {Telegram})";
 }

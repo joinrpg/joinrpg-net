@@ -9,7 +9,7 @@
 
 @if (success)
 {
-    <JoinAlert Variation="VariationStyleEnum.Success">Настройки публикации сохранены</JoinAlert>
+    <JoinAlert Variation="VariationStyleEnum.Success">Настройки контактов сохранены</JoinAlert>
 }
 
 @if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
@@ -36,7 +36,16 @@
                 <FormRowFor For="@(() => Model.Phone)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.Phone" />
                 </FormRowFor>
-
+                <FormRow>
+                  <h4>Защищенные данные</h4>
+                  Не запрашивайте эти данные, если они вам не абсолютно необходимы (например, для поселения). 
+                </FormRow>
+                <FormRowFor For="@(() => Model.Passport)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Passport" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.RegistrationAddress)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.RegistrationAddress" />
+                </FormRowFor>
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
                     <button type="submit" disabled="@formInvalid">Submit</button>

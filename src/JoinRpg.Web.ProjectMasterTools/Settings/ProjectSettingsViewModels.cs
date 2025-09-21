@@ -32,4 +32,10 @@ public class ProjectContactsSettingsViewModel
     [Display(Name = "Требовать ФИО")]
     public required MandatoryContactsView Fio { get; set; }
 
+    [Display(Name = "Требовать паспортные данные")]
+    public required MandatorySenstiveContactsView Passport { get; set; }
+
+    [Display(Name = "Требовать адрес регистрации")]
+    public required MandatorySenstiveContactsView RegistrationAddress { get; set; }
+
 }

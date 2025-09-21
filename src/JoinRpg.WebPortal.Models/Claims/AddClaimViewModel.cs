@@ -48,6 +48,13 @@ public class AddClaimViewModel : IProjectIdAware
     public static AddClaimViewModel Create(Character character, UserInfo userInfo, ProjectInfo projectInfo)
         => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, userInfo, projectInfo);
 
+    public bool SenstiveDataRequired { get; private set; }
+
+    [Display(Name = "Предоставить доступ к паспортным данным",
+     Description = "Мастера игры просят вас предоставить доступ к паспортным данным. Вероятно, это нужно для поселения. Вы все равно сможете отправить заявку," +
+        "даже если не предоставите доступ, но возможно, мастера отклонят вашу заявку. ")]
+    public bool SensitiveDataAllowed { get; private set; }
+
     public AddClaimViewModel Fill(Character claimSource, UserInfo userInfo, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
         var disallowReasons = claimSource.ValidateIfCanAddClaim(userInfo, projectInfo).ToList();
@@ -75,6 +82,7 @@ public class AddClaimViewModel : IProjectIdAware
         HasMasterAccess = accessArguments.MasterAccess;
 
         Fields = new CustomFieldsViewModel(claimSource, projectInfo, accessArguments.WithoutMasterAccess(), overrideValues: overrideValues);
+        SenstiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
         return this;
     }
 

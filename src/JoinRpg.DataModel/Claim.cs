@@ -151,6 +151,11 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     public int? LastVisibleMasterCommentBy_Id { get; set; }
     public DateTimeOffset? LastPlayerCommentAt { get; set; }
 
+    /// <summary>
+    /// Игрок разрешил мастерам видеть паспорт и адрес прописки
+    /// </summary>
+    public bool PlayerAllowedSenstiveData { get; set; }
+
     #region ILinkable impl
 
     LinkType ILinkable.LinkType => LinkType.Claim;
