@@ -450,6 +450,7 @@ internal class ClaimServiceImpl(
         claim.MasterDeclinedDate = Now;
         claim.ClaimStatus = Claim.Status.DeclinedByMaster;
         claim.ClaimDenialStatus = claimDenialStatus;
+        claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
 
         var roomEmail = await CommonClaimDecline(claim);
 
@@ -662,6 +663,7 @@ internal class ClaimServiceImpl(
 
         claim.PlayerDeclinedDate = Now;
         claim.ClaimStatus = Claim.Status.DeclinedByUser;
+        claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
 
 
         await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
