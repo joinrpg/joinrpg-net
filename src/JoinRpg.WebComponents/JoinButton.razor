@@ -250,7 +250,12 @@ else
 
     public void EditContextValidationStateChanged(object? sender, ValidationStateChangedEventArgs? _)
     {
-        InProgress = false; // Валидация закончилась, значит сабмит прошел
+        if (InProgress)
+        {
+            InProgress = false; // Валидация закончилась, значит сабмит прошел
+            StateHasChanged();
+        }
+        
     }
 
     private static RenderFragment FormatLabel(string? label, string? icon)
