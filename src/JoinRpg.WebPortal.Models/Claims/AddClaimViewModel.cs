@@ -26,8 +26,7 @@ public class AddClaimViewModel : IProjectIdAware
     [DisplayName("Заявка")]
     public string TargetName { get; set; }
 
-    [Display(Name = "Описание")]
-    public JoinHtmlString Description { get; set; }
+    public bool IsSlot { get; set; }
 
     public IReadOnlyCollection<AddClaimForbideReason> ValidationStatus
     {
@@ -76,7 +75,7 @@ public class AddClaimViewModel : IProjectIdAware
         ProjectId = claimSource.Project.ProjectId;
         ProjectName = claimSource.Project.ProjectName;
         TargetName = claimSource.CharacterName;
-        Description = claimSource.Description.ToHtmlString();
+        IsSlot = claimSource.CharacterType == CharacterType.Slot;
         ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
         var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, userInfo.UserId);
         HasMasterAccess = accessArguments.MasterAccess;
