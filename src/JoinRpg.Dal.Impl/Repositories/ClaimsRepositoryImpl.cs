@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
@@ -40,7 +39,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
     private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl(Expression<Func<Claim, bool>> predicate)
     {
-        Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
         return await Ctx
           .ClaimSet
           .Include(c => c.AccommodationRequest)
@@ -205,7 +203,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     public async Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status)
     {
         var predicateBuilder = PredicateBuilder.New<Claim>()
-        .And(claim => claim.PlayerUserId == userId.Value)
+        .And(ClaimPredicates.GetForUser(userId))
         .And(ClaimPredicates.GetClaimStatusPredicate(status));
 
         return await Ctx
@@ -217,5 +215,15 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .Include(c => c.Project)
           .Where(predicateBuilder)
           .ToListAsync();
+    }
+
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status)
+    {
+        var predicateBuilder = PredicateBuilder.New<Claim>()
+            .And(ClaimPredicates.GetForUser(userId))
+            .And(ClaimPredicates.GetForProject(projectId))
+            .And(ClaimPredicates.GetClaimStatusPredicate(status));
+
+        return GetClaimsImpl(predicateBuilder);
     }
 }

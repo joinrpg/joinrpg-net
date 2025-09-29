@@ -40,4 +40,5 @@ public enum ButtonPreset
     /// </summary>
     Claim,
     Profile,
+    Donate,
 }

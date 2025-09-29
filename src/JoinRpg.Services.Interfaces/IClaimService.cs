@@ -4,15 +4,15 @@ namespace JoinRpg.Services.Interfaces;
 
 public interface IClaimService
 {
-    Task AddClaimFromUser(int projectId,
-        int characterId,
+    Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification
+        characterId,
         string claimText,
         IReadOnlyDictionary<int, string?> fields,
-        bool SensitiveDataAllowed);
+        bool sensitiveDataAllowed);
 
     Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
-    Task ApproveByMaster(int projectId, int claimId, string commentText);
+    Task ApproveByMaster(ClaimIdentification claimId, string commentText);
     Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText, bool deleteCharacter);
     Task DeclineByPlayer(int projectId, int claimId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
@@ -49,6 +49,7 @@ public interface IClaimService
 
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
     Task AllowSensitiveData(ClaimIdentification projectId);
+    Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId);
 }
 
 public enum FinanceOperationAction

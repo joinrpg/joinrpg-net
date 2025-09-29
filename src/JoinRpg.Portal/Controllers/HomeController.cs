@@ -16,15 +16,15 @@ public class HomeController : Common.ControllerBase
         View(await ProjectListManager.LoadModel(false, ProjectsOnHomePage));
 
 
-    public ActionResult About() => View();
+    public ActionResult About() => RedirectToPage("/about");
 
-    public ActionResult Funding2016() => View();
+    public ActionResult Funding2016() => RedirectToPage("/about");
 
-    public ActionResult HowToHelp() => View();
+    public ActionResult HowToHelp() => RedirectToPage("/about");
 
     public ActionResult Support() => View();
 
-    public ActionResult FromAllrpgInfo() => View();
+    public ActionResult FromAllrpgInfo() => RedirectToPage("/about");
 
     public async Task<ActionResult> BrowseGames() => View(await ProjectListManager.LoadModel());
 

@@ -80,7 +80,7 @@ public class ClaimController(
 
         try
         {
-            await claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterId,
+            await claimService.AddClaimFromUser(new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
                 viewModel.ClaimText, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix), viewModel.SensitiveDataAllowed);
 
             return RedirectToAction(
@@ -223,7 +223,7 @@ public class ClaimController(
         try
         {
             await
-              claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+              claimService.ApproveByMaster(claim.GetId(), viewModel.CommentText);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -398,7 +398,7 @@ public class ClaimController(
 
             if (viewModel.AcceptAfterMove)
             {
-                await claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, "");
+                await claimService.ApproveByMaster(claim.GetId(), "");
             }
 
             return ReturnToClaim(projectId, claimId);

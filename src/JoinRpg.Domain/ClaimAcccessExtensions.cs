@@ -16,26 +16,6 @@ public enum ExtraAccessReason
 
 public static class ClaimAcccessExtensions
 {
-    [Obsolete]
-    public static Claim RequestAccess(
-        this Claim claim,
-        int currentUserId,
-        Expression<Func<ProjectAcl, bool>> access,
-        ExtraAccessReason reasons = ExtraAccessReason.None)
-    {
-        if (claim?.Project == null)
-        {
-            throw new ArgumentNullException(nameof(claim));
-        }
-
-        if (!claim.HasAccess(currentUserId, access, reasons))
-        {
-            throw new NoAccessToProjectException(claim, currentUserId);
-        }
-
-        return claim;
-    }
-
     public static Claim RequestAccess(
         this Claim claim,
         int currentUserId,

@@ -1,7 +1,15 @@
-@page "/privacy"
-@model JoinRpg.Portal.Pages.About.PrivacyModel
-@inject IWebHostEnvironment environment
+@page "/about"
+@model JoinRpg.Portal.Pages.About.IndexModel
 @{
-    ViewBag.Title = "Приватность и персональные данные";
+    ViewBag.Title = "JoinRpg.Ru — О Сайте";
 }
-<component type="typeof(JoinRpg.Web.AdminTools.About.PrivacyPanel)" render-mode="Static" />
+<h2>@ViewBag.Title</h2>
+<h3>@ViewBag.Message</h3>
+
+@if (!ViewBag.IsProduction)
+{
+    @await Html.PartialAsync("_DevAlertPartial")
+}
+
+<component type="typeof(JoinRpg.Blazor.Client.CommonPages.AboutPanel)"
+           render-mode="Static" />

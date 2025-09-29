@@ -18,6 +18,7 @@ using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
+using JoinRpg.Portal.Menu;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
@@ -46,6 +47,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
             .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
+            .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
 
         services.AddKogdaIgra();
@@ -122,6 +124,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinNotificationServices()
             .AddJoinTelegram()
             .AddJoinBlobStorage();
+
+        services.AddOptions<DonateOptions>();
     }
 
     /// <summary>

@@ -256,3 +256,5 @@ public class ProjectAccomodationNotFound : JoinRpgBaseException
 }
 
 public class JoinRpgAccountOperationFailedException(string message) : JoinRpgBaseException(message) { }
+
+public class JoinRpgProjectMisconfiguredException(ProjectIdentification projectId, string message) : JoinRpgProjectException(projectId, message);

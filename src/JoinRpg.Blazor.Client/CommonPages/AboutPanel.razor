@@ -1,28 +1,47 @@
-@using JoinRpg.WebComponents
 <JoinPanel>
-    <Header>Команда сайта</Header>
+    <Header><h4>Команда сайта</h4></Header>
     <Body>
         <b>#ЛеоЦарев</b> — создатель сайта, программист
-        <br /><b>#Шико</b> — программист
-        <br /><b>#Атана</b> — документация
-        <br /><b>#Айка</b> — техподдержка
-        <br /><b>Лулукошка</b> — тестер
-        <br /><a href="http://bastilia.ru/about/">#Бастилия</a>
+        <br />
+        <b>#Шико</b> — программист
+        <br />
+        <b>#Атана</b> — документация
+        <br />
+        <b>#Айка</b> — техподдержка
+        <br />
+        <b>Лулукошка</b> — тестер
+        <br />
+        <a href="http://bastilia.ru/about/">#Бастилия</a>
+        <br />
+        <JoinButton Label="К благодарностям"
+                    Title="На сайте бастильского рейтинга"
+                    Link="https://rating.bastilia.ru/project/joinrpg"
+                    Size="SizeStyleEnum.Large" />
 
-      
     </Body>
 </JoinPanel>
 
-<p>
-    <JoinButton
-               Label="Благодарности"
-               Title="На сайте бастильского рейтинга"
-               Link="https://rating.bastilia.ru/project/joinrpg" />
-</p>
-
 <JoinPanel>
-    <Header>Как помочь?</Header>
+    <Header><h4>Как помочь?</h4></Header>
     <Body>
-        В первую очередь нужны программисты. Пригодятся пожертвования деньгами. Подробности <a href="home/howtohelp">на отдельной странице</a>.
+        <p style="text-align:center">
+            <JoinButton Label="Донаты"
+                        Link="/about/donate"
+                        Preset="ButtonPreset.Donate"
+                        Size="SizeStyleEnum.Large" />
+        </p>
+        <p>
+            Самым простым способом помочь проекту было и остается пожертвование денег на оплату хостинга. Донат важен не только деньгами, это значимое подтверждение
+            того, что наша работа важна для вас.
+        </p>
+        <p>
+            Помимо донатов, Joinrpg — это открытый проект, в который может внести вклад каждый:
+            <ul>
+                <li>Программисты могут запилить свою любимую фичу на гитхабе: <a href="https://github.com/joinrpg/joinrpg-net">joinrpg</a> (.NET), <a href="https://github.com/joinrpg/kogda-igra">kogda-igra</a> (PHP).</li>
+                <li>Тестеры и просто вьедливые ребята могут принять участие в тестировании релиза.</li>
+                <li>Можно расширить документацию.</li>
+            </ul>
+            Обо всем этом можно поговорить <TelegramIcon Link="+QGY9nm81elDmiBX3">в чате</TelegramIcon>, а еще там можно обсудить JoinRpg с другими мастерами.
+        </p>
     </Body>
 </JoinPanel>
