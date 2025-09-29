@@ -306,6 +306,7 @@ else
         { ButtonPreset.Link, new("Привязать","Привязываем...", "glyphicon-plus", VariationStyleEnum.Info)},
         { ButtonPreset.Claim, new("Заявка",null, "glyphicon-file", VariationStyleEnum.Info)},
         { ButtonPreset.Profile, new("Профиль",null, "glyphicon-user", VariationStyleEnum.Info)},
+        { ButtonPreset.Donate, new("Отослать донат",null, "glyphicon-usd", VariationStyleEnum.Success)},
     }.ToFrozenDictionary();
 
     internal record struct ButtonContent(string? Label, string? Icon);

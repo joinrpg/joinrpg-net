@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -173,17 +174,16 @@ internal class ClaimServiceImpl(
         return claim.ClaimId;
     }
 
-    public async Task AddClaimFromUser(int projectId,
-        int characterId,
+    public async Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification characterId,
         string claimText,
-        IReadOnlyDictionary<int, string?> fields, bool SensitiveDataAllowed)
+        IReadOnlyDictionary<int, string?> fields, bool sensitiveDataAllowed)
     {
 
         logger.LogDebug("About to add claim to character {characterId}", characterId);
 
-        var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(projectId));
-        var user = await UserRepository.GetRequiredUserInfo(new(CurrentUserId));
+        var source = await CharactersRepository.GetCharacterAsync(characterId);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
+        var user = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
 
         source.EnsureCanAddClaim(user, projectInfo);
 
@@ -191,8 +191,8 @@ internal class ClaimServiceImpl(
 
         var claim = new Claim()
         {
-            CharacterId = characterId,
-            ProjectId = projectId,
+            CharacterId = characterId.CharacterId,
+            ProjectId = characterId.ProjectId,
             PlayerUserId = CurrentUserId,
             PlayerAcceptedDate = Now,
             CreateDate = Now,
@@ -200,8 +200,8 @@ internal class ClaimServiceImpl(
             ResponsibleMasterUserId = responsibleMaster.UserId,
             ResponsibleMasterUser = responsibleMaster,
             LastUpdateDateTime = Now,
-            PlayerAllowedSenstiveData = SensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired,
-            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = projectId },
+            PlayerAllowedSenstiveData = sensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired,
+            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
         };
 
         if (!string.IsNullOrWhiteSpace(claimText))
@@ -214,13 +214,15 @@ internal class ClaimServiceImpl(
                 CreatedAt = Now,
                 IsCommentByPlayer = true,
                 IsVisibleToPlayer = true,
-                ProjectId = projectId,
+                ProjectId = characterId.ProjectId,
                 LastEditTime = Now,
                 ExtraAction = CommentExtraAction.NewClaim,
             });
         }
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
+
+        var claimId = claim.GetId();
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
 
@@ -239,13 +241,12 @@ internal class ClaimServiceImpl(
         {
             StartImpersonate(claim.ResponsibleMasterUserId);
             //TODO[Localize]
-            await ApproveByMaster(projectId,
-                claim.ClaimId,
-                "Ваша заявка была принята автоматически");
+            await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
             ResetImpersonation();
         }
 
-        logger.LogInformation("Claim ({claimId}) was successfully send", claim.ClaimId);
+        logger.LogInformation("Claim ({claimId}) was successfully send", claimId);
+        return claimId;
     }
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
@@ -313,9 +314,9 @@ internal class ClaimServiceImpl(
         }
     }
 
-    public async Task ApproveByMaster(int projectId, int claimId, string commentText)
+    public async Task ApproveByMaster(ClaimIdentification claimId, string commentText)
     {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(projectId, claimId);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
 
         if (claim.ClaimStatus == Claim.Status.CheckedIn)
         {
@@ -541,8 +542,8 @@ internal class ClaimServiceImpl(
     {
         var claim = await ClaimsRepository.GetClaim(projectId, claimId);
 
-        claim = claim.RequestAccess(CurrentUserId,
-            acl => acl.CanSetPlayersAccommodations,
+        claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
+            Permission.CanSetPlayersAccommodations,
             claim.ClaimStatus == Claim.Status.Approved
                 ? ExtraAccessReason.PlayerOrResponsible
                 : ExtraAccessReason.None);
@@ -598,8 +599,8 @@ internal class ClaimServiceImpl(
         //todo set first state to Unanswered
         var claim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
 
-        claim = claim.RequestAccess(CurrentUserId,
-            acl => acl.CanSetPlayersAccommodations,
+        claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
+            Permission.CanSetPlayersAccommodations,
             claim?.ClaimStatus == Claim.Status.Approved
                 ? ExtraAccessReason.PlayerOrResponsible
                 : ExtraAccessReason.None);
@@ -843,9 +844,15 @@ internal class ClaimServiceImpl(
         await EmailService.Email(email);
     }
 
-    private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
+    [Obsolete]
+    private Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
     {
-        return await LoadClaimAsMaster(new(projectId), claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
+        return LoadClaimForApprovalDecline(new ClaimIdentification(projectId, claimId));
+    }
+
+    private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(ClaimIdentification claimId)
+    {
+        return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 
     public async Task SaveFieldsFromClaim(int projectId,
@@ -938,6 +945,24 @@ internal class ClaimServiceImpl(
 
         claim.PlayerAllowedSenstiveData = true;
         await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId)
+    {
+        var claims = await ClaimsRepository.GetClaimsForPlayer(donateProjectId, currentUserAccessor.UserIdentification, ClaimStatusSpec.Any);
+        var claim = claims.TrySelectSingleClaim() ?? claims.FirstOrDefault();
+        if (claim != null)
+        {
+            //TODO восстановить заявку, если она была отозвана или отклонена
+            return claim.GetId();
+        }
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(donateProjectId);
+        if (projectInfo.DefaultTemplateCharacter is null)
+        {
+            logger.LogError("Некорректно настроен проект донатов {donateProjectId}", donateProjectId);
+            throw new JoinRpgProjectMisconfiguredException(donateProjectId, "У проекта должен быть шаблон по умолчанию");
+        }
+        return await AddClaimFromUser(projectInfo.DefaultTemplateCharacter, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
     }
 }
 

@@ -2,6 +2,7 @@ using System.Data.Entity.SqlServer;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -35,7 +36,20 @@ internal static class ClaimPredicates
 
     public static Expression<Func<Claim, bool>> GetResponsible(int masterUserId) => claim => claim.ResponsibleMasterUserId == masterUserId;
 
+    [Obsolete]
     public static Expression<Func<Claim, bool>> GetForUser(int userId) => claim => claim.PlayerUserId == userId;
+
+    public static Expression<Func<Claim, bool>> GetForUser(UserIdentification userId)
+    {
+        var id = userId.Value;
+        return claim => claim.PlayerUserId == id;
+    }
+
+    public static Expression<Func<Claim, bool>> GetForProject(ProjectIdentification projectid)
+    {
+        var id = projectid.Value;
+        return claim => claim.ProjectId == id;
+    }
 
     public static Expression<Func<Claim, bool>> GetInGroupPredicate(int[] characterGroupsIds) =>
         claim => characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0);
