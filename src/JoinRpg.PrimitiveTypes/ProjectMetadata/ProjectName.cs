@@ -10,7 +10,7 @@ public record ProjectName : SingleValueType<string>
         }
         if (Value.Length < 5)
         {
-            throw new ArgumentException("Project name is too long", nameof(value));
+            throw new ArgumentException("Project name is too short", nameof(value));
         }
     }
 }
