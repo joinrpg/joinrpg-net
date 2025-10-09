@@ -24,7 +24,12 @@ public class ClaimAccommodationViewModel
         OutgoingInvite = outgoingInvite;
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
+        Neighbours = claim.GetClaimNeighbours();
+
+        RoomFreeSpace = claim.AccommodationRequest?.GetRoomFreeSpace() ?? 0;
     }
+
+
 
     public int ClaimId { get; }
     public int ProjectId { get; }
@@ -33,5 +38,8 @@ public class ClaimAccommodationViewModel
     public IEnumerable<AccommodationInvite> IncomingInvite { get; }
     public IEnumerable<AccommodationInvite> OutgoingInvite { get; }
     public AccommodationRequest? AccommodationRequest { get; }
-    public bool AccommodationEnabledForClaim { get; }
+
+    public int RoomFreeSpace { get; }
+
+    public IReadOnlyCollection<User> Neighbours { get; }
 }
