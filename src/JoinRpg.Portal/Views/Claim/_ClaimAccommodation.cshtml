@@ -8,11 +8,6 @@
 @using System.Diagnostics.Contracts
 @model ClaimAccommodationViewModel
 
-@if (!Model.AccommodationEnabledForClaim)
-{
-    return;
-}
-
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">
         <h5>Проживание</h5>
@@ -27,9 +22,6 @@
         }
         else
         {
-            var roomFreeSpace = 0;
-            IReadOnlyCollection<User> neighbours;
-
           <div style="display: flex; flex-direction: row; align-items: center;">
             <span style="margin-right: 1em;">
               <strong>@Model.AccommodationRequest.AccommodationType.Name</strong>
@@ -48,39 +40,30 @@
                 <div>
                     <strong>Назначена комната:</strong> @Model.AccommodationRequest.Accommodation.Name
                 </div>
-
-                neighbours = Model.AccommodationRequest.Accommodation.Inhabitants.SelectMany(i => i.Subjects).Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
-                roomFreeSpace = Model.AccommodationRequest.Accommodation.GetRoomFreeSpace();
-            }
-            else
-            {
-                neighbours = Model.AccommodationRequest.Subjects.Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
-                roomFreeSpace = Model.AccommodationRequest.AccommodationType.Capacity - neighbours.Count - 1;
             }
 
           <div style="margin-top: 1em;">
-            @if (roomFreeSpace > 0 || neighbours.Any())
+            @if (Model.RoomFreeSpace > 0 || Model.Neighbours.Any())
             {
                   <div><strong>Соседи по комнате
-                    @if (roomFreeSpace == 0)
+                    @if (Model.RoomFreeSpace == 0)
                     {
                       <text> (полностью заполнена)</text>
-                    }
-                            :
+                    }:
                   </strong></div>
               <div style="display: flex; flex-direction: row; align-items: center">
                 <ul style="margin-bottom: 0;">
-                  @foreach (var neighbor in neighbours)
+                  @foreach (var neighbor in Model.Neighbours)
                   {
                     <li>@Html.DisplayFor(model => neighbor)</li>
                   }
-                  @if (roomFreeSpace > 0)
+                  @if (Model.RoomFreeSpace > 0)
                   {
-                    <li>@CountHelper.DisplayCount(roomFreeSpace, " свободное место", "свободных места", "свободных мест")</li>
+                    <li>@CountHelper.DisplayCount(Model.RoomFreeSpace, " свободное место", "свободных места", "свободных мест")</li>
                   }
                 </ul>
 
-                @if (Model.AccommodationRequest.Subjects.Count > 1)
+                @if (Model.Neighbours.Count > 0)
                 {
                   <form method="post" asp-controller="Claim" asp-action="LeaveGroup" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" style="margin-left: 2em; padding-left: 2em; border-left: 1px solid silver;">
                     <button type="submit" class="btn btn-sm btn-warning">Отселиться от соседей</button>
@@ -93,7 +76,7 @@
               </div>
             }
 
-            @if (!Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
+            @if (!Model.PotentialNeighbors.Any() && Model.RoomFreeSpace > 0)
             {
               <div style="margin-top: 1em;">
                   <b>Пока еще нельзя никого пригласить к совместному проживанию.</b>
@@ -101,7 +84,7 @@
             }
           </div>
 
-          if (Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
+            if (Model.PotentialNeighbors.Any() && Model.RoomFreeSpace > 0)
           {
                 <form asp-action="Invite" asp-controller="Claim" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post" style="display: flex; flex-direction: row; align-items: center; margin-top: 0.5em;">
                     @Html.Hidden("RequestId", Model.AccommodationRequest.Id)
@@ -110,7 +93,7 @@
                       var alreadyGroupedNeighbors = Model.PotentialNeighbors
                       .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
                       .GroupBy(neighbor => neighbor.AccommodationRequestId!.Value)
-                      .Where(group => group.Count() <= roomFreeSpace)
+                      .Where(group => group.Count() <= Model.RoomFreeSpace)
                       .Select(neighborGroup =>
                         new JoinSelectListItem()
                       {
