@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Domain;
 
@@ -36,7 +37,7 @@ public static class ClaimExtensions
         return character.GetParentGroupsToTop().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
-    public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)
+    public static void EnsureStatus(this Claim claim, params ClaimStatus[] possibleStatus)
     {
         if (!possibleStatus.Contains(claim.ClaimStatus))
         {
@@ -45,42 +46,42 @@ public static class ClaimExtensions
     }
 
     [Pure]
-    public static bool CanChangeTo(this Claim.Status fromStatus, Claim.Status targetStatus)
+    public static bool CanChangeTo(this ClaimStatus fromStatus, ClaimStatus targetStatus)
     {
         switch (targetStatus)
         {
-            case Claim.Status.Approved:
-                return new[] { Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.CheckedIn }.Contains(fromStatus);
-            case Claim.Status.OnHold:
+            case ClaimStatus.Approved:
+                return new[] { ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.CheckedIn }.Contains(fromStatus);
+            case ClaimStatus.OnHold:
                 return
-                  new[] { Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster }
+                  new[] { ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.AddedByMaster }
                     .Contains(fromStatus);
-            case Claim.Status.AddedByUser:
+            case ClaimStatus.AddedByUser:
                 return new[]
-                    {Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold}
+                    {ClaimStatus.DeclinedByUser, ClaimStatus.DeclinedByMaster, ClaimStatus.OnHold}
                   .Contains(fromStatus);
-            case Claim.Status.AddedByMaster:
+            case ClaimStatus.AddedByMaster:
                 return false;
-            case Claim.Status.DeclinedByUser:
-            case Claim.Status.DeclinedByMaster:
+            case ClaimStatus.DeclinedByUser:
+            case ClaimStatus.DeclinedByMaster:
                 return
                   new[]
                   {
-          Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster,
-          Claim.Status.Approved, Claim.Status.OnHold,
+          ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.AddedByMaster,
+          ClaimStatus.Approved, ClaimStatus.OnHold,
                   }.Contains(fromStatus);
-            case Claim.Status.Discussed:
+            case ClaimStatus.Discussed:
                 return
-                  new[] { Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster }
+                  new[] { ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.AddedByMaster }
                     .Contains(fromStatus);
-            case Claim.Status.CheckedIn:
-                return fromStatus == Claim.Status.Approved;
+            case ClaimStatus.CheckedIn:
+                return fromStatus == ClaimStatus.Approved;
             default:
                 throw new ArgumentOutOfRangeException(nameof(targetStatus), targetStatus, null);
         }
     }
 
-    public static void EnsureCanChangeStatus(this Claim claim, Claim.Status targetStatus)
+    public static void EnsureCanChangeStatus(this Claim claim, ClaimStatus targetStatus)
     {
         if (!claim.ClaimStatus.CanChangeTo(targetStatus))
         {
@@ -92,7 +93,7 @@ public static class ClaimExtensions
 
     public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
 
-    public static void ChangeStatusWithCheck(this Claim claim, Claim.Status targetStatus)
+    public static void ChangeStatusWithCheck(this Claim claim, ClaimStatus targetStatus)
     {
         claim.EnsureCanChangeStatus(targetStatus);
         claim.ClaimStatus = targetStatus;

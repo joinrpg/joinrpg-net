@@ -1,4 +1,5 @@
 using JoinRpg.Domain.Problems;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Domain;
 
@@ -7,9 +8,9 @@ public class ClaimCheckInValidator(Claim claim, IProblemValidator<Claim> claimVa
     public int FeeDue => claim.ClaimFeeDue(projectInfo);
 
     public bool NotCheckedInAlready => claim.CheckInDate == null &&
-                                       claim.ClaimStatus != Claim.Status.CheckedIn;
+                                       claim.ClaimStatus != ClaimStatus.CheckedIn;
 
-    public bool IsApproved => claim.ClaimStatus == Claim.Status.Approved;
+    public bool IsApproved => claim.ClaimStatus == ClaimStatus.Approved;
 
     public IReadOnlyCollection<FieldRelatedProblem> FieldProblems { get; } = [.. claimValidator.ValidateFieldsOnly(claim, projectInfo)];
 

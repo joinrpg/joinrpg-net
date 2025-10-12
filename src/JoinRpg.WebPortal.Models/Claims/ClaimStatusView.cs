@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Web.Models;
 
@@ -57,7 +58,7 @@ public static class ClaimStatusViewExtensions
 
     public static bool CanChangeTo(this ClaimFullStatusView fromStatus,
         ClaimStatusView targetStatus)
-        => ((Claim.Status)fromStatus.ClaimStatus).CanChangeTo((Claim.Status)targetStatus);
+        => ((ClaimStatus)fromStatus.ClaimStatus).CanChangeTo((ClaimStatus)targetStatus);
 
     // TODO A lot of checks should be unified to Domain (like CanChangeTo)
 
@@ -69,7 +70,7 @@ public static class ClaimStatusViewExtensions
 
 
     public static bool IsActive(this ClaimFullStatusView status) =>
-        ((Claim.Status)status.ClaimStatus).IsActive();
+        ((ClaimStatus)status.ClaimStatus).IsActive();
 
     public static bool IsAlreadyApproved(this ClaimFullStatusView status) =>
         status.ClaimStatus == ClaimStatusView.Approved ||

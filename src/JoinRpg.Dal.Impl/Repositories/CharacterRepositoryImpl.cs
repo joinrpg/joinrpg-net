@@ -6,6 +6,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -96,12 +97,12 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
             JsonData = character.JsonData,
             ApprovedClaim = await Ctx.Set<Claim>()
                 .Where(claim => claim.CharacterId == characterId &&
-                            claim.ClaimStatus == Claim.Status.Approved)
+                            claim.ClaimStatus == ClaimStatus.Approved)
                 .Include(c => c.Player.Extra)
                 .SingleOrDefaultAsync(),
             Claims = await Ctx.Set<Claim>().AsExpandable()
             .Where(claim => claim.CharacterId == characterId &&
-                            claim.ClaimStatus == Claim.Status.Approved).Select(
+                            claim.ClaimStatus == ClaimStatus.Approved).Select(
               claim => new ClaimHeader()
               {
                   IsActive = activeClaimPredicate.Invoke(claim),
@@ -120,8 +121,8 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
     {
         return await Ctx.Set<Character>()
           .Where(c => c.ProjectId == projectId && c.IsAcceptingClaims && c.IsActive &&
-                      !c.Project.Claims.Any(claim => (claim.ClaimStatus == Claim.Status.Approved ||
-                                        claim.ClaimStatus == Claim.Status.CheckedIn) && claim.CharacterId == c.CharacterId))
+                      !c.Project.Claims.Any(claim => (claim.ClaimStatus == ClaimStatus.Approved ||
+                                        claim.ClaimStatus == ClaimStatus.CheckedIn) && claim.CharacterId == c.CharacterId))
           .OrderBy(c => c.CharacterName).ToListAsync();
     }
 

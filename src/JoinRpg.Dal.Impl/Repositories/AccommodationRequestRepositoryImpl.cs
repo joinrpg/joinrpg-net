@@ -1,6 +1,7 @@
 using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -35,7 +36,7 @@ public class AccommodationRequestRepositoryImpl : RepositoryImplBase,
         return await Ctx.Set<AccommodationRequest>().Where(request =>
                 request.AccommodationTypeId == accommodationTypeId)
             .SelectMany(request => request.Subjects)
-            .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
+            .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .Include(claim => claim.Player)
             .ToListAsync().ConfigureAwait(false);
     }
@@ -47,7 +48,7 @@ public class AccommodationRequestRepositoryImpl : RepositoryImplBase,
                 request.AccommodationTypeId == accommodationTypeId &&
                  request.AccommodationId == null)
             .SelectMany(request => request.Subjects)
-            .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
+            .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .Include(claim => claim.Player)
             .ToListAsync().ConfigureAwait(false);
     }
@@ -58,7 +59,7 @@ public class AccommodationRequestRepositoryImpl : RepositoryImplBase,
         var tmp = await Ctx.Set<AccommodationRequest>()
             .Where(request => request.Id == accommodationRequestId)
             .SelectMany(request => request.Subjects)
-            .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
+            .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .Include(claim => claim.Player)
             .ToListAsync().ConfigureAwait(false);
         return tmp;
@@ -70,12 +71,12 @@ public class AccommodationRequestRepositoryImpl : RepositoryImplBase,
         var projectClaims = await Ctx.Set<Claim>()
             .Where(claim => claim.ProjectId == projectId)
             .Include(claim => claim.Player)
-            .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
+            .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .ToListAsync().ConfigureAwait(false);
         var claimsWithAccommodationRequest = await Ctx.Set<AccommodationRequest>()
             .Where(request => request.ProjectId == projectId)
             .SelectMany(request => request.Subjects)
-            .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
+            .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .Include(claim => claim.Player)
             .ToListAsync().ConfigureAwait(false);
         return

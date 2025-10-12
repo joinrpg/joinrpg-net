@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
