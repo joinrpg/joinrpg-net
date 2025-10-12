@@ -1,6 +1,7 @@
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
 
@@ -161,7 +162,7 @@ public class MockedProject
     public Claim CreateApprovedClaim(Character character, User player)
     {
         var claim = CreateClaim(character, player);
-        claim.ClaimStatus = Claim.Status.Approved;
+        claim.ClaimStatus = ClaimStatus.Approved;
         character.ApprovedClaim = claim;
         character.ApprovedClaimId = claim.ClaimId;
         return claim;
@@ -170,7 +171,7 @@ public class MockedProject
     public Claim CreateCheckedInClaim(Character character, User player)
     {
         var claim = CreateClaim(character, player);
-        claim.ClaimStatus = Claim.Status.CheckedIn;
+        claim.ClaimStatus = ClaimStatus.CheckedIn;
         character.ApprovedClaim = claim;
         character.ApprovedClaimId = claim.ClaimId;
         return claim;

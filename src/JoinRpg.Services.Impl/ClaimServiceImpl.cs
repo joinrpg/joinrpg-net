@@ -10,6 +10,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -55,7 +56,7 @@ internal class ClaimServiceImpl(
     public async Task CheckInClaim(int projectId, int claimId, int money)
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId); //TODO Specific right
-        claim.EnsureCanChangeStatus(Claim.Status.CheckedIn);
+        claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
 
         var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         if (!validator.CanCheckInInPrinciple)
@@ -85,7 +86,7 @@ internal class ClaimServiceImpl(
             throw new ClaimWrongStatusException(claim);
         }
 
-        claim.ClaimStatus = Claim.Status.CheckedIn;
+        claim.ClaimStatus = ClaimStatus.CheckedIn;
         claim.CheckInDate = Now;
         Debug.Assert(claim.Character != null, "claim.Character != null");
         MarkChanged(claim.Character);
@@ -109,7 +110,7 @@ internal class ClaimServiceImpl(
     public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
         var (oldClaim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId); //TODO Specific right
-        oldClaim.EnsureStatus(Claim.Status.CheckedIn);
+        oldClaim.EnsureStatus(ClaimStatus.CheckedIn);
 
         Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
         oldClaim.Character.InGame = false;
@@ -130,7 +131,7 @@ internal class ClaimServiceImpl(
             PlayerUserId = oldClaim.PlayerUserId,
             PlayerAcceptedDate = Now,
             CreateDate = Now,
-            ClaimStatus = Claim.Status.Approved,
+            ClaimStatus = ClaimStatus.Approved,
             CurrentFee = 0,
             ResponsibleMasterUserId = responsibleMaster.UserId,
             ResponsibleMasterUser = responsibleMaster,
@@ -153,7 +154,7 @@ internal class ClaimServiceImpl(
             ExtraAction = CommentExtraAction.SecondRole,
         });
 
-        oldClaim.ClaimStatus = Claim.Status.Approved;
+        oldClaim.ClaimStatus = ClaimStatus.Approved;
         source.ApprovedClaim = claim;
         _ = AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
 
@@ -196,7 +197,7 @@ internal class ClaimServiceImpl(
             PlayerUserId = CurrentUserId,
             PlayerAcceptedDate = Now,
             CreateDate = Now,
-            ClaimStatus = Claim.Status.AddedByUser,
+            ClaimStatus = ClaimStatus.AddedByUser,
             ResponsibleMasterUserId = responsibleMaster.UserId,
             ResponsibleMasterUser = responsibleMaster,
             LastUpdateDateTime = Now,
@@ -318,7 +319,7 @@ internal class ClaimServiceImpl(
     {
         var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
 
-        if (claim.ClaimStatus == Claim.Status.CheckedIn)
+        if (claim.ClaimStatus == ClaimStatus.CheckedIn)
         {
             throw new ClaimWrongStatusException(claim);
         }
@@ -333,7 +334,7 @@ internal class ClaimServiceImpl(
         }
 
         claim.MasterAcceptedDate = Now;
-        claim.ChangeStatusWithCheck(Claim.Status.Approved);
+        claim.ChangeStatusWithCheck(ClaimStatus.Approved);
 
         _ = AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
@@ -341,9 +342,9 @@ internal class ClaimServiceImpl(
         {
             foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
             {
-                otherClaim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
+                otherClaim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
                 otherClaim.MasterDeclinedDate = Now;
-                otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
+                otherClaim.ClaimStatus = ClaimStatus.DeclinedByMaster;
                 await
                     EmailService.Email(
                         await
@@ -440,16 +441,16 @@ internal class ClaimServiceImpl(
         return newCharacter;
     }
 
-    public async Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText, bool deleteCharacter)
+    public async Task DeclineByMaster(int projectId, int claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
     {
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
 
-        var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
+        var statusWasApproved = claim.ClaimStatus == ClaimStatus.Approved;
 
-        claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
+        claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
 
         claim.MasterDeclinedDate = Now;
-        claim.ClaimStatus = Claim.Status.DeclinedByMaster;
+        claim.ClaimStatus = ClaimStatus.DeclinedByMaster;
         claim.ClaimDenialStatus = claimDenialStatus;
         claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
 
@@ -544,7 +545,7 @@ internal class ClaimServiceImpl(
 
         claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
             Permission.CanSetPlayersAccommodations,
-            claim.ClaimStatus == Claim.Status.Approved
+            claim.ClaimStatus == ClaimStatus.Approved
                 ? ExtraAccessReason.PlayerOrResponsible
                 : ExtraAccessReason.None);
 
@@ -601,7 +602,7 @@ internal class ClaimServiceImpl(
 
         claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
             Permission.CanSetPlayersAccommodations,
-            claim?.ClaimStatus == Claim.Status.Approved
+            claim?.ClaimStatus == ClaimStatus.Approved
                 ? ExtraAccessReason.PlayerOrResponsible
                 : ExtraAccessReason.None);
 
@@ -660,10 +661,10 @@ internal class ClaimServiceImpl(
     {
         var (claim, _) = await LoadClaimAsPlayer(new ClaimIdentification(projectId, claimId));
 
-        claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
+        claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByUser);
 
         claim.PlayerDeclinedDate = Now;
-        claim.ClaimStatus = Claim.Status.DeclinedByUser;
+        claim.ClaimStatus = ClaimStatus.DeclinedByUser;
         claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
 
 
@@ -700,8 +701,8 @@ internal class ClaimServiceImpl(
         var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
 
-        claim.EnsureCanChangeStatus(Claim.Status.AddedByUser);
-        claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
+        claim.EnsureCanChangeStatus(ClaimStatus.AddedByUser);
+        claim.ClaimStatus = ClaimStatus.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
         claim.ClaimDenialStatus = null;
         SetDiscussed(claim, true);
 
@@ -879,7 +880,7 @@ internal class ClaimServiceImpl(
 
         var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
         MarkCharacterChangedIfApproved(claim);
-        claim.ChangeStatusWithCheck(Claim.Status.OnHold);
+        claim.ChangeStatusWithCheck(ClaimStatus.OnHold);
 
 
         var email =
@@ -893,7 +894,7 @@ internal class ClaimServiceImpl(
 
     private void MarkCharacterChangedIfApproved(Claim claim)
     {
-        if (claim.ClaimStatus == Claim.Status.Approved && claim.Character != null)
+        if (claim.ClaimStatus == ClaimStatus.Approved && claim.Character != null)
         {
             MarkChanged(claim.Character);
         }
@@ -902,14 +903,14 @@ internal class ClaimServiceImpl(
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
     {
         claim.LastUpdateDateTime = Now;
-        if (claim.ClaimStatus == Claim.Status.AddedByMaster && CurrentUserId == claim.PlayerUserId)
+        if (claim.ClaimStatus == ClaimStatus.AddedByMaster && CurrentUserId == claim.PlayerUserId)
         {
-            claim.ClaimStatus = Claim.Status.Discussed;
+            claim.ClaimStatus = ClaimStatus.Discussed;
         }
 
-        if (claim.ClaimStatus == Claim.Status.AddedByUser && CurrentUserId != claim.PlayerUserId && isVisibleToPlayer)
+        if (claim.ClaimStatus == ClaimStatus.AddedByUser && CurrentUserId != claim.PlayerUserId && isVisibleToPlayer)
         {
-            claim.ClaimStatus = Claim.Status.Discussed;
+            claim.ClaimStatus = ClaimStatus.Discussed;
         }
     }
 

@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes.Claims;
+
 namespace JoinRpg.DataModel;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace JoinRpg.DataModel;
 /// </summary>
 public static class ClaimExtensionsTemp
 {
-    public static bool IsActive(this Claim.Status claimStatus) => claimStatus != Claim.Status.DeclinedByMaster
-                                                                  && claimStatus != Claim.Status.DeclinedByUser
-                                                                  && claimStatus != Claim.Status.OnHold;
+    public static bool IsActive(this ClaimStatus claimStatus) => claimStatus != ClaimStatus.DeclinedByMaster
+                                                                  && claimStatus != ClaimStatus.DeclinedByUser
+                                                                  && claimStatus != ClaimStatus.OnHold;
 }

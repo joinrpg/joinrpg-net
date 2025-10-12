@@ -10,6 +10,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
@@ -279,7 +280,7 @@ public class ClaimController(
                 claimService.DeclineByMaster(
                     claim.ProjectId,
                     claim.ClaimId,
-                    (Claim.DenialStatus)viewModel.DenialStatus,
+                    (ClaimDenialReason)viewModel.DenialStatus,
                     viewModel.CommentText,
                     viewModel.DeleteCharacter == MasterDenialExtraActionViewModel.DeleteCharacter);
 

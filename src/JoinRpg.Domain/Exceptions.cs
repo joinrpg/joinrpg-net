@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Domain;
 
@@ -142,7 +143,7 @@ public class ProjectDeactivatedException : JoinRpgBaseException
 
 public class ClaimWrongStatusException : JoinRpgProjectEntityException
 {
-    public ClaimWrongStatusException(Claim entity, IEnumerable<Claim.Status> possible)
+    public ClaimWrongStatusException(Claim entity, IEnumerable<ClaimStatus> possible)
       : base(entity, $"This operation can be performed only on claims with status {string.Join(", ", possible.Select(s => s.ToString()))}, but current status is {entity.ClaimStatus}")
     {
     }

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.DataModel;
 
@@ -41,17 +42,7 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     public virtual User ResponsibleMasterUser { get; set; }
     public int ResponsibleMasterUserId { get; set; }
 
-
-    public enum DenialStatus
-    {
-        Unavailable,
-        Refused,
-        NotRespond,
-        Removed,
-        NotSuitable,
-        NotImplementable,
-    }
-    public DenialStatus? ClaimDenialStatus { get; set; }
+    public ClaimDenialReason? ClaimDenialStatus { get; set; }
 
 
     /// <summary>
@@ -59,46 +50,29 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     /// </summary>
     /// <remarks>This property is not mapped to database and can not be used in predicates.</remarks>
     // TODO: Implement as extension
-    public bool IsPending => ClaimStatus is not Status.DeclinedByMaster and not Status.DeclinedByUser;
+    public bool IsPending => ClaimStatus is not ClaimStatus.DeclinedByMaster and not ClaimStatus.DeclinedByUser;
 
     /// <summary>
     /// Returns true when claim is in discussion.
     /// </summary>
     /// <remarks>This property is not mapped to database and can not be used in predicates.</remarks>
     // TODO: Implement as extension
-    public bool IsInDiscussion => ClaimStatus is Status.AddedByMaster or Status.AddedByUser or Status.Discussed;
+    public bool IsInDiscussion => ClaimStatus is ClaimStatus.AddedByMaster or ClaimStatus.AddedByUser or ClaimStatus.Discussed;
 
     /// <summary>
     /// Returns true when claim is approved.
     /// </summary>
     /// <remarks>This property is not mapped to database and can not be used in predicates.</remarks>
     // TODO: Implement as extension
-    public bool IsApproved => ClaimStatus is Status.Approved or Status.CheckedIn;
-
-    [Obsolete("Use Character.CharacterName")]
-    public string Name => Character.CharacterName ?? "заявка";
+    public bool IsApproved => ClaimStatus is ClaimStatus.Approved or ClaimStatus.CheckedIn;
 
     public DateTime LastUpdateDateTime { get; set; }
-
 
     public int CommentDiscussionId { get; set; }
 
     public virtual CommentDiscussion CommentDiscussion { get; set; }
 
-
-    public enum Status
-    {
-        AddedByUser,
-        AddedByMaster,
-        Approved,
-        DeclinedByUser,
-        DeclinedByMaster,
-        Discussed,
-        OnHold,
-        CheckedIn,
-    }
-
-    public Status ClaimStatus { get; set; }
+    public ClaimStatus ClaimStatus { get; set; }
 
     public int? AccommodationRequest_Id { get; set; }
 

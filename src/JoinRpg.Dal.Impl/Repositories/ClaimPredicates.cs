@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -13,23 +14,23 @@ internal static class ClaimPredicates
         return status switch
         {
             ClaimStatusSpec.Any => claim => true,
-            ClaimStatusSpec.Active => c => c.ClaimStatus != Claim.Status.DeclinedByMaster &&
-                                        c.ClaimStatus != Claim.Status.DeclinedByUser &&
-                                        c.ClaimStatus != Claim.Status.OnHold,
-            ClaimStatusSpec.InActive => c => c.ClaimStatus == Claim.Status.DeclinedByMaster ||
-                                        c.ClaimStatus == Claim.Status.DeclinedByUser ||
-                                        c.ClaimStatus == Claim.Status.OnHold,
-            ClaimStatusSpec.Discussion => c => c.ClaimStatus == Claim.Status.AddedByMaster ||
-                                        c.ClaimStatus == Claim.Status.AddedByUser ||
-                                        c.ClaimStatus == Claim.Status.Discussed,
-            ClaimStatusSpec.OnHold => c => c.ClaimStatus == Claim.Status.OnHold,
+            ClaimStatusSpec.Active => c => c.ClaimStatus != ClaimStatus.DeclinedByMaster &&
+                                        c.ClaimStatus != ClaimStatus.DeclinedByUser &&
+                                        c.ClaimStatus != ClaimStatus.OnHold,
+            ClaimStatusSpec.InActive => c => c.ClaimStatus == ClaimStatus.DeclinedByMaster ||
+                                        c.ClaimStatus == ClaimStatus.DeclinedByUser ||
+                                        c.ClaimStatus == ClaimStatus.OnHold,
+            ClaimStatusSpec.Discussion => c => c.ClaimStatus == ClaimStatus.AddedByMaster ||
+                                        c.ClaimStatus == ClaimStatus.AddedByUser ||
+                                        c.ClaimStatus == ClaimStatus.Discussed,
+            ClaimStatusSpec.OnHold => c => c.ClaimStatus == ClaimStatus.OnHold,
             ClaimStatusSpec.Approved => c =>
-                                c.ClaimStatus == Claim.Status.Approved ||
-                                c.ClaimStatus == Claim.Status.CheckedIn,
-            ClaimStatusSpec.ReadyForCheckIn => c => c.ClaimStatus == Claim.Status.Approved && c.CheckInDate == null,
-            ClaimStatusSpec.CheckedIn => c => c.ClaimStatus == Claim.Status.CheckedIn,
-            ClaimStatusSpec.ActiveOrOnHold => c => c.ClaimStatus != Claim.Status.DeclinedByMaster &&
-                                        c.ClaimStatus != Claim.Status.DeclinedByUser,
+                                c.ClaimStatus == ClaimStatus.Approved ||
+                                c.ClaimStatus == ClaimStatus.CheckedIn,
+            ClaimStatusSpec.ReadyForCheckIn => c => c.ClaimStatus == ClaimStatus.Approved && c.CheckInDate == null,
+            ClaimStatusSpec.CheckedIn => c => c.ClaimStatus == ClaimStatus.CheckedIn,
+            ClaimStatusSpec.ActiveOrOnHold => c => c.ClaimStatus != ClaimStatus.DeclinedByMaster &&
+                                        c.ClaimStatus != ClaimStatus.DeclinedByUser,
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
         };
     }

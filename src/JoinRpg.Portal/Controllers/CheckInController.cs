@@ -8,6 +8,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CheckIn;
@@ -136,7 +137,7 @@ public class CheckInController(
         {
             return NotFound();
         }
-        if (claim.ClaimStatus != Claim.Status.CheckedIn)
+        if (claim.ClaimStatus != ClaimStatus.CheckedIn)
         {
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }

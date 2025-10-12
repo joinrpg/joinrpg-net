@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
 

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Domain;
@@ -111,7 +112,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
         }
 
 
-        if (existingClaim?.ClaimStatus == Claim.Status.CheckedIn)
+        if (existingClaim?.ClaimStatus == ClaimStatus.CheckedIn)
         {
             yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
         }

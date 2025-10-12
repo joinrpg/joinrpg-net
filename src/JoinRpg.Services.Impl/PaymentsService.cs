@@ -8,6 +8,7 @@ using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
@@ -1133,14 +1134,14 @@ public class PaymentsService(
                 query = query.Where(
                     rp => rp.Status == RecurrentPaymentStatus.Active
                           && rp.Project.Active
-                          && (rp.Claim.ClaimStatus == Claim.Status.Approved || rp.Claim.ClaimStatus == Claim.Status.CheckedIn)
+                          && (rp.Claim.ClaimStatus == ClaimStatus.Approved || rp.Claim.ClaimStatus == ClaimStatus.CheckedIn)
                           && rp.PaymentType.IsActive);
                 break;
             case false:
                 query = query.Where(
                     rp => rp.Status != RecurrentPaymentStatus.Active
                           || !rp.PaymentType.IsActive
-                          || !(rp.Claim.ClaimStatus == Claim.Status.Approved || rp.Claim.ClaimStatus == Claim.Status.CheckedIn)
+                          || !(rp.Claim.ClaimStatus == ClaimStatus.Approved || rp.Claim.ClaimStatus == ClaimStatus.CheckedIn)
                           || !rp.Project.Active);
                 break;
         }

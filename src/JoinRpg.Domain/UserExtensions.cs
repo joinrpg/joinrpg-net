@@ -1,3 +1,4 @@
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Domain;
@@ -16,7 +17,7 @@ public static class UserExtensions
         {
             return UserProfileAccessReason.ItsMe;
         }
-        if (user.Claims.Any(claim => claim.HasAccess(currentUser.UserId) && claim.ClaimStatus != Claim.Status.AddedByMaster))
+        if (user.Claims.Any(claim => claim.HasAccess(currentUser.UserId) && claim.ClaimStatus != ClaimStatus.AddedByMaster))
         {
             return UserProfileAccessReason.Master;
         }

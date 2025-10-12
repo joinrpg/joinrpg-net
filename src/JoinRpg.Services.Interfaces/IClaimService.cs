@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Services.Interfaces;
 
@@ -13,7 +14,7 @@ public interface IClaimService
     Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
     Task ApproveByMaster(ClaimIdentification claimId, string commentText);
-    Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText, bool deleteCharacter);
+    Task DeclineByMaster(int projectId, int claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter);
     Task DeclineByPlayer(int projectId, int claimId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
     Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents);
