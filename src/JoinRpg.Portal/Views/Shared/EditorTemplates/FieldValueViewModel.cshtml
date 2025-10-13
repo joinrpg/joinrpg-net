@@ -1,5 +1,5 @@
-﻿@using System.ComponentModel
-
+@using System.ComponentModel
+@using JoinRpg.Web.CharacterGroups.CharacterFields
 @using JoinRpg.Web.Models
 @using MandatoryStatusViewType = JoinRpg.Web.ProjectCommon.Fields.MandatoryStatusViewType
 @model FieldValueViewModel
@@ -36,30 +36,13 @@
         {
             @Model.FieldName
         }<span style="white-space:nowrap">
-        @Html.DisplayFor(model => model.MandatoryStatus)
+        <component type="typeof(JoinRpg.Web.ProjectCommon.Fields.MandatoryStatusIcon)" render-mode="Static" param-Status="@(Model.MandatoryStatus)" />
         @if (Model.HasMasterAccess)
         {
             foreach (var label in Model.Labels)
             {
-                switch (label)
-                {
-                    case FieldSpecialLabelView.ForClaim:
-                      <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
-                      break;
-                    case FieldSpecialLabelView.Name:
-                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается именем персонажа и показывается в сетке ролей. Это можно изменить в настройках.")" />
-                      break;
-                    case FieldSpecialLabelView.Description:
-                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается описанием персонажа и показывается в сетке ролей. Это можно изменить в настройках.")"   />
-                      break;
-                    case FieldSpecialLabelView.SchedulePlace:
-                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается местом проведения мероприятия. Это можно изменить в настройках.")" />
-                      break;
-                    case FieldSpecialLabelView.ScheduleTime:
-                      <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Это поле считается временем проведения мероприятия. Это можно изменить в настройках")" />
-                    break;
-                }
-          }
+              <component type="typeof(FieldSpecialLabel)" render-mode="Static" param-Label="@(label)" />
+            }
         }
         </span>
   </label>
