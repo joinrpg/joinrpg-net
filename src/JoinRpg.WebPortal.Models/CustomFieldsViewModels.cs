@@ -5,6 +5,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.CharacterGroups.CharacterFields;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.ProjectCommon.Fields;
 using Microsoft.AspNetCore.Components;
@@ -16,8 +17,6 @@ public class FieldPossibleValueViewModel(ProjectFieldVariant value, bool hasPric
     public int? SpecialGroupId { get; } = value.CharacterGroupId?.CharacterGroupId;
 
     public int ProjectFieldDropdownValueId { get; } = value.Id.ProjectFieldVariantId;
-
-    public string DescriptionPlainText { get; } = value.Description.ToPlainText();
 
     public string Label { get; } = value.Label;
     public JoinHtmlString DescriptionHtml { get; } = value.Description.ToHtmlString();
@@ -34,15 +33,6 @@ public class FieldPossibleValueViewModel(ProjectFieldVariant value, bool hasPric
     public bool HasPrice { get; } = hasPrice;
 
     public bool Selected { get; } = selected;
-}
-
-public enum FieldSpecialLabelView
-{
-    ForClaim,
-    Name,
-    Description,
-    ScheduleTime,
-    SchedulePlace,
 }
 
 //Actually most of this logic should be moved to Domain
