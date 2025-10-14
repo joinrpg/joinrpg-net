@@ -7,6 +7,7 @@ using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Exporters;
 
@@ -122,8 +123,8 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
                 u => u.Email)
             .Union(
             [
-            ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk),
-            ComplexElementMemberColumn(func, u => u.Extra, e => e.Telegram),
+            VkColumn(func),
+            TelegramColumn(func),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
             ComplexElementMemberColumn(func, u => u.Extra, e => e.PhoneNumber),
             ]);
@@ -131,6 +132,12 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
 
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, User?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
+
+    [Pure]
+    protected ITableColumn VkColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("ВК", user => UserSocialLink.GetVKUri(func.Compile()(user)?.Extra?.Vk)?.Uri);
+
+    [Pure]
+    protected ITableColumn TelegramColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("Телеграм", user => UserSocialLink.GetTelegramUri(func.Compile()(user)?.Extra?.Telegram)?.Uri);
 
     [Pure]
     private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User?>> func, params Expression<Func<User, string?>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
