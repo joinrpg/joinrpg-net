@@ -5,6 +5,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Helpers;
 
@@ -178,30 +179,26 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             (CharacterType.Player, User player) when !showContacts => player.GetDisplayName(),
             _ => throw new NotImplementedException(),
         };
+    }
 
-        static string GetPlayerContacts(User player)
+    internal static string GetPlayerContacts(User player)
+    {
+        static string? GetContactLink(string contactName, Link? link)
         {
-            var contacts = new[] { GetEmailLinkImpl(player), GetVKLinkImpl(player), GetTelegramLinkImpl(player) };
-            return $"{player.GetDisplayName()}: {contacts.JoinIfNotNullOrWhitespace(", ")}";
+            if (link is null)
+            {
+                return null;
+            }
+            return $"{contactName}: <a href=\"{link.Uri.AbsoluteUri}\">{link.Label}</a>";
         }
-    }
 
-    private static string? GetEmailLinkImpl(User player)
-    {
-        var email = player.Email;
-        return string.IsNullOrEmpty(email) ? null : $"Email: <a href=\"mailto:{email}\">{email}</a>";
-    }
+        string?[] contacts = [
+                GetContactLink("Email", UserSocialLink.GetEmailUri(player.Email)),
+                GetContactLink("ВК", UserSocialLink.GetVKUri(player.Extra?.Vk)),
+                GetContactLink("Телеграм", UserSocialLink.GetTelegramUri(player.Extra?.Telegram))
+                ];
 
-    private static string? GetVKLinkImpl(User player)
-    {
-        var vk = player.Extra?.Vk;
-        return string.IsNullOrEmpty(vk) ? null : $"ВК: <a href=\"https://vk.com/{vk}\">vk.com/{vk}</a>";
-    }
-
-    private static string? GetTelegramLinkImpl(User player)
-    {
-        var link = player.Extra?.Telegram?.TrimStart('@');
-        return string.IsNullOrEmpty(link) ? null : $"Телеграм: <a href=\"https://t.me/{link}\">t.me/{link}</a>";
+        return $"{player.GetDisplayName()} ({contacts.JoinIfNotNullOrWhitespace(", ")})";
     }
 
     private static string CharacterLinkImpl(Character character, string extra = "")
