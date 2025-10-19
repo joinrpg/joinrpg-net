@@ -39,16 +39,6 @@ updates:
       serilog:
         patterns:
           - "Serilog*"
-  - package-ecosystem: "docker" 
-    directories: 
-      - "/src/Joinrpg.Dal.Migrate" 
-      - "/src/JoinRpg.Portal" 
-    schedule:
-      interval: "daily"
-    groups:
-      net:
-        patterns:
-          - "dotnet/aspnet*"
   - package-ecosystem: "github-actions" 
     directory: "/" 
     schedule:
