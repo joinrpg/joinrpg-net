@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.CharacterGroups.CharacterFields;
+namespace JoinRpg.Web.ProjectMasterTools.Fields;
 public enum FieldSpecialLabelView
 {
     ForClaim,
