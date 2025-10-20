@@ -61,7 +61,7 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
                 _ = xlCell.SetValue(time);
                 break;
             case Uri uri:
-                _ = xlCell.SetValue(uri.PathAndQuery);
+                _ = xlCell.SetValue(uri.PathAndQuery.TrimStart('/'));
                 xlCell.GetHyperlink().ExternalAddress = uri;
                 break;
             default:
