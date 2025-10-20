@@ -1,7 +1,7 @@
 namespace JoinRpg.XGameApi.Contract;
-public record ClaimInfo(int ClaimId, int CharacterId, PlayerContacts PlayerContacts, ClaimStatus Status);
+public record ClaimInfo(int ClaimId, int CharacterId, PlayerContacts PlayerContacts, ClaimStatusEnum Status);
 
-public enum ClaimStatus
+public enum ClaimStatusEnum
 {
     AddedByUser,
     AddedByMaster,

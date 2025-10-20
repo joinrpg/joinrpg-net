@@ -12,6 +12,6 @@ public class ClaimsApiController(IClaimsRepository claimsRepository) : XGameApiC
     public async Task<ClaimInfo> GetOne(int projectId, int claimId)
     {
         var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId);
-        return new ClaimInfo(claim.ClaimId, claim.CharacterId, ApiInfoBuilder.ToPlayerContacts(claim.Player), (ClaimStatus)claim.ClaimStatus);
+        return new ClaimInfo(claim.ClaimId, claim.CharacterId, ApiInfoBuilder.ToPlayerContacts(claim.Player), (ClaimStatusEnum)claim.ClaimStatus);
     }
 }
