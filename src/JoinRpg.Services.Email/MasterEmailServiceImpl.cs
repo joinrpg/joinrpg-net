@@ -82,7 +82,7 @@ internal class MasterEmailServiceImpl(
 {joinRpgSender.DisplayName}
 
 ";
-        var subject = $"{metadata.ProjectName}: проект закрыт";
+        var subject = $"{metadata.ProjectName.Value}: проект закрыт";
         await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
     }
 }
