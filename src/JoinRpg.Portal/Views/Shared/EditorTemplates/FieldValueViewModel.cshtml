@@ -1,6 +1,7 @@
 @using System.ComponentModel
-@using JoinRpg.Web.CharacterGroups.CharacterFields
 @using JoinRpg.Web.Models
+@using JoinRpg.Web.ProjectCommon.Fields
+@using JoinRpg.Web.ProjectMasterTools.Fields
 @using MandatoryStatusViewType = JoinRpg.Web.ProjectCommon.Fields.MandatoryStatusViewType
 @model FieldValueViewModel
 
@@ -36,7 +37,7 @@
         {
             @Model.FieldName
         }<span style="white-space:nowrap">
-        <component type="typeof(JoinRpg.Web.ProjectCommon.Fields.MandatoryStatusIcon)" render-mode="Static" param-Status="@(Model.MandatoryStatus)" />
+        <component type="typeof(MandatoryStatusIcon)" render-mode="Static" param-Status="@(Model.MandatoryStatus)" />
         @if (Model.HasMasterAccess)
         {
             foreach (var label in Model.Labels)
