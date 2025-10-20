@@ -13,4 +13,6 @@ public record ProjectName : SingleValueType<string>
             throw new ArgumentException("Project name is too short", nameof(value));
         }
     }
+
+    public override string ToString() => Value;
 }
