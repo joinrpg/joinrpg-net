@@ -13,7 +13,6 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Plots;
-using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models.Plot;
 
@@ -149,8 +148,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotFolderId = e.PlotFolderId;
         Status = e.GetStatus();
         ElementType = (PlotElementTypeView)e.ElementType;
-        ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***")
-            .ToPlainTextAndEscapeHtml(renderer);
+        ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
         HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(currentUserId, Permission.CanManagePlots) && e.Project.Active;
         HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
@@ -182,7 +180,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
     public JoinHtmlString Content { get; }
 
-    public MarkupString ShortContent { get; }
+    public string ShortContent { get; }
 
     [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }
