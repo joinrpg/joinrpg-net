@@ -49,6 +49,8 @@ internal static class HtmlSanitizers
         _ = sanitizer.Tag("pre");
         _ = sanitizer.Tag("code");
         _ = sanitizer.Tag("table");
+        _ = sanitizer.Tag("thead");
+        _ = sanitizer.Tag("tbody");
         _ = sanitizer.Tag("tr");
         _ = sanitizer.Tag("td");
         _ = sanitizer.Tag("th");

@@ -5,7 +5,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;

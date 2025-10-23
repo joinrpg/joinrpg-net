@@ -12,6 +12,7 @@ using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Plots;
 using JoinRpg.WebComponents.ElementMoving;
@@ -330,7 +331,7 @@ public class PlotController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
           CurrentUserId,
-            projectInfo, itemIdsToParticipateInSort: null, currentVersion: version, printMode: printMode));
+            itemIdsToParticipateInSort: null, renderer: new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo), currentVersion: version, printMode: printMode));
     }
 
     [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]

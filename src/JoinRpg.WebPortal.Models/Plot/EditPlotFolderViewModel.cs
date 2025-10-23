@@ -12,6 +12,7 @@ using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
@@ -67,7 +68,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
 
         var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo);
-        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
+        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, linkRenderer);
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
 
         HasEditAccess = folder.HasMasterAccess(currentUser) && folder.Project.Active;
@@ -109,19 +110,19 @@ public class EditPlotElementViewModel(PlotElement e, bool hasManageAccess, int? 
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {
-    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, JoinrpgMarkdownLinkRenderer linkRenderer)
     {
         var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
 
         return [.. orderedElements.Select(e => new PlotElementListItemViewModel(
-            e, currentUserAccessor.UserIdOrDefault, projectInfo, [.. orderedElements.Select(x => x.GetId().ToString())]))];
+            e, currentUserAccessor.UserIdOrDefault, [.. orderedElements.Select(x => x.GetId().ToString())], linkRenderer))];
     }
 
     public PlotElementListItemViewModel(
         PlotElement e,
         int? currentUserId,
-        ProjectInfo projectInfo,
         string[]? itemIdsToParticipateInSort,
+        JoinrpgMarkdownLinkRenderer renderer,
         int? currentVersion = null,
         bool printMode = false)
     {
@@ -136,8 +137,6 @@ public class PlotElementListItemViewModel : IProjectIdAware
         {
             throw new ArgumentOutOfRangeException(nameof(currentVersion));
         }
-
-        var renderer = new JoinrpgMarkdownLinkRenderer(e.Project, projectInfo);
 
         PlotElementId = e.PlotElementId;
         PlotElementIdentification = e.GetId();

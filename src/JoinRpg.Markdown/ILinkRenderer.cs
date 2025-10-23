@@ -1,4 +1,5 @@
 namespace JoinRpg.Markdown;
+using Markdig.Renderers;
 
 /// <summary>
 /// interfaces that allows consumers to plugin its renderers
@@ -13,5 +14,5 @@ public interface ILinkRenderer
     /// <summary>
     /// Function that do actual rendering 
     /// </summary>
-    string Render(string match, int index, string extra);
+    void Render(HtmlRenderer renderer, string match, int index, string extra);
 }

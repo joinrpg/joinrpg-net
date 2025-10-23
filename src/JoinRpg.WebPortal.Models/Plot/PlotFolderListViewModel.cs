@@ -5,8 +5,8 @@ using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
@@ -68,7 +68,7 @@ public class PlotFolderListFullItemViewModel : PlotFolderViewModelBase, IPlotFol
         ElementsCount = folder.Elements.Count(x => x.IsActive);
         TodoField = folder.TodoField;
         HasEditAccess = folder.HasMasterAccess(currentUser, Permission.CanManagePlots) && folder.Project.Active;
-        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
+        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, linkRenderer);
         Summary = folder.MasterSummary.ToHtmlString();
     }
 }
