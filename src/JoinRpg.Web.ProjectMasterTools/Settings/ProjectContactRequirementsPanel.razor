@@ -7,11 +7,6 @@
     return;
 }
 
-@if (success)
-{
-    <JoinAlert Variation="VariationStyleEnum.Success">Настройки контактов сохранены</JoinAlert>
-}
-
 @if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
 {
     return;
@@ -53,6 +48,11 @@
         </EditForm>
     </Body>
 </JoinPanel>
+
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Настройки контактов сохранены</JoinAlert>
+}
 
 @code {
     private EditContext? editContext;
