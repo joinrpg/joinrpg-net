@@ -70,7 +70,7 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
 
     public static ProjectListSpecification AllProjectsWithMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: true);
 
-    public static ProjectListSpecification ActiveProjectsWithGrantMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterGrantAccess, LoadArchived: true);
+    public static ProjectListSpecification ActiveProjectsWithGrantMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterGrantAccess, LoadArchived: false);
 
     public static ProjectListSpecification All { get; } = new ProjectListSpecification(ProjectListCriteria.All, LoadArchived: true);
 
