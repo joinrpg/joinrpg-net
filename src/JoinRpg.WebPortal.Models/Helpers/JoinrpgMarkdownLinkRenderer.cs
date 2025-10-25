@@ -153,17 +153,22 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     private void GroupListFunc(HtmlRenderer renderer, CharacterGroup group, IReadOnlyCollection<Character> ch, string extra)
     {
         GroupHeader(renderer, group, extra);
+        bool sep = false;
 
         foreach (var character in ch)
         {
-            if (renderer.EnableHtmlForInline)
+            if (sep)
             {
-                renderer.Write("<br>");
+                if (renderer.EnableHtmlForInline)
+                {
+                    renderer.Write("<br>");
+                }
+                else
+                {
+                    renderer.Write("\n");
+                }
             }
-            else
-            {
-                renderer.Write("\n");
-            }
+            sep = true;
             CharacterImpl(renderer, character, "");
         }
     }
