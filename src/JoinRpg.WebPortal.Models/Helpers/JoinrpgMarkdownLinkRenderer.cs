@@ -257,16 +257,16 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         CharacterLinkImpl(renderer, character, extra);
         if (renderer.EnableHtmlForInline)
         {
-            renderer.Write("&nbsp;");
+            renderer.Write("&nbsp;(");
         }
         else
         {
-            renderer.Write(" ");
+            renderer.Write(" (");
         }
         renderer.Write(GetPlayerString(character, projectInfo, showContacts: true));
         if (renderer.EnableHtmlForInline)
         {
-            renderer.Write("</span>");
+            renderer.Write(")</span>");
         }
     }
 
