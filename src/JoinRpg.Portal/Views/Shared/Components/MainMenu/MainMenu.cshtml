@@ -30,12 +30,11 @@
                             <li>
                                 @if (!project.HasMyMasterAccess)
                                 {
-                                    @Html.ActionLink(@project.ProjectName, "MyClaim", "Claim", new { ProjectId = project.ProjectId.Value, area = "" }, null)
-
+                                    <a asp-action="MyClaim" asp-action="Claim" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><span class="glyphicon glyphicon-file"></span> @project.ProjectName</a>
                                 }
                                 else
                                 {
-                                    @Html.ActionLink(@project.ProjectName, "Details", "Game", new { ProjectId = project.ProjectId.Value, area = "" }, null)
+                                    <a asp-action="Details" asp-action="Game" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><span class="glyphicon glyphicon-edit"></span> @project.ProjectName</a>
                                 }
                             </li>
                         }
