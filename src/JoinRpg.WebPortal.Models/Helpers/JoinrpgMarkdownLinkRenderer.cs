@@ -252,7 +252,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         CharacterLinkImpl(renderer, character, extra);
         if (renderer.EnableHtmlForInline)
         {
-            renderer.Write("&nbsp");
+            renderer.Write("&nbsp;");
         }
         else
         {
