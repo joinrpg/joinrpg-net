@@ -5,7 +5,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 using Microsoft.AspNetCore.Components;

@@ -1,3 +1,5 @@
+using Markdig.Renderers;
+
 namespace JoinRpg.Markdown.Test;
 
 public class LinkRendererTest
@@ -8,11 +10,11 @@ public class LinkRendererTest
 
         public string[] LinkTypesToMatch { get; } = [Test];
 
-        public string Render(string match, int index, string extra)
+        public void Render(HtmlRenderer renderer, string match, int index, string extra)
         {
             match.ShouldBe("%" + Test);
             index.ShouldBeGreaterThan(0);
-            return $"<b>{index}</b>{extra}";
+            renderer.Write($"<b>{index}</b>{extra}");
         }
     }
 
@@ -22,11 +24,11 @@ public class LinkRendererTest
 
         public string[] LinkTypesToMatch { get; } = [Test];
 
-        public string Render(string match, int index, string extra)
+        public void Render(HtmlRenderer renderer, string match, int index, string extra)
         {
             match.ShouldBe("%" + Test);
             index.ShouldBeGreaterThan(0);
-            return $"<b>{index}</b>{extra}";
+            renderer.Write($"<b>{index}</b>{extra}");
         }
     }
 

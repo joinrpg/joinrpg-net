@@ -1,3 +1,5 @@
+using Markdig.Renderers;
+
 namespace JoinRpg.Markdown;
 
 /// <summary>
@@ -9,7 +11,7 @@ internal class DoNothingLinkRenderer : ILinkRenderer
     public string[] LinkTypesToMatch { get; } = [];
 
     /// <inheritdoc />
-    public string Render(string match, int index, string extra) => throw new NotSupportedException();
+    public void Render(HtmlRenderer renderer, string match, int index, string extra) => throw new NotSupportedException();
 
     /// <summary>
     /// Instance copy to avoid allocations

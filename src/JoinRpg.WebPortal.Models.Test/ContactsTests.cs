@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.Helpers;
 
 namespace JoinRpg.WebPortal.Models.Test;
 public class ContactsTests
