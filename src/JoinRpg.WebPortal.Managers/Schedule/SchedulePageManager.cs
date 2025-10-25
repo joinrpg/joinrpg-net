@@ -51,7 +51,7 @@ public class SchedulePageManager(
         calendar.Events.AddRange(result.AllItems.Select(BuildIcalEvent));
 
         var serializer = new CalendarSerializer();
-        return serializer.SerializeToString(calendar); //TODO stream
+        return serializer.SerializeToString(calendar) ?? ""; //TODO stream
     }
 
     private CalendarEvent BuildIcalEvent(ProgramItemPlaced evt)
@@ -61,9 +61,8 @@ public class SchedulePageManager(
             Start = new CalDateTime(evt.StartTime.LocalDateTime),
             End = new CalDateTime(evt.EndTime.LocalDateTime),
             Summary = evt.ProgramItem.Name,
-            IsAllDay = false,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
-            Description = evt.ProgramItem.Description.ToPlainText(),
+            Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
         };
     }
 
@@ -121,15 +120,13 @@ public class SchedulePageManager(
                     ProjectId = slot.ProjectId,
                     CharacterId = slot.Id,
                     Users = slot.Users,
+                    Rooms = [.. viewModel.Columns
+                        .SkipWhile((v, index) => index < colIndex)
+                        .Take(slot.ColSpan)],
+                    Slots = [.. viewModel.Rows
+                        .SkipWhile((v, index) => index < rowIndex)
+                        .Take(slot.RowSpan)]
                 };
-                appointment.Rooms = viewModel.Columns
-                    .SkipWhile((v, index) => index < colIndex)
-                    .Take(slot.ColSpan)
-                    .ToArray();
-                appointment.Slots = viewModel.Rows
-                    .SkipWhile((v, index) => index < rowIndex)
-                    .Take(slot.RowSpan)
-                    .ToArray();
                 result.Add(appointment);
             }
         }
