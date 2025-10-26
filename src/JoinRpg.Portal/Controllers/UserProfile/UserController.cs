@@ -17,7 +17,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
     [AllowAnonymous]
     public async Task<ActionResult> Details(UserIdentification userId)
     {
-        var user = await userRepository.GetUserInfo(userId) ?? throw new Exception();
+        var user = await userRepository.GetUserInfo(userId) ?? throw new JoinRpgEntityNotFoundException([userId], "User");
 
         var userProjects = await projectRepository.GetProjectsBySpecification(userId, ProjectListSpecification.AllProjectsWithMasterAccess);
 
