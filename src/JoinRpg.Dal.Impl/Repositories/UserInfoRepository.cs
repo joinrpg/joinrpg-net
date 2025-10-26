@@ -22,6 +22,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
           .Include(u => u.Extra)
           .Include(u => u.Avatars)
           .Include(u => u.SelectedAvatar)
+          .Include(u => u.ExternalLogins)
           .SingleOrDefaultAsync(u => u.UserId == userId);
     }
 
