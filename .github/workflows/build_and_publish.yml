@@ -94,12 +94,12 @@ jobs:
 
     - name: Publish & push portal
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerVersion=${{ env.CALCULATED_VERSION }}
 
     - name: Publish & push migrator
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerVersion=${{ env.CALCULATED_VERSION }}
 
     - name: Publish & push id portal
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+      run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerVersion=${{ env.CALCULATED_VERSION }}
