@@ -160,9 +160,11 @@ public class ManageController(
         var dictionary = Request.Query.Select(x => x).ToDictionary(x => x.Key, x => x.Value.First() ?? "");
         var value = loginValidator.CheckAuthorization(dictionary);
 
-        var principal = new System.Security.Claims.ClaimsPrincipal();
-
-
+        if (value != TelegramAuthorizationResult.Valid)
+        {
+            logger.LogWarning("Ошибка при проверке логина через телеграмм {telegramValidateResult}", value);
+            return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
+        }
         var userId = currentUserAccessor.UserId;
         var user = (await userManager.FindByIdAsync(userId.ToString()))!;
 
@@ -173,9 +175,13 @@ public class ManageController(
 
         if (u is not null)
         {
+            logger.LogWarning("Телеграмм аккаунт {telegramUserId} уже был привязан к пользователю {userName}", telegramUserId, u.UserName);
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
         }
+
+
         await loginStore.AddCustomLoginAsync(user, telegramUserId, "telegram", CancellationToken.None);
+        logger.LogInformation("Привязали телеграмм аккаунт {telegramUserId}", telegramUserId);
 
         await externalLoginProfileExtractor.TryExtractTelegramProfile(user, dictionary);
         return RedirectToAction("SetupProfile");
