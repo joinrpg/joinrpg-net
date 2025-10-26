@@ -18,6 +18,12 @@
 
         <ImplicitUsings>enable</ImplicitUsings>
 
+        <!-- Версия контейнера совпадает с версией приложения -->
+        <ContainerVersion>$(Version)</ContainerVersion>
+
+        <!-- Всегда публикуем с двумя тегами: latest и версия -->
+        <ContainerImageTags>latest;$(Version)</ContainerImageTags>
+
     </PropertyGroup>
     <!--
     this instruction automatically allows XXX.Tests to access internals of XXX.
