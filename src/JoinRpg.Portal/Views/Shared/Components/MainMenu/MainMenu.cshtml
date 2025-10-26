@@ -30,11 +30,11 @@
                             <li>
                                 @if (!project.HasMyMasterAccess)
                                 {
-                                    <a asp-action="MyClaim" asp-action="Claim" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><span class="glyphicon glyphicon-file"></span> @project.ProjectName</a>
+                                    <a asp-action="MyClaim" asp-controller="Claim" asp-route-ProjectId="@project.ProjectId.Value"><span class="glyphicon glyphicon-file"></span> @project.ProjectName</a>
                                 }
                                 else
                                 {
-                                    <a asp-action="Details" asp-action="Game" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><span class="glyphicon glyphicon-edit"></span> @project.ProjectName</a>
+                                    <a asp-action="Details" asp-controller="Game" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><span class="glyphicon glyphicon-edit"></span> @project.ProjectName</a>
                                 }
                             </li>
                         }
