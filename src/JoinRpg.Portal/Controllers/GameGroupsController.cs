@@ -92,7 +92,7 @@ public class GameGroupsController(
             return NotFound();
         }
 
-        return View(GetHotCharacters(field));
+        return View(await GetHotCharacters(field));
     }
 
     [HttpGet]
