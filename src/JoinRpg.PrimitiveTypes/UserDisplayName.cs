@@ -25,4 +25,6 @@ public record UserDisplayName(
         return email.UserPart;
     }
 
+    public override string ToString() => $"User({DisplayName}";
+
 }

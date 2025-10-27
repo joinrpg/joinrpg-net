@@ -22,4 +22,6 @@ public record class UserIdentification(int Value) : SingleValueType<int>(Value),
         result = new UserIdentification(0);
         return false;
     }
+
+    public override string ToString() => $"UserId({Value})";
 }
