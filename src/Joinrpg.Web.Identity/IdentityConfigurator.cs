@@ -30,8 +30,10 @@ public static class IdentityConfigurator
             .AddScoped<JoinUserManager>()
 
             .AddHttpContextAccessor()
-            .AddScoped<ICurrentUserAccessor, CurrentUserAccessor>()
-            .AddScoped<ICurrentUserSetAccessor, CurrentUserAccessor>()
+            .AddScoped<CurrentUserAccessor>()
+            // ЧТобы это был один экземпляр
+            .AddScoped<ICurrentUserAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
+            .AddScoped<ICurrentUserSetAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
 
             .AddScoped(typeof(PerRequestCache<,>))
             .AddSingleton(typeof(SingletonCache<,>))

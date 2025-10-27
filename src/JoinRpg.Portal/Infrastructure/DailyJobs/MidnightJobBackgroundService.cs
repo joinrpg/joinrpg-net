@@ -38,7 +38,7 @@ public class MidnightJobBackgroundService<TJob>(
                 try
                 {
                     var job = scope.ServiceProvider.GetRequiredService<JobRunner<TJob>>();
-                    await job.RunJob(stoppingToken);
+                    await job.RunJob(stoppingToken, scope);
                     _ = await dailyJobRepository.TrySetJobCompleted(jobId);
                     logger.LogInformation("Successfully complete {jobName} on this instance", JobName);
                 }
