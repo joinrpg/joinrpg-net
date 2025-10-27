@@ -38,7 +38,7 @@ public class User
 
     public virtual AllrpgUserDetails? Allrpg { get; set; }
 
-    public virtual UserExtra? Extra { get; set; }
+    public virtual UserExtra Extra { get; set; }
 
     public virtual HashSet<UserSubscription> Subscriptions { get; set; }
 
