@@ -5,9 +5,7 @@ public class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
     private static readonly TimeZoneInfo mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
     public async Task<KogdaIgraGameUpdateMarker[]> GetChangedGamesSince(DateTimeOffset since)
     {
-        var sinceInMsk = (DateTimeOffset)TimeZoneInfo.ConvertTimeFromUtc(since.UtcDateTime, mskTimeZone);
-        // Kogda igra expects MSK unix seconds, not UTC. Need to fix them
-        var sinceAsUnixTimestamp = Math.Max(sinceInMsk.ToUnixTimeSeconds(), 0);
+        var sinceAsUnixTimestamp = ConvertToKogdaIgraTimeStamp(since);
 
         HttpResponseMessage result;
         try
@@ -21,6 +19,15 @@ public class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
         var strResult = await result.Content.ReadAsStringAsync();
 
         return ResultParser.ParseGameUpdateMarkers(strResult);
+    }
+
+    //For tests
+    internal static long ConvertToKogdaIgraTimeStamp(DateTimeOffset since)
+    {
+        // Когда будешь править этот метод, помни, что у тебя на компьютере одна таймзона, а на сервере — другая.
+        var sinceInMsk = TimeZoneInfo.ConvertTime(since, mskTimeZone);
+        // Kogda igra expects MSK unix seconds, not UTC. Need to fix them
+        return Math.Max(sinceInMsk.ToUnixTimeSeconds(), 0);
     }
 
     public async Task<KogdaIgraGameInfo?> GetGameInfo(int gameId)
