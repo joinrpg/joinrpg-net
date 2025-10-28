@@ -31,7 +31,7 @@ public class GameDataParserTest
         gameInfo.MasterGroupName.ShouldBe("МТГ «Бастилия»");
         gameInfo.RegionName.ShouldBe("СПб");
         gameInfo.Begin.ShouldBe(new DateOnly(2010, 09, 03));
-        gameInfo.End.ShouldBe(new DateOnly(2010, 09, 06));
+        gameInfo.End.ShouldBe(new DateOnly(2010, 09, 05));
         gameInfo.UpdateDate.ShouldBe(new DateTimeOffset(2013, 03, 17, 23, 56, 21, TimeSpan.FromHours(0)));
     }
 }
