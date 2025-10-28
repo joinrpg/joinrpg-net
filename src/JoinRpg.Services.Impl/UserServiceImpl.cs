@@ -222,7 +222,7 @@ public class UserServiceImpl(
     /// <inheritdoc/>
     async Task<AvatarIdentification> IAvatarService.EnsureAvatarPresent(int userId)
     {
-        logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
+        logger.LogDebug("Ensuring that user({userId}) has GrAvatar", userId);
 
         var user = await UserRepository.WithProfile(userId);
 

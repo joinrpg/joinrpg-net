@@ -337,6 +337,7 @@ public class AccountController(
 
         if (auth.None)
         {
+            logger.LogInformation("Неудачная попытка войти через ВК, дополнительная информация {authFailure}", auth.Failure);
             return RedirectToAction("Login");
         }
 
@@ -357,11 +358,19 @@ public class AccountController(
             var user = await userManager.FindByEmailAsync(email);
             if (user != null)
             {
+                logger.LogInformation("Привязываем привязки {loginProvider} / {loginProviderKey} к аккаунту {userId}",
+                    loginInfo.LoginProvider, loginInfo.LoginProvider, user.Id);
+
                 _ = await userManager.AddLoginAsync(user, loginInfo);
                 result = await signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
                 if (result.Succeeded)
                 {
                     await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                }
+                else
+                {
+                    logger.LogWarning("Неожиданная ошибка при повторном логине после привязки {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",
+                        loginInfo.LoginProvider, loginInfo.LoginProvider, user.Id, result);
                 }
             }
         }
