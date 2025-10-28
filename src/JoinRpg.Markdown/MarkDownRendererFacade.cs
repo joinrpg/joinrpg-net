@@ -53,7 +53,7 @@ public static class MarkDownRendererFacade
     ILinkRenderer? renderer = null)
     {
         var result = PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText);
-        if (result[^1] == '\n')
+        if (result.Length > 0 && result[^1] == '\n')
         {
             return result[..^1];
         }
