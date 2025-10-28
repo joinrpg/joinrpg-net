@@ -21,7 +21,7 @@ internal static class ResultParser
             strResult,
             parsedResult.update_date ?? DateTimeOffset.Now,
             parsedResult.begin,
-            parsedResult.begin.AddDays(parsedResult.time),
+            parsedResult.begin.AddDays(parsedResult.time - 1),
             parsedResult.sub_region_disp_name,
             parsedResult.mg,
             parsedResult.uri);
