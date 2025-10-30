@@ -16,7 +16,11 @@
             }
             @if (!string.IsNullOrWhiteSpace(Model.Email))
             {
-                <br /> @Html.DisplayFor(model => model.Email) 
+                <br /> @Html.DisplayFor(model => model.Email)
+                @if (!Model.EmailConfirmed && Model.IsAdmin)
+                {
+                    <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Email не подтвержден")" />
+                }
             }
             @if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
             {

@@ -105,7 +105,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.BornName,
                 user.Email,
                 user.ExternalLogins,
-                user.Extra!.Telegram,
+                user.Extra.Telegram,
                 Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId }),
                 Projects = user.ProjectAcls.Where(acl => activeProjectsPredicate.Invoke(acl.Project)).Select(acl => new { acl.ProjectId, acl.Project.Active }),
                 user.Auth.IsAdmin,
@@ -116,6 +116,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.SelectedAvatarId,
                 user.VerifiedProfileFlag,
                 user.Extra.PhoneNumber,
+                user.Auth.EmailConfirmed,
             };
 
         var result = await userQuery.SingleOrDefaultAsync();
@@ -141,6 +142,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             result.IsAdmin,
             AvatarIdentification.FromOptional(result.SelectedAvatarId),
             new Email(result.Email),
+            result.EmailConfirmed,
             userFullName,
             result.VerifiedProfileFlag,
             result.PhoneNumber
