@@ -7,7 +7,7 @@ using LinqKit;
 namespace JoinRpg.Services.Impl.Search.Providers;
 internal class UserSearchBySocialProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         searchString = searchString.Trim();
 
@@ -18,8 +18,8 @@ internal class UserSearchBySocialProvider(IUnitOfWork unitOfWork) : ISearchProvi
 
         var predicateBuilder = PredicateBuilder.New<User>();
 
-        predicateBuilder = predicateBuilder.Or(user => user.Extra != null & user.Extra!.Vk == searchString);
-        predicateBuilder = predicateBuilder.Or(user => user.Extra != null & user.Extra!.Telegram == searchString);
+        predicateBuilder = predicateBuilder.Or(user => user.Extra.Vk == searchString);
+        predicateBuilder = predicateBuilder.Or(user => user.Extra.Telegram == searchString);
 
         var results = await unitOfWork
             .GetDbSet<User>()

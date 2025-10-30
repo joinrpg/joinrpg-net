@@ -10,14 +10,14 @@ namespace JoinRpg.Web.Models;
 /// A view model for a single item from search result
 /// carrying, in additon, the target of the made search.
 /// </summary>
-public class TargetedSearchResultViewModel(ISearchResult searchResult,
+public class TargetedSearchResultViewModel(SearchResult searchResult,
     string searchTarget,
     IUriService uriService,
     ProjectListItemViewModel? projectViewModel)
 {
     private string SearchTarget { get; } = searchTarget ?? throw new ArgumentNullException(nameof(searchTarget));
     public ProjectListItemViewModel? ProjectViewModel { get; } = projectViewModel;
-    public ISearchResult SearchResult { get; } = searchResult ?? throw new ArgumentNullException(nameof(searchResult));
+    public SearchResult SearchResult { get; } = searchResult ?? throw new ArgumentNullException(nameof(searchResult));
     public GameObjectLinkType LinkType => SearchResult.LinkType.AsViewModel();
     public Uri Url { get; } = uriService.GetUri(searchResult);
 

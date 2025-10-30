@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class PlotSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         if (searchString.Length < 3)
         {
@@ -23,7 +23,7 @@ internal class PlotSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
              )
              .ToListAsync();
 
-        return results.Select(plot => new SearchResultImpl
+        return results.Select(plot => new SearchResult
         {
             LinkType = LinkType.Plot,
             Name = plot.MasterTitle,

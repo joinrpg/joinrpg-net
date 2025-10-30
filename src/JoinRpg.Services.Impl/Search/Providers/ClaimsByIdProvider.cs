@@ -12,7 +12,7 @@ internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%заявка", "заявка",];
 
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         (var idToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
@@ -30,7 +30,7 @@ internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
 
         return results
           .Where(claim => claim.HasMasterAccess(currentUserId))
-          .Select(claim => new SearchResultImpl
+          .Select(claim => new SearchResult
           {
               LinkType = LinkType.Claim,
               Name = claim.Character.CharacterName,

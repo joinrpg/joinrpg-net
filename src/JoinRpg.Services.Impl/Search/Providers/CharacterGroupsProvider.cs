@@ -15,7 +15,7 @@ internal class CharacterGroupsProvider : WorldObjectProviderBase, ISearchProvide
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         int? characterGroupIdToFind = int.TryParse(searchString.Trim(), out var parsedValue) ? parsedValue : null;
 

@@ -1,13 +1,14 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 internal static class SearchUtils
 {
-    public static SearchResultImpl GetUserResult(this User user)
+    public static SearchResult GetUserResult(this User user)
     {
-        return new SearchResultImpl
+        return new SearchResult
         {
             LinkType = LinkType.ResultUser,
             Name = user.GetDisplayName(),

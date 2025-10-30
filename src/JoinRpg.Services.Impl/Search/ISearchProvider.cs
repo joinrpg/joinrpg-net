@@ -4,5 +4,5 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal interface ISearchProvider
 {
-    Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString);
+    Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString);
 }
