@@ -361,7 +361,23 @@ public class AccountController(
                 logger.LogInformation("Привязываем привязки {loginProvider} / {loginProviderKey} к аккаунту {userId}",
                     loginInfo.LoginProvider, loginInfo.LoginProvider, user.Id);
 
-                _ = await userManager.AddLoginAsync(user, loginInfo);
+                var addLoginResult = await userManager.AddLoginAsync(user, loginInfo);
+                if (!addLoginResult.Succeeded)
+                {
+                    logger.LogWarning("Неожиданная ошибка при привязке {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",
+                        loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, addLoginResult);
+                    return View("Lockout");
+
+                }
+
+                if (!user.EmaiLConfirmed)
+                {
+                    logger.LogInformation("Пользователь входит через {loginProvider} / {loginProviderKey}, но у него не подтвержден email {email}. Он соответствует тому, что отдает ВК, подтверждаем.",
+                        loginInfo.LoginProvider, loginInfo.ProviderKey, email);
+                    var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                    _ = await userManager.ConfirmEmailAsync(user, token);
+                }
+
                 result = await signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
                 if (result.Succeeded)
                 {
@@ -370,7 +386,8 @@ public class AccountController(
                 else
                 {
                     logger.LogWarning("Неожиданная ошибка при повторном логине после привязки {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",
-                        loginInfo.LoginProvider, loginInfo.LoginProvider, user.Id, result);
+                        loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, result);
+                    return View("Lockout");
                 }
             }
         }
