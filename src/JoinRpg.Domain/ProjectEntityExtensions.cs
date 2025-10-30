@@ -10,6 +10,7 @@ namespace JoinRpg.Domain;
 public static class ProjectEntityExtensions
 {
     [Pure]
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Expression<Func<ProjectAcl, bool>> requiredAccess)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -18,6 +19,7 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -36,6 +38,7 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static bool HasMasterAccess(this IProjectEntity entity, [NotNullWhen(true)] int? currentUserId, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -55,6 +58,7 @@ public static class ProjectEntityExtensions
         return field.RequestMasterAccess(currentUserId, acl => permission.GetPermssionExpression()(acl));
     }
 
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static T RequestMasterAccess<T>(this T field,
         [NotNull]
         int? currentUserId,
@@ -132,6 +136,7 @@ public static class ProjectEntityExtensions
 
     public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
 
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static T EnsureProjectActive<T>(this T entity)
   where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException() : entity;
 
