@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
@@ -68,19 +69,24 @@ public class UserProfileDetailsViewModel
     public AccessReasonView Reason { get; }
 
     public bool IsVerifiedUser { get; }
-    public bool IsAdmin { get; }
+
+    public bool ViewAsAdmin { get; }
 
     public ContactsAccessTypeView SocialNetworkAccess { get; }
 
     public bool IsMine => Reason == AccessReasonView.ItsMe;
 
     public UserProfileDetailsViewModel(UserInfo user, UserInfo? currentUser)
-        : this(user, user.GetAccess(currentUser)) { }
+        : this(user, user.GetAccess(currentUser), currentUser?.IsAdmin ?? false) { }
 
+    public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, ICurrentUserAccessor currentUserAccessor)
+    : this(user, user.GetAccess(currentProject), currentUserAccessor.IsAdmin) { }
+
+    [Obsolete("Передайте сюда ICurrentUserAccessor или UserInfo")]
     public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject)
-    : this(user, user.GetAccess(currentProject)) { }
+    : this(user, user.GetAccess(currentProject), false) { }
 
-    public UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason)
+    private UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason, bool viewAsAdmin)
     {
         User = UserLinks.Create(user, ViewMode.Show);
         Reason = (AccessReasonView)accessReason;
@@ -94,7 +100,6 @@ public class UserProfileDetailsViewModel
             FullName = user.UserFullName.FullName;
             PhoneNumber = user.PhoneNumber;
             IsVerifiedUser = user.VerifiedProfileFlag;
-            IsAdmin = user.IsAdmin;
         }
         if (Reason != AccessReasonView.NoAccess || user.Social.SocialNetworksAccess == ContactsAccessType.Public)
         {
@@ -104,6 +109,8 @@ public class UserProfileDetailsViewModel
             Livejournal = user.Social.LiveJournal;
             HasSocialAccess = true;
         }
+
+        ViewAsAdmin = viewAsAdmin;
     }
 
     public bool HasSocialAccess { get; }

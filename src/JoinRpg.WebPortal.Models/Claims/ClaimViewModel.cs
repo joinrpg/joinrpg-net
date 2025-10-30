@@ -149,7 +149,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 currentUser.UserId,
                 CharacterNavigationPage.Claim, projectInfo);
         Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
-        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo);
+        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUser);
         ProjectActive = claim.Project.Active;
         CheckInStarted = claim.Project.Details.CheckInProgress;
         CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;

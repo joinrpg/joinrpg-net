@@ -1,17 +1,18 @@
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Money;
 
-public class FinOperationListViewModel(Project project, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations) : IOperationsAwareView
+public class FinOperationListViewModel(ProjectIdentification projectId, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations) : IOperationsAwareView
 {
     public IReadOnlyCollection<FinOperationListItemViewModel> Items { get; } = operations
           .OrderByDescending(f => f.CommentId)
           .Select(f => new FinOperationListItemViewModel(f, urlHelper))
           .ToArray();
 
-    public int ProjectId { get; } = project.ProjectId;
+    public int ProjectId { get; } = projectId;
 
     public IReadOnlyCollection<int> ClaimIds { get; } = [.. operations.Select(c => c.ClaimId).Distinct()];
 

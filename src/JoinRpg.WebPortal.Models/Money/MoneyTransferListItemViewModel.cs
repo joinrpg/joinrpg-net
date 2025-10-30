@@ -2,7 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Models.Money;
 
@@ -28,7 +30,7 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
     [Display(Name = "Комментарий")]
     public JoinHtmlString Comment { get; }
 
-    public MoneyTransferListItemViewModel(MoneyTransfer fo, int currentUserId)
+    public MoneyTransferListItemViewModel(MoneyTransfer fo, ICurrentUserAccessor currentUserId)
     {
         Id = fo.Id;
         ProjectId = fo.ProjectId;
@@ -49,10 +51,10 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
         var isPendingAny = isPendingReceiver || isPendingSender;
 
         HasApproveAccess =
-            (fo.Project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
+            (fo.Project.HasMasterAccess(currentUserId, Permission.CanManageMoney) &&
              isPendingAny)
-            || (currentUserId == Sender.UserId && isPendingSender)
-            || (currentUserId == Receiver.UserId && isPendingReceiver);
+            || (currentUserId.UserIdOrDefault == Sender.UserId && isPendingSender)
+            || (currentUserId.UserIdOrDefault == Receiver.UserId && isPendingReceiver);
 
         Comment = fo.TransferText.Text.ToHtmlString();
     }
