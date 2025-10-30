@@ -352,30 +352,38 @@ public class AccountController(
 
         var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
 
-        // If sign in failed, may be we have user with same email. Let's bind.
+        // У нас не получилось зайти, давайте посмотрим по email
         if (!result.Succeeded && !string.IsNullOrWhiteSpace(email))
         {
             var user = await userManager.FindByEmailAsync(email);
             if (user != null)
             {
-                logger.LogInformation("Привязываем привязки {loginProvider} / {loginProviderKey} к аккаунту {userId}",
-                    loginInfo.LoginProvider, loginInfo.LoginProvider, user.Id);
-
-                var addLoginResult = await userManager.AddLoginAsync(user, loginInfo);
-                if (!addLoginResult.Succeeded)
-                {
-                    logger.LogWarning("Неожиданная ошибка при привязке {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",
-                        loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, addLoginResult);
-                    return View("Lockout");
-
-                }
-
+                // Возможно не получается зайти, т.к. email не подтвержден.
                 if (!user.EmaiLConfirmed)
                 {
                     logger.LogInformation("Пользователь входит через {loginProvider} / {loginProviderKey}, но у него не подтвержден email {email}. Он соответствует тому, что отдает ВК, подтверждаем.",
                         loginInfo.LoginProvider, loginInfo.ProviderKey, email);
                     var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     _ = await userManager.ConfirmEmailAsync(user, token);
+                }
+
+                // Возможно не получается зайти, т.к. логин не привязан к этому аккаунту
+                var externalLogins = await userManager.GetLoginsAsync(user);
+
+                if (!externalLogins.Any(el => el.ProviderKey == loginInfo.ProviderKey && el.LoginProvider == loginInfo.LoginProvider))
+                {
+                    logger.LogInformation("Привязываем привязки {loginProvider} / {loginProviderKey} к аккаунту {userId}",
+                        loginInfo.LoginProvider, loginInfo.LoginProvider, user.Id);
+
+                    var addLoginResult = await userManager.AddLoginAsync(user, loginInfo);
+                    if (!addLoginResult.Succeeded)
+                    {
+                        logger.LogError("Неожиданная ошибка при привязке {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",
+                            loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, addLoginResult);
+                        return View("Lockout");
+
+                    }
+
                 }
 
                 result = await signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
@@ -394,6 +402,7 @@ public class AccountController(
 
         if (result.Succeeded)
         {
+            // TODO Обновлять профиль пользователя при логине
             return RedirectToLocal(returnUrl);
         }
 
