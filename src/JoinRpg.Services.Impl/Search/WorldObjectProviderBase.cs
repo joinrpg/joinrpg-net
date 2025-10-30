@@ -1,12 +1,13 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
 internal class WorldObjectProviderBase
 {
-    protected static List<SearchResultImpl> GetWorldObjectsResult(
+    protected static List<SearchResult> GetWorldObjectsResult(
       int? currentUserId,
       IEnumerable<IWorldObject> results,
       LinkType linkType,
@@ -15,7 +16,7 @@ internal class WorldObjectProviderBase
     {
         return [.. results.Where(cg => cg.IsVisible(currentUserId))
           .Select(result =>
-            new SearchResultImpl
+            new SearchResult
             {
                 LinkType = linkType,
                 Name = result.Name,

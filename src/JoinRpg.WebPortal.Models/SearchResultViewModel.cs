@@ -4,7 +4,7 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Web.Models;
 
-public class SearchResultViewModel(string searchString, IEnumerable<ISearchResult> results, IReadOnlyDictionary<ProjectIdentification, ProjectListItemViewModel> projectDetails, IUriService uriService)
+public class SearchResultViewModel(string searchString, IEnumerable<SearchResult> results, IReadOnlyDictionary<ProjectIdentification, ProjectListItemViewModel> projectDetails, IUriService uriService)
 {
     public string SearchString { get; } = searchString;
     public List<IGrouping<ProjectListItemViewModel?, TargetedSearchResultViewModel>> ResultsByProject { get; } = results.Select(r =>

@@ -1,15 +1,18 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Search;
 
-public interface ISearchResult : ILinkable
+public record class SearchResult : ILinkable
 {
-    string Name { get; }
-    MarkdownString Description { get; }
-    bool IsPublic { get; }
-    /// <summary>
-    /// Used to indicate that a perfect match was found and other search results are odd and useless. 
-    /// </summary>
-    bool IsPerfectMatch { get; }
+    public required LinkType LinkType { get; set; }
+    public required string Name { get; set; }
+    public required MarkdownString Description { get; set; }
+
+    public required bool IsPublic { get; set; }
+
+    public required bool IsActive { get; set; }
+    public bool IsPerfectMatch { get; set; } = false;
+
+    public required string Identification { get; set; }
+    public required int? ProjectId { get; set; }
 }

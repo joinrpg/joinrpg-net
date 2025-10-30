@@ -11,7 +11,7 @@ internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBa
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%персонаж", "персонаж",];
 
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         (var characterIdToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 

@@ -5,7 +5,7 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class SearchServiceImpl(IEnumerable<ISearchProvider> searchProviders) : ISearchService
 {
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         searchString = searchString.Trim();
         if (searchString.Length == 0)
@@ -15,18 +15,22 @@ internal class SearchServiceImpl(IEnumerable<ISearchProvider> searchProviders) :
 
         var searchTasks = searchProviders.Select(p => p.SearchAsync(currentUserId, searchString));
 
-        var results = new List<ISearchResult>();
+        var results = new List<SearchResult>();
         foreach (var task in searchTasks)
         {
             var rGroup = await task;
             //TODO: We can stop here when we have X results.
             results.AddRange(rGroup);
+
+            // If there're results that perfectly match the search string - return them only. 
+            // e.g. контакты123 should return only useer with ID=123
+            if (rGroup.Any(r => r.IsPerfectMatch))
+            {
+                return [.. results.Where(r => r.IsPerfectMatch).Distinct()];
+            }
         }
 
-        // If there're results that perfectly match the search string - return them only. 
-        // e.g. контакты123 should return only useer with ID=123
-        return results.Any(r => r.IsPerfectMatch)
-          ? [.. results.Where(r => r.IsPerfectMatch)]
-          : results;
+
+        return [.. results.Distinct()];
     }
 }
