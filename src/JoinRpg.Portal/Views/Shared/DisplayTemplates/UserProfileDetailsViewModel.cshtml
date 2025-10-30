@@ -17,7 +17,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.Email))
             {
                 <br /> @Html.DisplayFor(model => model.Email)
-                @if (!Model.EmailConfirmed && Model.IsAdmin)
+                @if (!Model.EmailConfirmed && Model.ViewAsAdmin)
                 {
                     <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Email не подтвержден")" />
                 }

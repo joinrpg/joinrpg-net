@@ -1,43 +1,30 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
-using MoreLinq;
 
 namespace JoinRpg.Web.Models;
 
-public class MoneyInfoForUserViewModel
+public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transfers,
+    User master,
+    IUriService urlHelper,
+    IReadOnlyCollection<FinanceOperation> operations,
+    PaymentTypeSummaryViewModel[] payments,
+    ICurrentUserAccessor currentUserId,
+    ProjectInfo projectInfo)
 {
-    public UserProfileDetailsViewModel UserDetails { get; }
-    public int ProjectId { get; }
-    public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; }
-
-    public FinOperationListViewModel Operations { get; }
-
-    public MasterBalanceViewModel Balance { get; }
-
-    public IReadOnlyCollection<PaymentTypeSummaryViewModel> PaymentTypeSummary { get; }
-
-    public MoneyInfoForUserViewModel(Project project,
-        IReadOnlyCollection<MoneyTransfer> transfers,
-        User master,
-        IUriService urlHelper,
-        IReadOnlyCollection<FinanceOperation> operations,
-        PaymentTypeSummaryViewModel[] payments,
-        int currentUserId)
-    {
-        Transfers = transfers
+    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(master.GetUserInfo(), projectInfo, currentUserId);
+    public int ProjectId { get; } = projectInfo.ProjectId;
+    public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; } = transfers
             .OrderBy(f => f.Id)
             .Select(f => new MoneyTransferListItemViewModel(f, currentUserId)).ToArray();
-        ProjectId = project.ProjectId;
-        UserDetails = new UserProfileDetailsViewModel(master.GetUserInfo(), UserProfileAccessReason.CoMaster);
 
-        Operations = new FinOperationListViewModel(project, urlHelper, operations);
+    public FinOperationListViewModel Operations { get; } = new FinOperationListViewModel(projectInfo.ProjectId, urlHelper, operations);
 
-        Balance = new MasterBalanceViewModel(master, project.ProjectId, operations, transfers);
+    public MasterBalanceViewModel Balance { get; } = new MasterBalanceViewModel(master, projectInfo.ProjectId, operations, transfers);
 
-        PaymentTypeSummary = payments;
-    }
+    public IReadOnlyCollection<PaymentTypeSummaryViewModel> PaymentTypeSummary { get; } = payments;
 }

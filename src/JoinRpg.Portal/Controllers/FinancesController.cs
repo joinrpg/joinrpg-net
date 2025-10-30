@@ -9,6 +9,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -73,18 +74,18 @@ public class FinancesController : ControllerGameBase
 
     [HttpGet]
     [RequireMaster]
-    public async Task<ActionResult> Operations(int projectid, string export)
+    public async Task<ActionResult> Operations(ProjectIdentification projectid, string export)
   => await GetFinanceOperationsList(projectid, export, fo => fo.MoneyFlowOperation && fo.Approved);
 
     [HttpGet]
     [RequireMaster]
-    public async Task<ActionResult> Moderation(int projectid, string export)
+    public async Task<ActionResult> Moderation(ProjectIdentification projectid, string export)
   => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration || (fo.State == FinanceOperationState.Proposed && fo.OperationType == FinanceOperationType.Online));
 
-    private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
+    private async Task<ActionResult> GetFinanceOperationsList(ProjectIdentification projectid, string export, Func<FinanceOperation, bool> predicate)
     {
         var project = await ProjectRepository.GetProjectWithFinances(projectid);
-        var viewModel = new FinOperationListViewModel(project, UriService,
+        var viewModel = new FinOperationListViewModel(projectid, UriService,
             project.FinanceOperations.Where(predicate).ToArray());
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
@@ -106,8 +107,9 @@ public class FinancesController : ControllerGameBase
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> MoneySummary(int projectId)
+    public async Task<ActionResult> MoneySummary(ProjectIdentification projectId)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var project = await ProjectRepository.GetProjectWithFinances(projectId);
         if (project == null)
         {
@@ -121,12 +123,12 @@ public class FinancesController : ControllerGameBase
             .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
             .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
 
-        var viewModel = new MoneyInfoTotalViewModel(project,
+        var viewModel = new MoneyInfoTotalViewModel(projectInfo,
             transfers,
             UriService,
             project.FinanceOperations.ToArray(),
             payments,
-            CurrentUserId);
+            CurrentUserAccessor);
 
         return View(viewModel);
     }
@@ -335,9 +337,10 @@ public class FinancesController : ControllerGameBase
 
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> ByMaster(int projectId, int masterId)
+    public async Task<ActionResult> ByMaster(ProjectIdentification projectId, int masterId)
     {
         var project = await ProjectRepository.GetProjectWithFinances(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var transfers =
             await FinanceReportRepository.GetMoneyTransfersForMaster(projectId, masterId);
         var user = await UserRepository.GetById(masterId);
@@ -355,13 +358,13 @@ public class FinancesController : ControllerGameBase
             .ToArray();
 
 
-        var viewModel = new MoneyInfoForUserViewModel(project,
-            transfers,
+        var viewModel = new MoneyInfoForUserViewModel(transfers,
             user,
             UriService,
             operations,
             payments,
-            CurrentUserId);
+            CurrentUserAccessor,
+            projectInfo);
         return View(viewModel);
     }
 
