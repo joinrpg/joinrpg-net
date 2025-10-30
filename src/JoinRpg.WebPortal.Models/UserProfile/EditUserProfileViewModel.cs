@@ -71,7 +71,7 @@ public class EditUserProfileViewModel
     public required string PassportData { get; set; }
 
 
-    [Display(Name = "Адрес регистрации данные")]
+    [Display(Name = "Адрес регистрации")]
     [UIHint("MultilineText")]
     public required string RegistrationAddress { get; set; }
 }
