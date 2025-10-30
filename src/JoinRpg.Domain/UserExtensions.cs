@@ -38,7 +38,6 @@ public static class UserExtensions
     {
         var telegramId = TelegramId.FromOptional(user.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(user.Extra?.Telegram));
 
-        var userFullName = user.ExtractFullName();
         return new UserInfo(
             user.GetId(),
             new UserSocialNetworks(telegramId, user.Extra?.Livejournal, user.Allrpg?.Sid, user.Extra?.Vk, user.Extra?.SocialNetworksAccess ?? ContactsAccessType.Public),
@@ -48,7 +47,8 @@ public static class UserExtensions
             user.Auth.IsAdmin,
             AvatarIdentification.FromOptional(user.SelectedAvatarId),
             new Email(user.Email),
-            userFullName,
+            user.Auth.EmailConfirmed,
+            user.ExtractFullName(),
             user.VerifiedProfileFlag,
             user.Extra?.PhoneNumber
             );

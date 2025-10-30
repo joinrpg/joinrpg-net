@@ -55,6 +55,7 @@ public class UserProfileDetailsViewModel
     public string? Vk { get; }
     [UIHint("Email")]
     public string? Email { get; }
+    public bool EmailConfirmed { get; }
     [DisplayName("ФИО")]
     public string? FullName { get; }
 
@@ -89,6 +90,7 @@ public class UserProfileDetailsViewModel
         if (Reason != AccessReasonView.NoAccess)
         {
             Email = user.Email;
+            EmailConfirmed = user.EmailConfirmed;
             FullName = user.UserFullName.FullName;
             PhoneNumber = user.PhoneNumber;
             IsVerifiedUser = user.VerifiedProfileFlag;

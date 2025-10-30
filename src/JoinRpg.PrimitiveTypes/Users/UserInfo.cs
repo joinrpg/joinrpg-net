@@ -10,6 +10,7 @@ public record class UserInfo(
     bool IsAdmin,
     AvatarIdentification? SelectedAvatarId,
     Email Email,
+    bool EmailConfirmed,
     UserFullName UserFullName,
     bool VerifiedProfileFlag,
     string? PhoneNumber)
