@@ -116,6 +116,7 @@ public class MockedProject
             CharacterId = Project.Characters.GetNextId(),
             Claims = [],
             Project = Project,
+            CharacterName = name,
         };
 
         Project.Characters.Add(character);
