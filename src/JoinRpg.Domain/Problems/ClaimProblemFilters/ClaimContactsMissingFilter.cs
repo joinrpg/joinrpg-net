@@ -9,17 +9,28 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
             CheckContact(claim.Player.Extra?.Telegram, projectInfo.ProfileRequirementSettings.RequireTelegram, ClaimProblemType.MissingTelegram),
             CheckContact(claim.Player.Extra?.Vk, projectInfo.ProfileRequirementSettings.RequireVkontakte, ClaimProblemType.MissingVkontakte),
             CheckContact(claim.Player.Extra?.PhoneNumber, projectInfo.ProfileRequirementSettings.RequirePhone, ClaimProblemType.MissingPhone),
-            CheckContact(claim.Player.Extra?.PassportData, projectInfo.ProfileRequirementSettings.RequirePassport, ClaimProblemType.MissingPassport),
-            CheckContact(claim.Player.Extra?.RegistrationAddress, projectInfo.ProfileRequirementSettings.RequireRegistrationAddress, ClaimProblemType.MissingRegistrationAddress),
             CheckContact(claim.Player.FullName, projectInfo.ProfileRequirementSettings.RequireRealName, ClaimProblemType.MissingRealname),
-            CheckSensitiveDataAccess(claim, projectInfo),
-        }.WhereNotNull();
+
+        }
+        .Union(CheckSensitiveDataAccess(claim, projectInfo))
+        .WhereNotNull();
     }
 
-    private static ProfileRelatedProblem? CheckSensitiveDataAccess(Claim claim, ProjectInfo projectInfo)
+    private static IEnumerable<ClaimProblem?> CheckSensitiveDataAccess(Claim claim, ProjectInfo projectInfo)
     {
-        return !claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired
-                    ? new ProfileRelatedProblem(ClaimProblemType.SensitiveDataNotAllowed, ProblemSeverity.Warning) : null;
+        if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
+        {
+            if (claim.PlayerAllowedSenstiveData)
+            {
+                yield return CheckContact(claim.Player.Extra?.PassportData, projectInfo.ProfileRequirementSettings.RequirePassport, ClaimProblemType.MissingPassport);
+                yield return CheckContact(claim.Player.Extra?.RegistrationAddress, projectInfo.ProfileRequirementSettings.RequireRegistrationAddress, ClaimProblemType.MissingRegistrationAddress);
+
+            }
+            else
+            {
+                yield return new ProfileRelatedProblem(ClaimProblemType.SensitiveDataNotAllowed, ProblemSeverity.Warning);
+            }
+        }
     }
 
     private static ProfileRelatedProblem? CheckContact(string? contact, MandatoryStatus requirement, ClaimProblemType problemType)

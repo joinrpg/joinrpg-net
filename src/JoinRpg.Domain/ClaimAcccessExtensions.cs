@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
@@ -17,7 +18,8 @@ public enum ExtraAccessReason
 public static class ClaimAcccessExtensions
 {
     public static Claim RequestAccess(
-        this Claim claim,
+        [NotNull]
+        this Claim? claim,
         int currentUserId,
         Permission permission = Permission.None,
         ExtraAccessReason reasons = ExtraAccessReason.None)
