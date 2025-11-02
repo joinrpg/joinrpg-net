@@ -223,8 +223,6 @@ internal class ClaimServiceImpl(
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        var claimId = claim.GetId();
-
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
 
         var claimEmail = await CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
@@ -235,6 +233,8 @@ internal class ClaimServiceImpl(
         await UnitOfWork.SaveChangesAsync();
 
         await EmailService.Email(claimEmail);
+
+        var claimId = claim.GetId();
 
         if (claim.Project.Details.AutoAcceptClaims &&
             (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
