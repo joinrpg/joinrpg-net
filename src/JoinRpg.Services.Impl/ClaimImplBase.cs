@@ -145,7 +145,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
         var claim = await ClaimsRepository.GetClaim(claimId);
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
 
-        if (claim.PlayerUserId != CurrentUserId)
+        if (claim?.PlayerUserId != CurrentUserId)
         {
             throw new PlayerOnlyException(claimId, CurrentUserId);
         }

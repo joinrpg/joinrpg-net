@@ -13,9 +13,9 @@ public interface IClaimsRepository : IDisposable
 
     Task<IEnumerable<Claim>> GetClaimsByIds(int projectid, IReadOnlyCollection<int> claimindexes);
     Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status);
-    Task<Claim> GetClaim(int projectId, int? claimId);
+    Task<Claim?> GetClaim(int projectId, int? claimId);
 
-    Task<Claim> GetClaim(ClaimIdentification claimId);
+    Task<Claim?> GetClaim(ClaimIdentification claimId);
     Task<Claim> GetClaimWithDetails(int projectId, int claimId);
     Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds);
     Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId);
