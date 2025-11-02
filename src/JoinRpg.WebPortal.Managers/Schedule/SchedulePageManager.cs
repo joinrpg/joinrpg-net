@@ -3,7 +3,6 @@ using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
@@ -19,17 +18,20 @@ public class SchedulePageManager(
     ICurrentProjectAccessor currentProject,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
-    ICharacterRepository characterRepository
+    ICharacterRepository characterRepository,
+    ILogger<SchedulePageManager> logger
         )
 {
     public async Task<SchedulePageViewModel> GetSchedule()
     {
-        (var project, var result) = await GetCompiledSchedule();
-        var hasMasterAccess = project.HasMasterAccess(currentUserAccessor);
+        var result = await GetCompiledSchedule();
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
+        var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
         var viewModel = new SchedulePageViewModel()
         {
             ProjectId = currentProject.ProjectId,
-            DisplayName = project.ProjectName,
+            DisplayName = projectInfo.ProjectName,
             NotScheduledProgramItems = result.NotScheduled.ToViewModel(hasMasterAccess),
             Columns = result.Rooms.ToViewModel(),
             Rows = result.TimeSlots.ToViewModel(),
@@ -38,7 +40,7 @@ public class SchedulePageManager(
         };
 
         MergeSlots(viewModel);
-        BuildAppointments(project, viewModel);
+        await BuildAppointments(viewModel);
 
         return viewModel;
     }
@@ -46,43 +48,72 @@ public class SchedulePageManager(
     //TODO we ignore acces rights here
     public async Task<string> GetIcalSchedule()
     {
-        (var project, var result) = await GetCompiledSchedule();
+        var result = await GetCompiledSchedule();
+
+        var timeZone = GuessTimeZone(result);
+
+        if (timeZone == null)
+        {
+            return "";
+        }
         var calendar = new Calendar();
-        calendar.Events.AddRange(result.AllItems.Select(BuildIcalEvent));
+        calendar.Events.AddRange(result.AllItems.Select(i => BuildIcalEvent(i, timeZone)));
 
         var serializer = new CalendarSerializer();
         return serializer.SerializeToString(calendar) ?? ""; //TODO stream
     }
 
-    private CalendarEvent BuildIcalEvent(ProgramItemPlaced evt)
+    private static readonly TimeZoneInfo mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+
+    private TimeZoneInfo? GuessTimeZone(ScheduleResult result)
     {
+        var offsets = result.AllItems.Select(i => i.StartTime.Offset).Distinct().ToList();
+
+        if (offsets.Count == 0)
+        {
+            return null;
+        }
+
+        if (offsets.Count == 1 && offsets[0] == TimeSpan.FromHours(3))
+        {
+            return mskTimeZone;
+        }
+
+        logger.LogError("Не удалось определить таймзону для проекта, встречаются варианты: {timeZoneHours}",
+            string.Join(",", offsets));
+
+        return null;
+    }
+
+    private CalendarEvent BuildIcalEvent(ProgramItemPlaced evt, TimeZoneInfo timeZone)
+    {
+        // TODO Здесь используется неявное предположение, что 
         return new CalendarEvent
         {
-            Start = new CalDateTime(evt.StartTime.LocalDateTime),
-            End = new CalDateTime(evt.EndTime.LocalDateTime),
+            Start = new CalDateTime(evt.StartTime.LocalDateTime, timeZone.Id),
+            End = new CalDateTime(evt.EndTime.LocalDateTime, timeZone.Id),
             Summary = evt.ProgramItem.Name,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
             Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
         };
     }
 
-    private async Task<(Project, ScheduleResult)> GetCompiledSchedule()
+    private async Task<ScheduleResult> GetCompiledSchedule()
     {
-        var project =
-    (await Project.GetProjectWithFieldsAsync(currentProject.ProjectId))
-    ?? throw new JoinRpgEntityNotFoundException(currentProject.ProjectId, "project");
-
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
 
         var characters = await characterRepository.LoadCharactersWithGroups(currentProject.ProjectId);
         var scheduleBuilder = new ScheduleBuilder(characters, projectInfo);
-        return (project, scheduleBuilder.Build());
+        return scheduleBuilder.Build();
     }
 
-    private void BuildAppointments(Project project, SchedulePageViewModel viewModel)
+    private async Task BuildAppointments(SchedulePageViewModel viewModel)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
+
+        var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
+
         var result = new List<AppointmentViewModel>(64);
-        var hasMasterAccess = project.HasMasterAccess(currentUserAccessor);
 
         for (var i = 0; i < viewModel.Rows.Count; i++)
         {
