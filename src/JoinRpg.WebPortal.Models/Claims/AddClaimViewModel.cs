@@ -53,7 +53,7 @@ public class AddClaimViewModel : IProjectIdAware
     [Display(Name = "Предоставить доступ к паспортным данным",
      Description = "Мастера игры просят вас предоставить доступ к паспортным данным. Вероятно, это нужно для поселения. Вы все равно сможете отправить заявку," +
         "даже если не предоставите доступ, но возможно, мастера отклонят вашу заявку. ")]
-    public bool SensitiveDataAllowed { get; private set; }
+    public bool SensitiveDataAllowed { get; set; }
 
     public AddClaimViewModel Fill(Character claimSource, UserInfo userInfo, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
