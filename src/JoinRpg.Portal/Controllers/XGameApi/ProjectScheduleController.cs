@@ -62,7 +62,7 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
                 RoomId = room.Id.ProjectFieldVariantId,
                 Name = room.Name,
             }),
-            Description = slot.ProgramItem.Description.ToPlainText().ToString(),
+            Description = slot.ProgramItem.Description.ToPlainTextWithoutHtmlEscape().ToString(),
             DescriptionHtml = slot.ProgramItem.Description.ToHtmlString().ToString(),
             DescriptionMarkdown = slot.ProgramItem.Description.Contents,
             ProgramItemDetailsUri = new Uri(GetProgramItemLink(slot)),

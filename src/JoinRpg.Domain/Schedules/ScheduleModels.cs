@@ -83,6 +83,7 @@ public record ScheduleResult(
 
     List<List<ProgramItem?>> Slots,
 
-    List<ProgramItemPlaced> AllItems)
+    List<ProgramItemPlaced> AllItems,
+    ProjectScheduleSettings ProjectScheduleSettings)
 { }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

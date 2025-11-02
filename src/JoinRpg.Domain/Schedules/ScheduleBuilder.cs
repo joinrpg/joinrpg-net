@@ -52,7 +52,9 @@ public class ScheduleBuilder(IReadOnlyCollection<Character> characters, ProjectI
             TimeSlots,
             Conflicted.ToList(),
             Slots.Select(row => row.Select(r => r.ProgramItem).ToList()).ToList(),
-            allItems);
+            allItems,
+            projectInfo.ProjectScheduleSettings
+            );
     }
 
     private void PutItem(ProgramItem programItem, List<ProgramItemSlot> slots)
