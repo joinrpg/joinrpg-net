@@ -81,15 +81,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         {
             return [];
         }
-        var projectId = groupIds.First().ProjectId;
-        foreach (var g in groupIds)
-        {
-            if (g.ProjectId != projectId)
-            {
-                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
-            }
-        }
-        return await LoadGroups(projectId, [.. groupIds.Select(x => x.CharacterGroupId)]);
+        (var projectId, var ids) = EnsureSingleProject(groupIds);
+        return await LoadGroups(projectId, ids);
     }
 
     public Task<ProjectField> GetProjectField(ProjectFieldIdentification id) => GetProjectField(id.ProjectId, id.ProjectFieldId);
@@ -253,5 +246,47 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             x.HasMyClaims,
             x.IAmMaster
             ))];
+    }
+
+    async Task<CharacterGroupHeaderDto[]> IProjectRepository.GetGroupHeaders(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds)
+    {
+        if (characterGroupIds.Count == 0)
+        {
+            return [];
+        }
+        (var projectId, var ids) = EnsureSingleProject(characterGroupIds);
+        var list =
+            await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && ids.Contains(cg.CharacterGroupId))
+            .Select(
+                x => new
+                {
+                    x.CharacterGroupId,
+                    x.CharacterGroupName,
+                    x.IsPublic,
+                    x.IsActive,
+                }
+                )
+            .ToListAsync();
+
+        return [..
+            list.Select(x => new CharacterGroupHeaderDto(new CharacterGroupIdentification(projectId, x.CharacterGroupId), x.CharacterGroupName, x.IsActive, x.IsPublic))
+            ];
+
+    }
+
+    private static (ProjectIdentification, IReadOnlyCollection<int>) EnsureSingleProject(IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    {
+        var projectId = groupIds.First().ProjectId;
+        List<int> ids = new List<int>(groupIds.Count);
+        foreach (var g in groupIds)
+        {
+            if (g.ProjectId != projectId)
+            {
+                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
+            }
+            ids.Add(g.CharacterGroupId);
+        }
+
+        return (projectId, ids);
     }
 }
