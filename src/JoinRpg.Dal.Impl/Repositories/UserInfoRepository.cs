@@ -148,4 +148,42 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             result.PhoneNumber
             );
     }
+
+    public async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
+    {
+        var ids = userIds.Select(x => x.Value).ToList();
+        Func<User, bool> predicate = user => ids.Contains(user.UserId);
+        return await GetUserInfoHeadersByPredicate(predicate);
+    }
+
+    private async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeadersByPredicate(Func<User, bool> predicate)
+    {
+        var userQuery =
+            from user in ctx.Set<User>().AsExpandable()
+            where predicate.Invoke(user)
+            select new
+            {
+                user.UserId,
+                user.PrefferedName,
+                user.FatherName,
+                user.SurName,
+                user.BornName,
+                user.Email,
+            };
+
+        var list = await userQuery.ToListAsync();
+
+        return list.Select(result =>
+            new UserInfoHeader(
+                new UserIdentification(result.UserId),
+                new UserDisplayName(
+                    new UserFullName(
+                    PrefferedName.FromOptional(result.PrefferedName),
+                BornName.FromOptional(result.BornName),
+                SurName.FromOptional(result.SurName),
+                FatherName.FromOptional(result.FatherName)),
+                    new Email(result.Email))
+                )
+        ).ToList();
+    }
 }

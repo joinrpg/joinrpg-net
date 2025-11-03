@@ -31,13 +31,13 @@ public class CheckInController(
 
                 new ClaimHeaderInfo
                 {
-                    ClaimId = claim.ClaimId,
+                    ClaimId = claim.ClaimId.ClaimId,
                     CharacterName = claim.CharacterName,
                     Player = new PlayerInfo()
                     {
                         PlayerId = claim.Player.UserId,
-                        NickName = claim.Player.GetDisplayName(),
-                        FullName = claim.Player.FullName,
+                        NickName = claim.Player.DisplayName.DisplayName,
+                        FullName = claim.Player.DisplayName.FullName,
                         OtherNicks = claim.ExtraNicknames ?? "",
                     },
                 });

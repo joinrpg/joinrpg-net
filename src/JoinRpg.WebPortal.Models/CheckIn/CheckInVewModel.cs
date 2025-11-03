@@ -1,36 +1,29 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.CheckIn;
 
-public class CheckInIndexViewModel : IProjectIdAware
+public class CheckInIndexViewModel(Project project, IReadOnlyCollection<ClaimWithPlayer> claims) : IProjectIdAware
 {
-    public CheckInIndexViewModel(Project project, IReadOnlyCollection<ClaimWithPlayer> claims)
-    {
-        ProjectId = project.ProjectId;
-        Claims = claims.Select(claim => new CheckInListItemViewModel(claim)).ToList();
-    }
-
-    public int ProjectId { get; }
+    public int ProjectId { get; } = project.ProjectId;
 
     public int ClaimId { get; set; }
 
-    public IReadOnlyCollection<CheckInListItemViewModel> Claims { get; }
+    public IReadOnlyCollection<CheckInListItemViewModel> Claims { get; } = claims.Select(claim => new CheckInListItemViewModel(claim)).ToList();
 }
 
 public class CheckInListItemViewModel(ClaimWithPlayer claim)
 {
     public string OtherNicks { get; } = claim.ExtraNicknames ?? "";
 
-    public string NickName { get; } = claim.Player.GetDisplayName();
+    public string NickName { get; } = claim.Player.DisplayName.DisplayName;
 
-    public string Fullname { get; } = claim.Player.FullName;
+    public string Fullname { get; } = claim.Player.DisplayName.FullName ?? "";
 
     public string CharacterName { get; } = claim.CharacterName;
 
-    public int ClaimId { get; } = claim.ClaimId;
+    public int ClaimId { get; } = claim.ClaimId.ClaimId;
 }
 
 public class CheckInSetupModel : IValidatableObject
