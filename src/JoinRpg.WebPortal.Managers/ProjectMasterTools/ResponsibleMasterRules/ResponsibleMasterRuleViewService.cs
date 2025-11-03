@@ -7,24 +7,12 @@ using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
-internal class ResponsibleMasterRuleViewService : IResponsibleMasterRuleClient
+internal class ResponsibleMasterRuleViewService(
+    IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
+    IRespMasterRuleService service,
+    IProjectRepository projectRepository,
+    ICurrentUserAccessor currentUserAccessor) : IResponsibleMasterRuleClient
 {
-    private readonly IResponsibleMasterRulesRepository responsibleMasterRulesRepository;
-    private readonly IRespMasterRuleService service;
-    private readonly IProjectRepository projectRepository;
-    private readonly ICurrentUserAccessor currentUserAccessor;
-
-    public ResponsibleMasterRuleViewService(
-        IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
-        IRespMasterRuleService service,
-        IProjectRepository projectRepository,
-        ICurrentUserAccessor currentUserAccessor)
-    {
-        this.responsibleMasterRulesRepository = responsibleMasterRulesRepository;
-        this.service = service;
-        this.projectRepository = projectRepository;
-        this.currentUserAccessor = currentUserAccessor;
-    }
     public async Task<ResponsibleMasterRuleListViewModel> GetResponsibleMasterRuleList(ProjectIdentification projectId)
     {
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(projectId);
