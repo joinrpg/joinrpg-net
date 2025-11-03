@@ -22,7 +22,9 @@ internal class RespMasterRuleService(IUnitOfWork unitOfWork,
     private async Task ModifyRule(ProjectIdentification projectId, int ruleId, int? masterId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+        projectInfo
+            .RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims)
+            .EnsureProjectActive();
         var characterGroup = await ProjectRepository.GetGroupAsync(new CharacterGroupIdentification(projectId, ruleId));
 
         if (characterGroup is null)
