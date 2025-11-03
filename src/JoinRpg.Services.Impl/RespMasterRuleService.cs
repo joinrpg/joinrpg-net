@@ -1,16 +1,17 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl;
-internal class RespMasterRuleService : DbServiceImplBase, IRespMasterRuleService
+internal class RespMasterRuleService(IUnitOfWork unitOfWork,
+                                     ICurrentUserAccessor currentUserAccessor,
+                                     IProjectMetadataRepository projectMetadataRepository)
+    : DbServiceImplBase(unitOfWork, currentUserAccessor), IRespMasterRuleService
 {
-    public RespMasterRuleService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
-    {
-    }
-
     Task IRespMasterRuleService.AddRule(ProjectIdentification projectId, int ruleId, int masterId)
         => ModifyRule(projectId, ruleId, masterId);
     Task IRespMasterRuleService.ChangeRule(ProjectIdentification projectId, int ruleId, int masterId)
@@ -20,14 +21,18 @@ internal class RespMasterRuleService : DbServiceImplBase, IRespMasterRuleService
 
     private async Task ModifyRule(ProjectIdentification projectId, int ruleId, int? masterId)
     {
-        var characterGroup =
-            (await ProjectRepository.GetGroupAsync(projectId, ruleId))
-            .RequestMasterAccess(CurrentUserId, acl => acl.CanManageClaims)
-            .EnsureProjectActive();
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+        var characterGroup = await ProjectRepository.GetGroupAsync(new CharacterGroupIdentification(projectId, ruleId));
+
+        if (characterGroup is null)
+        {
+            throw new JoinRpgEntityNotFoundException(ruleId, "CharacterGroup");
+        }
 
         if (masterId is not null)
         {
-            characterGroup.RequestMasterAccess(masterId);
+            projectInfo.RequestMasterAccess(UserIdentification.FromOptional(masterId));
         }
 
         characterGroup.ResponsibleMasterUserId = masterId;

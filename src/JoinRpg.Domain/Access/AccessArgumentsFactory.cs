@@ -12,6 +12,13 @@ public enum CharacterAccessMode
 
 public static class AccessArgumentsFactory
 {
+    private static bool HasPlayerAccess(this Character character, int? currentUserId)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
+    }
+
     public static AccessArguments Create(Character character, int? userId)
     {
         ArgumentNullException.ThrowIfNull(character);
