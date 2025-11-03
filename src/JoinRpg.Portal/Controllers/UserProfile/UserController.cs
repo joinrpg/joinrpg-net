@@ -42,7 +42,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             var claims = await claimsRepository.GetClaimsForPlayer(userId, ClaimStatusSpec.Any);
 
             userProfileViewModel.Claims = new MyClaimListViewModel(
-                [.. claims.Where(claim => currentUserAccessor.IsAdmin || claim.PlayerUserId == currentUser.UserId || currentUser.ActiveProjects.Contains(new(claim.ProjectId)))]);
+                [.. claims.Where(claim => currentUserAccessor.IsAdmin || claim.PlayerUserId == currentUser.UserId || currentUser.AllProjects.Contains(new(claim.ProjectId)))]);
         }
 
         return View(userProfileViewModel);
