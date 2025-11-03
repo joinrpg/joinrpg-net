@@ -6,6 +6,7 @@ using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
@@ -31,6 +32,7 @@ public static class Registration
         .AddScoped<ICharactersClient, CharacterGroupList.CharacterListViewService>()
         .AddScoped<ICheckInClient, CheckInViewService>()
         .AddScoped<IResponsibleMasterRuleClient, ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService>()
+        .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IMasterClient, ProjectMasterViewService>()
         .AddScoped<IProjectListClient, ProjectListViewService>()
         .AddScoped<MassMailManager>()

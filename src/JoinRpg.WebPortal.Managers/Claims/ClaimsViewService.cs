@@ -27,5 +27,5 @@ internal class ClaimsViewService(IClaimService claimService, IClaimsRepository c
 public static class Builders
 {
     public static IReadOnlyCollection<ClaimLinkViewModel> ToClaimViewModels(this IReadOnlyCollection<Data.Interfaces.ClaimWithPlayer> claims)
-    => [.. claims.Select(x => new ClaimLinkViewModel(x.ClaimId, x.Player.DisplayName, x.CharacterName, x.ExtraNicknames ?? ""))];
+    => [.. claims.Select(x => new ClaimLinkViewModel(x.ClaimId, x.Player.DisplayName, x.CharacterName, x.ExtraNicknames ?? "", x.Player.UserId))];
 }

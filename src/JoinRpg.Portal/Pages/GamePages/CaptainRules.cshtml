@@ -1,0 +1,19 @@
+@page "/{projectId:int}/tools/captains"
+@using JoinRpg.Web.ProjectMasterTools.CaptainRules;
+
+
+@model JoinRpg.Portal.Pages.GamePages.CaptainRulesModel
+
+@{
+    ViewData["Title"] = "Настройки капитанов команд";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<CaptainRulesList>(RenderMode.WebAssembly, new {Model.ProjectId}))
+
+@section Scripts {
+  <script src="/_framework/blazor.webassembly.js"></script>
+  <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
+}

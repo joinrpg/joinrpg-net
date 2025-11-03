@@ -1,0 +1,29 @@
+﻿<div class="rule-list-row">
+
+  <div>
+
+     Для всех заявок группы @Model.GroupName считать капитаном <UserLink Model="@Model.PlayerLink" />
+  </div>
+  <div class="filler">
+
+  </div>
+  <div>
+       <JoinButton Preset="ButtonPreset.Delete" 
+        OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
+        Label="Удалить доступ капитана"
+		DisabledTitle="Для управления капитанами нужны права администратора заявок"
+		Disabled="!HasEditAccess"
+		/>
+    </div>
+</div>
+@code {
+
+    [Parameter]
+    public CaptainRuleViewModel Model { get; set; } = null!;
+
+    [Parameter]
+	public EventCallback<CaptainRuleViewModel> OnRemoveCallback { get; set; }
+
+    [Parameter]
+    public bool HasEditAccess { get; set; }
+}

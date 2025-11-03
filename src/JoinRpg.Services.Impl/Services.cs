@@ -39,12 +39,13 @@ public static class Services
         }
     }
 
-    public static IJoinServiceCollection AddJoinDomainServices(this IJoinServiceCollection services)
+    public static IServiceCollection AddJoinDomainServices(this IJoinServiceCollection services)
     {
         return
             services
             .AddDailyJob<DailyChangedPlayerClaimsNotificationJob>()
-            .AddDailyJob<ProjectPerformCloseJob>();
+            .AddDailyJob<ProjectPerformCloseJob>()
+            .AddTransient<ICaptainRuleService, CaptainRuleService>();
     }
 
     [Obsolete("После того, как IdPortal заработает, убрать отсюда UserService в отдельную сборку в принципе")]

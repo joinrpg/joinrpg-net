@@ -5,7 +5,7 @@ using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
-[Route("/webapi/ClaimOperations/[action]")]
+[Route("/webapi/claim-list/[action]")]
 [MasterAuthorize]
 public class ClaimListController(IClaimListClient claimClient) : ControllerBase
 {

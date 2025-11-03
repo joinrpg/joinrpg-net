@@ -151,7 +151,30 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         ConfigureMoneyTransfer(modelBuilder);
 
+        ConfigureCaptainAccessRuleEntity(modelBuilder);
+
         base.OnModelCreating(modelBuilder);
+    }
+
+    private static void ConfigureCaptainAccessRuleEntity(DbModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CaptainAccessRuleEntity>()
+            .HasRequired(x => x.CharacterGroup)
+            .WithMany()
+            .HasForeignKey(x => x.CharacterGroupId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<CaptainAccessRuleEntity>()
+            .HasRequired(x => x.Project)
+            .WithMany()
+            .HasForeignKey(x => x.ProjectId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<CaptainAccessRuleEntity>()
+            .HasRequired(x => x.CaptainUser)
+            .WithMany()
+            .HasForeignKey(x => x.CaptainUserId)
+            .WillCascadeOnDelete(false);
     }
 
     private void ConfigureOptionalDependPropertyFor<TEntityType, TTargetEntity>(
