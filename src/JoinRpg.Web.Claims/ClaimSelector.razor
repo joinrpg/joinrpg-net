@@ -1,0 +1,69 @@
+@using JoinRpg.PrimitiveTypes
+@using JoinRpg.PrimitiveTypes.Claims
+@inject IClaimClient client
+
+@if (items is null)
+{
+   <JoinLoadingMessage />
+}
+else
+{
+  <IntSelector
+               Name="@Name"
+               SelectedValues="@Selected"
+               SelectedValuesChanged="@HandleSelectedChanged"
+               PossibleValues="items"
+               Multiple="false"
+               />
+}
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; }
+    [Parameter] public ClaimIdentification? ClaimId { get; set; }
+    [Parameter] public EventCallback<ClaimIdentification?> ClaimIdChanged { get; set; }
+
+    [Parameter] public ClaimLinkViewModel? Claim { get; set; }
+    [Parameter] public EventCallback<ClaimLinkViewModel?> ClaimChanged { get; set; }
+    [Parameter] public ClaimStatusSpec Spec { get; set; } = ClaimStatusSpec.Active;
+
+	private int[] Selected { get; set; } = new int[0];
+	private IntSelectListItem[] items = null!;
+	private IReadOnlyCollection<ClaimLinkViewModel> Claims = null!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Claims = await client.GetClaims(ProjectId, Spec);
+		items = Claims
+          .Select(claim  =>
+            new IntSelectListItem(
+			  Value: claim.ClaimId.ClaimId,
+              Text: claim.CharacterName,
+              Subtext: claim.PlayerName.ToLongString(),
+              ExtraSearch: claim.OtherPlayerNicks)
+          )
+           .ToArray();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (ClaimId is not null)
+        {
+            Selected = new int[] { ClaimId.ClaimId };
+        }
+        else if (Claim is not null)
+        {
+            Selected = new int[] { Claim.ClaimId.ClaimId };
+        }
+    }
+
+    private async Task HandleSelectedChanged(int[] values)
+    {
+        ClaimIdentification? id = values.Length == 0 ? null :new ClaimIdentification (ProjectId, values.Single());
+		var claim = Claims.SingleOrDefault(m => m.ClaimId == id);
+		await ClaimIdChanged.InvokeAsync(id);
+		await ClaimChanged.InvokeAsync(claim);
+    }
+}
