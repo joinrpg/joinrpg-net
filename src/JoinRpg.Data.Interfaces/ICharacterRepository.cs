@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Data.Interfaces;
 
@@ -79,9 +80,8 @@ public class ClaimHeader
 
 public class ClaimWithPlayer
 {
-    public required ProjectIdentification ProjectId { get; set; }
-    public required int ClaimId { get; set; }
+    public required ClaimIdentification ClaimId { get; set; }
     public required string CharacterName { get; set; }
-    public required User Player { get; set; }
+    public required UserInfoHeader Player { get; set; }
     public required string? ExtraNicknames { get; set; }
 }

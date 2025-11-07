@@ -4,6 +4,8 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Users;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -149,10 +151,15 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .Select(claim => new
           {
               claim.ProjectId,
-              claim.Player,
+              claim.PlayerUserId,
               claim.Character.CharacterName,
               claim.Player.Extra!.Nicknames,
+              claim.Player.PrefferedName,
+              claim.Player.SurName,
+              claim.Player.BornName,
+              claim.Player.FatherName,
               claim.ClaimId,
+              claim.Player.Email,
           })
           .ToListAsync();
 
@@ -160,10 +167,18 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             c => new ClaimWithPlayer
             {
                 CharacterName = c.CharacterName,
-                ClaimId = c.ClaimId,
+                ClaimId = new (c.ProjectId, c.ClaimId),
                 ExtraNicknames = c.Nicknames,
-                Player = c.Player,
-                ProjectId = new (c.ProjectId)
+                Player = new UserInfoHeader(new (c.PlayerUserId),
+                                new UserDisplayName(
+                                    new UserFullName(
+                                        PrefferedName.FromOptional(c.PrefferedName),
+                                        BornName.FromOptional(c.BornName),
+                                        SurName.FromOptional(c.SurName),
+                                        FatherName.FromOptional(c.FatherName)
+                                        ),
+                                    new Email(c.Email)
+                                    )),
             }
             )];
     }

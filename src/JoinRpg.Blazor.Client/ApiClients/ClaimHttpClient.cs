@@ -1,3 +1,4 @@
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
@@ -12,4 +13,9 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
         response.EnsureSuccessStatusCode();
 
     }
+
+    async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
+        => await httpClient.GetFromJsonAsync<IReadOnlyCollection<ClaimLinkViewModel>>(
+            $"webapi/claim-list/GetClaims?projectId={projectId.Value}&claimStatusSpec={claimStatusSpec}")
+            ?? throw new Exception("Couldn't get result from server");
 }

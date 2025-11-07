@@ -1,36 +1,30 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.CheckIn;
 
-public class CheckInIndexViewModel : IProjectIdAware
+public class CheckInIndexViewModel(ProjectInfo project) : IProjectIdAware
 {
-    public CheckInIndexViewModel(Project project, IReadOnlyCollection<ClaimWithPlayer> claims)
-    {
-        ProjectId = project.ProjectId;
-        Claims = claims.Select(claim => new CheckInListItemViewModel(claim)).ToList();
-    }
-
-    public int ProjectId { get; }
+    public ProjectIdentification ProjectId { get; } = project.ProjectId;
 
     public int ClaimId { get; set; }
 
-    public IReadOnlyCollection<CheckInListItemViewModel> Claims { get; }
+    int IProjectIdAware.ProjectId => ProjectId;
 }
 
 public class CheckInListItemViewModel(ClaimWithPlayer claim)
 {
     public string OtherNicks { get; } = claim.ExtraNicknames ?? "";
 
-    public string NickName { get; } = claim.Player.GetDisplayName();
+    public string NickName { get; } = claim.Player.DisplayName.DisplayName;
 
-    public string Fullname { get; } = claim.Player.FullName;
+    public string Fullname { get; } = claim.Player.DisplayName.FullName ?? "";
 
     public string CharacterName { get; } = claim.CharacterName;
 
-    public int ClaimId { get; } = claim.ClaimId;
+    public int ClaimId { get; } = claim.ClaimId.ClaimId;
 }
 
 public class CheckInSetupModel : IValidatableObject
@@ -44,12 +38,12 @@ public class CheckInSetupModel : IValidatableObject
 
     public int ProjectId { get; set; }
 
-    public CheckInSetupModel(Project project)
+    public CheckInSetupModel(ProjectInfo project)
     {
         ProjectId = project.ProjectId;
-        EnableCheckInModule = project.Details.EnableCheckInModule;
-        CheckInProgress = project.Details.CheckInProgress;
-        AllowSecondRoles = project.Details.AllowSecondRoles;
+        EnableCheckInModule = project.ProjectCheckInSettings.CheckInModuleEnabled;
+        CheckInProgress = project.ProjectCheckInSettings.InProgress;
+        AllowSecondRoles = project.ProjectCheckInSettings.AllowSecondRoles;
     }
 
     public CheckInSetupModel() { }

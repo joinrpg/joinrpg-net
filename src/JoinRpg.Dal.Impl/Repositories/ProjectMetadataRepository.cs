@@ -46,7 +46,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
             masters: CreateMasterList(project),
             publishPlot: project.Details.PublishPlot,
-            projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule),
+            projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule, project.Details.CheckInProgress, project.Details.AllowSecondRoles),
             projectStatus: status,
             projectScheduleSettings: new ProjectScheduleSettings(project.Details.ScheduleEnabled),
             projectCloneSettings: project.Details.ProjectCloneSettings,

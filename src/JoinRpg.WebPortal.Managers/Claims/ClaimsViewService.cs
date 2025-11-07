@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Claims;
 
@@ -15,4 +16,10 @@ internal class ClaimsViewService(IClaimService claimService, IClaimsRepository c
             await claimService.AllowSensitiveData(claim.GetId());
         }
     }
+
+    async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
+    => ToClaimViewModels(await claimsRepository.GetClaimHeadersWithPlayer(projectId, claimStatusSpec));
+
+    private static IReadOnlyCollection<ClaimLinkViewModel> ToClaimViewModels(IReadOnlyCollection<Data.Interfaces.ClaimWithPlayer> claims)
+        => [.. claims.Select(x => new ClaimLinkViewModel(x.ClaimId, x.Player.DisplayName, x.CharacterName, x.ExtraNicknames ?? ""))];
 }

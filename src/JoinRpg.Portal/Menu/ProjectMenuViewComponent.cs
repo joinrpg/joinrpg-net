@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;

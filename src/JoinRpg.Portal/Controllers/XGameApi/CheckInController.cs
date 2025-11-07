@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
@@ -31,13 +32,13 @@ public class CheckInController(
 
                 new ClaimHeaderInfo
                 {
-                    ClaimId = claim.ClaimId,
+                    ClaimId = claim.ClaimId.ClaimId,
                     CharacterName = claim.CharacterName,
                     Player = new PlayerInfo()
                     {
                         PlayerId = claim.Player.UserId,
-                        NickName = claim.Player.GetDisplayName(),
-                        FullName = claim.Player.FullName,
+                        NickName = claim.Player.DisplayName.DisplayName,
+                        FullName = claim.Player.DisplayName.FullName,
                         OtherNicks = claim.ExtraNicknames ?? "",
                     },
                 });
