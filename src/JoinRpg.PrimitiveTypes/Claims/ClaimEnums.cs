@@ -41,3 +41,16 @@ public enum AddClaimForbideReason
     TelegramMissing,
     VkontakteMissing,
 }
+
+// Более широкий вариант статуса, подразумевает комбинацию нескольких статусов.
+public enum ClaimStatusSpec
+{
+    Any,
+    Active,
+    InActive,
+    Discussion,
+    OnHold, Approved,
+    ReadyForCheckIn,
+    CheckedIn,
+    ActiveOrOnHold,
+}
