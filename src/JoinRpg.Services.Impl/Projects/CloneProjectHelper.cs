@@ -1,3 +1,4 @@
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Data.Entity.Validation;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -47,16 +48,17 @@ internal class CloneProjectHelper(
         if (cloneRequest.CopySettings >= ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates)
         {
             await CopyGroups();
-            await FixupConditionalFields();
+        }
 
-            if (cloneRequest.CopySettings == ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates)
-            {
-                await CopyTemplates();
-            }
-            else
-            {
-                await CopyCharacters();
-            }
+        await FixupConditionalFields(); // Это надо делать даже если группы не копируются, чтобы поправить спецгруппы
+
+        if (cloneRequest.CopySettings == ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates)
+        {
+            await CopyTemplates();
+        }
+        else if (cloneRequest.CopySettings >= ProjectCopySettingsDto.SettingsFieldsGroupsAndCharacters)
+        {
+            await CopyCharacters();
         }
 
         if (cloneRequest.CopySettings >= ProjectCopySettingsDto.SettingsFieldsGroupsCharactersAndPlot)
@@ -81,18 +83,31 @@ internal class CloneProjectHelper(
 
         await projectService.SetPublishSettings(projectId, ProjectCloneSettings.CloneDisabled, publishEnabled: false);
         await projectService.SetContactSettings(projectId, original.ProfileRequirementSettings);
+        await projectService.SetCheckInSettings(projectId,
+            checkInProgress: false,
+            original.ProjectCheckInSettings.CheckInModuleEnabled,
+            original.ProjectCheckInSettings.AllowSecondRoles);
 
         return everythingFine;
     }
 
     private async Task CopyGroups()
     {
+        var originalRoot = originalEntity.RootGroup;
+
         var originalList = originalEntity.CharacterGroups
-            .Where(cg => cg.IsActive && !cg.IsSpecial)
+            .Where(cg => cg.IsActive
+                 && !cg.IsSpecial // Спецгруппы уже скопированы, когда мы копировали поля
+                 && !cg.IsRoot // Корневую группу копировать не надо, она уже есть
+                 )
             .Select(cg => (group: cg, id: new CharacterGroupIdentification(new(originalEntity.ProjectId), cg.CharacterGroupId)))
             .ToList();
 
         var rootCharacterGroupId = new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId);
+
+        GroupMapping.Add(originalRoot.GetId(), rootCharacterGroupId); // Добавим в меппер ссылку на корень
+
+
         // Первый проход — создаем группы
         foreach ((var originalGroup, var originalId) in originalList)
         {
@@ -211,12 +226,16 @@ internal class CloneProjectHelper(
 
         foreach (var originalField in original.SortedActiveFields)
         {
+            var newField = info.GetFieldById(FieldMapping[originalField.Id]);
+
             var originalShowForGroups = originalField.GroupsAvailableForIds;
-            if (originalShowForGroups.Count == 0)
+
+            var mapped = TryMapGroups(originalShowForGroups);
+
+            if (mapped.Count == 0)
             {
                 continue;
             }
-            var newField = info.GetFieldById(FieldMapping[originalField.Id]);
 
             var request = new UpdateFieldRequest(
                 newField.Id,
@@ -226,7 +245,7 @@ internal class CloneProjectHelper(
                 newField.CanPlayerView,
                 newField.IsPublic,
                 newField.MandatoryStatus,
-                TryMapGroups(originalShowForGroups),
+                mapped,
                 newField.ValidForNpc,
                 newField.IncludeInPrint,
                 newField.ShowOnUnApprovedClaims,
