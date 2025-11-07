@@ -32,24 +32,23 @@ public class CheckInController(
         ) : ControllerGameBase(projectRepository, projectService, userRepository)
 {
     [HttpGet]
-    public async Task<ActionResult> Index(int projectId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-        if (!project.Details.EnableCheckInModule || !project.Details.CheckInProgress)
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (!project.ProjectCheckInSettings.CheckInModuleEnabled || !project.ProjectCheckInSettings.InProgress)
         {
             return View("CheckInNotStarted");
         }
-        var claims = await claimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.ReadyForCheckIn);
-        return View(new CheckInIndexViewModel(project, claims));
+        return View(new CheckInIndexViewModel(project));
     }
 
     [HttpPost]
     public ActionResult Index(int projectId, int claimId) => RedirectToAction("CheckIn", new { projectId, claimId });
 
     [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<ActionResult> Setup(int projectId)
+    public async Task<ActionResult> Setup(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new CheckInSetupModel(project));
     }
 

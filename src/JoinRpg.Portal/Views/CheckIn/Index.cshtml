@@ -1,4 +1,6 @@
-﻿@using JoinRpg.Portal
+@using JoinRpg.Portal
+@using JoinRpg.PrimitiveTypes.Claims
+@using JoinRpg.Web.Claims
 @using JoinRpg.Web.Models.CommonTypes
 @model JoinRpg.Web.Models.CheckIn.CheckInIndexViewModel
 
@@ -13,18 +15,10 @@
   @Html.HiddenFor(model => model.ProjectId)
   @Html.AntiForgeryToken()
 
-  @Html.SearchableDropdownFor(model => model.ClaimId, Model.Claims.Select(
-  claim =>
-  new JoinSelectListItem()
-  {
-    Value = claim.ClaimId,
-    Text = claim.CharacterName,
-    ExtraSearch = claim.OtherNicks,
-    Subtext = claim.NickName + " (" + claim.Fullname + " )"
-  }))
+  <component type="typeof(ClaimSelector)" render-mode="Static" param-Name="@("ClaimId")" param-ProjectId="@Model.ProjectId" param-Spec="@(ClaimStatusSpec.ReadyForCheckIn)" />
   
   <input type="submit" class="btn btn-success" value="Зарегистрировать"/>
 }
 
 <hr/>
-@Html.ActionLink("Статистика по регистрации", "Stat", new {Model.ProjectId})
+@Html.ActionLink("Статистика по регистрации", "Stat", new {ProjectId = Model.ProjectId.Value})

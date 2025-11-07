@@ -1,16 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.CheckIn;
 
-public class CheckInIndexViewModel(Project project, IReadOnlyCollection<ClaimWithPlayer> claims) : IProjectIdAware
+public class CheckInIndexViewModel(ProjectInfo project) : IProjectIdAware
 {
-    public int ProjectId { get; } = project.ProjectId;
+    public ProjectIdentification ProjectId { get; } = project.ProjectId;
 
     public int ClaimId { get; set; }
 
-    public IReadOnlyCollection<CheckInListItemViewModel> Claims { get; } = claims.Select(claim => new CheckInListItemViewModel(claim)).ToList();
+    int IProjectIdAware.ProjectId => ProjectId;
 }
 
 public class CheckInListItemViewModel(ClaimWithPlayer claim)
@@ -37,12 +38,12 @@ public class CheckInSetupModel : IValidatableObject
 
     public int ProjectId { get; set; }
 
-    public CheckInSetupModel(Project project)
+    public CheckInSetupModel(ProjectInfo project)
     {
         ProjectId = project.ProjectId;
-        EnableCheckInModule = project.Details.EnableCheckInModule;
-        CheckInProgress = project.Details.CheckInProgress;
-        AllowSecondRoles = project.Details.AllowSecondRoles;
+        EnableCheckInModule = project.ProjectCheckInSettings.CheckInModuleEnabled;
+        CheckInProgress = project.ProjectCheckInSettings.InProgress;
+        AllowSecondRoles = project.ProjectCheckInSettings.AllowSecondRoles;
     }
 
     public CheckInSetupModel() { }
