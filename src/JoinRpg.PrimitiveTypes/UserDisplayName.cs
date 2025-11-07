@@ -25,6 +25,8 @@ public record UserDisplayName(
         return email.UserPart;
     }
 
+    public string ToLongString() => string.IsNullOrWhiteSpace(FullName) ? DisplayName : $"{DisplayName} ({FullName})";
+
     public override string ToString() => $"User({DisplayName}";
 
 }
