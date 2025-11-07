@@ -16,7 +16,7 @@ public static class IdentityConfigurator
             .AddIdentity<JoinIdentityUser, string>(options =>
             {
                 options.Password.ConfigureValidation();
-                options.SignIn.RequireConfirmedEmail = true;
+                //options.SignIn.RequireConfirmedEmail = true;
             })
             .AddDefaultTokenProviders()
             .AddUserStore<MyUserStore>()
