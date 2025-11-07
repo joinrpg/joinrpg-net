@@ -46,16 +46,38 @@ public static class ProjectEntityExtensions
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserId);
     }
 
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static T RequestMasterAccess<T>(this T field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
             where T : IProjectEntity
     {
         return field.RequestMasterAccess(currentUserAccessor.UserId, permission);
     }
 
+    public static ProjectInfo RequestMasterAccess(this ProjectInfo field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
+    {
+        return field.RequestMasterAccess(currentUserAccessor.UserIdentificationOrDefault, permission);
+    }
+
+    [Obsolete("Используй projectInfo")]
     public static T RequestMasterAccess<T>(this T field, [NotNull] int? currentUserId, Permission permission = Permission.None)
         where T : IProjectEntity
     {
         return field.RequestMasterAccess(currentUserId, acl => permission.GetPermssionExpression()(acl));
+    }
+
+    public static ProjectInfo RequestMasterAccess(this ProjectInfo projectInfo, [NotNull] UserIdentification? currentUserId, Permission permission = Permission.None)
+    {
+        if (currentUserId is null)
+        {
+            throw new NoAccessToProjectException(projectInfo, null);
+        }
+
+        if (!projectInfo.HasMasterAccess(currentUserId, permission))
+        {
+            throw new NoAccessToProjectException(projectInfo, currentUserId, permission);
+        }
+
+        return projectInfo;
     }
 
     [Obsolete("Передавай сюда ProjectInfo")]
@@ -107,24 +129,15 @@ public static class ProjectEntityExtensions
         return entity;
     }
 
-    public static bool HasPlayerAccess(this Character character, int? currentUserId)
-    {
-        ArgumentNullException.ThrowIfNull(character);
-
-        return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
-    }
+    [Obsolete("Используйте AccessArguments")]
 
     public static bool HasAnyAccess(this Character character, int? currentUserIdOrDefault)
     {
         ArgumentNullException.ThrowIfNull(character);
 
-        return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault);
-    }
+        var playerAccess = currentUserIdOrDefault != null && character.ApprovedClaim?.PlayerUserId == currentUserIdOrDefault;
 
-    public static bool HasPlotViewAccess(this Character character, int? currentUserIdOrDefault)
-    {
-        return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault) ||
-               character.Project.Details.PublishPlot;
+        return playerAccess || character.HasMasterAccess(currentUserIdOrDefault);
     }
 
     public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)

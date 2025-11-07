@@ -2,22 +2,11 @@ using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
-internal class ResponsibleMasterRuleClient : IResponsibleMasterRuleClient
+internal class ResponsibleMasterRuleClient(
+    HttpClient httpClient,
+    CsrfTokenProvider csrfTokenProvider,
+    ILogger<ResponsibleMasterRuleClient> logger) : IResponsibleMasterRuleClient
 {
-    private readonly HttpClient httpClient;
-    private readonly CsrfTokenProvider csrfTokenProvider;
-    private readonly ILogger<ResponsibleMasterRuleClient> logger;
-
-    public ResponsibleMasterRuleClient(
-        HttpClient httpClient,
-        CsrfTokenProvider csrfTokenProvider,
-        ILogger<ResponsibleMasterRuleClient> logger)
-    {
-        this.httpClient = httpClient;
-        this.csrfTokenProvider = csrfTokenProvider;
-        this.logger = logger;
-    }
-
     public async Task<ResponsibleMasterRuleListViewModel> GetResponsibleMasterRuleList(ProjectIdentification projectId)
     {
         return await httpClient.GetFromJsonAsync<ResponsibleMasterRuleListViewModel>(

@@ -12,26 +12,26 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 public class ResponsibleMasterRuleController(IResponsibleMasterRuleClient responsibleMasterRuleClient) : ControllerBase
 {
     [HttpGet]
-    public async Task<ResponsibleMasterRuleListViewModel> GetList(int projectId)
-        => await responsibleMasterRuleClient.GetResponsibleMasterRuleList(new ProjectIdentification(projectId));
+    public async Task<ResponsibleMasterRuleListViewModel> GetList(ProjectIdentification projectId)
+        => await responsibleMasterRuleClient.GetResponsibleMasterRuleList(projectId);
 
     [HttpPost]
     [RequireMaster(Permission.CanManageClaims)]
-    public async Task<ActionResult> Remove(int projectId, int ruleId)
+    public async Task<ActionResult> Remove(ProjectIdentification projectId, int ruleId)
     {
-        await responsibleMasterRuleClient.RemoveResponsibleMasterRule(new ProjectIdentification(projectId), ruleId);
+        await responsibleMasterRuleClient.RemoveResponsibleMasterRule(projectId, ruleId);
         return Ok();
     }
 
     [HttpPost]
     [RequireMaster(Permission.CanManageClaims)]
     public async Task<ResponsibleMasterRuleListViewModel> Add(
-        int projectId,
+        ProjectIdentification projectId,
         int groupId,
         int masterId)
     {
         return await responsibleMasterRuleClient.AddResponsibleMasterRule(
-                new ProjectIdentification(projectId),
+                projectId,
                 groupId,
                 masterId);
     }
