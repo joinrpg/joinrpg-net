@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
@@ -24,7 +25,12 @@ public class ProjectMenuViewComponent(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProjectAccessor.ProjectId);
 
-        var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == currentUserAccessor.UserIdOrDefault);
+        if (currentUserAccessor.UserIdentificationOrDefault is not UserIdentification userId)
+        {
+            return await GenerateAnonMenu(projectInfo);
+        }
+
+        var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == userId);
 
         if (acl != null)
         {
@@ -32,29 +38,23 @@ public class ProjectMenuViewComponent(
         }
         else
         {
-            return await GeneratePlayerMenu(projectInfo);
+            return await GeneratePlayerMenu(projectInfo, userId);
         }
     }
 
-    private async Task<IViewComponentResult> GeneratePlayerMenu(ProjectInfo projectInfo)
+    private async Task<IViewComponentResult> GenerateAnonMenu(ProjectInfo projectInfo)
     {
-        IReadOnlyCollection<ClaimShortListItemViewModel> claims;
-        if (currentUserAccessor.UserIdOrDefault is int userId)
-        {
-            claims = [..
-                    (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
-                    .Select(c => new ClaimShortListItemViewModel(c))
-                ];
-        }
-        else
-        {
-            claims = [];
-        }
         var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
-        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups)
-        {
-            Claims = claims,
-        };
+        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, []);
+        return View("PlayerMenu", menuModel);
+    }
+
+    private async Task<IViewComponentResult> GeneratePlayerMenu(ProjectInfo projectInfo, UserIdentification userId)
+    {
+        var claims = (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
+                    .Select(c => new ClaimShortListItemViewModel(c)).ToList();
+        var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
+        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, claims);
         return View("PlayerMenu", menuModel);
     }
 

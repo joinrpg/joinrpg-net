@@ -17,10 +17,11 @@ public class MenuViewModelBase(ProjectInfo projectInfo, ICurrentUserAccessor cur
     public ProjectLifecycleStatus ProjectStatus { get; } = projectInfo.ProjectStatus;
 }
 
-public class PlayerMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, CharacterGroupLinkSlimViewModel[] bigGroups)
+public class PlayerMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, CharacterGroupLinkSlimViewModel[] bigGroups,
+    IReadOnlyCollection<ClaimShortListItemViewModel> claims)
     : MenuViewModelBase(projectInfo, currentUserAccessor, bigGroups)
 {
-    public required IReadOnlyCollection<ClaimShortListItemViewModel> Claims { get; set; }
+    public IReadOnlyCollection<ClaimShortListItemViewModel> Claims { get; } = claims;
     public bool PlotPublished { get; } = projectInfo.PublishPlot;
 }
 
