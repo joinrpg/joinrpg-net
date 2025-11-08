@@ -5,6 +5,8 @@ using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.Claims;
+using JoinRpg.Web.Models.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
@@ -68,7 +70,7 @@ public class MyClaimListViewModel(IReadOnlyCollection<Claim> claims)
 
             ClaimId = claim.ClaimId;
 
-            ClaimFullStatusView = new ClaimFullStatusView(claim, AccessArguments.None);
+            ClaimFullStatusView = ClaimStatusBuilders.CreateFullStatus(claim, AccessArguments.None);
             Name = claim.Character.CharacterName;
 
             UpdateDate = claim.LastUpdateDateTime;

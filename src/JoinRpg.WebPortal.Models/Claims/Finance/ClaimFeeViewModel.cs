@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models;
 

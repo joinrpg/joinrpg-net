@@ -3,6 +3,8 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.Web.Claims;
+using JoinRpg.Web.Models.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
@@ -50,7 +52,7 @@ public abstract class ClaimListItemViewModelBase : ILinkable
 
         ClaimId = claim.ClaimId;
 
-        ClaimFullStatusView = new ClaimFullStatusView(claim, accessArguments);
+        ClaimFullStatusView = ClaimStatusBuilders.CreateFullStatus(claim, accessArguments);
         Name = claim.Character.CharacterName;
         Player = claim.Player;
 

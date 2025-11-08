@@ -1,57 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models;
-
-public enum ClaimStatusView
-{
-    [Display(Name = "Подана")]
-    AddedByUser,
-
-    [Display(Name = "Предложена")]
-    AddedByMaster,
-
-    [Display(Name = "Принята")]
-    Approved,
-
-    [Display(Name = "Отозвана")]
-    DeclinedByUser,
-
-    [Display(Name = "Отклонена")]
-    DeclinedByMaster,
-
-    [Display(Name = "Обсуждается")]
-    Discussed,
-
-    [Display(Name = "В листе ожидания")]
-    OnHold,
-
-    [Display(Name = "Игрок заехал")]
-    CheckedIn,
-}
-
-public class ClaimFullStatusView
-{
-    public ClaimFullStatusView(Claim claim, AccessArguments accessArguments)
-    {
-        AccessArguments = accessArguments;
-        ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
-        ClaimDenialStatus = (ClaimDenialStatusView?)claim.ClaimDenialStatus;
-    }
-
-    [Display(Name = "Статус")]
-    public ClaimStatusView ClaimStatus { get; }
-
-    [Display(Name = "Причина отказа")]
-    public ClaimDenialStatusView? ClaimDenialStatus { get; }
-
-    public AccessArguments AccessArguments { get; }
-}
-
-
 
 public static class ClaimStatusViewExtensions
 {

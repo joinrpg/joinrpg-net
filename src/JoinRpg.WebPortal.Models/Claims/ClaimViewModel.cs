@@ -13,6 +13,7 @@ using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Claims;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
@@ -124,7 +125,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Player = claim.Player;
         PlayerLink = UserLinks.Create(playerInfo, ViewMode.Show);
         ProjectName = claim.Project.ProjectName;
-        Status = new ClaimFullStatusView(claim, AccessArgumentsFactory.Create(claim, currentUser));
+        Status = ClaimStatusBuilders.CreateFullStatus(claim, AccessArgumentsFactory.Create(claim, currentUser));
         CharacterId = claim.CharacterId;
         CharacterActive = claim.Character.IsActive;
         CharacterAutoCreated = claim.Character.AutoCreated;

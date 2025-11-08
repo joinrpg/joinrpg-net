@@ -7,6 +7,7 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
+using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.Projects;

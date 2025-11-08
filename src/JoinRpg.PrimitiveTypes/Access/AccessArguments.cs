@@ -28,6 +28,7 @@ public record class AccessArguments(
 
     public bool CharacterPlotAccess { get; } = Published || PlayerAccessToCharacter || MasterAccess;
     public static AccessArguments None { get; } = new AccessArguments(false, false, false, false, false);
+    public bool CanViewDenialStatus { get; } = MasterAccess;
 
     public AccessArguments WithoutMasterAccess() => this with { MasterAccess = false };
 
