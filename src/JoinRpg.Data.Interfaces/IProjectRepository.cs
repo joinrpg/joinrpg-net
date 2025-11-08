@@ -57,6 +57,8 @@ public interface IProjectRepository : IDisposable
     Task<ProjectShortInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
 
     Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId);
+
+    Task<CharacterGroupHeaderDto[]> GetGroupHeaders(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds);
 }
 
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)
