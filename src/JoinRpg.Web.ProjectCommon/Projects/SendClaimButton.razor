@@ -1,0 +1,30 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@inject IProjectUriLocator projectUriLocator
+@if (ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen)
+{
+    <JoinButton Link="@uri.AbsoluteUri" Size="@Size" Label="Заявиться" Preset="ButtonPreset.Claim" Title="Создать новую заявку на проект" />
+} else
+{
+    <JoinButton Size="@Size" Label="Заявки закрыты" Preset="ButtonPreset.Claim" Disabled="true" Title="Подать заявку невозможно, т.к. прием заявок закрыт мастерами" />
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectLifecycleStatus ProjectStatus { get; set; } = default;
+
+    [Parameter]
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Medium;
+
+    private Uri uri = null!;
+
+    protected override void OnParametersSet()
+    {
+        uri = projectUriLocator.GetAddClaimUri(ProjectId);
+        base.OnParametersSet();
+    }
+}

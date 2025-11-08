@@ -8,8 +8,10 @@ public static class UriLocatorExtensions
 {
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
-        IUriLocator<ProjectLinkViewModel>
+        IUriLocator<ProjectLinkViewModel>, IUriLocator<ClaimIdentification>
     {
+        public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
+
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
         {
             if (target.ViewMode == ViewMode.Hide)
@@ -34,10 +36,12 @@ public static class UriLocatorExtensions
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
         var locator = new UriLocator();
-        serviceCollection.AddSingleton<IUriLocator<UserLinkViewModel>>(locator);
-        serviceCollection.AddSingleton<IUriLocator<ProjectLinkViewModel>>(locator);
-        serviceCollection.AddSingleton<IUriLocator<CharacterGroupLinkSlimViewModel>>(locator);
-        serviceCollection.AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator);
-        return serviceCollection;
+        return serviceCollection
+            .AddSingleton<IUriLocator<UserLinkViewModel>>(locator)
+            .AddSingleton<IUriLocator<ProjectLinkViewModel>>(locator)
+            .AddSingleton<IUriLocator<CharacterGroupLinkSlimViewModel>>(locator)
+            .AddSingleton<IUriLocator<ClaimIdentification>>(locator)
+            .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
+            ;
     }
 }

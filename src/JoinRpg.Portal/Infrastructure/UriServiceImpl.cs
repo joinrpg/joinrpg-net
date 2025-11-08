@@ -19,7 +19,8 @@ internal class UriServiceImpl(
     IUriLocator<ProjectLinkViewModel>,
     IProjectUriLocator,
     ICharacterUriLocator,
-    IUriLocator<PlotFolderIdentification>
+    IUriLocator<PlotFolderIdentification>,
+    IUriLocator<ClaimIdentification>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -110,6 +111,7 @@ internal class UriServiceImpl(
     Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Plot", new { ProjectId = projectId.Value }));
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
     public Uri GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));
+    public Uri GetUri(ClaimIdentification target) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Claim", new { ProjectId = target.ProjectId.Value, target.ClaimId }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

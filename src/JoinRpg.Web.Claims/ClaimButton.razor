@@ -1,0 +1,22 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@using JoinRpg.Web.ProjectCommon.Claims
+@inject IUriLocator<ClaimIdentification> uriLocator
+
+<JoinButton Link="@uri.AbsoluteUri" Size="@Size" Title="@Claim.PlayerName.ToLongString()" Preset="ButtonPreset.Claim" Label="@Claim.CharacterName" />
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ClaimLinkViewModel Claim { get; set; } = null!;
+
+    [Parameter]
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Medium;
+
+    private Uri uri = null!;
+
+    protected override void OnParametersSet()
+    {
+        uri = uriLocator.GetUri(Claim.ClaimId);
+        base.OnParametersSet();
+    }
+}

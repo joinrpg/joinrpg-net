@@ -39,7 +39,7 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     [DisplayName("Анонс проекта")]
     public MarkupString ProjectAnnounce { get; } = projectDescription;
 
-    public bool HasMyClaims { get; } = claims.Count > 0;
+    public IReadOnlyCollection<ClaimLinkViewModel> MyClaims { get; } = claims;
 
     [DisplayName("Название проекта")]
     public ProjectName ProjectName { get; } = project.ProjectName;
