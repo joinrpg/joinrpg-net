@@ -1,8 +1,3 @@
-using System.Data.Entity;
-using System.Linq.Expressions;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class ForumRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IForumRepository

@@ -1,4 +1,3 @@
-using System.Data.Entity;
 using System.Diagnostics;
 
 namespace JoinRpg.Dal.Impl.Repositories;

@@ -1,9 +1,4 @@
-using System.Data.Entity;
-using System.Linq.Expressions;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 using LinqKit;
 

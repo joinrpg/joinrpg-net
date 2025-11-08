@@ -1,6 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Dal.Impl.Repositories;
 //TODO: temporary duplication from domain
 public static class UserTransformationExtensions

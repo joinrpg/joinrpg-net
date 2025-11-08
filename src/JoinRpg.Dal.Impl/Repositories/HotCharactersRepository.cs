@@ -1,6 +1,3 @@
-using System.Data.Entity;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
 

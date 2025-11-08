@@ -1,12 +1,8 @@
-using System.Data.Entity;
-using System.Linq.Expressions;
 using JoinRpg.Dal.Impl.Repositories;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Write.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.DataModel.Projects;
 using Microsoft.Extensions.Logging;

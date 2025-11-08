@@ -1,5 +1,3 @@
-using System.Data.Entity;
-
 namespace JoinRpg.Dal.Impl;
 
 public class MyDbConfiguration : DbConfiguration

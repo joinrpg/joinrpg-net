@@ -1,10 +1,5 @@
 using System.Collections.Immutable;
-using System.Data.Entity;
 using System.Data.Entity.SqlServer;
-using System.Linq.Expressions;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;

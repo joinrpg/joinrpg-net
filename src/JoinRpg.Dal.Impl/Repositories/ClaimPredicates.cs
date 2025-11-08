@@ -1,7 +1,4 @@
 using System.Data.Entity.SqlServer;
-using System.Linq.Expressions;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;

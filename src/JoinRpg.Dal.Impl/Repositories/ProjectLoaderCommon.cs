@@ -1,5 +1,3 @@
-using System.Data.Entity;
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Dal.Impl.Repositories;
