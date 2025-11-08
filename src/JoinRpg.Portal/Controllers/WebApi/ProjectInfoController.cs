@@ -1,5 +1,5 @@
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.Games.Projects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;

@@ -1,10 +1,8 @@
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Web.Claims;
-public interface IClaimClient
+public interface IClaimOperationClient
 {
     Task AllowSensitiveData(ProjectIdentification projectId);
 
-    Task<IReadOnlyCollection<ClaimLinkViewModel>> GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec);
 }

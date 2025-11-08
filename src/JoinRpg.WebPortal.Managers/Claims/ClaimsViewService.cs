@@ -4,9 +4,10 @@ using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Claims;
+using JoinRpg.Web.ProjectCommon.Claims;
 
 namespace JoinRpg.WebPortal.Managers.Claims;
-internal class ClaimsViewService(IClaimService claimService, IClaimsRepository claimsRepository, ICurrentUserAccessor currentUserAccessor) : IClaimClient
+internal class ClaimsViewService(IClaimService claimService, IClaimsRepository claimsRepository, ICurrentUserAccessor currentUserAccessor) : IClaimListClient, IClaimOperationClient
 {
     public async Task AllowSensitiveData(ProjectIdentification projectId)
     {
@@ -17,9 +18,14 @@ internal class ClaimsViewService(IClaimService claimService, IClaimsRepository c
         }
     }
 
-    async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
-    => ToClaimViewModels(await claimsRepository.GetClaimHeadersWithPlayer(projectId, claimStatusSpec));
+    async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimListClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
+    => (await claimsRepository.GetClaimHeadersWithPlayer(projectId, claimStatusSpec)).ToClaimViewModels();
 
-    private static IReadOnlyCollection<ClaimLinkViewModel> ToClaimViewModels(IReadOnlyCollection<Data.Interfaces.ClaimWithPlayer> claims)
-        => [.. claims.Select(x => new ClaimLinkViewModel(x.ClaimId, x.Player.DisplayName, x.CharacterName, x.ExtraNicknames ?? ""))];
+
+}
+
+public static class Builders
+{
+    public static IReadOnlyCollection<ClaimLinkViewModel> ToClaimViewModels(this IReadOnlyCollection<Data.Interfaces.ClaimWithPlayer> claims)
+    => [.. claims.Select(x => new ClaimLinkViewModel(x.ClaimId, x.Player.DisplayName, x.CharacterName, x.ExtraNicknames ?? ""))];
 }

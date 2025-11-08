@@ -145,6 +145,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Common.WebInfrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Common.Telegram", "src\JoinRpg.Common.Telegram\JoinRpg.Common.Telegram.csproj", "{F72ED56A-4EF8-40AD-9B08-236EF52828D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.Games", "src\JoinRpg.Web.Games\JoinRpg.Web.Games.csproj", "{1BD155B8-09CF-4978-BB44-654ADAA1E9B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -379,6 +381,10 @@ Global
 		{F72ED56A-4EF8-40AD-9B08-236EF52828D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F72ED56A-4EF8-40AD-9B08-236EF52828D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F72ED56A-4EF8-40AD-9B08-236EF52828D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BD155B8-09CF-4978-BB44-654ADAA1E9B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BD155B8-09CF-4978-BB44-654ADAA1E9B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BD155B8-09CF-4978-BB44-654ADAA1E9B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BD155B8-09CF-4978-BB44-654ADAA1E9B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -430,6 +436,7 @@ Global
 		{5727C083-0EE6-4316-909C-2D7B5AC72597} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{58533BEE-3B89-4374-8979-2E6B96405D2F} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 		{F72ED56A-4EF8-40AD-9B08-236EF52828D0} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
+		{1BD155B8-09CF-4978-BB44-654ADAA1E9B1} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}
