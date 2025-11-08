@@ -1,5 +1,5 @@
 using JoinRpg.Web.AdminTools.KogdaIgra;
-using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.Games.Projects;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 

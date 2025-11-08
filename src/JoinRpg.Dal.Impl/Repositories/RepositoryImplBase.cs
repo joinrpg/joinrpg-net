@@ -1,5 +1,6 @@
 namespace JoinRpg.Dal.Impl.Repositories;
 
+[Obsolete]
 public abstract class RepositoryImplBase : IDisposable
 {
     protected MyDbContext Ctx { get; }

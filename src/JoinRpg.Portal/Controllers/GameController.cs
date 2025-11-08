@@ -11,8 +11,10 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.WebPortal.Managers.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,14 +47,14 @@ public class GameController(
 
         var list = await kiClient.GetKogdaIgraCards(details.KogdaIgraLinkedIds);
 
-        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims, list));
+        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list));
     }
 
     [Authorize]
     [HttpGet("/game/create")]
     public IActionResult Create() => View(new ProjectCreateViewModel());
 
-    private IActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
+    private RedirectToActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
 
     [HttpGet("/{projectId}/project/settings")]
     [MasterAuthorize(Permission.CanChangeProjectProperties)]

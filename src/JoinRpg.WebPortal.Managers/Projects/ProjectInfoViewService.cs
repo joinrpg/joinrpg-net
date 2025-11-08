@@ -1,7 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
 internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadataRepository) : IProjectInfoClient

@@ -68,6 +68,6 @@ public class ProjectMenuViewComponent(
     private async Task<IEnumerable<CharacterGroupLinkSlimViewModel>> LoadBigGroups(ProjectInfo projectInfo)
     {
         return (await projectRepository.LoadDirectChildGroupHeaders(projectInfo.RootCharacterGroupId))
-            .Select(dto => new CharacterGroupLinkSlimViewModel(dto));
+            .Select(dto => new CharacterGroupLinkSlimViewModel(dto.CharacterGroupId, dto.Name, dto.IsPublic, dto.IsActive));
     }
 }

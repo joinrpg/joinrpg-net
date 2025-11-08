@@ -1,8 +1,10 @@
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
@@ -39,7 +41,8 @@ public static class HttpClientRegistration
                 .AddHttpClient<ICharacterGroupsClient, CharacterGroupsClient>()
                 .AddHttpClient<ICharactersClient, CharactersClient>()
                 .AddHttpClient<ICheckInClient, CheckInClient>()
-                .AddHttpClient<IClaimClient, ClaimHttpClient>()
+                .AddHttpClient<IClaimOperationClient, ClaimHttpClient>()
+                .AddHttpClient<IClaimListClient, ClaimHttpClient>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>();
     }
 }

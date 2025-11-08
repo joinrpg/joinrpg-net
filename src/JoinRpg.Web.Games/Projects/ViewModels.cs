@@ -1,11 +1,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Components;
 
-namespace JoinRpg.Web.ProjectCommon.Projects;
+namespace JoinRpg.Web.Games.Projects;
 public record class ProjectInfoViewModel(
     ProjectIdentification ProjectId,
     string Name,
@@ -26,7 +27,7 @@ public record class KogdaIgraCardViewModel(
     string MasterGroupName, Uri? SiteUri);
 
 [method: JsonConstructor]
-public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimWithPlayer> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras)
+public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras)
 {
     public ProjectLifecycleStatus Status { get; set; } = project.ProjectStatus;
     public ProjectIdentification ProjectId { get; } = project.ProjectId;

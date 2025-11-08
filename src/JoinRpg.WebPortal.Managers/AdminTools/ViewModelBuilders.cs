@@ -1,6 +1,6 @@
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
-using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.Games.Projects;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
