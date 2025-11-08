@@ -1,11 +1,5 @@
-using System.Data.Entity;
-using System.Linq.Expressions;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 using LinqKit;
 

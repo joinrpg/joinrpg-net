@@ -1,6 +1,3 @@
-using System.Data.Entity;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 
 namespace JoinRpg.Dal.Impl.Repositories;

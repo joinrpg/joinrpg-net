@@ -1,6 +1,5 @@
 using System.Reflection;
 using JoinRpg.Dal.Impl.Repositories;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 

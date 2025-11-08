@@ -1,7 +1,3 @@
-using System.Linq.Expressions;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;

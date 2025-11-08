@@ -1,7 +1,5 @@
-using System.Data.Entity;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.DataModel.Projects;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), IKogdaIgraRepository

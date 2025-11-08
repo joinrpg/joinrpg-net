@@ -1,8 +1,4 @@
-using System.Data.Entity;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Finances;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

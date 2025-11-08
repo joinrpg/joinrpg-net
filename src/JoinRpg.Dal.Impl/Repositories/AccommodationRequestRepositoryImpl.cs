@@ -1,17 +1,10 @@
-using System.Data.Entity;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-public class AccommodationRequestRepositoryImpl : RepositoryImplBase,
+public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(ctx),
     IAccommodationRequestRepository
 {
-    public AccommodationRequestRepositoryImpl(MyDbContext ctx) : base(ctx)
-    {
-    }
-
     public async Task<IReadOnlyCollection<AccommodationRequest>>
         GetAccommodationRequestForProject(int projectId)
     {
