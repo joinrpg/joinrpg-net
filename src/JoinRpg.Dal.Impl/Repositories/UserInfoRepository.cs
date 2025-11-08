@@ -147,11 +147,10 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
     public async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
     {
         var ids = userIds.Select(x => x.Value).ToList();
-        Func<User, bool> predicate = user => ids.Contains(user.UserId);
-        return await GetUserInfoHeadersByPredicate(predicate);
+        return await GetUserInfoHeadersByPredicate(user => ids.Contains(user.UserId));
     }
 
-    private async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeadersByPredicate(Func<User, bool> predicate)
+    private async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeadersByPredicate(Expression<Func<User, bool>> predicate)
     {
         var userQuery =
             from user in ctx.Set<User>().AsExpandable()
