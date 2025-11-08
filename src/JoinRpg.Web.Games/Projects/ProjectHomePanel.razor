@@ -1,10 +1,22 @@
 @using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon.Projects
+@using JoinRpg.Web.Claims
 <h2>@Model.Title</h2>
 
-<JoinAlert Variation="VariationStyleEnum.Info">
-  <CalendarIcon /> Дата создания: <strong>@Model.CreatedDate.ToShortDateString()</strong>
-</JoinAlert>
+<div style="margin-bottom:1em">
+  <JoinButtonGroup>
+    @foreach(var claim in Model.MyClaims)
+    {
+      <ClaimButton Claim="@claim" Size="SizeStyleEnum.Large"/>    
+    }
+
+    @if (Model.Status == ProjectLifecycleStatus.ActiveClaimsOpen)
+    {
+        <SendClaimButton ProjectId="Model.ProjectId" ProjectStatus="Model.Status" Size="SizeStyleEnum.Large" />
+    }
+    </JoinButtonGroup>
+    
+</div>
 
 @if (Model.Status== ProjectLifecycleStatus.Archived)
 {
@@ -24,10 +36,6 @@
     </Body>
   </JoinPanel>
 }
-
-<div style="text-align:center; margin-bottom:1em">
-    <MyClaimButton ProjectId="@Model.ProjectId" HasMyClaims="@Model.HasMyClaims" ProjectStatus="Model.Status" Size="SizeStyleEnum.Large"/>
-</div>
 
 <JoinPanel>
   <Header>Мастера</Header>
