@@ -1,37 +1,9 @@
-using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Domain;
 
 public static class UserExtensions
 {
-    public static UserProfileAccessReason GetProfileAccess(this User user, User? currentUser)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-
-        if (currentUser == null)
-        {
-            return UserProfileAccessReason.NoAccess;
-        }
-        if (user.UserId == currentUser.UserId)
-        {
-            return UserProfileAccessReason.ItsMe;
-        }
-        if (user.Claims.Any(claim => claim.HasAccess(currentUser.UserId) && claim.ClaimStatus != ClaimStatus.AddedByMaster))
-        {
-            return UserProfileAccessReason.Master;
-        }
-        if (user.ProjectAcls.Any(acl => acl.Project.HasMasterAccess(currentUser.UserId)))
-        {
-            return UserProfileAccessReason.CoMaster;
-        }
-        if (currentUser.Auth.IsAdmin == true)
-        {
-            return UserProfileAccessReason.Administrator;
-        }
-        return UserProfileAccessReason.NoAccess;
-    }
-
     public static UserIdentification GetId(this User user) => new UserIdentification(user.UserId);
 
     public static UserInfo GetUserInfo(this User user)
@@ -55,8 +27,6 @@ public static class UserExtensions
     }
 
     public static UserInfo GetUserInfo(this Claim claim) => claim.Player.GetUserInfo();
-
-    public static ContactsAccessType GetSocialNetworkAccess(this User user) => user.Extra?.SocialNetworksAccess ?? ContactsAccessType.OnlyForMasters;
 
     public static UserFullName ExtractFullName(this User user)
     {

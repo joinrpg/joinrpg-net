@@ -217,7 +217,7 @@ public class ManageController(
             LastClaimId = lastClaim?.ClaimId,
             LastClaimProjectId = lastClaim?.ProjectId,
             IsVerifiedFlag = user.VerifiedProfileFlag,
-            SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess(),
+            SocialNetworkAccess = (ContactsAccessTypeView)user.Extra.SocialNetworksAccess,
             SocialLoginStatus = user.GetSocialLogins().ToList(),
             Email = user.Email,
             HasPassword = user.PasswordHash != null,
