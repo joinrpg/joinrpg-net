@@ -2,7 +2,7 @@ namespace JoinRpg.Common.Telegram;
 public class TelegramLoginOptions
 {
     public required string BotName { get; set; }
-    public required long BotId { get; set; }
+    public required long? BotId { get; set; }
     public required string BotSecret { get; set; }
 
     /// <summary>

@@ -1,0 +1,55 @@
+@using JoinRpg.PrimitiveTypes
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.Claims
+@using JoinRpg.Web.ProjectCommon.Claims
+@using Microsoft.AspNetCore.Components.Forms
+@inject ILogger<CaptainRuleForm> Logger
+
+<EditForm Model="_model" OnValidSubmit="OnAdd">
+    <FormHorizontal>
+        <FormRow Label="Группа">
+            <SingleCharacterGroupSelector ProjectId="@ProjectId" @bind-SelectedGroup="_model.Group" />
+        </FormRow>
+        <FormRow Label="Капитан">
+            <ClaimSelector ProjectId="@ProjectId" @bind-Claim="_model.Claim" />
+        </FormRow>
+		<FormRow Label="Одобрение заявок">
+			<CheckboxInput @bind-Value="_model.CanApprove" />
+		</FormRow>
+        <br />
+        <JoinButton Preset="ButtonPreset.Add" Submit="true" /> |
+        <JoinButton Preset="ButtonPreset.Cancel" OnClick="OnCancelAdd" />
+    </FormHorizontal>
+</EditForm>
+
+@code {
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<AddCaptainRuleViewModel> OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnCancelAdd { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; }
+
+    public ProjectIdentification ProjectIdentification => new ProjectIdentification(ProjectId);
+
+
+	private AddCaptainRuleViewModel _model = new();
+
+    private async Task OnAdd()
+    {
+        if (_model.Group is null)
+        {
+            Logger.LogError("Unexpected null group");
+        }
+        await OnSubmit.InvokeAsync(_model);
+    }
+
+
+
+}

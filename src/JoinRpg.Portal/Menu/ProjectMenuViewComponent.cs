@@ -17,7 +17,8 @@ public class ProjectMenuViewComponent(
     IProjectRepository projectRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentProjectAccessor currentProjectAccessor,
-    IClaimsRepository claimsRepository
+    IClaimsRepository claimsRepository,
+    ICaptainRulesRepository captainRulesRepository
     ) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
@@ -45,7 +46,7 @@ public class ProjectMenuViewComponent(
     private async Task<IViewComponentResult> GenerateAnonMenu(ProjectInfo projectInfo)
     {
         var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
-        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, []);
+        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, [], []);
         return View("PlayerMenu", menuModel);
     }
 
@@ -53,8 +54,9 @@ public class ProjectMenuViewComponent(
     {
         var claims = (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
                     .Select(c => new ClaimShortListItemViewModel(c)).ToList();
+        var captainAccessRules = await captainRulesRepository.GetCaptainRules(projectInfo.ProjectId, userId);
         var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
-        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, claims);
+        var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, claims, captainAccessRules);
         return View("PlayerMenu", menuModel);
     }
 

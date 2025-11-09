@@ -29,7 +29,7 @@
     {
         <tr>
             <td>
-                <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
+                <a href="@Url.Action("Edit", "Claim", new {item.ClaimId.ProjectId.Value, item.ClaimId.ClaimId}, null)">
                     @item.Name
                     @if (item.UnreadCommentsCount > 0)
                     {
@@ -39,9 +39,9 @@
             </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
-                    @if (item.Player != null && !string.IsNullOrWhiteSpace(item.Player.FullName))
-                    {<text><br /> @item.Player.FullName </text>
-                }
+                    @if (!string.IsNullOrWhiteSpace(item.PlayerFullName))
+                      {<text><br /> @item.PlayerFullName </text>
+                      }
                 </td>
             <td>
                 @Html.DisplayFor(modelItem => item.ClaimFullStatusView)

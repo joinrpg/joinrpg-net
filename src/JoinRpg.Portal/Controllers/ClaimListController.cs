@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -27,7 +28,8 @@ public class ClaimListController(
     IAccommodationRepository accommodationRepository,
     IUserRepository userRepository,
     IProblemValidator<Claim> claimValidator,
-    IProjectMetadataRepository projectMetadataRepository
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor
         ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
 {
 
@@ -41,12 +43,12 @@ public class ClaimListController(
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(CurrentUserId, claims, projectId, unreadComments, title, projectInfo, claimValidator);
+            var view = new ClaimListViewModel(currentUserAccessor, claims, projectId, unreadComments, title, projectInfo, claimValidator);
             return View("Index", view);
         }
         else
         {
-            var view = new ClaimListForExportViewModel(CurrentUserId, claims, projectInfo);
+            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo);
 
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
@@ -100,12 +102,12 @@ public class ClaimListController(
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
-            var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
+            var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
             return View("ByGroup", view);
         }
         else
         {
-            var view = new ClaimListForExportViewModel(CurrentUserId, claims, projectInfo);
+            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo);
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
                         new ClaimListItemViewModelExporter(uriService, projectInfo),

@@ -1,0 +1,110 @@
+@using JoinRpg.PrimitiveTypes
+@using JoinRpg.PrimitiveTypes.Claims
+@using JoinRpg.Web.ProjectCommon
+@inject ICaptainRuleClient Client
+@inject ILogger<CaptainRulesList> logger
+@if (_model is null)
+{
+  <JoinLoadingMessage />
+  return;
+}
+
+<JoinPanelWithList Items="@_model.Items">
+  <Header>Капитаны команд</Header>
+  <Body>
+     <p>
+      Капитаны получат возможность смотреть список заявок в свою команду, статус заявки и взнос.
+	  Они не увидят сюжеты своей команды, переписку с мастерами или каких-то скрытых персонажей, это прерогатива мастеров.
+    </p>
+    @if (Adding)
+    {
+            <CaptainRuleForm OnSubmit="PerformAdd" OnCancelAdd="() => Adding = false" ProjectId="@ProjectId" />
+    }
+    else
+    {
+      if (_model.HasEditAccess)
+      {
+        <JoinButton Preset="ButtonPreset.Add"  OnClick="() => Adding = true" Title="Добавить правило" Label="Добавить правило"/>
+      }
+      else
+      {
+        <JoinButton Preset="ButtonPreset.Add"  Disabled="true" Title="Для управления настройками нужны права администратора заявок" Label="Добавить правило"/>
+      }
+    }
+  </Body>
+  <ItemTemplate>
+    <CaptainListRow
+      Model="@context"
+      OnRemoveCallback="OnRemoveRow"
+      HasEditAccess="@_model.HasEditAccess"
+      @key="@context.Rule" />
+  </ItemTemplate>
+</JoinPanelWithList>
+
+@code {
+    private CaptainRuleListViewModel? _model;
+
+    [Parameter]
+    public CaptainRuleListViewModel? InitialModel { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    public bool Adding { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (InitialModel != null)
+        {
+            _model = InitialModel;
+        }
+        else
+        {
+            _model = await Client.GetList(ProjectId);
+        }
+    }
+
+    async Task OnRemoveRow(CaptainRuleViewModel item)
+    {
+        var items = _model!.Items;
+        var idx = items.IndexOf(item);
+
+        items.RemoveAt(idx);
+        try
+        {
+            await Client.Remove(item.Rule);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during remove resp master");
+            items.Insert(idx, item);
+        }
+    }
+
+    async Task PerformAdd(AddCaptainRuleViewModel addedModel)
+    {
+        Adding = false;
+
+        var rule = addedModel.ToRule();
+
+        _model!.Items.Insert(
+          0,
+          new CaptainRuleViewModel(rule, addedModel.Group.Name, addedModel.Claim.ToUserLinkViewModel())
+      );
+
+        try
+        {
+
+            _model = await Client.AddOrChange(rule);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Error during add resp master");
+            _model!.Items.RemoveAt(0);
+        }
+    }
+
+
+
+}

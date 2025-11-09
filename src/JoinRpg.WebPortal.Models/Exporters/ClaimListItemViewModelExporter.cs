@@ -33,7 +33,7 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
 
         yield return ShortUserColumn(x => x.LastModifiedBy);
         yield return ShortUserColumn(x => x.Responsible);
-        foreach (var c in UserColumn(x => x.Player, projectInfo))
+        foreach (var c in UserColumn(x => x.FullPlayer, projectInfo))
         {
             yield return c;
         }
@@ -46,7 +46,7 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
 
         foreach (var projectField in projectInfo.SortedFields.Where(f => f.CanHaveValue))
         {
-            yield return FieldColumn(projectField, x => x.Fields);
+            yield return FieldColumn(projectField, x => x.FieldValues);
         }
     }
 }

@@ -28,8 +28,8 @@ public static class AccessArgumentsFactory
             PlayerAccessToCharacter: character.HasPlayerAccess(userId),
             PlayerAccesToClaim: character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false,
             EditAllowed: character.Project.Active,
-            Published: character.Project.Details.PublishPlot
-            );
+            Published: character.Project.Details.PublishPlot,
+            CharacterPublic: character.IsPublic);
     }
 
     public static AccessArguments Create(Character character, ICurrentUserAccessor user, CharacterAccessMode mode = CharacterAccessMode.Usual)
@@ -57,8 +57,8 @@ public static class AccessArgumentsFactory
               PlayerAccessToCharacter: character.HasAnyAccess(userId),
               PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(userId, Permission.None, ExtraAccessReason.Player) ?? false,
               EditAllowed: character.Project.Active,
-              Published: character.Project.Details.PublishPlot
-              );
+              Published: character.Project.Details.PublishPlot,
+              CharacterPublic: character.IsPublic);
     }
 
     /// <summary>
@@ -71,8 +71,8 @@ public static class AccessArgumentsFactory
           PlayerAccessToCharacter: false,
           PlayerAccesToClaim: true,
           EditAllowed: true,
-          Published: false
-          );
+          Published: false,
+          CharacterPublic: character.IsPublic);
     }
 
     public static AccessArguments Create(Claim claim, int? userId)
@@ -81,11 +81,11 @@ public static class AccessArgumentsFactory
 
         return new AccessArguments(
             MasterAccess: claim.HasMasterAccess(userId),
-            PlayerAccessToCharacter: claim.Character?.HasPlayerAccess(userId) ?? false,
+            PlayerAccessToCharacter: claim.Character.HasPlayerAccess(userId),
             PlayerAccesToClaim: claim.HasPlayerAccesToClaim(userId),
             EditAllowed: claim.Project.Active,
-            Published: claim.Project.Details.PublishPlot
-            );
+            Published: claim.Project.Details.PublishPlot,
+            CharacterPublic: claim.Character.IsPublic);
     }
 
     public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId) => Create(claim, userId.UserIdOrDefault);

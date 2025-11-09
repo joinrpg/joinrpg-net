@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models;
 

@@ -1,0 +1,23 @@
+@using JoinRpg.PrimitiveTypes.ProjectMetadata
+@using JoinRpg.Web.ProjectCommon.Claims
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IProjectUriLocator uriLocator
+
+<JoinButton Link="@uri.AbsoluteUri" Size="@Size" Title="Информация о персонажах в вашей команде" Preset="ButtonPreset.Claim" Label="Кабинет капитана" />
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Medium;
+
+    private Uri uri = null!;
+
+    protected override void OnParametersSet()
+    {
+        uri = uriLocator.GetCaptainCabinetUri(ProjectId);
+        base.OnParametersSet();
+    }
+}

@@ -2,9 +2,12 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.Claims;
+using JoinRpg.Web.Models.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
@@ -25,7 +28,7 @@ public class ClaimListViewModel : IOperationsAwareView
     int? IOperationsAwareView.ProjectId => ProjectId;
 
     public ClaimListViewModel(
-       int currentUserId,
+       ICurrentUserAccessor currentUserId,
        IReadOnlyCollection<Claim> claims,
        ProjectIdentification projectId,
        Dictionary<int, int> unreadComments,
@@ -34,13 +37,7 @@ public class ClaimListViewModel : IOperationsAwareView
        IProblemValidator<Claim> claimValidator)
     {
         Items = claims
-          .Select(c =>
-            new ClaimListItemViewModel(
-                c,
-                currentUserId,
-                unreadComments.GetValueOrDefault(c.CommentDiscussionId),
-                claimValidator.Validate(c, projectInfo))
-            )
+          .Select(c => ClaimListBuilder.BuildItem(c, currentUserId, projectInfo, claimValidator, unreadComments))
           .ToList();
         ClaimIds = claims.Select(c => c.ClaimId).ToArray();
         CharacterIds = claims.Select(c => c.CharacterId).ToArray();
@@ -68,7 +65,7 @@ public class MyClaimListViewModel(IReadOnlyCollection<Claim> claims)
 
             ClaimId = claim.ClaimId;
 
-            ClaimFullStatusView = new ClaimFullStatusView(claim, AccessArguments.None);
+            ClaimFullStatusView = ClaimStatusBuilders.CreateFullStatus(claim, AccessArguments.None);
             Name = claim.Character.CharacterName;
 
             UpdateDate = claim.LastUpdateDateTime;
