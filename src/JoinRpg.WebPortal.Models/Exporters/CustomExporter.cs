@@ -8,6 +8,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Exporters;
 
@@ -134,6 +135,9 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, User?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
 
     [Pure]
+    protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserLinkViewModel?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.DisplayName, name);
+
+    [Pure]
     protected ITableColumn VkColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("ВК", user => UserSocialLink.GetVKUri(func.Compile()(user)?.Extra?.Vk)?.Uri);
 
     [Pure]
@@ -173,6 +177,12 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
 
     [Pure]
     protected ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc) => FieldColumn(projectField, fieldsFunc, projectField.Name);
+
+    [Pure]
+    protected ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyDictionary<ProjectFieldIdentification, string>> fieldsFunc)
+    {
+        return new TableColumn<string>(projectField.Name, x => fieldsFunc(x)[projectField.Id]);
+    }
 
     [Pure]
     protected static ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
