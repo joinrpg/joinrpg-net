@@ -5,6 +5,10 @@
 
 <div style="margin-bottom:1em">
   <JoinButtonGroup>
+    @if (Model.HasCaptainAccess)
+    {
+      <JoinRpg.Web.Claims.CaptainCabinet.CaptainCabinetButton ProjectId="Model.ProjectId" Size="SizeStyleEnum.Large" />
+    }
     @foreach(var claim in Model.MyClaims)
     {
       <ClaimButton Claim="@claim" Size="SizeStyleEnum.Large"/>    

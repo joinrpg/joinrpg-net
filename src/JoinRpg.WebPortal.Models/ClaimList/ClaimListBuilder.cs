@@ -11,7 +11,7 @@ using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.ClaimList;
-internal static class ClaimListBuilder
+public static class ClaimListBuilder
 {
     internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo,
        IProblemValidator<Claim> claimValidator, Dictionary<int, int> unreadComments)
@@ -37,6 +37,34 @@ internal static class ClaimListBuilder
             unreadComments.GetValueOrDefault(claim.CommentDiscussionId),
             claim.Player.FullName
             );
+    }
+
+    public static ClaimListItemForCaptainViewModel BuildItemForCaptain(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)
+    {
+        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
+        (DateTime lastModifiedAt, _) = GetLastComment(claim, accessArguments);
+
+        if (accessArguments.CanViewCharacterName)
+        {
+            return new ClaimListItemForCaptainViewModel(
+                claim.Character.CharacterName,
+                UserLinks.Create(claim.Player, ViewMode.Show),
+                (ClaimStatusView)claim.ClaimStatus,
+                lastModifiedAt,
+                claim.CreateDate,
+                claim.CheckInDate,
+                UserLinks.Create(claim.ResponsibleMasterUser, ViewMode.Show),
+                FeePaid: claim.ClaimBalance(),
+                FeeDue: claim.ClaimFeeDue(projectInfo),
+                TotalFee: claim.ClaimTotalFee(projectInfo),
+                claim.GetId(),
+                claim.Player.FullName
+                );
+        }
+        else
+        {
+            return null;
+        }
     }
 
     internal static ClaimListItemForExportViewModel BuildItemForExport(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)

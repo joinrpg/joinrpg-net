@@ -6,4 +6,5 @@ public interface IProjectUriLocator
     Uri GetCreatePlotUri(ProjectIdentification projectId);
 
     Uri GetRolesListUri(ProjectIdentification projectId);
+    Uri GetCaptainCabinetUri(ProjectIdentification projectId);
 }

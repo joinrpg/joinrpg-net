@@ -33,7 +33,8 @@ public class GameController(
     public async Task<IActionResult> Details(ProjectIdentification projectId,
         [FromServices] IClaimsRepository claimsRepository,
         [FromServices] ICurrentUserAccessor currentUserAccessor,
-        [FromServices] IKogdaIgraSyncClient kiClient)
+        [FromServices] IKogdaIgraSyncClient kiClient,
+        [FromServices] ICaptainRulesRepository captainRulesRepository)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         var details = await projectMetadataRepository.GetProjectDetails(projectId);
@@ -47,7 +48,9 @@ public class GameController(
 
         var list = await kiClient.GetKogdaIgraCards(details.KogdaIgraLinkedIds);
 
-        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list));
+        var captainAccess = await captainRulesRepository.GetCaptainRules(projectId, currentUserAccessor.UserIdentification);
+
+        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, captainAccess));
     }
 
     [Authorize]

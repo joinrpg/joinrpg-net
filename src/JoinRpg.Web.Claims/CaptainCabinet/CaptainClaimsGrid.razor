@@ -1,0 +1,66 @@
+@using JoinRpg.Helpers
+@using JoinRpg.PrimitiveTypes.Claims
+@using JoinRpg.Web.ProjectCommon.Claims
+@inject IClaimGridClient claimListClient
+
+@if (claimListItems is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<table class="table">
+    <tr>
+        <th>Персонаж</th>
+        <th>Игрок</th>
+        <th>Статус</th>
+        <th>Заявка обновлена</th>
+        <th>Ответственный мастер</th>
+        <th>Взнос</th>
+    </tr>
+
+    @foreach (var item in claimListItems.OrderByDescending(c => c.UpdateDate))
+    {
+        <tr>
+            <td>
+                    @item.Name @* Здесь ссылка на персонажа*@
+            </td>
+            <td>
+                <UserLink Model="item.Player" />
+                @if (!string.IsNullOrWhiteSpace(item.PlayerFullName))
+                {
+                    <text><br /> @item.PlayerFullName </text>
+                }
+            </td>
+            <td>
+                @item.ClaimStatus.GetDisplayName()
+            </td>
+            <td>
+              <EventTime Model="item.UpdateDate"/>
+            </td>
+
+            <td><UserLink Model="item.Responsible" /></td>
+            <td>
+                @item.FeePaid / @item.TotalFee
+            </td>
+        </tr>
+    }
+
+</table>
+
+
+@code {
+
+    IReadOnlyCollection<ClaimListItemForCaptainViewModel> claimListItems = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        claimListItems = await claimListClient.GetForCaptain(ProjectId, ClaimStatusSpec.Active);
+        await base.OnInitializedAsync();
+    }
+
+}

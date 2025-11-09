@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
@@ -27,7 +28,7 @@ public record class KogdaIgraCardViewModel(
     string MasterGroupName, Uri? SiteUri);
 
 [method: JsonConstructor]
-public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras)
+public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras, IReadOnlyCollection<CaptainAccessRule> captainAccessRules)
 {
     public ProjectLifecycleStatus Status { get; set; } = project.ProjectStatus;
     public ProjectIdentification ProjectId { get; } = project.ProjectId;
@@ -40,6 +41,8 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public MarkupString ProjectAnnounce { get; } = projectDescription;
 
     public IReadOnlyCollection<ClaimLinkViewModel> MyClaims { get; } = claims;
+
+    public bool HasCaptainAccess { get; } = captainAccessRules.Count > 0;
 
     [DisplayName("Название проекта")]
     public ProjectName ProjectName { get; } = project.ProjectName;

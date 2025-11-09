@@ -44,6 +44,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<ICheckInClient, CheckInClient>()
                 .AddHttpClient<IClaimOperationClient, ClaimHttpClient>()
                 .AddHttpClient<IClaimListClient, ClaimHttpClient>()
+                .AddHttpClient<IClaimGridClient, ClaimHttpClient>()
                 .AddHttpClient<ICaptainRuleClient, CaptainRuleClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>();
     }

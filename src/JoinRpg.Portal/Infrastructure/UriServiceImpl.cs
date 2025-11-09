@@ -110,8 +110,9 @@ internal class UriServiceImpl(
     public Uri GetAddClaimUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForCharacter", "Claim", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
     Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Plot", new { ProjectId = projectId.Value }));
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
-    public Uri GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));
+    Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));
     public Uri GetUri(ClaimIdentification target) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Claim", new { ProjectId = target.ProjectId.Value, target.ClaimId }));
+    Uri IProjectUriLocator.GetCaptainCabinetUri(ProjectIdentification projectId) => new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/CaptainCabinet", values: new { ProjectId = projectId.Value }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

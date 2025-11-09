@@ -42,6 +42,7 @@ public static class Registration
         .AddScoped<Plots.CharacterPlotViewService>()
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()
+        .AddScoped<IClaimGridClient, ClaimsViewService>()
 
         ;
     }
