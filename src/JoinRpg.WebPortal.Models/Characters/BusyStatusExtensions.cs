@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models.Characters;
 

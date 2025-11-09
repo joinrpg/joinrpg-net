@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Models.Characters;
+namespace JoinRpg.Web.Claims;
 
 public enum CharacterBusyStatusView
 {
