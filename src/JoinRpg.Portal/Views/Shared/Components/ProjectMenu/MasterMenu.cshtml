@@ -169,6 +169,11 @@
                         <li><a asp-page="/GamePages/ResponsibleMasterRules" asp-route-projectId="@Model.ProjectId">
                                 Настройки ответственных
                             </a></li>
+                        <li>
+                            <a asp-page="/GamePages/CaptainRules" asp-route-projectId="@Model.ProjectId">
+                                Настройки капитанов команд
+                            </a>
+                        </li>
                         @if (Model.CheckInModuleEnabled)
                         {
                             <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
