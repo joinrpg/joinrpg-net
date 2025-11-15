@@ -2,7 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.Games.Projects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Areas.Admin.Controllers;
@@ -11,7 +11,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 [Area("Admin")]
 public class ProjectListController(
     IProjectRepository projectRepository,
-    ICurrentUserAccessor currentUserAccessor) : JoinRpg.Portal.Controllers.Common.ControllerBase
+    ICurrentUserAccessor currentUserAccessor) : Portal.Controllers.Common.ControllerBase
 {
     public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
 

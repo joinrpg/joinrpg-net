@@ -7,7 +7,8 @@ public record ProjectShortInfo(
     ProjectName ProjectName,
     int ActiveClaimsCount,
     bool HasMyClaims,
-    bool HasMyMasterAccess)
+    bool HasMyMasterAccess,
+    KogdaIgraIdentification? LastKogdaIgraId)
 {
     public bool Active => ProjectLifecycleStatus != ProjectLifecycleStatus.Archived;
 
