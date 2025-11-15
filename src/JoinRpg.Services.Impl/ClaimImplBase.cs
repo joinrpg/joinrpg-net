@@ -42,8 +42,8 @@ public abstract class ClaimImplBase : DbServiceImplBase
         return comment;
     }
 
-    protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int feeChange,
-    int money, PaymentType paymentType, Claim claim)
+    protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int money,
+    PaymentType paymentType, Claim claim)
     {
 
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
@@ -51,7 +51,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
 
         CheckOperationDate(operationDate);
 
-        if (feeChange != 0 || money < 0)
+        if (money < 0)
         {
             _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
         }
@@ -75,7 +75,6 @@ public abstract class ClaimImplBase : DbServiceImplBase
         var financeOperation = new FinanceOperation()
         {
             Created = Now,
-            FeeChange = feeChange,
             MoneyAmount = money,
             Changed = Now,
             Claim = claim,
@@ -109,7 +108,6 @@ public abstract class ClaimImplBase : DbServiceImplBase
           s => s.MoneyOperation,
           commentExtraAction: null,
           extraRecipients: new[] { paymentType.User });
-        email.FeeChange = feeChange;
         email.Money = money;
         return email;
     }

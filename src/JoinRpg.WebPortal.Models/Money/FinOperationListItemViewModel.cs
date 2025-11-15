@@ -16,9 +16,6 @@ public class FinOperationListItemViewModel : ILinkable
     [Display(Name = "Внесено денег"), Required]
     public int Money { get; }
 
-    [Display(Name = "Изменение взноса"), Required]
-    public int FeeChange { get; }
-
     [Display(Name = "Оплачено мастеру")]
     public User? PaymentMaster { get; }
 
@@ -58,7 +55,6 @@ public class FinOperationListItemViewModel : ILinkable
             fo.PaymentType?.GetDisplayName()                                        // If this is a payment, get payment type
             ?? ((FinanceOperationTypeViewModel)fo.OperationType).GetDisplayName();  // if this is other operation type, just display operation type
         Claim = fo.Claim.Character.CharacterName;
-        FeeChange = fo.FeeChange;
         Money = fo.MoneyAmount;
         OperationDate = fo.OperationDate;
         FinanceOperationId = fo.CommentId;

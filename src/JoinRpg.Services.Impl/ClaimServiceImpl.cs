@@ -74,7 +74,7 @@ internal class ClaimServiceImpl(
                 throw new JoinRpgInvalidUserException();
             }
 
-            financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
+            financeEmail = await AcceptFeeImpl(".", Now, money, paymentType, claim);
         }
         else if (money < 0)
         {

@@ -9,7 +9,6 @@ public class FinanceOperationExporter(IUriService uriService, ProjectInfo projec
     {
         yield return IntColumn(x => x.FinanceOperationId);
         yield return IntColumn(x => x.Money);
-        yield return IntColumn(x => x.FeeChange);
         yield return ShortUserColumn(x => x.PaymentMaster);
         yield return StringColumn(x => x.PaymentTypeName);
         yield return ShortUserColumn(x => x.MarkingMaster);

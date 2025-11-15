@@ -11,7 +11,6 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
     public virtual Project Project { get; set; }
     public int ClaimId { get; set; }
     public virtual Claim Claim { get; set; }
-    public int FeeChange { get; set; }
     public int MoneyAmount { get; set; }
     public int? PaymentTypeId { get; set; }
 
@@ -76,9 +75,6 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
         // Checking payment type
         switch (OperationType)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            case FinanceOperationType.FeeChange:
-#pragma warning restore CS0612 // Type or member is obsolete
             case FinanceOperationType.PreferentialFeeRequest:
             case FinanceOperationType.TransferTo:
             case FinanceOperationType.TransferFrom:
@@ -102,22 +98,10 @@ public class FinanceOperation : IProjectEntity, IValidatableObject
         // Checking money value
         switch (OperationType)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            case FinanceOperationType.FeeChange:
-#pragma warning restore CS0612 // Type or member is obsolete
+            case FinanceOperationType.PreferentialFeeRequest:
                 if (MoneyAmount != 0)
                 {
                     yield return new ValidationResult($"Operation type {OperationType} must not have money amount", new[] { nameof(MoneyAmount) });
-                }
-                if (FeeChange == 0)
-                {
-                    yield return new ValidationResult($"Operation type {OperationType} must have fee change not equal to zero", new[] { nameof(FeeChange) });
-                }
-                break;
-            case FinanceOperationType.PreferentialFeeRequest:
-                if (MoneyAmount != 0 || FeeChange != 0)
-                {
-                    yield return new ValidationResult($"Operation type {OperationType} must not have money amount or fee change", new[] { nameof(MoneyAmount), nameof(FeeChange) });
                 }
                 break;
             case FinanceOperationType.Submit:
@@ -213,12 +197,6 @@ public enum FinanceOperationState
 /// </summary>
 public enum FinanceOperationType
 {
-    /// <summary>
-    /// Manual fee modification
-    /// </summary>
-    [Obsolete]
-    FeeChange = -1, // TODO: Remove or start use
-
     /// <summary>
     /// Request for preferential fee
     /// </summary>

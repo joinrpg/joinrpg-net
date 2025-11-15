@@ -13,10 +13,6 @@ namespace JoinRpg.Web.Models;
 /// </remarks>
 public enum FinanceOperationTypeViewModel
 {
-    [Display(Name = "Изменение взноса")]
-    [Obsolete]
-    FeeChange = FinanceOperationType.FeeChange,
-
     [Display(Name = "Запрос льготы")]
     PreferentialFeeRequest = FinanceOperationType.PreferentialFeeRequest,
 

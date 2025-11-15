@@ -34,7 +34,6 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         var email = await AcceptFeeImpl(request.Contents,
             request.OperationDate,
-            request.FeeChange,
             request.Money,
             paymentType,
             claim);
@@ -284,7 +283,6 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         var financeOperation = new FinanceOperation()
         {
             Created = Now,
-            FeeChange = 0,
             MoneyAmount = 0,
             Changed = Now,
             Claim = claim,

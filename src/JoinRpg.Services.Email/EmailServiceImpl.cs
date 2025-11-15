@@ -211,11 +211,6 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
     {
         var message = "";
 
-        if (model.FeeChange != 0)
-        {
-            message += $"\nИзменение взноса: {model.FeeChange}\n";
-        }
-
         if (model.Money > 0)
         {
             message += $"\nОплата денег игроком: {model.Money}\n";

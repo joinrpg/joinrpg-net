@@ -74,11 +74,6 @@
                     </div>
                     @if (Model.Finance != null)
                         {
-                            if (Model.Finance.FeeChange != 0)
-                            {
-                    <span><b>Изменение взноса</b>: @Model.Finance.FeeChange &#8381;</span>
-                    <br />
-                            }
                         if (Model.Finance.MoneyAmount > 0 && Model.Finance.OperationType == FinanceOperationType.TransferFrom)
                         {
                             <span><b>Перевод денег от другого игрока</b>: @Model.Finance.MoneyAmount &#8381;</span>
