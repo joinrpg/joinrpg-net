@@ -13,9 +13,12 @@
         <FormRow Label="Капитан">
             <ClaimSelector ProjectId="@ProjectId" @bind-Claim="_model.Claim" />
         </FormRow>
+        @*
+          Пока не реализовано
 		<FormRow Label="Одобрение заявок">
 			<CheckboxInput @bind-Value="_model.CanApprove" />
 		</FormRow>
+        *@
         <br />
         <JoinButton Preset="ButtonPreset.Add" Submit="true" /> |
         <JoinButton Preset="ButtonPreset.Cancel" OnClick="OnCancelAdd" />

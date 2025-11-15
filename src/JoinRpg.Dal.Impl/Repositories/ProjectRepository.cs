@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Data.Entity.SqlServer;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
@@ -187,18 +186,21 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                };
     }
 
-    public async Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds)
+    public async Task<ICollection<Character>> GetCharacterByGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications)
     {
-        await LoadProjectFields(projectId);
+        if (characterGroupIdentifications.Count == 0)
+        {
+            return [];
+        }
+        var projectId = characterGroupIdentifications.EnsureSameProject().First().ProjectId;
+        await LoadProjectFields(projectId); //TODO Remove
         await LoadProjectCharactersAndGroups(projectId);
-        await LoadMasters(projectId);
+        await LoadMasters(projectId); //TODO Remove
         await LoadProjectClaims(projectId);
 
         var result =
-          await Ctx.Set<Character>().Where(
-            character => character.ProjectId == projectId &&
-              characterGroupIds.Any(id => SqlFunctions.CharIndex(id.ToString(), character.ParentGroupsImpl.ListIds) > 0)).ToListAsync();
-        return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
+          await Ctx.Set<Character>().Where(CharacterPredicates.ByGroupImprecise(characterGroupIdentifications)).ToListAsync();
+        return result.Where(CharacterPredicates.ByGroupPrecise(characterGroupIdentifications)).ToList();
     }
 
     async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)

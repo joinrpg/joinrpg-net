@@ -15,6 +15,7 @@ public static class Registraton
             .AddTransient<IUserRepository, UserInfoRepository>()
             .AddTransient<IUserSubscribeRepository, UserInfoRepository>()
             .AddTransient<ICaptainRulesRepository, CaptainRulesRepository>()
+            .AddTransient<IUnifiedGridRepository, UnifiedGridRepository>()
             .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>();
 
         foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsAssignableTo(typeof(RepositoryImplBase)) && !t.IsAbstract))

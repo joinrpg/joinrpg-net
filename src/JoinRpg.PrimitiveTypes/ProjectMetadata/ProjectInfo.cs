@@ -106,7 +106,7 @@ public record class ProjectInfo
         return UnsortedFields.Single(f => f.Id.ProjectFieldId == id.ProjectFieldId);
     }
 
-    public bool HasMasterAccess(UserIdentification userId, Permission permission = Permission.None)
+    public bool HasMasterAccess(UserIdentification? userId, Permission permission = Permission.None)
     {
         return Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(permission));
     }

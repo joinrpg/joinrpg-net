@@ -5,8 +5,6 @@
     ViewData["Title"] = "Кабинет капитана";
 }
 
-<h3>@ViewData["Title"]</h3>
-
 @(await Html.RenderComponentAsync<CaptainClaimsGrid>(RenderMode.WebAssembly, new { Model.ProjectId }))
 
 @section Scripts {

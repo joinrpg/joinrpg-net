@@ -116,12 +116,12 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
 
     public DateTimeOffset? LastMasterCommentAt { get; set; }
     [ForeignKey(nameof(LastMasterCommentBy_Id))]
-    public User? LastMasterCommentBy { get; set; }
+    public virtual User? LastMasterCommentBy { get; set; }
     public int? LastMasterCommentBy_Id { get; set; }
 
     public DateTimeOffset? LastVisibleMasterCommentAt { get; set; }
     [ForeignKey(nameof(LastVisibleMasterCommentBy_Id))]
-    public User? LastVisibleMasterCommentBy { get; set; }
+    public virtual User? LastVisibleMasterCommentBy { get; set; }
     public int? LastVisibleMasterCommentBy_Id { get; set; }
     public DateTimeOffset? LastPlayerCommentAt { get; set; }
 

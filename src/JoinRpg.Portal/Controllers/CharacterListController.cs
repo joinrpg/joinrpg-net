@@ -84,8 +84,8 @@ public class CharacterListController(
             return NotFound();
         }
 
-        var groupIds = characterGroup.GetChildrenGroupsIdRecursiveIncludingThis();
-        var characters = (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
+        var groupIds = characterGroup.GetChildrenGroupsIdentificationRecursiveIncludingThis().ToList();
+        var characters = (await ProjectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 

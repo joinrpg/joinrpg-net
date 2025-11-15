@@ -1,4 +1,6 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.PrimitiveTypes.Claims.Finances;
 
 namespace JoinRpg.Domain;
 
@@ -38,13 +40,14 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns total sum of claim fee and all finance operations using current date
     /// </summary>
+    [Obsolete("CalculateClaimBalance")]
     public static int ClaimTotalFee(this Claim claim, ProjectInfo projectInfo, int? fieldsFee = null)
         => claim.ClaimTotalFee(DateTime.UtcNow, fieldsFee, projectInfo);
 
     /// <summary>
     /// Returns base fee (taken from project settings or claim's property CurrentFee)
     /// </summary>
-    public static int BaseFee(this Claim claim, DateTime? operationDate = null)
+    public static int BaseFee(this Claim claim, ProjectInfo projectInfo, DateTime? operationDate = null)
         => claim.CurrentFee ?? claim.ProjectFeeForDate(operationDate);
 
     /// <summary>
@@ -58,7 +61,7 @@ public static class FinanceExtensions
     /// </summary>
     private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee, ProjectInfo projectInfo)
     {
-        return claim.BaseFee(operationDate)
+        return claim.BaseFee(projectInfo, operationDate)
                + claim.ClaimFieldsFee(fieldsFee, projectInfo)
                + claim.ClaimAccommodationFee();
         /******************************************************************
@@ -162,12 +165,29 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns how many money left to pay
     /// </summary>
+    [Obsolete("CalculateClaimBalance")]
     public static int ClaimFeeDue(this Claim claim, ProjectInfo projectInfo)
         => claim.ClaimTotalFee(projectInfo) - claim.ClaimBalance();
+
+    public static ClaimBalance CalculateClaimBalance(this Claim claim, ProjectInfo projectInfo, DateTime? date = null)
+    {
+        var paid = claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
+        var total = claim.ClaimTotalFee(date ?? DateTime.UtcNow, null, projectInfo);
+        return new ClaimBalance(paid, total);
+    }
+
+    public static ClaimBalance CalculateClaimBalance(this UgClaim claim, ProjectInfo projectInfo, DateTime? date = null)
+    {
+        var paid = claim.FeePaid;
+        var total = claim.Claim.ClaimTotalFee(date ?? DateTime.UtcNow, null, projectInfo);
+        return new ClaimBalance(paid, total);
+    }
 
     /// <summary>
     /// Returns sum of all approved finance operations
     /// </summary>
+    ///
+    [Obsolete("CalculateClaimBalance")]
     public static int ClaimBalance(this Claim claim)
         => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
 
@@ -178,6 +198,7 @@ public static class FinanceExtensions
         => claim.FinanceOperations.Sum(fo =>
             fo.State == FinanceOperationState.Proposed ? fo.MoneyAmount : 0);
 
+    [Obsolete]
     public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {
         if (!finance.Claim.HasAccess(currentUserId,
@@ -188,6 +209,7 @@ public static class FinanceExtensions
         }
     }
 
+    [Obsolete("CalculateClaimBalance")]
     public static bool ClaimPaidInFull(this Claim claim, ProjectInfo projectInfo)
         => claim.ClaimBalance() >= claim.ClaimTotalFee(projectInfo);
 

@@ -1,0 +1,23 @@
+@using JoinRpg.Helpers
+@CharacterBusyStatus.GetDisplayName()
+@if (CharacterBusyStatus == CharacterBusyStatusView.Slot)
+{
+    if (SlotCount is not null)
+    {
+        <text> (SlotCount)</text>
+    }
+    else
+    {
+        <text> (∞)</text>
+    }
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public CharacterBusyStatusView CharacterBusyStatus { get; set; } = default!;
+
+    [Parameter]
+    [EditorRequired]
+    public int? SlotCount { get; set; }
+}
