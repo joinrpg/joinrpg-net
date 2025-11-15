@@ -15,7 +15,7 @@ public class AddCaptainRuleViewModel
 
     [Required]
     public ClaimLinkViewModel Claim { get; set; } = null!;
-    public bool CanApprove { get; set; }
+    public bool CanApprove { get; set; } = false;
 
     public CaptainAccessRule ToRule() => new(Group.CharacterGroupId, Claim.UserId, CanApprove);
 }
