@@ -27,7 +27,7 @@ public record class AccessArguments(
     /// <summary>
     /// true, if there is master or player access to the claim
     /// </summary>
-    public bool AnyAccessToClaim { get; } = PlayerAccesToClaim || PlayerAccesToClaim;
+    public bool AnyAccessToClaim { get; } = PlayerAccesToClaim || MasterAccess;
 
     public bool CharacterPlotAccess { get; } = Published || PlayerAccessToCharacter || MasterAccess;
     public static AccessArguments None { get; } = new AccessArguments(false, false, false, false, false, false);
