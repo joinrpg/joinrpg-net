@@ -38,9 +38,7 @@ public class GameController(
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         var details = await projectMetadataRepository.GetProjectDetails(projectId);
-        var claims = currentUserAccessor.UserIdOrDefault is int userId
-            ? await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId)
-            : [];
+
         if (project == null)
         {
             return NotFound();
@@ -48,9 +46,18 @@ public class GameController(
 
         var list = await kiClient.GetKogdaIgraCards(details.KogdaIgraLinkedIds);
 
-        var captainAccess = await captainRulesRepository.GetCaptainRules(projectId, currentUserAccessor.UserIdentification);
+        if (currentUserAccessor.UserIdentificationOrDefault is UserIdentification userId)
+        {
+            var claims = await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId);
+            var captainAccess = await captainRulesRepository.GetCaptainRules(projectId, userId);
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, captainAccess));
+        }
+        else
+        {
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, []));
+        }
 
-        return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, captainAccess));
+
     }
 
     [Authorize]
@@ -116,7 +123,7 @@ public class GameController(
     {
         var project = await ProjectRepository.GetProjectAsync(projectid);
         var isMaster =
-            project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+            project.HasMasterAccess(CurrentUserId, Permission.CanChangeProjectProperties);
         return View(new CloseProjectViewModel()
         {
             OriginalName = project.ProjectName,
