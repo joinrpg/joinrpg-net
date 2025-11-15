@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces.Notification;
 
@@ -142,7 +141,6 @@ public class DeclineByPlayerEmail : ClaimEmailModel
 
 public class FinanceOperationEmail : ClaimEmailModel
 {
-    public int FeeChange { get; set; }
     public int Money { get; set; }
 }
 

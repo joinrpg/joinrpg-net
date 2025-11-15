@@ -67,10 +67,7 @@ public class FinanceOperationViewModel
         RowCssClass = source.State.ToRowClass();
         Date = source.OperationDate.ToShortDateString();
         ShowLinkedClaimLinkIfTransfer = isMaster;
-#pragma warning disable CS0612 // Type or member is obsolete
-        IsVisible = OperationType != FinanceOperationTypeViewModel.FeeChange
-#pragma warning restore CS0612 // Type or member is obsolete
-                    && OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest;
+        IsVisible = OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest;
 
         RecurrentPaymentId = source.RecurrentPaymentId;
 

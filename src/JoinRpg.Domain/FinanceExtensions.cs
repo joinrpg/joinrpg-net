@@ -33,8 +33,7 @@ public static class FinanceExtensions
     /// Returns total sum of claim fee and all finance operations
     /// </summary>
     private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee, ProjectInfo projectInfo)
-        => claim.ClaimCurrentFee(operationDate, fieldsFee, projectInfo)
-           + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
+        => claim.ClaimCurrentFee(operationDate, fieldsFee, projectInfo);
 
     /// <summary>
     /// Returns total sum of claim fee and all finance operations using current date
