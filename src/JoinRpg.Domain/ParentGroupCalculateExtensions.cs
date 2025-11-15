@@ -21,11 +21,19 @@ public static class ParentGroupCalculateExtensions
         return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups)).Distinct();
     }
 
+    [Obsolete]
     public static int[] GetChildrenGroupsIdRecursiveIncludingThis(this CharacterGroup target)
     {
         ArgumentNullException.ThrowIfNull(target);
 
         return [.. target.GetChildrenGroupsRecursive().Select(g => g.CharacterGroupId), target.CharacterGroupId];
+    }
+
+    public static IEnumerable<CharacterGroupIdentification> GetChildrenGroupsIdentificationRecursiveIncludingThis(this CharacterGroup target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+
+        return [.. target.GetChildrenGroupsRecursive().Select(g => g.GetId()), target.GetId()];
     }
 
     public static IEnumerable<CharacterGroup> GetOrderedChildrenGroupsRecursive(

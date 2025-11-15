@@ -36,7 +36,7 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);
 
-    Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
+    Task<ICollection<Character>> GetCharacterByGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds);
 
     /// <summary>
     /// Get projects not active since

@@ -50,4 +50,16 @@ internal static class ClaimPredicates
 
     public static Expression<Func<Claim, bool>> GetInGroupPredicate(int[] characterGroupsIds) =>
         claim => characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0);
+
+    internal static Expression<Func<Claim, bool>> ByUgStatus(UgStatusSpec spec)
+    {
+        return spec switch
+        {
+            UgStatusSpec.Active => GetClaimStatusPredicate(ClaimStatusSpec.Active),
+            UgStatusSpec.Vacant => GetClaimStatusPredicate(ClaimStatusSpec.Active),
+            UgStatusSpec.Discussion => GetClaimStatusPredicate(ClaimStatusSpec.Active),
+            UgStatusSpec.Archive => GetClaimStatusPredicate(ClaimStatusSpec.InActive),
+            _ => throw new NotImplementedException(),
+        };
+    }
 }

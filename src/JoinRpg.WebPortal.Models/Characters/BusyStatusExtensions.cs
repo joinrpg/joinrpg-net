@@ -21,6 +21,20 @@ public static class BusyStatusExtensions
         };
     }
 
+    public static CharacterBusyStatusView GetBusyStatus(this UgDto character)
+    {
+        return character switch
+        {
+
+            { CharacterType: CharacterType.NonPlayer } => CharacterBusyStatusView.Npc,
+            { CharacterType: CharacterType.Slot } => CharacterBusyStatusView.Slot,
+            { CharacterType: CharacterType.Player, ApprovedClaimUserId: not null } => CharacterBusyStatusView.HasPlayer,
+            { CharacterType: CharacterType.Player, HasActiveClaims: true } => CharacterBusyStatusView.Discussed,
+            { CharacterType: CharacterType.Player } => CharacterBusyStatusView.NoClaims,
+            _ => CharacterBusyStatusView.Unknown,
+        };
+    }
+
     public static CharacterBusyStatusView GetBusyStatus(this CharacterView character)
     {
         return character switch

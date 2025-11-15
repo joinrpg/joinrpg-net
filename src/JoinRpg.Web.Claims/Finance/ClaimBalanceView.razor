@@ -1,0 +1,19 @@
+@using JoinRpg.PrimitiveTypes.Claims.Finances
+<JoinBadge Variation="@variation">@Model.FeePaid / @Model.TotalFee</JoinBadge>
+
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public ClaimBalance Model { get; set; }
+
+    private VariationStyleEnum variation;
+
+    protected override void OnParametersSet()
+    {
+        variation = Model.FeeDue > 0 ? VariationStyleEnum.Warning : VariationStyleEnum.Primary;
+        base.OnParametersSet();
+    }
+
+}
