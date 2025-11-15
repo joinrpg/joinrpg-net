@@ -24,7 +24,7 @@ public static class ItemBuilder
         }
 
         var character = new UgCharacterForCaptainViewModel(
-           new CharacterLinkSlimViewModel(ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.IsPublic, accessArguments.MasterAccess)),
+           new CharacterLinkSlimViewModel(ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.IsPublic, accessArguments.CanViewCharacterName)),
            ugItem.GetBusyStatus(),
            ugItem.SlotCount,
            [] // TODO
