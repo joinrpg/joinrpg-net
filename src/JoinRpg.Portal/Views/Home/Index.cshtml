@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.HomeViewModel
+@model JoinRpg.Web.Models.HomeViewModel
 
 @{
     ViewBag.Title = ViewBag.IsProduction ?  "JoinRpg.RU" : "Dev.JoinRpg.RU";
@@ -44,7 +44,9 @@
 <div class="row">
     @foreach (var project in Model.ActiveProjects)
     {
-        @await Html.PartialAsync("ProjectCard", project)
+        <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
+                   param-Model="@project"
+                   render-mode="Static" />
     }
         @if (Model.HasMoreProjects)
         {

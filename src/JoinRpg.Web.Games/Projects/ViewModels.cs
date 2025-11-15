@@ -5,6 +5,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
+using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Games.Projects;
@@ -50,4 +51,18 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public string Title => "Игра «" + ProjectName + "»";
 
     public IReadOnlyCollection<KogdaIgraCardViewModel> KogdaIgras { get; set; } = kogdaIgras;
+}
+
+public record class ProjectListItemViewModel(ProjectShortInfo p) : ProjectLinkViewModel(p.ProjectId, p.ProjectName)
+{
+    public bool IsMaster { get; } = p.HasMyMasterAccess;
+    public bool IsActive { get; } = p.Active;
+    public ProjectLifecycleStatus Status = p.ProjectLifecycleStatus;
+
+    public bool PublishPlot { get; } = p.PublishPlot;
+
+    [Display(Name = "Заявки открыты?")]
+    public bool IsAcceptingClaims { get; } = p.IsAcceptingClaims;
+
+    public bool HasMyClaims { get; } = p.HasMyClaims;
 }

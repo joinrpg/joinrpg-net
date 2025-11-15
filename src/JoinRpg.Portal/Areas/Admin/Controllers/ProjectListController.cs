@@ -2,7 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.Games.Projects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Areas.Admin.Controllers;

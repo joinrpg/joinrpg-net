@@ -1,0 +1,46 @@
+
+
+<div class="col-sm-6 col-md-4">
+    <div class="thumbnail">
+        <div class="caption">
+            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@Model.ProjectName">
+                <ProjectLink Model="Model" />
+            </h4>
+            <div class="btn-group">
+                @if (Model.IsMaster)
+                {
+                    <a href="/@(Model.ProjectId.Value)/home"
+                       class="btn btn-info btn-sm"
+                       role="button"
+                       title="У меня есть права мастера на этой игре">Мой проект</a>
+                }
+
+                <a href="/@(Model.ProjectId.Value)/roles"
+                   class="btn btn-primary btn-sm"
+                   role="button"
+                   title="Сетка ролей">
+                    Сетка ролей
+                </a>
+
+                @if (!Model.IsMaster && Model.PublishPlot)
+                {
+                    <a href="/@(Model.ProjectId.Value)/plot/index"
+                       class="btn btn-info btn-sm"
+                       role="button">
+                        Материалы
+                    </a>
+                }
+
+                @if (Model.HasMyClaims || Model.IsAcceptingClaims)
+                {
+                    <MyClaimButton ProjectId="@Model.ProjectId" HasMyClaims="@Model.HasMyClaims" ProjectStatus="@Model.Status" Size="@SizeStyleEnum.Small" />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectListItemViewModel Model { get; set; } = null!;
+}

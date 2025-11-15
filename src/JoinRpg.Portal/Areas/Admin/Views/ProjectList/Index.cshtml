@@ -1,4 +1,5 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.ProjectListItemViewModel>
+@using JoinRpg.Web.Games.Projects
+@model IEnumerable<ProjectListItemViewModel>
 
 @{
     ViewBag.Title = "Все активные игры";
@@ -12,6 +13,8 @@
 <div class="row">
     @foreach (var project in Model)
     {
-        @await Html.PartialAsync("ProjectCard", project)
+        <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
+                   param-Model="@Model"
+                   render-mode="Static" />
     }
 </div>

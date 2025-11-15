@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
@@ -8,9 +9,6 @@ namespace JoinRpg.WebPortal.Managers.Projects;
 /// <summary>
 /// Shows project list
 /// </summary>
-/// <remarks>
-/// ctor
-/// </remarks>
 public class ProjectListManager(IProjectRepository projectRepository, ICurrentUserAccessor currentUser)
 {
     public async Task<HomeViewModel> LoadModel(bool showInactive = false, int maxProjects = int.MaxValue)

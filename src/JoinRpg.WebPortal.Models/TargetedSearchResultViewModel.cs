@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
+using JoinRpg.Web.Games.Projects;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models;

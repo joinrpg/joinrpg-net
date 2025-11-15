@@ -1,3 +1,5 @@
+using JoinRpg.Web.Games.Projects;
+
 namespace JoinRpg.Web.Models;
 
 public class HomeViewModel

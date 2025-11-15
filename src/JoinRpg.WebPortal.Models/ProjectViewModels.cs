@@ -68,21 +68,3 @@ public class CloseProjectViewModel
     public bool IsMaster { get; set; }
 }
 
-public class ProjectListItemViewModel(ProjectShortInfo p)
-{
-    public bool IsMaster { get; } = p.HasMyMasterAccess;
-    public bool IsActive { get; } = p.Active;
-    public ProjectLifecycleStatus Status = p.ProjectLifecycleStatus;
-
-    public bool PublishPlot { get; } = p.PublishPlot;
-
-    public ProjectIdentification ProjectId { get; set; } = new(p.ProjectId);
-
-    [DisplayName("Название проекта"), Required]
-    public string ProjectName { get; set; } = p.ProjectName;
-
-    [Display(Name = "Заявки открыты?")]
-    public bool IsAcceptingClaims { get; } = p.IsAcceptingClaims;
-
-    public bool HasMyClaims { get; } = p.HasMyClaims;
-}
