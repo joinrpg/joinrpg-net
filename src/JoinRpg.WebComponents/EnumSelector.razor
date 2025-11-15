@@ -1,0 +1,55 @@
+@typeparam TValue where TValue:struct, Enum
+@inject ILogger<EnumSelector<TValue>> logger
+<select
+        name="@Name"
+        @onchange="UpdateSelected">
+  @foreach (var enumValue in Enum.GetValues<TValue>())
+  {
+        <option
+          value="@enumValue"
+          >@enumValue.GetDisplayName()</option>
+  }
+</select>
+
+@code {
+    private FieldIdentifier fieldIdentifier = default!;
+    private string name = default!;
+
+    [CascadingParameter]
+    public EditContext? EditContext { get; set; } = default!;
+    [Parameter]
+    public TValue SelectedValue { get; set; } = default(TValue)!;
+
+    [Parameter]
+    public EventCallback<TValue> SelectedValueChanged { get; set; }
+
+
+    [Parameter]
+    public System.Linq.Expressions.Expression<Func<TValue>> SelectedValueExpression { get; set; } = default!;
+
+    [Parameter]
+    public string Name { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (SelectedValueExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(SelectedValueExpression);
+            logger.LogTrace("FieldName = {fieldName}", fieldIdentifier.FieldName);
+            name ??= fieldIdentifier.FieldName;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        name = Name ?? fieldIdentifier.FieldName;
+    }
+
+    private async Task UpdateSelected(ChangeEventArgs eventArgs)
+    {
+        await SelectedValueChanged.InvokeAsync(Enum.Parse<TValue>(eventArgs.Value!.ToString ()!));
+        EditContext?.NotifyFieldChanged(fieldIdentifier);
+    }
+}

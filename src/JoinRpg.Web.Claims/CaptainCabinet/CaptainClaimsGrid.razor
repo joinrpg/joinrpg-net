@@ -5,13 +5,19 @@
 @using JoinRpg.Web.ProjectCommon.Claims
 @inject IUnifiedGridClient claimListClient
 
+<div style="margin:0.5em">
+  <span class="h3">Моя команда</span> <EnumSelector TValue="UgStatusFilterView" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
+  <InfoIcon Title="@StatusFilter.GetDescription()" />
+</div>
+
 @if (claimListItems is null)
 {
     <JoinLoadingMessage />
     return;
 }
 
-<table class="table">
+<table class="table table-bordered table-hover">
+  <thead>
     <tr>
         <th>Персонаж</th>
         <th>Игрок</th>
@@ -20,6 +26,8 @@
         <th>Ответственный мастер</th>
         <th>Взнос</th>
     </tr>
+    </thead>
+    <tbody>
 
     @foreach (var item in claimListItems.OrderBy(c => c.Character.BusyStatus))
     {
@@ -83,13 +91,15 @@
             }
         }
     }
-
+    </tbody>
 </table>
 
 
-@code {
+    @code {
 
-    IReadOnlyCollection<UgItemForCaptainViewModel> claimListItems = null!;
+    IReadOnlyCollection<UgItemForCaptainViewModel>? claimListItems;
+
+    private UgStatusFilterView StatusFilter { get; set; }
 
     [Parameter]
     [EditorRequired]
@@ -97,8 +107,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        claimListItems = await claimListClient.GetForCaptain(ProjectId, UgStatusFilterView.Active);
+        claimListItems = await claimListClient.GetForCaptain(ProjectId, StatusFilter);
         await base.OnInitializedAsync();
     }
 
+}
+@code {
+    private async Task UpdateFilter(UgStatusFilterView args)
+    {
+        if (StatusFilter != args)
+        {
+            StatusFilter = args;
+            claimListItems = null;
+            StateHasChanged();
+            claimListItems = await claimListClient.GetForCaptain(ProjectId, StatusFilter);
+        }
+    }
 }
