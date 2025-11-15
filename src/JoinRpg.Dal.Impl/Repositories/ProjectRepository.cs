@@ -235,6 +235,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                         IAmMaster = masterPredicate.Compile()(project),
                         HasMyClaims = claimPredicate.Compile()(project),
                         ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                        LastKogdaIgraId = (int?)project.KogdaIgraGames.OrderByDescending(x => x.KogdaIgraGameId).FirstOrDefault()!.KogdaIgraGameId
                     };
 
         var result = await query.ToListAsync();
@@ -246,7 +247,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             new(x.ProjectName),
             x.ActiveClaimsCount,
             x.HasMyClaims,
-            x.IAmMaster
+            x.IAmMaster,
+            KogdaIgraIdentification.FromOptional(x.LastKogdaIgraId)
             ))];
     }
 

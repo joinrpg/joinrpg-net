@@ -11,7 +11,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 [Area("Admin")]
 public class ProjectListController(
     IProjectRepository projectRepository,
-    ICurrentUserAccessor currentUserAccessor) : JoinRpg.Portal.Controllers.Common.ControllerBase
+    ICurrentUserAccessor currentUserAccessor) : Portal.Controllers.Common.ControllerBase
 {
     public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
 

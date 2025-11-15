@@ -1,0 +1,7 @@
+.project-name {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-height:1.3em;
+}

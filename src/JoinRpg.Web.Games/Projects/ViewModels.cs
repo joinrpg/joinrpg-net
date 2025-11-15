@@ -65,4 +65,5 @@ public record class ProjectListItemViewModel(ProjectShortInfo p) : ProjectLinkVi
     public bool IsAcceptingClaims { get; } = p.IsAcceptingClaims;
 
     public bool HasMyClaims { get; } = p.HasMyClaims;
+    public KogdaIgraIdentification? LastKogdaIgraId { get; set; } = p.LastKogdaIgraId;
 }

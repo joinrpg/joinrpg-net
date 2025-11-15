@@ -11,7 +11,7 @@
     @foreach (var project in Model.ActiveProjects)
     {
             <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
-                       param-Model="@Model"
+                       param-Model="@project"
                        render-mode="Static" />
     }
   </div>
