@@ -42,7 +42,7 @@ internal static class CharacterPredicates
         return spec switch
         {
             UgStatusSpec.Active => character => character.IsActive,
-            UgStatusSpec.Vacant => character => character.IsActive && character.ApprovedClaimId == null && character.CharacterType != CharacterType.Slot,
+            UgStatusSpec.Vacant => character => character.IsActive && character.ApprovedClaimId == null && character.CharacterType != CharacterType.NonPlayer,
             UgStatusSpec.Discussion => character => character.IsActive && character.ApprovedClaimId == null && character.Claims.Any(x => activeClaims.Invoke(x)),
             UgStatusSpec.Archive => character => !character.IsActive && character.Claims.Any(x => inactiveClaims.Invoke(x)),
             _ => throw new NotImplementedException(),

@@ -35,7 +35,7 @@
         {
             <tr>
                 <td>
-                    @item.Character.Name @* Здесь ссылка на персонажа*@
+                  <CharacterLink Model="item.Character.Name" />
                 </td>
 
                 <td>
@@ -63,7 +63,7 @@
                     {
                         first = false;
                         <td rowspan="@item.Claims.Length">
-                            @item.Character.Name @* Здесь ссылка на персонажа*@
+                                <CharacterLink Model="item.Character.Name" />
                         </td>
                     }
                     

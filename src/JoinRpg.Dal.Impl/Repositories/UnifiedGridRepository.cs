@@ -46,6 +46,7 @@ internal class UnifiedGridRepository(MyDbContext Ctx) : IUnifiedGridRepository
         new UgDto(r.character.CharacterName,
                   UserIdentification.FromOptional(r.ApprovedUser),
                   r.character.IsPublic,
+                  r.character.IsActive,
                   r.character.CharacterType,
                   r.HasActiveClaims,
                   r.character.CharacterSlotLimit,

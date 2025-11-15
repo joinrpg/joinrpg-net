@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims.Finances;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Claims.UnifiedGrid;
@@ -42,10 +43,10 @@ public record class UgItemForCaptainViewModel(
 }
 
 public record class UgCharacterForCaptainViewModel(
-    [property: Display(Name = "Персонаж")] string Name,
+    [property: Display(Name = "Персонаж")] CharacterLinkSlimViewModel Name,
     CharacterBusyStatusView BusyStatus,
     int? SlotCount,
-    CharacterIdentification CharacterId);
+    IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups);
 
 public record class UgClaimForCaptainViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,

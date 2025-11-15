@@ -8,8 +8,8 @@ using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
-using MoreLinq;
 
 namespace JoinRpg.WebPortal.Managers.UnifiedGrid;
 public static class ItemBuilder
@@ -24,10 +24,10 @@ public static class ItemBuilder
         }
 
         var character = new UgCharacterForCaptainViewModel(
-             ugItem.CharacterName,
+           new CharacterLinkSlimViewModel(ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.IsPublic, accessArguments.MasterAccess)),
            ugItem.GetBusyStatus(),
            ugItem.SlotCount,
-           ugItem.CharacterId
+           [] // TODO
            );
 
         return new UgItemForCaptainViewModel(

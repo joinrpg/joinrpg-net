@@ -10,6 +10,7 @@ public record class UgDto(
     string CharacterName,
     UserIdentification? ApprovedClaimUserId,
     bool IsPublic,
+    bool IsActive,
     CharacterType CharacterType,
     bool HasActiveClaims,
     int? SlotCount,

@@ -8,9 +8,11 @@ public static class UriLocatorExtensions
 {
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
-        IUriLocator<ProjectLinkViewModel>, IUriLocator<ClaimIdentification>
+        IUriLocator<ProjectLinkViewModel>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
+
+        public Uri GetUri(CharacterIdentification target) => new Uri($"/{target.ProjectId.Value}/character/{target.CharacterId}/details", UriKind.Relative);
 
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
         {
@@ -24,7 +26,7 @@ public static class UriLocatorExtensions
         // TODO implement for Blazor. Added so we will have nice exception instead of bla-bla not resolved.
         Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target)
             => throw new NotImplementedException();
-        Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => throw new NotImplementedException();
+        Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => GetUri(target.CharacterId);
 
         //end of TODO
 
