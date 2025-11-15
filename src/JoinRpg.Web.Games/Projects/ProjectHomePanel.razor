@@ -27,7 +27,7 @@
     <JoinAlert Variation="VariationStyleEnum.Warning"><RemoveIcon /> Проект <strong>закрыт</strong></JoinAlert>
 }
 
-@foreach (var ki in Model.KogdaIgras)
+@foreach (var ki in Model.KogdaIgras.OrderByDescending(ki => ki.End))
 {
     <KogdaIgraCard Model="ki" />
 }

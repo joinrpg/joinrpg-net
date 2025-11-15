@@ -1,9 +1,18 @@
 @using JoinRpg.Web.ProjectCommon.Projects
 
-    Даты: @Model.Begin — @Model.End <br />
-    Регион: @Model.RegionName <br />
-    МГ: @Model.MasterGroupName <br />
-    Сайт: @Model.SiteUri <br />
+Даты: @Model.Begin — @Model.End
+<br />
+Регион: @Model.RegionName
+<br />
+@if (!string.IsNullOrWhiteSpace(Model.MasterGroupName))
+{
+    <text>МГ: @Model.MasterGroupName</text>
+    <br />
+}
+@if (Model.SiteUri is not null)
+{
+    <text>Сайт: <a href="@Model.SiteUri"> @Model.SiteUri?.Host </a><br /></text>
+}
 @code {
     [Parameter]
     [EditorRequired]
