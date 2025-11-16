@@ -9,10 +9,11 @@ public enum CharacterBusyStatusView
     [Display(Name = "Обсуждается")]
     Discussed,
     [Display(Name = "Нет заявок")]
-    NoClaims,
+    Vacancy,
     [Display(Name = "NPC")]
     Npc,
-    [Display(Name = "Шаблон")]
     Slot,
+    HotSlot,
     Unknown,
+    HotVacancy,
 }

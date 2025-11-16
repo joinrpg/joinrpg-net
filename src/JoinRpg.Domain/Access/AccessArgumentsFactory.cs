@@ -30,7 +30,7 @@ public static class AccessArgumentsFactory
             PlayerAccesToClaim: character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false,
             EditAllowed: character.Project.Active,
             Published: character.Project.Details.PublishPlot,
-            CharacterPublic: character.IsPublic);
+            CharacterPublic: character.IsPublic, IsCapitan: false);
     }
 
     private static bool SamePlayerId(UserIdentification? left, UserIdentification? right)
@@ -50,7 +50,8 @@ public static class AccessArgumentsFactory
             PlayerAccesToClaim: SamePlayerId(user, ugItem.ApprovedClaimUserId), // Тут не совсем корректно, но непонятно как еще ведь внутри несколько заявок
             EditAllowed: projectInfo.IsActive,
             Published: projectInfo.PublishPlot,
-            CharacterPublic: ugItem.IsPublic);
+            CharacterPublic: ugItem.CharacterTypeInfo.IsPublic,
+            IsCapitan: false);
     }
 
     public static AccessArguments Create(Character character, ICurrentUserAccessor user, CharacterAccessMode mode = CharacterAccessMode.Usual)
@@ -79,7 +80,7 @@ public static class AccessArgumentsFactory
               PlayerAccesToClaim: character.ApprovedClaim?.HasAccess(userId, Permission.None, ExtraAccessReason.Player) ?? false,
               EditAllowed: character.Project.Active,
               Published: character.Project.Details.PublishPlot,
-              CharacterPublic: character.IsPublic);
+              CharacterPublic: character.IsPublic, IsCapitan: false);
     }
 
     /// <summary>
@@ -93,7 +94,7 @@ public static class AccessArgumentsFactory
           PlayerAccesToClaim: true,
           EditAllowed: true,
           Published: false,
-          CharacterPublic: character.IsPublic);
+          CharacterPublic: character.IsPublic, IsCapitan: false);
     }
 
     public static AccessArguments Create(Claim claim, int? userId)
@@ -106,7 +107,7 @@ public static class AccessArgumentsFactory
             PlayerAccesToClaim: claim.HasPlayerAccesToClaim(userId),
             EditAllowed: claim.Project.Active,
             Published: claim.Project.Details.PublishPlot,
-            CharacterPublic: claim.Character.IsPublic);
+            CharacterPublic: claim.Character.IsPublic, IsCapitan: false);
     }
 
     public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId) => Create(claim, userId.UserIdOrDefault);

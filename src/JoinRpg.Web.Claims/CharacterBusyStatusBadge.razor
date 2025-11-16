@@ -1,17 +1,51 @@
 @using JoinRpg.Helpers
-@CharacterBusyStatus.GetDisplayName()
-@if (CharacterBusyStatus == CharacterBusyStatusView.Slot)
+@switch (CharacterBusyStatus)
 {
-    if (SlotCount is not null)
-    {
-        <text> (@SlotCount)</text>
-    }
-    else
-    {
-        <text> (∞)</text>
-    }
+    case CharacterBusyStatusView.Npc:
+        <JoinBadge Variation="VariationStyleEnum.Primary">NPC</JoinBadge>
+        break;
+    case CharacterBusyStatusView.Vacancy:
+        <JoinBadge Variation="VariationStyleEnum.Primary">Вакансия</JoinBadge>
+        break;
+    case CharacterBusyStatusView.HotVacancy:
+        <JoinBadge Variation="VariationStyleEnum.Warning" Title="Горячая роль"><HotIcon />Hot</JoinBadge>
+        break;
+    case CharacterBusyStatusView.Slot:
+        <JoinBadge Variation="VariationStyleEnum.Primary">
+            Шаблон
+            @if (SlotCount is not null)
+            {
+                <text> (@SlotCount)</text>
+            }
+            else
+            {
+                <text> (∞)</text>
+            }
+        </JoinBadge>
+        break;
+    case CharacterBusyStatusView.HotSlot:
+        <JoinBadge Variation="VariationStyleEnum.Warning" Title="Горячая роль">
+            <HotIcon />
+            Шаблон
+            @if (SlotCount is not null)
+            {
+                <text> (@SlotCount)</text>
+            }
+            else
+            {
+                <text> (∞)</text>
+            }
+        </JoinBadge>
+        break;
+    case CharacterBusyStatusView.HasPlayer:
+        <JoinBadge Variation="VariationStyleEnum.Success">Занят</JoinBadge>
+        break;
+    case CharacterBusyStatusView.Discussed:
+    case CharacterBusyStatusView.Unknown:
+    default:
+        <JoinBadge Variation="VariationStyleEnum.Danger">Неизвестно</JoinBadge>
+        break;
 }
-
 @code {
     [Parameter]
     [EditorRequired]

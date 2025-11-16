@@ -60,18 +60,7 @@
                 }
                 else
                 {
-                    @Html.DisplayFor(modelItem => item.BusyStatus)
-                    if (item.BusyStatus == CharacterBusyStatusView.Slot)
-                    {
-                        if (item.SlotCount is not null)
-                        {
-                            <text> (@item.SlotCount)</text>
-                        }
-                        else
-                        {
-                            <text> (∞)</text>
-                        }
-                    }
+                  <component type="typeof(CharacterBusyStatusBadge)" param-CharacterBusyStatus="item.BusyStatus" param-SlotCount="item.SlotCount" render-mode="Static"/>
                 }
             </td>
             @if (Model.Items.Any(x => x.Groups.HasAnyGroups))

@@ -3,10 +3,10 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.Models.Claims;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
@@ -16,7 +16,7 @@ public static class ItemBuilder
 {
     public static UgItemForCaptainViewModel? BuildItemForCaptain(UgDto ugItem, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)
     {
-        var accessArguments = AccessArgumentsFactory.Create(ugItem, currentUserId, projectInfo);
+        var accessArguments = AccessArgumentsFactory.Create(ugItem, currentUserId, projectInfo) with { IsCapitan = true };
 
         if (!accessArguments.CanViewCharacterName)
         {
@@ -24,10 +24,12 @@ public static class ItemBuilder
         }
 
         var character = new UgCharacterForCaptainViewModel(
-           new CharacterLinkSlimViewModel(ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.IsPublic, accessArguments.CanViewCharacterName)),
+           new CharacterLinkSlimViewModel(
+               ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.CharacterTypeInfo.IsPublic, accessArguments.CanViewCharacterName)),
            ugItem.GetBusyStatus(),
-           ugItem.SlotCount,
-           [] // TODO
+           ugItem.CharacterTypeInfo.SlotLimit,
+           [], // TODO,
+           ugItem.CharacterTypeInfo.IsHot
            );
 
         return new UgItemForCaptainViewModel(
@@ -45,7 +47,7 @@ public static class ItemBuilder
 
         return new UgClaimForCaptainViewModel(
             UserLinks.Create(claim.Player, ViewMode.Show),
-            (ClaimStatusView)claim.ClaimStatus,
+            ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
             claim.CreateDate,
             claim.CheckInDate,
