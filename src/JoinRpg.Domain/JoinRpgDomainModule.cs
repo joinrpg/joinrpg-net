@@ -11,7 +11,7 @@ public class JoinRpgDomainModule : Module
 
         _ = builder.RegisterType<FieldSaveHelper>().AsSelf().InstancePerLifetimeScope();
 
-        _ = builder.RegisterGeneric(typeof(ProblemValidator<>)).AsImplementedInterfaces().SingleInstance();
+        _ = builder.RegisterGeneric(typeof(ProblemValidator<>)).AsImplementedInterfaces();
 
         _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IProblemFilter<>)).SingleInstance();
 
