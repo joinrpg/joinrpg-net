@@ -22,18 +22,18 @@ public record class AccessArguments(
     /// <summary>
     /// true if there is master or player access to the character
     /// </summary>
-    public bool AnyAccessToCharacter { get; } = MasterAccess || PlayerAccessToCharacter;
+    public bool AnyAccessToCharacter => MasterAccess || PlayerAccessToCharacter;
 
-    public bool CanViewCharacterName { get; } = MasterAccess || PlayerAccessToCharacter || CharacterPublic || IsCapitan;
+    public bool CanViewCharacterName => MasterAccess || PlayerAccessToCharacter || CharacterPublic || IsCapitan;
 
     /// <summary>
     /// true, if there is master or player access to the claim
     /// </summary>
-    public bool AnyAccessToClaim { get; } = PlayerAccesToClaim || MasterAccess;
+    public bool AnyAccessToClaim => PlayerAccesToClaim || MasterAccess;
 
-    public bool CharacterPlotAccess { get; } = Published || PlayerAccessToCharacter || MasterAccess;
+    public bool CharacterPlotAccess => Published || PlayerAccessToCharacter || MasterAccess;
     public static AccessArguments None { get; } = new AccessArguments(false, false, false, false, false, false, false);
-    public bool CanViewDenialStatus { get; } = MasterAccess;
+    public bool CanViewDenialStatus => MasterAccess;
 
     public AccessArguments WithoutMasterAccess() => this with { MasterAccess = false };
 
