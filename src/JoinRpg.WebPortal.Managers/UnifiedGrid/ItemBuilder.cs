@@ -29,7 +29,8 @@ public static class ItemBuilder
            ugItem.GetBusyStatus(),
            ugItem.CharacterTypeInfo.SlotLimit,
            [], // TODO,
-           ugItem.CharacterTypeInfo.IsHot
+           ugItem.CharacterTypeInfo.IsHot,
+           ugItem.CharacterTypeInfo.CharacterType == CharacterType.Slot
            );
 
         return new UgItemForCaptainViewModel(

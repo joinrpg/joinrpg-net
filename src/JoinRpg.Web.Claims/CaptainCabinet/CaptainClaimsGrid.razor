@@ -62,7 +62,8 @@
                     @if (first)
                     {
                         first = false;
-                        <td rowspan="@item.Claims.Length">
+                            var rowspan = item.Claims.Length + (item.Character.IsSlot ? 1 : 0);
+                            <td rowspan="@rowspan">
                                 <CharacterLink Model="item.Character.Name" />
                         </td>
                     }
@@ -89,7 +90,26 @@
                     </td>
                 </tr>
             }
-        }
+            @if (item.Character.IsSlot)
+                {
+                    <tr>
+
+                      <td>
+                          &nbsp;
+                      </td>
+                      <td>
+                          <CharacterBusyStatusBadge CharacterBusyStatus="item.Character.BusyStatus" SlotCount="item.Character.SlotCount" />
+                      </td>
+                      <td>
+                          &nbsp;
+                      </td>
+                      <td>&nbsp;</td>
+                      <td>
+                          &nbsp;
+                      </td>
+                  </tr>
+                }
+            }
     }
     </tbody>
 </table>
