@@ -7,13 +7,11 @@ public interface IUnifiedGridRepository
 }
 
 public record class UgDto(
+    CharacterTypeInfo CharacterTypeInfo,
     string CharacterName,
     UserIdentification? ApprovedClaimUserId,
-    bool IsPublic,
     bool IsActive,
-    CharacterType CharacterType,
     bool HasActiveClaims,
-    int? SlotCount,
     CharacterIdentification CharacterId,
     IReadOnlyCollection<UgClaim> Claims
     );

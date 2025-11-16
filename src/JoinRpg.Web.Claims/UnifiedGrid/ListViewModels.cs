@@ -46,11 +46,12 @@ public record class UgCharacterForCaptainViewModel(
     [property: Display(Name = "Персонаж")] CharacterLinkSlimViewModel Name,
     CharacterBusyStatusView BusyStatus,
     int? SlotCount,
-    IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups);
+    IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups,
+    bool IsHot);
 
 public record class UgClaimForCaptainViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,
-    [property: Display(Name = "Статус заявки")] ClaimStatusView? ClaimStatus,
+    [property: Display(Name = "Статус заявки")] ClaimFullStatusView ClaimStatus,
     [property: Display(Name = "Обновлена"), UIHint("EventTime")] DateTimeOffset? UpdateDate,
     [property: Display(Name = "Создана"), UIHint("EventTime")] DateTimeOffset? CreateDate,
     [property: Display(Name = "Дата заезда")] DateTimeOffset? CheckInDate,

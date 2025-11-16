@@ -1,3 +1,4 @@
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.PrimitiveTypes.Claims;
 using LinqKit;
 
@@ -43,13 +44,12 @@ internal class UnifiedGridRepository(MyDbContext Ctx) : IUnifiedGridRepository
         return [.. result
             .Where(x => groupPrecise(x.character))
             .Select(r =>
-        new UgDto(r.character.CharacterName,
+        new UgDto(
+                  r.character.ToCharacterTypeInfo(),
+                  r.character.CharacterName,
                   UserIdentification.FromOptional(r.ApprovedUser),
-                  r.character.IsPublic,
                   r.character.IsActive,
-                  r.character.CharacterType,
                   r.HasActiveClaims,
-                  r.character.CharacterSlotLimit,
                   r.character.GetId(),
                   [..r.Claims.Select(c => new UgClaim(c.Claim, c.FeePaid ?? 0))])
         )];

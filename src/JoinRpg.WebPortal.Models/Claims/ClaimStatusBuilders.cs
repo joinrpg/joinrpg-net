@@ -3,9 +3,9 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models.Claims;
-internal static class ClaimStatusBuilders
+public static class ClaimStatusBuilders
 {
-    internal static ClaimFullStatusView CreateFullStatus(Claim claim, AccessArguments accessArguments)
+    public static ClaimFullStatusView CreateFullStatus(Claim claim, AccessArguments accessArguments)
     {
         if (accessArguments.CanViewDenialStatus)
         {

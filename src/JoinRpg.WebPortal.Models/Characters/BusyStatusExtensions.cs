@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Claims;
 
@@ -8,42 +9,27 @@ namespace JoinRpg.Web.Models.Characters;
 public static class BusyStatusExtensions
 {
     public static CharacterBusyStatusView GetBusyStatus(this Character character)
-    {
-        return character switch
-        {
-
-            { CharacterType: CharacterType.NonPlayer } => CharacterBusyStatusView.Npc,
-            { CharacterType: CharacterType.Slot } => CharacterBusyStatusView.Slot,
-            { CharacterType: CharacterType.Player, ApprovedClaim: not null } => CharacterBusyStatusView.HasPlayer,
-            { CharacterType: CharacterType.Player } when character.Claims.Any(c => c.ClaimStatus.IsActive()) => CharacterBusyStatusView.Discussed,
-            { CharacterType: CharacterType.Player } => CharacterBusyStatusView.NoClaims,
-            _ => CharacterBusyStatusView.Unknown,
-        };
-    }
+        => GetBusyStatus(character.ToCharacterTypeInfo(), character.ApprovedClaimId is not null, character.Claims.Any(c => c.ClaimStatus.IsActive()));
 
     public static CharacterBusyStatusView GetBusyStatus(this UgDto character)
-    {
-        return character switch
-        {
-
-            { CharacterType: CharacterType.NonPlayer } => CharacterBusyStatusView.Npc,
-            { CharacterType: CharacterType.Slot } => CharacterBusyStatusView.Slot,
-            { CharacterType: CharacterType.Player, ApprovedClaimUserId: not null } => CharacterBusyStatusView.HasPlayer,
-            { CharacterType: CharacterType.Player, HasActiveClaims: true } => CharacterBusyStatusView.Discussed,
-            { CharacterType: CharacterType.Player } => CharacterBusyStatusView.NoClaims,
-            _ => CharacterBusyStatusView.Unknown,
-        };
-    }
+        => GetBusyStatus(character.CharacterTypeInfo, character.ApprovedClaimUserId is not null, character.HasActiveClaims);
 
     public static CharacterBusyStatusView GetBusyStatus(this CharacterView character)
+        => GetBusyStatus(character.CharacterTypeInfo, character.ApprovedClaim is not null, character.Claims.Any(c => c.IsActive));
+
+    private static CharacterBusyStatusView GetBusyStatus(CharacterTypeInfo typeInfo, bool hasApproved, bool hasActive)
     {
-        return character switch
+        var tuple = (typeInfo, hasApproved, hasActive);
+        return tuple switch
         {
-            { CharacterTypeInfo: { CharacterType: CharacterType.NonPlayer } } => CharacterBusyStatusView.Npc,
-            { CharacterTypeInfo: { CharacterType: CharacterType.Slot } } => CharacterBusyStatusView.Slot,
-            { CharacterTypeInfo: { CharacterType: CharacterType.Player }, ApprovedClaim: not null } => CharacterBusyStatusView.HasPlayer,
-            { CharacterTypeInfo: { CharacterType: CharacterType.Player }, } when character.Claims.Any(c => c.IsActive) => CharacterBusyStatusView.Discussed,
-            { CharacterTypeInfo: { CharacterType: CharacterType.Player } } => CharacterBusyStatusView.NoClaims,
+
+            { typeInfo.CharacterType: CharacterType.NonPlayer } => CharacterBusyStatusView.Npc,
+            { typeInfo.CharacterType: CharacterType.Slot, typeInfo.IsHot: true } => CharacterBusyStatusView.HotSlot,
+            { typeInfo.CharacterType: CharacterType.Slot } => CharacterBusyStatusView.Slot,
+            { typeInfo.CharacterType: CharacterType.Player, hasApproved: true } => CharacterBusyStatusView.HasPlayer,
+            { typeInfo.CharacterType: CharacterType.Player, hasActive: true } => CharacterBusyStatusView.Discussed,
+            { typeInfo.CharacterType: CharacterType.Player, typeInfo.IsHot: true } => CharacterBusyStatusView.HotVacancy,
+            { typeInfo.CharacterType: CharacterType.Player } => CharacterBusyStatusView.Vacancy,
             _ => CharacterBusyStatusView.Unknown,
         };
     }

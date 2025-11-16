@@ -8,6 +8,8 @@ public record CharacterTypeInfo
 
     public bool IsAcceptingClaims => CharacterType != CharacterType.NonPlayer;
 
+    public bool IsPublic => CharacterVisibility == CharacterVisibility.Public;
+
     public int? SlotLimit { get; }
 
     public string? SlotName { get; }

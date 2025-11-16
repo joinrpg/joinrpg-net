@@ -1,0 +1,44 @@
+@using JoinRpg.Helpers
+@switch (Status.ClaimStatus)
+{
+    case ClaimStatusView.Approved:
+        <JoinBadge Variation="VariationStyleEnum.Success">Принята</JoinBadge>
+        break;
+    case ClaimStatusView.CheckedIn:
+        <JoinBadge Variation="VariationStyleEnum.Success">Заехал</JoinBadge>
+        break;
+    case ClaimStatusView.AddedByUser:
+        <JoinBadge Variation="VariationStyleEnum.Primary">Подана</JoinBadge>
+        break;
+    case ClaimStatusView.AddedByMaster:
+        <JoinBadge Variation="VariationStyleEnum.Primary">Предложена</JoinBadge>
+        break;
+    case ClaimStatusView.Discussed:
+        <JoinBadge Variation="VariationStyleEnum.Primary">Обсуждается</JoinBadge>
+        break;
+    case ClaimStatusView.DeclinedByUser:
+        <JoinBadge Variation="VariationStyleEnum.Danger">Отозвана</JoinBadge>
+        break;
+    case ClaimStatusView.OnHold:
+        <JoinBadge Variation="VariationStyleEnum.None">Лист ожидания</JoinBadge>
+        break;
+    case ClaimStatusView.DeclinedByMaster:
+        <JoinBadge Variation="VariationStyleEnum.Danger">
+            Отклонена
+            @if (Status.ClaimDenialStatus is not null)
+            {
+                <text>(@Status.ClaimDenialStatus.Value.GetDisplayName())</text>
+            }
+        </JoinBadge>
+        break;
+
+
+    default:
+        <JoinBadge Variation="VariationStyleEnum.Danger">Неизвестно</JoinBadge>
+        break;
+}
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ClaimFullStatusView Status { get; set; } = default!;
+}
