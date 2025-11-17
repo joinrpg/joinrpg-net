@@ -17,7 +17,7 @@ public class XUserInfoController(
 {
 
     [HttpGet]
-    [Route("{userId}/")]
+    [Route("{userId:int}/")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status410Gone)]
     [ProducesDefaultResponseType]
