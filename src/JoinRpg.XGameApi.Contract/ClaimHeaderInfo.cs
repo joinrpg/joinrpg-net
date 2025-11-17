@@ -16,5 +16,5 @@ public class ClaimHeaderInfo
     /// <summary>
     /// Player
     /// </summary>
-    public PlayerInfo Player { get; set; }
+    public CheckinPlayerInfo Player { get; set; }
 }

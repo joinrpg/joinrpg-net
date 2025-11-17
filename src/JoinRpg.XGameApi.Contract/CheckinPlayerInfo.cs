@@ -1,0 +1,24 @@
+namespace JoinRpg.XGameApi.Contract;
+
+/// <summary>
+/// Player info
+/// </summary>
+public class CheckinPlayerInfo
+{
+    /// <summary>
+    /// Id
+    /// </summary>
+    public int PlayerId { get; set; }
+    /// <summary>
+    /// Nick name
+    /// </summary>
+    public string NickName { get; set; }
+    /// <summary>
+    /// Fulll name
+    /// </summary>
+    public string FullName { get; set; }
+    /// <summary>
+    /// Other nicks to search
+    /// </summary>
+    public string OtherNicks { get; set; }
+}

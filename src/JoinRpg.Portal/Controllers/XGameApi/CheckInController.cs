@@ -34,7 +34,7 @@ public class CheckInController(
                 {
                     ClaimId = claim.ClaimId.ClaimId,
                     CharacterName = claim.CharacterName,
-                    Player = new PlayerInfo()
+                    Player = new CheckinPlayerInfo()
                     {
                         PlayerId = claim.Player.UserId,
                         NickName = claim.Player.DisplayName.DisplayName,
