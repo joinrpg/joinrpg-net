@@ -1,7 +1,6 @@
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.XApi;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +20,9 @@ public class XUserInfoController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status410Gone)]
     [ProducesDefaultResponseType]
-    public async Task<ActionResult<CheckinPlayerInfo>> GetUser(UserIdentification userId)
+    public async Task<ActionResult<CheckinPlayerInfo>> GetUser(int userId)
     {
-        var userInfo = await userRepository.GetUserInfo(userId);
+        var userInfo = await userRepository.GetUserInfo(new(userId));
         if (userInfo is null)
         {
             return new StatusCodeResult(410);
