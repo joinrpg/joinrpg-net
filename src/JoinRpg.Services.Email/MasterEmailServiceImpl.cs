@@ -29,7 +29,7 @@ internal class MasterEmailServiceImpl(
 
 Проект {metadata.ProjectName.Value} был в последний раз активен {email.LastActiveDate:yyyy-MM-dd}. Если до {email.WillCloseDate:yyyy-MM-dd} активность в нем не появится, он автоматически будет закрыт.
 
-Подробности в справке https://docs.joinrpg.ru/ru/latest/project/after.html#id3
+Подробности в справке https://docs.joinrpg.ru/project/after.html#id3
 
 Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.
 
