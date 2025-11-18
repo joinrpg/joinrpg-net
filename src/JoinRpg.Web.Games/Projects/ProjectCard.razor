@@ -3,12 +3,12 @@
 <div class="col-sm-6 col-md-4">
     <div class="thumbnail">
         <div class="caption">
-            <h4 style="" title="@Model.ProjectName" class="project-name">
-                <ProjectLink Model="Model" />
-                @if (Model.LastKogdaIgraId is not null)
+            <h4 title="@Model.ProjectName" class="project-name">
+				@if (Model.LastKogdaIgraId is not null)
                 {
-                    <text>&nbsp;</text> <a href="https://kogda-igra.ru/game/@(Model.LastKogdaIgraId.Value)/"><CalendarIcon /></a>
+					<a href="https://kogda-igra.ru/game/@(Model.LastKogdaIgraId.Value)/"><CalendarIcon /></a><text>&nbsp;</text>
                 }
+                <ProjectLink Model="Model" />
             </h4>
             <div class="btn-group">
                 @if (Model.IsMaster)
