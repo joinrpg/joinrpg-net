@@ -140,6 +140,20 @@
                         <component type="typeof(JoinRpg.Web.Plots.PlotElementControls)" 
                             param-Model="@controlsModel"
                             render-mode="WebAssembly"  />
+
+
+
+
+
+                        var copyElementUrl = Url.Action("CreateElement", "Plot", new { Model.ProjectId, Model.PlotFolderId, copyFrom = Model.PlotElementIdentification });
+                        <component
+                          type="typeof(JoinButton)"
+                          render-mode="Static"
+                          param-Link="@copyElementUrl"
+                          param-Preset="ButtonPreset.Copy"
+                          param-Size="SizeStyleEnum.Small"
+                          />
+
                 if (Model.NextModifiedDateTime != null)
                 {
 
