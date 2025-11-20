@@ -6,7 +6,13 @@
 }
 
 JoinRpgRoles.prototype.loadRoles = function (projectId, locationId) {
-  var url = this._Settings.baseUrl  || 'https://joinrpg.ru/'; 
+  var baseUrl = (this._Settings.baseUrl || '').toLowerCase().trim();  
+  var defaultDomains = ['http://joinrpg.ru', 'https://joinrpg.ru', 'http://joinrpg.ru/', 'https://joinrpg.ru/'];  
+
+  var url = (defaultDomains.includes(baseUrl) || !this._Settings.baseUrl)  
+    ? 'https://joinrpg.ru/'  
+    : this._Settings.baseUrl;  
+  
   url = url[url.length - 1] != '/' ? url + '/' : url;
   this.$.ajax({
            url: url + projectId + '/roles/' + locationId + '/indexjson',
