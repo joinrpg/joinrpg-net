@@ -62,7 +62,7 @@ jobs:
           echo "IDPORTAL_IMAGE_VERSION_WITH_DIGEST=${COMMON_IMAGE_VERSION}@${IDPORTAL_IMAGE_DIGEST}" >> $GITHUB_ENV
 
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
