@@ -115,6 +115,7 @@
                    param-ProjectId="Model.ProjectId"
                    param-Name="@("ShowForGroupsInts")"
                    param-SelectedGroupIds="@(Model.ShowForGroups)"
+                   param-IncludeSpecial="true"
                    render-mode="WebAssembly" />
                 @Html.ValidationMessageFor(model => model.ShowForGroups, "", new { @class = "text-danger" })
                 <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>

@@ -103,6 +103,7 @@
         <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                    param-ProjectId="Model.ProjectId"
                    param-Name="@("ShowForGroupsInts")"
+                   param-IncludeSpecial="true"
                    param-SelectedGroupIds="@(Model.ShowForGroups)"
                    render-mode="WebAssembly" />
         <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>

@@ -3,6 +3,7 @@
   ProjectId="@ProjectId"
   SelectedGroupIds="@selectedGroupIds"
   SelectedGroupsChanged="HandleSelectedGroupChanged"
+  IncludeSpecial="@IncludeSpecial"
   Multiple="false"
   />
 
@@ -14,6 +15,7 @@
     [Parameter] public EventCallback<CharacterGroupIdentification?> SelectedGroupIdChanged { get; set; }
     [Parameter] public CharacterGroupDto? SelectedGroup { get; set; }
     [Parameter] public EventCallback<CharacterGroupDto> SelectedGroupChanged { get; set; }
+    [Parameter] public bool IncludeSpecial { get; set; } = true;
 
     private CharacterGroupIdentification[] selectedGroupIds = [];
 
