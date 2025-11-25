@@ -46,7 +46,7 @@ jobs:
         REF_TYPE: ${{ github.ref_type }}
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v5.0.0
+      uses: actions/setup-dotnet@v5.0.1
       with:
         global-json-file: global.json
 
