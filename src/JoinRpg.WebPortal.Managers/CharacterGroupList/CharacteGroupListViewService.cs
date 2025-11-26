@@ -6,7 +6,7 @@ namespace JoinRpg.WebPortal.Managers.CharacterGroupList;
 
 internal class CharacteGroupListViewService(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : ICharacterGroupsClient
 {
-    private async Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId, Predicate<CharacterGroupDto> predicate)
+    private async Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId, Func<CharacterGroupDto, bool> predicate)
     {
 
         var rootGroup = (await projectRepository.LoadGroupWithTreeSlimAsync(projectId)) ?? throw new JoinRpgEntityNotFoundException(projectId, "project");
