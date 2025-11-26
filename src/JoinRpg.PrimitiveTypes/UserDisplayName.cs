@@ -27,6 +27,6 @@ public record UserDisplayName(
 
     public string ToLongString() => string.IsNullOrWhiteSpace(FullName) ? DisplayName : $"{DisplayName} ({FullName})";
 
-    public override string ToString() => $"User({DisplayName}";
+    public override string ToString() => $"User({DisplayName})";
 
 }
