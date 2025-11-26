@@ -12,7 +12,7 @@ internal class CharacteGroupListViewService(IProjectRepository projectRepository
         var rootGroup = (await projectRepository.LoadGroupWithTreeSlimAsync(projectId)) ?? throw new JoinRpgEntityNotFoundException(projectId, "project");
 
         var results = new CharacterGroupListGenerator(rootGroup, currentUserAccessor.UserId).Generate();
-        return results;
+        return results.Where(predicate).ToList();
     }
 
     Task<List<CharacterGroupDto>> ICharacterGroupsClient.GetCharacterGroupsWithSpecial(int projectId) => GetCharacterGroups(projectId, x => true);
