@@ -24,7 +24,7 @@ internal class CaptainRuleViewService(
         var userIds = rules.Select(x => x.Player).Distinct().ToList();
 
         var groups = (await projectRepository.GetGroupHeaders(groupIds)).ToDictionary(x => x.CharacterGroupId);
-        var users = (await userRepository.GetRequuiredUserInfoHeaders(userIds)).ToDictionary(x => x.UserId);
+        var users = (await userRepository.GetRequiredUserInfoHeaders(userIds)).ToDictionary(x => x.UserId);
 
         var ruleViewModels = rules.Select(rule =>
                 new CaptainRuleViewModel(rule, groups[rule.CharacterGroup].Name, UserLinks.Create(users[rule.Player])))
