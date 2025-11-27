@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces.Notification;
-using JoinRpg.Web.Models;
 
 namespace JoinRpg.WebPortal.Managers;
 public class MassMailManager(
