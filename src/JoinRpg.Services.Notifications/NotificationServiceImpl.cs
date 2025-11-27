@@ -5,6 +5,7 @@ using JoinRpg.Interfaces.Email;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Services.Notifications;
 
@@ -21,7 +22,7 @@ public partial class NotificationServiceImpl(
         var templater = new NotifcationFieldsTemplater(notificationMessage.Text);
 
         var users = await GetNotificationsForUsers(notificationMessage.Recepients);
-        var sender = (await userRepository.GetUsersNotificationInfo([notificationMessage.Initiator])).Single();
+        var sender = await userRepository.GetRequiredUserInfo(notificationMessage.Initiator);
 
         VerifyFieldsPresent();
 
@@ -62,7 +63,7 @@ public partial class NotificationServiceImpl(
         }
     }
 
-    private NotificationMessageDto CreateMessageDto(NotificationMessage notificationMessage, NotificationRow user, UserNotificationInfoDto sender, MarkdownString body)
+    private NotificationMessageDto CreateMessageDto(NotificationMessage notificationMessage, NotificationRow user, UserInfo sender, MarkdownString body)
     {
         return new NotificationMessageDto()
         {
@@ -87,8 +88,8 @@ public partial class NotificationServiceImpl(
     private async Task<NotificationRow[]> GetNotificationsForUsers(NotificationRecepient[] recepients)
     {
         var recDict = recepients.ToDictionary(r => r.UserId, r => r);
-        var r = await userRepository.GetUsersNotificationInfo(recepients.Select(r => r.UserId).ToArray());
+        var r = await userRepository.GetRequiredUserInfos(recepients.Select(r => r.UserId).ToArray());
 
-        return r.Select(user => new NotificationRow(user.UserId, recDict[user.UserId], user.Email, user.TelegramId, user.DisplayName)).ToArray();
+        return r.Select(user => new NotificationRow(user.UserId, recDict[user.UserId], user.Email, user.Social.TelegramId, user.DisplayName)).ToArray();
     }
 }

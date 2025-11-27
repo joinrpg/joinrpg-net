@@ -12,10 +12,6 @@ public static class UserTransformationExtensions
     }
 
     public static UserDisplayName ExtractDisplayName(this User user) => new UserDisplayName(user.ExtractFullName(), new Email(user.Email));
-    public static UserDisplayName ExtractDisplayName(this User user)
-    {
-        return UserDisplayName.Create(user.ExtractFullName(), new Email(user.Email));
-    }
 
     public static UserExternalLogin? TryGetExternalLoginByProviderId(this User user, string providerId)
     {
