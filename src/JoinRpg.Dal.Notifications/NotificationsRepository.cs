@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace JoinRpg.Dal.Notifications;
 
@@ -8,6 +10,10 @@ internal class NotificationsRepository : INotificationRepository
     private readonly Counter<int> successRaceCounter;
     private readonly NotificationsDataDbContext dbContext;
     private readonly ILogger<NotificationsRepository> logger;
+
+    private readonly IExecutionStrategy executionStrategy;
+
+    private readonly string lockRequestSql;
 
     public NotificationsRepository(
         NotificationsDataDbContext dbContext,
@@ -19,9 +25,30 @@ internal class NotificationsRepository : INotificationRepository
         var meter = meterFactory.Create("JoinRpg.Dal.Notifications.Repository");
         lostRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_lost_races");
         successRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_success_races");
+        executionStrategy = dbContext.Database.CreateExecutionStrategy();
+
+        lockRequestSql = BuildLockRequestSql();
     }
 
-    async Task INotificationRepository.InsertNotifications(NotificationMessageDto[] notifications)
+    private string BuildLockRequestSql()
+    {
+        var channelsTableName = dbContext.NotificationMessageChannels.EntityType.GetTableName();
+        Debug.Assert(channelsTableName is not null);
+        var channelStatusPropName = dbContext.NotificationMessageChannels.EntityType
+            .GetProperty(nameof(NotificationMessageChannel.NotificationMessageStatus))
+            .GetColumnName();
+        Debug.Assert(channelStatusPropName is not null);
+        var channelTypePropName = dbContext.NotificationMessageChannels.EntityType
+            .GetProperty(nameof(NotificationMessageChannel.Channel))
+            .GetColumnName();
+
+        return $"SELECT * FROM {channelsTableName} ch"
+            + $"\nWHERE {channelTypePropName} = {{0}} AND {channelStatusPropName} = {{1}}"
+            + "\nLIMIT 1"
+            + "\nLOCK FOR UPDATE SKIP LOCKED";
+    }
+
+    async Task INotificationRepository.InsertNotifications(NotificationMessageCreateDto[] notifications)
     {
         foreach (var x in notifications)
         {
@@ -31,7 +58,7 @@ internal class NotificationsRepository : INotificationRepository
                 Header = x.Header,
                 InitiatorAddress = x.InitiatorAddress,
                 InitiatorUserId = x.Initiator.Value,
-                RecepientUserId = x.Recepient.Value,
+                RecipientUserId = x.Recipient.Value,
                 NotificationMessageChannels = [
                     .. x.Channels.Select(c => new NotificationMessageChannel()
                     {
@@ -45,83 +72,82 @@ internal class NotificationsRepository : INotificationRepository
             _ = dbContext.Notifications.Add(message);
         }
         _ = await dbContext.SaveChangesAsync();
-
-    }
-    async Task INotificationRepository.MarkSendFailed(NotificationId id, NotificationChannel channel)
-    {
-        if (!await TrySetStatus(id.Value, channel, from: NotificationMessageStatus.Sending, to: NotificationMessageStatus.Failed))
-        {
-            logger.LogWarning("Notification {notificationId} for channel {channel} failed to set status to failed", id, channel);
-        }
     }
 
-    async Task INotificationRepository.MarkSendSuccess(NotificationId id, NotificationChannel channel)
+    Task INotificationRepository.MarkSendingFailed(NotificationId id, NotificationChannel channel)
+        => SetStatus(id.Value, channel, from: NotificationMessageStatus.Sending, to: NotificationMessageStatus.Failed);
+
+    Task INotificationRepository.MarkEnqueued(NotificationId id, NotificationChannel channel)
+        => SetStatus(id.Value, channel, from: NotificationMessageStatus.Sending, to: NotificationMessageStatus.Queued);
+
+    Task INotificationRepository.MarkSendingSucceeded(NotificationId id, NotificationChannel channel)
+        => SetStatus(id.Value, channel, from: NotificationMessageStatus.Sending, to: NotificationMessageStatus.Sent);
+
+    private record struct SelectMessageData(NotificationChannel Channel);
+
+    private async Task<AddressedNotificationMessageDto?> InternalSelectNextNotificationAsync(SelectMessageData data, CancellationToken cancellationToken)
     {
-        if (!await TrySetStatus(id.Value, channel, from: NotificationMessageStatus.Sending, to: NotificationMessageStatus.Sent))
+        var candidate = await dbContext.NotificationMessageChannels
+            .FromSqlRaw(lockRequestSql, data.Channel, NotificationMessageStatus.Queued)
+            .Include(static e => e.NotificationMessage)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (candidate is null)
         {
-            logger.LogWarning("Notification {notificationId} for channel {channel} failed to set status to success", id, channel);
-        }
-    }
-    async Task<(NotificationId Id, NotificationMessageDto Message)?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
-    {
-        var tryCount = 0;
-        while (tryCount < 5)
-        {
-            var candidate =
-                await dbContext.NotificationMessageChannels
-                .Include(c => c.NotificationMessage)
-                .ThenInclude(m => m.NotificationMessageChannels)
-                .ForChannelAndStatus(channel, NotificationMessageStatus.Queued)
-                .FirstOrDefaultAsync();
-
-            if (candidate is null)
-            {
-                return null;
-            }
-
-            if (await TrySetStatus(candidate.NotificationMessageId, channel, from: NotificationMessageStatus.Queued, to: NotificationMessageStatus.Sending))
-            {
-                successRaceCounter.Add(1);
-                return (new(candidate.NotificationMessageId), CreateNotificationMessageDto(candidate.NotificationMessage));
-            }
-
-            // lost race
-
-            logger.LogDebug("Lost race when try to acquire candidate for sending!");
+            // No messages left
             lostRaceCounter.Add(1);
-            await Task.Delay(Random.Shared.Next(100 * tryCount));
-            tryCount++;
+            return null;
         }
-        logger.LogWarning("Constantly losing race...");
-        return null;
+
+        await SetStatus(
+            candidate.NotificationMessageChannelId,
+            candidate.Channel,
+            candidate.NotificationMessageStatus,
+            NotificationMessageStatus.Sending);
+
+        successRaceCounter.Add(1);
+
+        return CreateNotificationMessageDto(candidate);
     }
 
-    private static NotificationMessageDto CreateNotificationMessageDto(NotificationMessage candidate)
+    Task<AddressedNotificationMessageDto?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
     {
+        return executionStrategy.ExecuteInTransactionAsync(
+            new SelectMessageData(channel),
+            InternalSelectNextNotificationAsync,
+            (_, _) => Task.FromResult(false));
+    }
 
-        return new NotificationMessageDto
+    private static AddressedNotificationMessageDto CreateNotificationMessageDto(NotificationMessageChannel candidate)
+    {
+        return new AddressedNotificationMessageDto
         {
-            Body = new DataModel.MarkdownString(candidate.Body),
-            Channels = [.. candidate.NotificationMessageChannels.Select(c => new NotificationChannelDto(c.Channel, c.ChannelSpecificValue))],
-            Header = candidate.Header,
-            Initiator = new(candidate.InitiatorUserId),
-            InitiatorAddress = new(candidate.InitiatorAddress),
-            Recepient = new(candidate.RecepientUserId),
+            Id = new NotificationId(candidate.NotificationMessageId),
+            Channel = new NotificationChannelDto(candidate.Channel, candidate.ChannelSpecificValue),
+            Body = new DataModel.MarkdownString(candidate.NotificationMessage.Body),
+            Header = candidate.NotificationMessage.Header,
+            Initiator = new(candidate.NotificationMessage.InitiatorUserId),
+            InitiatorAddress = new(candidate.NotificationMessage.InitiatorAddress),
+            Recipient = new(candidate.NotificationMessage.RecipientUserId),
         };
     }
 
-    private async Task<bool> TrySetStatus(int id, NotificationChannel channel, NotificationMessageStatus from, NotificationMessageStatus to)
+    private async Task SetStatus(int messageId, NotificationChannel channel, NotificationMessageStatus from, NotificationMessageStatus to)
     {
         var totalRows = await dbContext
             .NotificationMessageChannels
-            .Where(n => n.NotificationMessageId == id)
+            .Where(ch => ch.NotificationMessageId == messageId)
             .ForChannelAndStatus(channel, from)
             .ExecuteUpdateAsync(ch => ch.SetProperty(x => x.NotificationMessageStatus, to));
-        return totalRows switch
+
+        // Both cases are unexpected due to row-level lock and provided search criteria, so we can throw.
+        switch (totalRows)
         {
-            0 => false,
-            1 => true,
-            _ => throw new InvalidOperationException("Unexpected — too many rows updated")
-        };
+            case 0:
+                throw new DbUpdateConcurrencyException($"Failed to change status of channel {channel} from {from} to {to} of message {messageId}");
+            case > 1:
+                throw new DbUpdateConcurrencyException($"Unexpected number ({totalRows}) of updated notification channels {channel} from {from} to {to} of message {messageId}");
+        }
     }
 }

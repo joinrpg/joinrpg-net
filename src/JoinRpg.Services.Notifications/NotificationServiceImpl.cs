@@ -15,7 +15,7 @@ public partial class NotificationServiceImpl(
     INotificationRepository notificationRepository) : INotifcationService
 {
     private record class NotificationRow(
-        UserIdentification UserIdentification, NotificationRecepient Recepient, Email? Email, TelegramId? TelegramId, UserDisplayName DisplayName);
+        UserIdentification UserIdentification, NotificationRecepient Recipient, Email? Email, TelegramId? TelegramId, UserDisplayName DisplayName);
 
     async Task INotifcationService.QueueNotification(NotificationMessage notificationMessage)
     {
@@ -38,12 +38,12 @@ public partial class NotificationServiceImpl(
                 new RecepientData(sender.DisplayName, sender.Email),
                 users
                 .Where(u => u.Email is not null)
-                .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recepient.Fields)).ToArray());
+                .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recipient.Fields)).ToArray());
         }
 
         async Task SaveToQueue() => await notificationRepository.InsertNotifications(
             [..
-            users.Select(user => CreateMessageDto(notificationMessage, user, sender, templater.Substitute(user.Recepient.Fields, user.DisplayName)))]);
+            users.Select(user => CreateMessageDto(notificationMessage, user, sender, templater.Substitute(user.Recipient.Fields, user.DisplayName)))]);
 
         void VerifyFieldsPresent()
         {
@@ -63,15 +63,15 @@ public partial class NotificationServiceImpl(
         }
     }
 
-    private NotificationMessageDto CreateMessageDto(NotificationMessage notificationMessage, NotificationRow user, UserInfo sender, MarkdownString body)
+    private NotificationMessageCreateDto CreateMessageDto(NotificationMessage notificationMessage, NotificationRow user, UserInfo sender, MarkdownString body)
     {
-        return new NotificationMessageDto()
+        return new NotificationMessageCreateDto()
         {
             Body = body,
             Header = notificationMessage.Header,
             Initiator = notificationMessage.Initiator,
             InitiatorAddress = sender.Email,
-            Recepient = user.UserIdentification,
+            Recipient = user.UserIdentification,
             Channels = GetChannels(user).ToArray(),
         };
 
