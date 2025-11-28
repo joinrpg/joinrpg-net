@@ -1,6 +1,6 @@
 namespace JoinRpg.Dal.Notifications;
 
-[Index(nameof(RecepientUserId))]
+[Index(nameof(RecipientUserId))]
 [Index(nameof(InitiatorUserId))]
 internal class NotificationMessage
 {
@@ -12,7 +12,7 @@ internal class NotificationMessage
     [MaxLength(1024)]
     public required string InitiatorAddress { get; set; }
 
-    public required int RecepientUserId { get; set; }
+    public required int RecipientUserId { get; set; }
 
-    public virtual HashSet<NotificationMessageChannel> NotificationMessageChannels { get; set; } = [];
+    public HashSet<NotificationMessageChannel> NotificationMessageChannels { get; set; } = [];
 }
