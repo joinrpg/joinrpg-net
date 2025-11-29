@@ -12,6 +12,7 @@ using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
 using JoinRpg.Interfaces;
+using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
@@ -51,6 +52,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
+
+        services.AddOptions<PostboxOptions>().BindConfiguration("Postbox");
 
         services.AddKogdaIgra();
 

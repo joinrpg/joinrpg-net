@@ -33,7 +33,7 @@ public record NotificationAddress
         Channel = notificationChannel;
         if (Channel == NotificationChannel.Email)
         {
-            InternalValue = new Email(channelSpeficValue);
+            InternalValue = Email.Parse(channelSpeficValue);
         }
         else if (Channel == NotificationChannel.ShowInUi)
         {

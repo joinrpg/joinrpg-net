@@ -1,13 +1,18 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Email;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications;
 
 public partial class NotificationServiceImpl(
     IUserRepository userRepository,
     IEmailSendingService emailSendingService,
-    INotificationRepository notificationRepository) : INotificationService
+    INotificationRepository notificationRepository,
+    IOptions<NotificationsOptions> notificationOptions,
+    IOptions<PostboxOptions> postboxOptions
+    ) : INotificationService
 {
     private record class NotificationRow(
         NotificationRecepient Recipient, UserDisplayName DisplayName, IReadOnlyCollection<NotificationAddress> Channels, Email Email);
@@ -42,6 +47,10 @@ public partial class NotificationServiceImpl(
 
     private async Task SendEmailsUsingLegacy(NotificationEvent notificationMessage, NotificationRow[] users)
     {
+        if (postboxOptions.Value.Enabled)
+        {
+            return; // Если postbox почему-то выключен, дублировать письма через старый механизм
+        }
         var sender = await userRepository.GetRequiredUserInfo(notificationMessage.Initiator);
         await emailSendingService.SendEmails(
             notificationMessage.Header,
@@ -101,8 +110,9 @@ public partial class NotificationServiceImpl(
         }
     }
 
-    private static IEnumerable<NotificationAddress> GetChannels(UserInfo user)
+    private IEnumerable<NotificationAddress> GetChannels(UserInfo user)
     {
+        yield return NotificationAddress.Ui();
         if (user.Social.TelegramId is not null)
         {
             //    yield return new NotificationAddress(user.Social.TelegramId);
@@ -110,7 +120,11 @@ public partial class NotificationServiceImpl(
 
         if (user.Email is not null)
         {
-            yield return new NotificationAddress(user.Email);
+            if (notificationOptions.Value.EmailWhiteList.Length == 0 || notificationOptions.Value.EmailWhiteList.Contains(user.Email))
+            {
+                yield return new NotificationAddress(user.Email);
+            }
+
         }
     }
 }
