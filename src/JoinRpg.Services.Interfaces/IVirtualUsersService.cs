@@ -13,4 +13,6 @@ public interface IVirtualUsersService
     User PaymentsUser { get; }
 
     User RobotUser { get; }
+
+    UserIdentification RobotUserId { get; }
 }
