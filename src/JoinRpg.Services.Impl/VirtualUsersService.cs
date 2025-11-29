@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl;
@@ -15,6 +16,8 @@ public class VirtualUsersService(Func<IUnitOfWork> uowResolver) : IVirtualUsersS
     private readonly Lazy<User> _robotUser = new Lazy<User>(() => LoadUserByName(uowResolver(), User.RobotVirtualUser), true);
 
     public User RobotUser => _robotUser.Value;
+
+    UserIdentification IVirtualUsersService.RobotUserId => new UserIdentification(RobotUser.UserId);
 
     private static User LoadUserByName(IUnitOfWork uow, string userName)
     {
