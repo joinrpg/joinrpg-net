@@ -1,9 +1,6 @@
-using JoinRpg.PrimitiveTypes;
+namespace JoinRpg.Interfaces;
 
-namespace JoinRpg.Data.Interfaces;
-
-public record KeySetPagination<TId>(TId? From, int PageSize = 1000)
-    where TId : class, IProjectEntityId
+public record KeySetPagination(int? From, int PageSize = 1000)
 {
     public int PageSize { get; } = ValidatePageSize(PageSize);
 
@@ -21,3 +18,4 @@ public record KeySetPagination<TId>(TId? From, int PageSize = 1000)
 
     }
 }
+

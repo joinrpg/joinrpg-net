@@ -1,18 +1,19 @@
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-internal class HotCharactersRepository(MyDbContext ctx) : RepositoryImplBase(ctx), IHotCharactersRepository
+internal class HotCharactersRepository(MyDbContext ctx) : IHotCharactersRepository
 {
-    public async Task<IReadOnlyCollection<CharacterWithProject>> GetHotCharactersFromAllProjects(KeySetPagination<CharacterIdentification>? pagination = null)
+    public async Task<IReadOnlyCollection<CharacterWithProject>> GetHotCharactersFromAllProjects(KeySetPagination? pagination = null)
     {
-        var query = Ctx.ProjectsSet
+        var query = ctx.ProjectsSet
             .AsExpandable()
             .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
             .SelectMany(c => c.Characters)
             .Where(CharacterPredicates.Hot())
-            .Apply(pagination, c => c.CharacterId)
+            .ApplyPaginationEf(pagination, c => c.CharacterId)
             .Select(c => new
             {
                 c.CharacterId,
