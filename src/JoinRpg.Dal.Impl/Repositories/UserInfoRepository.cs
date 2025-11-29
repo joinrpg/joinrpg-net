@@ -177,4 +177,6 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             );
         })];
     }
+
+    public async Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => await GetUserInfoHeadersByPredicate(user => user.Auth.IsAdmin);
 }

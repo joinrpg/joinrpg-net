@@ -29,7 +29,7 @@ public partial class NotificationServiceImpl(
         var templater = new NotifcationFieldsTemplater(notificationMessage.TemplateText);
         VerifyFieldsPresent(notificationMessage, templater);
 
-        var users = await GetNotificationsForUsers(notificationMessage.Recepients, user => [NotificationChannel.ShowInUi]); // все выключено, кроме UI
+        var users = await GetNotificationsForUsers(notificationMessage.Recepients, user => [NotificationChannel.ShowInUi, NotificationChannel.Email]);
 
         await SendEmailsUsingLegacy(notificationMessage, users);
 

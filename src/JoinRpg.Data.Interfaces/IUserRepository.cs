@@ -42,4 +42,6 @@ public interface IUserRepository
         }
         return result;
     }
+
+    Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders();
 }
