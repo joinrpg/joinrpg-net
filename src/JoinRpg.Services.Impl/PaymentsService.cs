@@ -1,17 +1,12 @@
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Text;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
-using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Extensions.Logging;
 using PscbApi;
 using PscbApi.Models;
 

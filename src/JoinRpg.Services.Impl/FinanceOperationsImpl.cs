@@ -1,15 +1,11 @@
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
-using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;

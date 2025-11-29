@@ -1,8 +1,5 @@
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DataModel;
-using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl;
 

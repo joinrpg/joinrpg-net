@@ -1,10 +1,6 @@
 using System.Diagnostics.Metrics;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl.Notifications;
 
