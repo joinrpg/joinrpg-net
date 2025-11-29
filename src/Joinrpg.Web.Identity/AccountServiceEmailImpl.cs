@@ -1,20 +1,18 @@
-using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Extensions.Options;
 
 namespace Joinrpg.Web.Identity;
-internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, INotificationService messageService, IVirtualUsersService virtualUsersService) : IAccountEmailService<JoinIdentityUser>
+internal class AccountServiceEmailImpl(INotificationService messageService, IVirtualUsersService virtualUsersService) : IAccountEmailService<JoinIdentityUser>
 {
     public Task ResetPasswordEmail(JoinIdentityUser user, string callbackUrl)
     {
         // Эти и другие email должны читаться в plain text режиме. Для этого нужно, чтобы ссылки были отдельно от HTML и не были спрятаны
         // Хорошо бы научить вырезалку markdown отображать URL корректно https://github.com/xoofx/markdig/issues/882
-        var text = $@"Добрый день, {user.UserName}, 
+        var text = $@"Добрый день, %recepient.name%!
 
-вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
+Вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
 Если это вы, кликните по ссылке ниже, чтобы восстановить пароль:
 
 {callbackUrl}
@@ -27,9 +25,9 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
 
     public Task ConfirmEmail(JoinIdentityUser user, string callbackUrl)
     {
-        var text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
+        var text = $@"Добрый день, %recepient.name%!
 
-Пожалуйста, подтвердите свой аккаунт, кликнув по сссылке:
+Добро пожаловать на JoinRpg.Ru. Пожалуйста, подтвердите свой аккаунт, кликнув по сссылке:
 
 {callbackUrl}
 
@@ -42,13 +40,11 @@ internal class AccountServiceEmailImpl(IOptions<NotificationsOptions> options, I
 
     private Task SendAccountNotification(JoinIdentityUser user, string text, string header)
     {
-        text += $"\n--\n\n{options.Value.JoinRpgTeamName}";
-
         var notification = new NotificationEvent(NotificationClass.UserAccount,
                                                  EntityReference: null,
                                                  header,
                                                  new NotificationEventTemplate(text),
-                                                 [NotificationRecepient.Direct(new(user.Id))],
+                                                 [NotificationRecepient.Direct(new(user.Id), user.DisplayName?.DisplayName ?? $"user{user.Id}")],
                                                  virtualUsersService.RobotUserId);
 
         return messageService.QueueDirectNotification(notification, NotificationChannel.Email);
