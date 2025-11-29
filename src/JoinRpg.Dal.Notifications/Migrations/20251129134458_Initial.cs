@@ -1,4 +1,4 @@
-﻿using JoinRpg.Dal.Notifications;
+using JoinRpg.Dal.Notifications;
 using JoinRpg.PrimitiveTypes.Notifications;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
