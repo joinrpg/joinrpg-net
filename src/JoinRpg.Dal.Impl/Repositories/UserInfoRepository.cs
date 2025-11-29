@@ -71,15 +71,6 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         return subscribe;
     }
 
-    public async Task<User?> GetByEmail(string email)
-    {
-        return await ctx.Set<User>()
-          .Include(u => u.Auth)
-          .Include(u => u.Allrpg)
-          .Include(u => u.Extra)
-          .SingleOrDefaultAsync(u => u.Email == email);
-    }
-
     Task<UserAvatar> IUserRepository.LoadAvatar(AvatarIdentification userAvatarId)
         => ctx.Set<User>()
             .SelectMany(user => user.Avatars)
