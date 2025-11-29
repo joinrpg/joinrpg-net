@@ -17,7 +17,8 @@ public enum NotificationClass
     /// <summary>
     /// Уведомления, отсылаемые мастерам проекта по какой-то причине
     /// </summary>
-    MasterProject
+    MasterProject,
+    AdminMessage
 }
 
 public enum SubscriptionReason
@@ -30,4 +31,5 @@ public enum SubscriptionReason
     Finance,
     SubscribedMaster,
     MasterOfGame,
+    Admin,
 }

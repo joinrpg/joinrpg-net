@@ -50,6 +50,11 @@ public record NotificationRecepient
     {
         return new(user.UserId, user.DisplayName.DisplayName, SubscriptionReason.Player, Fields ?? new Dictionary<string, string>());
     }
+
+    public static NotificationRecepient Admin(UserInfoHeader user, IReadOnlyDictionary<string, string>? Fields = null)
+    {
+        return new(user.UserId, user.DisplayName.DisplayName, SubscriptionReason.Admin, Fields ?? new Dictionary<string, string>());
+    }
 }
 
 public record NotificationEventTemplate(string TemplateContents)
