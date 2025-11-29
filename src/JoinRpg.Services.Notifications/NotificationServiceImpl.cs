@@ -12,84 +12,86 @@ namespace JoinRpg.Services.Notifications;
 public partial class NotificationServiceImpl(
     IUserRepository userRepository,
     IEmailSendingService emailSendingService,
-    INotificationRepository notificationRepository) : INotifcationService
+    INotificationRepository notificationRepository) : INotificationService
 {
     private record class NotificationRow(
-        UserIdentification UserIdentification, NotificationRecepient Recipient, Email? Email, TelegramId? TelegramId, UserDisplayName DisplayName);
+        NotificationRecepient Recipient, UserDisplayName DisplayName, IReadOnlyCollection<NotificationAddress> Channels, Email Email);
 
-    async Task INotifcationService.QueueNotification(NotificationMessage notificationMessage)
+    async Task INotificationService.QueueNotification(NotificationEvent notificationMessage)
     {
-        var templater = new NotifcationFieldsTemplater(notificationMessage.Text);
+        var templater = new NotifcationFieldsTemplater(notificationMessage.TemplateText);
+        VerifyFieldsPresent(notificationMessage, templater);
 
         var users = await GetNotificationsForUsers(notificationMessage.Recepients);
+
+        await SendEmailsUsingLegacy(notificationMessage, users);
+
+        await SaveToQueue(notificationMessage, templater, users);
+    }
+
+    private async Task SaveToQueue(NotificationEvent notificationMessage, NotifcationFieldsTemplater templater, NotificationRow[] users)
+        => await notificationRepository.InsertNotifications(
+                [.. users.Select(user => CreateMessageDto(notificationMessage, user, templater.Substitute(user.Recipient.Fields, user.DisplayName)))]);
+
+    private async Task SendEmailsUsingLegacy(NotificationEvent notificationMessage, NotificationRow[] users)
+    {
         var sender = await userRepository.GetRequiredUserInfo(notificationMessage.Initiator);
+        await emailSendingService.SendEmails(
+            notificationMessage.Header,
+            notificationMessage.TemplateText,
+            new RecepientData(sender.DisplayName, sender.Email),
+            [.. users
+            .Where(u => u.Email is not null)
+            .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recipient.Fields))]);
+    }
 
-        VerifyFieldsPresent();
+    private static void VerifyFieldsPresent(NotificationEvent notificationMessage, NotifcationFieldsTemplater templater)
+    {
+        var fields = templater.GetFields();
 
-        await SendEmailsUsingLegacy();
-
-        await SaveToQueue();
-
-        async Task SendEmailsUsingLegacy()
+        foreach (var recepient in notificationMessage.Recepients)
         {
-            await emailSendingService.SendEmails(
-                notificationMessage.Header,
-                notificationMessage.Text,
-                new RecepientData(sender.DisplayName, sender.Email),
-                users
-                .Where(u => u.Email is not null)
-                .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recipient.Fields)).ToArray());
-        }
-
-        async Task SaveToQueue() => await notificationRepository.InsertNotifications(
-            [..
-            users.Select(user => CreateMessageDto(notificationMessage, user, sender, templater.Substitute(user.Recipient.Fields, user.DisplayName)))]);
-
-        void VerifyFieldsPresent()
-        {
-            string[] fields = templater.GetFields();
-
-            foreach (var recepient in notificationMessage.Recepients)
+            if (recepient.Fields.Values.Except(fields).Any())
             {
-                if (recepient.Fields.Values.Except(fields).Any())
-                {
-                    throw new InvalidOperationException("Not enough fields");
-                }
-                if (fields.Except(recepient.Fields.Values).Any())
-                {
-                    throw new InvalidOperationException("Too many fields");
-                }
+                throw new InvalidOperationException("Not enough fields");
+            }
+            if (fields.Except(recepient.Fields.Values).Any())
+            {
+                throw new InvalidOperationException("Too many fields");
             }
         }
     }
 
-    private NotificationMessageCreateDto CreateMessageDto(NotificationMessage notificationMessage, NotificationRow user, UserInfo sender, MarkdownString body)
+    private static NotificationMessageCreateDto CreateMessageDto(NotificationEvent notificationMessage, NotificationRow user, MarkdownString body)
     {
-        return new NotificationMessageCreateDto()
-        {
-            Body = body,
-            Header = notificationMessage.Header,
-            Initiator = notificationMessage.Initiator,
-            InitiatorAddress = sender.Email,
-            Recipient = user.UserIdentification,
-            Channels = GetChannels(user).ToArray(),
-        };
+        return new NotificationMessageCreateDto(
 
-        static IEnumerable<NotificationChannelDto> GetChannels(NotificationRow user)
-        {
-            //TODO Add Email channel here
-            if (user.TelegramId is not null)
-            {
-                yield return new(NotificationChannel.Telegram, user.TelegramId.Id.ToString());
-            }
-        }
+            new NotificationMessageForRecipient(body, notificationMessage.Initiator, notificationMessage.Header, user.Recipient.UserId),
+            user.Channels
+
+            );
     }
 
     private async Task<NotificationRow[]> GetNotificationsForUsers(NotificationRecepient[] recepients)
     {
         var recDict = recepients.ToDictionary(r => r.UserId, r => r);
-        var r = await userRepository.GetRequiredUserInfos(recepients.Select(r => r.UserId).ToArray());
+        var r = await userRepository.GetRequiredUserInfos([.. recepients.Select(r => r.UserId)]);
 
-        return r.Select(user => new NotificationRow(user.UserId, recDict[user.UserId], user.Email, user.Social.TelegramId, user.DisplayName)).ToArray();
+        return [.. r.Select(user => new NotificationRow(recDict[user.UserId], user.DisplayName, [.. GetChannels(user)], user.Email))];
+
+        static IEnumerable<NotificationAddress> GetChannels(UserInfo user)
+        {
+
+            //TODO Все включить
+            if (user.Social.TelegramId is not null && false)
+            {
+                //yield return new NotificationAddress(user.Social.TelegramId);
+            }
+
+            if (user.Email is not null && false)
+            {
+                yield return new NotificationAddress(user.Email);
+            }
+        }
     }
 }

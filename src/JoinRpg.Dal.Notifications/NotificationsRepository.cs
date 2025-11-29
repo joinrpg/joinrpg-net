@@ -6,10 +6,8 @@ namespace JoinRpg.Dal.Notifications;
 
 internal class NotificationsRepository : INotificationRepository
 {
-    private readonly Counter<int> lostRaceCounter;
     private readonly Counter<int> successRaceCounter;
     private readonly NotificationsDataDbContext dbContext;
-    private readonly ILogger<NotificationsRepository> logger;
 
     private readonly IExecutionStrategy executionStrategy;
 
@@ -17,14 +15,11 @@ internal class NotificationsRepository : INotificationRepository
 
     public NotificationsRepository(
         NotificationsDataDbContext dbContext,
-        ILogger<NotificationsRepository> logger,
         IMeterFactory meterFactory)
     {
         this.dbContext = dbContext;
-        this.logger = logger;
         var meter = meterFactory.Create("JoinRpg.Dal.Notifications.Repository");
-        lostRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_lost_races");
-        successRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_success_races");
+        successRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_success");
         executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
         lockRequestSql = BuildLockRequestSql();
@@ -50,28 +45,32 @@ internal class NotificationsRepository : INotificationRepository
 
     async Task INotificationRepository.InsertNotifications(NotificationMessageCreateDto[] notifications)
     {
-        foreach (var x in notifications)
+        foreach (var notification in notifications)
         {
+            var x = notification.Message;
             var message = new NotificationMessage()
             {
                 Body = x.Body.Contents!,
                 Header = x.Header,
-                InitiatorAddress = x.InitiatorAddress,
                 InitiatorUserId = x.Initiator.Value,
                 RecipientUserId = x.Recipient.Value,
-                NotificationMessageChannels = [
-                    .. x.Channels.Select(c => new NotificationMessageChannel()
-                    {
-                        Channel = c.Channel,
-                        ChannelSpecificValue = c.ChannelSpecificValue,
-                        NotificationMessageStatus = NotificationMessageStatus.Queued,
-                        NotificationMessage = null!,
-                    })
-                    ]
+                NotificationMessageChannels = [.. notification.Channels.Select(ToNotificationMessageChannel)],
             };
             _ = dbContext.Notifications.Add(message);
         }
         _ = await dbContext.SaveChangesAsync();
+    }
+
+    private static NotificationMessageChannel ToNotificationMessageChannel(NotificationAddress c)
+    {
+        (var channel, var specificValue) = c;
+        return new NotificationMessageChannel()
+        {
+            Channel = channel,
+            ChannelSpecificValue = specificValue,
+            NotificationMessageStatus = NotificationMessageStatus.Queued,
+            NotificationMessage = null!,
+        };
     }
 
     Task INotificationRepository.MarkSendingFailed(NotificationId id, NotificationChannel channel)
@@ -85,7 +84,7 @@ internal class NotificationsRepository : INotificationRepository
 
     private record struct SelectMessageData(NotificationChannel Channel);
 
-    private async Task<AddressedNotificationMessageDto?> InternalSelectNextNotificationAsync(SelectMessageData data, CancellationToken cancellationToken)
+    private async Task<TargetedNotificationMessageForRecipient?> InternalSelectNextNotificationAsync(SelectMessageData data, CancellationToken cancellationToken)
     {
         var candidate = await dbContext.NotificationMessageChannels
             .FromSqlRaw(lockRequestSql, data.Channel, NotificationMessageStatus.Queued)
@@ -96,7 +95,6 @@ internal class NotificationsRepository : INotificationRepository
         if (candidate is null)
         {
             // No messages left
-            lostRaceCounter.Add(1);
             return null;
         }
 
@@ -111,7 +109,7 @@ internal class NotificationsRepository : INotificationRepository
         return CreateNotificationMessageDto(candidate);
     }
 
-    Task<AddressedNotificationMessageDto?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
+    Task<TargetedNotificationMessageForRecipient?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
     {
         return executionStrategy.ExecuteInTransactionAsync(
             new SelectMessageData(channel),
@@ -119,18 +117,13 @@ internal class NotificationsRepository : INotificationRepository
             (_, _) => Task.FromResult(false));
     }
 
-    private static AddressedNotificationMessageDto CreateNotificationMessageDto(NotificationMessageChannel candidate)
+    private static TargetedNotificationMessageForRecipient CreateNotificationMessageDto(NotificationMessageChannel candidate)
     {
-        return new AddressedNotificationMessageDto
-        {
-            Id = new NotificationId(candidate.NotificationMessageId),
-            Channel = new NotificationChannelDto(candidate.Channel, candidate.ChannelSpecificValue),
-            Body = new DataModel.MarkdownString(candidate.NotificationMessage.Body),
-            Header = candidate.NotificationMessage.Header,
-            Initiator = new(candidate.NotificationMessage.InitiatorUserId),
-            InitiatorAddress = new(candidate.NotificationMessage.InitiatorAddress),
-            Recipient = new(candidate.NotificationMessage.RecipientUserId),
-        };
+        return new TargetedNotificationMessageForRecipient(new DataModel.MarkdownString(candidate.NotificationMessage.Body),
+                                               new(candidate.NotificationMessage.InitiatorUserId),
+                                               candidate.NotificationMessage.Header,
+                                               new(candidate.NotificationMessage.RecipientUserId),
+                                               new NotificationAddress(candidate.Channel, candidate.ChannelSpecificValue));
     }
 
     private async Task SetStatus(int messageId, NotificationChannel channel, NotificationMessageStatus from, NotificationMessageStatus to)

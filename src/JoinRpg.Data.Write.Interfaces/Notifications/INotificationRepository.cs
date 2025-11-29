@@ -10,8 +10,8 @@ public interface INotificationRepository
     /// Tries to lock and return next enqueued notification message by the provided channel.
     /// </summary>
     /// <param name="channel">Transmission channel.</param>
-    /// <returns>An instance of <see cref="AddressedNotificationMessageDto"/> class with message details, null otherwise.</returns>
-    Task<AddressedNotificationMessageDto?> SelectNextNotificationForSending(NotificationChannel channel);
+    /// <returns>An instance of <see cref="TargetedNotificationMessageForRecipient"/> class with message details, null otherwise.</returns>
+    Task<TargetedNotificationMessageForRecipient?> SelectNextNotificationForSending(NotificationChannel channel);
 
     /// <summary>
     /// Marks the message being sent as successfully sent.
@@ -28,3 +28,5 @@ public interface INotificationRepository
     /// </summary>
     Task MarkEnqueued(NotificationId id, NotificationChannel channel);
 }
+
+public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);
