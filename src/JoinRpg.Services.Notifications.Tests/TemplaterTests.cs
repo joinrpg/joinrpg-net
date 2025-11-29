@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes.Notifications;
+
 namespace JoinRpg.Services.Notifications.Tests;
 
 public class TemplaterTests
@@ -7,7 +9,7 @@ public class TemplaterTests
     [Fact]
     public void Helloworld()
     {
-        var templater = new NotifcationFieldsTemplater(new MarkdownString("Hello, %recepient.name%!"));
+        var templater = new NotifcationFieldsTemplater(new NotificationEventTemplate("Hello, %recepient.name%!"));
         templater.GetFields().ShouldBe(["name"]);
 
         templater.Substitute(EmptyDict, new UserDisplayName("Leo", null)).ShouldBe(new MarkdownString("Hello, Leo!"));
@@ -16,7 +18,7 @@ public class TemplaterTests
     [Fact]
     public void Twice()
     {
-        var templater = new NotifcationFieldsTemplater(new MarkdownString("Hello, %recepient.name%! Welcome to our %recepient.game%. Your name will be %recepient.name%."));
+        var templater = new NotifcationFieldsTemplater(new NotificationEventTemplate("Hello, %recepient.name%! Welcome to our %recepient.game%. Your name will be %recepient.name%."));
         templater.GetFields().ShouldBe(["game", "name"]);
 
         templater.Substitute(new Dictionary<string, string> { { "game", "Firefly" } }, new UserDisplayName("Leo", null)).ShouldBe(new MarkdownString("Hello, Leo! Welcome to our Firefly. Your name will be Leo."));
@@ -25,7 +27,7 @@ public class TemplaterTests
     [Fact]
     public void CorrectlyReused()
     {
-        var templater = new NotifcationFieldsTemplater(new MarkdownString("Hello, %recepient.name%! Welcome to our %recepient.game%."));
+        var templater = new NotifcationFieldsTemplater(new NotificationEventTemplate("Hello, %recepient.name%! Welcome to our %recepient.game%."));
         templater.GetFields().ShouldBe(["game", "name"]);
 
         var fields = new Dictionary<string, string> { { "game", "Firefly" } };

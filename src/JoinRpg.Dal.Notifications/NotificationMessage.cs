@@ -12,5 +12,12 @@ internal class NotificationMessage
 
     public required int RecipientUserId { get; set; }
 
+    /// <summary>
+    /// Какая-то информация о связанной с уведомлением сущности, например проекте, заявке и т.д.
+    /// </summary>
+    public required string? EntityReference { get; set; }
+
+    public required DateTimeOffset CreatedAt { get; set; }
+
     public HashSet<NotificationMessageChannel> NotificationMessageChannels { get; set; } = [];
 }

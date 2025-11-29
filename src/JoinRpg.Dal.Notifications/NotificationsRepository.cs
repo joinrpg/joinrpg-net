@@ -1,5 +1,9 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using JoinRpg.Dal.CommonEfCore;
+using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
+using LinqKit;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace JoinRpg.Dal.Notifications;
@@ -55,6 +59,8 @@ internal class NotificationsRepository : INotificationRepository
                 InitiatorUserId = x.Initiator.Value,
                 RecipientUserId = x.Recipient.Value,
                 NotificationMessageChannels = [.. notification.Channels.Select(ToNotificationMessageChannel)],
+                EntityReference = x.EntityReference?.ToString(),
+                CreatedAt = x.CreatedAt,
             };
             _ = dbContext.Notifications.Add(message);
         }
@@ -106,7 +112,7 @@ internal class NotificationsRepository : INotificationRepository
 
         successRaceCounter.Add(1);
 
-        return CreateNotificationMessageDto(candidate);
+        return CreateTargetedNotificationMessageDto(candidate);
     }
 
     Task<TargetedNotificationMessageForRecipient?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
@@ -117,13 +123,22 @@ internal class NotificationsRepository : INotificationRepository
             (_, _) => Task.FromResult(false));
     }
 
-    private static TargetedNotificationMessageForRecipient CreateNotificationMessageDto(NotificationMessageChannel candidate)
+    private static TargetedNotificationMessageForRecipient CreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
     {
-        return new TargetedNotificationMessageForRecipient(new DataModel.MarkdownString(candidate.NotificationMessage.Body),
-                                               new(candidate.NotificationMessage.InitiatorUserId),
-                                               candidate.NotificationMessage.Header,
-                                               new(candidate.NotificationMessage.RecipientUserId),
-                                               new NotificationAddress(candidate.Channel, candidate.ChannelSpecificValue));
+        return new TargetedNotificationMessageForRecipient(CreateNotificationMessageDto(candidate.NotificationMessage),
+                                               new NotificationAddress(candidate.Channel, candidate.ChannelSpecificValue)
+                                               );
+    }
+
+    private static NotificationMessageForRecipient CreateNotificationMessageDto(NotificationMessage message)
+    {
+        return new NotificationMessageForRecipient(new DataModel.MarkdownString(message.Body),
+                                               new(message.InitiatorUserId),
+                                               message.Header,
+                                               new(message.RecipientUserId),
+                                               ProjectEntityIdParser.TryParseId(message.EntityReference, out var id) ? id : null,
+                                               message.CreatedAt
+                                               );
     }
 
     private async Task SetStatus(int messageId, NotificationChannel channel, NotificationMessageStatus from, NotificationMessageStatus to)
@@ -142,5 +157,21 @@ internal class NotificationsRepository : INotificationRepository
             case > 1:
                 throw new DbUpdateConcurrencyException($"Unexpected number ({totalRows}) of updated notification channels {channel} from {from} to {to} of message {messageId}");
         }
+    }
+
+    public async Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination)
+    {
+        var query =
+            from message in dbContext.Notifications.AsExpandableEFCore().Include(x => x.NotificationMessageChannels)
+            where message.RecipientUserId == userId
+            where message.NotificationMessageChannels.Any(c => c.Channel == notificationChannel)
+            select message;
+
+        query = query.ApplyEfCore(pagination, n => n.NotificationMessageId);
+
+        var result = await query.ToListAsync();
+
+        return [.. result.Select(x => new NotificationHistoryDto(CreateNotificationMessageDto(x), [.. x.NotificationMessageChannels.Select(c => c.Channel)]))];
+
     }
 }

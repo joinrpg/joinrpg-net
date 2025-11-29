@@ -1,3 +1,5 @@
+using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Notifications;
 
 namespace JoinRpg.Data.Write.Interfaces.Notifications;
@@ -27,6 +29,10 @@ public interface INotificationRepository
     /// Returns the message being sent back to queue.
     /// </summary>
     Task MarkEnqueued(NotificationId id, NotificationChannel channel);
+
+    Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination);
 }
 
 public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);
+
+public record NotificationHistoryDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationChannel> OtherChannels);

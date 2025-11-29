@@ -3,15 +3,16 @@ using JoinRpg.DataModel;
 namespace JoinRpg.PrimitiveTypes.Notifications;
 
 /// Конкретный экземпляр уведомления для конкретного пользователя
-public record NotificationMessageForRecipient(MarkdownString Body, UserIdentification Initiator, string Header, UserIdentification Recipient);
+public record NotificationMessageForRecipient(
+    MarkdownString Body,
+    UserIdentification Initiator,
+    string Header,
+    UserIdentification Recipient,
+    IProjectEntityId? EntityReference,
+    DateTimeOffset CreatedAt);
 
 // Конкретный экземпляр уведомления для конкретного пользователя через конкретный канал
-public record TargetedNotificationMessageForRecipient(MarkdownString Body,
-                                          UserIdentification Initiator,
-                                          string Header,
-                                          UserIdentification Recipient,
-                                          NotificationAddress NotificationAddress)
-    : NotificationMessageForRecipient(Body, Initiator, Header, Recipient);
+public record TargetedNotificationMessageForRecipient(NotificationMessageForRecipient Message, NotificationAddress NotificationAddress);
 
 public record NotificationAddress
 {
@@ -25,12 +26,18 @@ public record NotificationAddress
         Channel = NotificationChannel.Email;
     }
 
+    public static NotificationAddress Ui() => new NotificationAddress(NotificationChannel.ShowInUi, "");
+
     public NotificationAddress(NotificationChannel notificationChannel, string channelSpeficValue)
     {
         Channel = notificationChannel;
         if (Channel == NotificationChannel.Email)
         {
             InternalValue = new Email(channelSpeficValue);
+        }
+        else if (Channel == NotificationChannel.ShowInUi)
+        {
+            InternalValue = "";
         }
         else
         {
@@ -44,7 +51,7 @@ public record NotificationAddress
         {
             throw new InvalidOperationException();
         }
-        return (Email)InternalValue;
+        return (Email)InternalValue!;
     }
 
     public void Deconstruct(out NotificationChannel channel, out string channelSpecificValue)

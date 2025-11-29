@@ -25,6 +25,7 @@ using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
+using JoinRpg.Services.Notifications;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
@@ -124,6 +125,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinExportService()
             .AddJoinManagers()
             .AddJoinNotificationServices()
+            .AddJoinNotificationLayerServices()
             .AddJoinTelegram()
             .AddJoinBlobStorage();
 

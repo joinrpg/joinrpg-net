@@ -1,7 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Notifications;
 /// <summary>
@@ -11,11 +9,11 @@ namespace JoinRpg.Services.Notifications;
 /// Class is not thread safe (used StringBuilder)
 /// </remarks>
 /// <param name="Template"></param>
-internal partial class NotifcationFieldsTemplater(MarkdownString Template)
+internal partial class NotifcationFieldsTemplater(NotificationEventTemplate Template)
 {
-    private readonly string template = Template.Contents!;
-    private readonly MatchCollection matchCollection = FieldPlaceholderRegex().Matches(Template.Contents!);
-    private readonly StringBuilder stringBuilder = new(Template.Contents!.Length + 50);
+    private readonly string template = Template.TemplateContents;
+    private readonly MatchCollection matchCollection = FieldPlaceholderRegex().Matches(Template.TemplateContents);
+    private readonly StringBuilder stringBuilder = new(Template.TemplateContents.Length + 50);
 
     public string[] GetFields() => [.. matchCollection.Select(m => ExtractFieldName(m.Value)).Distinct().Order()];
 

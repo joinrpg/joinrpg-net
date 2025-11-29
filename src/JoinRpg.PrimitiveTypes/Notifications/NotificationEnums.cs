@@ -2,6 +2,7 @@ namespace JoinRpg.PrimitiveTypes.Notifications;
 
 public enum NotificationChannel
 {
+    ShowInUi,
     Email,
 }
 

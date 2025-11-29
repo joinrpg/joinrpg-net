@@ -59,6 +59,7 @@
     <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj" />
     <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />

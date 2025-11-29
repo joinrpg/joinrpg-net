@@ -8,6 +8,7 @@ using JoinRpg.IdPortal.Components.Account;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Notifications;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +46,7 @@ builder.Services.AddUserServicesOnly();
 builder.Services
     .AddJoinIdentity()
     .AddJoinBlobStorage()
+    .AddJoinNotificationLayerServices()
     .AddJoinEmailSendingService();
 
 var app = builder.Build();

@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj" />
