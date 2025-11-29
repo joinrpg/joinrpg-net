@@ -167,7 +167,7 @@ internal class NotificationsRepository : INotificationRepository
             where message.NotificationMessageChannels.Any(c => c.Channel == notificationChannel)
             select message;
 
-        query = query.ApplyEfCore(pagination, n => n.NotificationMessageId);
+        query = query.ApplyPaginationEfCore(pagination, n => n.NotificationMessageId);
 
         var result = await query.ToListAsync();
 
