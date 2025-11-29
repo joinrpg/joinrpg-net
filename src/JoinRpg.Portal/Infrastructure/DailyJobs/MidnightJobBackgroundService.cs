@@ -1,6 +1,7 @@
 using System.Reflection;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
+using JoinRpg.Services.Notifications.Senders; // Не самое правильное место для этого, перенести
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
@@ -8,7 +9,8 @@ namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 public class MidnightJobBackgroundService<TJob>(
     IServiceProvider serviceProvider,
     ILogger<MidnightJobBackgroundService<TJob>> logger,
-    IOptions<DailyJobOptions> options
+    IOptions<DailyJobOptions> options,
+    IHostApplicationLifetime hostApplicationLifetime
     ) : BackgroundService
     where TJob : class, IDailyJob
 {
@@ -17,6 +19,7 @@ public class MidnightJobBackgroundService<TJob>(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await hostApplicationLifetime.WaitForAppStartup(stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
             var delay = typeof(TJob).GetCustomAttribute<JobDelayAttribute>()?.Delay;
