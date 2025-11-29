@@ -8,7 +8,10 @@ using Microsoft.Extensions.Options;
 namespace JoinRpg.Services.Notifications.Senders;
 
 internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
-    ILogger<SenderJobService<TSender>> logger, IOptions<NotificationWorkerOptions> workerOptions) : BackgroundService
+    ILogger<SenderJobService<TSender>> logger,
+    IOptions<NotificationWorkerOptions> workerOptions,
+    IHostApplicationLifetime hostApplicationLifetime
+    ) : BackgroundService
         where TSender : class, ISenderJob
 {
     private static readonly string JobName = typeof(TSender).FullName!;
@@ -37,6 +40,8 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await hostApplicationLifetime.WaitForAppStartup(stoppingToken);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogDebug("Запущена итерация обработки... ");
