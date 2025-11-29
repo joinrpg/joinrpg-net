@@ -38,14 +38,14 @@ public partial class NotificationServiceImpl(
 
     private async Task SaveToQueue(NotificationEvent notificationMessage, NotifcationFieldsTemplater templater, NotificationRow[] users, DateTimeOffset createdAt)
         => await notificationRepository.InsertNotifications(
-                [.. users.Select(user => CreateMessageDto(notificationMessage, user, templater.Substitute(user.Recipient.Fields, user.DisplayName), createdAt))]);
+                [.. users.Select(user => CreateMessageDto(notificationMessage, user, templater.Substitute(user.Recipient.Fields), createdAt))]);
 
     private async Task SendEmailsUsingLegacy(NotificationEvent notificationMessage, NotificationRow[] users)
     {
         var sender = await userRepository.GetRequiredUserInfo(notificationMessage.Initiator);
         await emailSendingService.SendEmails(
             notificationMessage.Header,
-            notificationMessage.TemplateText,
+            new MarkdownString(notificationMessage.TemplateText.TemplateContents + $"\n--\n\n{sender.DisplayName.DisplayName}"),
             new RecepientData(sender.DisplayName, sender.Email),
             [.. users
             .Where(u => u.Email is not null)
@@ -58,13 +58,13 @@ public partial class NotificationServiceImpl(
 
         foreach (var recepient in notificationMessage.Recepients)
         {
-            if (recepient.Fields.Values.Except(fields).Any())
-            {
-                throw new InvalidOperationException("Not enough fields");
-            }
-            if (fields.Except(recepient.Fields.Values).Any())
+            if (recepient.Fields.Keys.Except(fields).Any())
             {
                 throw new InvalidOperationException("Too many fields");
+            }
+            if (fields.Except(recepient.Fields.Keys).Any())
+            {
+                throw new InvalidOperationException("Not enough fields");
             }
         }
     }

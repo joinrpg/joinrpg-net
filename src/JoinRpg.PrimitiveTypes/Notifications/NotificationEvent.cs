@@ -1,4 +1,6 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.PrimitiveTypes.Notifications;
 /// <summary>
@@ -14,15 +16,40 @@ public record NotificationEvent(
 
 
 
-public record NotificationRecepient(UserIdentification UserId, SubscriptionReason SubscriptionReason, IReadOnlyDictionary<string, string> Fields)
+public record NotificationRecepient
 {
-    public static NotificationRecepient MasterOfGame(UserIdentification userId, IReadOnlyDictionary<string, string>? Fields = null)
-        => new(userId, SubscriptionReason.MasterOfGame, Fields ?? new Dictionary<string, string>());
+    public UserIdentification UserId { get; set; }
+    public SubscriptionReason SubscriptionReason { get; set; }
+    private readonly IDictionary<string, string> fields;
 
-    public static NotificationRecepient Direct(UserIdentification userId, IReadOnlyDictionary<string, string>? Fields = null)
-    => new(userId, SubscriptionReason.DirectToYou, Fields ?? new Dictionary<string, string>());
-    public static NotificationRecepient Player(UserIdentification userId, IReadOnlyDictionary<string, string>? Fields = null)
-        => new(userId, SubscriptionReason.Player, Fields ?? new Dictionary<string, string>());
+    public IReadOnlyDictionary<string, string> Fields => fields.AsReadOnly();
+
+    private NotificationRecepient(UserIdentification userId, SubscriptionReason subscriptionReason, IReadOnlyDictionary<string, string>? fields = null)
+    {
+        UserId = userId;
+        SubscriptionReason = subscriptionReason;
+        this.fields = fields is null ? [] : new Dictionary<string, string>(fields);
+    }
+
+    private NotificationRecepient(UserIdentification userId, string userDisplayName, SubscriptionReason subscriptionReason, IReadOnlyDictionary<string, string>? fields = null)
+        : this(userId, subscriptionReason, fields)
+    {
+        this.fields.TryAdd("name", userDisplayName);
+    }
+    public NotificationRecepient(ProjectMasterInfo master, IReadOnlyDictionary<string, string>? fields = null)
+        : this(master.UserId, master.Name.DisplayName, SubscriptionReason.MasterOfGame, fields)
+    {
+    }
+
+    public static NotificationRecepient Direct(UserIdentification userId, string userDisplayName, IReadOnlyDictionary<string, string>? Fields = null)
+    {
+        return new(userId, userDisplayName, SubscriptionReason.DirectToYou, Fields);
+    }
+
+    public static NotificationRecepient Player(UserInfoHeader user, IReadOnlyDictionary<string, string>? Fields = null)
+    {
+        return new(user.UserId, user.DisplayName.DisplayName, SubscriptionReason.Player, Fields ?? new Dictionary<string, string>());
+    }
 }
 
 public record NotificationEventTemplate(string TemplateContents)

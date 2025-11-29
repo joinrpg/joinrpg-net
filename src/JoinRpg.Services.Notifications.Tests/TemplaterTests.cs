@@ -4,7 +4,8 @@ namespace JoinRpg.Services.Notifications.Tests;
 
 public class TemplaterTests
 {
-    private readonly Dictionary<string, string> EmptyDict = [];
+    private readonly Dictionary<string, string> FireFlyAndLeo = new() { { "game", "Firefly" }, { "name", "Leo" } };
+    private readonly Dictionary<string, string> FireFlyAndRiver = new() { { "game", "Firefly" }, { "name", "River" } };
 
     [Fact]
     public void Helloworld()
@@ -12,7 +13,7 @@ public class TemplaterTests
         var templater = new NotifcationFieldsTemplater(new NotificationEventTemplate("Hello, %recepient.name%!"));
         templater.GetFields().ShouldBe(["name"]);
 
-        templater.Substitute(EmptyDict, new UserDisplayName("Leo", null)).ShouldBe(new MarkdownString("Hello, Leo!"));
+        templater.Substitute(new Dictionary<string, string> { { "name", "Leo" } }).ShouldBe(new MarkdownString("Hello, Leo!"));
     }
 
     [Fact]
@@ -21,7 +22,7 @@ public class TemplaterTests
         var templater = new NotifcationFieldsTemplater(new NotificationEventTemplate("Hello, %recepient.name%! Welcome to our %recepient.game%. Your name will be %recepient.name%."));
         templater.GetFields().ShouldBe(["game", "name"]);
 
-        templater.Substitute(new Dictionary<string, string> { { "game", "Firefly" } }, new UserDisplayName("Leo", null)).ShouldBe(new MarkdownString("Hello, Leo! Welcome to our Firefly. Your name will be Leo."));
+        templater.Substitute(FireFlyAndLeo).ShouldBe(new MarkdownString("Hello, Leo! Welcome to our Firefly. Your name will be Leo."));
     }
 
     [Fact]
@@ -30,8 +31,7 @@ public class TemplaterTests
         var templater = new NotifcationFieldsTemplater(new NotificationEventTemplate("Hello, %recepient.name%! Welcome to our %recepient.game%."));
         templater.GetFields().ShouldBe(["game", "name"]);
 
-        var fields = new Dictionary<string, string> { { "game", "Firefly" } };
-        templater.Substitute(fields, new UserDisplayName("Leo", null)).ShouldBe(new MarkdownString("Hello, Leo! Welcome to our Firefly."));
-        templater.Substitute(fields, new UserDisplayName("River", null)).ShouldBe(new MarkdownString("Hello, River! Welcome to our Firefly."));
+        templater.Substitute(FireFlyAndLeo).ShouldBe(new MarkdownString("Hello, Leo! Welcome to our Firefly."));
+        templater.Substitute(FireFlyAndRiver).ShouldBe(new MarkdownString("Hello, River! Welcome to our Firefly."));
     }
 }

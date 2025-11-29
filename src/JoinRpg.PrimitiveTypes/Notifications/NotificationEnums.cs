@@ -14,6 +14,10 @@ public enum NotificationClass
     Payment,
     Forum,
     MassProjectEmails,
+    /// <summary>
+    /// Уведомления, отсылаемые мастерам проекта по какой-то причине
+    /// </summary>
+    MasterProject
 }
 
 public enum SubscriptionReason

@@ -1,23 +1,19 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Interfaces;
-using JoinRpg.Interfaces.Email;
+using JoinRpg.Interfaces.Notifications;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Email;
 internal class MasterEmailServiceImpl(
     IUriService uriService,
-    IEmailSendingService messageService,
+    INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
-    IOptions<NotificationsOptions> options,
-    IUserRepository userRepository
+    IVirtualUsersService virtualUsersService
     ) : IMasterEmailService
 {
-    private readonly RecepientData joinRpgSender = options.Value.ServiceRecepient;
 
     public async Task EmailProjectStale(ProjectStaleMail email)
     {
@@ -25,64 +21,43 @@ internal class MasterEmailServiceImpl(
 
         var subject = $"{metadata.ProjectName.Value}: проект будет закрыт из-за неактивности";
 
-        var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
-
+        var body = $@"
 Проект {metadata.ProjectName.Value} был в последний раз активен {email.LastActiveDate:yyyy-MM-dd}. Если до {email.WillCloseDate:yyyy-MM-dd} активность в нем не появится, он автоматически будет закрыт.
 
 Подробности в справке https://docs.joinrpg.ru/project/after.html#id3
 
 Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.
 
-Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
-
---
-{joinRpgSender.DisplayName}
-
-";
-        await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
+Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}";
+        await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
     }
 
     async Task IMasterEmailService.EmailProjectClosed(ProjectClosedMail email)
     {
-        var initiator = await userRepository.GetById(email.Initiator.Value);
-
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
-        var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
-
-Проект {metadata.ProjectName.Value} был закрыт. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
-
---
-{initiator.GetDisplayName()}
-
+        var body = $@"Проект {metadata.ProjectName.Value} был закрыт. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
 ";
         var subject = $"{metadata.ProjectName.Value}: проект закрыт";
-        await SendToAllMasters(messageService, metadata, body, subject, initiator.ToRecepientData());
+        await SendToAllMasters(metadata, body, subject, email.Initiator);
     }
 
-    private static async Task SendToAllMasters(IEmailSendingService messageService, ProjectInfo metadata, string body, string subject, RecepientData initiator)
+    private async Task SendToAllMasters(ProjectInfo metadata, string body, string subject, UserIdentification initiator)
     {
-        await messageService.SendEmails(
-                    subject,
-                    new MarkdownString(body),
-                    initiator,
-                    metadata.Masters.Select(master => new RecepientData(master)).ToArray()
-                    );
+        var recipients = metadata.Masters.Select(master => new NotificationRecepient(master)).ToArray();
+        var notification = new NotificationEvent(NotificationClass.MasterProject, metadata.ProjectId, subject,
+            new NotificationEventTemplate("Добрый день, %recepient.name%!\n\n" + body), recipients, initiator);
+        await notificationService.QueueNotification(notification);
+
     }
 
     async Task IMasterEmailService.EmailProjectClosedStale(ProjectClosedStaleMail email)
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
-        var body = $@"Добрый день, {messageService.GetRecepientPlaceholderName()}
-
-Проект {metadata.ProjectName.Value} был закрыт, т.к. он не был активен с {email.LastActiveDate:yyyy-MM-dd}. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
-
---
-{joinRpgSender.DisplayName}
-
+        var body = $@"Проект {metadata.ProjectName.Value} был закрыт, т.к. он не был активен с {email.LastActiveDate:yyyy-MM-dd}. Вы всегда можете найти его по ссылке {uriService.GetUri(email.ProjectId)}
 ";
         var subject = $"{metadata.ProjectName.Value}: проект закрыт";
-        await SendToAllMasters(messageService, metadata, body, subject, joinRpgSender);
+        await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
     }
 }

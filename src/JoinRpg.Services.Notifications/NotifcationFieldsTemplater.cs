@@ -17,19 +17,14 @@ internal partial class NotifcationFieldsTemplater(NotificationEventTemplate Temp
 
     public string[] GetFields() => [.. matchCollection.Select(m => ExtractFieldName(m.Value)).Distinct().Order()];
 
-    internal MarkdownString Substitute(IReadOnlyDictionary<string, string> fields, UserDisplayName displayName)
+    internal MarkdownString Substitute(IReadOnlyDictionary<string, string> fields)
     {
-        var dict = new Dictionary<string, string>(fields)
-        {
-            { "name", displayName.DisplayName }
-        };
-
         var lastChar = 0;
         foreach (var match in matchCollection.OrderBy(x => x.Index))
         {
             _ = stringBuilder
                 .Append(template[lastChar..match.Index])
-                .Append(dict[ExtractFieldName(match.Value)]);
+                .Append(fields[ExtractFieldName(match.Value)]);
             lastChar = match.Index + match.Length;
         }
         var result = new MarkdownString(stringBuilder.Append(template[lastChar..]).ToString());
