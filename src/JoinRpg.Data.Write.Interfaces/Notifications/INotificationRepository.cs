@@ -28,7 +28,7 @@ public interface INotificationRepository
     /// <summary>
     /// Returns the message being sent back to queue.
     /// </summary>
-    Task MarkEnqueued(NotificationId id, NotificationChannel channel);
+    Task MarkEnqueued(NotificationId id, NotificationChannel channel, DateTimeOffset sendAfter, int? attempts = null);
 
     Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination);
 }

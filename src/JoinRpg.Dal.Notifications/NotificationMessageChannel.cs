@@ -13,4 +13,14 @@ internal class NotificationMessageChannel
     [MaxLength(1024)]
     public required string ChannelSpecificValue { get; set; }
     public required NotificationMessageStatus NotificationMessageStatus { get; set; }
+
+    /// <summary>
+    /// The moment after which the next sending attempt should take place.
+    /// </summary>
+    public DateTimeOffset SendAfter { get; set; }
+
+    /// <summary>
+    /// How many attempts have been made to send a message.
+    /// </summary>
+    public int Attempts { get; set; }
 }

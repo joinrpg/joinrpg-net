@@ -12,7 +12,7 @@ public record NotificationMessageForRecipient(
     DateTimeOffset CreatedAt);
 
 // Конкретный экземпляр уведомления для конкретного пользователя через конкретный канал
-public record TargetedNotificationMessageForRecipient(NotificationMessageForRecipient Message, NotificationAddress NotificationAddress);
+public record TargetedNotificationMessageForRecipient(NotificationMessageForRecipient Message, NotificationAddress NotificationAddress, int Attempts, NotificationId MessageId);
 
 public record NotificationAddress
 {
