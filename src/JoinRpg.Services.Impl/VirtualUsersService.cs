@@ -15,6 +15,8 @@ public class VirtualUsersService(Func<IUnitOfWork> uowResolver) : IVirtualUsersS
 
     public User RobotUser => _robotUser.Value;
 
+    UserIdentification IVirtualUsersService.RobotUserId => new UserIdentification(RobotUser.UserId);
+
     private static User LoadUserByName(IUnitOfWork uow, string userName)
     {
         return uow

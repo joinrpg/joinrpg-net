@@ -1,11 +1,12 @@
+using System.Linq.Expressions;
 using JoinRpg.Interfaces;
 using LinqKit;
 
-namespace JoinRpg.Dal.Impl.Repositories;
+namespace JoinRpg.Dal.CommonEfCore;
 
 public static class Paginator
 {
-    public static IQueryable<T> ApplyPaginationEf<T>(this IQueryable<T> query, KeySetPagination? pagination, Expression<Func<T, int>> keySelector)
+    public static IQueryable<T> ApplyPaginationEfCore<T>(this IQueryable<T> query, KeySetPagination? pagination, Expression<Func<T, int>> keySelector)
     {
         pagination ??= new KeySetPagination();
         var id = pagination.From ?? 0;
