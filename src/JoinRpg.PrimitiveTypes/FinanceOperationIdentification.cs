@@ -13,6 +13,8 @@ public record class FinanceOperationIdentification(ProjectIdentification Project
 
     }
 
+    public override string ToString() => $"FinanceOperation({ProjectId.Value}, {ClaimId}, {FinanceOperationId})";
+
     public static FinanceOperationIdentification? FromOptional(ProjectIdentification? ProjectId, int? ClaimId, int? FinanceOperationId)
     => ProjectId is not null && ClaimId is not null && FinanceOperationId is not null ? new FinanceOperationIdentification(ProjectId, ClaimId.Value, FinanceOperationId.Value) : null;
 
