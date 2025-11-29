@@ -84,65 +84,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         => ctx.Set<User>()
             .SelectMany(user => user.Avatars)
             .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
-    public async Task<UserInfo?> GetUserInfo(UserIdentification userId)
-    {
-        var activeclaimsPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var activeProjectsPredicate = ProjectPredicates.MasterAccess(userId);
-        var userQuery =
-            from user in ctx.Set<User>().AsExpandable()
-            where user.UserId == userId.Value
-            select new
-            {
-                user.UserId,
-                user.PrefferedName,
-                user.FatherName,
-                user.SurName,
-                user.BornName,
-                user.Email,
-                user.ExternalLogins,
-                user.Extra.Telegram,
-                Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId }),
-                Projects = user.ProjectAcls.Where(acl => activeProjectsPredicate.Invoke(acl.Project)).Select(acl => new { acl.ProjectId, acl.Project.Active }),
-                user.Auth.IsAdmin,
-                user.Extra!.Livejournal,
-                AllRpgInfoId = user.Allrpg!.Sid,
-                user.Extra.Vk,
-                user.Extra.SocialNetworksAccess,
-                user.SelectedAvatarId,
-                user.VerifiedProfileFlag,
-                user.Extra.PhoneNumber,
-                user.Auth.EmailConfirmed,
-            };
-
-        var result = await userQuery.SingleOrDefaultAsync();
-        if (result is null)
-        {
-            return null;
-        }
-
-        var telegramId = TelegramId.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram));
-
-        var userFullName =
-            new UserFullName(
-                PrefferedName.FromOptional(result.PrefferedName),
-            BornName.FromOptional(result.BornName),
-            SurName.FromOptional(result.SurName),
-            FatherName.FromOptional(result.FatherName));
-        return new UserInfo(
-            new UserIdentification(result.UserId),
-            new UserSocialNetworks(telegramId, result.Livejournal, result.AllRpgInfoId, result.Vk, result.SocialNetworksAccess),
-            result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
-            result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
-            result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
-            result.IsAdmin,
-            AvatarIdentification.FromOptional(result.SelectedAvatarId),
-            new Email(result.Email),
-            result.EmailConfirmed,
-            userFullName,
-            result.VerifiedProfileFlag,
-            result.PhoneNumber
-            );
-    }
+    public async Task<UserInfo?> GetUserInfo(UserIdentification userId) => (await GetUserInfosByPredicate(user => user.UserId == userId.Value)).SingleOrDefault();
 
     public async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
     {
@@ -179,5 +121,69 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                     new Email(result.Email))
                 )
         ).ToList();
+    }
+
+    async Task<IReadOnlyCollection<UserInfo>> IUserRepository.GetUserInfos(IReadOnlyCollection<UserIdentification> userIds)
+    {
+        var ids = userIds.Select(x => x.Value).ToList();
+        return await GetUserInfosByPredicate(user => ids.Contains(user.UserId));
+    }
+
+    public async Task<IReadOnlyCollection<UserInfo>> GetUserInfosByPredicate(Expression<Func<User, bool>> predicate)
+    {
+        var activeclaimsPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var userQuery =
+            from user in ctx.Set<User>().AsExpandable()
+            where predicate.Invoke(user)
+            select new
+            {
+                user.UserId,
+                user.PrefferedName,
+                user.FatherName,
+                user.SurName,
+                user.BornName,
+                user.Email,
+                user.ExternalLogins,
+                user.Extra.Telegram,
+                Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId }),
+                Projects = user.ProjectAcls.Select(acl => new { acl.ProjectId, acl.Project.Active }),
+                user.Auth.IsAdmin,
+                user.Extra!.Livejournal,
+                AllRpgInfoId = user.Allrpg!.Sid,
+                user.Extra.Vk,
+                user.Extra.SocialNetworksAccess,
+                user.SelectedAvatarId,
+                user.VerifiedProfileFlag,
+                user.Extra.PhoneNumber,
+                user.Auth.EmailConfirmed,
+            };
+
+
+        var results = await userQuery.ToListAsync();
+
+        return [.. results.Select(result => {
+             var telegramId = TelegramId.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram));
+
+        var userFullName =
+            new UserFullName(
+                PrefferedName.FromOptional(result.PrefferedName),
+            BornName.FromOptional(result.BornName),
+            SurName.FromOptional(result.SurName),
+            FatherName.FromOptional(result.FatherName));
+        return new UserInfo(
+            new UserIdentification(result.UserId),
+            new UserSocialNetworks(telegramId, result.Livejournal, result.AllRpgInfoId, result.Vk, result.SocialNetworksAccess),
+            result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
+            result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            result.IsAdmin,
+            AvatarIdentification.FromOptional(result.SelectedAvatarId),
+            new Email(result.Email),
+            result.EmailConfirmed,
+            userFullName,
+            result.VerifiedProfileFlag,
+            result.PhoneNumber
+            );
+        })];
     }
 }
