@@ -4,20 +4,37 @@ namespace JoinRpg.PrimitiveTypes.Test;
 
 public class IdentificationCommonTest
 {
-    [Theory(Skip = "Не все поддерживает IParsable, а должно")]
-    [ClassData(typeof(IdentificationDataSource))]
-    public void ShouldImplementIParsable(Type type)
-    {
-        type.IsAssignableTo(typeof(IParsable<>).MakeGenericType(type)).ShouldBeTrue();
-    }
+    // Это временный вайтлист. Не надо добавлять сюда ничего
+    public static string[] SkipISpanParsable = ["AvatarIdentification", "CharacterGroupIdentification", "CharacterIdentification", "ClaimIdentification",
+    "PlotVersionIdentification", "ProjectFieldIdentification", "ProjectFieldVariantIdentification"];
 
-    [Theory(Skip = "Не все поддерживает ISpanParsable, а должно")]
+    [SkippableTheory()]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldImplementISpanParsable(Type type)
     {
+        Skip.If(SkipISpanParsable.Contains(type.Name));
+
         type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)).ShouldBeTrue();
     }
 
+    [SkippableTheory()]
+    [ClassData(typeof(ProjectIdDataSource))]
+    public void ShouldImplementPolymorphicParse(Type type)
+    {
+        Skip.If(SkipISpanParsable.Contains(type.Name));
+
+        var x = TryEasyConstruct(type);
+        ProjectEntityIdParser.TryParseId(x.ToString(), out var id).ShouldBeTrue();
+        id.ShouldBe(x);
+    }
+
+    [Theory]
+    [ClassData(typeof(WhiteListDataSource))]
+    public void WhiteListIsActual(Type type)
+    {
+        // Если это тест начал падать, надо удалить тип из вайтлиста
+        _ = Should.Throw<ArgumentException>(() => type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)));
+    }
 
     [Theory]
     [ClassData(typeof(IdentificationDataSource))]
@@ -46,10 +63,10 @@ public class IdentificationCommonTest
     }
 
     [Theory]
-    [ClassData(typeof(IdentificationDataSource))]
+    [ClassData(typeof(ProjectIdDataSource))]
     public void ShouldBeConstructedWithProjectId(Type type)
     {
-        if (type == typeof(ProjectIdentification) || !type.IsAssignableTo(typeof(IProjectEntityId)))
+        if (type == typeof(ProjectIdentification))
         {
             return;
         }

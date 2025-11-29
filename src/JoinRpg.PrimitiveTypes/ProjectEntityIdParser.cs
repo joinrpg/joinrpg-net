@@ -1,0 +1,49 @@
+using System.Diagnostics.CodeAnalysis;
+using JoinRpg.PrimitiveTypes.Plots;
+
+namespace JoinRpg.PrimitiveTypes;
+public static class ProjectEntityIdParser
+{
+    public static bool TryParseId(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out IProjectEntityId id)
+    {
+        value = value.Trim();
+
+        if (!value.Contains('('))
+        {
+            id = null;
+            return false;
+        }
+        if (ProjectIdentification.TryParse(value, null, out var project))
+        {
+            id = project;
+            return true;
+        }
+
+        if (FinanceOperationIdentification.TryParse(value, null, out var fo))
+        {
+            id = fo;
+            return true;
+        }
+
+        if (PlotElementIdentification.TryParse(value, null, out var pe))
+        {
+            id = pe;
+            return true;
+        }
+
+        if (PlotFolderIdentification.TryParse(value, null, out var pf))
+        {
+            id = pf;
+            return true;
+        }
+
+        /*if (ClaimIdentification.TryParse(value, null, out var claim))
+        {
+            id = claim;
+            return true;
+        }*/
+
+        id = null;
+        return false;
+    }
+}

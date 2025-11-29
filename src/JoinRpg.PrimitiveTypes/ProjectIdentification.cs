@@ -2,13 +2,17 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace JoinRpg.PrimitiveTypes;
 
-public record ProjectIdentification(int Value) : SingleValueType<int>(Value), ILinkable, ISpanParsable<ProjectIdentification>
+public record ProjectIdentification(int Value) : SingleValueType<int>(Value), ILinkable, ISpanParsable<ProjectIdentification>, IProjectEntityId
 {
     LinkType ILinkable.LinkType => LinkType.Project;
 
     string ILinkable.Identification => Value.ToString();
 
     int? ILinkable.ProjectId => Value;
+
+    ProjectIdentification IProjectEntityId.ProjectId => this;
+
+    int IProjectEntityId.Id => Value;
 
     public override string ToString() => $"Project({Value})";
 
