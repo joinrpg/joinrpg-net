@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.Data.Write.Interfaces.Notifications;
+namespace JoinRpg.Data.Write.Interfaces.Notifications;
 
 public class NotificationWorkerOptions
 {

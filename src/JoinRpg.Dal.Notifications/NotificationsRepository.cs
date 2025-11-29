@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq.Expressions;
 using JoinRpg.Dal.CommonEfCore;
@@ -34,24 +33,21 @@ internal class NotificationsRepository : INotificationRepository
     private string BuildLockRequestSql()
     {
         var channelsTableName = dbContext.NotificationMessageChannels.EntityType.GetTableName();
-        Debug.Assert(channelsTableName is not null);
         var channelStatusPropName = dbContext.NotificationMessageChannels.EntityType
             .GetProperty(nameof(NotificationMessageChannel.NotificationMessageStatus))
             .GetColumnName();
-        Debug.Assert(channelStatusPropName is not null);
         var channelTypePropName = dbContext.NotificationMessageChannels.EntityType
             .GetProperty(nameof(NotificationMessageChannel.Channel))
             .GetColumnName();
-        Debug.Assert(channelTypePropName is not null);
         var momentPropName = dbContext.NotificationMessageChannels.EntityType
             .GetProperty(nameof(NotificationMessageChannel.SendAfter))
             .GetColumnName();
-        Debug.Assert(momentPropName is not null);
 
-        return $"SELECT * FROM {channelsTableName} ch"
-            + $"\nWHERE {channelTypePropName} = {{0}} AND {channelStatusPropName} = {{1}} AND CURRENT_TIMESTAMP > {momentPropName}"
+        return $"SELECT * FROM \"{channelsTableName}\" ch"
+            + $"\nWHERE \"{channelTypePropName}\" = {{0}} AND \"{channelStatusPropName}\" = {{1}} AND CURRENT_TIMESTAMP > \"{momentPropName}\""
             + "\nLIMIT 1"
-            + "\nLOCK FOR UPDATE SKIP LOCKED";
+            + "\nFOR UPDATE SKIP LOCKED"
+            ;
     }
 
     async Task INotificationRepository.InsertNotifications(NotificationMessageCreateDto[] notifications)
@@ -82,7 +78,7 @@ internal class NotificationsRepository : INotificationRepository
             Channel = channel,
             ChannelSpecificValue = specificValue,
             NotificationMessageStatus = NotificationMessageStatus.Queued,
-            NotificationMessage = null!,
+            NotificationMessage = null!, // Здесь это норм, т.к. сразу сохраняем
             Attempts = 0,
             SendAfter = moment,
         };
@@ -114,7 +110,7 @@ internal class NotificationsRepository : INotificationRepository
         }
 
         await SetStatus(
-            candidate.NotificationMessageChannelId,
+            candidate.NotificationMessageId,
             candidate.Channel,
             from: candidate.NotificationMessageStatus,
             to: NotificationMessageStatus.Sending,
@@ -137,7 +133,8 @@ internal class NotificationsRepository : INotificationRepository
     {
         return new TargetedNotificationMessageForRecipient(CreateNotificationMessageDto(candidate.NotificationMessage),
                                                new NotificationAddress(candidate.Channel, candidate.ChannelSpecificValue),
-                                               candidate.Attempts
+                                               candidate.Attempts,
+                                               new NotificationId(candidate.NotificationMessageId)
                                                );
     }
 
