@@ -7,6 +7,7 @@ using JoinRpg.Common.Telegram;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
+using JoinRpg.Dal.Notifications;
 using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
@@ -24,6 +25,7 @@ using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
+using JoinRpg.Services.Notifications;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
@@ -84,6 +86,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         services.AddJoinDataProtection(Configuration, environment);
 
         services.AddJoinDailyJob(Configuration, environment);
+        services.AddNotificationsDal(Configuration, environment);
 
         services.AddJoinDomainServices();
 
@@ -122,6 +125,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinExportService()
             .AddJoinManagers()
             .AddJoinNotificationServices()
+            .AddJoinNotificationLayerServices()
             .AddJoinTelegram()
             .AddJoinBlobStorage();
 
