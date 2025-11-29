@@ -44,7 +44,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogDebug("Запущена итерация обработки... ");
+            logger.LogInformation("Запущена итерация обработки... ");
 
             if (FailureCounter >= WorkerOptions.MaxSubsequentFailures)
             {
@@ -75,6 +75,10 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
             {
                 await RunIteration(stoppingToken);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка при запуске итерации SenderJobService<{senderJobName}>", JobName);
@@ -101,61 +105,74 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
             return;
         }
 
-        QueueIsEmpty = false;
-
-        SendingResult sendingResult;
-
-        try
+        do
         {
-            var sender = scope.ServiceProvider.GetRequiredService<TSender>();
-            stoppingToken.ThrowIfCancellationRequested();
 
-            sendingResult = await sender.SendAsync(nextMessage, stoppingToken);
-        }
-        catch (Exception exception)
-        {
-            // Consider that the fact of unhandled exception here means message was not really sent,
-            // so we can return it to the queue without consuming an attempt.
-            // TODO не до конца согласен
-            await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, DateTimeOffset.UtcNow, nextMessage.Attempts - 1);
-            logger.LogError(exception, "Падение при отправке сообщения {messageId}", nextMessage.MessageId);
-            sendingResult = new SendingResult(Succeeded: false, Repeatable: true);
-        }
+            QueueIsEmpty = false;
 
-        if (sendingResult.Succeeded)
-        {
-            SuccessCounter++;
-            logger.LogDebug("Сообщение {messageId} отправлено", nextMessage.MessageId);
+            SendingResult sendingResult;
 
-            if (SuccessCounter >= WorkerOptions.MinSubsequentSuccessesToStopFailureCounting)
+            try
             {
-                FailureCounter = 0;
+                var sender = scope.ServiceProvider.GetRequiredService<TSender>();
+                stoppingToken.ThrowIfCancellationRequested();
+
+                sendingResult = await sender.SendAsync(nextMessage, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                // Consider that the fact of unhandled exception here means message was not really sent,
+                // so we can return it to the queue without consuming an attempt.
+                // TODO не до конца согласен
+                await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, DateTimeOffset.UtcNow, nextMessage.Attempts - 1);
+                logger.LogError(exception, "Падение при отправке сообщения {messageId}", nextMessage.MessageId);
+                sendingResult = new SendingResult(Succeeded: false, Repeatable: true);
             }
 
-            if (SuccessCounter >= WorkerOptions.MinSubsequentSuccessesToStopCooldownCounting)
+            if (sendingResult.Succeeded)
             {
-                CooldownCounter = 0;
-            }
+                SuccessCounter++;
+                logger.LogDebug("Сообщение {messageId} отправлено", nextMessage.MessageId);
 
-            await notificationRepository.MarkSendingSucceeded(nextMessage.MessageId, channel);
-        }
-        else
-        {
-            SuccessCounter = 0;
-            FailureCounter++;
+                if (SuccessCounter >= WorkerOptions.MinSubsequentSuccessesToStopFailureCounting)
+                {
+                    FailureCounter = 0;
+                }
 
-            logger.LogWarning("Сообщение {messageId} не получилось отправить", nextMessage.MessageId);
+                if (SuccessCounter >= WorkerOptions.MinSubsequentSuccessesToStopCooldownCounting)
+                {
+                    CooldownCounter = 0;
+                }
 
-            if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
-            {
-                var momentOfNextAttempt = DateTimeOffset.UtcNow.Add(GetNextAttemptDelay(nextMessage));
-                await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt);
+                await notificationRepository.MarkSendingSucceeded(nextMessage.MessageId, channel);
             }
             else
             {
-                await notificationRepository.MarkSendingFailed(nextMessage.MessageId, channel);
+                SuccessCounter = 0;
+                FailureCounter++;
+
+                logger.LogWarning("Сообщение {messageId} не получилось отправить", nextMessage.MessageId);
+
+                if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
+                {
+                    var momentOfNextAttempt = DateTimeOffset.UtcNow.Add(GetNextAttemptDelay(nextMessage));
+                    await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt);
+                }
+                else
+                {
+                    await notificationRepository.MarkSendingFailed(nextMessage.MessageId, channel);
+                }
+
+                return; // При ошибке тоже выходим, очищаем скоуп
             }
-        }
+
+            nextMessage = await notificationRepository.SelectNextNotificationForSending(channel);
+        } while (nextMessage != null);
+        QueueIsEmpty = true;
     }
 
     private static TimeSpan GetDelay(TimeSpan basePause, int counter, double hysteresisFactor)
