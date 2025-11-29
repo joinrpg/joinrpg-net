@@ -1,7 +1,6 @@
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces.Search;
 using LinqKit;
 

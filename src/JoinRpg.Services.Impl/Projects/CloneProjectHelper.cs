@@ -1,17 +1,11 @@
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Data.Entity.Validation;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl.Projects;
 

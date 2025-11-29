@@ -1,4 +1,3 @@
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;

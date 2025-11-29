@@ -2,14 +2,8 @@ using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
-using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
-using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Services.Impl.Projects;
 

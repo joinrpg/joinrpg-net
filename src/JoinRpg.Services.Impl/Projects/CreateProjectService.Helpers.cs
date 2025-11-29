@@ -1,6 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 
 namespace JoinRpg.Services.Impl.Projects;

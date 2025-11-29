@@ -1,7 +1,6 @@
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;

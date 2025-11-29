@@ -1,10 +1,7 @@
 using System.Data.Entity;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;

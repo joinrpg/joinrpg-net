@@ -1,9 +1,7 @@
 using System.Data.Entity.Validation;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 
