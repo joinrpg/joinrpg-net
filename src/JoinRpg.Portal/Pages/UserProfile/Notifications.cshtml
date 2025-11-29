@@ -1,0 +1,18 @@
+@page  "/profile/notifications"
+@model JoinRpg.Portal.Pages.UserProfile.NotificationsModel
+@{
+  <div class="container">
+  <br/>
+  <br />
+  @* TODO невероятно наколеночный UI *@
+    @foreach (var notification in Model.Notifications)
+    {
+        <div class="panel panel-default">
+            <div class="panel-heading">@notification.Header</div>
+            <div class="panel-body">
+              @Html.Raw(notification.Body.Value)
+            </div>
+        </div>
+    }
+    </div>
+}

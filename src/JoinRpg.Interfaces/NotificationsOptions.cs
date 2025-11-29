@@ -10,6 +10,8 @@ public class NotificationsOptions
     [Required]
     public string JoinRpgTeamName { get; set; } = null!;
 
+    [Obsolete]
+
     public RecepientData ServiceRecepient => new(JoinRpgTeamName, ServiceAccountEmail);
 
     public Uri BaseDomain => ExtractDomainFromMail(ServiceAccountEmail);
