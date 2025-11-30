@@ -10,6 +10,15 @@ public static class ParentGroupCalculateExtensions
                    .Distinct() ?? [];
     }
 
+    public static IReadOnlyCollection<CharacterGroupIdentification> GetParentGroupIdsToTop(this IWorldObject? target)
+    {
+        if (target == null)
+        {
+            return [];
+        }
+        return [.. target.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)).Select(x => x.GetId()).Order().Distinct()];
+    }
+
     public static IEnumerable<CharacterGroup> GetIntrestingGroupsForDisplayToTop(this Character character)
         => character.GetParentGroupsToTop().Where(g => !g.IsRoot && g.IsActive && (!g.IsSpecial || g.ParentGroups.All(g => !g.IsRoot)));
 
