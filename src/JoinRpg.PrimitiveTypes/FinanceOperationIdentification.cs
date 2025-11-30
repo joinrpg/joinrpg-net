@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
-public record class FinanceOperationIdentification(ProjectIdentification ProjectId, int ClaimId, int FinanceOperationId) : IProjectEntityId, ISpanParsable<FinanceOperationIdentification>
+public record class FinanceOperationIdentification(ProjectIdentification ProjectId, int ClaimId, int FinanceOperationId)
+    : IProjectEntityId, ISpanParsable<FinanceOperationIdentification>, IComparable<FinanceOperationIdentification>
 {
     int IProjectEntityId.Id => FinanceOperationId;
 
@@ -37,4 +38,6 @@ public record class FinanceOperationIdentification(ProjectIdentification Project
         result = null;
         return false;
     }
+
+    int IComparable<FinanceOperationIdentification>.CompareTo(FinanceOperationIdentification? other) => Comparer<int>.Default.Compare(FinanceOperationId, other?.FinanceOperationId ?? -1);
 }

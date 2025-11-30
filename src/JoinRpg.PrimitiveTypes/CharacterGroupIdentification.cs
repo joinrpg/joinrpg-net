@@ -5,7 +5,7 @@ namespace JoinRpg.PrimitiveTypes;
 [method: JsonConstructor]
 public record CharacterGroupIdentification(
     ProjectIdentification ProjectId,
-    int CharacterGroupId) : IProjectEntityId
+    int CharacterGroupId) : IProjectEntityId, IComparable<CharacterGroupIdentification>
 {
 
     public CharacterGroupIdentification(int ProjectId, int CharacterGroupId) : this(new ProjectIdentification(ProjectId), CharacterGroupId)
@@ -27,4 +27,5 @@ public record CharacterGroupIdentification(
     }
 
     public static IEnumerable<CharacterGroupIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new CharacterGroupIdentification(projectId, g));
+    int IComparable<CharacterGroupIdentification>.CompareTo(CharacterGroupIdentification? other) => Comparer<int>.Default.Compare(CharacterGroupId, other?.CharacterGroupId ?? -1);
 }

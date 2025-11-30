@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes.Plots;
 
 [method: JsonConstructor]
-public record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version) : IParsable<PlotVersionIdentification>, IProjectEntityId
+public record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version) : IParsable<PlotVersionIdentification>, IProjectEntityId, IComparable<PlotVersionIdentification>
 {
     public PlotVersionIdentification(int projectId, int plotFolderId, int plotElementId, int version)
         : this(new PlotElementIdentification(new PlotFolderIdentification(new ProjectIdentification(projectId), plotFolderId), plotElementId), version)
@@ -69,4 +69,13 @@ public record class PlotVersionIdentification(PlotElementIdentification PlotElem
     public PlotVersionIdentification Next() => this with { Version = Version + 1 };
     public PlotVersionIdentification? Prev() => Version == 0 ? null : this with { Version = Version - 1 };
     public override string ToString() => $"PlotVersion({ProjectId.Value}-{PlotFolderId.PlotFolderId}-{PlotElementId.PlotElementId}-{Version})";
+
+    int IComparable<PlotVersionIdentification>.CompareTo(PlotVersionIdentification? other)
+    {
+        if (PlotElementId == other?.PlotElementId)
+        {
+            return Comparer<int>.Default.Compare(Version, other.Version);
+        }
+        return PlotElementId.CompareTo(other?.PlotElementId);
+    }
 }

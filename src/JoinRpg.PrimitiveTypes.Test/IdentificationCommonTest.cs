@@ -43,6 +43,13 @@ public class IdentificationCommonTest
         TryEasyConstruct(type).ShouldNotBeNull();
     }
 
+    [Theory]
+    [ClassData(typeof(IdentificationDataSource))]
+    public void ShouldImplementIComparable(Type type)
+    {
+        type.IsAssignableTo(typeof(IComparable<>).MakeGenericType(type)).ShouldBeTrue();
+    }
+
     private static object TryEasyConstruct(Type type)
     {
         var parameters = new List<object?>();

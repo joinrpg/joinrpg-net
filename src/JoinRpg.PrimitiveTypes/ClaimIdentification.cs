@@ -4,7 +4,7 @@ namespace JoinRpg.PrimitiveTypes;
 [method: JsonConstructor]
 public record ClaimIdentification(
     ProjectIdentification ProjectId,
-    int ClaimId) : IProjectEntityId, ILinkable
+    int ClaimId) : IProjectEntityId, ILinkable, IComparable<ClaimIdentification>
 {
     public int Id => ClaimId;
 
@@ -32,6 +32,8 @@ public record ClaimIdentification(
     }
 
     public static IEnumerable<ClaimIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new ClaimIdentification(projectId, g));
+
+    int IComparable<ClaimIdentification>.CompareTo(ClaimIdentification? other) => Comparer<int>.Default.Compare(Id, other?.Id ?? -1);
 
     public override string ToString() => $"ClaimId({ClaimId}, {ProjectId})";
 }
