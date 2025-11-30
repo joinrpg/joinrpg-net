@@ -77,7 +77,7 @@ public class PrintController(
         var characters = (await characterRepository.LoadCharactersWithGroups(projectId)).Where(c => c.IsActive).ToList();
 
         return
-          View(new PrintIndexViewModel(projectId, characters.Select(c => c.CharacterId).ToArray()));
+          View(new PrintIndexViewModel(projectId, characters.Select(c => c.GetId()).ToArray()));
     }
 
     [MasterAuthorize()]

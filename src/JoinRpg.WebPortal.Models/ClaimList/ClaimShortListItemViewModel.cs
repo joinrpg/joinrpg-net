@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
@@ -8,15 +7,9 @@ using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
+[Obsolete("Use ClaimLinkViewModel")]
 public class ClaimShortListItemViewModel(string name, ClaimIdentification claimId, UserLinkViewModel player)
 {
-    public ClaimShortListItemViewModel(ClaimWithPlayer claimWithPlayer)
-        : this(claimWithPlayer.CharacterName, claimWithPlayer.ClaimId, UserLinks.Create(claimWithPlayer.Player))
-    {
-
-    }
-
-    [Obsolete]
     public ClaimShortListItemViewModel(Claim claim)
         : this(claim.Character.CharacterName, claim.GetId(), UserLinks.Create(claim.Player))
     {

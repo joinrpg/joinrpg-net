@@ -2,8 +2,8 @@ using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Claims;
 
 namespace JoinRpg.Web.Models;
 
@@ -19,11 +19,11 @@ public class MenuViewModelBase(ProjectInfo projectInfo, ICurrentUserAccessor cur
 }
 
 public class PlayerMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, CharacterGroupLinkSlimViewModel[] bigGroups,
-    IReadOnlyCollection<ClaimShortListItemViewModel> claims,
+    IReadOnlyCollection<ClaimLinkViewModel> claims,
     IReadOnlyCollection<CaptainAccessRule> captainAccessRules)
     : MenuViewModelBase(projectInfo, currentUserAccessor, bigGroups)
 {
-    public IReadOnlyCollection<ClaimShortListItemViewModel> Claims { get; } = claims;
+    public IReadOnlyCollection<ClaimLinkViewModel> Claims { get; } = claims;
     public IReadOnlyCollection<CaptainAccessRule> CaptainAccessRules { get; } = captainAccessRules;
     public bool PlotPublished { get; } = projectInfo.PublishPlot;
 }

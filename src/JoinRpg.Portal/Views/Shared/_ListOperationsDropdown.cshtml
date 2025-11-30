@@ -8,7 +8,7 @@
 <div style="display:flex;align-items:center">
     @if (Model.InlineTitle is not null)
     {
-        <h2>@Model.InlineTitle</h2>
+        <h2 style="vertical-align:central">@Model.InlineTitle</h2>
     }
 <div class="btn-group" style="padding: 1em">
     
@@ -40,7 +40,7 @@
     {
         <component type="typeof(JoinButton)"
                     render-mode="Static"
-                    param-Link="@(@Url.Action("ForClaims", "MassMail", new {Model.ProjectId, ClaimIds = Model.ClaimIds.CompressIdList()}))"
+                    param-Link="@(@Url.Action("ForClaims", "MassMail", new { Model.ProjectId, ClaimIds = Model.ClaimIdCompressed()}))"
                     param-Preset="@ButtonPreset.Email"
                     param-Label="@("Написать всем")" />
     
@@ -49,7 +49,7 @@
     {
             <component type="typeof(JoinButton)"
                        render-mode="Static"
-                       param-Link="@(@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()}))"
+                       param-Link="@(@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIdCompressed()}))"
                        param-Preset="@ButtonPreset.Print"
                        param-Label="@("Распечатать все")" />
     }

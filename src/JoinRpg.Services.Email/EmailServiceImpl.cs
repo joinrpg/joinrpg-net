@@ -1,11 +1,8 @@
-using System.Text.RegularExpressions;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces.Email;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;
 
@@ -223,19 +220,6 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
         return SendClaimEmail(model, "изменена", message);
     }
-
-    public async Task Email(MassEmailModel model)
-    {
-        ArgumentNullException.ThrowIfNull(model.Text.Contents);
-
-        var body = NamePlaceholderRegex().Replace(model.Text.Contents, messageService.GetRecepientPlaceholderName());
-
-        await messageService.SendEmail(model, $"{model.ProjectName}: {model.Subject}",
-            $@"{body}
-
-{model.Initiator.GetDisplayName()}
-");
-    }
     #endregion
 
     /// <summary>
@@ -338,6 +322,4 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
         await messageService.SendEmails(subject, body, email.Initiator.ToRecepientData(), recipients);
     }
 
-    [GeneratedRegex("%NAME%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex NamePlaceholderRegex();
 }

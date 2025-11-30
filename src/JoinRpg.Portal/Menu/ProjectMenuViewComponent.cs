@@ -5,8 +5,8 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.WebPortal.Managers.Claims;
 using JoinRpg.WebPortal.Managers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,8 +52,7 @@ public class ProjectMenuViewComponent(
 
     private async Task<IViewComponentResult> GeneratePlayerMenu(ProjectInfo projectInfo, UserIdentification userId)
     {
-        var claims = (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId))
-                    .Select(c => new ClaimShortListItemViewModel(c)).ToList();
+        var claims = (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId)).ToClaimViewModels().ToList();
         var captainAccessRules = await captainRulesRepository.GetCaptainRules(projectInfo.ProjectId, userId);
         var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
         var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, claims, captainAccessRules);
