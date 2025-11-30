@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes.Plots;
 
 [method: JsonConstructor]
-public record class PlotElementIdentification(PlotFolderIdentification PlotFolderId, int PlotElementId) : ISpanParsable<PlotElementIdentification>, IProjectEntityId
+public record class PlotElementIdentification(PlotFolderIdentification PlotFolderId, int PlotElementId)
+    : ISpanParsable<PlotElementIdentification>, IProjectEntityId, IComparable<PlotElementIdentification>
 {
     public ProjectIdentification ProjectId => PlotFolderId.ProjectId;
 
@@ -45,5 +46,7 @@ public record class PlotElementIdentification(PlotFolderIdentification PlotFolde
         result = null;
         return false;
     }
+
+    public int CompareTo(PlotElementIdentification? other) => Comparer<int>.Default.Compare(PlotElementId, other?.PlotElementId ?? -1);
 
 }
