@@ -9,7 +9,7 @@ public class EnumTests
     [Fact]
     public void ProblemEnum()
     {
-        EnumerationTestComparer.EnsureSame<DataModel.CommentExtraAction, CommentExtraAction>();
+        EnumerationTestComparer.EnsureSame<PrimitiveTypes.Claims.CommentExtraAction, CommentExtraAction>();
         EnumerationTestComparer.EnsureSame<DataModel.PaymentTypeKind, PaymentTypeKindViewModel>();
     }
 }
