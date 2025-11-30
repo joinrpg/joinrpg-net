@@ -1,7 +1,6 @@
-using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Data.Interfaces;
+namespace JoinRpg.Data.Interfaces.Subscribe;
 
 /// <summary>
 /// Load user subscribe settings 
@@ -11,10 +10,12 @@ public interface IUserSubscribeRepository
     /// <summary>
     /// Load every Subscriptions for project
     /// </summary>
-    Task<(User User, UserSubscriptionDto[] UserSubscriptions)> LoadSubscriptionsForProject(int userId, int projectId);
+    Task<(User User, UserSubscriptionDto[] UserSubscriptions)> LoadSubscriptionsForProject(UserIdentification userId, ProjectIdentification projectId);
 
     /// <summary>
     /// Load subscribtion by id
     /// </summary>
-    Task<UserSubscriptionDto> LoadSubscriptionById(int projectId, int subscriptionId);
+    Task<UserSubscriptionDto> LoadSubscriptionById(ProjectIdentification projectId, int subscriptionId);
+    Task<IReadOnlyCollection<UserSubscribe>> GetDirect(ClaimIdentification claimId);
+    Task<IReadOnlyCollection<UserSubscribe>> GetForCharAndGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications, CharacterIdentification characterId);
 }

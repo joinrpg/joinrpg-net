@@ -4,7 +4,7 @@ namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
 
-public class UserSubscription : IValidatableObject, ISubscriptionOptions
+public class UserSubscription : IValidatableObject
 {
     public int UserSubscriptionId { get; set; }
 

@@ -1,14 +1,15 @@
-using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.PrimitiveTypes;
 
-public class SubscriptionOptions : ISubscriptionOptions
+public record class SubscriptionOptions
 {
     public required bool ClaimStatusChange { get; set; }
     public required bool Comments { get; set; }
     public required bool FieldChange { get; set; }
     public required bool MoneyOperation { get; set; }
     public required bool AccommodationChange { get; set; }
+    public required bool AccommodationInvitesChange { get; set; }
 
     public bool AnySet => ClaimStatusChange || Comments || FieldChange || MoneyOperation || AccommodationChange;
 
@@ -20,5 +21,8 @@ public class SubscriptionOptions : ISubscriptionOptions
             ClaimStatusChange = true,
             MoneyOperation = true,
             Comments = true,
+            AccommodationInvitesChange = true,
         };
 }
+
+public record class UserSubscribe(UserInfoHeader User, SubscriptionOptions Options);
