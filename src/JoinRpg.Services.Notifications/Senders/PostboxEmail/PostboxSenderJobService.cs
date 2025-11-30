@@ -23,10 +23,11 @@ internal class PostboxSenderJobService(
     {
         var client = postboxClientFactory.Get();
 
-        var html = message.Message.Body.ToHtmlString();
+        var html = message.Message.Body.ToHtmlString().Value;
         var text = message.Message.Body.ToPlainTextWithoutHtmlEscape(); // Экранировать HTML в plain text email не нужно
 
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
+        var signature = $"\n--\n\n{sender.DisplayName}";
 
         var request = new SendEmailRequest
         {
@@ -40,8 +41,8 @@ internal class PostboxSenderJobService(
                 {
                     Body = new Body
                     {
-                        Text = ToContent(text),
-                        Html = ToContent(html.Value),
+                        Text = ToContent(text + signature),
+                        Html = ToContent(html + signature),
                     },
                     Subject = ToContent(message.Message.Header),
                 }
