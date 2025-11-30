@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -6,6 +5,8 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -18,10 +19,12 @@ internal class ClaimServiceImpl(
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
-    ILogger<CharacterServiceImpl> logger)
+    ILogger<CharacterServiceImpl> logger,
+    IClaimNotificationService claimNotificationService
+    )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IClaimService
 {
-
+    // TODO в GameSubscribeService
     public async Task SubscribeClaimToUser(int projectId, int claimId)
     {
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
@@ -32,6 +35,7 @@ internal class ClaimServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
+    // TODO в GameSubscribeService
     public async Task UnsubscribeClaimToUser(int projectId, int claimId)
     {
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
@@ -45,9 +49,9 @@ internal class ClaimServiceImpl(
         }
     }
 
-    public async Task CheckInClaim(int projectId, int claimId, int money)
+    public async Task CheckInClaim(ClaimIdentification claimId, int money)
     {
-        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId); //TODO Specific right
+        var (claim, projectInfo) = await LoadClaimAsMaster(claimId); //TODO Specific right
         claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
 
         var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
@@ -80,18 +84,14 @@ internal class ClaimServiceImpl(
 
         claim.ClaimStatus = ClaimStatus.CheckedIn;
         claim.CheckInDate = Now;
-        Debug.Assert(claim.Character != null, "claim.Character != null");
         MarkChanged(claim.Character);
         claim.Character.InGame = true;
 
-        _ = AddCommentImpl(claim, null, ".", true, CommentExtraAction.CheckedIn);
+        var (_, email) = AddCommentWithNotification("", claim, projectInfo, CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange);
 
         await UnitOfWork.SaveChangesAsync();
 
-        await
-          EmailService.Email(
-            await CreateClaimEmail<CheckedInEmal>(claim, ".", s => s.ClaimStatusChange,
-              CommentExtraAction.ApproveByMaster));
+        await claimNotificationService.SendNotification(email);
 
         if (financeEmail != null)
         {
@@ -99,16 +99,19 @@ internal class ClaimServiceImpl(
         }
     }
 
-    public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
+    public async Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText)
     {
-        var (oldClaim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId); //TODO Specific right
+        if (claimId.ProjectId != characterId.ProjectId)
+        {
+            throw new InvalidOperationException("Нельзя смешивать разные проекты в запросе");
+        }
+        var (oldClaim, projectInfo) = await LoadClaimAsMaster(claimId); //TODO Specific right
         oldClaim.EnsureStatus(ClaimStatus.CheckedIn);
 
-        Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
         oldClaim.Character.InGame = false;
         MarkChanged(oldClaim.Character);
 
-        var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
+        var source = await CharactersRepository.GetCharacterAsync(characterId);
 
         MarkChanged(source);
 
@@ -118,8 +121,8 @@ internal class ClaimServiceImpl(
         var responsibleMaster = source.GetResponsibleMaster();
         var claim = new Claim()
         {
-            CharacterId = characterId,
-            ProjectId = projectId,
+            CharacterId = characterId.CharacterId,
+            ProjectId = characterId.ProjectId,
             PlayerUserId = oldClaim.PlayerUserId,
             PlayerAcceptedDate = Now,
             CreateDate = Now,
@@ -130,39 +133,37 @@ internal class ClaimServiceImpl(
             LastUpdateDateTime = Now,
             MasterAcceptedDate = Now,
             CommentDiscussion =
-            new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = projectId },
+            new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
         };
 
         claim.CommentDiscussion.Comments.Add(new Comment
         {
             CommentDiscussionId = -1,
             AuthorUserId = CurrentUserId,
-            CommentText = new CommentText { Text = new MarkdownString(".") },
+            CommentText = new CommentText { Text = new MarkdownString(secondRoleCommentText) },
             CreatedAt = Now,
             IsCommentByPlayer = false,
             IsVisibleToPlayer = true,
-            ProjectId = projectId,
+            ProjectId = characterId.ProjectId,
             LastEditTime = Now,
             ExtraAction = CommentExtraAction.SecondRole,
         });
 
         oldClaim.ClaimStatus = ClaimStatus.Approved;
         source.ApprovedClaim = claim;
-        _ = AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
+
+        var (_, email) = AddCommentWithNotification(secondRoleCommentText, oldClaim, projectInfo, CommentExtraAction.OutOfGame, ClaimOperationType.MasterVisibleChange);
+
+        email = email with { AnotherCharacterId = characterId };
 
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        var updatedFields =
-          fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(), projectInfo);
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
-        var claimEmail = await CreateClaimEmail<SecondRoleEmail>(claim, "",
-            s => s.ClaimStatusChange,
-            CommentExtraAction.NewClaim);
-
-        await EmailService.Email(claimEmail);
+        await claimNotificationService.SendNotification(email);
 
         return claim.ClaimId;
     }
@@ -242,15 +243,25 @@ internal class ClaimServiceImpl(
         return claimId;
     }
 
-    public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
+    public async Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-        var (claim, projectInfo) = await LoadClaimAsMaster(new ClaimIdentification(projectId, claimId), Permission.None, ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.None, ExtraAccessReason.Player);
+
+        ClaimOperationType claimOperationType;
+
+        if (claim.PlayerUserId == CurrentUserId)
+        {
+            claimOperationType = ClaimOperationType.PlayerChange;
+        }
+        else
+        {
+            claimOperationType = isVisibleToPlayer ? ClaimOperationType.MasterVisibleChange : ClaimOperationType.MasterSecretChange;
+        }
 
         SetDiscussed(claim, isVisibleToPlayer);
 
         var parentComment = claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
-        Func<UserSubscription, bool> predicate = s => s.Comments;
         CommentExtraAction? extraAction = null;
 
         if (financeAction != FinanceOperationAction.None)
@@ -260,16 +271,19 @@ internal class ClaimServiceImpl(
                 throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
             }
             extraAction = PerformFinanceOperation(financeAction, parentComment, claim, projectInfo);
-            predicate = s => s.Comments || s.MoneyOperation;
         }
 
 
-        var email = await AddCommentWithEmail<AddCommentEmail>(commentText, claim, isVisibleToPlayer,
-          predicate, parentComment, extraAction);
+        var result = AddCommentWithNotification(commentText, claim, projectInfo, extraAction, claimOperationType);
+
+        if (parentComment is not null)
+        {
+            SetParentCommentAndCheck(result, parentComment, claimOperationType);
+        }
 
         await UnitOfWork.SaveChangesAsync();
 
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(result.Item2);
     }
 
     private CommentExtraAction? PerformFinanceOperation(FinanceOperationAction financeAction,
@@ -328,7 +342,9 @@ internal class ClaimServiceImpl(
         claim.MasterAcceptedDate = Now;
         claim.ChangeStatusWithCheck(ClaimStatus.Approved);
 
-        _ = AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
+        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.ApproveByMaster, ClaimOperationType.MasterVisibleChange);
+
+        List<ClaimSimpleChangedNotification> notificationsList = [email];
 
         if (!claim.Project.Details.EnableManyCharacters)
         {
@@ -337,13 +353,15 @@ internal class ClaimServiceImpl(
                 otherClaim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
                 otherClaim.MasterDeclinedDate = Now;
                 otherClaim.ClaimStatus = ClaimStatus.DeclinedByMaster;
-                await
-                    EmailService.Email(
-                        await
-                            AddCommentWithEmail<DeclineByMasterEmail>(
-                                "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                                otherClaim, true, s => s.ClaimStatusChange, null,
-                                CommentExtraAction.DeclineByMaster));
+
+                var (_, otherEmail) = AddCommentWithNotification(
+                    "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                    otherClaim,
+                    projectInfo,
+                    CommentExtraAction.DeclineByMaster,
+                    ClaimOperationType.MasterVisibleChange);
+
+                notificationsList.Add(otherEmail);
             }
         }
 
@@ -361,11 +379,10 @@ internal class ClaimServiceImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        await
-            EmailService.Email(
-               await CreateClaimEmail<ApproveByMasterEmail>(claim, commentText,
-                    s => s.ClaimStatusChange,
-                    CommentExtraAction.ApproveByMaster));
+        foreach (var notification in notificationsList)
+        {
+            await claimNotificationService.SendNotification(notification);
+        }
     }
 
     private async Task<Character> CreateCharacterFromSlot(Character slot, User player)
@@ -433,9 +450,9 @@ internal class ClaimServiceImpl(
         return newCharacter;
     }
 
-    public async Task DeclineByMaster(int projectId, int claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
+    public async Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
     {
-        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
 
         var statusWasApproved = claim.ClaimStatus == ClaimStatus.Approved;
 
@@ -450,36 +467,29 @@ internal class ClaimServiceImpl(
 
         if (deleteCharacter)
         {
-            if (claim.Character is null || !statusWasApproved)
+            if (!statusWasApproved)
             {
                 throw new InvalidOperationException("Attempt to delete character, but it not exists");
             }
-            DeleteCharacter(claim.Character, CurrentUserId);
+            DeleteCharacter(claim.Character, projectInfo);
         }
 
-        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+        await accommodationInviteService.DeclineAllClaimInvites(claimId);
 
-        var email =
-          await
-              AddCommentWithEmail<DeclineByMasterEmail>(commentText,
-                  claim,
-                  true,
-                  s => s.ClaimStatusChange,
-                  null,
-                  CommentExtraAction.DeclineByMaster);
+        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByMaster, ClaimOperationType.MasterVisibleChange);
 
         await UnitOfWork.SaveChangesAsync();
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
         if (roomEmail != null)
         {
             await EmailService.Email(roomEmail);
         }
     }
 
-    private void DeleteCharacter(Character character, int currentUserId)
+    private void DeleteCharacter(Character character, ProjectInfo projectInfo)
     {
 
-        _ = character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification, Permission.CanEditRoles);
         MarkTreeModified(character.Project);
 
         character.DirectlyRelatedPlotElements.CleanLinksList();
@@ -649,9 +659,9 @@ internal class ClaimServiceImpl(
     }
 
 
-    public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
+    public async Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
     {
-        var (claim, _) = await LoadClaimAsPlayer(new ClaimIdentification(projectId, claimId));
+        var (claim, projectInfo) = await LoadClaimAsPlayer(claimId);
 
         claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByUser);
 
@@ -666,17 +676,10 @@ internal class ClaimServiceImpl(
 
 
 
-        var email =
-            await
-                AddCommentWithEmail<DeclineByPlayerEmail>(commentText,
-                    claim,
-                    true,
-                    s => s.ClaimStatusChange,
-                    null,
-                    CommentExtraAction.DeclineByPlayer);
+        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByPlayer, ClaimOperationType.PlayerChange);
 
         await UnitOfWork.SaveChangesAsync();
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
         if (roomEmail != null)
         {
             await EmailService.Email(roomEmail);
@@ -684,14 +687,12 @@ internal class ClaimServiceImpl(
     }
 
 
-    public async Task RestoreByMaster(int projectId, int claimId, string commentText, int characterId)
+    public async Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
     {
-        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
-        var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
 
-        //Grab subscribtions before change
-        var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
-
+        var oldCharacterId = claim.GetCharacterId(); // Сохраняем на случай если он изменится
+        var character = await CharactersRepository.GetCharacterAsync(characterId);
 
         claim.EnsureCanChangeStatus(ClaimStatus.AddedByUser);
         claim.ClaimStatus = ClaimStatus.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
@@ -705,30 +706,27 @@ internal class ClaimServiceImpl(
         }
 
         claim.Character = character;
-        claim.CharacterId = characterId;
+        claim.CharacterId = characterId.Id;
 
         //Ensure that character is active
         claim.Character.IsActive = true;
         MarkChanged(claim.Character);
 
-        var email =
-          await
-            AddCommentWithEmail<RestoreByMasterEmail>(commentText, claim, true,
-              s => s.ClaimStatusChange, null, CommentExtraAction.RestoreByMaster, extraSubscriptions: subscribe);
+        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.RestoreByMaster, ClaimOperationType.MasterVisibleChange);
+
+        email = email with { AnotherCharacterId = oldCharacterId };
 
         await UnitOfWork.SaveChangesAsync();
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
     }
 
-    public async Task MoveByMaster(int projectId, int claimId, string contents, int characterId)
+    public async Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
     {
-        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
-        var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
+        var source = await CharactersRepository.GetCharacterAsync(characterId);
         var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
 
-        //Grab subscribtions before change
-        var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
+        var oldCharacterId = claim.GetCharacterId(); // Сохраняем, так как он изменится
 
 
 
@@ -740,7 +738,7 @@ internal class ClaimServiceImpl(
         {
             claim.Character.ApprovedClaim = null;
         }
-        claim.CharacterId = characterId;
+        claim.CharacterId = characterId.CharacterId;
         claim.Character = source; //That fields is required later
 
         if (claim.IsApproved)
@@ -750,14 +748,13 @@ internal class ClaimServiceImpl(
 
         MarkCharacterChangedIfApproved(claim); // after move
 
-        var email =
-          await
-            AddCommentWithEmail<MoveByMasterEmail>(contents, claim,
-              isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
-              extraAction: CommentExtraAction.MoveByMaster, extraSubscriptions: subscribe);
+        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.MoveByMaster, ClaimOperationType.MasterVisibleChange);
+
+        email = email with { AnotherCharacterId = oldCharacterId };
+
 
         await UnitOfWork.SaveChangesAsync();
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
     }
 
     public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
@@ -795,64 +792,41 @@ internal class ClaimServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private async Task<T> AddCommentWithEmail<T>(string? commentText, Claim claim,
-      bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment? parentComment,
-      CommentExtraAction? extraAction = null, IEnumerable<User>? extraSubscriptions = null) where T : ClaimEmailModel, new()
+    public async Task SetResponsible(ClaimIdentification claimId, UserIdentification responsibleMasterId)
     {
-        var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
-        _ = AddCommentImpl(claim, parentComment, commentText ?? "", visibleToPlayerUpdated, extraAction);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
 
-        var extraRecipients =
-          new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
-          Union(extraSubscriptions ?? []);
+        _ = projectInfo.RequestMasterAccess(responsibleMasterId);
 
-        var mastersOnly = !visibleToPlayerUpdated;
-        return
-          await CreateClaimEmail<T>(claim, commentText ?? "", predicate,
-            extraAction, mastersOnly, extraRecipients);
-    }
+        var oldResponsibleMaster = new UserIdentification(claim.ResponsibleMasterUserId);
 
-    public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
-    {
-        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
-
-        _ = claim.RequestMasterAccess(responsibleMasterId);
-
-        if (responsibleMasterId == claim.ResponsibleMasterUserId)
+        if (responsibleMasterId == oldResponsibleMaster)
         {
             return; // Just do nothing
         }
+        claim.ResponsibleMasterUserId = responsibleMasterId;
 
         var newMaster = await UserRepository.GetById(responsibleMasterId);
 
-        var email = await
-          AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser.GetDisplayName() ?? "N/A"} → {newMaster.GetDisplayName()}", claim,
-            isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
-            extraAction: CommentExtraAction.ChangeResponsible, extraSubscriptions: new[] { newMaster });
+        var (_, email) = AddCommentWithNotification(
+            $"{claim.ResponsibleMasterUser.GetDisplayName()} → {newMaster.GetDisplayName()}",
+            claim,
+            projectInfo,
+            CommentExtraAction.ChangeResponsible,
+            ClaimOperationType.MasterVisibleChange);
 
-        claim.ResponsibleMasterUserId = responsibleMasterId;
+        email = email with { OldResponsibleMaster = oldResponsibleMaster };
 
         await UnitOfWork.SaveChangesAsync();
 
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
     }
 
-    [Obsolete]
-    private Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
-    {
-        return LoadClaimForApprovalDecline(new ClaimIdentification(projectId, claimId));
-    }
-
-    private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(ClaimIdentification claimId)
-    {
-        return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
-    }
-
-    public async Task SaveFieldsFromClaim(int projectId,
-        int claimId,
+    public async Task SaveFieldsFromClaim(
+        ClaimIdentification claimId,
         IReadOnlyDictionary<int, string?> newFieldValue)
     {
-        var (claim, projectInfo) = await LoadClaimAsMaster(new(projectId), claimId, Permission.None, ExtraAccessReason.Player);
+        var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.None, ExtraAccessReason.Player);
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, newFieldValue, projectInfo);
         if (updatedFields.Any(f => f.Field.BoundTo == FieldBoundTo.Character) && claim.Character != null)
@@ -867,21 +841,20 @@ internal class ClaimServiceImpl(
         await EmailService.Email(email);
     }
 
-    public async Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents)
+    public async Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
     {
 
-        var (claim, _) = await LoadClaimForApprovalDecline(projectId, claimId);
+        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
+
         MarkCharacterChangedIfApproved(claim);
         claim.ChangeStatusWithCheck(ClaimStatus.OnHold);
 
 
-        var email =
-          await
-            AddCommentWithEmail<OnHoldByMasterEmail>(contents, claim, true,
-              s => s.ClaimStatusChange, null, CommentExtraAction.OnHoldByMaster);
+        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.OnHoldByMaster, ClaimOperationType.MasterVisibleChange);
+
 
         await UnitOfWork.SaveChangesAsync();
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
     }
 
     private void MarkCharacterChangedIfApproved(Claim claim)
@@ -956,6 +929,74 @@ internal class ClaimServiceImpl(
             throw new JoinRpgProjectMisconfiguredException(donateProjectId, "У проекта должен быть шаблон по умолчанию");
         }
         return await AddClaimFromUser(projectInfo.DefaultTemplateCharacter, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
+    }
+
+
+    //Если parentComment не равен нулю comment.SetParentCommentAndCheck(parentComment, claimOperationType);
+    public (Comment, ClaimSimpleChangedNotification) AddCommentWithNotification(
+        string commentText,
+        Claim claim,
+        ProjectInfo projectInfo,
+        CommentExtraAction? commentExtraAction,
+        ClaimOperationType claimOperationType)
+    {
+        // Этот метод вызывается ДО сохранения всего в базу
+        // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
+
+        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
+        {
+            projectInfo.RequestMasterAccess(currentUserAccessor);
+
+        }
+
+
+        var comment = AddCommentImpl(claim, commentText, claimOperationType != ClaimOperationType.MasterSecretChange, commentExtraAction);
+
+        return (comment, new ClaimSimpleChangedNotification(
+            claim.GetId(),
+            Player: ToUserInfoHeader(claim.Player),
+            commentExtraAction,
+            new(claim.ProjectId),
+            currentUserAccessor.ToUserInfoHeader(),
+            new NotificationEventTemplate(commentText),
+            claimOperationType
+            ));
+    }
+
+    public static void SetParentCommentAndCheck((Comment, ClaimSimpleChangedNotification) result, Comment parentComment, ClaimOperationType claimOperationType)
+    {
+        if (claimOperationType != ClaimOperationType.MasterSecretChange && parentComment.IsVisibleToPlayer == false)
+        {
+            throw new EntityWrongStatusException(parentComment); // Нельзя ответить на скрытый комментарий так, чтобы игрок видел
+        }
+
+        result.Item1.Parent = parentComment;
+        result.Item2 = result.Item2 with { ExtraSubscribers = [.. GetNotificationRecepients(parentComment)] };
+    }
+
+
+    private static IEnumerable<NotificationRecepient> GetNotificationRecepients(Comment comment)
+    {
+        var author = comment.Author;
+        yield return new NotificationRecepient(author.GetId(), author.ExtractDisplayName().DisplayName, SubscriptionReason.AnswerToYourComment);
+
+        if (comment?.Finance?.PaymentType?.User is User paymentOwner)
+        {
+            yield return new NotificationRecepient(paymentOwner.GetId(), paymentOwner.ExtractDisplayName().DisplayName, SubscriptionReason.Finance);
+        }
+    }
+
+    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
+
+    [Obsolete]
+    private Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
+    {
+        return LoadClaimForApprovalDecline(new ClaimIdentification(projectId, claimId));
+    }
+
+    private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(ClaimIdentification claimId)
+    {
+        return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 }
 

@@ -139,8 +139,8 @@ public class ForumController : ControllerGameBase
             if (claim != null)
             {
 
-                await ClaimService.AddComment(discussion.ProjectId,
-                    claim.ClaimId,
+                await ClaimService.AddComment(
+                    claim.GetId(),
                     viewModel.ParentCommentId,
                     !viewModel.HideFromUser,
                     viewModel.CommentText,

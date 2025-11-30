@@ -312,10 +312,10 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         return inviteRequest;
     }
 
-    public async Task DeclineAllClaimInvites(int claimId)
+    public async Task DeclineAllClaimInvites(ClaimIdentification claimId)
     {
         var inviteRequests = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.ToClaimId == claimId || invite.FromClaimId == claimId)
+            .Where(invite => invite.ToClaimId == claimId.ClaimId || invite.FromClaimId == claimId.ClaimId)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -336,7 +336,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
         claims = claims.Distinct().ToList();
-        _ = claims.Remove(claimId);
+        _ = claims.Remove(claimId.ClaimId);
 
         var receivers = await UnitOfWork
             .GetDbSet<Claim>()

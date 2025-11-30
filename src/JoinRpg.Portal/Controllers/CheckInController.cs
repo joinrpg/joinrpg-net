@@ -1,8 +1,9 @@
-using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -28,8 +29,9 @@ public class CheckInController(
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
-    CharacterPlotViewService characterPlotViewService
-        ) : ControllerGameBase(projectRepository, projectService, userRepository)
+    CharacterPlotViewService characterPlotViewService,
+    ICurrentUserAccessor currentUserAccessor
+        ) : JoinControllerGameBase
 {
     [HttpGet]
     public async Task<ActionResult> Index(ProjectIdentification projectId)
@@ -61,7 +63,7 @@ public class CheckInController(
         }
         try
         {
-            await ProjectService.SetCheckInSettings(new(model.ProjectId), model.CheckInProgress,
+            await projectService.SetCheckInSettings(new(model.ProjectId), model.CheckInProgress,
               model.EnableCheckInModule, model.AllowSecondRoles);
             return RedirectToAction("Setup", new { model.ProjectId });
         }
@@ -87,12 +89,12 @@ public class CheckInController(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
-        var characterId = claim.Character.GetId();
+        var characterId = claim.GetCharacterId();
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
         return View("CheckIn",
             new CheckInClaimModel(claim,
-            await GetCurrentUserAsync(),
+            await userRepository.GetById(currentUserAccessor.UserIdentification),
             handouts[characterId],
             claimValidator,
             projectInfo
@@ -102,14 +104,15 @@ public class CheckInController(
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> DoCheckIn(ProjectIdentification projectId, int claimId, int money, Checkbox? feeAccepted)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claimIdentification = new ClaimIdentification(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(claimIdentification);
         if (claim == null)
         {
             return NotFound();
         }
         try
         {
-            await claimService.CheckInClaim(projectId, claimId, feeAccepted == Checkbox.@on ? money : 0);
+            await claimService.CheckInClaim(claimIdentification, feeAccepted == Checkbox.@on ? money : 0);
             return RedirectToAction("Index", new { ProjectId = projectId.Value });
         }
         catch (Exception ex)
@@ -143,7 +146,7 @@ public class CheckInController(
 
         var characters = await characterRepository.GetAvailableCharacters(projectId);
 
-        return View(new SecondRoleViewModel(claim, characters, await GetCurrentUserAsync(), projectInfo));
+        return View(new SecondRoleViewModel(claim, characters, await userRepository.GetById(currentUserAccessor.UserIdentification), projectInfo));
     }
 
     [ValidateAntiForgeryToken]
@@ -157,7 +160,7 @@ public class CheckInController(
         }
         try
         {
-            var newClaim = await claimService.MoveToSecondRole(model.ProjectId, model.ClaimId, model.CharacterId);
+            var newClaim = await claimService.MoveToSecondRole(claim.GetId(), new(model.ProjectId, model.CharacterId), ".");
             return RedirectToAction("CheckIn", new { model.ProjectId, claimId = newClaim });
         }
         catch (Exception ex)

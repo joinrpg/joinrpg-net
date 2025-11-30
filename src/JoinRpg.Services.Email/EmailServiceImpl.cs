@@ -18,28 +18,9 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
     #endregion
 
     #region IEmailService implementation
-    public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
-
-    public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model);
-
-    public Task Email(DeclineByMasterEmail model) => SendClaimEmail(model, "отклонена");
-
-    public Task Email(DeclineByPlayerEmail model) => SendClaimEmail(model, "отозвана");
 
     public Task Email(NewClaimEmail model) => SendClaimEmail(model, "подана");
 
-    public Task Email(RestoreByMasterEmail model) => SendClaimEmail(model, "восстановлена");
-
-    public Task Email(MoveByMasterEmail model) => SendClaimEmail(model, "изменена", $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.Character.CharacterName}».");
-
-
-    public Task Email(ChangeResponsibleMasterEmail model) => SendClaimEmail(model, "изменена", "В заявке изменен ответственный мастер.");
-
-    public Task Email(OnHoldByMasterEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "Заявка поставлена в лист ожидания");
-
-    public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "Игрок прошел регистрацию на полигоне");
-
-    public Task Email(SecondRoleEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "Игрок выпущен новой ролью");
 
     public async Task Email(ForumEmail model)
     {

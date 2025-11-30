@@ -38,6 +38,20 @@ public abstract class ClaimImplBase : DbServiceImplBase
         return comment;
     }
 
+    protected Comment AddCommentImpl(Claim claim,
+       string commentText,
+       bool isVisibleToPlayer,
+       CommentExtraAction? extraAction = null)
+    {
+        var comment = CommentHelper.CreateCommentForClaim(claim,
+            CurrentUserId,
+            Now,
+            commentText,
+            isVisibleToPlayer,
+            extraAction);
+        return comment;
+    }
+
     protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int money,
     PaymentType paymentType, Claim claim)
     {
@@ -129,6 +143,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
 
         return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
     }
+    [Obsolete]
     protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
     {
         return LoadClaimAsMaster(new ClaimIdentification(projectId, claimId), permission, reason);

@@ -368,7 +368,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         var (claimFrom, projectInfo) = await LoadClaimAsMaster(request, Permission.CanManageMoney);
 
         // Loading destination claim
-        var (claimTo, _) = await LoadClaimAsMaster(new(request.ProjectId), request.ToClaimId);
+        var (claimTo, _) = await LoadClaimAsMaster(new ClaimIdentification(request.ProjectId, request.ToClaimId));
 
         // Checking money amount
         var availableMoney = claimFrom.GetPaymentSum();

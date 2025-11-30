@@ -23,6 +23,33 @@ internal static class CommentHelper
           parentComment,
           extraAction);
 
+        SetClaimTimes(claim, currentUserId, createdAt, isVisibleToPlayer);
+
+        return comment;
+    }
+
+    public static Comment CreateCommentForClaim(
+    Claim claim,
+    int currentUserId,
+    DateTime createdAt,
+    string commentText,
+    bool isVisibleToPlayer,
+    CommentExtraAction? extraAction = null)
+    {
+        var comment = CreateCommentForDiscussion(claim.CommentDiscussion,
+          currentUserId,
+          createdAt,
+          commentText,
+          isVisibleToPlayer,
+          extraAction);
+
+        SetClaimTimes(claim, currentUserId, createdAt, isVisibleToPlayer);
+
+        return comment;
+    }
+
+    private static void SetClaimTimes(Claim claim, int currentUserId, DateTime createdAt, bool isVisibleToPlayer)
+    {
         claim.LastUpdateDateTime = createdAt;
         if (claim.Player.UserId == currentUserId)
         {
@@ -39,9 +66,8 @@ internal static class CommentHelper
                 claim.LastVisibleMasterCommentBy_Id = currentUserId;
             }
         }
-
-        return comment;
     }
+
     public static Comment CreateCommentForDiscussion(
         CommentDiscussion commentDiscussion,
         int currentUserId,
@@ -49,17 +75,23 @@ internal static class CommentHelper
         string commentText,
         bool isVisibleToPlayer,
         Comment? parentComment,
-        CommentExtraAction? extraAction = null)
-    {
-        if (commentDiscussion == null)
-        {
-            throw new ArgumentNullException(nameof(commentDiscussion));
-        }
+        CommentExtraAction? extraAction = null) => CreateCommentForDiscussion(commentDiscussion, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction).SetParent(parentComment);
 
-        if (commentText == null)
+    [Obsolete("Use SetParentCommentAndCheck")]
+    public static Comment SetParent(this Comment comment, Comment? parentComment)
+    {
+        if (parentComment is not null)
         {
-            throw new ArgumentNullException(nameof(commentText));
+            comment.Parent = parentComment;
         }
+        return comment;
+    }
+
+    public static Comment CreateCommentForDiscussion(CommentDiscussion commentDiscussion, int currentUserId, DateTime createdAt, string commentText, bool isVisibleToPlayer, CommentExtraAction? extraAction)
+    {
+        ArgumentNullException.ThrowIfNull(commentDiscussion);
+
+        ArgumentNullException.ThrowIfNull(commentText);
 
         var comment = new Comment
         {
@@ -74,7 +106,6 @@ internal static class CommentHelper
             },
             IsCommentByPlayer = !commentDiscussion.HasMasterAccess(currentUserId),
             IsVisibleToPlayer = isVisibleToPlayer,
-            Parent = parentComment,
             ExtraAction = extraAction,
             CreatedAt = createdAt,
             LastEditTime = createdAt,
@@ -84,6 +115,7 @@ internal static class CommentHelper
         {
             _ = commentDiscussion.RequestMasterAccess(currentUserId);
         }
+
         //TODO: check access for discussion for players (claims & forums)
         return comment;
     }

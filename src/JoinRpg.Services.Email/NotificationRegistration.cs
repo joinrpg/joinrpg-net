@@ -9,6 +9,7 @@ public static class NotificationRegistration
             .AddTransient<IEmailService, EmailServiceImpl>()
             .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
+            .AddTransient<IClaimNotificationService, ClaimNotificationService>()
             .AddTransient<IMasterEmailService, MasterEmailServiceImpl>();
     }
 }

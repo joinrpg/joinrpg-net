@@ -95,7 +95,7 @@ public partial class NotificationServiceImpl(
     }
 
     private async Task<NotificationRow[]> GetNotificationsForUsers(
-        NotificationRecepient[] recepients,
+        IReadOnlyCollection<NotificationRecepient> recepients,
         Func<UserInfo, IReadOnlyCollection<NotificationChannel>> enabledChannelsSelector)
     {
         var recDict = recepients.ToDictionary(r => r.UserId, r => r);

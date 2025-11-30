@@ -11,28 +11,26 @@ public interface IClaimService
         IReadOnlyDictionary<int, string?> fields,
         bool sensitiveDataAllowed);
 
-    Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
+    Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
     Task ApproveByMaster(ClaimIdentification claimId, string commentText);
-    Task DeclineByMaster(int projectId, int claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter);
-    Task DeclineByPlayer(int projectId, int claimId, string commentText);
-    Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
-    Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents);
+    Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter);
+    Task DeclineByPlayer(ClaimIdentification claimId, string commentText);
+    Task SetResponsible(ClaimIdentification claimId, UserIdentification responsibleMasterId);
+    Task OnHoldByMaster(ClaimIdentification claimId, string commentText);
 
-    Task RestoreByMaster(int projectId, int claimId, string commentText, int characterId);
+    Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId);
 
-    Task MoveByMaster(int projectId, int claimId, string commentText, int characterId);
+    Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId);
 
     Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId);
 
-    Task SaveFieldsFromClaim(int projectId,
-        int claimId,
-        IReadOnlyDictionary<int, string?> newFieldValue);
+    Task SaveFieldsFromClaim(ClaimIdentification claimId, IReadOnlyDictionary<int, string?> newFieldValue);
 
     Task SubscribeClaimToUser(int projectId, int claimId);
     Task UnsubscribeClaimToUser(int projectId, int claimId);
-    Task CheckInClaim(int projectId, int claimId, int money);
-    Task<int> MoveToSecondRole(int projectId, int claimId, int characterId);
+    Task CheckInClaim(ClaimIdentification claimId, int money);
+    Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText);
 
     Task<AccommodationRequest> SetAccommodationType(int projectId, int claimId, int accommodationTypeId);
 

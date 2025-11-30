@@ -117,7 +117,7 @@ public class CheckInController(
             return NotFound();
         }
 
-        await claimsService.CheckInClaim(projectId, command.ClaimId, command.MoneyPaid);
+        await claimsService.CheckInClaim(claim.GetId(), command.MoneyPaid);
         return "OK";
     }
 }
