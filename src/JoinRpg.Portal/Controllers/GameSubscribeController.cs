@@ -1,9 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -13,8 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-[TypeFilter<CaptureNoAccessExceptionFilter>]
-[DiscoverProjectFilter]
 [RequireMaster]
 [Route("{projectId}/subscribe/[action]")]
 public class GameSubscribeController(
@@ -23,7 +20,7 @@ public class GameSubscribeController(
     IUriService uriService,
     IGameSubscribeClient subscribeClient,
     ICurrentUserAccessor currentUserAccessor
-        ) : Controller
+        ) : JoinControllerGameBase
 {
 
 #pragma warning disable ASP0023 // Route conflict detected between controller actions There is no one because of [action]
@@ -45,7 +42,7 @@ public class GameSubscribeController(
 
 
     [HttpGet]
-    public async Task<ActionResult> EditRedirect(int projectId, int subscriptionId)
+    public async Task<ActionResult> EditRedirect(ProjectIdentification projectId, int subscriptionId)
     {
         var subscribe = await userSubscribeRepository.LoadSubscriptionById(projectId, subscriptionId);
         var link = subscribe.ToSubscribeTargetLink();

@@ -32,7 +32,7 @@ internal class SubscribeViewService(IUriService uriService,
 
     public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
     {
-        var data = await userSubscribeRepository.LoadSubscriptionsForProject(masterId, projectId);
+        var data = await userSubscribeRepository.LoadSubscriptionsForProject(new UserIdentification(masterId), new ProjectIdentification(projectId));
         var currentUser = await userRepository.GetById(currentUserAccessor.UserId);
 
         var paymentTypes = await financeReportRepository.GetPaymentTypesForMaster(projectId, masterId);

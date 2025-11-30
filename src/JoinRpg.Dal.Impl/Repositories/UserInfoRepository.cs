@@ -28,41 +28,14 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             .SingleOrDefaultAsync(u => u.UserId == currentUserId);
 
     public async Task<(User User, UserSubscriptionDto[] UserSubscriptions)>
-        LoadSubscriptionsForProject(int userId, int projectId)
+        LoadSubscriptionsForProject(UserIdentification userId, ProjectIdentification projectId)
     {
         var user = await WithProfile(userId);
-        var subscribe = await ctx.Set<UserSubscription>()
-            .Where(x => x.ProjectId == projectId && x.UserId == userId)
-            .Select(SubscriptionDtoBuilder())
-            .ToArrayAsync();
+        UserSubscriptionDto[] subscribe = await GetSubscriptionsByPredicate(x => x.ProjectId == projectId && x.UserId == userId);
         return (user, subscribe);
     }
 
-    private static Expression<Func<UserSubscription, UserSubscriptionDto>> SubscriptionDtoBuilder()
-    {
-        return x =>
-                new UserSubscriptionDto()
-                {
-                    UserSubscriptionId = x.UserSubscriptionId,
-                    ProjectId = x.ProjectId,
-                    CharacterGroupId = x.CharacterGroupId,
-                    CharacterGroupName = x.CharacterGroup.CharacterGroupName,
-                    CharacterId = x.CharacterId,
-                    CharacterNames = x.Character.CharacterName,
-                    ClaimId = x.ClaimId,
-                    ClaimName = x.Claim.Character.CharacterName,
-                    Options = new SubscriptionOptions
-                    {
-                        AccommodationChange = x.AccommodationChange,
-                        ClaimStatusChange = x.ClaimStatusChange,
-                        Comments = x.Comments,
-                        FieldChange = x.FieldChange,
-                        MoneyOperation = x.MoneyOperation,
-                    }
-                };
-    }
-
-    public async Task<UserSubscriptionDto> LoadSubscriptionById(int projectId, int subscriptionId)
+    public async Task<UserSubscriptionDto> LoadSubscriptionById(ProjectIdentification projectId, int subscriptionId)
     {
         var subscribe = await ctx.Set<UserSubscription>()
             .Where(x => x.ProjectId == projectId && x.UserSubscriptionId == subscriptionId)
@@ -85,33 +58,15 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
 
     private async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeadersByPredicate(Expression<Func<User, bool>> predicate)
     {
+        var builder = UserInfoHeaderDtoBuilder();
         var userQuery =
             from user in ctx.Set<User>().AsExpandable()
             where predicate.Invoke(user)
-            select new
-            {
-                user.UserId,
-                user.PrefferedName,
-                user.FatherName,
-                user.SurName,
-                user.BornName,
-                user.Email,
-            };
+            select builder.Invoke(user);
 
         var list = await userQuery.ToListAsync();
 
-        return list.Select(result =>
-            new UserInfoHeader(
-                new UserIdentification(result.UserId),
-                new UserDisplayName(
-                    new UserFullName(
-                    PrefferedName.FromOptional(result.PrefferedName),
-                BornName.FromOptional(result.BornName),
-                SurName.FromOptional(result.SurName),
-                FatherName.FromOptional(result.FatherName)),
-                    new Email(result.Email))
-                )
-        ).ToList();
+        return [.. list.Select(x => x.ToUserInfoHeader())];
     }
 
     async Task<IReadOnlyCollection<UserInfo>> IUserRepository.GetUserInfos(IReadOnlyCollection<UserIdentification> userIds)
@@ -179,4 +134,114 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
     }
 
     public async Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => await GetUserInfoHeadersByPredicate(user => user.Auth.IsAdmin);
+    public async Task<IReadOnlyCollection<UserSubscribe>> GetDirect(ClaimIdentification claimId)
+    {
+        var builder = UserInfoHeaderDtoBuilder();
+        var options = SubscriptionOptionsBuilder();
+        var query =
+            from x in ctx.Set<UserSubscription>().AsExpandable()
+            where x.ProjectId == claimId.ProjectId && x.ClaimId == claimId.ClaimId
+            select
+            new
+            {
+                Options = options.Invoke(x),
+                User = builder.Invoke(x.User),
+            };
+        var result = await query.ToArrayAsync();
+        return [.. result.Select(x => new UserSubscribe(x.User.ToUserInfoHeader(), x.Options))];
+    }
+    public async Task<IReadOnlyCollection<UserSubscribe>> GetForCharAndGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications, CharacterIdentification characterId)
+    {
+        var builder = UserInfoHeaderDtoBuilder();
+        var options = SubscriptionOptionsBuilder();
+        var groupIds = characterGroupIdentifications.EnsureSameProject().Select(x => x.CharacterGroupId).ToList();
+        var query =
+            from x in ctx.Set<UserSubscription>().AsExpandable()
+            where x.ProjectId == characterId.ProjectId && (groupIds.Contains(x.CharacterGroupId!.Value) || x.CharacterId == characterId.Id)
+            select
+            new
+            {
+                Options = options.Invoke(x),
+                User = builder.Invoke(x.User),
+            };
+        var result = await query.ToArrayAsync();
+        return [.. result.Select(x => new UserSubscribe(x.User.ToUserInfoHeader(), x.Options))];
+    }
+
+    private async Task<UserSubscriptionDto[]> GetSubscriptionsByPredicate(Expression<Func<UserSubscription, bool>> predicate)
+    {
+        return await ctx.Set<UserSubscription>().AsExpandable()
+            .Where(predicate)
+            .Select(SubscriptionDtoBuilder())
+            .ToArrayAsync();
+    }
+
+    private static Expression<Func<UserSubscription, UserSubscriptionDto>> SubscriptionDtoBuilder()
+    {
+        var inner = SubscriptionOptionsBuilder();
+        return x =>
+                new UserSubscriptionDto()
+                {
+                    UserSubscriptionId = x.UserSubscriptionId,
+                    ProjectId = x.ProjectId,
+                    CharacterGroupId = x.CharacterGroupId,
+                    CharacterGroupName = x.CharacterGroup.CharacterGroupName,
+                    CharacterId = x.CharacterId,
+                    CharacterNames = x.Character.CharacterName,
+                    ClaimId = x.ClaimId,
+                    ClaimName = x.Claim.Character.CharacterName,
+                    Options = inner.Invoke(x),
+                };
+    }
+
+    private static Expression<Func<UserSubscription, SubscriptionOptions>> SubscriptionOptionsBuilder()
+    {
+        return x =>
+                 new SubscriptionOptions
+                 {
+                     AccommodationChange = x.AccommodationChange,
+                     ClaimStatusChange = x.ClaimStatusChange,
+                     Comments = x.Comments,
+                     FieldChange = x.FieldChange,
+                     MoneyOperation = x.MoneyOperation,
+                     AccommodationInvitesChange = x.AccommodationChange, // В базе мы пока на это не умеем подписываться
+                 };
+    }
+
+    private static Expression<Func<User, UserInfoHeaderDto>> UserInfoHeaderDtoBuilder()
+    {
+        return user => new UserInfoHeaderDto
+        {
+            UserId = user.UserId,
+            PrefferedName1 = user.PrefferedName,
+            FatherName1 = user.FatherName,
+            SurName1 = user.SurName,
+            BornName1 = user.BornName,
+            Email = user.Email,
+        };
+    }
+
+    private class UserInfoHeaderDto
+    {
+        public required int UserId { get; internal set; }
+        public required string? PrefferedName1 { get; internal set; }
+        public required string? FatherName1 { get; internal set; }
+        public required string? SurName1 { get; internal set; }
+        public required string? BornName1 { get; internal set; }
+        public required string Email { get; internal set; }
+
+        internal UserInfoHeader ToUserInfoHeader()
+        {
+            return new UserInfoHeader(
+                            new UserIdentification(UserId),
+                            new UserDisplayName(
+                                new UserFullName(
+                                PrefferedName.FromOptional(PrefferedName1),
+                            BornName.FromOptional(BornName1),
+                            SurName.FromOptional(SurName1),
+                            FatherName.FromOptional(FatherName1)),
+                                new Email(Email))
+                            );
+        }
+    }
 }

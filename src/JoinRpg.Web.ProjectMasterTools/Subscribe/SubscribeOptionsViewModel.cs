@@ -33,6 +33,7 @@ public record class SubscribeOptionsViewModel
             Comments = Comments,
             FieldChange = FieldChange,
             MoneyOperation = MoneyOperation,
+            AccommodationInvitesChange = AccommodationChange,
         };
     }
 
