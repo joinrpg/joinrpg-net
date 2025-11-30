@@ -6,6 +6,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;

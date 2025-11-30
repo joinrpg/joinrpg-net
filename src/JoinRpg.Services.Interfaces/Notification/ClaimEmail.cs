@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Services.Interfaces.Notification;
 

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.DataModel;
 
@@ -81,23 +82,4 @@ public class CommentText
     public int CommentId { get; set; }
 
     public MarkdownString Text { get; set; } = new MarkdownString();
-}
-
-public enum CommentExtraAction
-{
-    ApproveFinance,
-    RejectFinance,
-    ApproveByMaster,
-    DeclineByMaster,
-    RestoreByMaster,
-    MoveByMaster,
-    DeclineByPlayer,
-    ChangeResponsible,
-    NewClaim,
-    OnHoldByMaster,
-    FeeChanged,
-    CheckedIn,
-    SecondRole,
-    OutOfGame,
-    RequestPreferential,
 }
