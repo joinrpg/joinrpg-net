@@ -1,7 +1,6 @@
-using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Data.Interfaces;
+namespace JoinRpg.Data.Interfaces.Subscribe;
 
 /// <summary>
 /// Load user subscribe settings 
