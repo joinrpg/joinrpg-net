@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 
-public record class SubscribeOptionsViewModel : ISubscriptionOptions
+public record class SubscribeOptionsViewModel
 {
 
     [Display(

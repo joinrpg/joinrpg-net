@@ -2,7 +2,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.PrimitiveTypes;
 
-public class SubscriptionOptions : ISubscriptionOptions
+public class SubscriptionOptions
 {
     public required bool ClaimStatusChange { get; set; }
     public required bool Comments { get; set; }
