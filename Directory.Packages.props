@@ -13,6 +13,7 @@
     <PackageVersion Include="Autofac" Version="8.4.0" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageVersion Include="AWSSDK.S3" Version="3.7.412.0" />
+    <PackageVersion Include="AWSSDK.SimpleEmailV2" Version="3.7.412.0" />
     <PackageVersion Include="BitArmory.ReCaptcha" Version="5.0.1" />
     <PackageVersion Include="ClosedXML" Version="0.105.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />

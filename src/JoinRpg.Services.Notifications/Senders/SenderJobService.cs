@@ -117,6 +117,12 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 var sender = scope.ServiceProvider.GetRequiredService<TSender>();
                 stoppingToken.ThrowIfCancellationRequested();
 
+                if (!sender.Enabled)
+                {
+                    logger.LogInformation("Отправка SenderJobService<{senderJobName}> отключена", JobName);
+                    throw new OperationCanceledException("Выключаем");
+                }
+
                 sendingResult = await sender.SendAsync(nextMessage, stoppingToken);
             }
             catch (OperationCanceledException)
@@ -125,10 +131,6 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
             }
             catch (Exception exception)
             {
-                // Consider that the fact of unhandled exception here means message was not really sent,
-                // so we can return it to the queue without consuming an attempt.
-                // TODO не до конца согласен
-                await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, DateTimeOffset.UtcNow, nextMessage.Attempts - 1);
                 logger.LogError(exception, "Падение при отправке сообщения {messageId}", nextMessage.MessageId);
                 sendingResult = new SendingResult(Succeeded: false, Repeatable: true);
             }
@@ -160,7 +162,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
                 {
                     var momentOfNextAttempt = DateTimeOffset.UtcNow.Add(GetNextAttemptDelay(nextMessage));
-                    await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt);
+                    await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt, nextMessage.Attempts + 1);
                 }
                 else
                 {

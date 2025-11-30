@@ -3,6 +3,8 @@ internal class UiSenderJobService : ISenderJob
 {
     public static NotificationChannel Channel => NotificationChannel.ShowInUi;
 
+    public bool Enabled => true;
+
     public Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
     {
         // Это просто то, что показывается в UI. Отправлять не надо.

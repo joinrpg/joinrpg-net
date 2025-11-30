@@ -27,6 +27,11 @@ internal class MailGunEmailSendingService(IOptions<MailGunOptions> config, IHttp
         var html = body.ToHtmlString();
         var text = body.ToPlainTextWithoutHtmlEscape(); // Экранировать HTML в plain text email не нужно
 
+        if (notificationsOptions.Value.EmailWhiteList.Length > 0)
+        {
+            to = [.. to.Where(t => notificationsOptions.Value.EmailWhiteList.Contains(t.Email))];
+        }
+
         foreach (var recepientChunk in to.Chunk(Mailgun.Constants.MaximumAllowedRecipients))
         {
             await SendEmailChunkImpl(recepientChunk, subject, text, sender, html);
