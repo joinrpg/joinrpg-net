@@ -6,6 +6,8 @@ public static class JoinClaimTypes
     /// Display name that configured in profile
     /// </summary>
     public const string DisplayName = "joinrpg.DisplayName";
+
+    public const string FullName = "joinrpg.FullName";
     /// <summary>
     /// Id of Avatar
     /// </summary>

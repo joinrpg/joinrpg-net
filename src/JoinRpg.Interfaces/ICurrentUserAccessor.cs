@@ -1,4 +1,5 @@
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Interfaces;
 
@@ -8,7 +9,7 @@ namespace JoinRpg.Interfaces;
 public interface ICurrentUserAccessor
 {
     int? UserIdOrDefault { get; }
-    string DisplayName { get; }
+    UserDisplayName DisplayName { get; }
     string Email { get; }
     bool IsAdmin { get; }
     /// <summary>
@@ -21,4 +22,6 @@ public interface ICurrentUserAccessor
     UserIdentification? UserIdentificationOrDefault => UserIdentification.FromOptional(UserIdOrDefault);
 
     int UserId => UserIdOrDefault ?? throw new Exception("Authorization required here");
+
+    UserInfoHeader ToUserInfoHeader() => new UserInfoHeader(UserIdentification, DisplayName);
 }

@@ -12,13 +12,22 @@ namespace Joinrpg.Web.Identity;
 /// </summary>
 public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
 {
-    private class CurrentUserFromHttpContext(IHttpContextAccessor httpContextAccessor) : ICurrentUserAccessor
+    private class CurrentUserFromHttpContext : ICurrentUserAccessor
     {
         private ClaimsPrincipal User => httpContextAccessor.HttpContext?.User ?? throw new Exception("Should be inside http request");
 
+        private readonly Lazy<UserDisplayName> DisplayName;
+        private readonly IHttpContextAccessor httpContextAccessor;
+
+        public CurrentUserFromHttpContext(IHttpContextAccessor httpContextAccessor)
+        {
+            this.httpContextAccessor = httpContextAccessor;
+            DisplayName = new Lazy<UserDisplayName>(() => new UserDisplayName(User.FindFirst(JoinClaimTypes.DisplayName)!.Value, User.FindFirst(JoinClaimTypes.FullName)?.Value));
+        }
+
         int? ICurrentUserAccessor.UserIdOrDefault => GetUserIdOrDefault(User);
 
-        string ICurrentUserAccessor.DisplayName => User.FindFirst(JoinClaimTypes.DisplayName)!.Value;
+        UserDisplayName ICurrentUserAccessor.DisplayName => DisplayName.Value;
 
         string ICurrentUserAccessor.Email => User.FindFirst(ClaimTypes.Email)!.Value;
 
@@ -51,7 +60,7 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
     {
         public int? UserIdOrDefault { get; } = user.UserId;
 
-        public string DisplayName { get; } = user.GetDisplayName();
+        public UserDisplayName DisplayName { get; } = user.ExtractDisplayName();
 
         public string Email { get; } = user.Email;
 
@@ -73,7 +82,7 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
 
     public int? UserIdOrDefault => Current.UserIdOrDefault;
 
-    public string DisplayName => Current.DisplayName;
+    public UserDisplayName DisplayName => Current.DisplayName;
 
     public string Email => Current.Email;
 
