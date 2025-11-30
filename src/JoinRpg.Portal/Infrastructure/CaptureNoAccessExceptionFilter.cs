@@ -23,5 +23,16 @@ public class CaptureNoAccessExceptionFilter(IProjectMetadataRepository projectMe
             viewResult.ViewData.Model = new ErrorNoAccessToProjectViewModel(projectInfo, noAccessException.Permission);
             filterContext.Result = viewResult;
         }
+
+
+        if (filterContext.Exception is ProjectDeactivatedException)
+        {
+            var viewResult = new ViewResult()
+            {
+                ViewName = "ErrorNotActiveProject",
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
+            };
+            filterContext.Result = viewResult;
+        }
     }
 }
