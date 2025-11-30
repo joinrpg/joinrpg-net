@@ -84,4 +84,5 @@ public class ClaimWithPlayer
     public required string CharacterName { get; set; }
     public required UserInfoHeader Player { get; set; }
     public required string? ExtraNicknames { get; set; }
+    public required UserIdentification ResponsibleMasterUserId { get; set; }
 }

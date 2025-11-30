@@ -46,15 +46,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .ToListAsync();
     }
 
-    public async Task<IEnumerable<Claim>> GetClaimsByIds(int projectid, IReadOnlyCollection<int> claimindexes)
-    {
-        await LoadProjectFields(projectid);
-        return
-          await Ctx.ClaimSet.Include(c => c.Project.ProjectAcls.Select(pa => pa.User))
-            .Include(c => c.Player)
-            .Where(c => claimindexes.Contains(c.ClaimId) && c.ProjectId == projectid)
-            .ToListAsync();
-    }
 
     public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, ClaimPredicates.GetResponsible(userId));
 
@@ -72,10 +63,23 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
     public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec claimStatusSpec)
     {
-        var query = Ctx.ClaimSet
-              .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
-              .Where(c => c.ProjectId == projectId);
-        return await MapToClaimWithPlayer(query);
+        return await GetHeadersByPredicate(new(projectId), ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec));
+    }
+
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
+    {
+        return await GetHeadersByPredicate(projectId, ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec));
+    }
+
+    async Task<IReadOnlyCollection<ClaimWithPlayer>> IClaimsRepository.GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds)
+    {
+        if (claimIds.Count == 0)
+        {
+            return [];
+        }
+        var projectId = claimIds.First().ProjectId;
+        var idList = claimIds.EnsureSameProject().Select(c => c.ClaimId).ToArray();
+        return await GetHeadersByPredicate(projectId, claim => idList.Contains(claim.ClaimId));
     }
 
     public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId)
@@ -131,12 +135,20 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
         => GetClaimsImpl(projectId, claimStatusSpec, ClaimPredicates.GetForUser(userId));
 
-    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId)
     {
         var query = Ctx.ClaimSet
           .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
           .Where(ClaimPredicates.GetForUser(userId))
           .Where(c => c.ProjectId == projectId);
+        return await MapToClaimWithPlayer(query);
+    }
+
+    private async Task<IReadOnlyCollection<ClaimWithPlayer>> GetHeadersByPredicate(ProjectIdentification projectId, Expression<Func<Claim, bool>> predicate)
+    {
+        var query = Ctx.ClaimSet
+              .Where(predicate)
+              .Where(c => c.ProjectId == projectId);
         return await MapToClaimWithPlayer(query);
     }
 
@@ -155,6 +167,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
               claim.Player.FatherName,
               claim.ClaimId,
               claim.Player.Email,
+              claim.ResponsibleMasterUserId,
           })
           .ToListAsync();
 
@@ -164,6 +177,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
                 CharacterName = c.CharacterName,
                 ClaimId = new (c.ProjectId, c.ClaimId),
                 ExtraNicknames = c.Nicknames,
+                ResponsibleMasterUserId = new( c.ResponsibleMasterUserId),
                 Player = new UserInfoHeader(new (c.PlayerUserId),
                                 new UserDisplayName(
                                     new UserFullName(

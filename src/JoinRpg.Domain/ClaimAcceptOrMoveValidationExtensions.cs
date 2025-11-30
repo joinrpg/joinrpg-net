@@ -22,30 +22,31 @@ public static class ClaimAcceptOrMoveValidationExtensions
     public static void EnsureCanAddClaim([NotNull] this Character claimSource, UserInfo userInfo, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
-        ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(userInfo, projectInfo), claim: null);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(userInfo, projectInfo), claim: null, projectInfo);
     }
 
     public static void EnsureCanMoveClaim([NotNull] this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
-        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim, userInfo, projectInfo), claim);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim, userInfo, projectInfo), claim, projectInfo);
     }
 
     private static void ThrowIfValidationFailed(
         IEnumerable<AddClaimForbideReason> validation,
-        Claim? claim)
+        Claim? claim,
+        ProjectInfo projectInfo)
     {
         if (validation.Any())
         {
-            ThrowForReason(validation.First(), claim);
+            ThrowForReason(validation.First(), claim, projectInfo);
         }
     }
 
-    internal static void ThrowForReason(AddClaimForbideReason reason, Claim? claim)
+    internal static void ThrowForReason(AddClaimForbideReason reason, Claim? claim, ProjectInfo projectInfo)
     {
         throw reason switch
         {
-            AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(),
+            AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(projectInfo.ProjectId),
 
             AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted
                 or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive

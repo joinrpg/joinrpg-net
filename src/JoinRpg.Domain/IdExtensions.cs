@@ -11,6 +11,7 @@ public static class IdExtensions
     public static CharacterGroupIdentification GetId(this CharacterGroup group) => new CharacterGroupIdentification(group.ProjectId, group.CharacterGroupId);
 
     public static ClaimIdentification GetId(this Claim group) => new(group.ProjectId, group.ClaimId);
+    public static CharacterIdentification GetCharacterId(this Claim group) => new(group.ProjectId, group.CharacterId);
 
     public static ProjectFieldVariantIdentification GetId(this ProjectFieldDropdownValue variant) => new(variant.ProjectId, variant.ProjectFieldId, variant.ProjectFieldDropdownValueId);
 }

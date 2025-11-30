@@ -1,5 +1,6 @@
 @using JoinRpg.PrimitiveTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon;
+@using JoinRpg.Web.ProjectCommon.Claims
 @model JoinRpg.Web.Models.PlayerMenuViewModel
 
 <div class="navbar navbar-default">
@@ -49,7 +50,9 @@
                 {
                     var claim = Model.Claims.Single();
                     <li>
-                        @Html.ActionLink("Заявка: " + claim.Name, "Edit", "Claim", new { projectId = claim.ProjectId.Value, claim.ClaimId }, null)
+                        <component type="typeof(ClaimLink)"
+                                   render-mode="Static"
+                                   param-Model="@claim" />
                     </li>
                 }
                 else if (Model.Claims.Count > 0)
@@ -60,7 +63,9 @@
                             @foreach (var claim in Model.Claims)
                             {
                                 <li>
-                                    @Html.ActionLink(claim.Name, "Edit", "Claim", new { projectId = claim.ProjectId.Value, claim.ClaimId }, null)
+                                    <component type="typeof(ClaimLink)"
+                                               render-mode="Static"
+                                               param-Model="@claim" />
                                 </li>
                             }
                         </ul>

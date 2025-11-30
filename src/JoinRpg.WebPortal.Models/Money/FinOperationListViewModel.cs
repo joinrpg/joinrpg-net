@@ -12,12 +12,10 @@ public class FinOperationListViewModel(ProjectIdentification projectId, IUriServ
           .Select(f => new FinOperationListItemViewModel(f, urlHelper))
           .ToArray();
 
-    public int ProjectId { get; } = projectId;
+    IReadOnlyCollection<ClaimIdentification> IOperationsAwareView.ClaimIds { get; } = [.. operations.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).Distinct()];
 
-    public IReadOnlyCollection<int> ClaimIds { get; } = [.. operations.Select(c => c.ClaimId).Distinct()];
-
-    IReadOnlyCollection<int> IOperationsAwareView.CharacterIds => [];
-    int? IOperationsAwareView.ProjectId => ProjectId;
+    IReadOnlyCollection<CharacterIdentification> IOperationsAwareView.CharacterIds => [];
+    int? IOperationsAwareView.ProjectId { get; } = projectId;
     bool IOperationsAwareView.ShowCharacterCreateButton => false;
 
     string? IOperationsAwareView.InlineTitle => "Список финансовых операций";

@@ -1,0 +1,16 @@
+@inject IUriLocator<ClaimIdentification> linkLocator
+<a href="@TargetUri"><span class="glyphicon glyphicon-file"></span>@Model.CharacterName</a>
+@if (ShowPlayer)
+{
+    <text>&nbsp;(<UserLink Model="Model.ToUserLinkViewModel()" />)</text>
+}
+
+@code {
+    [Parameter] [EditorRequired]
+    public ClaimLinkViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public bool ShowPlayer { get; set; } = false;
+
+    public Uri TargetUri => linkLocator.GetUri(Model.ClaimId);
+}

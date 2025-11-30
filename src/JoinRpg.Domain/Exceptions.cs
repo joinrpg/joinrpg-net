@@ -133,13 +133,8 @@ public class ProjectEntityDeactivatedException : JoinRpgProjectEntityException
     }
 }
 
-public class ProjectDeactivatedException : JoinRpgBaseException
-{
-    public ProjectDeactivatedException() : base("This operation can\'t be performed on deactivated project.")
-    {
-
-    }
-}
+public class ProjectDeactivatedException(ProjectIdentification projectId)
+    : JoinRpgProjectException(projectId, "This operation can\'t be performed on deactivated project.");
 
 public class ClaimWrongStatusException : JoinRpgProjectEntityException
 {

@@ -11,7 +11,6 @@ public interface IEmailService
     Task Email(RestoreByMasterEmail createClaimEmail);
     Task Email(MoveByMasterEmail createClaimEmail);
     Task Email(FinanceOperationEmail createClaimEmail);
-    Task Email(MassEmailModel model);
     Task Email(ChangeResponsibleMasterEmail createClaimEmail);
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);

@@ -12,20 +12,15 @@ namespace JoinRpg.Portal.Controllers.Common;
 
 [TypeFilter<CaptureNoAccessExceptionFilter>]
 [DiscoverProjectFilter]
-public abstract class ControllerGameBase : LegacyJoinControllerBase
+[Obsolete("Use JoinControllerGameBase")]
+public abstract class ControllerGameBase(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IUserRepository userRepository
+        ) : LegacyJoinControllerBase(userRepository)
 {
-    protected IProjectService ProjectService { get; }
-    public IProjectRepository ProjectRepository { get; }
-
-    protected ControllerGameBase(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IUserRepository userRepository
-        ) : base(userRepository)
-    {
-        ProjectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
-        ProjectService = projectService;
-    }
+    protected IProjectService ProjectService { get; } = projectService;
+    public IProjectRepository ProjectRepository { get; } = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
 
     [DoesNotReturn]
     protected ActionResult NoAccesToProjectView(Project project) => throw new NoAccessToProjectException(project, CurrentUserId);
@@ -41,4 +36,15 @@ public abstract class ControllerGameBase : LegacyJoinControllerBase
         var project = await ProjectRepository.GetProjectAsync(projectId);
         return project == null ? NotFound() : RedirectToIndex(project);
     }
+}
+
+[TypeFilter<CaptureNoAccessExceptionFilter>]
+[DiscoverProjectFilter]
+public abstract class JoinControllerGameBase : ControllerBase
+{
+    protected ActionResult RedirectToIndex(Project project) => RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
+
+    protected ActionResult RedirectToIndex(int projectId, int characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
+
+    protected ActionResult RedirectToIndex(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { characterGroupId.ProjectId, characterGroupId.CharacterGroupId, area = "" });
 }

@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes;
+
 namespace JoinRpg.Web.Models;
 
 public interface IOperationsAwareView
@@ -8,11 +10,15 @@ public interface IOperationsAwareView
 
     bool ShowCharacterCreateButton => ProjectId is not null;
 
-    IReadOnlyCollection<int> ClaimIds { get; }
+    IReadOnlyCollection<ClaimIdentification> ClaimIds { get; }
 
-    IReadOnlyCollection<int> CharacterIds { get; }
+    IReadOnlyCollection<CharacterIdentification> CharacterIds { get; }
 
     string? InlineTitle { get; }
 
     string? CountString { get; }
+
+    string ClaimIdCompressed() => new CompressedIntList(ClaimIds).ToString();
+
+    string CharacterIdCompressed() => new CompressedIntList(CharacterIds).ToString();
 }

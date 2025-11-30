@@ -1,4 +1,3 @@
-using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Services.Email;
@@ -9,6 +8,7 @@ public static class NotificationRegistration
         return services
             .AddTransient<IEmailService, EmailServiceImpl>()
             .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
+            .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IMasterEmailService, MasterEmailServiceImpl>();
     }
 }

@@ -37,7 +37,6 @@ public static class Registration
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IMasterClient, ProjectMasterViewService>()
         .AddScoped<IProjectListClient, ProjectListViewService>()
-        .AddScoped<MassMailManager>()
         .AddScoped<IPlotClient, Plots.PlotViewService>()
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<IKogdaIgraBindClient, AdminTools.KogdaIgraSyncManager>()

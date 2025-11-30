@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Mocks;
 using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Domain.Test.AddClaim;
@@ -13,6 +14,7 @@ public class ExceptionTranslationTest
     public void AllForbideReasonTranslatedToThrow(AddClaimForbideReason reason)
     {
         var claim = new Claim();
-        _ = Should.Throw<JoinRpgBaseException>(() => ClaimAcceptOrMoveValidationExtensions.ThrowForReason(reason, claim));
+        var projectInfo = new MockedProject().ProjectInfo;
+        _ = Should.Throw<JoinRpgBaseException>(() => ClaimAcceptOrMoveValidationExtensions.ThrowForReason(reason, claim, projectInfo));
     }
 }

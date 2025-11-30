@@ -42,8 +42,8 @@ public class CharacterListViewModel(
                     currentUserId,
                     projectInfo, problemValidator)).ToArray();
     public int? ProjectId { get; } = projectInfo.ProjectId.Value;
-    public IReadOnlyCollection<int> ClaimIds { get; } = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
-    public IReadOnlyCollection<int> CharacterIds { get; } = characters.Select(c => c.CharacterId).ToArray();
+    public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; } = characters.Select(c => c.ApprovedClaim?.GetId()).WhereNotNull().ToArray();
+    public IReadOnlyCollection<CharacterIdentification> CharacterIds { get; } = characters.Select(c => c.GetId()).ToArray();
     public string ProjectName { get; } = projectInfo.ProjectName;
     public string Title { get; } = title;
 
