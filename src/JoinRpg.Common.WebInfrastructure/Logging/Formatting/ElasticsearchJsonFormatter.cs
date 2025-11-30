@@ -1,3 +1,9 @@
+#pragma warning disable CS8604
+#pragma warning disable CS8625
+#pragma warning disable CS1572
+#pragma warning disable IDE0011
+#pragma warning disable IDE0040
+
 // Copyright 2014 Serilog Contributors
 // 
 // Adapted from https://github.com/serilog-contrib/serilog-sinks-elasticsearch/blob/1e9777c3034c2d8d078f60822c77b9caad5b7870/src/Serilog.Formatting.Elasticsearch/ElasticsearchJsonFormatter.cs
@@ -177,6 +183,7 @@ internal class ElasticsearchJsonFormatter : DefaultJsonFormatter
         WriteJsonProperty("Depth", depth, ref delim, output);
         WriteJsonProperty("ClassName", className, ref delim, output);
         WriteJsonProperty("Message", exception.Message, ref delim, output);
+
         WriteJsonProperty("Source", source, ref delim, output);
         if (_formatStackTraceAsArray)
         {
