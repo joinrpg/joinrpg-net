@@ -168,6 +168,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
               claim.ClaimId,
               claim.Player.Email,
               claim.ResponsibleMasterUserId,
+              claim.CharacterId
           })
           .ToListAsync();
 
@@ -188,6 +189,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
                                         ),
                                     new Email(c.Email)
                                     )),
+                CharacterId = new CharacterIdentification(c.ProjectId, c.CharacterId),
             }
             )];
     }
