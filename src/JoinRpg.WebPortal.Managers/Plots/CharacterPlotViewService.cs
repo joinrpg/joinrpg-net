@@ -113,7 +113,7 @@ public class CharacterPlotViewService(
     {
         return new TargetsInfo(
         [new(new(character.ProjectId, character.CharacterId), character.CharacterName)],
-            [.. character.GetParentGroupsToTop().Select(x => new GroupTarget(new CharacterGroupIdentification(x.ProjectId, x.CharacterGroupId), x.CharacterGroupName))]);
+            [.. character.GetParentGroupsToTop().Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))]);
     }
 
     public async Task<IReadOnlyList<PlotTextDto>> GetPlotsForCharacter(CharacterIdentification characterId)

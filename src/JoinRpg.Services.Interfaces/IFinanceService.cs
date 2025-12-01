@@ -81,7 +81,7 @@ public class ClaimPaymentTransferRequest : ClaimPaymentRequest, IClaimOperationR
     /// <summary>
     /// Claim to transfer money to
     /// </summary>
-    public int ToClaimId { get; set; }
+    public required int ToClaimId { get; set; }
 }
 
 

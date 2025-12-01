@@ -184,7 +184,7 @@ public class ForumController : ControllerGameBase
         {
             var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
 
-            groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupsToTop().Select(g => g.CharacterGroupId));
+            groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupIdsToTop().Select(g => g.CharacterGroupId));
         }
         var threads = await ForumRepository.GetThreads(projectid, isMaster, groupIds);
         var viewModel = new ForumThreadListViewModel(project, threads, CurrentUserId);

@@ -28,13 +28,13 @@ public static class ClaimExtensions
     public static bool IsPartOfAnyOfGroups(this Character character, IReadOnlyCollection<CharacterGroupIdentification> groups)
     {
         //TODO we can do faster than this
-        return CharacterGroupIdentification.FromList(character.GetParentGroupsToTop().Select(x => x.CharacterGroupId), new ProjectIdentification(character.ProjectId)).Intersect(groups).Any();
+        return character.GetParentGroupIdsToTop().Intersect(groups).Any();
     }
 
     public static bool IsPartOfGroup(this Character character, int characterGroupId)
     {
         //TODO we can do faster than this
-        return character.GetParentGroupsToTop().Any(g => g.CharacterGroupId == characterGroupId);
+        return character.GetParentGroupIdsToTop().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
     public static void EnsureStatus(this Claim claim, params ClaimStatus[] possibleStatus)
