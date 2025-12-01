@@ -743,6 +743,7 @@ public class PaymentsService(
         try
         {
             var sb = new StringBuilder();
+
             // TODO: Localize
             switch (notification)
             {
@@ -753,12 +754,12 @@ public class PaymentsService(
                     sb.AppendLine($"Оформлена ежемесячная подписка на сумму {sum:F2}₽.");
                     sb.AppendLine("Списания будут проводиться автоматически.");
                     sb.AppendLine();
-                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку: {uriService.Get(claim)}");
+                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку.");
                     break;
                 case PaymentNotification.RecurrentCharge:
                     sb.Append($"Списание средств по подписке на сумму {sum:F2}₽ подтверждено.");
                     sb.AppendLine();
-                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку: {uriService.Get(claim)}");
+                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку.");
                     break;
                 case PaymentNotification.Refund:
                     sb.AppendLine($"Проведен возврат на сумму {sum:F2}₽ на использованное средство платежа.");
@@ -769,14 +770,10 @@ public class PaymentsService(
                     throw new ArgumentOutOfRangeException(nameof(notification), notification, "Unknown payment notification");
             }
 
-            var email = new ClaimSimpleChangedNotification(
+            var email = new ClaimOnlinePaymentNotification(
                 claim.GetId(),
                 Player: ToUserInfoHeader(claim.Player),
-                CommentExtraAction.PcsbOnlineFeeAccepted,
-                new(claim.ProjectId),
-                currentUserAccessor.ToUserInfoHeader(),
-                new NotificationEventTemplate(sb.ToString()),
-                ClaimOperationType.PlayerChange
+                new NotificationEventTemplate(sb.ToString())
             );
 
             await claimNotificationService.Value.SendNotification(email);

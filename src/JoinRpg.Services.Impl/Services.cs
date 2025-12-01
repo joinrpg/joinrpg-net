@@ -43,7 +43,9 @@ public static class Services
             services
             .AddDailyJob<DailyChangedPlayerClaimsNotificationJob>()
             .AddDailyJob<ProjectPerformCloseJob>()
-            .AddTransient<ICaptainRuleService, CaptainRuleService>();
+            .AddTransient<ICaptainRuleService, CaptainRuleService>()
+            .AddTransient<CommentHelper>()
+            ;
     }
 
     [Obsolete("После того, как IdPortal заработает, убрать отсюда UserService в отдельную сборку в принципе")]

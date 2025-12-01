@@ -52,6 +52,6 @@ public enum CommentExtraAction
     [Display(Name = "Оплачен взнос", ShortName = "отмечено")]
     PaidFee,
 
-    [Display(Name = "Оплачен взнос", ShortName = "отмечено")]
-    PcsbOnlineFeeAccepted,
+    [Display(Name = "Возвращен взнос", ShortName = "отмечено")]
+    RefundFee,
 }

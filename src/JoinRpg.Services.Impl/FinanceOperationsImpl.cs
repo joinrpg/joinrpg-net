@@ -11,13 +11,14 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public class FinanceOperationsImpl(
+internal class FinanceOperationsImpl(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
     IVirtualUsersService vpu,
     ICurrentUserAccessor currentUserAccessor,
     IClaimNotificationService claimNotificationService,
-    IProjectMetadataRepository projectMetadataRepository) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IFinanceService
+    CommentHelper commentHelper,
+    IProjectMetadataRepository projectMetadataRepository) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
 {
     public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
@@ -222,7 +223,7 @@ public class FinanceOperationsImpl(
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.CanManageMoney);
 
-        var (_, email) = AddCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange, Now);
 
         claim.CurrentFee = feeValue;
 
@@ -266,7 +267,7 @@ public class FinanceOperationsImpl(
 
         CheckOperationDate(request.OperationDate);
 
-        var (comment, email) = AddCommentWithNotification(request.Contents, claim, projectInfo, CommentExtraAction.RequestPreferential, ClaimOperationType.PlayerChange);
+        var (comment, email) = CommentHelper.AddClaimCommentWithNotification(request.Contents, claim, projectInfo, CommentExtraAction.RequestPreferential, ClaimOperationType.PlayerChange, Now);
 
         var financeOperation = new FinanceOperation()
         {

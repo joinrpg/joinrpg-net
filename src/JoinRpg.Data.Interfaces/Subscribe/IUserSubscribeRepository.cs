@@ -16,6 +16,8 @@ public interface IUserSubscribeRepository
     /// Load subscribtion by id
     /// </summary>
     Task<UserSubscriptionDto> LoadSubscriptionById(ProjectIdentification projectId, int subscriptionId);
-    Task<IReadOnlyCollection<UserSubscribe>> GetDirect(ClaimIdentification claimId);
-    Task<IReadOnlyCollection<UserSubscribe>> GetForCharAndGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications, CharacterIdentification characterId);
+    Task<IReadOnlyCollection<UserSubscribe>> GetDirect(IReadOnlyCollection<ClaimIdentification> claimId);
+    Task<IReadOnlyCollection<UserSubscribe>> GetForCharAndGroups(
+        IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications,
+        IReadOnlyCollection<CharacterIdentification> characterId);
 }

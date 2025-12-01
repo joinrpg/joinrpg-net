@@ -19,9 +19,10 @@ internal class ClaimServiceImpl(
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
-    IClaimNotificationService claimNotificationService
+    IClaimNotificationService claimNotificationService,
+    CommentHelper commentHelper
     )
-    : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IClaimService
+    : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
     // TODO в GameSubscribeService
     public async Task SubscribeClaimToUser(int projectId, int claimId)
@@ -81,7 +82,7 @@ internal class ClaimServiceImpl(
         MarkChanged(claim.Character);
         claim.Character.InGame = true;
 
-        var (_, email) = AddCommentWithNotification("", claim, projectInfo, CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification("", claim, projectInfo, CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange, Now);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -146,7 +147,7 @@ internal class ClaimServiceImpl(
         oldClaim.ClaimStatus = ClaimStatus.Approved;
         source.ApprovedClaim = claim;
 
-        var (_, email) = AddCommentWithNotification(secondRoleCommentText, oldClaim, projectInfo, CommentExtraAction.OutOfGame, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(secondRoleCommentText, oldClaim, projectInfo, CommentExtraAction.OutOfGame, ClaimOperationType.MasterVisibleChange, Now);
 
         email = email with { AnotherCharacterId = characterId };
 
@@ -268,7 +269,7 @@ internal class ClaimServiceImpl(
         }
 
 
-        var result = AddCommentWithNotification(commentText, claim, projectInfo, extraAction, claimOperationType);
+        var result = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, extraAction, claimOperationType, Now);
 
         if (parentComment is not null)
         {
@@ -336,7 +337,7 @@ internal class ClaimServiceImpl(
         claim.MasterAcceptedDate = Now;
         claim.ChangeStatusWithCheck(ClaimStatus.Approved);
 
-        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.ApproveByMaster, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.ApproveByMaster, ClaimOperationType.MasterVisibleChange, Now);
 
         List<ClaimSimpleChangedNotification> notificationsList = [email];
 
@@ -348,12 +349,12 @@ internal class ClaimServiceImpl(
                 otherClaim.MasterDeclinedDate = Now;
                 otherClaim.ClaimStatus = ClaimStatus.DeclinedByMaster;
 
-                var (_, otherEmail) = AddCommentWithNotification(
+                var (_, otherEmail) = CommentHelper.AddClaimCommentWithNotification(
                     "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
                     otherClaim,
                     projectInfo,
                     CommentExtraAction.DeclineByMaster,
-                    ClaimOperationType.MasterVisibleChange);
+                    ClaimOperationType.MasterVisibleChange, Now);
 
                 notificationsList.Add(otherEmail);
             }
@@ -470,7 +471,7 @@ internal class ClaimServiceImpl(
 
         await accommodationInviteService.DeclineAllClaimInvites(claimId);
 
-        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByMaster, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByMaster, ClaimOperationType.MasterVisibleChange, Now);
 
         await UnitOfWork.SaveChangesAsync();
         await claimNotificationService.SendNotification(email);
@@ -670,7 +671,7 @@ internal class ClaimServiceImpl(
 
 
 
-        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByPlayer, ClaimOperationType.PlayerChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByPlayer, ClaimOperationType.PlayerChange, Now);
 
         await UnitOfWork.SaveChangesAsync();
         await claimNotificationService.SendNotification(email);
@@ -706,7 +707,7 @@ internal class ClaimServiceImpl(
         claim.Character.IsActive = true;
         MarkChanged(claim.Character);
 
-        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.RestoreByMaster, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.RestoreByMaster, ClaimOperationType.MasterVisibleChange, Now);
 
         email = email with { AnotherCharacterId = oldCharacterId };
 
@@ -742,7 +743,7 @@ internal class ClaimServiceImpl(
 
         MarkCharacterChangedIfApproved(claim); // after move
 
-        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.MoveByMaster, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.MoveByMaster, ClaimOperationType.MasterVisibleChange, Now);
 
         email = email with { AnotherCharacterId = oldCharacterId };
 
@@ -802,12 +803,12 @@ internal class ClaimServiceImpl(
 
         var newMaster = await UserRepository.GetById(responsibleMasterId);
 
-        var (_, email) = AddCommentWithNotification(
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(
             $"{claim.ResponsibleMasterUser.GetDisplayName()} → {newMaster.GetDisplayName()}",
             claim,
             projectInfo,
             CommentExtraAction.ChangeResponsible,
-            ClaimOperationType.MasterVisibleChange);
+            ClaimOperationType.MasterVisibleChange, Now);
 
         email = email with { OldResponsibleMaster = oldResponsibleMaster };
 
@@ -844,7 +845,7 @@ internal class ClaimServiceImpl(
         claim.ChangeStatusWithCheck(ClaimStatus.OnHold);
 
 
-        var (_, email) = AddCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.OnHoldByMaster, ClaimOperationType.MasterVisibleChange);
+        var (_, email) = CommentHelper.AddClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.OnHoldByMaster, ClaimOperationType.MasterVisibleChange, Now);
 
 
         await UnitOfWork.SaveChangesAsync();

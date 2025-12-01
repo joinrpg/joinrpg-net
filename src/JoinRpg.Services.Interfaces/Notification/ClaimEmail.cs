@@ -126,7 +126,6 @@ public record class ClaimSimpleChangedNotification(
     ClaimIdentification ClaimId,
     UserInfoHeader Player,
     CommentExtraAction? CommentExtraAction,                                 // Не нравится, что тут nullable
-    ProjectIdentification ProjectId,
     UserInfoHeader Initiator,
     NotificationEventTemplate Text,
     ClaimOperationType ClaimOperationType,
@@ -134,5 +133,11 @@ public record class ClaimSimpleChangedNotification(
     UserIdentification? OldResponsibleMaster = null,                        // Мог поменяться
     CharacterIdentification? AnotherCharacterId = null,                          // Это если
     int? Money = null
+    );
+
+public record class ClaimOnlinePaymentNotification(
+    ClaimIdentification ClaimId,
+    UserInfoHeader Player,
+    NotificationEventTemplate Text
     );
 

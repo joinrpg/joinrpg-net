@@ -36,4 +36,7 @@ public record class SubscriptionOptions
         };
 }
 
-public record class UserSubscribe(UserInfoHeader User, SubscriptionOptions Options);
+public record class UserSubscribe(UserInfoHeader User, SubscriptionOptions Options)
+{
+    public UserSubscribe(UserInfoHeader User) : this(User, SubscriptionOptions.CreateAllSet()) { }
+}

@@ -11,7 +11,7 @@
   OnHoldByMaster: 9,
   OutOfGame: 13,
   PaidFee: 15,
-  PcsbOnlineFeeAccepted: 16,
+  RefundFee: 16,
   RejectFinance: 1,
   RequestPreferential: 14,
   RestoreByMaster: 4,

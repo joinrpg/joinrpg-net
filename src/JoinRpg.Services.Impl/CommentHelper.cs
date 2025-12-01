@@ -1,12 +1,24 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-internal static class CommentHelper
+internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
 {
+    [Obsolete("Use AddCommentWithNotification")]
     public static Comment CreateCommentForClaim(
+      Claim claim,
+      int currentUserId,
+      DateTime createdAt,
+      string commentText,
+      bool isVisibleToPlayer,
+      CommentExtraAction? extraAction = null) => CreateCommentForClaimInternal(claim, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction);
+
+    private static Comment CreateCommentForClaimInternal(
       Claim claim,
       int currentUserId,
       DateTime createdAt,
@@ -53,10 +65,10 @@ internal static class CommentHelper
         string commentText,
         bool isVisibleToPlayer,
         Comment? parentComment,
-        CommentExtraAction? extraAction = null) => CreateCommentForDiscussion(commentDiscussion, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction).SetParent(parentComment);
+        CommentExtraAction? extraAction = null) => SetParent(CreateCommentForDiscussion(commentDiscussion, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction), parentComment);
 
     [Obsolete("Use SetParentCommentAndCheck")]
-    public static Comment SetParent(this Comment comment, Comment? parentComment)
+    public static Comment SetParent(Comment comment, Comment? parentComment)
     {
         if (parentComment is not null)
         {
@@ -97,4 +109,40 @@ internal static class CommentHelper
         //TODO: check access for discussion for players (claims & forums)
         return comment;
     }
+
+    //Если parentComment не равен нулю comment.SetParentCommentAndCheck(parentComment, claimOperationType);
+    internal (Comment, ClaimSimpleChangedNotification) AddClaimCommentWithNotification(
+        string commentText,
+        Claim claim,
+        ProjectInfo projectInfo,
+        CommentExtraAction? commentExtraAction,
+        ClaimOperationType claimOperationType, DateTime now)
+    {
+        // Этот метод вызывается ДО сохранения всего в базу
+        // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
+
+        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
+        {
+            projectInfo.RequestMasterAccess(currentUserAccessor);
+
+        }
+
+        var comment = CreateCommentForClaimInternal(claim,
+            currentUserAccessor.UserId,
+            now,
+            commentText,
+            isVisibleToPlayer: claimOperationType != ClaimOperationType.MasterSecretChange,
+            commentExtraAction);
+
+        return (comment, new ClaimSimpleChangedNotification(
+            claim.GetId(),
+            Player: ToUserInfoHeader(claim.Player),
+            commentExtraAction,
+            currentUserAccessor.ToUserInfoHeader(),
+            new NotificationEventTemplate(commentText),
+            claimOperationType
+            ));
+    }
+
+    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 }

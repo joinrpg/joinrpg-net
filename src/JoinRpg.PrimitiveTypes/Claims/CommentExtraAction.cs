@@ -18,5 +18,5 @@ public enum CommentExtraAction
     OutOfGame = 13,
     RequestPreferential = 14,
     PaidFee = 15,
-    PcsbOnlineFeeAccepted = 16,
+    RefundFee = 16,
 }

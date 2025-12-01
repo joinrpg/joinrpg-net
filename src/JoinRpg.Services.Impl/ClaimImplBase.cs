@@ -5,16 +5,18 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public abstract class ClaimImplBase(IUnitOfWork unitOfWork,
+internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
     IEmailService emailService,
     ICurrentUserAccessor currentUserAccessor,
-    IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor)
+    IProjectMetadataRepository projectMetadataRepository,
+    CommentHelper commentHelper
+    ) : DbServiceImplBase(unitOfWork, currentUserAccessor)
 {
+    protected CommentHelper CommentHelper { get; } = commentHelper;
     protected IProjectMetadataRepository ProjectMetadataRepository { get; } = projectMetadataRepository;
 
     protected IEmailService EmailService { get; } = emailService;
@@ -56,12 +58,14 @@ public abstract class ClaimImplBase(IUnitOfWork unitOfWork,
             playerChange = false;
         }
 
+        var commentAction = money < 0 ? CommentExtraAction.RefundFee : CommentExtraAction.PaidFee;
+
         projectInfo.EnsureProjectActive();
 
         ClaimOperationType claimOperationType = playerChange ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
         var state = playerChange ? FinanceOperationState.Proposed : FinanceOperationState.Approved;
 
-        var (comment, email) = AddCommentWithNotification(contents, claim, projectInfo, CommentExtraAction.PaidFee, claimOperationType);
+        var (comment, email) = CommentHelper.AddClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, Now);
 
         email = email with
         {
@@ -172,41 +176,4 @@ public abstract class ClaimImplBase(IUnitOfWork unitOfWork,
             CommentExtraAction = commentExtraAction,
         };
     }
-
-    //Если parentComment не равен нулю comment.SetParentCommentAndCheck(parentComment, claimOperationType);
-    protected (Comment, ClaimSimpleChangedNotification) AddCommentWithNotification(
-        string commentText,
-        Claim claim,
-        ProjectInfo projectInfo,
-        CommentExtraAction? commentExtraAction,
-        ClaimOperationType claimOperationType)
-    {
-        // Этот метод вызывается ДО сохранения всего в базу
-        // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
-
-        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
-        {
-            projectInfo.RequestMasterAccess(currentUserAccessor);
-
-        }
-
-        var comment = CommentHelper.CreateCommentForClaim(claim,
-            CurrentUserId,
-            Now,
-            commentText,
-            isVisibleToPlayer: claimOperationType != ClaimOperationType.MasterSecretChange,
-            commentExtraAction);
-
-        return (comment, new ClaimSimpleChangedNotification(
-            claim.GetId(),
-            Player: ToUserInfoHeader(claim.Player),
-            commentExtraAction,
-            new(claim.ProjectId),
-            currentUserAccessor.ToUserInfoHeader(),
-            new NotificationEventTemplate(commentText),
-            claimOperationType
-            ));
-    }
-
-    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 }
