@@ -16,6 +16,7 @@ public interface ICharacterRepository : IDisposable
 
     Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds);
 
+    [Obsolete]
     Task<Character> GetCharacterAsync(int projectId, int characterId);
 
     Task<Character> GetCharacterAsync(CharacterIdentification characterId);
@@ -85,4 +86,5 @@ public class ClaimWithPlayer
     public required UserInfoHeader Player { get; set; }
     public required string? ExtraNicknames { get; set; }
     public required UserIdentification ResponsibleMasterUserId { get; set; }
+    public required CharacterIdentification CharacterId { get; set; }
 }
