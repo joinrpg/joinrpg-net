@@ -9,6 +9,8 @@
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
+    <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj" />
+    <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

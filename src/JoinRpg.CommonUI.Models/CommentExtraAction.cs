@@ -48,4 +48,10 @@ public enum CommentExtraAction
 
     [Display(Name = "Запрос льготного взноса", ShortName = "изменена")]
     RequestPreferential,
+
+    [Display(Name = "Оплачен взнос", ShortName = "отмечено")]
+    PaidFee,
+
+    [Display(Name = "Оплачен взнос", ShortName = "отмечено")]
+    PcsbOnlineFeeAccepted,
 }

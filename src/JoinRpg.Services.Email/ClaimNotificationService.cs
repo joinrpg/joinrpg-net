@@ -117,11 +117,16 @@ $@"Добрый день, %recepient.name%
         return await userSubscribeRepository.GetForCharAndGroups(await GetCharacterGroups(projectInfo, characterId), characterId);
     }
 
-    private Func<SubscriptionOptions, bool> GetSubscribePredicate(CommentExtraAction? commentExtraAction)
+    internal static Func<SubscriptionOptions, bool> GetSubscribePredicate(CommentExtraAction? commentExtraAction)
     {
         return commentExtraAction switch
         {
-            CommentExtraAction.ApproveFinance or CommentExtraAction.RejectFinance or CommentExtraAction.FeeChanged or CommentExtraAction.RequestPreferential
+            CommentExtraAction.ApproveFinance
+                or CommentExtraAction.RejectFinance
+                or CommentExtraAction.FeeChanged
+                or CommentExtraAction.RequestPreferential
+                or CommentExtraAction.PaidFee
+                or CommentExtraAction.PcsbOnlineFeeAccepted
             => s => s.MoneyOperation,
             CommentExtraAction.ApproveByMaster or CommentExtraAction.DeclineByMaster or CommentExtraAction.RestoreByMaster
             or CommentExtraAction.MoveByMaster or CommentExtraAction.DeclineByPlayer or CommentExtraAction.ChangeResponsible
