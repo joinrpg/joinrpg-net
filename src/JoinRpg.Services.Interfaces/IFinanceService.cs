@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Services.Interfaces;
 
@@ -28,13 +29,13 @@ public class MarkPreferentialRequest : IClaimOperationRequest
 
 public class FeeAcceptedOperationRequest : IClaimOperationRequest
 {
-    public int ProjectId { get; set; }
+    int IClaimOperationRequest.ProjectId => PaymentTypeId.ProjectId;
     public int ClaimId { get; set; }
     public required string Contents { get; set; }
     public DateTime OperationDate { get; set; }
     public int FeeChange { get; set; }
     public int Money { get; set; }
-    public int PaymentTypeId { get; set; }
+    public required PaymentTypeIdentification PaymentTypeId { get; set; }
 }
 
 public class MarkMeAsPreferentialFeeOperationRequest : IClaimOperationRequest
@@ -114,7 +115,7 @@ public interface IFinanceService
     Task EditCustomPaymentType(int projectId, int paymentTypeId, string name, bool isDefault);
     Task CreateFeeSetting(CreateFeeSettingRequest request);
     Task DeleteFeeSetting(int projectid, int projectFeeSettingId);
-    Task ChangeFee(int projectId, int claimId, int feeValue);
+    Task ChangeFee(ClaimIdentification claimIdentification, int feeValue);
     Task SaveGlobalSettings(SetFinanceSettingsRequest request);
     Task MarkPreferential(MarkPreferentialRequest request);
     Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request);

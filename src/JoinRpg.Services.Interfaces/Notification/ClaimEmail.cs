@@ -101,11 +101,6 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
     }
 }
 
-public class FinanceOperationEmail : ClaimEmailModel
-{
-    public int Money { get; set; }
-}
-
 public class ClaimEmailModel : EmailModelBase
 {
     public ParcipantType InitiatorType { get; set; }
@@ -137,6 +132,7 @@ public record class ClaimSimpleChangedNotification(
     ClaimOperationType ClaimOperationType,
     IReadOnlyCollection<NotificationRecepient>? ExtraSubscribers = null,
     UserIdentification? OldResponsibleMaster = null,                        // Мог поменяться
-    CharacterIdentification? AnotherCharacterId = null                          // Это если 
+    CharacterIdentification? AnotherCharacterId = null,                          // Это если
+    int? Money = null
     );
 

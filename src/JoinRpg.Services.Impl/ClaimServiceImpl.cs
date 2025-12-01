@@ -6,7 +6,6 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -60,17 +59,12 @@ internal class ClaimServiceImpl(
             throw new ClaimWrongStatusException(claim);
         }
 
-        FinanceOperationEmail? financeEmail = null;
+        ClaimSimpleChangedNotification? financeEmail = null;
         if (money > 0)
         {
-            var paymentType = claim.Project.GetCashPaymentType(CurrentUserId);
+            var paymentType = projectInfo.ProjectFinanceSettings.GetCashPaymentType(currentUserAccessor.UserIdentification) ?? throw new JoinRpgInvalidUserException();
 
-            if (paymentType == null)
-            {
-                throw new JoinRpgInvalidUserException();
-            }
-
-            financeEmail = await AcceptFeeImpl(".", Now, money, paymentType, claim);
+            financeEmail = AcceptFeeImpl(".", Now, money, paymentType, claim, projectInfo);
         }
         else if (money < 0)
         {
@@ -95,7 +89,7 @@ internal class ClaimServiceImpl(
 
         if (financeEmail != null)
         {
-            await EmailService.Email(financeEmail);
+            await claimNotificationService.SendNotification(financeEmail);
         }
     }
 
@@ -931,38 +925,6 @@ internal class ClaimServiceImpl(
         return await AddClaimFromUser(projectInfo.DefaultTemplateCharacter, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
     }
 
-
-    //Если parentComment не равен нулю comment.SetParentCommentAndCheck(parentComment, claimOperationType);
-    public (Comment, ClaimSimpleChangedNotification) AddCommentWithNotification(
-        string commentText,
-        Claim claim,
-        ProjectInfo projectInfo,
-        CommentExtraAction? commentExtraAction,
-        ClaimOperationType claimOperationType)
-    {
-        // Этот метод вызывается ДО сохранения всего в базу
-        // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
-
-        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
-        {
-            projectInfo.RequestMasterAccess(currentUserAccessor);
-
-        }
-
-
-        var comment = AddCommentImpl(claim, commentText, claimOperationType != ClaimOperationType.MasterSecretChange, commentExtraAction);
-
-        return (comment, new ClaimSimpleChangedNotification(
-            claim.GetId(),
-            Player: ToUserInfoHeader(claim.Player),
-            commentExtraAction,
-            new(claim.ProjectId),
-            currentUserAccessor.ToUserInfoHeader(),
-            new NotificationEventTemplate(commentText),
-            claimOperationType
-            ));
-    }
-
     public static void SetParentCommentAndCheck((Comment, ClaimSimpleChangedNotification) result, Comment parentComment, ClaimOperationType claimOperationType)
     {
         if (claimOperationType != ClaimOperationType.MasterSecretChange && parentComment.IsVisibleToPlayer == false)
@@ -986,7 +948,7 @@ internal class ClaimServiceImpl(
         }
     }
 
-    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
+
 
     [Obsolete]
     private Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)

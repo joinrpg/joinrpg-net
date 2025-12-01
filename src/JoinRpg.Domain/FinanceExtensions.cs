@@ -227,28 +227,6 @@ public static class FinanceExtensions
         }
     }
 
-    public static PaymentType? GetCashPaymentType(
-        this Project project,
-        int userId)
-    {
-        if (project == null)
-        {
-            throw new ArgumentNullException(nameof(project));
-        }
-
-        return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.TypeKind == PaymentTypeKind.Cash);
-    }
-
-    public static bool CanAcceptCash(
-        this Project project,
-        UserIdentification userId)
-    {
-        ArgumentNullException.ThrowIfNull(project);
-        ArgumentNullException.ThrowIfNull(userId);
-
-        return GetCashPaymentType(project, userId.Value)?.IsActive ?? false;
-    }
-
     public static IEnumerable<MoneyTransfer> Approved(
         this IEnumerable<MoneyTransfer> transfers)
         => transfers.Where(mt => mt.ResultState == MoneyTransferState.Approved);

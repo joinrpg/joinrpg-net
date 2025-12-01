@@ -7,34 +7,12 @@ namespace JoinRpg.Services.Impl;
 internal static class CommentHelper
 {
     public static Comment CreateCommentForClaim(
-        Claim claim,
-        int currentUserId,
-        DateTime createdAt,
-        string commentText,
-        bool isVisibleToPlayer,
-        Comment? parentComment,
-        CommentExtraAction? extraAction = null)
-    {
-        var comment = CreateCommentForDiscussion(claim.CommentDiscussion,
-          currentUserId,
-          createdAt,
-          commentText,
-          isVisibleToPlayer,
-          parentComment,
-          extraAction);
-
-        SetClaimTimes(claim, currentUserId, createdAt, isVisibleToPlayer);
-
-        return comment;
-    }
-
-    public static Comment CreateCommentForClaim(
-    Claim claim,
-    int currentUserId,
-    DateTime createdAt,
-    string commentText,
-    bool isVisibleToPlayer,
-    CommentExtraAction? extraAction = null)
+      Claim claim,
+      int currentUserId,
+      DateTime createdAt,
+      string commentText,
+      bool isVisibleToPlayer,
+      CommentExtraAction? extraAction = null)
     {
         var comment = CreateCommentForDiscussion(claim.CommentDiscussion,
           currentUserId,

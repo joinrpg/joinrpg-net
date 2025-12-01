@@ -3,84 +3,71 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public abstract class ClaimImplBase : DbServiceImplBase
+public abstract class ClaimImplBase(IUnitOfWork unitOfWork,
+    IEmailService emailService,
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor)
 {
-    protected IProjectMetadataRepository ProjectMetadataRepository { get; }
+    protected IProjectMetadataRepository ProjectMetadataRepository { get; } = projectMetadataRepository;
 
-    protected IEmailService EmailService { get; }
+    protected IEmailService EmailService { get; } = emailService;
 
-    protected ClaimImplBase(IUnitOfWork unitOfWork,
-        IEmailService emailService,
-        ICurrentUserAccessor currentUserAccessor,
-        IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, currentUserAccessor)
+    protected ClaimSimpleChangedNotification AcceptFeeImpl(string contents,
+                                                           DateTime operationDate,
+                                                           int money,
+                                                           PaymentTypeInfo paymentType,
+                                                           Claim claim,
+                                                           ProjectInfo projectInfo)
     {
-        EmailService = emailService;
-        ProjectMetadataRepository = projectMetadataRepository;
-    }
-
-    protected Comment AddCommentImpl(Claim claim,
-        Comment? parentComment,
-        string commentText,
-        bool isVisibleToPlayer,
-        CommentExtraAction? extraAction = null)
-    {
-        var comment = CommentHelper.CreateCommentForClaim(claim,
-            CurrentUserId,
-            Now,
-            commentText,
-            isVisibleToPlayer,
-            parentComment,
-            extraAction);
-        return comment;
-    }
-
-    protected Comment AddCommentImpl(Claim claim,
-       string commentText,
-       bool isVisibleToPlayer,
-       CommentExtraAction? extraAction = null)
-    {
-        var comment = CommentHelper.CreateCommentForClaim(claim,
-            CurrentUserId,
-            Now,
-            commentText,
-            isVisibleToPlayer,
-            extraAction);
-        return comment;
-    }
-
-    protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int money,
-    PaymentType paymentType, Claim claim)
-    {
-
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
-        _ = paymentType.EnsureActive();
 
         CheckOperationDate(operationDate);
 
+        paymentType.EnsureActive();
+
+        bool playerChange;
+
         if (money < 0)
         {
-            _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
+            projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
+            playerChange = false;
         }
-        var state = FinanceOperationState.Approved;
-
-        if (paymentType.UserId != CurrentUserId)
+        else if (claim.PlayerUserId == CurrentUserId)
         {
-            if (claim.PlayerUserId == CurrentUserId)
+            playerChange = true;
+        }
+        else
+        {
+
+            if (paymentType.User.UserId != CurrentUserId)
             {
-                //Player mark that he pay fee. Put this to moderation
-                state = FinanceOperationState.Proposed;
+                projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
             }
             else
             {
-                _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
+                projectInfo.RequestMasterAccess(currentUserAccessor);
             }
+            playerChange = false;
         }
 
-        var comment = AddCommentImpl(claim, null, contents, isVisibleToPlayer: true);
+        projectInfo.EnsureProjectActive();
+
+        ClaimOperationType claimOperationType = playerChange ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
+        var state = playerChange ? FinanceOperationState.Proposed : FinanceOperationState.Approved;
+
+        var (comment, email) = AddCommentWithNotification(contents, claim, projectInfo, CommentExtraAction.PaidFee, claimOperationType);
+
+        email = email with
+        {
+            Money = money,
+            ExtraSubscribers = [new NotificationRecepient(paymentType.User, SubscriptionReason.Finance)],
+        };
 
         var financeOperation = new FinanceOperation()
         {
@@ -89,7 +76,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
             Changed = Now,
             Claim = claim,
             Comment = comment,
-            PaymentType = paymentType,
+            PaymentTypeId = paymentType.PaymentTypeId.PaymentTypeId,
             State = state,
             ProjectId = claim.ProjectId,
             OperationDate = operationDate,
@@ -114,15 +101,9 @@ public abstract class ClaimImplBase : DbServiceImplBase
 
         claim.UpdateClaimFeeIfRequired(operationDate, projectInfo);
 
-        var email = await CreateClaimEmail<FinanceOperationEmail>(claim, contents,
-          s => s.MoneyOperation,
-          commentExtraAction: null,
-          extraRecipients: new[] { paymentType.User });
-        email.Money = money;
         return email;
     }
 
-    // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
     protected void CheckOperationDate(DateTime operationDate)
     {
         if (operationDate > Now.AddDays(1)
@@ -142,11 +123,6 @@ public abstract class ClaimImplBase : DbServiceImplBase
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
 
         return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
-    }
-    [Obsolete]
-    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
-    {
-        return LoadClaimAsMaster(new ClaimIdentification(projectId, claimId), permission, reason);
     }
 
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsPlayer(ClaimIdentification claimId)
@@ -196,4 +172,41 @@ public abstract class ClaimImplBase : DbServiceImplBase
             CommentExtraAction = commentExtraAction,
         };
     }
+
+    //Если parentComment не равен нулю comment.SetParentCommentAndCheck(parentComment, claimOperationType);
+    protected (Comment, ClaimSimpleChangedNotification) AddCommentWithNotification(
+        string commentText,
+        Claim claim,
+        ProjectInfo projectInfo,
+        CommentExtraAction? commentExtraAction,
+        ClaimOperationType claimOperationType)
+    {
+        // Этот метод вызывается ДО сохранения всего в базу
+        // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
+
+        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
+        {
+            projectInfo.RequestMasterAccess(currentUserAccessor);
+
+        }
+
+        var comment = CommentHelper.CreateCommentForClaim(claim,
+            CurrentUserId,
+            Now,
+            commentText,
+            isVisibleToPlayer: claimOperationType != ClaimOperationType.MasterSecretChange,
+            commentExtraAction);
+
+        return (comment, new ClaimSimpleChangedNotification(
+            claim.GetId(),
+            Player: ToUserInfoHeader(claim.Player),
+            commentExtraAction,
+            new(claim.ProjectId),
+            currentUserAccessor.ToUserInfoHeader(),
+            new NotificationEventTemplate(commentText),
+            claimOperationType
+            ));
+    }
+
+    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 }

@@ -449,13 +449,12 @@ public class ClaimController(
             await
                 financeService.FeeAcceptedOperation(new FeeAcceptedOperationRequest()
                 {
-                    ProjectId = claim.ProjectId,
                     ClaimId = claim.ClaimId,
                     Contents = viewModel.CommentText,
                     FeeChange = viewModel.FeeChange,
                     Money = viewModel.Money,
                     OperationDate = viewModel.OperationDate,
-                    PaymentTypeId = viewModel.PaymentTypeId,
+                    PaymentTypeId = new PrimitiveTypes.ProjectMetadata.Payments.PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId),
                 });
 
             return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
@@ -516,7 +515,7 @@ public class ClaimController(
             }
 
             await
-              financeService.ChangeFee(projectid, claimid, feeValue);
+              financeService.ChangeFee(new ClaimIdentification(projectid, claimid), feeValue);
 
             return RedirectToAction("Edit", "Claim", new { claimid, projectid });
         }

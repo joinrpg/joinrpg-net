@@ -36,6 +36,11 @@ public record NotificationRecepient
     {
         this.fields.TryAdd("name", userDisplayName);
     }
+
+    public NotificationRecepient(UserInfoHeader user, SubscriptionReason subscriptionReason, IReadOnlyDictionary<string, string>? fields = null)
+    : this(user.UserId, user.DisplayName.DisplayName, subscriptionReason, fields)
+    {
+    }
     public NotificationRecepient(ProjectMasterInfo master, IReadOnlyDictionary<string, string>? fields = null)
         : this(master.UserId, master.Name.DisplayName, SubscriptionReason.MasterOfGame, fields)
     {

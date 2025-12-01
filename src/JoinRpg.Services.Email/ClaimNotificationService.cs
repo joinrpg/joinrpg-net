@@ -37,6 +37,16 @@ internal class ClaimNotificationService(
             extraText = "**" + extraText + "**\n\n";
         }
 
+        if (model.Money > 0)
+        {
+            extraText += $"\nОплата денег игроком: {model.Money}\n";
+        }
+
+        if (model.Money < 0)
+        {
+            extraText += $"\nВозврат денег игроку: {-model.Money}\n";
+        }
+
         if (model.CommentExtraAction == CommentExtraAction.MoveByMaster)
         {
             // TODO Раньше писалось на какую новую роль
@@ -127,7 +137,7 @@ $@"Добрый день, %recepient.name%
                 or CommentExtraAction.RequestPreferential
                 or CommentExtraAction.PaidFee
                 or CommentExtraAction.PcsbOnlineFeeAccepted
-            => s => s.MoneyOperation,
+                => s => s.MoneyOperation,
             CommentExtraAction.ApproveByMaster or CommentExtraAction.DeclineByMaster or CommentExtraAction.RestoreByMaster
             or CommentExtraAction.MoveByMaster or CommentExtraAction.DeclineByPlayer or CommentExtraAction.ChangeResponsible
             or CommentExtraAction.OnHoldByMaster or CommentExtraAction.CheckedIn or CommentExtraAction.SecondRole or CommentExtraAction.OutOfGame

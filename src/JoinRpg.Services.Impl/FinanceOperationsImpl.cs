@@ -11,33 +11,30 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
+public class FinanceOperationsImpl(
+    IUnitOfWork unitOfWork,
+    IEmailService emailService,
+    IVirtualUsersService vpu,
+    ICurrentUserAccessor currentUserAccessor,
+    IClaimNotificationService claimNotificationService,
+    IProjectMetadataRepository projectMetadataRepository) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository), IFinanceService
 {
-
-    private IVirtualUsersService _vpu;
-
-    public FinanceOperationsImpl(
-        IUnitOfWork unitOfWork,
-        IEmailService emailService,
-        IVirtualUsersService vpu,
-        ICurrentUserAccessor currentUserAccessor,
-        IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository) => _vpu = vpu;
-
     public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
-        var (claim, _) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
-        var paymentType =
-            claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == request.PaymentTypeId);
+        var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
 
-        var email = await AcceptFeeImpl(request.Contents,
+
+        var email = AcceptFeeImpl(request.Contents,
             request.OperationDate,
             request.Money,
-            paymentType,
-            claim);
+            projectInfo.ProjectFinanceSettings.GetRequiredPayment(request.PaymentTypeId),
+            claim,
+            projectInfo
+            );
 
         await UnitOfWork.SaveChangesAsync();
 
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
     }
 
     #region Payment type
@@ -76,7 +73,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
                 throw new DataException($"Can't create more than one {request.TypeKind} payment type");
             }
 
-            masterId = _vpu.PaymentsUser.UserId;
+            masterId = vpu.PaymentsUser.UserId;
         }
 
         // Creating payment type
@@ -221,19 +218,17 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task ChangeFee(int projectId, int claimId, int feeValue)
+    public async Task ChangeFee(ClaimIdentification claimId, int feeValue)
     {
-        var (claim, _) = await LoadClaimAsMaster(new(projectId), claimId, Permission.CanManageMoney);
+        var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.CanManageMoney);
 
-        _ = AddCommentImpl(claim,
-            null,
-            feeValue.ToString(),
-            isVisibleToPlayer: true,
-            extraAction: CommentExtraAction.FeeChanged);
+        var (_, email) = AddCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange);
 
         claim.CurrentFee = feeValue;
 
         await UnitOfWork.SaveChangesAsync();
+
+        await claimNotificationService.SendNotification(email);
     }
 
     #endregion
@@ -271,11 +266,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         CheckOperationDate(request.OperationDate);
 
-        var comment = AddCommentImpl(claim,
-            null,
-            request.Contents,
-            isVisibleToPlayer: true,
-            extraAction: CommentExtraAction.RequestPreferential);
+        var (comment, email) = AddCommentWithNotification(request.Contents, claim, projectInfo, CommentExtraAction.RequestPreferential, ClaimOperationType.PlayerChange);
 
         var financeOperation = new FinanceOperation()
         {
@@ -299,13 +290,7 @@ public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
 
         await UnitOfWork.SaveChangesAsync();
 
-        var email = await CreateClaimEmail<FinanceOperationEmail>(claim,
-            request.Contents,
-            s => s.MoneyOperation,
-            commentExtraAction: CommentExtraAction.RequestPreferential);
-
-
-        await EmailService.Email(email);
+        await claimNotificationService.SendNotification(email);
     }
 
     private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(

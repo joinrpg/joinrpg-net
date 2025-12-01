@@ -6,6 +6,8 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 using PscbApi;
 using PscbApi.Models;
@@ -41,7 +43,7 @@ public class PaymentsService(
     IUriService uriService,
     IBankSecretsProvider bankSecrets,
     ICurrentUserAccessor currentUserAccessor,
-    Lazy<IEmailService> emailService,
+    Lazy<IClaimNotificationService> claimNotificationService,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
@@ -73,8 +75,7 @@ public class PaymentsService(
 
     private async Task<Claim> GetClaimAsync(int projectId, int claimId)
     {
-        var claim = await UnitOfWork.GetClaimsRepository()
-            .GetClaim(projectId, claimId);
+        var claim = await UnitOfWork.GetClaimsRepository().GetClaim(new(projectId, claimId));
         return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
     }
 
@@ -768,19 +769,17 @@ public class PaymentsService(
                     throw new ArgumentOutOfRangeException(nameof(notification), notification, "Unknown payment notification");
             }
 
-            var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, [], mastersOnly: true).ToList();
-            var email = new FinanceOperationEmail()
-            {
-                Claim = claim,
-                ProjectName = claim.Project.ProjectName,
-                Initiator = claim.Player,
-                InitiatorType = ParcipantType.Player,
-                Recipients = subscriptions,
-                Text = new MarkdownString(sb.ToString()),
-                CommentExtraAction = null,
-            };
+            var email = new ClaimSimpleChangedNotification(
+                claim.GetId(),
+                Player: ToUserInfoHeader(claim.Player),
+                CommentExtraAction.PcsbOnlineFeeAccepted,
+                new(claim.ProjectId),
+                currentUserAccessor.ToUserInfoHeader(),
+                new NotificationEventTemplate(sb.ToString()),
+                ClaimOperationType.PlayerChange
+            );
 
-            await emailService.Value.Email(email);
+            await claimNotificationService.Value.SendNotification(email);
         }
         catch (Exception ex)
         {
@@ -1212,6 +1211,8 @@ public class PaymentsService(
             ClaimId = claimId;
         }
     }
+
+    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 
     private class PaymentSuccessUrl : PaymentRedirectUrl
     {

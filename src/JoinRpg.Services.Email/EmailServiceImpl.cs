@@ -184,23 +184,6 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
         await Task.WhenAll(sendTasks).ConfigureAwait(false);
     }
-
-    public Task Email(FinanceOperationEmail model)
-    {
-        var message = "";
-
-        if (model.Money > 0)
-        {
-            message += $"\nОплата денег игроком: {model.Money}\n";
-        }
-
-        if (model.Money < 0)
-        {
-            message += $"\nВозврат денег игроку: {-model.Money}\n";
-        }
-
-        return SendClaimEmail(model, "изменена", message);
-    }
     #endregion
 
     /// <summary>

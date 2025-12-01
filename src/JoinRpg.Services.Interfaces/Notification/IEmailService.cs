@@ -4,7 +4,6 @@ public interface IEmailService
 {
     Task Email(NewClaimEmail createClaimEmail);
 
-    Task Email(FinanceOperationEmail createClaimEmail);
     Task Email(ForumEmail model);
     Task Email(FieldsChangedEmail filedsEmail);
     Task Email(OccupyRoomEmail createClaimEmail);
