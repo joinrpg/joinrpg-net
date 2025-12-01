@@ -1,6 +1,7 @@
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepository
@@ -22,7 +23,15 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         var financeSettings = new ProjectFinanceSettings(
             project.Details.PreferentialFeeEnabled,
-            project.PaymentTypes.Select(pt => new PaymentTypeInfo(pt.TypeKind, pt.IsActive, pt.UserId)).ToArray());
+            [..
+                project.PaymentTypes.Select(
+                    pt => new PaymentTypeInfo(
+                        pt.TypeKind,
+                        pt.IsActive,
+                        new UserInfoHeader(new UserIdentification(pt.User.UserId), pt.User.ExtractDisplayName()),
+                        new PaymentTypeIdentification(pt.ProjectId, pt.PaymentTypeId)
+                        )
+                    )]);
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
