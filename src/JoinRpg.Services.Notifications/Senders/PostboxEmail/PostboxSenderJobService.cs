@@ -22,12 +22,11 @@ internal class PostboxSenderJobService(
     async Task<SendingResult> ISenderJob.SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
     {
         var client = postboxClientFactory.Get();
-
-        var html = message.Message.Body.ToHtmlString().Value;
-        var text = message.Message.Body.ToPlainTextWithoutHtmlEscape(); // Экранировать HTML в plain text email не нужно
-
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
-        var signature = $"\n--\n\n{sender.DisplayName}";
+
+
+        var signature = $"\n--\n\n{sender.DisplayName.DisplayName}";
+        var emailBody = new MarkdownString(message.Message.Body + signature);
 
         var request = new SendEmailRequest
         {
@@ -41,8 +40,8 @@ internal class PostboxSenderJobService(
                 {
                     Body = new Body
                     {
-                        Text = ToContent(text + signature),
-                        Html = ToContent(html + signature),
+                        Text = ToContent(emailBody.ToPlainTextWithoutHtmlEscape()), // Экранировать HTML в plain text email не нужно
+                        Html = ToContent(emailBody.ToHtmlString().Value),
                     },
                     Subject = ToContent(message.Message.Header),
                 }
