@@ -14,6 +14,7 @@ public static class NotificationRegistration
             .AddSingleton<PostboxClientFactory>()
             .AddSenderJob<UiSenderJobService>()
             .AddSenderJob<PostboxSenderJobService>()
+            .AddSenderJob<TelegramSenderJobService>()
             ;
     }
 
