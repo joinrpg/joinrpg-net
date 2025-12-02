@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Email;
 
@@ -35,11 +36,7 @@ public partial class MassProjectEmailService(
             throw new ArgumentException("Empty body", nameof(body));
         }
 
-        NotificationRecepient[] recipients = [
-            ..
-            claims.Select(c =>NotificationRecepient.Player(c.Player))
-            .UnionIf(project.Masters.Select(acl => new NotificationRecepient(acl)), alsoMailToMasters)
-            ];
+        List<NotificationRecepient> recipients = CalculateRecepients(alsoMailToMasters, claims, project);
 
         var template = new NotificationEventTemplate(NamePlaceholderRegex().Replace(body.Contents, "%recepient.name%"));
 
@@ -51,6 +48,28 @@ public partial class MassProjectEmailService(
                                                  currentUserAccessor.UserIdentification);
 
         await notificationService.QueueNotification(notification);
+    }
+
+    internal static List<NotificationRecepient> CalculateRecepients(bool alsoMailToMasters, IReadOnlyCollection<ClaimWithPlayer> claims, ProjectInfo project)
+    {
+        List<NotificationRecepient> recipients = [
+                    ..
+            claims.Select(c =>NotificationRecepient.Player(c.Player)).DistinctBy(x => x.UserId) // Выкидываем повторные заявки
+                    ];
+
+        if (alsoMailToMasters)
+        {
+            foreach (var master in project.Masters)
+            {
+                if (!recipients.Any(x => x.UserId == master.UserId))
+                {
+                    // Если мастер уже получает письмо как игрок, не дублируем
+                    recipients.Add(new NotificationRecepient(master));
+                }
+            }
+        }
+
+        return recipients;
     }
 
     [GeneratedRegex("%NAME%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
