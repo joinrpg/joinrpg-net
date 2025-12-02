@@ -17,8 +17,7 @@ public class PaymentApiController(IFinanceService financeService) : XGameApiCont
                 FeeChange = 0,
                 Money = amount,
                 OperationDate = DateTime.Now,
-                PaymentTypeId = paymentTypeId,
-                ProjectId = projectId
+                PaymentTypeId = new PrimitiveTypes.ProjectMetadata.Payments.PaymentTypeIdentification(projectId, paymentTypeId),
             });
         return "ok";
     }

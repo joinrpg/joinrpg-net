@@ -1,4 +1,5 @@
 using JoinRpg.Interfaces;
+using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
@@ -20,7 +21,8 @@ internal class UriServiceImpl(
     IProjectUriLocator,
     ICharacterUriLocator,
     IUriLocator<PlotFolderIdentification>,
-    IUriLocator<ClaimIdentification>
+    IUriLocator<ClaimIdentification>,
+    INotificationUriLocator<ClaimIdentification>
 {
     public Uri GetUri(ILinkable linkable)
     {

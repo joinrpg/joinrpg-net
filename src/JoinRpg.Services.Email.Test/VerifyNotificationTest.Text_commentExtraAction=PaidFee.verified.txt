@@ -1,0 +1,10 @@
+﻿Добрый день, %recepient.name%
+Заявка CharacterName игрока PlayerName отмечено мастером Master
+
+**Оплачен взнос**
+
+Сумма операции: 300
+
+
+
+Страница заявки: https://joinrpg.ru/1/claim/1/edit

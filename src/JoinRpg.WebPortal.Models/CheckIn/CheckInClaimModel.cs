@@ -29,7 +29,7 @@ public class CheckInClaimModel : IProjectIdAware
         PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo);
         Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None, projectInfo);
 
-        CanAcceptFee = claim.Project.CanAcceptCash(currentUser.GetId());
+        CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUser.GetId());
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
         Master = claim.ResponsibleMasterUser;

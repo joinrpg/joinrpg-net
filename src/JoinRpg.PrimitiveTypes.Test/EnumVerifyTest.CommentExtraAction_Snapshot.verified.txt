@@ -1,0 +1,19 @@
+﻿{
+  ApproveByMaster: 2,
+  ApproveFinance: 0,
+  ChangeResponsible: 7,
+  CheckedIn: 11,
+  DeclineByMaster: 3,
+  DeclineByPlayer: 6,
+  FeeChanged: 10,
+  MoveByMaster: 5,
+  NewClaim: 8,
+  OnHoldByMaster: 9,
+  OutOfGame: 13,
+  PaidFee: 15,
+  RefundFee: 16,
+  RejectFinance: 1,
+  RequestPreferential: 14,
+  RestoreByMaster: 4,
+  SecondRole: 12
+}

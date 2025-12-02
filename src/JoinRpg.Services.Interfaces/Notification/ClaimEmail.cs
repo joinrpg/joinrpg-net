@@ -1,12 +1,10 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Services.Interfaces.Notification;
-
-public class AddCommentEmail : ClaimEmailModel
-{
-}
 
 public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
 {
@@ -17,27 +15,6 @@ public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
 
     public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
         new Dictionary<string, PreviousAndNewValue>();
-}
-
-public class ApproveByMasterEmail : ClaimEmailModel
-{
-}
-
-public class CheckedInEmal : ClaimEmailModel
-{
-}
-
-public class SecondRoleEmail : ClaimEmailModel
-{
-}
-
-public class DeclineByMasterEmail : ClaimEmailModel
-{
-}
-
-public class OnHoldByMasterEmail : ClaimEmailModel
-{
-
 }
 
 public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
@@ -124,27 +101,6 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
     }
 }
 
-public class RestoreByMasterEmail : ClaimEmailModel
-{
-}
-
-public class MoveByMasterEmail : ClaimEmailModel
-{
-}
-
-public class ChangeResponsibleMasterEmail : ClaimEmailModel
-{
-}
-
-public class DeclineByPlayerEmail : ClaimEmailModel
-{
-}
-
-public class FinanceOperationEmail : ClaimEmailModel
-{
-    public int Money { get; set; }
-}
-
 public class ClaimEmailModel : EmailModelBase
 {
     public ParcipantType InitiatorType { get; set; }
@@ -158,3 +114,31 @@ public enum ParcipantType
     Master,
     Player,
 }
+
+public enum ClaimOperationType
+{
+    PlayerChange,
+    MasterVisibleChange,
+    MasterSecretChange,
+}
+
+public record class ClaimSimpleChangedNotification(
+    ClaimIdentification ClaimId,
+    UserInfoHeader Player,
+    CommentExtraAction? CommentExtraAction,                                 // Не нравится, что тут nullable
+    UserInfoHeader Initiator,
+    NotificationEventTemplate Text,
+    ClaimOperationType ClaimOperationType,
+    UserIdentification? OldResponsibleMaster = null,                        // Мог поменяться
+    CharacterIdentification? AnotherCharacterId = null,                          // Это если
+    int? Money = null,
+    UserInfoHeader? PaymentOwner = null,
+    UserInfoHeader? ParentCommentAuthor = null
+    );
+
+public record class ClaimOnlinePaymentNotification(
+    ClaimIdentification ClaimId,
+    UserInfoHeader Player,
+    NotificationEventTemplate Text
+    );
+

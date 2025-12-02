@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.PrimitiveTypes.Plots;
+using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.PrimitiveTypes;
 public static class ProjectEntityIdParser
@@ -16,6 +17,12 @@ public static class ProjectEntityIdParser
         if (ProjectIdentification.TryParse(value, null, out var project))
         {
             id = project;
+            return true;
+        }
+
+        if (PaymentTypeIdentification.TryParse(value, null, out var pt))
+        {
+            id = pt;
             return true;
         }
 

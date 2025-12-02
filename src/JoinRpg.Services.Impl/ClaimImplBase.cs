@@ -3,70 +3,74 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public abstract class ClaimImplBase : DbServiceImplBase
+internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
+    IEmailService emailService,
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository,
+    CommentHelper commentHelper
+    ) : DbServiceImplBase(unitOfWork, currentUserAccessor)
 {
-    protected IProjectMetadataRepository ProjectMetadataRepository { get; }
+    protected CommentHelper CommentHelper { get; } = commentHelper;
+    protected IProjectMetadataRepository ProjectMetadataRepository { get; } = projectMetadataRepository;
 
-    protected IEmailService EmailService { get; }
+    protected IEmailService EmailService { get; } = emailService;
 
-    protected ClaimImplBase(IUnitOfWork unitOfWork,
-        IEmailService emailService,
-        ICurrentUserAccessor currentUserAccessor,
-        IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, currentUserAccessor)
+    protected ClaimSimpleChangedNotification AcceptFeeImpl(string contents,
+                                                           DateTime operationDate,
+                                                           int money,
+                                                           PaymentTypeInfo paymentType,
+                                                           Claim claim,
+                                                           ProjectInfo projectInfo)
     {
-        EmailService = emailService;
-        ProjectMetadataRepository = projectMetadataRepository;
-    }
-
-    protected Comment AddCommentImpl(Claim claim,
-        Comment? parentComment,
-        string commentText,
-        bool isVisibleToPlayer,
-        CommentExtraAction? extraAction = null)
-    {
-        var comment = CommentHelper.CreateCommentForClaim(claim,
-            CurrentUserId,
-            Now,
-            commentText,
-            isVisibleToPlayer,
-            parentComment,
-            extraAction);
-        return comment;
-    }
-
-    protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int money,
-    PaymentType paymentType, Claim claim)
-    {
-
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
-        _ = paymentType.EnsureActive();
 
         CheckOperationDate(operationDate);
 
+        paymentType.EnsureActive();
+
+        bool playerChange;
+
         if (money < 0)
         {
-            _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
+            projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
+            playerChange = false;
         }
-        var state = FinanceOperationState.Approved;
-
-        if (paymentType.UserId != CurrentUserId)
+        else if (claim.PlayerUserId == CurrentUserId)
         {
-            if (claim.PlayerUserId == CurrentUserId)
+            playerChange = true;
+        }
+        else
+        {
+
+            if (paymentType.User.UserId != CurrentUserId)
             {
-                //Player mark that he pay fee. Put this to moderation
-                state = FinanceOperationState.Proposed;
+                projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
             }
             else
             {
-                _ = claim.RequestAccess(CurrentUserId, Permission.CanManageMoney);
+                projectInfo.RequestMasterAccess(currentUserAccessor);
             }
+            playerChange = false;
         }
 
-        var comment = AddCommentImpl(claim, null, contents, isVisibleToPlayer: true);
+        var commentAction = money < 0 ? CommentExtraAction.RefundFee : CommentExtraAction.PaidFee;
+
+        projectInfo.EnsureProjectActive();
+
+        ClaimOperationType claimOperationType = playerChange ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
+        var state = playerChange ? FinanceOperationState.Proposed : FinanceOperationState.Approved;
+
+        var (comment, email) = CommentHelper.AddClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, Now);
+
+        email = email with
+        {
+            Money = money,
+            PaymentOwner = paymentType.User,
+        };
 
         var financeOperation = new FinanceOperation()
         {
@@ -75,7 +79,7 @@ public abstract class ClaimImplBase : DbServiceImplBase
             Changed = Now,
             Claim = claim,
             Comment = comment,
-            PaymentType = paymentType,
+            PaymentTypeId = paymentType.PaymentTypeId.PaymentTypeId,
             State = state,
             ProjectId = claim.ProjectId,
             OperationDate = operationDate,
@@ -100,15 +104,9 @@ public abstract class ClaimImplBase : DbServiceImplBase
 
         claim.UpdateClaimFeeIfRequired(operationDate, projectInfo);
 
-        var email = await CreateClaimEmail<FinanceOperationEmail>(claim, contents,
-          s => s.MoneyOperation,
-          commentExtraAction: null,
-          extraRecipients: new[] { paymentType.User });
-        email.Money = money;
         return email;
     }
 
-    // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
     protected void CheckOperationDate(DateTime operationDate)
     {
         if (operationDate > Now.AddDays(1)
@@ -128,10 +126,6 @@ public abstract class ClaimImplBase : DbServiceImplBase
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
 
         return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
-    }
-    protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ProjectIdentification projectId, int claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
-    {
-        return LoadClaimAsMaster(new ClaimIdentification(projectId, claimId), permission, reason);
     }
 
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsPlayer(ClaimIdentification claimId)

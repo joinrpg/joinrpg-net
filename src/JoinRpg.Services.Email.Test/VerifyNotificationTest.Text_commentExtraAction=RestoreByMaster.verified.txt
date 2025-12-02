@@ -1,0 +1,8 @@
+﻿Добрый день, %recepient.name%
+Заявка CharacterName игрока PlayerName восстановлена мастером Master
+
+**Заявка восстановлена мастером**
+
+
+
+Страница заявки: https://joinrpg.ru/1/claim/1/edit

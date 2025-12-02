@@ -6,6 +6,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 using PscbApi;
 using PscbApi.Models;
@@ -41,7 +42,7 @@ public class PaymentsService(
     IUriService uriService,
     IBankSecretsProvider bankSecrets,
     ICurrentUserAccessor currentUserAccessor,
-    Lazy<IEmailService> emailService,
+    Lazy<IClaimNotificationService> claimNotificationService,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
@@ -73,8 +74,7 @@ public class PaymentsService(
 
     private async Task<Claim> GetClaimAsync(int projectId, int claimId)
     {
-        var claim = await UnitOfWork.GetClaimsRepository()
-            .GetClaim(projectId, claimId);
+        var claim = await UnitOfWork.GetClaimsRepository().GetClaim(new(projectId, claimId));
         return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
     }
 
@@ -742,6 +742,7 @@ public class PaymentsService(
         try
         {
             var sb = new StringBuilder();
+
             // TODO: Localize
             switch (notification)
             {
@@ -752,12 +753,12 @@ public class PaymentsService(
                     sb.AppendLine($"Оформлена ежемесячная подписка на сумму {sum:F2}₽.");
                     sb.AppendLine("Списания будут проводиться автоматически.");
                     sb.AppendLine();
-                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку: {uriService.Get(claim)}");
+                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку.");
                     break;
                 case PaymentNotification.RecurrentCharge:
                     sb.Append($"Списание средств по подписке на сумму {sum:F2}₽ подтверждено.");
                     sb.AppendLine();
-                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку: {uriService.Get(claim)}");
+                    sb.Append($"Чтобы отказаться от подписки, перейдите в свою заявку.");
                     break;
                 case PaymentNotification.Refund:
                     sb.AppendLine($"Проведен возврат на сумму {sum:F2}₽ на использованное средство платежа.");
@@ -768,19 +769,13 @@ public class PaymentsService(
                     throw new ArgumentOutOfRangeException(nameof(notification), notification, "Unknown payment notification");
             }
 
-            var subscriptions = claim.GetSubscriptions(p => p.MoneyOperation, [], mastersOnly: true).ToList();
-            var email = new FinanceOperationEmail()
-            {
-                Claim = claim,
-                ProjectName = claim.Project.ProjectName,
-                Initiator = claim.Player,
-                InitiatorType = ParcipantType.Player,
-                Recipients = subscriptions,
-                Text = new MarkdownString(sb.ToString()),
-                CommentExtraAction = null,
-            };
+            var email = new ClaimOnlinePaymentNotification(
+                claim.GetId(),
+                Player: claim.Player.ToUserInfoHeader(),
+                new NotificationEventTemplate(sb.ToString())
+            );
 
-            await emailService.Value.Email(email);
+            await claimNotificationService.Value.SendNotification(email);
         }
         catch (Exception ex)
         {

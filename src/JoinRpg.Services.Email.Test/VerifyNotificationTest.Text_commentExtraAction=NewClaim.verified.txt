@@ -1,0 +1,8 @@
+﻿Добрый день, %recepient.name%
+Заявка CharacterName игрока PlayerName подана мастером Master
+
+**Новая заявка**
+
+
+
+Страница заявки: https://joinrpg.ru/1/claim/1/edit

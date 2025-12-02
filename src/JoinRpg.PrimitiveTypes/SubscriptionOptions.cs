@@ -23,6 +23,20 @@ public record class SubscriptionOptions
             Comments = true,
             AccommodationInvitesChange = true,
         };
+
+    public static SubscriptionOptions CreateNoneSet()
+        => new()
+        {
+            AccommodationChange = false,
+            FieldChange = false,
+            ClaimStatusChange = false,
+            MoneyOperation = false,
+            Comments = false,
+            AccommodationInvitesChange = false,
+        };
 }
 
-public record class UserSubscribe(UserInfoHeader User, SubscriptionOptions Options);
+public record class UserSubscribe(UserInfoHeader User, SubscriptionOptions Options)
+{
+    public UserSubscribe(UserInfoHeader User) : this(User, SubscriptionOptions.CreateAllSet()) { }
+}

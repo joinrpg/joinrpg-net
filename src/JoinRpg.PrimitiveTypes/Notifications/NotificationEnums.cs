@@ -30,6 +30,7 @@ public enum SubscriptionReason
     ResponsibleMaster,
     Finance,
     SubscribedMaster,
+    SubscribedDirectMaster,
     MasterOfGame,
     Admin,
 }

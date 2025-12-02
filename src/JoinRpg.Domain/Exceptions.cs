@@ -5,11 +5,6 @@ using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Domain;
 
-public abstract class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
-{
-    public ProjectIdentification ProjectId { get; } = projectId;
-}
-
 public class PlayerOnlyException(ClaimIdentification claimId, int? currentUserId)
     : JoinRpgProjectException(claimId.ProjectId, $"Нет доступа к заявке {claimId}, потому что ее отправил не UserId={currentUserId}")
 {
@@ -132,9 +127,6 @@ public class ProjectEntityDeactivatedException : JoinRpgProjectEntityException
 
     }
 }
-
-public class ProjectDeactivatedException(ProjectIdentification projectId)
-    : JoinRpgProjectException(projectId, "This operation can\'t be performed on deactivated project.");
 
 public class ClaimWrongStatusException : JoinRpgProjectEntityException
 {

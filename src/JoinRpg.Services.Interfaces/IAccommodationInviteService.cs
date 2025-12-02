@@ -20,5 +20,5 @@ public interface IAccommodationInviteService
     Task<AccommodationInvite?> AcceptAccommodationInvite(int projectId,
         int inviteId);
 
-    Task DeclineAllClaimInvites(int claimId);
+    Task DeclineAllClaimInvites(ClaimIdentification claimId);
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
@@ -12,21 +13,18 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{ProjectId}/claim/{ClaimId}/[action]")]
 public class ClaimController(
-    IProjectRepository projectRepository,
-    IProjectService projectService,
+    IProjectRepository ProjectRepository,
     IClaimService claimService,
     IGameSubscribeClient gameSubscribeClient,
     IClaimsRepository claimsRepository,
@@ -36,13 +34,13 @@ public class ClaimController(
     IAccommodationRepository accommodationRepository,
     IAccommodationInviteService accommodationInviteService,
     IAccommodationInviteRepository accommodationInviteRepository,
-    IUserRepository userRepository,
+    IUserRepository UserRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ICurrentUserAccessor currentUserAccessor,
     CharacterPlotViewService characterPlotViewService
-    ) : ControllerGameBase(projectRepository, projectService, userRepository)
+    ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
@@ -136,7 +134,7 @@ public class ClaimController(
             SubscriptionTooltip = await gameSubscribeClient.GetSubscribeForClaim(claim.ProjectId, claim.ClaimId),
         };
 
-        if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
+        if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {
             await
               claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
@@ -193,7 +191,8 @@ public class ClaimController(
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claimIdentification = new ClaimIdentification(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(claimIdentification);
         var error = WithClaim(claim);
         if (error != null)
         {
@@ -202,7 +201,7 @@ public class ClaimController(
         try
         {
             await
-              claimService.SaveFieldsFromClaim(projectId, claimId, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+              claimService.SaveFieldsFromClaim(claimIdentification, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
         catch (Exception exception)
@@ -247,7 +246,7 @@ public class ClaimController(
         try
         {
             await
-              claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+              claimService.OnHoldByMaster(claim.GetId(), viewModel.CommentText);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -278,8 +277,7 @@ public class ClaimController(
 
             await
                 claimService.DeclineByMaster(
-                    claim.ProjectId,
-                    claim.ClaimId,
+                    claim.GetId(),
                     (ClaimDenialReason)viewModel.DenialStatus,
                     viewModel.CommentText,
                     viewModel.DeleteCharacter == MasterDenialExtraActionViewModel.DeleteCharacter);
@@ -311,7 +309,7 @@ public class ClaimController(
                 return await ShowClaim(claim);
             }
             await
-              claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
+              claimService.RestoreByMaster(claim.GetId(), viewModel.CommentText, new CharacterIdentification(projectId, characterId));
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -332,7 +330,7 @@ public class ClaimController(
         {
             return NotFound();
         }
-        if (claim.PlayerUserId != CurrentUserId)
+        if (claim.PlayerUserId != currentUserAccessor.UserId)
         {
             return NoAccesToProjectView(claim.Project);
         }
@@ -344,7 +342,7 @@ public class ClaimController(
                 return await ShowClaim(claim);
             }
             await
-              claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+              claimService.DeclineByPlayer(claim.GetId(), viewModel.CommentText);
 
             return ReturnToClaim(projectId, claimId);
         }
@@ -358,7 +356,7 @@ public class ClaimController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     [MasterAuthorize()]
-    public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
+    public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, UserIdentification responsibleMasterId)
     {
         var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim == null)
@@ -367,7 +365,7 @@ public class ClaimController(
         }
         try
         {
-            await claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
+            await claimService.SetResponsible(claim.GetId(), responsibleMasterId);
             return ReturnToClaim(projectId, claimId);
         }
         catch (Exception exception)
@@ -395,7 +393,7 @@ public class ClaimController(
                 return await ShowClaim(claim);
             }
 
-            await claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText, characterId);
+            await claimService.MoveByMaster(claim.GetId(), viewModel.CommentText, new CharacterIdentification(projectId, characterId));
 
             if (viewModel.AcceptAfterMove)
             {
@@ -415,7 +413,7 @@ public class ClaimController(
     [Authorize, HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
     {
-        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, CurrentUserId);
+        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, currentUserAccessor.UserIdentification);
 
         if (claims.Count == 0)
         {
@@ -451,13 +449,12 @@ public class ClaimController(
             await
                 financeService.FeeAcceptedOperation(new FeeAcceptedOperationRequest()
                 {
-                    ProjectId = claim.ProjectId,
                     ClaimId = claim.ClaimId,
                     Contents = viewModel.CommentText,
                     FeeChange = viewModel.FeeChange,
                     Money = viewModel.Money,
                     OperationDate = viewModel.OperationDate,
-                    PaymentTypeId = viewModel.PaymentTypeId,
+                    PaymentTypeId = new PrimitiveTypes.ProjectMetadata.Payments.PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId),
                 });
 
             return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
@@ -518,7 +515,7 @@ public class ClaimController(
             }
 
             await
-              financeService.ChangeFee(projectid, claimid, feeValue);
+              financeService.ChangeFee(new ClaimIdentification(projectid, claimid), feeValue);
 
             return RedirectToAction("Edit", "Claim", new { claimid, projectid });
         }
@@ -569,7 +566,7 @@ public class ClaimController(
         {
             return NotFound();
         }
-        if (!claim.HasAccess(CurrentUserId, Permission.None, ExtraAccessReason.Player))
+        if (!claim.HasAccess(currentUserAccessor.UserId, Permission.None, ExtraAccessReason.Player))
         {
             return NoAccesToProjectView(claim.Project);
         }
@@ -832,5 +829,8 @@ public class ClaimController(
         return Redirect($"/{projectInfo.ProjectId.Value}/default-slot-not-set");
     }
 
-    private ActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
+    private RedirectToActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
+
+    [DoesNotReturn]
+    protected ActionResult NoAccesToProjectView(Project project) => throw new NoAccessToProjectException(project, currentUserAccessor.UserId);
 }

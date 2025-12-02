@@ -134,13 +134,14 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
     }
 
     public async Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => await GetUserInfoHeadersByPredicate(user => user.Auth.IsAdmin);
-    public async Task<IReadOnlyCollection<UserSubscribe>> GetDirect(ClaimIdentification claimId)
+    public async Task<IReadOnlyCollection<UserSubscribe>> GetDirect(IReadOnlyCollection<ClaimIdentification> claimIds)
     {
         var builder = UserInfoHeaderDtoBuilder();
         var options = SubscriptionOptionsBuilder();
+        var (projectId, ids) = claimIds.ToIntListSameProject();
         var query =
             from x in ctx.Set<UserSubscription>().AsExpandable()
-            where x.ProjectId == claimId.ProjectId && x.ClaimId == claimId.ClaimId
+            where x.ProjectId == projectId && ids.Contains(x.ClaimId!.Value)
             select
             new
             {
@@ -150,14 +151,21 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         var result = await query.ToArrayAsync();
         return [.. result.Select(x => new UserSubscribe(x.User.ToUserInfoHeader(), x.Options))];
     }
-    public async Task<IReadOnlyCollection<UserSubscribe>> GetForCharAndGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications, CharacterIdentification characterId)
+    public async Task<IReadOnlyCollection<UserSubscribe>> GetForCharAndGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIdentifications, IReadOnlyCollection<CharacterIdentification> characterIds)
     {
         var builder = UserInfoHeaderDtoBuilder();
         var options = SubscriptionOptionsBuilder();
-        var groupIds = characterGroupIdentifications.EnsureSameProject().Select(x => x.CharacterGroupId).ToList();
+        var (p2, groupIds) = characterGroupIdentifications.ToIntListSameProject();
+        var (projectId, charIds) = characterIds.ToIntListSameProject();
+
+        if (projectId != p2)
+        {
+            throw new InvalidOperationException();
+        }
+
         var query =
             from x in ctx.Set<UserSubscription>().AsExpandable()
-            where x.ProjectId == characterId.ProjectId && (groupIds.Contains(x.CharacterGroupId!.Value) || x.CharacterId == characterId.Id)
+            where x.ProjectId == projectId && (groupIds.Contains(x.CharacterGroupId!.Value) || charIds.Contains(x.CharacterId!.Value))
             select
             new
             {

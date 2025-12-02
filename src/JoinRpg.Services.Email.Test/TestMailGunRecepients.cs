@@ -3,8 +3,6 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces.Email;
 using Newtonsoft.Json.Linq;
-using Shouldly;
-using Xunit;
 
 namespace JoinRpg.Services.Email.Test;
 

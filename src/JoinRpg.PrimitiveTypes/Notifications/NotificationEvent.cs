@@ -11,7 +11,7 @@ public record NotificationEvent(
     IProjectEntityId? EntityReference,
     string Header,
     NotificationEventTemplate TemplateText,
-    NotificationRecepient[] Recepients,
+    IReadOnlyCollection<NotificationRecepient> Recepients,
     UserIdentification Initiator);
 
 
@@ -31,10 +31,15 @@ public record NotificationRecepient
         this.fields = fields is null ? [] : new Dictionary<string, string>(fields);
     }
 
-    private NotificationRecepient(UserIdentification userId, string userDisplayName, SubscriptionReason subscriptionReason, IReadOnlyDictionary<string, string>? fields = null)
+    public NotificationRecepient(UserIdentification userId, string userDisplayName, SubscriptionReason subscriptionReason, IReadOnlyDictionary<string, string>? fields = null)
         : this(userId, subscriptionReason, fields)
     {
         this.fields.TryAdd("name", userDisplayName);
+    }
+
+    public NotificationRecepient(UserInfoHeader user, SubscriptionReason subscriptionReason, IReadOnlyDictionary<string, string>? fields = null)
+    : this(user.UserId, user.DisplayName.DisplayName, subscriptionReason, fields)
+    {
     }
     public NotificationRecepient(ProjectMasterInfo master, IReadOnlyDictionary<string, string>? fields = null)
         : this(master.UserId, master.Name.DisplayName, SubscriptionReason.MasterOfGame, fields)

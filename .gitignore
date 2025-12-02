@@ -203,3 +203,8 @@ appsettings.Development.json
 #generated kubeconfig
 /scripts/github-actions-*
 /scripts/*.yaml
+
+# xUnit verify
+
+*.received.*
+*.received/

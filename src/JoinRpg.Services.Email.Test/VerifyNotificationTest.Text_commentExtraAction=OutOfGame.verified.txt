@@ -1,0 +1,8 @@
+﻿Добрый день, %recepient.name%
+Заявка CharacterName игрока PlayerName изменена мастером Master
+
+**Игрок вышел из игры**
+
+
+
+Страница заявки: https://joinrpg.ru/1/claim/1/edit
