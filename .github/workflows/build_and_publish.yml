@@ -103,3 +103,15 @@ jobs:
     - name: Publish & push id portal
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} 
+
+  report:
+    runs-on: ubuntu-24.04
+    needs: build
+    if: always()
+    steps:
+      - uses: dorny/test-reporter@v2.3.0
+        with:
+          artifact: test-results # artifact name
+          name: Unit tests                  # Name of the check run which will be created
+          path: '*.trx'                     # Path to test results (inside artifact .zip)
+          reporter: dotnet-trx              # Format of test results
