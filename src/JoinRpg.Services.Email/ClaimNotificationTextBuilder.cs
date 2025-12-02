@@ -11,7 +11,7 @@ internal class ClaimNotificationTextBuilder(INotificationUriLocator<ClaimIdentif
 
         var extraText = commentExtraActionView?.GetDisplayName();
 
-        var actionName = commentExtraActionView?.GetShortName() ?? "изменена";
+        var actionName = commentExtraActionView?.GetShortName() ?? "откомментирована"; // Если CommentExtraAction = Null, это просто комментарий
 
         if (extraText != null)
         {

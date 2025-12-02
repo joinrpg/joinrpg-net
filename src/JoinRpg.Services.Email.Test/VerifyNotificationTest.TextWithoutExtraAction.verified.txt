@@ -1,0 +1,6 @@
+﻿Добрый день, %recepient.name%
+Заявка CharacterName игрока PlayerName откомментирована мастером Master
+
+Здесь длинный занимательный комментарий
+
+Страница заявки: https://joinrpg.ru/1/claim/1/edit
