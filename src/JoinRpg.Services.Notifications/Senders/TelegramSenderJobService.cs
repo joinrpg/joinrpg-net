@@ -16,6 +16,7 @@ internal class TelegramSenderJobService(
     public async Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
     {
         var htmlString = message.Message.Body.ToHtmlString();
+        //TODO Здесь подпись нужна и тест на нее
         await telegramNotificationService.SendTelegramNotification(message.NotificationAddress.AsTelegram(), new TelegramHtmlString(htmlString.Value));
         return SendingResult.Success();
     }
