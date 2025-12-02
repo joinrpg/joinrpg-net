@@ -14,7 +14,10 @@ internal class SubscribeCalculator(
     {
         Dictionary<UserIdentification, NotificationRecepient> list = [];
 
-        AddIfPredicateAndNotAlreadyPresent([.. args.Player.Select(player => new UserSubscribe(player))], SubscriptionReason.Player);
+        AddUserInfoHeaderIfNotPresent([.. args.Finance], SubscriptionReason.Finance);
+        AddUserInfoHeaderIfNotPresent([.. args.RespondingTo], SubscriptionReason.AnswerToYourComment);
+        AddUserInfoHeaderIfNotPresent([.. args.Player], SubscriptionReason.Player);
+
         AddIfPredicateAndNotAlreadyPresent([.. args.RespMasters.WhereNotNull().Select(id => CreateForRespMaster(projectInfo, id))], SubscriptionReason.ResponsibleMaster);
 
         var claim = await userSubscribeRepository.GetDirect(args.Claims);
@@ -32,10 +35,19 @@ internal class SubscribeCalculator(
 
         void AddIfPredicateAndNotAlreadyPresent(IReadOnlyCollection<UserSubscribe> subscribe, SubscriptionReason reason)
         {
-            foreach (var r in subscribe.Where(s => args.Predicate(s.Options)).Select(x => new NotificationRecepient(x.User.UserId, x.User.DisplayName.DisplayName, reason)))
+            foreach (var r in subscribe
+                .Where(s => args.Predicate(s.Options))
+                .Where(s => s.User.UserId != args.Initiator?.UserId)
+                .Select(x => new NotificationRecepient(x.User.UserId, x.User.DisplayName.DisplayName, reason))
+                )
             {
                 list.TryAdd(r.UserId, r);
             }
+        }
+
+        void AddUserInfoHeaderIfNotPresent(IReadOnlyCollection<UserInfoHeader?> subscribe, SubscriptionReason reason)
+        {
+            AddIfPredicateAndNotAlreadyPresent([.. subscribe.WhereNotNull().Select(player => new UserSubscribe(player))], reason);
         }
     }
 
@@ -50,7 +62,11 @@ internal class SubscribeCalculator(
 
 internal record SubscribeCalculateArgs
     (Func<SubscriptionOptions, bool> Predicate,
+     UserInfoHeader? Initiator,
      UserInfoHeader[] Player,
      UserIdentification?[] RespMasters,
      ClaimIdentification[] Claims,
-     IReadOnlyCollection<CharacterIdentification?> Characters);
+     IReadOnlyCollection<CharacterIdentification?> Characters,
+     UserInfoHeader?[] Finance,
+     UserInfoHeader?[] RespondingTo
+     );

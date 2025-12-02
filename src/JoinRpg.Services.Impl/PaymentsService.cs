@@ -7,7 +7,6 @@ using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 using PscbApi;
 using PscbApi.Models;
@@ -772,7 +771,7 @@ public class PaymentsService(
 
             var email = new ClaimOnlinePaymentNotification(
                 claim.GetId(),
-                Player: ToUserInfoHeader(claim.Player),
+                Player: claim.Player.ToUserInfoHeader(),
                 new NotificationEventTemplate(sb.ToString())
             );
 
@@ -1208,8 +1207,6 @@ public class PaymentsService(
             ClaimId = claimId;
         }
     }
-
-    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 
     private class PaymentSuccessUrl : PaymentRedirectUrl
     {

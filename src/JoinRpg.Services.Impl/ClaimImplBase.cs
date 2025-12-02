@@ -3,7 +3,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -70,7 +69,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         email = email with
         {
             Money = money,
-            ExtraSubscribers = [new NotificationRecepient(paymentType.User, SubscriptionReason.Finance)],
+            PaymentOwner = paymentType.User,
         };
 
         var financeOperation = new FinanceOperation()

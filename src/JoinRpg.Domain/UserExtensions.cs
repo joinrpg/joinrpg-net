@@ -42,6 +42,8 @@ public static class UserExtensions
         return new UserDisplayName(user.ExtractFullName(), new Email(user.Email));
     }
 
+    public static UserInfoHeader ToUserInfoHeader(this User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
+
     /// <summary>
     /// Returns display name of a user
     /// </summary>

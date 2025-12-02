@@ -129,10 +129,11 @@ public record class ClaimSimpleChangedNotification(
     UserInfoHeader Initiator,
     NotificationEventTemplate Text,
     ClaimOperationType ClaimOperationType,
-    IReadOnlyCollection<NotificationRecepient>? ExtraSubscribers = null,
     UserIdentification? OldResponsibleMaster = null,                        // Мог поменяться
     CharacterIdentification? AnotherCharacterId = null,                          // Это если
-    int? Money = null
+    int? Money = null,
+    UserInfoHeader? PaymentOwner = null,
+    UserInfoHeader? ParentCommentAuthor = null
     );
 
 public record class ClaimOnlinePaymentNotification(

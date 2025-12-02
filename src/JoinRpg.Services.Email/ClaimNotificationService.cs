@@ -26,10 +26,14 @@ internal class ClaimNotificationService(
 
         var args = new SubscribeCalculateArgs(
             Predicate: GetSubscribePredicate(model.CommentExtraAction),
+            Initiator: model.Initiator,
             Player: model.ClaimOperationType == ClaimOperationType.MasterVisibleChange ? [claim.Player] : [],
             RespMasters: [claim.ResponsibleMasterUserId, model.OldResponsibleMaster],
             Claims: [claim.ClaimId],
-            Characters: [claim.CharacterId, model.AnotherCharacterId]);
+            Characters: [claim.CharacterId, model.AnotherCharacterId],
+            Finance: [model.PaymentOwner],
+            RespondingTo: [model.ParentCommentAuthor]
+            );
 
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Claims,
@@ -49,10 +53,14 @@ internal class ClaimNotificationService(
 
         var args = new SubscribeCalculateArgs(
             Predicate: s => s.MoneyOperation,
+            Initiator: null,
             Player: [claim.Player],
             RespMasters: [claim.ResponsibleMasterUserId],
             Claims: [claim.ClaimId],
-            Characters: [claim.CharacterId]);
+            Characters: [claim.CharacterId],
+            Finance: [],
+            RespondingTo: []
+            );
 
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Claims,

@@ -5,7 +5,6 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -934,27 +933,11 @@ internal class ClaimServiceImpl(
         }
 
         result.Item1.Parent = parentComment;
-        result.Item2 = result.Item2 with { ExtraSubscribers = [.. GetNotificationRecepients(parentComment)] };
-    }
-
-
-    private static IEnumerable<NotificationRecepient> GetNotificationRecepients(Comment comment)
-    {
-        var author = comment.Author;
-        yield return new NotificationRecepient(author.GetId(), author.ExtractDisplayName().DisplayName, SubscriptionReason.AnswerToYourComment);
-
-        if (comment?.Finance?.PaymentType?.User is User paymentOwner)
+        result.Item2 = result.Item2 with
         {
-            yield return new NotificationRecepient(paymentOwner.GetId(), paymentOwner.ExtractDisplayName().DisplayName, SubscriptionReason.Finance);
-        }
-    }
-
-
-
-    [Obsolete]
-    private Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(int projectId, int claimId)
-    {
-        return LoadClaimForApprovalDecline(new ClaimIdentification(projectId, claimId));
+            ParentCommentAuthor = parentComment.Author.ToUserInfoHeader(),
+            PaymentOwner = parentComment?.Finance?.PaymentType?.User?.ToUserInfoHeader(),
+        };
     }
 
     private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(ClaimIdentification claimId)
