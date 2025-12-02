@@ -23,10 +23,7 @@ internal class PostboxSenderJobService(
     {
         var client = postboxClientFactory.Get();
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
-
-
-        var signature = $"\n\n---\n\n{sender.DisplayName.DisplayName}";
-        var emailBody = new MarkdownString(message.Message.Body.Contents + signature);
+        Body body = FormatBody(message.Message.Body, sender.DisplayName);
 
         var request = new SendEmailRequest
         {
@@ -38,11 +35,7 @@ internal class PostboxSenderJobService(
             {
                 Simple = new Message
                 {
-                    Body = new Body
-                    {
-                        Text = ToContent(emailBody.ToPlainTextWithoutHtmlEscape()), // Экранировать HTML в plain text email не нужно
-                        Html = ToContent(emailBody.ToHtmlString().Value),
-                    },
+                    Body = body,
                     Subject = ToContent(message.Message.Header),
                 }
             },
@@ -55,6 +48,19 @@ internal class PostboxSenderJobService(
         logger.LogInformation("Отправка сообщения {notificationMessage} на адрес {recipientEmail} успешна {sesMessageId}", message.MessageId, message.NotificationAddress.AsEmail(), response.MessageId);
 
         return SendingResult.Success();
+    }
+
+    internal static Body FormatBody(MarkdownString bodyString, UserDisplayName displayName)
+    {
+        var signature = $"\n\n---\n\n{displayName.DisplayName}";
+        var emailBody = new MarkdownString(bodyString.Contents + signature);
+
+        var body = new Body
+        {
+            Text = ToContent(bodyString.ToPlainTextWithoutHtmlEscape() + signature), // Экранировать HTML в plain text email не нужно
+            Html = ToContent(emailBody.ToHtmlString().Value),
+        };
+        return body;
     }
 
     private static Content ToContent(string text)
