@@ -832,5 +832,6 @@ public class ClaimController(
     private RedirectToActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
 
     [DoesNotReturn]
+    [Obsolete]
     protected ActionResult NoAccesToProjectView(Project project) => throw new NoAccessToProjectException(project, currentUserAccessor.UserId);
 }

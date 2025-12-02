@@ -1,6 +1,7 @@
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
@@ -22,7 +23,9 @@ internal class UriServiceImpl(
     ICharacterUriLocator,
     IUriLocator<PlotFolderIdentification>,
     IUriLocator<ClaimIdentification>,
-    INotificationUriLocator<ClaimIdentification>
+    INotificationUriLocator<ClaimIdentification>,
+    IUriLocator<ClaimCommentIdentification>,
+    INotificationUriLocator<ClaimCommentIdentification>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -114,6 +117,9 @@ internal class UriServiceImpl(
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));
     public Uri GetUri(ClaimIdentification target) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Claim", new { ProjectId = target.ProjectId.Value, target.ClaimId }));
+
+    public Uri GetUri(ClaimCommentIdentification target) =>
+        new(GetUri(target.ClaimId).AbsoluteUri + $"#comment{target.CommentId}");
     Uri IProjectUriLocator.GetCaptainCabinetUri(ProjectIdentification projectId) => new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/CaptainCabinet", values: new { ProjectId = projectId.Value }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable

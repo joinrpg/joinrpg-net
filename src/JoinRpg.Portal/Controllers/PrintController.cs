@@ -1,9 +1,9 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Print;
 using JoinRpg.WebPortal.Managers.Plots;
@@ -16,18 +16,17 @@ namespace JoinRpg.Portal.Controllers;
 [Authorize]
 [Route("{projectId}/print/[action]")]
 public class PrintController(
-    IProjectRepository projectRepository,
-    IProjectService projectService,
     ICharacterRepository characterRepository,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
     CharacterPlotViewService characterPlotViewService
-    ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
+    ) : JoinControllerGameBase
 {
     [HttpGet]
-    public async Task<IActionResult> Character(int projectId, int characterid)
+    public async Task<IActionResult> Character(ProjectIdentification projectId, int characterid)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
         var characterId = new CharacterIdentification(projectId, characterid);
         var character = await characterRepository.GetCharacterWithGroups(projectId, characterid);
         if (character == null)
@@ -36,10 +35,10 @@ public class PrintController(
         }
         if (!character.HasAnyAccess(currentUserAccessor.UserIdOrDefault))
         {
-            return NoAccesToProjectView(character.Project);
+            return NoAccesToProjectView(projectInfo, currentUserAccessor);
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+
         var plots = await characterPlotViewService.GetPlotForCharacters([characterId], Domain.Access.CharacterAccessMode.Print);
 
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
