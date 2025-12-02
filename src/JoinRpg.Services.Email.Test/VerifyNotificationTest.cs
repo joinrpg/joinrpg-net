@@ -52,6 +52,23 @@ public class VerifyNotificationTest
         return Verify(text).UseParameters(commentExtraAction);
     }
 
+    [Fact]
+    public Task TextWithoutExtraAction()
+    {
+        var model = new ClaimSimpleChangedNotification(
+            new ClaimIdentification(1, 1),
+            player,
+            CommentExtraAction: null,
+            Initiator: master,
+            new NotificationEventTemplate("Здесь длинный занимательный комментарий"),
+            ClaimOperationType.MasterVisibleChange
+            );
+
+        var text = claimNotificationTextBuilder.GetText(model, claimWithPlayer);
+
+        return Verify(text);
+    }
+
     private class UriMock : INotificationUriLocator<ClaimIdentification>
     {
         public Uri GetUri(ClaimIdentification target) => new($"https://joinrpg.ru/{target.ProjectId.Value}/claim/{target.ClaimId}/edit");
