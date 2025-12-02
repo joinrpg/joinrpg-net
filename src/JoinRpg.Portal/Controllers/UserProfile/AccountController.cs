@@ -73,6 +73,7 @@ public class AccountController(
         {
             if (!await userManager.IsEmailConfirmedAsync(user))
             {
+                logger.LogInformation("Пользовать {user} все еще не подтвердил почту, отошлем ему письмо повторно", user);
                 await SendConfirmationEmail(user);
                 return View("EmailUnconfirmed");
             }

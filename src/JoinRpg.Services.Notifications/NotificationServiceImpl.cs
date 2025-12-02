@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Email;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications;
@@ -11,14 +13,20 @@ public partial class NotificationServiceImpl(
     IEmailSendingService emailSendingService,
     INotificationRepository notificationRepository,
     IOptions<NotificationsOptions> notificationOptions,
-    IOptions<PostboxOptions> postboxOptions
+    IOptions<PostboxOptions> postboxOptions,
+    ILogger<NotificationServiceImpl> logger
     ) : INotificationService
 {
+    private readonly ActivitySource activitySource = new(nameof(NotificationServiceImpl));
+
     private record class NotificationRow(
         NotificationRecepient Recipient, UserDisplayName DisplayName, IReadOnlyCollection<NotificationAddress> Channels, Email Email);
 
-    async Task INotificationService.QueueDirectNotification(NotificationEvent notificationMessage, NotificationChannel directChannel)
+    public async Task QueueDirectNotification(NotificationEvent notificationMessage, NotificationChannel directChannel)
     {
+        using var activity = activitySource.StartActivity(nameof(QueueDirectNotification));
+        logger.LogInformation("Собираемся отправить в {notificationChannel} сообщение {notificationMessage}", directChannel, notificationMessage);
+
         var templater = new NotifcationFieldsTemplater(notificationMessage.TemplateText);
         VerifyFieldsPresent(notificationMessage, templater);
 
@@ -29,8 +37,12 @@ public partial class NotificationServiceImpl(
         await SaveToQueue(notificationMessage, templater, users, DateTimeOffset.UtcNow);
     }
 
-    async Task INotificationService.QueueNotification(NotificationEvent notificationMessage)
+    public async Task QueueNotification(NotificationEvent notificationMessage)
     {
+        using var activity = activitySource.StartActivity(nameof(QueueNotification));
+        logger.LogInformation("Собираемся отправить во все каналы сообщение {notificationMessage}", notificationMessage);
+
+
         var templater = new NotifcationFieldsTemplater(notificationMessage.TemplateText);
         VerifyFieldsPresent(notificationMessage, templater);
 
