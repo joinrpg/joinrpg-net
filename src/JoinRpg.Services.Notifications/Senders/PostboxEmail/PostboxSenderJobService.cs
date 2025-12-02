@@ -25,8 +25,8 @@ internal class PostboxSenderJobService(
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
 
 
-        var signature = $"\n--\n\n{sender.DisplayName.DisplayName}";
-        var emailBody = new MarkdownString(message.Message.Body + signature);
+        var signature = $"\n\n---\n\n{sender.DisplayName.DisplayName}";
+        var emailBody = new MarkdownString(message.Message.Body.Contents + signature);
 
         var request = new SendEmailRequest
         {
