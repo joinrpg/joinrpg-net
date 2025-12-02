@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 
@@ -23,6 +24,12 @@ public static class ProjectEntityIdParser
         if (PaymentTypeIdentification.TryParse(value, null, out var pt))
         {
             id = pt;
+            return true;
+        }
+
+        if (ClaimCommentIdentification.TryParse(value, null, out var cci))
+        {
+            id = cci;
             return true;
         }
 
