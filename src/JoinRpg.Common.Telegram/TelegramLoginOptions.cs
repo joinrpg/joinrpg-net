@@ -9,4 +9,6 @@ public class TelegramLoginOptions
     /// How old (in seconds) can authorization attempts be to be considered valid (compared to the auth_date field)
     /// </summary>
     public TimeSpan AllowedTimeOffset { get; set; } = TimeSpan.FromSeconds(30);
+
+    public bool Enabled => !string.IsNullOrWhiteSpace(BotName);
 }

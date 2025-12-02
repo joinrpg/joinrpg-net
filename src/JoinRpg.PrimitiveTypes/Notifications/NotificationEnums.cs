@@ -4,6 +4,7 @@ public enum NotificationChannel
 {
     ShowInUi,
     Email,
+    Telegram
 }
 
 public enum NotificationClass

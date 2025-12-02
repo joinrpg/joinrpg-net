@@ -34,7 +34,11 @@ public partial class NotificationServiceImpl(
         var templater = new NotifcationFieldsTemplater(notificationMessage.TemplateText);
         VerifyFieldsPresent(notificationMessage, templater);
 
-        var users = await GetNotificationsForUsers(notificationMessage.Recepients, user => [NotificationChannel.ShowInUi, NotificationChannel.Email]);
+        var users = await GetNotificationsForUsers(notificationMessage.Recepients, user => [
+            NotificationChannel.ShowInUi,
+            NotificationChannel.Email,
+            NotificationChannel.Telegram,
+            ]);
 
         await SendEmailsUsingLegacy(notificationMessage, users);
 
@@ -115,7 +119,7 @@ public partial class NotificationServiceImpl(
         yield return NotificationAddress.Ui();
         if (user.Social.TelegramId is not null)
         {
-            //    yield return new NotificationAddress(user.Social.TelegramId);
+            yield return new NotificationAddress(user.Social.TelegramId);
         }
 
         if (user.Email is not null)
