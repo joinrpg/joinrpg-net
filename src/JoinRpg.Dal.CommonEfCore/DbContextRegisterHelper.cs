@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Dal.CommonEfCore;
 
@@ -24,6 +26,10 @@ public static class DbContextRegisterHelper
             options.UseNpgsql(connectionString);
             options.EnableSensitiveDataLogging(environment.IsDevelopment());
             options.EnableDetailedErrors(environment.IsDevelopment());
+            options
+                .ConfigureWarnings(
+                    b => b.Log(
+                        (RelationalEventId.CommandExecuted, LogLevel.Debug)));
         });
 
         services
