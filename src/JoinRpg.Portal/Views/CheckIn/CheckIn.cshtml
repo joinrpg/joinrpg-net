@@ -29,6 +29,7 @@
 <form asp-action="DoCheckIn" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
   <input type="hidden" name="money" id="money" value="@Model.Validator.FeeDue" />
 
+  @Html.ValidationSummary()
   @if (Model.Validator.FeeDue > 0)
   {
 
