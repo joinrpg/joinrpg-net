@@ -16,7 +16,7 @@ public class ImageTests
         var sanitizer = new HtmlSanitizer();
 
         sanitizer.WhiteListMode = true;
-        _ = sanitizer.Tag("img").AllowAttributes("src");
+        _ = HtmlSanitizerFluentHelper.Tag(sanitizer, "img").AllowAttributes("src");
         sanitizer.Sanitize(str).ShouldBe("<img src=\"https://joinrpg.ru/a.png\">");
     }
 

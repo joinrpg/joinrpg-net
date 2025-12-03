@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Encodings.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
@@ -98,7 +99,7 @@ public class FieldValueViewModel
 
         DisplayString = ch.Field.SupportsMarkdown
             ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
-            : ch.DisplayString.SanitizeHtml();
+            : new MarkupString(HtmlEncoder.Default.Encode(ch.DisplayString));
         FieldViewType = (ProjectFieldViewType)ch.Field.Type;
         FieldName = ch.Field.Name;
 

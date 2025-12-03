@@ -1,3 +1,5 @@
+using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
@@ -13,7 +15,7 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
     {
         try
         {
-            _ = await client.SendMessage(new ChatId(telegramId.Id), contents.Contents, ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
+            _ = await client.SendMessage(new ChatId(telegramId.Id), contents.SanitizeHtml(), ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
             logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}", telegramId);
         }
         catch (ApiRequestException exception)
