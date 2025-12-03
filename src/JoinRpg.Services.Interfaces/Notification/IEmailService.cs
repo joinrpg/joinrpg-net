@@ -12,5 +12,4 @@ public interface IEmailService
     Task Email(NewInviteEmail email);
     Task Email(AcceptInviteEmail email);
     Task Email(DeclineInviteEmail email);
-    Task Email(PublishPlotElementEmail email);
 }
