@@ -39,7 +39,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
             projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
             playerChange = false;
         }
-        else if (claim.PlayerUserId == CurrentUserId)
+        else if (claim.PlayerUserId == CurrentUserId && paymentType.User.UserId != CurrentUserId)
         {
             playerChange = true;
         }
