@@ -15,7 +15,7 @@ public static class Registration
             .AddTransient<ITelegramNotificationService>(services =>
             {
                 var options = services.GetRequiredService<IOptions<TelegramLoginOptions>>();
-                if (options.Value.Enabled)
+                if (!options.Value.Enabled)
                 {
                     return services.GetRequiredService<StubTelegramNotificationService>();
                 }
