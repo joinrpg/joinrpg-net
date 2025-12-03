@@ -1,4 +1,5 @@
 using JoinRpg.Common.Telegram;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Options;

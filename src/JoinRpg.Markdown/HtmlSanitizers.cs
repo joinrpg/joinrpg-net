@@ -11,21 +11,17 @@ internal static class HtmlSanitizers
     private static readonly Lazy<HtmlSanitizer> RemoveAllHtmlSanitizer = new(InitRemoveSanitizer);
     public static IHtmlSanitizer RemoveAll => RemoveAllHtmlSanitizer.Value;
 
+    public static IHtmlSanitizer Telegram { get; } = InitTelegramSanitizer();
+
     private static HtmlSanitizer InitRemoveSanitizer()
     {
-        return new HtmlSanitizer()
-            .FlattenTags("p", "h1", "h2", "h3", "h4", "h5",
+        var x = new HtmlSanitizer();
+        _ = x.Tags("p", "h1", "h2", "h3", "h4", "h5",
                 "strong", "b", "i", "em", "br", "p", "div", "span", "ul", "ol",
-                "li", "a", "blockquote");
-    }
+                "li", "a", "blockquote")
+            .Flatten();
 
-    private static HtmlSanitizer FlattenTags(this HtmlSanitizer htmlSanitizer, params ReadOnlySpan<string> tagNames)
-    {
-        foreach (var tagName in tagNames)
-        {
-            _ = htmlSanitizer.Tag(tagName).Operation(SanitizerOperation.FlattenTag);
-        }
-        return htmlSanitizer;
+        return x;
     }
 
     private static HtmlSanitizer InitHtml5Sanitizer()
@@ -43,42 +39,58 @@ internal static class HtmlSanitizers
             .AllowAttributes("height")
             .AllowAttributes("width")
             .AllowAttributes("frameborder");
-        _ = sanitizer.Tag("hr");
-        _ = sanitizer.Tag("blockquote");
-        _ = sanitizer.Tag("s");
-        _ = sanitizer.Tag("pre");
-        _ = sanitizer.Tag("code");
-        _ = sanitizer.Tag("table");
-        _ = sanitizer.Tag("thead");
-        _ = sanitizer.Tag("tbody");
-        _ = sanitizer.Tag("tr");
-        _ = sanitizer.Tag("td");
-        _ = sanitizer.Tag("th");
+
+        sanitizer.Tags("hr", "blockquote", "s", "pre", "code", "table", "thead", "tbody", "tr", "td", "th");
+
         return sanitizer;
     }
-}
 
-internal class AllowWhiteListedIframeDomains : UrlCheckerAttributeSanitizer
-{
-    private AllowWhiteListedIframeDomains() { }
-    public static AllowWhiteListedIframeDomains Default { get; private set; } = new AllowWhiteListedIframeDomains();
-
-    protected override bool AttributeUrlCheck(HtmlAttribute attribute)
+    private static HtmlSanitizer InitTelegramSanitizer()
     {
-        var baseResult = base.AttributeUrlCheck(attribute);
-        if (!baseResult)
+        var htmlSanitizer = new HtmlSanitizer
         {
+            WhiteListMode = true
+        };
+        htmlSanitizer.Tags("b", "strong", "i", "em", "u", "ins", "s", "strike", "del").RemoveEmpty();
+
+        htmlSanitizer.Tag("a").SetAttribute("target", "_blank").SetAttribute("rel", "nofollow")
+            .CheckAttributeUrl("href")
+            .RemoveEmpty()
+            .NoAttributes(SanitizerOperation.FlattenTag);
+
+
+        htmlSanitizer.Tags("code", "pre", "blockquote").RemoveEmpty();
+
+        htmlSanitizer.Tags("p", "div", "span", "ul", "ol", "li").Flatten();
+
+        return htmlSanitizer;
+    }
+
+
+    private class AllowWhiteListedIframeDomains : UrlCheckerAttributeSanitizer
+    {
+        private AllowWhiteListedIframeDomains() { }
+        public static AllowWhiteListedIframeDomains Default { get; private set; } = new AllowWhiteListedIframeDomains();
+
+        protected override bool AttributeUrlCheck(HtmlAttribute attribute)
+        {
+            var baseResult = base.AttributeUrlCheck(attribute);
+            if (!baseResult)
+            {
+                return false;
+            }
+
+            if (attribute.Value.StartsWith("https://music.yandex.ru/iframe/")
+                || attribute.Value.StartsWith("https://www.youtube.com/embed/")
+                || attribute.Value.StartsWith("https://ok.ru/videoembed/")
+                )
+            {
+                return true;
+            }
+
             return false;
         }
-
-        if (attribute.Value.StartsWith("https://music.yandex.ru/iframe/")
-            || attribute.Value.StartsWith("https://www.youtube.com/embed/")
-            || attribute.Value.StartsWith("https://ok.ru/videoembed/")
-            )
-        {
-            return true;
-        }
-
-        return false;
     }
 }
+
+

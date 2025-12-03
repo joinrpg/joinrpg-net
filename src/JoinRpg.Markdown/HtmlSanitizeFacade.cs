@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Markdown;
 
@@ -7,9 +7,5 @@ namespace JoinRpg.Markdown;
 /// </summary>
 public static class HtmlSanitizeFacade
 {
-    /// <summary>
-    /// Sanitize all Html, leaving safe subset
-    /// </summary>
-    /// <returns>We are returning <see cref="MarkupString"/> to signal "no need to sanitize this again"</returns>
-    public static MarkupString SanitizeHtml(this string str) => new MarkupString(HtmlSanitizers.Simple.Sanitize(str));
+    public static string SanitizeHtml(this TelegramHtmlString str) => HtmlSanitizers.Telegram.Sanitize(str.Contents);
 }
