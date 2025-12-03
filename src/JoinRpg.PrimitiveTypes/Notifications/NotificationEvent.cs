@@ -60,6 +60,15 @@ public record NotificationRecepient
     {
         return new(user.UserId, user.DisplayName.DisplayName, SubscriptionReason.Admin, Fields ?? new Dictionary<string, string>());
     }
+
+    public NotificationRecepient AddField(string key, string value)
+    {
+        var fields = new Dictionary<string, string>(Fields)
+        {
+            [key] = value
+        };
+        return new NotificationRecepient(UserId, SubscriptionReason, fields);
+    }
 }
 
 public record NotificationEventTemplate(string TemplateContents)

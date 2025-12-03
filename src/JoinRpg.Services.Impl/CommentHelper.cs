@@ -2,7 +2,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -136,13 +135,11 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
 
         return (comment, new ClaimSimpleChangedNotification(
             claim.GetId(),
-            Player: ToUserInfoHeader(claim.Player),
+            Player: claim.Player.ToUserInfoHeader(),
             commentExtraAction,
             currentUserAccessor.ToUserInfoHeader(),
             new NotificationEventTemplate(commentText),
             claimOperationType
             ));
     }
-
-    private static UserInfoHeader ToUserInfoHeader(User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 }

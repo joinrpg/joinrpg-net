@@ -1,10 +1,7 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;
 internal class MasterEmailServiceImpl(

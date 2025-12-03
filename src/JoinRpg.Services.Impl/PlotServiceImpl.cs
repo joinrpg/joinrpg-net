@@ -8,7 +8,9 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurrentUserAccessor currentUserAccessor) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPlotService
+public class PlotServiceImpl(IUnitOfWork unitOfWork,
+    IMassProjectEmailService massProjectEmailService,
+    ICurrentUserAccessor currentUserAccessor) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPlotService
 {
     public async Task<PlotFolderIdentification> CreatePlotFolder(ProjectIdentification projectId, string masterTitle, string todo)
     {
@@ -280,15 +282,8 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurre
                 .Select(c => c.ApprovedClaim)
                             .WhereNotNull());
 
-            // Now we have list of claims
-            await email.Email(new PublishPlotElementEmail
-            {
-                Initiator = await GetCurrentUser(),
-                Claims = claims,
-                ProjectName = plotElement.Project.ProjectName,
-                PlotElement = plotElement,
-                Text = new MarkdownString(commentText),
-            });
+
+            await massProjectEmailService.PlotEmail([.. claims.Select(c => c.GetId())], new MarkdownString(commentText), plotElement.GetId());
         }
     }
 

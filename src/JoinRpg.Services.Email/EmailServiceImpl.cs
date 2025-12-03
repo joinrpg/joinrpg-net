@@ -263,27 +263,4 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
             model.Initiator.ToRecepientData(),
             recipients);
     }
-
-    private const string ClaimUriKey = "claimUri";
-
-    public async Task Email(PublishPlotElementEmail email)
-    {
-        var plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
-
-        var subject = $@"{email.ProjectName}: опубликована вводная";
-        var body = new MarkdownString($@"{StandartGreeting()}
-
-Для вас опубликована вводная. Прочитать ее: {messageService.GetUserDependentValue(ClaimUriKey)}
-
-{email.Text.Contents}");
-
-        var recipients = email.Claims
-            .DistinctBy(x => x.PlayerUserId)
-            .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
-                { ClaimUriKey, uriService.Get(c) + plotElementId } }))
-            .ToList();
-
-        await messageService.SendEmails(subject, body, email.Initiator.ToRecepientData(), recipients);
-    }
-
 }
