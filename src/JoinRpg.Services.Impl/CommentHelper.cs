@@ -57,25 +57,6 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
         }
     }
 
-    public static Comment CreateCommentForDiscussion(
-        CommentDiscussion commentDiscussion,
-        int currentUserId,
-        DateTime createdAt,
-        string commentText,
-        bool isVisibleToPlayer,
-        Comment? parentComment,
-        CommentExtraAction? extraAction = null) => SetParent(CreateCommentForDiscussion(commentDiscussion, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction), parentComment);
-
-    [Obsolete("Use SetParentCommentAndCheck")]
-    public static Comment SetParent(Comment comment, Comment? parentComment)
-    {
-        if (parentComment is not null)
-        {
-            comment.Parent = parentComment;
-        }
-        return comment;
-    }
-
     public static Comment CreateCommentForDiscussion(CommentDiscussion commentDiscussion, int currentUserId, DateTime createdAt, string commentText, bool isVisibleToPlayer, CommentExtraAction? extraAction)
     {
         ArgumentNullException.ThrowIfNull(commentDiscussion);

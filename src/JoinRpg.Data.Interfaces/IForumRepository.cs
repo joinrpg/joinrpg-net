@@ -1,16 +1,21 @@
 using JoinRpg.DataModel;
+using JoinRpg.PrimitiveTypes.Forums;
 
 namespace JoinRpg.Data.Interfaces;
 
 public interface IForumRepository
 {
+    [Obsolete]
     Task<ForumThread> GetThread(int projectId, int? forumThreadId);
     Task<CommentDiscussion> GetDiscussion(int projectId, int commentDiscussionId);
 
     Task<CommentDiscussion> GetDiscussionByComment(int projectId, int commentId);
 
     Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int>? groupIds);
+    Task<ForumThreadHeader> GetThread(ForumThreadIdentification threadId);
 }
+
+public record class ForumThreadHeader(string Header, CharacterGroupIdentification CharacterGroupId);
 
 public interface IForumThreadListItem : ICommentDiscussionHeader, IForumThread
 {
