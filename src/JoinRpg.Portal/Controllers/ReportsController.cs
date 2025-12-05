@@ -9,7 +9,10 @@ namespace JoinRpg.Portal.Controllers;
 
 [MasterAuthorize()]
 [Route("{projectId}/reports")]
-public class ReportsController : ControllerGameBase
+public class ReportsController(
+    IProjectRepository projectRepository,
+    IProjectService projectService) : ControllerGameBase(projectRepository,
+        projectService)
 {
     [HttpGet("2d/{gameReport2DTemplateId}")]
     public async Task<IActionResult> Report2D(int projectId, int gameReport2DTemplateId)
@@ -33,14 +36,5 @@ public class ReportsController : ControllerGameBase
         var report2DResultViewModel = new Report2DResultViewModel(template);
 
         return View(report2DResultViewModel);
-    }
-
-    public ReportsController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IUserRepository userRepository) : base(projectRepository,
-            projectService,
-            userRepository)
-    {
     }
 }

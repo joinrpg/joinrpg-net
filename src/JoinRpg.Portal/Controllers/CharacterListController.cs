@@ -23,12 +23,11 @@ public class CharacterListController(
     IProjectService projectService,
     IExportDataService exportDataService,
     IUriService uriService,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Character> problemValidator,
     ICharacterRepository characterRepository,
     ICurrentUserAccessor currentUserAccessor
-    ) : ControllerGameBase(projectRepository, projectService, userRepository)
+    ) : ControllerGameBase(projectRepository, projectService)
 {
     [HttpGet]
     public Task<ActionResult> Active(ProjectIdentification projectid, string export)

@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -25,9 +26,12 @@ public class AclController(
     IUriService uriService,
     IUserRepository userRepository,
     IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
-    IProjectAccessService projectAccessService
-    ) : ControllerGameBase(projectRepository, projectService, userRepository)
+    IProjectAccessService projectAccessService,
+    ICurrentUserAccessor currentUserAccessor
+    ) : ControllerGameBase(projectRepository, projectService)
 {
+    protected readonly IUserRepository UserRepository = userRepository;
+
     [HttpGet("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Add(ProjectIdentification projectId, int userId) => await ShowAddPage(projectId, userId);
@@ -79,9 +83,8 @@ public class AclController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(projectId);
-        var currentUser = await GetCurrentUserAsync();
 
-        return View(new MastersListViewModel(project, claims, groups, currentUser, uriService, projectInfo));
+        return View(new MastersListViewModel(project, claims, groups, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpGet("delete")]
@@ -143,7 +146,6 @@ public class AclController(
 
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(projectId, new(projectAcl.UserId));
 
-        var currentUser = await GetCurrentUserAsync();
         return View(await GetAclViewModel(projectId, projectaclid));
     }
 

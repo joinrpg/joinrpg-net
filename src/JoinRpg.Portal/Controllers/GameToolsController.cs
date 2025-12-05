@@ -7,14 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/tools/[action]")]
-public class GameToolsController : Common.ControllerGameBase
+public class GameToolsController(IProjectRepository projectRepository, IProjectService projectService) : Common.ControllerGameBase(projectRepository, projectService)
 {
-    public GameToolsController(IProjectRepository projectRepository,
-      IProjectService projectService, IUserRepository userRepository)
-      : base(projectRepository, projectService, userRepository)
-    {
-    }
-
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Apis(int projectId)
     {

@@ -1,9 +1,5 @@
-using System.Data.Entity;
-using System.Text;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
@@ -23,53 +19,30 @@ namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
 [Route("{projectId}/money/[action]")]
-public class FinancesController : ControllerGameBase
+public class FinancesController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IExportDataService exportDataService,
+    IFinanceService financeService,
+    IUriService uriService,
+    IFinanceReportRepository financeReportRepository,
+    IUserRepository userRepository,
+    IVirtualUsersService vpu,
+    ICurrentUserAccessor currentUserAccessor,
+    ILogger<FinancesController> logger,
+    IProjectMetadataRepository projectMetadataRepository
+        ) : ControllerGameBase(projectRepository, projectService)
 {
-    private IExportDataService ExportDataService { get; }
-    private IFinanceService FinanceService { get; }
-    private IUriService UriService { get; }
-    private IFinanceReportRepository FinanceReportRepository { get; }
+    public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
 
-    private IVirtualUsersService VirtualUsers { get; }
-    public ICurrentUserAccessor CurrentUserAccessor { get; }
-    private readonly ILogger<FinancesController> logger;
-    private readonly IProjectMetadataRepository projectMetadataRepository;
-
-    private IUnitOfWork UnitOfWork { get; }
-
-    public FinancesController(
-        IUnitOfWork uow,
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IExportDataService exportDataService,
-        IFinanceService financeService,
-        IUriService uriService,
-        IFinanceReportRepository financeReportRepository,
-        IUserRepository userRepository,
-        IVirtualUsersService vpu,
-        ICurrentUserAccessor currentUserAccessor,
-        ILogger<FinancesController> logger,
-        IProjectMetadataRepository projectMetadataRepository
-        )
-        : base(projectRepository, projectService, userRepository)
-    {
-        ExportDataService = exportDataService;
-        FinanceService = financeService;
-        UriService = uriService;
-        FinanceReportRepository = financeReportRepository;
-        VirtualUsers = vpu;
-        UnitOfWork = uow;
-        CurrentUserAccessor = currentUserAccessor;
-        this.logger = logger;
-        this.projectMetadataRepository = projectMetadataRepository;
-    }
+    protected readonly IUserRepository UserRepository = userRepository;
 
     [HttpGet]
     [MasterAuthorize]
     public async Task<ActionResult> Setup(int projectid)
     {
         var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-        return View(new FinanceSetupViewModel(project, CurrentUserId, CurrentUserAccessor.IsAdmin, VirtualUsers.PaymentsUser));
+        return View(new FinanceSetupViewModel(project, CurrentUserId, CurrentUserAccessor.IsAdmin, vpu.PaymentsUser));
     }
 
     [HttpGet]
@@ -85,7 +58,7 @@ public class FinancesController : ControllerGameBase
     private async Task<ActionResult> GetFinanceOperationsList(ProjectIdentification projectid, string export, Func<FinanceOperation, bool> predicate)
     {
         var project = await ProjectRepository.GetProjectWithFinances(projectid);
-        var viewModel = new FinOperationListViewModel(projectid, UriService,
+        var viewModel = new FinOperationListViewModel(projectid, uriService,
             project.FinanceOperations.Where(predicate).ToArray());
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
@@ -97,9 +70,9 @@ public class FinancesController : ControllerGameBase
         else
         {
             var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-            var frontend = new FinanceOperationExporter(UriService, metadata);
+            var frontend = new FinanceOperationExporter(uriService, metadata);
 
-            var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
+            var generator = exportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
 
             return GeneratorResultHelper.Result(project.ProjectName + ": Финансы", generator);
         }
@@ -117,7 +90,7 @@ public class FinancesController : ControllerGameBase
         }
 
         var transfers =
-            await FinanceReportRepository.GetAllMoneyTransfers(projectId);
+            await financeReportRepository.GetAllMoneyTransfers(projectId);
 
         var payments = project.PaymentTypes
             .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
@@ -125,7 +98,7 @@ public class FinancesController : ControllerGameBase
 
         var viewModel = new MoneyInfoTotalViewModel(projectInfo,
             transfers,
-            UriService,
+            uriService,
             project.FinanceOperations.ToArray(),
             payments,
             CurrentUserAccessor);
@@ -141,11 +114,11 @@ public class FinancesController : ControllerGameBase
         {
             if (data.PaymentTypeId > 0)
             {
-                await FinanceService.TogglePaymentActiveness(data.ProjectId, data.PaymentTypeId.Value);
+                await financeService.TogglePaymentActiveness(data.ProjectId, data.PaymentTypeId.Value);
             }
             else
             {
-                await FinanceService.CreatePaymentType(new CreatePaymentTypeRequest
+                await financeService.CreatePaymentType(new CreatePaymentTypeRequest
                 {
                     ProjectId = data.ProjectId,
                     TargetMasterId = data.MasterId,
@@ -171,7 +144,7 @@ public class FinancesController : ControllerGameBase
     {
         try
         {
-            await FinanceService.CreatePaymentType(new CreatePaymentTypeRequest
+            await financeService.CreatePaymentType(new CreatePaymentTypeRequest
             {
                 ProjectId = viewModel.ProjectId,
                 TargetMasterId = viewModel.UserId,
@@ -220,7 +193,7 @@ public class FinancesController : ControllerGameBase
 
         try
         {
-            await FinanceService.EditCustomPaymentType(viewModel.ProjectId, viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
+            await financeService.EditCustomPaymentType(viewModel.ProjectId, viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
         catch (Exception exc)
@@ -242,7 +215,7 @@ public class FinancesController : ControllerGameBase
 
         try
         {
-            await FinanceService.CreateFeeSetting(new CreateFeeSettingRequest()
+            await financeService.CreateFeeSetting(new CreateFeeSettingRequest()
             {
                 ProjectId = viewModel.ProjectId,
                 Fee = viewModel.Fee,
@@ -270,7 +243,7 @@ public class FinancesController : ControllerGameBase
 
         try
         {
-            await FinanceService.DeleteFeeSetting(projectid, projectFeeSettingId);
+            await financeService.DeleteFeeSetting(projectid, projectFeeSettingId);
             return RedirectToAction("Setup", new { projectid });
         }
         catch
@@ -296,13 +269,13 @@ public class FinancesController : ControllerGameBase
 
         var masterOperations = project.FinanceOperations.ToArray();
 
-        var masterTransfers = await FinanceReportRepository.GetAllMoneyTransfers(projectId);
+        var masterTransfers = await financeReportRepository.GetAllMoneyTransfers(projectId);
 
         var summary =
             MasterBalanceBuilder.ToMasterBalanceViewModels(masterOperations, masterTransfers, projectId);
 
-        var generator = ExportDataService.GetGenerator(ExportType.Csv, summary,
-    new MoneySummaryByMasterExporter(UriService));
+        var generator = exportDataService.GetGenerator(ExportType.Csv, summary,
+    new MoneySummaryByMasterExporter(uriService));
 
         return GeneratorResultHelper.Result(project.ProjectName + ": Финансы", generator);
     }
@@ -319,7 +292,7 @@ public class FinancesController : ControllerGameBase
 
         try
         {
-            await FinanceService.SaveGlobalSettings(new SetFinanceSettingsRequest
+            await financeService.SaveGlobalSettings(new SetFinanceSettingsRequest
             {
                 ProjectId = viewModel.ProjectId,
                 WarnOnOverPayment = viewModel.WarnOnOverPayment,
@@ -342,7 +315,7 @@ public class FinancesController : ControllerGameBase
         var project = await ProjectRepository.GetProjectWithFinances(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var transfers =
-            await FinanceReportRepository.GetMoneyTransfersForMaster(projectId, masterId);
+            await financeReportRepository.GetMoneyTransfersForMaster(projectId, masterId);
         var user = await UserRepository.GetById(masterId);
 
         var operations = project.FinanceOperations
@@ -360,69 +333,11 @@ public class FinancesController : ControllerGameBase
 
         var viewModel = new MoneyInfoForUserViewModel(transfers,
             user,
-            UriService,
+            uriService,
             operations,
             payments,
             CurrentUserAccessor,
             projectInfo);
         return View(viewModel);
-    }
-
-    [HttpGet]
-    [AdminAuthorize]
-    [ActionName("unfixed-list")]
-    public async Task<ActionResult> ListUnfixedPayments(int projectId)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        Project project = await UnitOfWork.GetDbSet<Project>()
-            .Include(p => p.ProjectFeeSettings)
-            .Include(p => p.ProjectFields)
-            .Include(p => p.FinanceOperations)
-            .SingleAsync(p => p.ProjectId == projectId);
-        ICollection<Claim> claims = await UnitOfWork.GetDbSet<Claim>()
-            .Where(c => c.ProjectId == projectId && c.CurrentFee == null)
-            .Include(c => c.AccommodationRequest)
-            .ToArrayAsync();
-
-        var s = new StringBuilder();
-        _ = s.AppendLine($"{"Id",10} {"Paid",10} {"Fee",10}");
-
-        foreach (Claim claim in claims)
-        {
-            _ = s.AppendLine($"{claim.ClaimId,10}" +
-                $" {claim.ClaimBalance(),10}" +
-                $" {claim.ClaimTotalFee(projectInfo),10}");
-        }
-
-        return Content(s.ToString(), "text/plain", Encoding.ASCII);
-    }
-
-    [HttpGet] //TODO fix this to use POST
-    [AdminAuthorize]
-    [ActionName("unfixed-fix")]
-    public async Task<ActionResult> FixUnfixedPayments(int projectId)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        Project project = await UnitOfWork.GetDbSet<Project>()
-            .Include(p => p.ProjectFeeSettings)
-            .Include(p => p.ProjectFields)
-            .Include(p => p.FinanceOperations)
-            .SingleAsync(p => p.ProjectId == projectId);
-        ICollection<Claim> claims = await UnitOfWork.GetDbSet<Claim>()
-            .Where(c => c.ProjectId == projectId && c.CurrentFee == null)
-            .Include(c => c.AccommodationRequest)
-            .ToArrayAsync();
-
-        DateTime now = DateTime.UtcNow;
-        foreach (Claim claim in claims)
-        {
-            claim.UpdateClaimFeeIfRequired(now, projectInfo);
-        }
-
-        await UnitOfWork.SaveChangesAsync();
-
-        return RedirectToAction("Setup", new { projectId });
     }
 }

@@ -1,5 +1,3 @@
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Portal.Infrastructure.Authentication;
 
 namespace JoinRpg.Portal.Controllers.Common;
@@ -8,12 +6,9 @@ namespace JoinRpg.Portal.Controllers.Common;
 /// This controller is used if we need to access user methods.
 /// It's recommended that you inject ICurrentUserAccessor in your constructor
 /// </summary>
-public abstract class LegacyJoinControllerBase(IUserRepository userRepository) : ControllerBase
+[Obsolete]
+public abstract class LegacyJoinControllerBase : ControllerBase
 {
-
-    protected readonly IUserRepository UserRepository = userRepository;
-
-    protected async Task<User> GetCurrentUserAsync() => await UserRepository.GetById(CurrentUserId);
 
     protected int CurrentUserId
     {

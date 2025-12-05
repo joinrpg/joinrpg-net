@@ -17,31 +17,16 @@ namespace JoinRpg.Portal.Controllers;
 
 [Authorize]
 [Route("{projectId}/forums/{forumThreadId}/[action]")]
-public class ForumController : ControllerGameBase
+public class ForumController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    IForumService forumService,
+    IForumRepository forumRepository,
+    IClaimsRepository claimsRepository,
+    IClaimService claimService) : ControllerGameBase(projectRepository, projectService)
 {
+
     #region Constructor & Services
-    private IForumService ForumService { get; }
-    private IForumRepository ForumRepository { get; }
-    private IClaimsRepository ClaimsRepository { get; }
-
-    private IClaimService ClaimService { get; }
-
-    public ForumController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IForumService forumService,
-        IForumRepository forumRepository,
-        IClaimsRepository claimsRepository,
-        IClaimService claimService,
-        IUserRepository userRepository
-        )
-      : base(projectRepository, projectService, userRepository)
-    {
-        ForumService = forumService;
-        ForumRepository = forumRepository;
-        ClaimsRepository = claimsRepository;
-        ClaimService = claimService;
-    }
     #endregion
 
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
@@ -71,7 +56,7 @@ public class ForumController : ControllerGameBase
         }
         try
         {
-            var forumThreadId = await ForumService.CreateThread(
+            var forumThreadId = await forumService.CreateThread(
               viewModel.ProjectId,
               viewModel.CharacterGroupId,
               viewModel.Header,
@@ -103,10 +88,10 @@ public class ForumController : ControllerGameBase
 
     private async Task<ForumThread> GetForumThread(int projectid, int forumThreadId)
     {
-        var forumThread = await ForumRepository.GetThread(projectid, forumThreadId);
+        var forumThread = await forumRepository.GetThread(projectid, forumThreadId);
         var isMaster = forumThread.HasMasterAccess(CurrentUserId);
         var isPlayer = forumThread.IsVisibleToPlayer &&
-                       (await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
+                       (await claimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
                          claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
 
         if (!isMaster && !isPlayer)
@@ -119,7 +104,7 @@ public class ForumController : ControllerGameBase
     [HttpPost("~/{projectId}/forums/createcomment")]
     public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
     {
-        CommentDiscussion discussion = await ForumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+        CommentDiscussion discussion = await forumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
         discussion.RequestAnyAccess(CurrentUserId);
 
         if (discussion == null)
@@ -139,7 +124,7 @@ public class ForumController : ControllerGameBase
             if (claim != null)
             {
 
-                await ClaimService.AddComment(
+                await claimService.AddComment(
                     claim.GetId(),
                     viewModel.ParentCommentId,
                     !viewModel.HideFromUser,
@@ -151,7 +136,7 @@ public class ForumController : ControllerGameBase
                 var forumThread = discussion.GetForumThread();
                 if (forumThread != null)
                 {
-                    await ForumService.AddComment(discussion.ProjectId, forumThread.ForumThreadId, viewModel.ParentCommentId,
+                    await forumService.AddComment(discussion.ProjectId, forumThread.ForumThreadId, viewModel.ParentCommentId,
                       !viewModel.HideFromUser, viewModel.CommentText);
                 }
             }
@@ -182,11 +167,11 @@ public class ForumController : ControllerGameBase
         }
         else
         {
-            var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
+            var claims = await claimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
 
             groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupIdsToTop().Select(g => g.CharacterGroupId));
         }
-        var threads = await ForumRepository.GetThreads(projectid, isMaster, groupIds);
+        var threads = await forumRepository.GetThreads(projectid, isMaster, groupIds);
         var viewModel = new ForumThreadListViewModel(project, threads, CurrentUserId);
         return View(viewModel);
     }
@@ -200,7 +185,7 @@ public class ForumController : ControllerGameBase
             return NotFound();
         }
         var isMaster = group.HasMasterAccess(CurrentUserIdOrDefault);
-        var threads = await ForumRepository.GetThreads(projectid, isMaster, new[] { characterGroupId });
+        var threads = await forumRepository.GetThreads(projectid, isMaster, new[] { characterGroupId });
         var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(CurrentUserIdOrDefault)), CurrentUserId);
         return View(viewModel);
     }
@@ -208,9 +193,9 @@ public class ForumController : ControllerGameBase
     [HttpPost("~/{projectId}/forums/concealcomment")]
     public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
     {
-        await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
+        await claimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
         var discussion =
-               await ForumRepository.GetDiscussion(projectid, commentDiscussionId);
+               await forumRepository.GetDiscussion(projectid, commentDiscussionId);
         return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
     }
 }
