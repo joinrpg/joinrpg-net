@@ -26,11 +26,10 @@ public class ClaimListController(
     IClaimsRepository claimsRepository,
     IUriService uriService,
     IAccommodationRepository accommodationRepository,
-    IUserRepository userRepository,
     IProblemValidator<Claim> claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
-        ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
+        ) : Common.ControllerGameBase(projectRepository, projectService)
 {
 
     #region implementation

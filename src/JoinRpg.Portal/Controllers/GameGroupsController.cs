@@ -26,11 +26,10 @@ namespace JoinRpg.Portal.Controllers;
 public class GameGroupsController(
     IProjectRepository projectRepository,
     IProjectService projectService,
-    IUserRepository userRepository,
     IUriService uriService,
     IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository
-    ) : ControllerGameBase(projectRepository, projectService, userRepository)
+    ) : ControllerGameBase(projectRepository, projectService)
 {
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
     [AllowAnonymous]

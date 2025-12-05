@@ -27,13 +27,11 @@ public class PlotController(
     IPlotService plotService,
     IPlotRepository plotRepository,
     IUriService uriService,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
     ILogger<PlotController> logger
     ) : ControllerGameBase(projectRepository,
-        projectService,
-        userRepository)
+        projectService)
 {
     [MasterAuthorize(Permission.CanManagePlots)]
     [HttpGet]

@@ -23,11 +23,10 @@ public class GameFieldController(
     IProjectRepository projectRepository,
     IProjectService projectService,
     IFieldSetupService fieldSetupService,
-    IUserRepository userRepository,
     FieldSetupManager manager,
     ICurrentProjectAccessor currentProjectAccessor,
     IProjectMetadataRepository projectMetadataRepository
-        ) : ControllerGameBase(projectRepository, projectService, userRepository)
+        ) : ControllerGameBase(projectRepository, projectService)
 {
     public FieldSetupManager Manager { get; } = manager;
 

@@ -16,10 +16,7 @@ namespace JoinRpg.Portal.Controllers.Money;
 public class TransferController(
     IProjectRepository projectRepository,
     IProjectService projectService,
-    IFinanceService financeService,
-    IUserRepository userRepository) : ControllerGameBase(projectRepository,
-        projectService,
-        userRepository)
+    IFinanceService financeService) : ControllerGameBase(projectRepository, projectService)
 {
     [HttpGet]
     public async Task<IActionResult> Create(int projectId)

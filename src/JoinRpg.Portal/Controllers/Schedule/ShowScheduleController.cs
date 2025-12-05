@@ -13,17 +13,12 @@ namespace JoinRpg.Portal.Controllers.Schedule;
 
 [AllowAnonymous] // Access to schedule checked by scheduleManager
 [Route("{projectId}/schedule")]
-public class ShowScheduleController : Common.ControllerGameBase
+public class ShowScheduleController(
+    IProjectRepository projectRepository,
+    IProjectService projectService,
+    SchedulePageManager manager) : Common.ControllerGameBase(projectRepository, projectService)
 {
-    public ShowScheduleController(
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IUserRepository userRepository, SchedulePageManager manager)
-        : base(projectRepository, projectService, userRepository) => Manager = manager;
-
-    public SchedulePageManager Manager { get; }
-
-    private ActionResult Error(int projectId, IEnumerable<ScheduleConfigProblemsViewModel> errors)
+    private ViewResult Error(int projectId, IEnumerable<ScheduleConfigProblemsViewModel> errors)
     {
         return View("Error", new ErrorViewModel
         {
@@ -42,12 +37,12 @@ public class ShowScheduleController : Common.ControllerGameBase
     [HttpGet("")]
     public async Task<ActionResult> Index(int projectId)
     {
-        var errors = await Manager.CheckScheduleConfiguration();
+        var errors = await manager.CheckScheduleConfiguration();
         if (errors.Any())
         {
             return Error(projectId, errors);
         }
-        var schedule = await Manager.GetSchedule();
+        var schedule = await manager.GetSchedule();
         return View(schedule);
     }
 
@@ -55,19 +50,19 @@ public class ShowScheduleController : Common.ControllerGameBase
     [HttpGet("ical")]
     public async Task<ActionResult> Ical(int projectId)
     {
-        var schedule = await Manager.GetIcalSchedule();
+        var schedule = await manager.GetIcalSchedule();
         return File(Encoding.UTF8.GetBytes(schedule), "text/calendar");
     }
 
     [HttpGet("full")]
     public async Task<ActionResult> FullScreen(int projectId)
     {
-        var errors = await Manager.CheckScheduleConfiguration();
+        var errors = await manager.CheckScheduleConfiguration();
         if (errors.Any())
         {
             return Error(projectId, errors);
         }
-        var schedule = await Manager.GetSchedule();
+        var schedule = await manager.GetSchedule();
         return View("FullScreen", schedule);
     }
 }

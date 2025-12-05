@@ -23,9 +23,8 @@ namespace JoinRpg.Portal.Controllers;
 public class GameController(
     IProjectService projectService,
     IProjectRepository projectRepository,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository
-    ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
+    ) : Common.ControllerGameBase(projectRepository, projectService)
 {
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]

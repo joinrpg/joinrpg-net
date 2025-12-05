@@ -17,12 +17,9 @@ public class PlotListController(
     IProjectRepository projectRepository,
     IProjectService projectService,
     IPlotRepository plotRepository,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser
-    ) : ControllerGameBase(projectRepository,
-    projectService,
-    userRepository)
+    ) : ControllerGameBase(projectRepository, projectService)
 {
     [RequireMasterOrPublish]
     [HttpGet]

@@ -25,12 +25,11 @@ public class CharacterController(
     IProjectService projectService,
     ICharacterRepository characterRepository,
     IUriService uriService,
-    IUserRepository userRepository,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
     CharacterPlotViewService characterPlotViewService
-        ) : Common.ControllerGameBase(projectRepository, projectService, userRepository)
+        ) : Common.ControllerGameBase(projectRepository, projectService)
 {
 
     [HttpGet("~/{projectId}/character/{characterid}/")]

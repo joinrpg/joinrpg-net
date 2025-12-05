@@ -17,11 +17,9 @@ public class AccommodationTypeController(
     IProjectService projectService,
     IAccommodationService accommodationService,
     IAccommodationRepository accommodationRepository,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor) : Common.ControllerGameBase(projectRepository,
-        projectService,
-        userRepository)
+        projectService)
 {
 
     /// <summary>

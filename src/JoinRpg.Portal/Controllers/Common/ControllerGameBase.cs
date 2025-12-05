@@ -17,9 +17,7 @@ namespace JoinRpg.Portal.Controllers.Common;
 [Obsolete("Use JoinControllerGameBase")]
 public abstract class ControllerGameBase(
     IProjectRepository projectRepository,
-    IProjectService projectService,
-    IUserRepository userRepository
-        ) : LegacyJoinControllerBase(userRepository)
+    IProjectService projectService) : LegacyJoinControllerBase
 {
     protected IProjectService ProjectService { get; } = projectService;
     public IProjectRepository ProjectRepository { get; } = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));

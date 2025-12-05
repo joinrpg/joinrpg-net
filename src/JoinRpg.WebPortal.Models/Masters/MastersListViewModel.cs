@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
@@ -19,7 +20,7 @@ public class MastersListViewModel
         Project project,
         IReadOnlyCollection<ClaimCountByMaster> claims,
         IReadOnlyCollection<CharacterGroup> groups,
-        User currentUser,
+        ICurrentUserAccessor currentUser,
         IUriService uriService,
         ProjectInfo projectInfo)
     {

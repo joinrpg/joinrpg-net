@@ -20,11 +20,9 @@ public class AccommodationPrintController(
     IExportDataService exportDataService,
     IUriService uriService,
     IAccommodationRepository accommodationRepository,
-    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository
     ) : Common.ControllerGameBase(projectRepository,
-        projectService,
-        userRepository)
+        projectService)
 {
     [HttpGet]
     public async Task<ActionResult> MainReport(ProjectIdentification projectId, string export)
