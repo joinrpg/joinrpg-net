@@ -1,5 +1,6 @@
 using System.Data.Entity.SqlServer;
 using JoinRpg.PrimitiveTypes.Claims;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -48,8 +49,17 @@ internal static class ClaimPredicates
         return claim => claim.ProjectId == id;
     }
 
-    public static Expression<Func<Claim, bool>> GetInGroupPredicate(int[] characterGroupsIds) =>
+    public static Expression<Func<Claim, bool>> GetInGroupPredicate(IReadOnlyCollection<int> characterGroupsIds) =>
         claim => characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0);
+
+    public static Expression<Func<Claim, bool>> GetInGroupPredicate(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds)
+    {
+        var (projectId, ids) = characterGroupsIds.ToIntListSameProject();
+        var builder = PredicateBuilder.New<Claim>()
+            .And(GetForProject(projectId))
+            .And(GetInGroupPredicate(ids));
+        return builder;
+    }
 
     internal static Expression<Func<Claim, bool>> ByUgStatus(UgStatusSpec spec)
     {

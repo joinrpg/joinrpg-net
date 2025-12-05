@@ -2,15 +2,17 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-internal class ForumServiceImpl : DbServiceImplBase, IForumService
+internal class ForumServiceImpl(IUnitOfWork unitOfWork,
+                                IEmailService emailService,
+                                ICurrentUserAccessor currentUserAccessor,
+                                IForumNotificationService forumNotificationService
+    ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IForumService
 {
-    private IEmailService EmailService { get; }
-    public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => EmailService = emailService;
-
     public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
     {
         var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
@@ -28,12 +30,13 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
             CommentDiscussion = new CommentDiscussion() { ProjectId = projectId, Project = group.Project, },
         };
 
-        _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
+        var comment = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
             CurrentUserId,
             Now,
             commentText,
             !hideFromUser,
-            parentComment: null);
+            extraAction: null
+            );
 
 
         group.ForumThreads.Add(forumThread);
@@ -41,22 +44,14 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
 
         if (emailEverybody)
         {
-            var groups = group.GetChildrenGroupsIdRecursiveIncludingThis();
-            var players = hideFromUser ? [] :
-              (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Approved, groups)).Select(
-                claim => claim.Player);
-            var masters = forumThread.Project.ProjectAcls.Select(acl => acl.User);
+            var email = new ForumMessageNotification(
+                new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
+                currentUserAccessor.ToUserInfoHeader(),
+                new MarkdownString(commentText),
+                header
+                );
 
-            var fe = new ForumEmail()
-            {
-                ForumThread = forumThread,
-                ProjectName = forumThread.Project.ProjectName,
-                Initiator = await UserRepository.GetById(CurrentUserId),
-                Recipients = players.Union(masters).ToList(),
-                Text = new MarkdownString(commentText),
-            };
-
-            await EmailService.Email(fe);
+            await forumNotificationService.SendNotification(email);
         }
         return forumThread.ForumThreadId;
     }
@@ -87,7 +82,7 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
 
         await UnitOfWork.SaveChangesAsync();
 
-        await EmailService.Email(email);
+        await emailService.Email(email);
 
     }
 
@@ -96,12 +91,14 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
     {
         var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
 
-        _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
+        var comment = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
             CurrentUserId,
             Now,
             commentText,
             isVisibleToPlayer,
-            parentComment);
+            extraAction: null);
+
+        comment.Parent = parentComment;
 
         var extraRecipients =
           new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User };

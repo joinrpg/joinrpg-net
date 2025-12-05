@@ -34,4 +34,5 @@ public enum SubscriptionReason
     SubscribedDirectMaster,
     MasterOfGame,
     Admin,
+    Forum,
 }

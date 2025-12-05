@@ -253,4 +253,14 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
         return GetClaimsImpl(predicateBuilder);
     }
+
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec)
+    {
+        var query = Ctx.ClaimSet
+            .AsExpandable()
+            .Where(ClaimPredicates.GetInGroupPredicate(characterGroupsIds))
+            .Where(ClaimPredicates.GetClaimStatusPredicate(spec));
+
+        return await MapToClaimWithPlayer(query);
+    }
 }
