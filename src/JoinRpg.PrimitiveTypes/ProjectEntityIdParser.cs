@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 
@@ -30,6 +31,18 @@ public static class ProjectEntityIdParser
         if (ClaimCommentIdentification.TryParse(value, null, out var cci))
         {
             id = cci;
+            return true;
+        }
+
+        if (ForumCommentIdentification.TryParse(value, null, out var fci))
+        {
+            id = fci;
+            return true;
+        }
+
+        if (ForumThreadIdentification.TryParse(value, null, out var fti))
+        {
+            id = fti;
             return true;
         }
 

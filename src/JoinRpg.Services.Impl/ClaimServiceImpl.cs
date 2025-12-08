@@ -194,18 +194,11 @@ internal class ClaimServiceImpl(
 
         if (!string.IsNullOrWhiteSpace(claimText))
         {
-            claim.CommentDiscussion.Comments.Add(new Comment
-            {
-                CommentDiscussionId = -1,
-                AuthorUserId = CurrentUserId,
-                CommentText = new CommentText { Text = new MarkdownString(claimText) },
-                CreatedAt = Now,
-                IsCommentByPlayer = true,
-                IsVisibleToPlayer = true,
-                ProjectId = characterId.ProjectId,
-                LastEditTime = Now,
-                ExtraAction = CommentExtraAction.NewClaim,
-            });
+            var comment = CommentHelper.CreateCommentForClaim(claim,
+                Now,
+                claimText,
+                isVisibleToPlayer: true,
+                extraAction: CommentExtraAction.NewClaim);
         }
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);

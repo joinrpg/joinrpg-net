@@ -8,7 +8,6 @@ using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Notifications;
-using JoinRpg.DI;
 using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
 using JoinRpg.Interfaces;
@@ -140,7 +139,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     /// </summary>
     public void ConfigureContainer(ContainerBuilder builder)
     {
-        _ = builder.RegisterModule(new JoinrpgMainModule())
+        _ = builder
             .RegisterModule(new JoinRpgDomainModule())
             .RegisterModule(new JoinRpgPortalModule());
     }

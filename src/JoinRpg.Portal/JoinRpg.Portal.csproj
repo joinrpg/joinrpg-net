@@ -55,10 +55,10 @@
     <ProjectReference Include="..\JoinRpg.Dal.DataProtection\JoinRpg.Dal.DataProtection.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Notifications\JoinRpg.Dal.Notifications.csproj" />
-    <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />
     <ProjectReference Include="..\JoinRpg.Integrations.KogdaIgra\JoinRpg.Integrations.KogdaIgra.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
+    <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj" />

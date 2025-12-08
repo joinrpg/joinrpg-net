@@ -8,75 +8,62 @@ namespace JoinRpg.Services.Impl;
 
 internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
 {
-    [Obsolete("Use AddCommentWithNotification")]
-    public static Comment CreateCommentForClaim(
+    public Comment CreateCommentForClaim(
       Claim claim,
-      int currentUserId,
-      DateTime createdAt,
-      string commentText,
-      bool isVisibleToPlayer,
-      CommentExtraAction? extraAction = null) => CreateCommentForClaimInternal(claim, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction);
-
-    private static Comment CreateCommentForClaimInternal(
-      Claim claim,
-      int currentUserId,
       DateTime createdAt,
       string commentText,
       bool isVisibleToPlayer,
       CommentExtraAction? extraAction = null)
     {
         var comment = CreateCommentForDiscussion(claim.CommentDiscussion,
-          currentUserId,
+          currentUserAccessor.UserId,
           createdAt,
           commentText,
           isVisibleToPlayer,
           extraAction);
 
-        SetClaimTimes(claim, currentUserId, createdAt, isVisibleToPlayer);
+        SetClaimTimes(claim, createdAt, isVisibleToPlayer);
 
         return comment;
     }
 
-    private static void SetClaimTimes(Claim claim, int currentUserId, DateTime createdAt, bool isVisibleToPlayer)
+    public Comment CreateCommentForForumThread(
+      ForumThread forumThread,
+      DateTime createdAt,
+      string commentText,
+      bool isVisibleToPlayer)
+    {
+        var comment = CreateCommentForDiscussion(forumThread.CommentDiscussion,
+          currentUserAccessor.UserId,
+          createdAt,
+          commentText,
+          isVisibleToPlayer,
+          extraAction: null);
+
+        return comment;
+    }
+
+    private void SetClaimTimes(Claim claim, DateTime createdAt, bool isVisibleToPlayer)
     {
         claim.LastUpdateDateTime = createdAt;
-        if (claim.Player.UserId == currentUserId)
+        if (claim.Player.UserId == currentUserAccessor.UserId)
         {
             claim.LastPlayerCommentAt = createdAt;
         }
         else
         {
             claim.LastMasterCommentAt = createdAt;
-            claim.LastMasterCommentBy_Id = currentUserId;
+            claim.LastMasterCommentBy_Id = currentUserAccessor.UserId;
 
             if (isVisibleToPlayer)
             {
                 claim.LastVisibleMasterCommentAt = createdAt;
-                claim.LastVisibleMasterCommentBy_Id = currentUserId;
+                claim.LastVisibleMasterCommentBy_Id = currentUserAccessor.UserId;
             }
         }
     }
 
-    public static Comment CreateCommentForDiscussion(
-        CommentDiscussion commentDiscussion,
-        int currentUserId,
-        DateTime createdAt,
-        string commentText,
-        bool isVisibleToPlayer,
-        Comment? parentComment,
-        CommentExtraAction? extraAction = null) => SetParent(CreateCommentForDiscussion(commentDiscussion, currentUserId, createdAt, commentText, isVisibleToPlayer, extraAction), parentComment);
-
-    [Obsolete("Use SetParentCommentAndCheck")]
-    public static Comment SetParent(Comment comment, Comment? parentComment)
-    {
-        if (parentComment is not null)
-        {
-            comment.Parent = parentComment;
-        }
-        return comment;
-    }
-
-    public static Comment CreateCommentForDiscussion(CommentDiscussion commentDiscussion, int currentUserId, DateTime createdAt, string commentText, bool isVisibleToPlayer, CommentExtraAction? extraAction)
+    private static Comment CreateCommentForDiscussion(CommentDiscussion commentDiscussion, int currentUserId, DateTime createdAt, string commentText, bool isVisibleToPlayer, CommentExtraAction? extraAction)
     {
         ArgumentNullException.ThrowIfNull(commentDiscussion);
 
@@ -126,12 +113,11 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
 
         }
 
-        var comment = CreateCommentForClaimInternal(claim,
-            currentUserAccessor.UserId,
+        var comment = CreateCommentForClaim(claim,
             now,
             commentText,
             isVisibleToPlayer: claimOperationType != ClaimOperationType.MasterSecretChange,
-            commentExtraAction);
+            extraAction: commentExtraAction);
 
         return (comment, new ClaimSimpleChangedNotification(
             claim.GetId(),

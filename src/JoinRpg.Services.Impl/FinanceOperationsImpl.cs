@@ -302,7 +302,6 @@ internal class FinanceOperationsImpl(
         // Comment to source claim
         Comment commentFrom = CommentHelper.CreateCommentForClaim(
             claimFrom,
-            CurrentUserId,
             Now,
             request.CommentText,
             true,
@@ -324,7 +323,6 @@ internal class FinanceOperationsImpl(
         // Comment to destination claim
         Comment commentTo = CommentHelper.CreateCommentForClaim(
             claimTo,
-            CurrentUserId,
             Now,
             request.CommentText,
             true,

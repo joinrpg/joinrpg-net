@@ -57,8 +57,7 @@ public class ForumController(
         try
         {
             var forumThreadId = await forumService.CreateThread(
-              viewModel.ProjectId,
-              viewModel.CharacterGroupId,
+              new(viewModel.ProjectId, viewModel.CharacterGroupId),
               viewModel.Header,
               viewModel.CommentText,
               viewModel.HideFromUser,
@@ -88,7 +87,7 @@ public class ForumController(
 
     private async Task<ForumThread> GetForumThread(int projectid, int forumThreadId)
     {
-        var forumThread = await forumRepository.GetThread(projectid, forumThreadId);
+        var forumThread = await forumRepository.GetThread(new(projectid, forumThreadId));
         var isMaster = forumThread.HasMasterAccess(CurrentUserId);
         var isPlayer = forumThread.IsVisibleToPlayer &&
                        (await claimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
@@ -136,7 +135,7 @@ public class ForumController(
                 var forumThread = discussion.GetForumThread();
                 if (forumThread != null)
                 {
-                    await forumService.AddComment(discussion.ProjectId, forumThread.ForumThreadId, viewModel.ParentCommentId,
+                    await forumService.AddComment(forumThread.GetId(), viewModel.ParentCommentId,
                       !viewModel.HideFromUser, viewModel.CommentText);
                 }
             }

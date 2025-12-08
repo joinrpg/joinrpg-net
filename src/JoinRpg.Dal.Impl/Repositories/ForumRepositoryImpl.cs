@@ -1,15 +1,37 @@
+using JoinRpg.PrimitiveTypes.Forums;
+
 namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class ForumRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IForumRepository
 {
-    public Task<ForumThread> GetThread(int projectId, int? forumThreadId)
+    public Task<ForumThread> GetThread(ForumThreadIdentification forumThreadId)
     {
         return
           Ctx.Set<ForumThread>()
             .Include(thread => thread.CommentDiscussion.Comments.Select(comment => comment.CommentText))
             .Include(thread => thread.CommentDiscussion.Comments.Select(comment => comment.Author))
             .Include(thread => thread.Project)
-            .SingleOrDefaultAsync(thread => thread.ProjectId == projectId && thread.ForumThreadId == forumThreadId);
+            .SingleOrDefaultAsync(thread => thread.ProjectId == forumThreadId.ProjectId && thread.ForumThreadId == forumThreadId.ThreadId);
+    }
+
+    public async Task<ForumThreadHeader> GetThreadHeader(ForumThreadIdentification threadId)
+    {
+        var result = await
+         Ctx.Set<ForumThread>()
+           .Select(ft =>
+           new
+           {
+               ft.ProjectId,
+               ft.ForumThreadId,
+               ft.Header,
+               ft.CharacterGroupId
+           }
+           )
+           .Where(thread => thread.ProjectId == threadId.ProjectId && thread.ForumThreadId == threadId.ThreadId)
+           .ToListAsync();
+
+        return
+            result.Select(ft => new ForumThreadHeader(ft.Header, new CharacterGroupIdentification(ft.ProjectId, ft.CharacterGroupId))).Single();
     }
 
     public Task<CommentDiscussion> GetDiscussion(int projectId, int commentDiscussionId)

@@ -133,7 +133,8 @@ public record class ClaimSimpleChangedNotification(
     CharacterIdentification? AnotherCharacterId = null,                          // Это если
     int? Money = null,
     UserInfoHeader? PaymentOwner = null,
-    UserInfoHeader? ParentCommentAuthor = null
+    UserInfoHeader? ParentCommentAuthor = null,
+    IReadOnlyCollection<FieldWithPreviousAndNewValue>? UpdatedFields = null
     );
 
 public record class ClaimOnlinePaymentNotification(

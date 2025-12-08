@@ -55,7 +55,7 @@ public interface IForumThread : IProjectEntity
     int CharacterGroupId { get; }
 }
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by Entity Framework
+//TODO В форумах есть подписка, мы ее никогда не ставим. Когда сделаем, поправить также SubscribeCalculator.cs 
 public class UserForumSubscription
 {
     public int UserForumSubscriptionId { get; set; }

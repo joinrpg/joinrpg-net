@@ -21,21 +21,6 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
     public Task Email(NewClaimEmail model) => SendClaimEmail(model, "подана");
 
-
-    public async Task Email(ForumEmail model)
-    {
-        await messageService.SendEmail(model, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
-            StandartGreeting() + $@"
-На форуме появилось новое сообщение: 
-
-{model.Text.Contents}
-
-{model.Initiator.GetDisplayName()}
-
-Чтобы ответить на комментарий, перейдите на страницу обсуждения: {uriService.Get(model.ForumThread.CommentDiscussion)}
-");
-    }
-
     public async Task Email(FieldsChangedEmail model)
     {
         var projectEmailEnabled = model.GetEmailEnabled();
