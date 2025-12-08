@@ -37,7 +37,7 @@ public static class FinanceOperationExtensions
 }
 
 /// <inheritdoc cref="IPaymentsService" />
-public class PaymentsService(
+internal class PaymentsService(
     IUnitOfWork unitOfWork,
     IUriService uriService,
     IBankSecretsProvider bankSecrets,
@@ -45,6 +45,7 @@ public class PaymentsService(
     Lazy<IClaimNotificationService> claimNotificationService,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
+    CommentHelper commentHelper,
     IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
 {
     private readonly Lazy<FastPaymentsSystemApi> _lazyFpsApi = new(() => new FastPaymentsSystemApi(clientFactory));
@@ -407,9 +408,8 @@ public class PaymentsService(
             throw new ArgumentException($"{nameof(ClaimPaymentRequest.FinanceOperationToRefundId)} is required when {nameof(ClaimPaymentRequest.Refund)} is true", nameof(request));
         }
 
-        Comment comment = CommentHelper.CreateCommentForClaim(
+        Comment comment = commentHelper.CreateCommentForClaim(
             claim,
-            CurrentUserId,
             Now,
             // Do not remove null-coalescing here!
             // Payment comment is not necessary, but it must not be null to create comment.

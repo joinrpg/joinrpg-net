@@ -1,5 +1,7 @@
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
@@ -7,18 +9,20 @@ using JoinRpg.PrimitiveTypes.Users;
 namespace JoinRpg.Services.Email;
 internal class SubscribeCalculator(
     IUserSubscribeRepository userSubscribeRepository,
-    ICharacterRepository characterRepository
+    ICharacterRepository characterRepository,
+    IClaimsRepository claimsRepository,
+    IProjectRepository projectRepository
     )
 {
     internal async Task<IReadOnlyCollection<NotificationRecepient>> GetRecepients(SubscribeCalculateArgs args, ProjectInfo projectInfo)
     {
         Dictionary<UserIdentification, NotificationRecepient> list = [];
 
-        AddUserInfoHeaderIfNotPresent([.. args.Finance], SubscriptionReason.Finance);
-        AddUserInfoHeaderIfNotPresent([.. args.RespondingTo], SubscriptionReason.AnswerToYourComment);
-        AddUserInfoHeaderIfNotPresent([.. args.Player], SubscriptionReason.Player);
+        AddUserInfoHeaderIfNotPresent(list, args.Finance, SubscriptionReason.Finance);
+        AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
+        AddUserInfoHeaderIfNotPresent(list, args.Player, SubscriptionReason.Player);
 
-        AddIfPredicateAndNotAlreadyPresent([.. args.RespMasters.WhereNotNull().Select(id => CreateForRespMaster(projectInfo, id))], SubscriptionReason.ResponsibleMaster);
+        AddIfPredicateAndNotAlreadyPresent(args.RespMasters.WhereNotNull().Select(id => CreateForRespMaster(projectInfo, id)), SubscriptionReason.ResponsibleMaster);
 
         var claim = await userSubscribeRepository.GetDirect(args.Claims);
         AddIfPredicateAndNotAlreadyPresent(claim, SubscriptionReason.SubscribedDirectMaster);
@@ -31,23 +35,51 @@ internal class SubscribeCalculator(
             characterIds);
         AddIfPredicateAndNotAlreadyPresent(character, SubscriptionReason.SubscribedMaster);
 
-        return list.Values;
-
-        void AddIfPredicateAndNotAlreadyPresent(IReadOnlyCollection<UserSubscribe> subscribe, SubscriptionReason reason)
+        if (args.Initiator?.UserId is UserIdentification userId)
         {
-            foreach (var r in subscribe
-                .Where(s => args.Predicate(s.Options))
-                .Where(s => s.User.UserId != args.Initiator?.UserId)
-                .Select(x => new NotificationRecepient(x.User.UserId, x.User.DisplayName.DisplayName, reason))
-                )
-            {
-                list.TryAdd(r.UserId, r);
-            }
+            list.Remove(userId);
         }
 
-        void AddUserInfoHeaderIfNotPresent(IReadOnlyCollection<UserInfoHeader?> subscribe, SubscriptionReason reason)
+        return list.Values;
+
+        void AddIfPredicateAndNotAlreadyPresent(IEnumerable<UserSubscribe> subscribe, SubscriptionReason reason)
         {
-            AddIfPredicateAndNotAlreadyPresent([.. subscribe.WhereNotNull().Select(player => new UserSubscribe(player))], reason);
+            AddUserInfoHeaderIfNotPresent(list, subscribe.Where(s => args.Predicate(s.Options)).Select(x => x.User), reason);
+        }
+    }
+
+    internal async Task<IReadOnlyCollection<NotificationRecepient>> GetRecepients(ForumCalculateArgs args, ProjectInfo projectInfo)
+    {
+        Dictionary<UserIdentification, NotificationRecepient> list = [];
+
+        //TODO В форумах есть подписка, но она никогда не ставится, соответственно использовать ее тоже пока не надо
+
+        AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
+
+        var groups = await projectRepository.LoadGroups(args.Groups);
+
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. groups.SelectMany(g => g.GetChildrenGroupsIdentificationRecursiveIncludingThis())], ClaimStatusSpec.Approved);
+
+        AddUserInfoHeaderIfNotPresent(list, claims.Select(c => c.Player), SubscriptionReason.Forum);
+
+        AddUserInfoHeaderIfNotPresent(list, args.Masters, SubscriptionReason.MasterOfGame);
+
+        if (args.Initiator?.UserId is UserIdentification userId)
+        {
+            list.Remove(userId);
+        }
+
+        return list.Values;
+    }
+
+    private static void AddUserInfoHeaderIfNotPresent(Dictionary<UserIdentification, NotificationRecepient> list, IEnumerable<UserInfoHeader?> subscribe, SubscriptionReason reason)
+    {
+        foreach (var r in subscribe
+            .WhereNotNull()
+            .Select(x => new NotificationRecepient(x.UserId, x.DisplayName.DisplayName, reason))
+            )
+        {
+            list.TryAdd(r.UserId, r);
         }
     }
 
@@ -69,4 +101,11 @@ internal record SubscribeCalculateArgs
      IReadOnlyCollection<CharacterIdentification?> Characters,
      UserInfoHeader?[] Finance,
      UserInfoHeader?[] RespondingTo
+     );
+
+internal record ForumCalculateArgs
+    (UserInfoHeader Initiator,
+     IReadOnlyCollection<CharacterGroupIdentification> Groups,
+     IReadOnlyCollection<UserInfoHeader> RespondingTo,
+     IReadOnlyCollection<UserInfoHeader> Masters
      );

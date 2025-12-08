@@ -2,38 +2,40 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-internal class ForumServiceImpl : DbServiceImplBase, IForumService
+internal class ForumServiceImpl(IUnitOfWork unitOfWork,
+                                ICurrentUserAccessor currentUserAccessor,
+                                IForumNotificationService forumNotificationService,
+                                IProjectMetadataRepository projectMetadataRepository,
+                                CommentHelper commentHelper
+    ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IForumService
 {
-    private IEmailService EmailService { get; }
-    public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => EmailService = emailService;
-
-    public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
+    public async Task<ForumThreadIdentification> CreateThread(CharacterGroupIdentification characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
     {
-        var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
+        var group = await LoadProjectSubEntityAsync<CharacterGroup>(characterGroupId);
         _ = group.RequestMasterAccess(CurrentUserId);
         var forumThread = new ForumThread()
 
         {
-            CharacterGroupId = characterGroupId,
-            ProjectId = projectId,
+            CharacterGroupId = characterGroupId.CharacterGroupId,
+            ProjectId = characterGroupId.ProjectId,
             Header = Required(header),
             CreatedAt = Now,
             ModifiedAt = Now,
             AuthorUserId = CurrentUserId,
             IsVisibleToPlayer = !hideFromUser,
-            CommentDiscussion = new CommentDiscussion() { ProjectId = projectId, Project = group.Project, },
+            CommentDiscussion = new CommentDiscussion() { ProjectId = characterGroupId.ProjectId, Project = group.Project, },
         };
 
-        _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
-            CurrentUserId,
+        var comment = commentHelper.CreateCommentForForumThread(forumThread,
             Now,
             commentText,
-            !hideFromUser,
-            parentComment: null);
+            !hideFromUser
+            );
 
 
         group.ForumThreads.Add(forumThread);
@@ -41,79 +43,61 @@ internal class ForumServiceImpl : DbServiceImplBase, IForumService
 
         if (emailEverybody)
         {
-            var groups = group.GetChildrenGroupsIdRecursiveIncludingThis();
-            var players = hideFromUser ? [] :
-              (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Approved, groups)).Select(
-                claim => claim.Player);
-            var masters = forumThread.Project.ProjectAcls.Select(acl => acl.User);
+            var email = new ForumMessageNotification(
+                new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
+                currentUserAccessor.ToUserInfoHeader(),
+                new MarkdownString(commentText),
+                header
+                );
 
-            var fe = new ForumEmail()
-            {
-                ForumThread = forumThread,
-                ProjectName = forumThread.Project.ProjectName,
-                Initiator = await UserRepository.GetById(CurrentUserId),
-                Recipients = players.Union(masters).ToList(),
-                Text = new MarkdownString(commentText),
-            };
-
-            await EmailService.Email(fe);
+            await forumNotificationService.SendNotification(email);
         }
-        return forumThread.ForumThreadId;
+        return forumThread.GetId();
     }
 
-    private async Task<ForumThread> GetForumThread(int projectid, int forumThreadId)
+    private async Task<ForumThread> GetForumThread(ForumThreadIdentification forumThreadId)
     {
-        var forumThread = await ForumRepository.GetThread(projectid, forumThreadId);
-        var isMaster = forumThread.HasMasterAccess(CurrentUserId);
+        var forumThread = await ForumRepository.GetThread(forumThreadId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(forumThreadId.ProjectId);
+        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var isPlayer = forumThread.IsVisibleToPlayer &&
-                       (await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
+                       (await ClaimsRepository.GetClaimsForPlayer(forumThreadId.ProjectId, ClaimStatusSpec.Approved, CurrentUserId)).Any(
                          claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
 
         if (!isMaster && !isPlayer)
         {
-            throw new NoAccessToProjectException(forumThread, CurrentUserId);
+            throw new NoAccessToProjectException(projectInfo, CurrentUserId);
         }
         return forumThread;
     }
 
 
-    public async Task AddComment(int projectId, int forumThreadId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
+    public async Task AddComment(ForumThreadIdentification forumThreadId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
     {
-        var forumThread = await GetForumThread(projectId, forumThreadId);
+        var forumThread = await GetForumThread(forumThreadId);
 
         var parentComment = forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
-        var email = await AddCommentWithEmail(commentText, forumThread, isVisibleToPlayer, parentComment);
+        var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
+
+        var comment = commentHelper.CreateCommentForForumThread(forumThread,
+            Now,
+            commentText,
+            isVisibleToPlayer);
+
+        comment.Parent = parentComment;
+
+        var email = new ForumMessageNotification(
+                new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
+                currentUserAccessor.ToUserInfoHeader(),
+                new MarkdownString(commentText),
+                forumThread.Header,
+                ParentCommentAuthor: parentComment?.Author.ToUserInfoHeader()
+                );
 
         await UnitOfWork.SaveChangesAsync();
 
-        await EmailService.Email(email);
+        await forumNotificationService.SendNotification(email);
 
-    }
-
-    private async Task<ForumEmail> AddCommentWithEmail(string commentText, ForumThread forumThread,
-      bool isVisibleToPlayer, Comment? parentComment)
-    {
-        var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
-
-        _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
-            CurrentUserId,
-            Now,
-            commentText,
-            isVisibleToPlayer,
-            parentComment);
-
-        var extraRecipients =
-          new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User };
-        var subscriptions =
-          forumThread.GetSubscriptions(extraRecipients, visibleToPlayerUpdated).ToList();
-        return new ForumEmail()
-        {
-            ForumThread = forumThread,
-            ProjectName = forumThread.Project.ProjectName,
-            Initiator = await UserRepository.GetById(CurrentUserId),
-            Recipients = subscriptions.ToList(),
-            Text = new MarkdownString(commentText),
-        };
     }
 }
