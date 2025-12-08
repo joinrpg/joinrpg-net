@@ -294,18 +294,20 @@ internal class FinanceOperationsImpl(
         await claimNotificationService.SendNotification(email);
     }
 
-    private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(
+    private async Task<(Comment CommentFrom, Comment CommentTo)> AddTransferCommentsAsync(
         Claim claimFrom,
         Claim claimTo,
-        ClaimPaymentTransferRequest request)
+        ClaimPaymentTransferRequest request,
+        ProjectInfo projectInfo)
     {
         // Comment to source claim
         Comment commentFrom = CommentHelper.CreateCommentForClaim(
             claimFrom,
             Now,
-            request.CommentText,
-            true,
-            null);
+            request.CommentText ?? "",
+            ClaimOperationType.MasterVisibleChange,
+            projectInfo,
+            CommentExtraAction.TransferFrom);
         commentFrom.Finance = new FinanceOperation
         {
             OperationType = FinanceOperationType.TransferTo,
@@ -324,9 +326,10 @@ internal class FinanceOperationsImpl(
         Comment commentTo = CommentHelper.CreateCommentForClaim(
             claimTo,
             Now,
-            request.CommentText,
-            true,
-            null);
+            request.CommentText ?? "",
+            ClaimOperationType.MasterVisibleChange,
+            projectInfo,
+            CommentExtraAction.TransferTo);
         commentTo.Finance = new FinanceOperation
         {
             OperationType = FinanceOperationType.TransferFrom,
@@ -342,7 +345,7 @@ internal class FinanceOperationsImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        return Tuple.Create(commentFrom, commentTo);
+        return (commentFrom, commentTo);
     }
 
     /// <inheritdoc />
@@ -362,14 +365,22 @@ internal class FinanceOperationsImpl(
         }
 
         // Adding comments
-        _ = await AddTransferCommentsAsync(
+        var (commentFrom, commentTo) = await AddTransferCommentsAsync(
             claimFrom,
             claimTo,
-            request);
+            request,
+            projectInfo
+            );
 
         // Trying to fix fee in destination claim
         claimTo.UpdateClaimFeeIfRequired(Now, projectInfo);
+
         await UnitOfWork.SaveChangesAsync();
+
+        var emailTo = CommentHelper.CreateNotificationFromComment(claimTo, ClaimOperationType.MasterVisibleChange, commentTo);
+        await claimNotificationService.SendNotification(emailTo);
+        var emailFrom = CommentHelper.CreateNotificationFromComment(claimFrom, ClaimOperationType.MasterVisibleChange, commentFrom);
+        await claimNotificationService.SendNotification(emailFrom);
     }
 
     #endregion

@@ -12,11 +12,17 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
       Claim claim,
       DateTime createdAt,
       string commentText,
-      bool isVisibleToPlayer,
-      CommentExtraAction? extraAction = null)
+      ClaimOperationType claimOperationType,
+      ProjectInfo projectInfo, CommentExtraAction? extraAction = null)
     {
+        var isVisibleToPlayer = claimOperationType != ClaimOperationType.MasterSecretChange;
+
+        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
+        {
+            projectInfo.RequestMasterAccess(currentUserAccessor);
+        }
+
         var comment = CreateCommentForDiscussion(claim.CommentDiscussion,
-          currentUserAccessor.UserId,
           createdAt,
           commentText,
           isVisibleToPlayer,
@@ -34,7 +40,6 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
       bool isVisibleToPlayer)
     {
         var comment = CreateCommentForDiscussion(forumThread.CommentDiscussion,
-          currentUserAccessor.UserId,
           createdAt,
           commentText,
           isVisibleToPlayer,
@@ -63,7 +68,7 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
         }
     }
 
-    private static Comment CreateCommentForDiscussion(CommentDiscussion commentDiscussion, int currentUserId, DateTime createdAt, string commentText, bool isVisibleToPlayer, CommentExtraAction? extraAction)
+    private Comment CreateCommentForDiscussion(CommentDiscussion commentDiscussion, DateTime createdAt, string commentText, bool isVisibleToPlayer, CommentExtraAction? extraAction)
     {
         ArgumentNullException.ThrowIfNull(commentDiscussion);
 
@@ -73,14 +78,14 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
         {
             CommentId = -1,
             ProjectId = commentDiscussion.ProjectId,
-            AuthorUserId = currentUserId,
+            AuthorUserId = currentUserAccessor.UserId,
             CommentDiscussionId = commentDiscussion.CommentDiscussionId,
             CommentText = new CommentText()
             {
                 CommentId = -1,
                 Text = new MarkdownString(commentText),
             },
-            IsCommentByPlayer = !commentDiscussion.HasMasterAccess(currentUserId),
+            IsCommentByPlayer = !commentDiscussion.HasMasterAccess(currentUserAccessor.UserId),
             IsVisibleToPlayer = isVisibleToPlayer,
             ExtraAction = extraAction,
             CreatedAt = createdAt,
@@ -89,7 +94,7 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
         commentDiscussion.Comments.Add(comment);
         if (!isVisibleToPlayer)
         {
-            _ = commentDiscussion.RequestMasterAccess(currentUserId);
+            _ = commentDiscussion.RequestMasterAccess(currentUserAccessor.UserId);
         }
 
         //TODO: check access for discussion for players (claims & forums)
@@ -107,25 +112,26 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
         // Этот метод вызывается ДО сохранения всего в базу
         // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
 
-        if (claimOperationType == ClaimOperationType.MasterSecretChange || claimOperationType == ClaimOperationType.MasterVisibleChange)
-        {
-            projectInfo.RequestMasterAccess(currentUserAccessor);
-
-        }
-
         var comment = CreateCommentForClaim(claim,
             now,
             commentText,
-            isVisibleToPlayer: claimOperationType != ClaimOperationType.MasterSecretChange,
-            extraAction: commentExtraAction);
+            claimOperationType,
+            projectInfo,
+            commentExtraAction);
 
-        return (comment, new ClaimSimpleChangedNotification(
+        ClaimSimpleChangedNotification claimSimpleChangedNotification = CreateNotificationFromComment(claim, claimOperationType, comment);
+        return (comment, claimSimpleChangedNotification);
+    }
+
+    public ClaimSimpleChangedNotification CreateNotificationFromComment(Claim claim, ClaimOperationType claimOperationType, Comment comment)
+    {
+        return new ClaimSimpleChangedNotification(
             claim.GetId(),
             Player: claim.Player.ToUserInfoHeader(),
-            commentExtraAction,
+            comment.ExtraAction,
             currentUserAccessor.ToUserInfoHeader(),
-            new NotificationEventTemplate(commentText),
+            new NotificationEventTemplate(comment.CommentText.Text.Contents ?? ""),
             claimOperationType
-            ));
+            );
     }
 }

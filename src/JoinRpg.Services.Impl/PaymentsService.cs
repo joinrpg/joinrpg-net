@@ -408,13 +408,16 @@ internal class PaymentsService(
             throw new ArgumentException($"{nameof(ClaimPaymentRequest.FinanceOperationToRefundId)} is required when {nameof(ClaimPaymentRequest.Refund)} is true", nameof(request));
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claim.GetId().ProjectId);
+
         Comment comment = commentHelper.CreateCommentForClaim(
             claim,
             Now,
             // Do not remove null-coalescing here!
             // Payment comment is not necessary, but it must not be null to create comment.
             request.CommentText?.Trim() ?? "",
-            true,
+            ClaimOperationType.PlayerChange,
+            projectInfo,
             null);
         comment.Finance = new FinanceOperation
         {
