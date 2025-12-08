@@ -44,6 +44,8 @@ public static class Services
             .AddDailyJob<DailyChangedPlayerClaimsNotificationJob>()
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
+            .AddTransient<IPaymentsService, PaymentsService>()
+            .AddSingleton<IVirtualUsersService, VirtualUsersService>()
             .AddTransient<CommentHelper>()
             ;
     }
