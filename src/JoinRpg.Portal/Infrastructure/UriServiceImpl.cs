@@ -2,6 +2,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
@@ -25,7 +26,8 @@ internal class UriServiceImpl(
     IUriLocator<ClaimIdentification>,
     INotificationUriLocator<ClaimIdentification>,
     IUriLocator<ClaimCommentIdentification>,
-    INotificationUriLocator<ClaimCommentIdentification>
+    INotificationUriLocator<ClaimCommentIdentification>,
+    INotificationUriLocator<ForumThreadIdentification>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -117,6 +119,8 @@ internal class UriServiceImpl(
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));
     public Uri GetUri(ClaimIdentification target) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Claim", new { ProjectId = target.ProjectId.Value, target.ClaimId }));
+
+    public Uri GetUri(ForumThreadIdentification target) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("ViewThread", "Forum", new { ProjectId = target.ProjectId.Value, ForumThreadId = target.ThreadId }));
 
     public Uri GetUri(ClaimCommentIdentification target) =>
         new(GetUri(target.ClaimId).AbsoluteUri + $"#comment{target.CommentId}");

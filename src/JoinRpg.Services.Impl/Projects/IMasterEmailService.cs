@@ -3,13 +3,6 @@ namespace JoinRpg.Services.Interfaces.Notification;
 /// <summary>
 /// Уведомления мастерам в проекте (вне привязок к конкретной заявке)
 /// </summary>
-public interface IMasterEmailService
-{
-    Task EmailProjectClosed(ProjectClosedMail email);
-    Task EmailProjectClosedStale(ProjectClosedStaleMail email);
-    Task EmailProjectStale(ProjectStaleMail email);
-}
-
 public class ProjectEmailModelBase
 {
     public required ProjectIdentification ProjectId { get; set; }

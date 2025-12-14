@@ -2,7 +2,7 @@ using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Users;
 
-namespace JoinRpg.Services.Email;
+namespace JoinRpg.Services.Impl.Claims;
 internal class ClaimNotificationTextBuilder(INotificationUriLocator<ClaimIdentification> uriService)
 {
     internal string GetText(ClaimSimpleChangedNotification model, ClaimWithPlayer claim)
@@ -49,4 +49,6 @@ $@"Добрый день, %recepient.name%
             _ => throw new ArgumentOutOfRangeException(nameof(claimOperationType), claimOperationType, null),
         };
     }
+
+    public string GetClaimEmailTitle(ProjectName projectName, ClaimWithPlayer claim) => $"{projectName.Value}: {claim.CharacterName}, игрок {claim.Player.DisplayName.DisplayName}";
 }

@@ -1,8 +1,11 @@
 using System.Reflection;
+using JoinRpg.Services.Email;
+using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Notifications;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
+using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Services.Impl;
@@ -47,6 +50,12 @@ public static class Services
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddSingleton<IVirtualUsersService, VirtualUsersService>()
             .AddTransient<CommentHelper>()
+            .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
+            .AddTransient<ClaimNotificationService>()
+            .AddTransient<ForumNotificationService>()
+            .AddTransient<MasterEmailService>()
+            .AddTransient<ClaimNotificationTextBuilder>()
+            .AddTransient<SubscribeCalculator>()
             ;
     }
 

@@ -7,7 +7,7 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces.Notification;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Services.Impl.Claims;
 
 internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
@@ -18,7 +18,7 @@ internal class ClaimServiceImpl(
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
-    IClaimNotificationService claimNotificationService,
+    ClaimNotificationService claimNotificationService,
     CommentHelper commentHelper
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService

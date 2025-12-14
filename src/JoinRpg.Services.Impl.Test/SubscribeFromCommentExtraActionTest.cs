@@ -1,7 +1,7 @@
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.Services.Impl.Claims;
 
-namespace JoinRpg.Services.Email.Test;
+namespace JoinRpg.Services.Impl.Test;
 public class SubscribeFromCommentExtraActionTest
 {
     [Theory]

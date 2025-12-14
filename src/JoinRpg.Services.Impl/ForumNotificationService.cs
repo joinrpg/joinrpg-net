@@ -1,18 +1,20 @@
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.Services.Impl.Claims;
 
-namespace JoinRpg.Services.Email;
+namespace JoinRpg.Services.Impl;
+
+
 internal class ForumNotificationService(
     SubscribeCalculator subscribeCalculator,
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
     IForumRepository forumRepository,
     INotificationUriLocator<ForumThreadIdentification> uriLocator
-    ) : IForumNotificationService
+    )
 
 {
-
 
     public async Task SendNotification(ForumMessageNotification model)
     {

@@ -7,6 +7,7 @@ using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -16,7 +17,7 @@ internal class FinanceOperationsImpl(
     IEmailService emailService,
     IVirtualUsersService vpu,
     ICurrentUserAccessor currentUserAccessor,
-    IClaimNotificationService claimNotificationService,
+    ClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     IProjectMetadataRepository projectMetadataRepository) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
 {

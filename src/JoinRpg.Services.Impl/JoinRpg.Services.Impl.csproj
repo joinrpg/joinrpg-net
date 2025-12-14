@@ -4,6 +4,7 @@
     <AssemblyTitle>JoinRpg.Services.Impl</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />

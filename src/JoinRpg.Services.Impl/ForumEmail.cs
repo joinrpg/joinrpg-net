@@ -1,7 +1,8 @@
+using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.PrimitiveTypes.Users;
 
-namespace JoinRpg.Services.Interfaces.Notification;
+namespace JoinRpg.Services.Impl;
 
 public record class ForumMessageNotification(
     ForumCommentIdentification ForumCommentId,

@@ -2,9 +2,8 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.Services.Interfaces.Notification;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Services.Impl.Claims;
 
 internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
 {

@@ -7,6 +7,7 @@ using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;
 using PscbApi;
 using PscbApi.Models;
@@ -42,7 +43,7 @@ internal class PaymentsService(
     IUriService uriService,
     IBankSecretsProvider bankSecrets,
     ICurrentUserAccessor currentUserAccessor,
-    Lazy<IClaimNotificationService> claimNotificationService,
+    Lazy<ClaimNotificationService> claimNotificationService,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     CommentHelper commentHelper,
