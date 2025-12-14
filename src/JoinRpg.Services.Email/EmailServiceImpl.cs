@@ -191,7 +191,7 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
           .Select(updatedField =>
             new MarkdownString(
               $@"__**{updatedField.Field.Name}:**__
-{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
+{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.New.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
         //Add info about other changed atttributes (no access rights validation)
         IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields

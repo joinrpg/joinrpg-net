@@ -1,19 +1,23 @@
-using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.Characters;
 
 namespace JoinRpg.Domain.CharacterFields;
 
 /// <summary>
 /// A class to store project field's previous and new value
 /// </summary>
-public class FieldWithPreviousAndNewValue(
-  ProjectFieldInfo field,
-  string? value,
-  string? previousValue) : FieldWithValue(field, value)
+public record class FieldWithPreviousAndNewValue
 {
-    public string? PreviousValue { get; private set; } = previousValue;
+    public FieldWithValue New { get; private set; }
+    public FieldWithValue Previous { get; private set; }
+    public ProjectFieldInfo Field => New.Field;
+    public FieldWithPreviousAndNewValue(FieldWithValue current, string? newValue)
+    {
+        New = new FieldWithValue(current.Field, newValue);
+        Previous = current;
+    }
+    public string? PreviousValue => Previous.Value;
 
-    public string PreviousDisplayString =>
-      GetDisplayValue(PreviousValue, Field.HasValueList ? PreviousValue?.ParseToIntList() ?? [] : []);
+    public string PreviousDisplayString => Previous.DisplayString;
 
-    public override string ToString() => $"{Field.Name}={Value},PreviousValue={PreviousValue}";
+    public override string ToString() => $"({New.Field.Name}={Previous.Value} → {New.Value})";
 }

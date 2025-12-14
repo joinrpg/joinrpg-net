@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Characters;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.CharacterGroups;

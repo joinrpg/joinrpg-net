@@ -1,3 +1,4 @@
+using JoinRpg.PrimitiveTypes.Characters;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Domain.CharacterFields;
@@ -86,7 +87,7 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     {
         foreach (var field in updatedFields)
         {
-            MarkUsed(field, project);
+            MarkUsed(field.New, project);
         }
     }
 

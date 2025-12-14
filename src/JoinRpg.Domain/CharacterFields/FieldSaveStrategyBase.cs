@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Characters;
 
 namespace JoinRpg.Domain.CharacterFields;
 
@@ -15,7 +16,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     protected ProjectInfo ProjectInfo { get; } = projectInfo;
 
-    private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } = [];
+    private Dictionary<ProjectFieldIdentification, FieldWithPreviousAndNewValue> UpdatedFields { get; } = [];
 
     public virtual void Save(Dictionary<int, FieldWithValue> fields) => SerializeFields(fields);
 
@@ -42,16 +43,9 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
             return false;
         }
 
-        var existingField = UpdatedFields.FirstOrDefault(uf => uf.Field == field.Field);
-        if (existingField != null)
-        {
-            existingField.Value = newValue;
-        }
-        else
-        {
-            UpdatedFields.Add(
-                new FieldWithPreviousAndNewValue(field.Field, newValue, field.Value));
-        }
+        var updated = new FieldWithPreviousAndNewValue(field, newValue);
+
+        UpdatedFields[field.Field.Id] = updated;
 
         field.Value = newValue;
 
@@ -129,6 +123,6 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         GenerateDefaultValues(fields);
 
         Save(fields);
-        return UpdatedFields;
+        return UpdatedFields.Values;
     }
 }
