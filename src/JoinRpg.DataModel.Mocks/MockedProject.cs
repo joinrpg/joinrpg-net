@@ -1,6 +1,7 @@
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Characters;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;

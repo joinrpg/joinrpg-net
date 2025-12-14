@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Characters;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.UserProfile;
 using Markdig.Renderers;

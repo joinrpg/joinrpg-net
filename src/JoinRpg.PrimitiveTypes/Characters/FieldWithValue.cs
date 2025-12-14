@@ -1,13 +1,14 @@
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
-namespace JoinRpg.Domain;
+namespace JoinRpg.PrimitiveTypes.Characters;
 
 public class FieldWithValue
 {
     private string? _value;
 
-    private IReadOnlyList<int> SelectedIds { get; set; } = new List<int>();
+    private IReadOnlyList<int> SelectedIds { get; set; } = [];
 
     public FieldWithValue(ProjectFieldInfo field, string? value)
     {

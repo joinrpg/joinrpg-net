@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain.Access;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.PrimitiveTypes.Characters;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Domain;

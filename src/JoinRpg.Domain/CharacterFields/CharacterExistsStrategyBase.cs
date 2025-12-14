@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.Domain.Access;
+using JoinRpg.PrimitiveTypes.Characters;
 
 namespace JoinRpg.Domain.CharacterFields;
 

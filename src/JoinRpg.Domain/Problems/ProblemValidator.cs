@@ -1,3 +1,5 @@
+using JoinRpg.PrimitiveTypes.Characters;
+
 namespace JoinRpg.Domain.Problems;
 internal class ProblemValidator<TObject>(
     IProblemFilter<TObject>[] filters,

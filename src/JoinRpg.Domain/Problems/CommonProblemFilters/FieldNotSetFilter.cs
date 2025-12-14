@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using JoinRpg.PrimitiveTypes.Characters;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
