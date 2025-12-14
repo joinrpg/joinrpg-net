@@ -25,6 +25,10 @@
                         <li>
                             @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
                         </li>
+                        @if (Model.CaptainAccessRules.Count > 0)
+                        {
+                            <li><a asp-page="/GamePages/CaptainCabinet" asp-route-ProjectId="@Model.ProjectId">Кабинет капитана</a></li>
+                        }
                         @if (Model.BigGroups.Any())
                         {
                             <li role="separator" class="dropdown-header">По группам:</li>
