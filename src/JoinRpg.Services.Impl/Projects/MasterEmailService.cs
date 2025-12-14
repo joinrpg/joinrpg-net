@@ -1,15 +1,14 @@
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Notification;
 
-namespace JoinRpg.Services.Email;
-internal class MasterEmailServiceImpl(
+namespace JoinRpg.Services.Impl.Projects;
+internal class MasterEmailService(
     IUriService uriService,
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
     IVirtualUsersService virtualUsersService
-    ) : IMasterEmailService
+    )
 {
 
     public async Task EmailProjectStale(ProjectStaleMail email)
@@ -29,7 +28,7 @@ internal class MasterEmailServiceImpl(
         await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
     }
 
-    async Task IMasterEmailService.EmailProjectClosed(ProjectClosedMail email)
+    public async Task EmailProjectClosed(ProjectClosedMail email)
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
@@ -48,7 +47,7 @@ internal class MasterEmailServiceImpl(
 
     }
 
-    async Task IMasterEmailService.EmailProjectClosedStale(ProjectClosedStaleMail email)
+    public async Task EmailProjectClosedStale(ProjectClosedStaleMail email)
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 

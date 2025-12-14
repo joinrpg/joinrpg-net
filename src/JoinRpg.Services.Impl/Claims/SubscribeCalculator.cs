@@ -3,10 +3,9 @@ using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.PrimitiveTypes.Users;
 
-namespace JoinRpg.Services.Email;
+namespace JoinRpg.Services.Impl.Claims;
 internal class SubscribeCalculator(
     IUserSubscribeRepository userSubscribeRepository,
     ICharacterRepository characterRepository,

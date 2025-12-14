@@ -3,9 +3,8 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Services.Email;
+namespace JoinRpg.Services.Impl.Claims;
 internal class ClaimNotificationService(
     IClaimsRepository claimsRepository,
     ClaimNotificationTextBuilder claimNotificationTextBuilder,
@@ -13,7 +12,7 @@ internal class ClaimNotificationService(
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
     IVirtualUsersService virtualUsersService
-    ) : IClaimNotificationService
+    )
 
 {
     public async Task SendNotification(ClaimSimpleChangedNotification model)
@@ -38,7 +37,7 @@ internal class ClaimNotificationService(
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Claims,
             model.ClaimId,
-            EmailModelHelpers.GetClaimEmailTitle(projectInfo.ProjectName, claim),
+            claimNotificationTextBuilder.GetClaimEmailTitle(projectInfo.ProjectName, claim),
             new NotificationEventTemplate(text1),
             await subscribeCalculator.GetRecepients(args, projectInfo),
             model.Initiator.UserId
@@ -65,7 +64,7 @@ internal class ClaimNotificationService(
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Claims,
             model.ClaimId,
-            EmailModelHelpers.GetClaimEmailTitle(projectInfo.ProjectName, claim),
+            claimNotificationTextBuilder.GetClaimEmailTitle(projectInfo.ProjectName, claim),
             model.Text,
             await subscribeCalculator.GetRecepients(args, projectInfo),
             virtualUsersService.PaymentsUser.GetId()

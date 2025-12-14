@@ -1,9 +1,11 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.Services.Impl.Claims;
 
-namespace JoinRpg.Services.Email.Test;
+namespace JoinRpg.Services.Impl.Test;
 public class VerifyNotificationTest
 {
     private readonly ClaimNotificationTextBuilder claimNotificationTextBuilder = new(new UriMock());

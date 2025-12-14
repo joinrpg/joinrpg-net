@@ -3,13 +3,14 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Forums;
+using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
 internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                                 ICurrentUserAccessor currentUserAccessor,
-                                IForumNotificationService forumNotificationService,
+                                ForumNotificationService forumNotificationService,
                                 IProjectMetadataRepository projectMetadataRepository,
                                 CommentHelper commentHelper
     ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IForumService

@@ -8,12 +8,6 @@ public static class NotificationRegistration
         return services
             .AddTransient<IEmailService, EmailServiceImpl>()
             .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
-            .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
-            .AddTransient<IClaimNotificationService, ClaimNotificationService>()
-            .AddTransient<IForumNotificationService, ForumNotificationService>()
-            .AddTransient<IMasterEmailService, MasterEmailServiceImpl>()
-            .AddTransient<ClaimNotificationTextBuilder>()
-            .AddTransient<SubscribeCalculator>()
             ;
     }
 }

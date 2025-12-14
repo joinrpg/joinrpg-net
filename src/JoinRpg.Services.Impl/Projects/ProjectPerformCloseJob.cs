@@ -6,7 +6,7 @@ internal class ProjectPerformCloseJob(
     IProjectRepository projectRepository,
     ILogger<ProjectPerformCloseJob> logger,
     IProjectService projectService,
-    IMasterEmailService masterEmailService
+    MasterEmailService masterEmailService
     ) : IDailyJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)

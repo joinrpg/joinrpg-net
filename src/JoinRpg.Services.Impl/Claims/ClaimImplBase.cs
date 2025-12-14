@@ -6,7 +6,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces.Notification;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Services.Impl.Claims;
 
 internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
     IEmailService emailService,

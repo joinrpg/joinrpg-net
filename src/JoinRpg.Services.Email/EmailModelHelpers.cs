@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Email;
 
@@ -35,8 +34,6 @@ internal static class EmailModelHelpers
     }
 
     public static string GetClaimEmailTitle(this EmailModelBase model, Claim claim) => $"{model.ProjectName}: {claim.Character.CharacterName}, игрок {claim.Player.GetDisplayName()}";
-
-    public static string GetClaimEmailTitle(ProjectName projectName, ClaimWithPlayer claim) => $"{projectName.Value}: {claim.CharacterName}, игрок {claim.Player.DisplayName.DisplayName}";
 
     public static string GetClaimEmailTitle(this ClaimEmailModel model) => model.GetClaimEmailTitle(model.Claim);
 }

@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Impl.Projects;
 internal class ProjectService(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
-    IMasterEmailService masterEmailService,
+    MasterEmailService masterEmailService,
     ILogger<ProjectService> logger
     ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
