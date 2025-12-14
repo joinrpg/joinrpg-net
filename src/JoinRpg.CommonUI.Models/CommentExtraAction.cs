@@ -54,4 +54,10 @@ public enum CommentExtraAction
 
     [Display(Name = "Возвращен взнос", ShortName = "отмечено")]
     RefundFee,
+
+    [Display(Name = "Принят перевод", ShortName = "отмечен перевод денег")]
+    TransferTo,
+
+    [Display(Name = "Отправлен перевод", ShortName = "отмечен перевод денег")]
+    TransferFrom,
 }
