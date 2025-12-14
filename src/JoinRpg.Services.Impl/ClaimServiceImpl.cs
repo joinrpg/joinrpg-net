@@ -192,15 +192,13 @@ internal class ClaimServiceImpl(
             CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
         };
 
-        if (!string.IsNullOrWhiteSpace(claimText))
-        {
-            var comment = CommentHelper.CreateCommentForClaim(claim,
-                Now,
-                claimText,
-                ClaimOperationType.PlayerChange,
-                projectInfo,
-                CommentExtraAction.NewClaim);
-        }
+        var comment = CommentHelper.CreateCommentForClaim(claim,
+               Now,
+               claimText,
+               ClaimOperationType.PlayerChange,
+               projectInfo,
+               CommentExtraAction.NewClaim);
+
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
@@ -212,6 +210,8 @@ internal class ClaimServiceImpl(
         claimEmail.UpdatedFields = updatedFields;
 
         await UnitOfWork.SaveChangesAsync();
+
+        var email = CommentHelper.CreateNotificationFromComment(claim, ClaimOperationType.PlayerChange, comment);
 
         await EmailService.Email(claimEmail);
 
