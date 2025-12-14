@@ -197,8 +197,9 @@ internal class ClaimServiceImpl(
             var comment = CommentHelper.CreateCommentForClaim(claim,
                 Now,
                 claimText,
-                isVisibleToPlayer: true,
-                extraAction: CommentExtraAction.NewClaim);
+                ClaimOperationType.PlayerChange,
+                projectInfo,
+                CommentExtraAction.NewClaim);
         }
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);

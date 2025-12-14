@@ -19,4 +19,6 @@ public enum CommentExtraAction
     RequestPreferential = 14,
     PaidFee = 15,
     RefundFee = 16,
+    TransferTo = 17,
+    TransferFrom = 18,
 }

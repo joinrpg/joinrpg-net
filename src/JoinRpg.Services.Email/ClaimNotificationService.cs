@@ -82,6 +82,8 @@ internal class ClaimNotificationService(
                 or CommentExtraAction.RequestPreferential
                 or CommentExtraAction.PaidFee
                 or CommentExtraAction.RefundFee
+                or CommentExtraAction.TransferFrom
+                or CommentExtraAction.TransferTo
                 => s => s.MoneyOperation,
             CommentExtraAction.ApproveByMaster or CommentExtraAction.DeclineByMaster or CommentExtraAction.RestoreByMaster
             or CommentExtraAction.MoveByMaster or CommentExtraAction.DeclineByPlayer or CommentExtraAction.ChangeResponsible
