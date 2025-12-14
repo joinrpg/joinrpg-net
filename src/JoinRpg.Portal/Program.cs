@@ -10,9 +10,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Log.Logger = new LoggerConfiguration()
+        using var log = new LoggerConfiguration()
             .WriteTo.Console()
-            .CreateBootstrapLogger(); //Will be reconfigured after host initialization
+            .CreateLogger();
 
         try
         {
@@ -35,12 +35,8 @@ public class Program
         }
         catch (Exception e)
         {
-            Log.Fatal(e, "Host terminated unexpectedly");
+            log.Fatal(e, "Host terminated unexpectedly");
             Environment.ExitCode = 1;
-        }
-        finally
-        {
-            Log.CloseAndFlush();
         }
     }
 }

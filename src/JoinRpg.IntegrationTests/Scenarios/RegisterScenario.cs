@@ -1,5 +1,6 @@
 using System.Net;
 using HtmlAgilityPack;
+using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using Shouldly;
 using Xunit;

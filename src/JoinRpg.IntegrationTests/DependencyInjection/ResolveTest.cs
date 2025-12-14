@@ -1,4 +1,4 @@
-using JoinRpg.IntegrationTests.TestInfrastructure;
+using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Portal;
 using JoinRpg.TestHelpers;
 using Microsoft.AspNetCore.Mvc;

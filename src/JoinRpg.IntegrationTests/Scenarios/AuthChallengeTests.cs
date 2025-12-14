@@ -1,5 +1,5 @@
 using System.Net;
-using JoinRpg.IntegrationTests.TestInfrastructure;
+using JoinRpg.IntegrationTest.TestInfrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
 using Xunit;
