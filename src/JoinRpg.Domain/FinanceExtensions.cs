@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.PrimitiveTypes.Characters;
 using JoinRpg.PrimitiveTypes.Claims.Finances;
 
 namespace JoinRpg.Domain;
@@ -112,27 +111,6 @@ public static class FinanceExtensions
         => claim.FinanceOperations
             .Where(fo => fo.Approved && fo.MoneyFlowOperation)
             .Sum(fo => fo.MoneyAmount);
-
-    /// <summary>
-    /// Returns current fee of a field with value
-    /// </summary>
-    public static int GetCurrentFee(this FieldWithValue self)
-    {
-        if (!self.Field.SupportsPricing)
-        {
-            return 0;
-        }
-        return self.Field.Type
-        switch
-        {
-            ProjectFieldType.Checkbox => self.HasEditableValue ? self.Field.Price : 0,
-            ProjectFieldType.Number => self.ToInt() * self.Field.Price,
-            ProjectFieldType.Dropdown => self.GetDropdownValues().Sum(v => v.Price),
-            ProjectFieldType.MultiSelect => self.GetDropdownValues().Sum(v => v.Price),
-
-            _ => throw new NotSupportedException("Can't calculate pricing"),
-        };
-    }
 
     /// <summary>
     /// Calculates total fields fee
