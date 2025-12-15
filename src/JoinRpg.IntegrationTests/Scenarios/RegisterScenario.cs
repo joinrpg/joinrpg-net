@@ -2,10 +2,8 @@ using System.Net;
 using HtmlAgilityPack;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.IntegrationTests.TestInfrastructure;
-using Shouldly;
-using Xunit;
 
-namespace JoinRpg.IntegrationTests.Scenarios;
+namespace JoinRpg.IntegrationTest.Scenarios;
 
 public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
