@@ -3,12 +3,8 @@ using Xunit;
 
 namespace JoinRpg.IntegrationTests.Scenarios;
 
-public class SwaggerTests : IClassFixture<JoinApplicationFactory>
+public class SwaggerTests(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
-    private readonly JoinApplicationFactory factory;
-
-    public SwaggerTests(JoinApplicationFactory factory) => this.factory = factory;
-
     [Fact]
     public async Task SwaggerShouldWork()
     {
