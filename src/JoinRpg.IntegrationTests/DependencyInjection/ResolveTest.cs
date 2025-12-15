@@ -1,12 +1,10 @@
-using JoinRpg.IntegrationTests.TestInfrastructure;
+using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Portal;
-using JoinRpg.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
-using Shouldly;
-using Xunit;
 
-namespace JoinRpg.IntegrationTests.DependencyInjection;
+namespace JoinRpg.IntegrationTest.DependencyInjection;
 
 /// <summary>
 /// Проверяет, что все контроллеры правильно зарегистрированы в контейнере и все их зависимости резолвятся
@@ -27,13 +25,19 @@ public class ResolveTest : IClassFixture<JoinApplicationFactory>
     [ClassData(typeof(ControllerDataSource))]
     public void AutofacControllers(Type typeToEnsure) => serviceProvider.GetRequiredService(typeToEnsure).ShouldNotBeNull();
 
-    private class ControllerDataSource : FindDerivedClassesDataSourceBase<Controller, Startup> { }
+    private class ControllerDataSource : FindDerivedClassesDataSourceBase<ControllerBase, Startup> { }
 
     [Theory]
     [ClassData(typeof(ViewComponentsDataSource))]
     public void AutofacViewComponents(Type typeToEnsure) => serviceProvider.GetRequiredService(typeToEnsure).ShouldNotBeNull();
 
     public class ViewComponentsDataSource : FindDerivedClassesDataSourceBase<ViewComponent, Startup> { }
+
+    [Theory]
+    [ClassData(typeof(PageModelDataSource))]
+    public void PageModels(Type typeToEnsure) => ActivatorUtilities.CreateInstance(serviceProvider, typeToEnsure).ShouldNotBeNull();
+
+    public class PageModelDataSource : FindDerivedClassesDataSourceBase<PageModel, Startup> { }
 }
 
 

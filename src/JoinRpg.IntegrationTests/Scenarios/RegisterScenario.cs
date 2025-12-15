@@ -1,18 +1,13 @@
 using System.Net;
 using HtmlAgilityPack;
+using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.IntegrationTests.TestInfrastructure;
-using Shouldly;
-using Xunit;
 
-namespace JoinRpg.IntegrationTests.Scenarios;
+namespace JoinRpg.IntegrationTest.Scenarios;
 
-public class RegisterScenario : IClassFixture<JoinApplicationFactory>
+public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
-    private readonly JoinApplicationFactory factory;
-
-    public RegisterScenario(JoinApplicationFactory factory) => this.factory = factory;
-
-    [Fact]
+    [Fact(Skip = "DB not working on CI")]
     public async Task RegistrationPageShouldOpen()
     {
         var client = factory.CreateClient();
@@ -20,7 +15,7 @@ public class RegisterScenario : IClassFixture<JoinApplicationFactory>
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "I hate localDB")]
+    [Fact(Skip = "DB not working on CI")]
     public async Task RegistrationShouldBePossible()
     {
         var client = factory.CreateClient();

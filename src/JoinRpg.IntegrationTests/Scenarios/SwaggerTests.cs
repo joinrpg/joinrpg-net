@@ -1,14 +1,9 @@
-using JoinRpg.IntegrationTests.TestInfrastructure;
-using Xunit;
+using JoinRpg.IntegrationTest.TestInfrastructure;
 
-namespace JoinRpg.IntegrationTests.Scenarios;
+namespace JoinRpg.IntegrationTest.Scenarios;
 
-public class SwaggerTests : IClassFixture<JoinApplicationFactory>
+public class SwaggerTests(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
-    private readonly JoinApplicationFactory factory;
-
-    public SwaggerTests(JoinApplicationFactory factory) => this.factory = factory;
-
     [Fact]
     public async Task SwaggerShouldWork()
     {
