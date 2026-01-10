@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.ApisIndexViewModel
+@model JoinRpg.Web.Models.ApisIndexViewModel
 
 @{
   ViewBag.Title = "Встраивание на сайт";
@@ -16,18 +16,16 @@
     <pre>&lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId"&gt;
   Идет загрузка...
 &lt;/div&gt;</pre>
-    И подключите скрипт:
+    И подключите скрипт в конце <pre>body</pre>:
 <pre>&lt;script type="text/javascript"
         src="@Html.GetFullHostName(Context.Request)/external/joinrpg-api.js"
-        async defer&gt;
+        &gt;
 &lt;/script&gt;
 &lt;script type="text/javascript"&gt;
         $(function() {
           $('.joinrpg-api').joinrpgroles();
         });
 &lt;/script&gt;</pre>
-    
-    Также можно подключить дефолтные стили: <var> @Html.GetFullHostName(Context.Request)/external/joinrpg-api.css </var>
 
     Обратите внимание: чтобы это работало, необходимо использовать jquery. Если у вас не подключено jquery, подключите его так:
     <pre>&lt;script type="text/javascript" src="https://yastatic.net/jquery/3.1.1/jquery.min.js"&gt;&lt;/script&gt;</pre>
@@ -38,6 +36,8 @@
             Идет загрузка...
         </div>
     </div>
+
+    Также можно подключить дефолтные стили: <var> @Html.GetFullHostName(Context.Request)/external/joinrpg-api.css </var>
 </p>
 
 <h3>Показ горячих ролей</h3>
