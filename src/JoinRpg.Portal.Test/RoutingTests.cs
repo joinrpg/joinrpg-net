@@ -12,15 +12,24 @@ public class RoutingTests
 
     public void GameControllersShouldHaveProjectIdInRoute(TypeInfo controllerType)
     {
-        if (controllerType == typeof(GameController))
-        {
-            //This is special controller, we need to refactor it
-            return;
-        }
         var routeAttribute = controllerType.GetCustomAttribute<RouteAttribute>();
         _ = routeAttribute.ShouldNotBeNull();
         routeAttribute.Template.ShouldStartWith("{projectId}");
     }
 
-    private class ControllerDataSource : FindDerivedClassesDataSourceBase<ControllerGameBase, Startup> { }
+    [SkippableTheory]
+    [ClassData(typeof(LegacyControllerDataSource))]
+    public void LegacyGameControllersShouldHaveProjectIdInRoute(TypeInfo controllerType)
+    {
+        Skip.If(controllerType == typeof(GameController)); //This is special controller, we need to refactor it
+
+        var routeAttribute = controllerType.GetCustomAttribute<RouteAttribute>();
+        _ = routeAttribute.ShouldNotBeNull();
+        routeAttribute.Template.ShouldStartWith("{projectId}");
+    }
+
+    [Obsolete]
+    private class LegacyControllerDataSource : FindDerivedClassesDataSourceBase<ControllerGameBase, Startup> { }
+
+    private class ControllerDataSource : FindDerivedClassesDataSourceBase<JoinControllerGameBase, Startup> { }
 }
