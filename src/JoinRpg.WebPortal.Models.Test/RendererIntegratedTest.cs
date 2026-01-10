@@ -65,4 +65,18 @@ public class RendererIntegratedTest
         text.ToPlainTextWithoutHtmlEscape(renderer)
             .ShouldBe("принца Элендила");
     }
+
+    [Fact]
+    public void RenderGroupHtml()
+    {
+        var projectMock = new MockedProject();
+        var renderer =
+            new JoinrpgMarkdownLinkRenderer(projectMock.Project, projectMock.ProjectInfo);
+
+
+        var text = new MarkdownString($"%группа{projectMock.Group.CharacterGroupId}");
+
+        text.ToHtmlString(renderer).Value
+            .ShouldBe("<p><a href=\"/0/roles/2/details\" target=\"_blank\" rel=\"nofollow\">test_2</a></p>");
+    }
 }

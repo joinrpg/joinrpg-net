@@ -240,7 +240,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     {
         if (renderer.EnableHtmlForInline)
         {
-            renderer.Write("<a href=\"/{group.ProjectId}/roles/{group.CharacterGroupId}/details\">");
+            renderer.Write($"<a href=\"/{group.ProjectId}/roles/{group.CharacterGroupId}/details\">");
         }
         renderer.Write(extra == "" ? group.CharacterGroupName : extra);
         if (renderer.EnableHtmlForInline)
