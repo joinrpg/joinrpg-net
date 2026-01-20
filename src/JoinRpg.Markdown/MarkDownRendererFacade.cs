@@ -28,7 +28,10 @@ public static class MarkDownRendererFacade
     public static MarkupString ToHtmlString(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
-        => new MarkupString(HtmlSanitizers.Simple.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToHtml)));
+    {
+        using var sanitizer = HtmlSanitizers.GetSimple();
+        return new MarkupString(sanitizer.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToHtml)));
+    }
 
     /// <summary>
     /// Превращает Markdown в MarkupString, который можно вывести без дополнительного Escape HTML
@@ -36,13 +39,19 @@ public static class MarkDownRendererFacade
     public static MarkupString ToPlainTextAndEscapeHtml(
         this MarkdownString? markdownString,
         ILinkRenderer? renderer = null)
-        => new MarkupString(HtmlSanitizers.RemoveAll.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText)));
+    {
+        using var sanitizer = HtmlSanitizers.GetRemoveAll();
+        return new MarkupString(sanitizer.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText)));
+    }
 
     [Obsolete("Выберите ToPlainTextAndEscapeHtml/ToPlainTextWithoutHtmlEscape вместо этого")]
     public static string ToPlainText(
-    this MarkdownString? markdownString,
-    ILinkRenderer? renderer = null)
-    => HtmlSanitizers.RemoveAll.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText));
+        this MarkdownString? markdownString,
+        ILinkRenderer? renderer = null)
+    {
+        using var sanitizer = HtmlSanitizers.GetRemoveAll();
+        return sanitizer.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText));
+    }
 
     /// <summary>
     /// Превращает Markdown в строку, которую можно использовать только при гарантии, что ее не будут трактовать как HTML. При выводе в шаблон

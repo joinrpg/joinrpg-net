@@ -7,5 +7,9 @@ namespace JoinRpg.Markdown;
 /// </summary>
 public static class HtmlSanitizeFacade
 {
-    public static string SanitizeHtml(this TelegramHtmlString str) => HtmlSanitizers.Telegram.Sanitize(str.Contents);
+    public static string SanitizeHtml(this TelegramHtmlString str)
+    {
+        using var sanitizer = HtmlSanitizers.GetTelegram();
+        return sanitizer.Sanitize(str.Contents);
+    }
 }
