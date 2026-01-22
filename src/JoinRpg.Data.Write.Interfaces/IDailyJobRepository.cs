@@ -1,4 +1,5 @@
 namespace JoinRpg.Data.Write.Interfaces;
+
 public interface IDailyJobRepository
 {
     Task<bool> TryInsertJobRecord(JobId jobId);

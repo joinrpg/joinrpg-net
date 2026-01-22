@@ -2,6 +2,7 @@ using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Notifications;
 
 namespace JoinRpg.Services.Email;
+
 internal class AdminNotificationServiceImpl(
     INotificationService notificationService,
     ICurrentUserAccessor currentUserAccessor

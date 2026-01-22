@@ -5,6 +5,7 @@ using JoinRpg.Services.Interfaces.Search;
 using LinqKit;
 
 namespace JoinRpg.Services.Impl.Search.Providers;
+
 internal class UserSearchByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
     //keep longer strings first to please Regexp

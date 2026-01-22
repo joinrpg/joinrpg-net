@@ -2,6 +2,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl.Test;
+
 public class SubscribeFromCommentExtraActionTest
 {
     [Theory]

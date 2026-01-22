@@ -3,6 +3,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
+
 internal class UnifiedGridRepository(MyDbContext Ctx) : IUnifiedGridRepository
 {
     public async Task<IReadOnlyCollection<UgDto>> GetByGroups(ProjectIdentification projectId, UgStatusSpec spec, IReadOnlyCollection<CharacterGroupIdentification> groups)

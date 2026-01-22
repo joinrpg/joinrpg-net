@@ -1,6 +1,7 @@
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
+
 internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
 {
     public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)

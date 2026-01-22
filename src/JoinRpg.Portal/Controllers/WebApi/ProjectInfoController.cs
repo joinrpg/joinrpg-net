@@ -3,6 +3,7 @@ using JoinRpg.Web.Games.Projects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
+
 [Route("/webapi/{projectId}/project-info/[action]")]
 [IgnoreAntiforgeryToken]
 [ApiController]

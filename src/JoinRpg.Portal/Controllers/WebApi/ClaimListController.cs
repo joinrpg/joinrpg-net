@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
+
 [Route("/webapi/claim-list/[action]")]
 public class ClaimListController(IClaimListClient claimClient, IUnifiedGridClient claimGridClient) : ControllerBase
 {

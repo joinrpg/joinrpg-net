@@ -30,10 +30,10 @@ public class GameFieldController(
 {
     public FieldSetupManager Manager { get; } = manager;
 
-    private ActionResult ReturnToIndex()
+    private RedirectToActionResult ReturnToIndex()
         => RedirectToAction("Index", new { ProjectId = currentProjectAccessor.ProjectId.Value });
 
-    private ActionResult ReturnToField(ProjectField value)
+    private RedirectToActionResult ReturnToField(ProjectField value)
         => RedirectToAction("Edit", new { ProjectId = currentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
 
 

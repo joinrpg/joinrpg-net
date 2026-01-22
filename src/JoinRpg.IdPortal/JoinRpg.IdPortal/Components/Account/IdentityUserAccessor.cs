@@ -1,4 +1,5 @@
 namespace JoinRpg.IdPortal.Components.Account;
+
 internal sealed class IdentityUserAccessor(JoinUserManager userManager, IdentityRedirectManager redirectManager)
 {
     public async Task<JoinIdentityUser> GetRequiredUserAsync(HttpContext context)

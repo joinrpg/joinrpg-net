@@ -1,4 +1,5 @@
 namespace JoinRpg.Interfaces.Notifications;
+
 public class PostboxOptions
 {
     public string? Endpoint { get; set; }

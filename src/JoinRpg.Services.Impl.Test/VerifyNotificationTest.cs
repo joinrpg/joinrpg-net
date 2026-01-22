@@ -6,6 +6,7 @@ using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl.Test;
+
 public class VerifyNotificationTest
 {
     private readonly ClaimNotificationTextBuilder claimNotificationTextBuilder = new(new UriMock());

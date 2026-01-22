@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>JoinRpg.Dal.Impl</RootNamespace>
-    <AssemblyName>JoinRpg.Dal.Impl</AssemblyName>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
+    <LangVersion>13</LangVersion> <!-- First-class span support causes translation failure with Contains https://github.com/dotnet/ef6/issues/2322 -->
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />

@@ -13,7 +13,7 @@ public static class ForwardedHeadersExtensions
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
             options.KnownProxies.Clear();
-            options.KnownNetworks.Clear();
+            options.KnownIPNetworks.Clear();
             options.ForwardLimit = 1;
             // Allow nearest proxy server to set X-Forwarded-?? header
             // Do not white-list servers (It's hard to know them specifically proxy server in cloud)

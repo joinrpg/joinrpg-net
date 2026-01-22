@@ -5,6 +5,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
 
 namespace JoinRpg.Services.Impl.Claims;
+
 internal class ClaimNotificationService(
     IClaimsRepository claimsRepository,
     ClaimNotificationTextBuilder claimNotificationTextBuilder,

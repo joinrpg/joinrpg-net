@@ -1,0 +1,88 @@
+<Solution>
+  <Folder Name="/Common/">
+    <Project Path="src/JoinRpg.Common.EmailSending.Impl/JoinRpg.Common.EmailSending.Impl.csproj" />
+    <Project Path="src/JoinRpg.Common.Telegram/JoinRpg.Common.Telegram.csproj" />
+    <Project Path="src/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
+    <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
+    <Project Path="src/JoinRpg.Markdown/JoinRpg.Markdown.csproj" />
+    <Project Path="src/JoinRpg.PrimitiveTypes/JoinRpg.PrimitiveTypes.csproj" />
+  </Folder>
+  <Folder Name="/Dal/">
+    <Project Path="src/JoinRpg.Dal.CommonEfCore/JoinRpg.Dal.CommonEfCore.csproj" />
+    <Project Path="src/JoinRpg.Dal.DataProtection/JoinRpg.Dal.DataProtection.csproj" />
+    <Project Path="src/JoinRpg.Dal.Impl/JoinRpg.Dal.Impl.csproj" />
+    <Project Path="src/JoinRpg.Dal.JobService/JoinRpg.Dal.JobService.csproj" />
+    <Project Path="src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj" />
+    <Project Path="src/JoinRpg.Dal.Notifications/JoinRpg.Dal.Notifications.csproj" />
+    <Project Path="src/JoinRpg.Data.Interfaces/JoinRpg.Data.Interfaces.csproj" />
+    <Project Path="src/JoinRpg.Data.Write.Interfaces/JoinRpg.Data.Write.Interfaces.csproj" />
+  </Folder>
+  <Folder Name="/Services/">
+    <Project Path="src/JoinRpg.Integrations.KogdaIgra/JoinRpg.Integrations.KogdaIgra.csproj" />
+    <Project Path="src/JoinRpg.Services.Email/JoinRpg.Services.Email.csproj" />
+    <Project Path="src/JoinRpg.Services.Export/JoinRpg.Services.Export.csproj" />
+    <Project Path="src/JoinRpg.Services.Impl/JoinRpg.Services.Impl.csproj" />
+    <Project Path="src/JoinRpg.Services.Interfaces/JoinRpg.Services.Interfaces.csproj" />
+    <Project Path="src/JoinRpg.Services.Notifications/JoinRpg.Services.Notifications.csproj" />
+    <Project Path="src/PscbApi/PscbApi.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".config/dotnet-tools.json" />
+    <File Path=".editorconfig" />
+    <File Path=".github/dependabot.yml" />
+    <File Path=".gitignore" />
+    <File Path="code_placement.txt" />
+    <File Path="CONTRIBUTING.MD" />
+    <File Path="directory.build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
+    <File Path="global.json" />
+    <File Path="LICENSE.MD" />
+    <File Path="manifests/dev/.env" />
+    <File Path="manifests/prod/.env" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="src/JoinRpg.CommonUI.Models.Test/JoinRpg.CommonUI.Models.Test.csproj" />
+    <Project Path="src/JoinRpg.DataModel.Mocks/JoinRpg.DataModel.Mocks.csproj" />
+    <Project Path="src/JoinRpg.Domain.Test/JoinRpg.Domain.Test.csproj" />
+    <Project Path="src/JoinRpg.Helpers.Test/JoinRpg.Helpers.Test.csproj" />
+    <Project Path="src/JoinRpg.Integrations.KogdaIgra.Test/JoinRpg.Integrations.KogdaIgra.Test.csproj" />
+    <Project Path="src/JoinRpg.IntegrationTests/JoinRpg.IntegrationTest.csproj" />
+    <Project Path="src/JoinRpg.Markdown.Test/JoinRpg.Markdown.Test.csproj" />
+    <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
+    <Project Path="src/JoinRpg.PrimitiveTypes.Test/JoinRpg.PrimitiveTypes.Test.csproj" />
+    <Project Path="src/JoinRpg.Services.Email.Test/JoinRpg.Services.Email.Test.csproj" />
+    <Project Path="src/JoinRpg.Services.Impl.Test/JoinRpg.Services.Impl.Test.csproj" />
+    <Project Path="src/JoinRpg.Services.Notifications.Tests/JoinRpg.Services.Notifications.Tests.csproj" />
+    <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
+    <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
+    <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
+  </Folder>
+  <Folder Name="/WebPortalShared/">
+    <Project Path="src/JoinRpg.Blazor.Client/JoinRpg.Blazor.Client.csproj" />
+    <Project Path="src/JoinRpg.Blazor.ComponentBook/JoinRpg.Blazor.ComponentBook.csproj" />
+    <Project Path="src/JoinRpg.Web.AdminTools/JoinRpg.Web.AdminTools.csproj" />
+    <Project Path="src/JoinRpg.Web.CharacterGroups/JoinRpg.Web.CharacterGroups.csproj" />
+    <Project Path="src/JoinRpg.Web.CheckIn/JoinRpg.Web.CheckIn.csproj" />
+    <Project Path="src/JoinRpg.Web.Claims/JoinRpg.Web.Claims.csproj" />
+    <Project Path="src/JoinRpg.Web.Games/JoinRpg.Web.Games.csproj" />
+    <Project Path="src/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />
+    <Project Path="src/JoinRpg.Web.ProjectCommon/JoinRpg.Web.ProjectCommon.csproj" />
+    <Project Path="src/JoinRpg.Web.ProjectMasterTools/JoinRpg.Web.ProjectMasterTools.csproj" />
+    <Project Path="src/JoinRpg.WebComponents/JoinRpg.WebComponents.csproj" />
+    <Project Path="src/JoinRpg.WebPortal.Managers/JoinRpg.WebPortal.Managers.csproj" />
+    <Project Path="src/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
+    <Project Path="src/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
+  </Folder>
+  <Project Path="src/Joinrpg.AspNetCore.Helpers/Joinrpg.AspNetCore.Helpers.csproj" />
+  <Project Path="src/JoinRpg.BlobStorage/JoinRpg.BlobStorage.csproj" />
+  <Project Path="src/JoinRpg.CommonUI.Models/JoinRpg.CommonUI.Models.csproj" />
+  <Project Path="src/JoinRpg.DataModel/JoinRpg.DataModel.csproj" />
+  <Project Path="src/JoinRpg.Domain/JoinRpg.Domain.csproj" />
+  <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Client/JoinRpg.IdPortal.Client.csproj" />
+  <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj" />
+  <Project Path="src/JoinRpg.Interfaces/JoinRpg.Interfaces.csproj" />
+  <Project Path="src/JoinRpg.Portal/JoinRpg.Portal.csproj" />
+  <Project Path="src/Joinrpg.Web.Identity/Joinrpg.Web.Identity.csproj" />
+</Solution>

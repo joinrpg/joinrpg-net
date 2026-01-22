@@ -1,6 +1,7 @@
 using System.Buffers;
 
 namespace JoinRpg.BlobStorage;
+
 internal class AvatarDownloader(IHttpClientFactory httpClientFactory, ILogger<AvatarDownloader> logger)
 {
     internal async Task<(string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, Stream target, CancellationToken ct)

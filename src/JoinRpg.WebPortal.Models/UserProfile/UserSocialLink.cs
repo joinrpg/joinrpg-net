@@ -1,4 +1,5 @@
 namespace JoinRpg.Web.Models.UserProfile;
+
 internal class UserSocialLink
 {
     public static Link? GetVKUri(string? vk) => string.IsNullOrWhiteSpace(vk) ? null : new Link(new Uri($"https://vk.com/{vk}"), $"vk.com/{vk}");

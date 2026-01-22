@@ -1,4 +1,5 @@
 namespace JoinRpg.Helpers.Test;
+
 public class StaticStringHelperTest
 {
     [Fact]

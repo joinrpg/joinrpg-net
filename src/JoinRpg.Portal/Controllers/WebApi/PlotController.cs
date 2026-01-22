@@ -6,6 +6,7 @@ using JoinRpg.Web.Plots;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
+
 [Route("/webapi/plots/[action]")]
 [IgnoreAntiforgeryToken]
 [RequireMaster]

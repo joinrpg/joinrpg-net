@@ -1,6 +1,7 @@
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Dal.Impl.Repositories;
+
 internal static class ProjectLoaderCommon
 {
     // TODO не грузить тут лишнего, в частности в Details

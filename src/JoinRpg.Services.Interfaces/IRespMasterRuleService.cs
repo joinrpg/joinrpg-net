@@ -1,6 +1,7 @@
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Services.Interfaces;
+
 public interface IRespMasterRuleService
 {
     Task RemoveRule(ProjectIdentification projectId, int ruleId);

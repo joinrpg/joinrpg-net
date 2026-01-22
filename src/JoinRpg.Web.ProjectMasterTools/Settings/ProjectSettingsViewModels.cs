@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.ProjectMasterTools.Settings;
+
 public class ProjectPublishSettingsViewModel
 {
     public required ProjectIdentification ProjectId { get; set; }

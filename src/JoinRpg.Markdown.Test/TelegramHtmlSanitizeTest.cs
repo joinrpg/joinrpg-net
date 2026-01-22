@@ -1,6 +1,7 @@
 using JoinRpg.Interfaces;
 
 namespace JoinRpg.Markdown.Test;
+
 public class TelegramHtmlSanitizeTest
 {
     [Fact]

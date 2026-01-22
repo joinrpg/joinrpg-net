@@ -6,6 +6,7 @@ using JoinRpg.PrimitiveTypes;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Integrations.KogdaIgra;
+
 internal class KogdaIgraSyncService(
     IUnitOfWork unitOfWork,
     IKogdaIgraApiClient apiClient,

@@ -7,6 +7,7 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Services.Impl;
+
 internal class CaptainRuleService(IUnitOfWork unitOfWork,
                                      ICurrentUserAccessor currentUserAccessor,
                                      IProjectMetadataRepository projectMetadataRepository,

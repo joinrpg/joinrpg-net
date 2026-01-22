@@ -9,6 +9,7 @@ using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Games.Projects;
+
 public record class ProjectInfoViewModel(
     ProjectIdentification ProjectId,
     string Name,

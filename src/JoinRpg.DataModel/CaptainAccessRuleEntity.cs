@@ -2,6 +2,7 @@ using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.DataModel;
+
 public class CaptainAccessRuleEntity : IProjectEntityWithId
 {
     public required int CaptainAccessRuleEntityId { get; set; }

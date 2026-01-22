@@ -2,6 +2,7 @@ using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl.Projects;
+
 internal class ProjectPerformCloseJob(
     IProjectRepository projectRepository,
     ILogger<ProjectPerformCloseJob> logger,

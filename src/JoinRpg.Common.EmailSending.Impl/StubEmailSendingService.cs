@@ -4,6 +4,7 @@ using JoinRpg.Markdown;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Common.EmailSending.Impl;
+
 internal class StubEmailSendingService(ILogger<StubEmailSendingService> logger) : IEmailSendingService
 {
     public string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";

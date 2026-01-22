@@ -1,5 +1,6 @@
 using System.Reflection;
 using JoinRpg.Dal.Impl.Repositories;
+using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Data.Write.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ public static class Registraton
             .AddTransient<ICaptainRulesRepository, CaptainRulesRepository>()
             .AddTransient<IHotCharactersRepository, HotCharactersRepository>()
             .AddTransient<IUnifiedGridRepository, UnifiedGridRepository>()
+            .AddTransient<IKogdaIgraRepository, KogdaIgraRepository>()
             .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>();
 
         foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsAssignableTo(typeof(RepositoryImplBase)) && !t.IsAbstract))

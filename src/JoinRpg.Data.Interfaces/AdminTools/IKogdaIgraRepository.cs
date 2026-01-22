@@ -2,6 +2,7 @@
 using JoinRpg.DataModel.Projects;
 
 namespace JoinRpg.Data.Interfaces.AdminTools;
+
 public interface IKogdaIgraRepository
 {
     Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> GetActive();

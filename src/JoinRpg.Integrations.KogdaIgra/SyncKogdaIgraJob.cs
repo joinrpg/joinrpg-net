@@ -1,6 +1,7 @@
 using JoinRpg.Interfaces;
 
 namespace JoinRpg.Integrations.KogdaIgra;
+
 internal class SyncKogdaIgraJob(IKogdaIgraSyncService kogdaIgraSyncService) : IDailyJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)

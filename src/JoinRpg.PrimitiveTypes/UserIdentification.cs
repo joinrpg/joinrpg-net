@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace JoinRpg.PrimitiveTypes;
+
 public record class UserIdentification(int Value) : SingleValueType<int>(Value), ISpanParsable<UserIdentification>
 {
     public static UserIdentification? FromOptional(int? userId)

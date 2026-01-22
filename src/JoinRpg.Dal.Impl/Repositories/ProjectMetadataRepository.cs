@@ -4,6 +4,7 @@ using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Dal.Impl.Repositories;
+
 internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepository
 {
     public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache)

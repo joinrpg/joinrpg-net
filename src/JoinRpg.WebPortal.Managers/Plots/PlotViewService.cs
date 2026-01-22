@@ -4,6 +4,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.WebPortal.Managers.Plots;
+
 internal class PlotViewService(IPlotRepository plotRepository, IPlotService plotService) : IPlotClient
 {
     public Task DeleteElement(PlotElementIdentification elementId) => plotService.DeleteElement(elementId);

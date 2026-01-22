@@ -1,6 +1,7 @@
 using JoinRpg.Helpers;
 
 namespace JoinRpg.PrimitiveTypes;
+
 public interface IProjectEntityWithId : IOrderableEntity
 {
 

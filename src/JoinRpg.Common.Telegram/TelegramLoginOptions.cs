@@ -1,4 +1,5 @@
 namespace JoinRpg.Common.Telegram;
+
 public class TelegramLoginOptions
 {
     public required string BotName { get; set; }

@@ -2,6 +2,7 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.Models.Masters;
 
 namespace JoinRpg.WebPortal.Models.Test;
+
 public class PermissionBadgeTests
 {
     [Theory]

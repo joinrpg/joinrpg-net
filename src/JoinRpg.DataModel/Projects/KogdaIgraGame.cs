@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel.Projects;
+
 public class KogdaIgraGame
 {
     /// <summary>

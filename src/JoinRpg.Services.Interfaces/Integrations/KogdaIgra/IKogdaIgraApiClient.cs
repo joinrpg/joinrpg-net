@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 
 namespace JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
+
 public interface IKogdaIgraApiClient
 {
     Task<KogdaIgraGameUpdateMarker[]> GetChangedGamesSince(DateTimeOffset since);

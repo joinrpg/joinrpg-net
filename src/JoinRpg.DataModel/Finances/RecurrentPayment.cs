@@ -1,6 +1,7 @@
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel.Finances;
+
 public class RecurrentPayment : IProjectEntity
 {
     public int RecurrentPaymentId { get; set; }

@@ -28,6 +28,7 @@ public class MyDbContext : DbContext, IUnitOfWork
             // На самом деле EF6LoggerToMSExtLogging перехватывает эти вызовы и сам пишет в логгер структурно, но если не вызвать Database.set_Log, то он не активируется
             Database.Log = (message) => logger.LogDebug("{message}", message);
         }
+        Database.SetInitializer(new NullDatabaseInitializer<MyDbContext>());
     }
 
     DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();

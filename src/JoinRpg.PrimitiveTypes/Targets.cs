@@ -1,5 +1,6 @@
 
 namespace JoinRpg.PrimitiveTypes;
+
 public record GroupTarget(CharacterGroupIdentification CharacterGroupId, string Name) : ILinkableWithName
 {
     LinkType ILinkable.LinkType => LinkType.ResultCharacterGroup;

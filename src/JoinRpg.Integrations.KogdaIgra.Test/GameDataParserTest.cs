@@ -1,4 +1,5 @@
 namespace JoinRpg.Integrations.KogdaIgra.Test;
+
 public class GameDataParserTest
 {
     [Fact]

@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims.UnifiedGrid;
 
 namespace JoinRpg.WebPortal.Managers.UnifiedGrid;
+
 internal class UnifiedGridViewService(
     ICurrentUserAccessor currentUserAccessor,
     ICaptainRulesRepository captainRulesRepository,

@@ -2,6 +2,7 @@
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain;
+
 public class CharacterBulkLoader
 {
     private readonly Dictionary<CharacterGroupIdentification, CharacterGroupIdentification[]> parentGroupsCache = [];

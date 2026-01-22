@@ -4,6 +4,7 @@ using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
+
 internal class KogdaIgraSyncManager(
     IKogdaIgraSyncService kogdaIgraSyncService,
     ILogger<KogdaIgraSyncManager> logger,

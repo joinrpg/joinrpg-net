@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.WebPortal.Models.Test;
+
 public class CharacterTreeBuilderTest
 {
     public MockedProject Mock = new MockedProject();

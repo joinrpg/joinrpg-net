@@ -3,6 +3,7 @@ using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
+
 public record class ProjectFieldInfo(
     ProjectFieldIdentification Id,
     string Name,

@@ -1,4 +1,5 @@
 namespace JoinRpg.Dal.Impl.Repositories;
+
 internal class ResponsibleMasterRulesRepository(MyDbContext ctx) : RepositoryImplBase(ctx), IResponsibleMasterRulesRepository
 {
     public async Task<List<CharacterGroup>> GetResponsibleMasterRules(ProjectIdentification projectId)

@@ -1,4 +1,5 @@
 namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
+
 public enum ProjectCloneSettings
 {
     CloneDisabled = 0,

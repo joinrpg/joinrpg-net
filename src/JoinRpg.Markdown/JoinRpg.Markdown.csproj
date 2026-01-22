@@ -1,11 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyTitle>JoinRpg.Markdown</AssemblyTitle>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Nullable>enable</Nullable>
-    <AssemblyName>JoinRpg.Markdown</AssemblyName>
-    <RootNamespace>JoinRpg.Markdown</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />

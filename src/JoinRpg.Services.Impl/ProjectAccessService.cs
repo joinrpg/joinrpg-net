@@ -6,6 +6,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 
 namespace JoinRpg.Services.Impl;
+
 internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IResponsibleMasterRulesRepository responsibleMasterRulesRepository)
     : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectAccessService
 {

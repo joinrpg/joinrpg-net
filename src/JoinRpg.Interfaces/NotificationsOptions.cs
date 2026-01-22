@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Interfaces;
+
 public class NotificationsOptions
 {
     [Required]

@@ -3,6 +3,7 @@ using JoinRpg.Data.Write.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Dal.JobService;
+
 public class DailyJobRepository(JobScheduleDataDbContext dbContext) : IDailyJobRepository
 {
     async Task<bool> IDailyJobRepository.TryInsertJobRecord(JobId jobId)

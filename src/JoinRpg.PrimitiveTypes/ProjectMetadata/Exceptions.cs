@@ -3,6 +3,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Domain;
+
 public abstract class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
 {
     public ProjectIdentification ProjectId { get; } = projectId;

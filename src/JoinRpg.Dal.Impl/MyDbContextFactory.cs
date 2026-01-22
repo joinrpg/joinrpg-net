@@ -1,6 +1,7 @@
 using System.Data.Entity.Infrastructure;
 
 namespace JoinRpg.Dal.Impl;
+
 public class MyDbContextFactory : IDbContextFactory<MyDbContext>
 {
     // DbContextFactory используется только при миграциях, поэтому нормально что тут захардкожено.

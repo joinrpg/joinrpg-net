@@ -5,6 +5,7 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectMasterTools.Print;
 
 namespace JoinRpg.Web.Models.Print;
+
 public static class ModelBuilders
 {
     public static EnvelopeViewModel ToEnvelopeViewModel(this Character character, ProjectInfo projectInfo)

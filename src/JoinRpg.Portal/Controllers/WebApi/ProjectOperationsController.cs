@@ -4,6 +4,7 @@ using JoinRpg.Web.ProjectMasterTools.Settings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
+
 [Route("/webapi/{projectId}/project/[action]")]
 [IgnoreAntiforgeryToken]
 [RequireMaster]

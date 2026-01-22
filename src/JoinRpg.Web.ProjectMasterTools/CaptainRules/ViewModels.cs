@@ -4,6 +4,7 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 
 namespace JoinRpg.Web.ProjectMasterTools.CaptainRules;
+
 public record CaptainRuleViewModel(CaptainAccessRule Rule, string GroupName, UserLinkViewModel PlayerLink);
 
 public record CaptainRuleListViewModel(List<CaptainRuleViewModel> Items, bool HasEditAccess);

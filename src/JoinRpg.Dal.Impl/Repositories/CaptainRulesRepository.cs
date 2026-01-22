@@ -1,6 +1,7 @@
 using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;
+
 internal class CaptainRulesRepository(MyDbContext ctx) : ICaptainRulesRepository
 {
     async Task<IReadOnlyCollection<CaptainAccessRule>> ICaptainRulesRepository.GetCaptainRules(ProjectIdentification projectIdentification)

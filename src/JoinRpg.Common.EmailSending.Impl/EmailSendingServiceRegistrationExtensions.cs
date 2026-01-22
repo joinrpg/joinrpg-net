@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Common.EmailSending.Impl;
+
 public static class EmailSendingServiceRegistrationExtensions
 {
     public static IServiceCollection AddJoinEmailSendingService(this IServiceCollection services)

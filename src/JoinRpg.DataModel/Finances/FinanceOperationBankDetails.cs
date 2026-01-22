@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.DataModel.Finances;
+
 public class FinanceOperationBankDetails
 {
     public int CommentId { get; set; }

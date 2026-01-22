@@ -5,6 +5,7 @@ using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.PrimitiveTypes;
+
 public static class ProjectEntityIdParser
 {
     public static bool TryParseId(ReadOnlySpan<char> value, [MaybeNullWhen(false)] out IProjectEntityId id)

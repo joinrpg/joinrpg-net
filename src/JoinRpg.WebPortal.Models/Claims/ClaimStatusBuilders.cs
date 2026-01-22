@@ -3,6 +3,7 @@ using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models.Claims;
+
 public static class ClaimStatusBuilders
 {
     public static ClaimFullStatusView CreateFullStatus(Claim claim, AccessArguments accessArguments)

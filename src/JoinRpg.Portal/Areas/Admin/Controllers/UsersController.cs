@@ -35,7 +35,7 @@ public class UsersController : JoinRpg.Portal.Controllers.Common.ControllerBase
         return RedirectToUserDetails(model.UserId);
     }
 
-    private ActionResult RedirectToUserDetails(int userId) => RedirectToAction("Details", "User", new { area = "", userId });
+    private RedirectToActionResult RedirectToUserDetails(int userId) => RedirectToAction("Details", "User", new { area = "", userId });
 
     [ValidateAntiForgeryToken, HttpPost]
     public async Task<ActionResult> GrantAmin(int userId)

@@ -1,6 +1,7 @@
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain;
+
 public static class ParentGroupCalculateExtensions
 {
     public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IWorldObject? target)

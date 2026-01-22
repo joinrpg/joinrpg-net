@@ -1,4 +1,5 @@
 namespace JoinRpg.Markdown.Test;
+
 public class RoundTripUrls
 {
     [Fact]

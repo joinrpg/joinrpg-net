@@ -6,6 +6,7 @@ using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Services.Impl.Claims;
+
 internal class SubscribeCalculator(
     IUserSubscribeRepository userSubscribeRepository,
     ICharacterRepository characterRepository,
