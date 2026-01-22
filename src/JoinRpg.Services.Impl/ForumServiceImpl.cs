@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.Services.Impl.Claims;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
@@ -18,7 +17,10 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
     public async Task<ForumThreadIdentification> CreateThread(CharacterGroupIdentification characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
     {
         var group = await LoadProjectSubEntityAsync<CharacterGroup>(characterGroupId);
-        _ = group.RequestMasterAccess(CurrentUserId);
+
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId)).RequestMasterAccess(currentUserAccessor);
+        ClaimOperationType claimOperationType = GetOperationType(hideFromUser, projectInfo);
+
         var forumThread = new ForumThread()
 
         {
@@ -35,8 +37,8 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         var comment = commentHelper.CreateCommentForForumThread(forumThread,
             Now,
             commentText,
-            !hideFromUser
-            );
+            projectInfo,
+            claimOperationType);
 
 
         group.ForumThreads.Add(forumThread);
@@ -56,26 +58,9 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         return forumThread.GetId();
     }
 
-    private async Task<ForumThread> GetForumThread(ForumThreadIdentification forumThreadId)
-    {
-        var forumThread = await ForumRepository.GetThread(forumThreadId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(forumThreadId.ProjectId);
-        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
-        var isPlayer = forumThread.IsVisibleToPlayer &&
-                       (await ClaimsRepository.GetClaimsForPlayer(forumThreadId.ProjectId, ClaimStatusSpec.Approved, CurrentUserId)).Any(
-                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
-
-        if (!isMaster && !isPlayer)
-        {
-            throw new NoAccessToProjectException(projectInfo, CurrentUserId);
-        }
-        return forumThread;
-    }
-
-
     public async Task AddComment(ForumThreadIdentification forumThreadId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
     {
-        var forumThread = await GetForumThread(forumThreadId);
+        var (forumThread, projectInfo) = await GetForumThread(forumThreadId);
 
         var parentComment = forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
@@ -84,7 +69,8 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         var comment = commentHelper.CreateCommentForForumThread(forumThread,
             Now,
             commentText,
-            isVisibleToPlayer);
+            projectInfo,
+            GetOperationType(!isVisibleToPlayer, projectInfo));
 
         comment.Parent = parentComment;
 
@@ -101,4 +87,36 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         await forumNotificationService.SendNotification(email);
 
     }
+
+    private ClaimOperationType GetOperationType(bool hideFromUser, ProjectInfo projectInfo)
+    {
+        ClaimOperationType claimOperationType;
+        if (projectInfo.HasMasterAccess(currentUserAccessor.UserIdentification))
+        {
+            claimOperationType = hideFromUser ? ClaimOperationType.MasterSecretChange : ClaimOperationType.MasterVisibleChange;
+        }
+        else
+        {
+            claimOperationType = ClaimOperationType.PlayerChange;
+        }
+
+        return claimOperationType;
+    }
+
+    private async Task<(ForumThread, ProjectInfo)> GetForumThread(ForumThreadIdentification forumThreadId)
+    {
+        var forumThread = await ForumRepository.GetThread(forumThreadId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(forumThreadId.ProjectId);
+        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
+        var isPlayer = forumThread.IsVisibleToPlayer &&
+                       (await ClaimsRepository.GetClaimsForPlayer(forumThreadId.ProjectId, ClaimStatusSpec.Approved, CurrentUserId)).Any(
+                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
+
+        if (!isMaster && !isPlayer)
+        {
+            throw new NoAccessToProjectException(projectInfo, CurrentUserId);
+        }
+        return (forumThread, projectInfo);
+    }
+
 }

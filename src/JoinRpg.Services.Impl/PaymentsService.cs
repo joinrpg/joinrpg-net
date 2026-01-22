@@ -8,7 +8,6 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Impl.Claims;
-using JoinRpg.Services.Interfaces.Notification;
 using PscbApi;
 using PscbApi.Models;
 
@@ -411,15 +410,11 @@ internal class PaymentsService(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(claim.GetId().ProjectId);
 
-        Comment comment = commentHelper.CreateCommentForClaim(
-            claim,
-            Now,
-            // Do not remove null-coalescing here!
-            // Payment comment is not necessary, but it must not be null to create comment.
-            request.CommentText?.Trim() ?? "",
-            ClaimOperationType.PlayerChange,
-            projectInfo,
-            null);
+        var commentText = request.CommentText?.Trim() ?? ""; // Do not remove null-coalescing here! Payment comment is not necessary, but it must not be null to create comment.
+
+        // Мы здесь игнорируем созданное нами уведомление, и потом создаем его отдельно в другом месте. Так повелось.
+        var (comment, _) = commentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, commentExtraAction: null, ClaimOperationType.PlayerChange, Now);
+
         comment.Finance = new FinanceOperation
         {
             OperationType = request.Refund ? FinanceOperationType.Refund : FinanceOperationType.Online,

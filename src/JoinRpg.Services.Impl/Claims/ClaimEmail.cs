@@ -14,7 +14,6 @@ public enum ClaimOperationType
 
 public record class ClaimSimpleChangedNotification(
     ClaimIdentification ClaimId,
-    UserInfoHeader Player,
     CommentExtraAction? CommentExtraAction,                                 // Не нравится, что тут nullable
     UserInfoHeader Initiator,
     NotificationEventTemplate Text,
