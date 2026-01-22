@@ -7,6 +7,7 @@ using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
+
 internal class ResponsibleMasterRuleViewService(
     IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
     IRespMasterRuleService service,

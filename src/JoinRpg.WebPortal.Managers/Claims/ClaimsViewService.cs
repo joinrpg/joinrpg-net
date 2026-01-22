@@ -7,6 +7,7 @@ using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectCommon.Claims;
 
 namespace JoinRpg.WebPortal.Managers.Claims;
+
 internal class ClaimsViewService(
     IClaimService claimService,
     IClaimsRepository claimsRepository,

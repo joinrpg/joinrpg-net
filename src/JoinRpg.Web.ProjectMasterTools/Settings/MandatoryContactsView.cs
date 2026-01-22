@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.ProjectMasterTools.Settings;
+
 public enum MandatoryContactsView
 {
     [Display(Name = "Все равно")]

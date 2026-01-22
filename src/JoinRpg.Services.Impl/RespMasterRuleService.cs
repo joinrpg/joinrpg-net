@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Services.Impl;
+
 internal class RespMasterRuleService(IUnitOfWork unitOfWork,
                                      ICurrentUserAccessor currentUserAccessor,
                                      IProjectMetadataRepository projectMetadataRepository)

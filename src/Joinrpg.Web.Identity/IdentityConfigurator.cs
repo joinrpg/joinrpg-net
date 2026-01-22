@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Joinrpg.Web.Identity;
+
 public static class IdentityConfigurator
 {
     public static IServiceCollection AddJoinIdentity(this IServiceCollection services)

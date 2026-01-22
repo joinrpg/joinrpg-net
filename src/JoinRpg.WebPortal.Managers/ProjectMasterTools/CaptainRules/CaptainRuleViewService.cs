@@ -7,6 +7,7 @@ using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.CaptainRules;
+
 internal class CaptainRuleViewService(
     ICaptainRulesRepository repository,
     ICaptainRuleService service,

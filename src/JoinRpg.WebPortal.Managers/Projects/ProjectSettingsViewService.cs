@@ -4,6 +4,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
+
 internal class ProjectSettingsViewService(IProjectMetadataRepository projectMetadataRepository, IProjectService projectService) : IProjectSettingsClient
 {
     async Task<ProjectContactsSettingsViewModel> IProjectSettingsClient.GetContactSettings(ProjectIdentification projectId)

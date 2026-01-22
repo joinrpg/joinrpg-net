@@ -5,6 +5,7 @@ using JoinRpg.Services.Interfaces.Search;
 using LinqKit;
 
 namespace JoinRpg.Services.Impl.Search.Providers;
+
 internal class UserSearchBySocialProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
     public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)

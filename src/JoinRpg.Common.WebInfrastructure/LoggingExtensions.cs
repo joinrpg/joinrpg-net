@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace JoinRpg.Common.WebInfrastructure;
+
 public static class LoggingExtensions
 {
     public static IApplicationBuilder UseJoinRequestLogging(this IApplicationBuilder app)

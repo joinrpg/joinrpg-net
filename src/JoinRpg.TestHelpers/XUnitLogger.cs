@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace JoinRpg.TestHelpers;
+
 public class XUnitLogger<T> : ILogger<T>, IDisposable
 {
     private ITestOutputHelper _output;

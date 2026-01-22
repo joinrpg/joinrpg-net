@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 
 namespace JoinRpg.PrimitiveTypes;
+
 public interface IProjectEntityId
 {
     ProjectIdentification ProjectId { get; }

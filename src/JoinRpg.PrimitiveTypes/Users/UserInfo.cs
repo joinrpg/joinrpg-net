@@ -1,6 +1,7 @@
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.PrimitiveTypes.Users;
+
 public record class UserInfo(
     UserIdentification UserId,
     UserSocialNetworks Social,

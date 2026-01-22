@@ -1,4 +1,5 @@
 namespace JoinRpg.Services.Interfaces.ProjectAccess;
+
 public interface IProjectAccessService
 {
     Task GrantAccess(GrantAccessRequest grantAccessRequest);

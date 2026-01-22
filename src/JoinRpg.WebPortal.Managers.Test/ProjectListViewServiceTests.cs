@@ -2,6 +2,7 @@ using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebPortal.Managers.Projects;
 
 namespace JoinRpg.WebPortal.Managers.Test;
+
 public class ProjectListViewServiceTests
 {
     [Theory]

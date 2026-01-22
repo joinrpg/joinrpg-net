@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.ProjectCommon.Fields;
+
 public enum MandatoryStatusViewType
 {
     [Display(Name = "Опциональное")]

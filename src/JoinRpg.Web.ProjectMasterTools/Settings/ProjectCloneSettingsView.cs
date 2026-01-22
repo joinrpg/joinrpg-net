@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.ProjectMasterTools.Settings;
+
 public enum ProjectCloneSettingsView
 {
     [Display(Name = "Никому", Description = "Копировать проект запрещено")]

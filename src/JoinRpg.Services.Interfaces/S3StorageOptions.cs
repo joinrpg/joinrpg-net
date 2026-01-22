@@ -1,4 +1,5 @@
 namespace JoinRpg.Services.Interfaces;
+
 public class S3StorageOptions
 {
     public string? Endpoint { get; set; }

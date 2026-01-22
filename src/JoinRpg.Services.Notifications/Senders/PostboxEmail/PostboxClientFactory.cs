@@ -3,6 +3,7 @@ using Amazon.SimpleEmailV2;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications.Senders.PostboxEmail;
+
 internal class PostboxClientFactory(IOptions<PostboxOptions> options)
 {
     private readonly Lazy<IAmazonSimpleEmailServiceV2> client = new Lazy<IAmazonSimpleEmailServiceV2>(() => CreateClient(options.Value));

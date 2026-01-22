@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Data.Interfaces;
+
 public interface IResponsibleMasterRulesRepository
 {
     /// <summary>

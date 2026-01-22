@@ -4,6 +4,7 @@ using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
+
 [Route("x-game-api/{projectId}/claims"), XGameMasterAuthorize()]
 public class ClaimsApiController(IClaimsRepository claimsRepository) : XGameApiController
 {

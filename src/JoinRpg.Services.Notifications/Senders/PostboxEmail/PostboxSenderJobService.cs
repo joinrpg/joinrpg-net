@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications.Senders.PostboxEmail;
+
 internal class PostboxSenderJobService(
     IOptions<PostboxOptions> options,
     PostboxClientFactory postboxClientFactory,

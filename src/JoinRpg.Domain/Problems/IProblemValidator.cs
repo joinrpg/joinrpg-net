@@ -1,4 +1,5 @@
 namespace JoinRpg.Domain.Problems;
+
 public interface IProblemValidator<TObject> where TObject : IFieldContainter
 {
     IEnumerable<ClaimProblem> Validate(TObject claim, ProjectInfo projectInfo, ProblemSeverity minimalSeverity = ProblemSeverity.Hint);

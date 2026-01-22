@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
+
 internal static class SearchUtils
 {
     public static SearchResult GetUserResult(this User user)

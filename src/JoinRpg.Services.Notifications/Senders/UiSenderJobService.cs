@@ -1,4 +1,5 @@
 namespace JoinRpg.Services.Notifications.Senders;
+
 internal class UiSenderJobService : ISenderJob
 {
     public static NotificationChannel Channel => NotificationChannel.ShowInUi;

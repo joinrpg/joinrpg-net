@@ -3,6 +3,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Services.Impl.Claims;
+
 internal class ClaimNotificationTextBuilder(INotificationUriLocator<ClaimIdentification> uriService)
 {
     internal string GetText(ClaimSimpleChangedNotification model, ClaimWithPlayer claim)

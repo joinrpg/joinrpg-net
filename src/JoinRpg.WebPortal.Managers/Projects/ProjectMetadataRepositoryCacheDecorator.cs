@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
+
 public class ProjectMetadataRepositoryCacheDecorator(
     IProjectMetadataRepository repository,
     PerRequestCache<ProjectIdentification, ProjectInfo> projectMetadataCache) : IProjectMetadataRepository

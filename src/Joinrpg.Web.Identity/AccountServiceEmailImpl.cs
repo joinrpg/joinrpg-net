@@ -4,6 +4,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace Joinrpg.Web.Identity;
+
 internal class AccountServiceEmailImpl(INotificationService messageService, IVirtualUsersService virtualUsersService) : IAccountEmailService<JoinIdentityUser>
 {
     public Task ResetPasswordEmail(JoinIdentityUser user, string callbackUrl)

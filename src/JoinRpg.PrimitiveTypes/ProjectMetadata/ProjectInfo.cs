@@ -2,6 +2,7 @@ using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
+
 public record class ProjectInfo
 {
     private readonly Lazy<VirtualOrderContainer<ProjectFieldInfo>> sortedFieldsContainer;

@@ -3,6 +3,7 @@ using JoinRpg.Interfaces;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
+
 internal class FinanceOperationsRepository(MyDbContext ctx) : RepositoryImplBase(ctx), IFinanceOperationsRepository
 {
     /// <summary>

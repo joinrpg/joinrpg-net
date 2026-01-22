@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace JoinRpg.PrimitiveTypes;
+
 public record KogdaIgraIdentification(int Value) : SingleValueType<int>(Value), ISpanParsable<KogdaIgraIdentification>
 {
     public override string ToString() => $"KogdaIgra({Value})";

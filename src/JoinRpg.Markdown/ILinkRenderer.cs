@@ -1,4 +1,5 @@
 namespace JoinRpg.Markdown;
+
 using Markdig.Renderers;
 
 /// <summary>

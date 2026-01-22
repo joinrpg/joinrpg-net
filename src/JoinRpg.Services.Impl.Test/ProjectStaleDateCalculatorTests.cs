@@ -1,6 +1,7 @@
 using JoinRpg.Services.Impl.Projects;
 
 namespace JoinRpg.Services.Impl.Test;
+
 public class ProjectStaleDateCalculatorTests
 {
     [Fact]

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications;
+
 public static class NotificationRegistration
 {
     public static IServiceCollection AddJoinNotificationLayerServices(this IServiceCollection services)

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace JoinRpg.PrimitiveTypes.Plots;
+
 [method: JsonConstructor]
 public record PlotFolderIdentification(ProjectIdentification ProjectId, int PlotFolderId) :
     IProjectEntityId, ISpanParsable<PlotFolderIdentification>, IComparable<PlotFolderIdentification>

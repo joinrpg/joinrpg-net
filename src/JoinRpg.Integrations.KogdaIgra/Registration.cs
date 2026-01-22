@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Integrations.KogdaIgra;
+
 public static class Registration
 {
     public static void AddKogdaIgra(this IJoinServiceCollection services)

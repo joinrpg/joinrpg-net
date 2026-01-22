@@ -2,6 +2,7 @@ using JoinRpg.PrimitiveTypes.Forums;
 using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Domain;
+
 public static class IdExtensions
 {
     public static CharacterIdentification GetId(this Character character) => new CharacterIdentification(character.ProjectId, character.CharacterId);

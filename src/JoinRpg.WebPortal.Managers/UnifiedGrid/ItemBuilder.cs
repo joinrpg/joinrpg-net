@@ -12,6 +12,7 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.WebPortal.Managers.UnifiedGrid;
+
 public static class ItemBuilder
 {
     public static UgItemForCaptainViewModel? BuildItemForCaptain(UgDto ugItem, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)

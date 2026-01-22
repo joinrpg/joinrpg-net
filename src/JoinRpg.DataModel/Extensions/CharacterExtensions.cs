@@ -1,6 +1,7 @@
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.DataModel.Extensions;
+
 public static class CharacterExtensions
 {
     public static CharacterTypeInfo ToCharacterTypeInfo(this Character character)

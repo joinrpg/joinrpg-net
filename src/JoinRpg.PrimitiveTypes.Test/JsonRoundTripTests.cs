@@ -2,6 +2,7 @@ using System.Text.Json;
 using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.PrimitiveTypes.Test;
+
 public class JsonRoundTripTests
 {
     [Fact]

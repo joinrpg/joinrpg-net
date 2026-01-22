@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Claims;
+
 public enum ClaimStatusView
 {
     [Display(Name = "Подана")]

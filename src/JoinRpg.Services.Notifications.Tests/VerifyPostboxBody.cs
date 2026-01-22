@@ -1,6 +1,7 @@
 using JoinRpg.Services.Notifications.Senders.PostboxEmail;
 
 namespace JoinRpg.Services.Email.Test;
+
 public class VerifyPostboxBody
 {
 

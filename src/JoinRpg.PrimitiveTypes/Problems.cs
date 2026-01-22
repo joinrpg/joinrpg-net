@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.PrimitiveTypes;
+
 [method: JsonConstructor]
 public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? ProblemTime, string? ExtraInfo, ProblemSeverity Severity)
 {

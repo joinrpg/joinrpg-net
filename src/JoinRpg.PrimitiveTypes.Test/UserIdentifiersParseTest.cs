@@ -1,4 +1,5 @@
 namespace JoinRpg.PrimitiveTypes.Test;
+
 public class UserIdentifiersParseTest
 {
     [Theory]

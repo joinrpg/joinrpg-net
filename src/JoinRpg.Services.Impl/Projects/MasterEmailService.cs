@@ -3,6 +3,7 @@ using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Projects;
+
 internal class MasterEmailService(
     IUriService uriService,
     INotificationService notificationService,

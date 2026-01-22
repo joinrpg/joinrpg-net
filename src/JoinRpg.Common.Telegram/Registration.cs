@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
 namespace JoinRpg.Common.Telegram;
+
 public static class Registration
 {
     public static IServiceCollection AddJoinTelegram(this IServiceCollection services)

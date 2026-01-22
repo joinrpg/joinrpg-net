@@ -5,6 +5,7 @@ using JoinRpg.WebComponents;
 
 
 namespace JoinRpg.Web.Models.Characters;
+
 public static class CharacterViewModeExtensions
 {
     public static ViewMode GetViewModeForCharacter(this Character character, int? currentUserIdOrDefault)

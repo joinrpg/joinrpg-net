@@ -4,6 +4,7 @@ using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
+
 internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadataRepository) : IProjectInfoClient
 {
     async Task<ProjectInfoViewModel> IProjectInfoClient.GetProjectInfo(ProjectIdentification projectId)

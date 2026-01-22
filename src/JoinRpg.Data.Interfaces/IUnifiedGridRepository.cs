@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces;
+
 public interface IUnifiedGridRepository
 {
     Task<IReadOnlyCollection<UgDto>> GetByGroups(ProjectIdentification projectId, UgStatusSpec spec, IReadOnlyCollection<CharacterGroupIdentification> groups);

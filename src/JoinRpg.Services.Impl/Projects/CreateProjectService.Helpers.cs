@@ -1,6 +1,7 @@
 using JoinRpg.Services.Interfaces.Characters;
 
 namespace JoinRpg.Services.Impl.Projects;
+
 internal partial class CreateProjectService
 {
     private async Task<ProjectFieldIdentification> CreateField(

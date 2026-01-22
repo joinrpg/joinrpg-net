@@ -3,6 +3,7 @@ using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
+
 [Route("x-game-api/{projectId}/finance"), XGameMasterAuthorize()]
 public class PaymentApiController(IFinanceService financeService) : XGameApiController
 {

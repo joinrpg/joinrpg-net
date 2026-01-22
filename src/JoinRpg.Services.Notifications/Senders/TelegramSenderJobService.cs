@@ -5,6 +5,7 @@ using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications.Senders;
+
 internal class TelegramSenderJobService(
     IOptions<TelegramLoginOptions> telegramLoginOptions,
     ITelegramNotificationService telegramNotificationService

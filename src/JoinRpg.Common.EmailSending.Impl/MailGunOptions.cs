@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Common.EmailSending.Impl;
+
 public class MailGunOptions
 {
     [Required]

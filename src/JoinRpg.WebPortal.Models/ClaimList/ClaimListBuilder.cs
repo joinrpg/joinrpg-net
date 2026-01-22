@@ -13,6 +13,7 @@ using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.ClaimList;
+
 public static class ClaimListBuilder
 {
     internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo,

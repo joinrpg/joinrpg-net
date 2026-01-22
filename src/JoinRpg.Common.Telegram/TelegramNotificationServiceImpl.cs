@@ -9,6 +9,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace JoinRpg.Common.Telegram;
+
 internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger<TelegramNotificationServiceImpl> logger) : ITelegramNotificationService
 {
     public async Task SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)

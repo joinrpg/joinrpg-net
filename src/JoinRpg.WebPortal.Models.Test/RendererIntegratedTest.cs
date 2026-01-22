@@ -4,6 +4,7 @@ using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Helpers;
 
 namespace JoinRpg.WebPortal.Models.Test;
+
 public class RendererIntegratedTest
 {
     [Fact]

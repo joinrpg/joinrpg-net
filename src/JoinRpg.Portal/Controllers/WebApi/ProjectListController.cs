@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
+
 [Route("/webapi/projects/[action]")]
 [Authorize]
 public class ProjectListController(IProjectListClient client) : ControllerBase

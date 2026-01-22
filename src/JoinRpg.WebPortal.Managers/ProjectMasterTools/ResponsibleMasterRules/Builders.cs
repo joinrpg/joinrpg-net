@@ -3,6 +3,7 @@ using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
+
 internal static class Builders
 {
     internal static ResponsibleMasterRuleViewModel ToRespRuleViewModel(

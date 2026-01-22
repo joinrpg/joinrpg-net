@@ -1,6 +1,7 @@
 using JoinRpg.PrimitiveTypes.Characters;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
+
 internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
 {
     public IEnumerable<FieldRelatedProblem> CheckField(CharacterItem target, FieldWithValue fieldWithValue)
