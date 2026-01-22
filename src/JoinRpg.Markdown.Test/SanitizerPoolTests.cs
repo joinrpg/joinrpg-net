@@ -1,4 +1,4 @@
-﻿using Vereyon.Web;
+using Vereyon.Web;
 
 namespace JoinRpg.Markdown.Test;
 

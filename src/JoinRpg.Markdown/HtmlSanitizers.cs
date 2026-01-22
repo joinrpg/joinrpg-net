@@ -5,7 +5,9 @@ namespace JoinRpg.Markdown;
 
 internal static partial class HtmlSanitizers
 {
-    private static HtmlSanitizerPool SimpleSanitizers { get; } = new (InitHtml5Sanitizer);
+    //TODO
+    // Refactor this to go to object pool https://learn.microsoft.com/en-us/aspnet/core/performance/objectpool?view=aspnetcore-9.0
+    private static HtmlSanitizerPool SimpleSanitizers { get; } = new(InitHtml5Sanitizer);
 
     /// <returns>An instance of <see cref="IDisposableHtmlSanitizer"/> which has to be disposed right after use.</returns>
     public static IDisposableHtmlSanitizer GetSimple() => SimpleSanitizers.Get();
