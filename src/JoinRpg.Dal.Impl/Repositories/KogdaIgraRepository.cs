@@ -2,7 +2,8 @@ using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.DataModel.Projects;
 
 namespace JoinRpg.Dal.Impl.Repositories;
-internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), IKogdaIgraRepository
+
+internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
 {
     public async Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> GetNotUpdated()
     {
@@ -25,7 +26,7 @@ internal class KogdaIgraRepository(MyDbContext ctx) : RepositoryImplBase(ctx), I
                    .Include(ki => ki.Projects);
     }
 
-    private static System.Linq.Expressions.Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;
+    private static Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;
 
     async Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> IKogdaIgraRepository.GetActive()
     {

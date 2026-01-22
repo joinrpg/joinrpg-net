@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyTitle>JoinRpg.Services.Impl.Test</AssemblyTitle>
     <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>

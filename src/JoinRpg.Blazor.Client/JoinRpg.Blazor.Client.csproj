@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
     <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>

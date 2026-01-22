@@ -26,8 +26,7 @@ public class Report2DResultViewModel
     {
         var flatChilds = group.FlatTree(model => model.ChildGroups);
 
-        var flatCharacters = flatChilds.SelectMany(c => c.Characters).Distinct().ToList();
-        return flatCharacters;
+        return [.. flatChilds.SelectMany(c => c.Characters).Distinct()];
     }
 
     private static Dictionary<int, GroupChars> GenerateSet(GameReport2DTemplate template, CharacterGroup group)

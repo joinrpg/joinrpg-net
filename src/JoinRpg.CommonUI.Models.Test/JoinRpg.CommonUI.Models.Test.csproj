@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
     <AssemblyTitle>JoinRpg.CommonUI.Models.Test</AssemblyTitle>
     <Product>JoinRpg.CommonUI.Models.Test</Product>
     <NoWarn>${NoWarn};CS1591</NoWarn>

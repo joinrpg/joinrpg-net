@@ -130,7 +130,7 @@ public class AccommodationTypeController(
     {
         try
         {
-            IReadOnlyCollection<int> ids = reqId.Split(',')
+            var ids = reqId.Split(',')
                 .Select(s => int.TryParse(s, out var val) ? val : 0)
                 .Where(val => val > 0)
                 .ToList();

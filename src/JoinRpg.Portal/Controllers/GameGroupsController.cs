@@ -2,6 +2,7 @@ using System.Text.Json;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -18,7 +19,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
-using MoreLinq;
 
 namespace JoinRpg.Portal.Controllers;
 
@@ -28,7 +28,8 @@ public class GameGroupsController(
     IProjectService projectService,
     IUriService uriService,
     IUriLocator<UserLinkViewModel> userLinkLocator,
-    IProjectMetadataRepository projectMetadataRepository
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor
     ) : ControllerGameBase(projectRepository, projectService)
 {
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
@@ -130,7 +131,7 @@ public class GameGroupsController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
+        var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
         return ReturnJson(new
         {
             field.Project.ProjectId,

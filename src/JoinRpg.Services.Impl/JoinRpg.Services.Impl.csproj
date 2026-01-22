@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyTitle>JoinRpg.Services.Impl</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />

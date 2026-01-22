@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyTitle>JoinRpg.Data.Interfaces</AssemblyTitle>
-    <Product>JoinRpg.Data.Interfaces</Product>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />

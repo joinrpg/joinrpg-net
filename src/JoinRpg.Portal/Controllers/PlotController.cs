@@ -244,9 +244,9 @@ public class PlotController(
             return await Delete(projectId, plotFolderId);
         }
     }
-    private ActionResult ReturnToPlot(int projectId, int plotFolderId) => RedirectToAction("Edit", new { projectId, plotFolderId });
+    private RedirectToActionResult ReturnToPlot(int projectId, int plotFolderId) => RedirectToAction("Edit", new { projectId, plotFolderId });
 
-    private ActionResult ReturnToPlot(PlotFolderIdentification plotFolderId) => RedirectToAction("Edit", new { projectId = plotFolderId.ProjectId.Value, plotFolderId = plotFolderId.PlotFolderId });
+    private RedirectToActionResult ReturnToPlot(PlotFolderIdentification plotFolderId) => RedirectToAction("Edit", new { projectId = plotFolderId.ProjectId.Value, plotFolderId = plotFolderId.PlotFolderId });
 
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> EditElement(ProjectIdentification projectId, PlotElementIdentification elementId, int? version)

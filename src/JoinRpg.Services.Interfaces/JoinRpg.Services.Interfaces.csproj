@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyTitle>JoinRpg.Services.Interfaces</AssemblyTitle>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
