@@ -166,6 +166,9 @@ internal class ClaimServiceImpl(
         string claimText,
         IReadOnlyDictionary<int, string?> fields, bool sensitiveDataAllowed)
     {
+        ArgumentNullException.ThrowIfNull(characterId);
+        ArgumentNullException.ThrowIfNull(claimText);
+        ArgumentNullException.ThrowIfNull(fields);
 
         logger.LogDebug("About to add claim to character {characterId}", characterId);
 
@@ -204,8 +207,7 @@ internal class ClaimServiceImpl(
 
         var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
 
-        var claimEmail = await CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
-          CommentExtraAction.NewClaim);
+        var claimEmail = await CreateClaimEmail<NewClaimEmail>(claim, claimText, s => s.ClaimStatusChange, CommentExtraAction.NewClaim);
 
         claimEmail.UpdatedFields = updatedFields;
 
