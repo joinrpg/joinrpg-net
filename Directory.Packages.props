@@ -64,7 +64,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.4" />
-    <PackageVersion Include="System.Net.Http.Json" Version="9.0.10" />
+    <PackageVersion Include="System.Net.Http.Json" Version="10.0.0" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="Telegram.Bot" Version="22.7.2" />
     <PackageVersion Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
