@@ -80,7 +80,7 @@ public class ClaimController(
         try
         {
             await claimService.AddClaimFromUser(new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                viewModel.ClaimText, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix), viewModel.SensitiveDataAllowed);
+                viewModel.ClaimText ?? "", Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix), viewModel.SensitiveDataAllowed);
 
             return RedirectToAction(
               "SetupProfile",
