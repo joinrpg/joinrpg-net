@@ -64,7 +64,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         ClaimOperationType claimOperationType = playerChange ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
         var state = playerChange ? FinanceOperationState.Proposed : FinanceOperationState.Approved;
 
-        var (comment, email) = CommentHelper.AddClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, Now);
+        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, Now);
 
         email = email with
         {

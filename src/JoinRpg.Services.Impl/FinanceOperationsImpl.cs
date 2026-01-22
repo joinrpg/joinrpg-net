@@ -224,7 +224,7 @@ internal class FinanceOperationsImpl(
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.CanManageMoney);
 
-        var (_, email) = CommentHelper.AddClaimCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange, Now);
+        var (_, email) = CommentHelper.CreateClaimCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange, Now);
 
         claim.CurrentFee = feeValue;
 
@@ -268,7 +268,7 @@ internal class FinanceOperationsImpl(
 
         CheckOperationDate(request.OperationDate);
 
-        var (comment, email) = CommentHelper.AddClaimCommentWithNotification(request.Contents, claim, projectInfo, CommentExtraAction.RequestPreferential, ClaimOperationType.PlayerChange, Now);
+        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(request.Contents, claim, projectInfo, CommentExtraAction.RequestPreferential, ClaimOperationType.PlayerChange, Now);
 
         var financeOperation = new FinanceOperation()
         {
@@ -295,60 +295,6 @@ internal class FinanceOperationsImpl(
         await claimNotificationService.SendNotification(email);
     }
 
-    private async Task<(Comment CommentFrom, Comment CommentTo)> AddTransferCommentsAsync(
-        Claim claimFrom,
-        Claim claimTo,
-        ClaimPaymentTransferRequest request,
-        ProjectInfo projectInfo)
-    {
-        // Comment to source claim
-        Comment commentFrom = CommentHelper.CreateCommentForClaim(
-            claimFrom,
-            Now,
-            request.CommentText ?? "",
-            ClaimOperationType.MasterVisibleChange,
-            projectInfo,
-            CommentExtraAction.TransferFrom);
-        commentFrom.Finance = new FinanceOperation
-        {
-            OperationType = FinanceOperationType.TransferTo,
-            MoneyAmount = -request.Money,
-            OperationDate = request.OperationDate,
-            ProjectId = request.ProjectId,
-            ClaimId = request.ClaimId,
-            LinkedClaimId = request.ToClaimId,
-            Created = Now,
-            Changed = Now,
-            State = FinanceOperationState.Approved,
-        };
-        _ = UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
-
-        // Comment to destination claim
-        Comment commentTo = CommentHelper.CreateCommentForClaim(
-            claimTo,
-            Now,
-            request.CommentText ?? "",
-            ClaimOperationType.MasterVisibleChange,
-            projectInfo,
-            CommentExtraAction.TransferTo);
-        commentTo.Finance = new FinanceOperation
-        {
-            OperationType = FinanceOperationType.TransferFrom,
-            MoneyAmount = request.Money,
-            OperationDate = request.OperationDate,
-            ProjectId = request.ProjectId,
-            ClaimId = request.ToClaimId,
-            LinkedClaimId = request.ClaimId,
-            Created = Now,
-            Changed = Now,
-            State = FinanceOperationState.Approved,
-        };
-
-        await UnitOfWork.SaveChangesAsync();
-
-        return (commentFrom, commentTo);
-    }
-
     /// <inheritdoc />
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
@@ -365,22 +311,59 @@ internal class FinanceOperationsImpl(
             throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Character.CharacterName} to perform transfer");
         }
 
-        // Adding comments
-        var (commentFrom, commentTo) = await AddTransferCommentsAsync(
+        // Comment to source claim
+        var (commentFrom, emailFrom) = CommentHelper.CreateClaimCommentWithNotification(
+            request.CommentText ?? "",
             claimFrom,
-            claimTo,
-            request,
-            projectInfo
+            projectInfo,
+            CommentExtraAction.TransferFrom,
+            ClaimOperationType.MasterVisibleChange,
+            Now
             );
+
+        commentFrom.Finance = new FinanceOperation
+        {
+            OperationType = FinanceOperationType.TransferTo,
+            MoneyAmount = -request.Money,
+            OperationDate = request.OperationDate,
+            ProjectId = request.ProjectId,
+            ClaimId = request.ClaimId,
+            LinkedClaimId = request.ToClaimId,
+            Created = Now,
+            Changed = Now,
+            State = FinanceOperationState.Approved,
+        };
+
+        // Comment to destination claim
+        var (commentTo, emailTo) = CommentHelper.CreateClaimCommentWithNotification(
+            request.CommentText ?? "",
+            claimTo,
+            projectInfo,
+            CommentExtraAction.TransferTo,
+            ClaimOperationType.MasterVisibleChange,
+            Now
+            );
+        commentTo.Finance = new FinanceOperation
+        {
+            OperationType = FinanceOperationType.TransferFrom,
+            MoneyAmount = request.Money,
+            OperationDate = request.OperationDate,
+            ProjectId = request.ProjectId,
+            ClaimId = request.ToClaimId,
+            LinkedClaimId = request.ClaimId,
+            Created = Now,
+            Changed = Now,
+            State = FinanceOperationState.Approved,
+        };
+
+        await UnitOfWork.SaveChangesAsync();
 
         // Trying to fix fee in destination claim
         claimTo.UpdateClaimFeeIfRequired(Now, projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
-        var emailTo = CommentHelper.CreateNotificationFromComment(claimTo, ClaimOperationType.MasterVisibleChange, commentTo);
         await claimNotificationService.SendNotification(emailTo);
-        var emailFrom = CommentHelper.CreateNotificationFromComment(claimFrom, ClaimOperationType.MasterVisibleChange, commentFrom);
         await claimNotificationService.SendNotification(emailFrom);
     }
 

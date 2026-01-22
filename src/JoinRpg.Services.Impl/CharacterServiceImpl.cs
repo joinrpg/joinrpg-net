@@ -112,7 +112,8 @@ internal class CharacterServiceImpl(
 
         if (email != null)
         {
-            await emailService.Email(email);
+            // Исправить потом отправку изменений
+            // await emailService.Email(email);
         }
     }
 
@@ -188,10 +189,12 @@ internal class CharacterServiceImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        if (email != null)
-        {
-            await emailService.Email(email);
-        }
+
+
+        //if (email != null)
+        //{
+        //    await emailService.Email(email);
+        //}
     }
 
     private async Task<int[]> ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<CharacterGroupIdentification> groupIds)

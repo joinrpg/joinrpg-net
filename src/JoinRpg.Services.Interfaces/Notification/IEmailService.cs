@@ -2,8 +2,6 @@ namespace JoinRpg.Services.Interfaces.Notification;
 
 public interface IEmailService
 {
-    Task Email(NewClaimEmail createClaimEmail);
-    Task Email(FieldsChangedEmail filedsEmail);
     Task Email(OccupyRoomEmail createClaimEmail);
     Task Email(UnOccupyRoomEmail email);
     Task Email(LeaveRoomEmail email);

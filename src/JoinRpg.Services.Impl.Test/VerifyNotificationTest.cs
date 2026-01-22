@@ -37,7 +37,6 @@ public class VerifyNotificationTest
     {
         var model = new ClaimSimpleChangedNotification(
             new ClaimIdentification(1, 1),
-            player,
             commentExtraAction,
             Initiator: master,
             new NotificationEventTemplate(""),
@@ -60,7 +59,6 @@ public class VerifyNotificationTest
     {
         var model = new ClaimSimpleChangedNotification(
             new ClaimIdentification(1, 1),
-            player,
             CommentExtraAction: null,
             Initiator: master,
             new NotificationEventTemplate("Здесь длинный занимательный комментарий"),
