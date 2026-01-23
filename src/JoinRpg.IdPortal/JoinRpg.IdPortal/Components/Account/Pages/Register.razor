@@ -66,11 +66,11 @@
 
     public async Task RegisterUser(EditContext editContext)
     {
-        var user = new JoinIdentityUser() { UserName = Input.Email } ;
+        var user = new JoinIdentityUser() { UserName = Input.Email.Trim() } ;
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        await UserStore.SetUserNameAsync(user, Input.Email.Trim(), CancellationToken.None);
         var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        await emailStore.SetEmailAsync(user, Input.Email.Trim(), CancellationToken.None);
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (!result.Succeeded)

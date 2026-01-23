@@ -164,7 +164,7 @@ public class AccountController(
             return View("Login", loginModel);
         }
 
-        var user = new JoinIdentityUser { UserName = model.Email };
+        var user = new JoinIdentityUser { UserName = model.Email.Trim() };
         var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
         {
