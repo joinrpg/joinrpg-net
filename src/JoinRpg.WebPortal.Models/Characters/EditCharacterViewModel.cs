@@ -42,7 +42,7 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
         CreatedBy = field.CreatedBy;
         UpdatedBy = field.UpdatedBy;
 
-        IsDefaultTemplate = projectInfo.DefaultTemplateCharacter?.CharacterId == field.CharacterId;
+        IsDefaultTemplate = projectInfo.ClaimSettings.DefaultTemplate?.CharacterId == field.CharacterId;
 
         return this;
     }

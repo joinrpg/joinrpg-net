@@ -19,7 +19,8 @@ internal class ClaimServiceImpl(
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
     ClaimNotificationService claimNotificationService,
-    CommentHelper commentHelper
+    CommentHelper commentHelper,
+    IImpersonateAccessor impersonateAccessor
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
@@ -183,7 +184,9 @@ internal class ClaimServiceImpl(
         var claim = new Claim()
         {
             CharacterId = characterId.CharacterId,
+            Character = source,
             ProjectId = characterId.ProjectId,
+            Project = source.Project, // это нужно при операциях с полями, к сожалению
             PlayerUserId = CurrentUserId,
             PlayerAcceptedDate = Now,
             CreateDate = Now,
@@ -195,7 +198,13 @@ internal class ClaimServiceImpl(
             CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
         };
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(claimText,
+        // Т.к. CreateClaimCommentWithNotification ожидает, что комментарий уже существует
+        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
+        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
+        await UnitOfWork.SaveChangesAsync();
+
+        //TODO добавить сюда измененные поля
+        var (_, email) = CommentHelper.CreateClaimCommentWithNotification(claimText,
                claim,
                projectInfo,
                CommentExtraAction.NewClaim,
@@ -203,14 +212,7 @@ internal class ClaimServiceImpl(
                Now
                );
 
-
-        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
-
-        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
-
         await UnitOfWork.SaveChangesAsync();
-
-        //TODO добавить сюда измененные поля
 
         await claimNotificationService.SendNotification(email);
 
@@ -220,10 +222,10 @@ internal class ClaimServiceImpl(
             (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
         // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
         {
-            StartImpersonate(claim.ResponsibleMasterUserId);
+            impersonateAccessor.StartImpersonate(responsibleMaster.GetId(), responsibleMaster.ExtractDisplayName());
             //TODO[Localize]
             await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
-            ResetImpersonation();
+            impersonateAccessor.StopImpersonate();
         }
 
         logger.LogInformation("Claim ({claimId}) was successfully send to character {characterId}", claimId, characterId);
@@ -333,7 +335,7 @@ internal class ClaimServiceImpl(
 
         List<ClaimSimpleChangedNotification> notificationsList = [email];
 
-        if (!claim.Project.Details.EnableManyCharacters)
+        if (!projectInfo.ClaimSettings.AllowManyCharacters)
         {
             foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
             {
@@ -913,12 +915,12 @@ internal class ClaimServiceImpl(
             return claim.GetId();
         }
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(donateProjectId);
-        if (projectInfo.DefaultTemplateCharacter is null)
+        if (projectInfo.ClaimSettings.DefaultTemplate is null)
         {
             logger.LogError("Некорректно настроен проект донатов {donateProjectId}", donateProjectId);
             throw new JoinRpgProjectMisconfiguredException(donateProjectId, "У проекта должен быть шаблон по умолчанию");
         }
-        return await AddClaimFromUser(projectInfo.DefaultTemplateCharacter, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
+        return await AddClaimFromUser(projectInfo.ClaimSettings.DefaultTemplate, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
     }
 
     public static void SetParentCommentAndCheck((Comment, ClaimSimpleChangedNotification) result, Comment parentComment, ClaimOperationType claimOperationType)

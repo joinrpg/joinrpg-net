@@ -71,7 +71,7 @@ public class AddClaimViewModel : IProjectIdAware
         WarnForAnotherClaim = claimSource.Project.Claims.OfUserActive(userInfo.UserId.Value).Any();
 
         ValidationStatus = disallowReasons;
-        ProjectAllowsMultipleCharacters = claimSource.Project.Details.EnableManyCharacters;
+        ProjectAllowsMultipleCharacters = projectInfo.ClaimSettings.AllowManyCharacters;
 
         ProjectId = claimSource.Project.ProjectId;
         ProjectName = claimSource.Project.ProjectName;

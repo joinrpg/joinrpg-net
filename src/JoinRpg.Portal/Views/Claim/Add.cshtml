@@ -77,10 +77,10 @@
             </div>
         }
 
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
         @if (Model.CanSendClaim())
         {
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
             @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
             if (Model.Fields.Fields.Any(f => f.HasPrice))

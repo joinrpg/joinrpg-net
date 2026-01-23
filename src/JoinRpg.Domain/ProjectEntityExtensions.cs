@@ -46,13 +46,6 @@ public static class ProjectEntityExtensions
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserId);
     }
 
-    [Obsolete("Передавай сюда ProjectInfo")]
-    public static T RequestMasterAccess<T>(this T field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
-            where T : IProjectEntity
-    {
-        return field.RequestMasterAccess(currentUserAccessor.UserId, permission);
-    }
-
     public static ProjectInfo RequestMasterAccess(this ProjectInfo field, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
     {
         return field.RequestMasterAccess(currentUserAccessor.UserIdentificationOrDefault, permission);
@@ -147,7 +140,8 @@ public static class ProjectEntityExtensions
         return claim.PlayerUserId == currentUserIdOrDefault;
     }
 
-    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
+    [Obsolete("Используйте AccessArguments")]
+    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, Permission.CanEditRoles) && character.Project.Active;
 
     [Obsolete("Передавай сюда ProjectInfo")]
     public static T EnsureProjectActive<T>(this T entity)

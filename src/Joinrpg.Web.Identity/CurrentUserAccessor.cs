@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +9,7 @@ namespace Joinrpg.Web.Identity;
 /// <summary>
 /// Adapter to extract user data from HttpContext principal
 /// </summary>
-public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
+public class CurrentUserAccessor : ICurrentUserAccessor, IImpersonateAccessor
 {
     private class CurrentUserFromHttpContext : ICurrentUserAccessor
     {
@@ -28,8 +27,6 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
         int? ICurrentUserAccessor.UserIdOrDefault => GetUserIdOrDefault(User);
 
         UserDisplayName ICurrentUserAccessor.DisplayName => DisplayName.Value;
-
-        string ICurrentUserAccessor.Email => User.FindFirst(ClaimTypes.Email)!.Value;
 
         bool ICurrentUserAccessor.IsAdmin => User.IsInRole(Security.AdminRoleName);
 
@@ -56,17 +53,15 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
         }
     }
 
-    private class CurrentUserFromDomainUser(User user) : ICurrentUserAccessor
+    private class ImpersonatedUser(UserIdentification userId, UserDisplayName displayName) : ICurrentUserAccessor
     {
-        public int? UserIdOrDefault { get; } = user.UserId;
+        public int? UserIdOrDefault { get; } = userId.Value;
 
-        public UserDisplayName DisplayName { get; } = user.ExtractDisplayName();
+        public UserDisplayName DisplayName { get; } = displayName;
 
-        public string Email { get; } = user.Email;
+        public bool IsAdmin { get; } = false;
 
-        public bool IsAdmin { get; } = user.Auth.IsAdmin;
-
-        public AvatarIdentification? Avatar { get; } = AvatarIdentification.FromOptional(user.SelectedAvatarId);
+        public AvatarIdentification? Avatar { get; } = null;
     }
 
     /// <summary>
@@ -84,18 +79,9 @@ public class CurrentUserAccessor : ICurrentUserAccessor, ICurrentUserSetAccessor
 
     public UserDisplayName DisplayName => Current.DisplayName;
 
-    public string Email => Current.Email;
-
     public bool IsAdmin => Current.IsAdmin;
 
     public AvatarIdentification? Avatar => Current.Avatar;
-
-    public void StartImpersonate(User user) => stack.Push(new CurrentUserFromDomainUser(user));
     public void StopImpersonate() => stack.Pop();
-}
-
-public interface ICurrentUserSetAccessor
-{
-    void StartImpersonate(User user);
-    void StopImpersonate();
+    void IImpersonateAccessor.StartImpersonate(UserIdentification userId, UserDisplayName displayName) => stack.Push(new ImpersonatedUser(userId, displayName));
 }
