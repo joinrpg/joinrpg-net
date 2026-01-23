@@ -33,7 +33,7 @@
     <File Path=".gitignore" />
     <File Path="code_placement.txt" />
     <File Path="CONTRIBUTING.MD" />
-    <File Path="directory.build.props" />
+    <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
     <File Path="docker-compose.yml" />
     <File Path="global.json" />
