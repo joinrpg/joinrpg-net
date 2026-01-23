@@ -31,7 +31,7 @@ internal static class RecepientExtensions
                 { Constants.MailGunName, r.DisplayName }
             };
 
-            foreach (var nameAndValue in r.RecipientSpecificValues)
+            foreach (var nameAndValue in r.RecipientSpecificValues.Where(x => x.Key != Constants.MailGunName))
             {
                 jobj.Add(nameAndValue.Key, nameAndValue.Value);
             }
