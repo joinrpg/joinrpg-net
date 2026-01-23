@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure.Annotations;
+using System.Data.Entity.ModelConfiguration;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
@@ -153,6 +156,8 @@ public class MyDbContext : DbContext, IUnitOfWork
         ConfigureMoneyTransfer(modelBuilder);
 
         ConfigureCaptainAccessRuleEntity(modelBuilder);
+
+        modelBuilder.Configurations.Add(new UserExternalLoginConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }
@@ -318,4 +323,31 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     IKogdaIgraRepository IUnitOfWork.GetKogdaIgraRepository() => new KogdaIgraRepository(this);
     IFinanceOperationsRepository IUnitOfWork.GetFinanceOperationsRepositoryRepository() => new FinanceOperationsRepository(this);
+}
+
+public class UserExternalLoginConfiguration : EntityTypeConfiguration<UserExternalLogin>
+{
+    public UserExternalLoginConfiguration()
+    {
+        ToTable("UserExternalLogins");
+
+        HasKey(e => e.UserExternalLoginId);
+
+        Property(e => e.Provider)
+            .HasMaxLength(450) // важно для уникального индекса
+            .HasColumnAnnotation(
+                IndexAnnotation.AnnotationName,
+                new IndexAnnotation(
+                    new IndexAttribute("IX_UserExternalLogin_UserId_Provider", 1) { IsUnique = true }
+                )
+            );
+
+        Property(e => e.UserId)
+            .HasColumnAnnotation(
+                IndexAnnotation.AnnotationName,
+                new IndexAnnotation(
+                    new IndexAttribute("IX_UserExternalLogin_UserId_Provider", 0) { IsUnique = true }
+                )
+            );
+    }
 }
