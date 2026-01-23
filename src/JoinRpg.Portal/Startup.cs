@@ -95,9 +95,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         if (environment.IsDevelopment())
         {
             services.AddDatabaseDeveloperPageExceptionFilter();
-
-            //That's make local debug more easy
-            _ = mvc.AddRazorRuntimeCompilation();
         }
 
         _ = services.AddJoinAuth(

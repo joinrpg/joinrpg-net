@@ -39,7 +39,7 @@ internal static class IdentificationParseHelper
     {
         ReadOnlySpan<char> val = RemovePrefixes(value, prefixes);
 
-        if (int.TryParse(val, provider, out var id))
+        if (int.TryParse(val, provider, out var id) && id > 0)
         {
             return id;
         }

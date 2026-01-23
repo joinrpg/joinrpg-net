@@ -1,7 +1,9 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Models;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,21 +17,13 @@ public class MainMenuViewComponent(
     public async Task<IViewComponentResult> InvokeAsync()
     {
         var projectLinks = (await GetProjectLinks()).OrderByDisplayPriority().ToArray();
-        int? currentProjectId = ViewBag.ProjectId is int x ? x : null;
         string? currentProjectName = null;
-        if (currentProjectId is not null)
+        if (HttpContext.TryGetProjectIdFromItems() is ProjectIdentification currentProjectId)
         {
-            var currentProject = projectLinks.SingleOrDefault(p => p.ProjectId == currentProjectId);
-            if (currentProject is null)
-            {
-                var info = await projectMetadataRepository.GetProjectMetadata(new(currentProjectId.Value));
-                currentProjectName = info.ProjectName;
-            }
-            else
-            {
-                currentProjectName = currentProject.ProjectName;
-            }
+            // Кажется, будто это лишнее хождение в базу, но оно всегда будет в кеше
+            var info = await projectMetadataRepository.GetProjectMetadata(currentProjectId);
 
+            currentProjectName = info.ProjectName;
 
             if (currentProjectName.Length > 30)
             {
@@ -38,12 +32,7 @@ public class MainMenuViewComponent(
 
         }
 
-        var viewModel = new MainMenuViewModel()
-        {
-            ProjectLinks = projectLinks,
-            CurrentProjectId = currentProjectId,
-            CurrentProjectName = currentProjectName,
-        };
+        var viewModel = new MainMenuViewModel(projectLinks, currentProjectName);
         return View("MainMenu", viewModel);
     }
 
