@@ -129,6 +129,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinBlobStorage();
 
         services.AddOptions<DonateOptions>();
+
+        services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
     }
 
     /// <summary>
@@ -144,6 +146,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+
         app.MapStaticAssets().ShortCircuit();
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
@@ -168,16 +171,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         app.MapJoinHealthChecks();
 
-        //if (!env.IsDevelopment())
-        //{
-        //    _ = app.UseHttpsRedirection();
-        //}
-
         _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
         _ = app.UseAuthentication();
         _ = app.UseAuthorization()
             .UseMiddleware<CsrfTokenCookieMiddleware>();
+
+        _ = app.MapRazorComponents<JoinRpg.Blazor.Client.Components.App>().AddInteractiveWebAssemblyRenderMode();
 
         _ = app.MapControllers().WithStaticAssets();
         _ = app.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
