@@ -37,13 +37,10 @@ public class DbServiceImplBase
     private readonly Lazy<ICharacterRepository> _charactersRepository;
     protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
 
-    private int? _impersonatedUserId;
-
     /// <summary>
     /// Returns current user database Id
     /// </summary>
-    protected int CurrentUserId => _impersonatedUserId ?? currentUserAccessor.UserId;
-    // TODO: Fix impersonation
+    protected int CurrentUserId => currentUserAccessor.UserId;
 
     /// <summary>
     /// Returns true if current user is admin
@@ -70,10 +67,6 @@ public class DbServiceImplBase
 
         Now = DateTime.UtcNow;
     }
-
-    protected void StartImpersonate(int userId) => _impersonatedUserId = userId;
-
-    protected void ResetImpersonation() => _impersonatedUserId = null;
 
     protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
         where T : class, IProjectEntity

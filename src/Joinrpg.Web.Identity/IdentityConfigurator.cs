@@ -34,7 +34,7 @@ public static class IdentityConfigurator
             .AddScoped<CurrentUserAccessor>()
             // ЧТобы это был один экземпляр
             .AddScoped<ICurrentUserAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
-            .AddScoped<ICurrentUserSetAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
+            .AddScoped<IImpersonateAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
 
             .AddScoped(typeof(PerRequestCache<,>))
             .AddSingleton(typeof(SingletonCache<,>))

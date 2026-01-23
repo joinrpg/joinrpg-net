@@ -44,7 +44,6 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             fieldSettings,
             financeSettings,
             project.Details.EnableAccommodation,
-            CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
 
             //TODO в этих двух полях LazyLoad
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
@@ -61,7 +60,10 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             profileRequirementSettings: new ProjectProfileRequirementSettings(
                 project.Details.RequireRealName, project.Details.RequireTelegram, project.Details.RequireVkontakte, project.Details.RequirePhone, project.Details.RequirePassport,
                 project.Details.RequireRegistrationAddress),
-            allowManyClaims: project.Details.EnableManyCharacters);
+            projectClaimSettings: new ProjectClaimSettings(
+                DefaultTemplate: CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
+                AllowManyCharacters: project.Details.EnableManyCharacters,
+                AutoAcceptClaims: project.Details.AutoAcceptClaims));
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {

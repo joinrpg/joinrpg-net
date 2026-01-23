@@ -114,7 +114,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         AllowToSetGroups = projectInfo.AllowToSetGroups;
         CommentDiscussionId = claim.CommentDiscussionId;
         RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
-        HasMasterAccess = claim.HasMasterAccess(currentUser);
+        HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
             Permission.CanManageClaims,
             ExtraAccessReason.ResponsibleMaster);
@@ -138,7 +138,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             .ToList();
         OtherClaimsFromThisPlayerCount =
             OtherClaimsFromThisPlayerCount =
-                claim.IsApproved || claim.Project.Details.EnableManyCharacters
+                claim.IsApproved || projectInfo.ClaimSettings.AllowManyCharacters
                     ? 0
                     : claim.OtherPendingClaimsForThisPlayer().Count();
 

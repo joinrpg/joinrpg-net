@@ -34,7 +34,7 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
         CommentExtraAction? commentExtraAction,
         ClaimOperationType claimOperationType, DateTime now)
     {
-        // Этот метод вызывается ДО сохранения всего в базу
+        // Этот метод вызывается ДО сохранения комментария в базу
         // А вот ClaimSimpleChangedNotification будет обрабатываться сервисом и доп. данные будут загружаться ПОСЛЕ сохранения
 
         var commentCommand = new CommentCommand(claimOperationType, commentText, commentExtraAction, now, projectInfo);

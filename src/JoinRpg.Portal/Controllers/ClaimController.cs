@@ -39,7 +39,8 @@ public class ClaimController(
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ICurrentUserAccessor currentUserAccessor,
-    CharacterPlotViewService characterPlotViewService
+    CharacterPlotViewService characterPlotViewService,
+    ILogger<ClaimController> logger
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -89,6 +90,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
+            logger.LogWarning(exception, "Проблема при отсылке заявки");
             ModelState.AddException(exception);
             var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
             var source = await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
@@ -821,9 +823,9 @@ public class ClaimController(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
 
-        if (projectInfo.DefaultTemplateCharacter is not null)
+        if (projectInfo.ClaimSettings.DefaultTemplate is CharacterIdentification defaultId)
         {
-            return RedirectToAction("AddForCharacter", new { projectid, projectInfo.DefaultTemplateCharacter.CharacterId });
+            return RedirectToAction("AddForCharacter", new { projectid, defaultId.CharacterId });
         }
 
         return Redirect($"/{projectInfo.ProjectId.Value}/default-slot-not-set");

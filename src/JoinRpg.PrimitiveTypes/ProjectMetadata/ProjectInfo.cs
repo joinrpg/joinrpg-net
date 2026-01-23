@@ -45,7 +45,7 @@ public record class ProjectInfo
     public ProjectScheduleSettings ProjectScheduleSettings { get; }
 
     public ProjectProfileRequirementSettings ProfileRequirementSettings { get; }
-    public bool AllowManyClaims { get; }
+    public ProjectClaimSettings ClaimSettings { get; }
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -55,7 +55,6 @@ public record class ProjectInfo
         ProjectFieldSettings projectFieldSettings,
         ProjectFinanceSettings projectFinanceSettings,
         bool accomodationEnabled,
-        CharacterIdentification? defaultTemplateCharacter,
         bool allowToSetGroups,
         CharacterGroupIdentification rootCharacterGroupId,
         IReadOnlyCollection<ProjectMasterInfo> masters,
@@ -66,7 +65,7 @@ public record class ProjectInfo
         ProjectCloneSettings projectCloneSettings,
         DateOnly createDate,
         ProjectProfileRequirementSettings profileRequirementSettings,
-        bool allowManyClaims)
+        ProjectClaimSettings projectClaimSettings)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -84,7 +83,6 @@ public record class ProjectInfo
         TimeSlotField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleTimeSlotField && f.IsActive);
         RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);
 
-        DefaultTemplateCharacter = defaultTemplateCharacter;
         AllowToSetGroups = allowToSetGroups;
         RootCharacterGroupId = rootCharacterGroupId;
         Masters = masters;
@@ -95,7 +93,7 @@ public record class ProjectInfo
         CloneSettings = projectCloneSettings;
         CreateDate = createDate;
         ProfileRequirementSettings = profileRequirementSettings;
-        AllowManyClaims = allowManyClaims;
+        ClaimSettings = projectClaimSettings;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -125,29 +123,29 @@ public record class ProjectInfo
         ProjectFieldInfo[] fields = [field, .. UnsortedFields];
 
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
-            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, DefaultTemplateCharacter,
-            AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
-            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, AllowManyClaims);
+            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, AllowToSetGroups,
+            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
+            ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings);
     }
 
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
-            DefaultTemplateCharacter,
-            AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot,
-            ProjectCheckInSettings,
-            projectLifecycleStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, AllowManyClaims);
+            AllowToSetGroups,
+            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            projectLifecycleStatus,
+            ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings);
     }
 
     internal ProjectInfo WithAllowManyClaims(bool allowManyClaims)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
-            DefaultTemplateCharacter,
-            AllowToSetGroups, RootCharacterGroupId, Masters, PublishPlot,
-            ProjectCheckInSettings,
-            ProjectStatus, ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, allowManyClaims);
+            AllowToSetGroups,
+            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            ProjectStatus,
+            ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { AllowManyCharacters = allowManyClaims });
     }
 }
 
@@ -164,3 +162,9 @@ public record ProjectProfileRequirementSettings(
 
     public bool SensitiveDataRequired => RequirePassport != MandatoryStatus.Optional || RequireRegistrationAddress != MandatoryStatus.Optional;
 }
+
+public record ProjectClaimSettings(
+    CharacterIdentification? DefaultTemplate,
+    bool AllowManyCharacters,
+    bool AutoAcceptClaims
+    );

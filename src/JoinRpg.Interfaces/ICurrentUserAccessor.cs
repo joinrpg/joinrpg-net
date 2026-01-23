@@ -10,7 +10,6 @@ public interface ICurrentUserAccessor
 {
     int? UserIdOrDefault { get; }
     UserDisplayName DisplayName { get; }
-    string Email { get; }
     bool IsAdmin { get; }
     /// <summary>
     /// Avatar of current user
@@ -24,4 +23,10 @@ public interface ICurrentUserAccessor
     int UserId => UserIdOrDefault ?? throw new Exception("Authorization required here");
 
     UserInfoHeader ToUserInfoHeader() => new UserInfoHeader(UserIdentification, DisplayName);
+}
+
+public interface IImpersonateAccessor
+{
+    void StartImpersonate(UserIdentification userId, UserDisplayName displayName);
+    void StopImpersonate();
 }
