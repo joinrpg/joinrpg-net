@@ -44,7 +44,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("Запущена итерация обработки... ");
+            logger.LogDebug("Запущена итерация обработки... ");
 
             if (FailureCounter >= WorkerOptions.MaxSubsequentFailures)
             {
@@ -138,7 +138,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
             if (sendingResult.Succeeded)
             {
                 SuccessCounter++;
-                logger.LogDebug("Сообщение {messageId} отправлено", nextMessage.MessageId);
+                logger.LogInformation("Сообщение {messageId} отправлено", nextMessage.MessageId);
 
                 if (SuccessCounter >= WorkerOptions.MinSubsequentSuccessesToStopFailureCounting)
                 {
