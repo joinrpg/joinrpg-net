@@ -15,12 +15,3 @@
     var link = new ProjectAdminControlViewModel(Model.ProjectId, Model.ProjectName, [.. Model.KogdaIgras.Select(x => x.KogdaIgraId)]);
     <component type="typeof(ProjectAdminControlPanel)" render-mode="WebAssembly" param-Model="@link" />
 }
-
-@section Scripts {
-    @if (currentUserAccessor.IsAdmin)
-    {
-        <script src="/_framework/blazor.webassembly.js"></script>
-        <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-    }
-
-}
