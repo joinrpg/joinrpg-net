@@ -9,6 +9,7 @@
     <ContainerRegistry>cr.yandex</ContainerRegistry>
     <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-portal</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Pages\GamePages\Groups\**" />

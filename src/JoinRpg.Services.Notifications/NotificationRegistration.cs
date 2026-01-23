@@ -24,7 +24,6 @@ public static class NotificationRegistration
     {
         return serviceCollection
             .AddScoped<TSenderJob>()
-            //.AddScoped<IDailyJob, TJob>()
             .AddHostedService<SenderJobService<TSenderJob>>();
     }
 
