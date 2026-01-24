@@ -13,16 +13,19 @@ internal class NotificationsRepository : INotificationRepository
 {
     private readonly Counter<int> successRaceCounter;
     private readonly NotificationsDataDbContext dbContext;
-
+    private readonly ILogger<NotificationsRepository> logger;
     private readonly IExecutionStrategy executionStrategy;
 
     private readonly string lockRequestSql;
 
     public NotificationsRepository(
         NotificationsDataDbContext dbContext,
-        IMeterFactory meterFactory)
+        IMeterFactory meterFactory,
+        ILogger<NotificationsRepository> logger
+        )
     {
         this.dbContext = dbContext;
+        this.logger = logger;
         var meter = meterFactory.Create("JoinRpg.Dal.Notifications.Repository");
         successRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_success");
         executionStrategy = dbContext.Database.CreateExecutionStrategy();
@@ -129,13 +132,21 @@ internal class NotificationsRepository : INotificationRepository
             (_, _) => Task.FromResult(false));
     }
 
-    private static TargetedNotificationMessageForRecipient CreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
+    private TargetedNotificationMessageForRecipient CreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
     {
-        return new TargetedNotificationMessageForRecipient(CreateNotificationMessageDto(candidate.NotificationMessage),
-                                               new NotificationAddress(candidate.Channel, candidate.ChannelSpecificValue),
-                                               candidate.Attempts,
-                                               new NotificationId(candidate.NotificationMessageId)
-                                               );
+        try
+        {
+            return new TargetedNotificationMessageForRecipient(CreateNotificationMessageDto(candidate.NotificationMessage),
+                                                   new NotificationAddress(candidate.Channel, candidate.ChannelSpecificValue),
+                                                   candidate.Attempts,
+                                                   new NotificationId(candidate.NotificationMessageId)
+                                                   );
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to parse NotificationMessageChannel record from DB {notificationMessageChannelId}", candidate.NotificationMessageChannelId);
+            throw;
+        }
     }
 
     private static NotificationMessageForRecipient CreateNotificationMessageDto(NotificationMessage message)
