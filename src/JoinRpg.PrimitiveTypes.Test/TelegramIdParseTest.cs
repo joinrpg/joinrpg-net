@@ -19,6 +19,15 @@ public class TelegramIdParseTest
         parseResult.ShouldBe(new TelegramId(351484506, null));
     }
 
+    [Theory]
+    [InlineData("Telegram(5159651684, @)")]
+    [InlineData("Telegram(5159651684)")]
+    public void TelegramIdShouldParseLong(string val)
+    {
+        TelegramId.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(new TelegramId(5159651684, null));
+    }
+
     [Fact]
     public void TelegramIdWithoutNameShouldRoundTrip()
     {

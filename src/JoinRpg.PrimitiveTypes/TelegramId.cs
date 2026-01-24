@@ -15,7 +15,7 @@ public record TelegramId(long Id, PrefferedName? UserName) : ISpanParsable<Teleg
         Span<Range> ranges = stackalloc Range[2];
         var count = IdentificationParseHelper.SplitIdentifier(val, ranges);
         if (count == 2
-           && int.TryParse(val[ranges[0]], provider, out var i1)
+           && long.TryParse(val[ranges[0]], provider, out var i1)
            )
         {
             result = new TelegramId(i1, PrefferedName.FromOptional(val[ranges[1]].TrimStart('@').ToString()));
@@ -23,7 +23,7 @@ public record TelegramId(long Id, PrefferedName? UserName) : ISpanParsable<Teleg
         }
 
         if (count == 1
-          && int.TryParse(val[ranges[0]], provider, out var i)
+          && long.TryParse(val[ranges[0]], provider, out var i)
           )
         {
             result = new TelegramId(i, null);
