@@ -12,9 +12,13 @@ internal static class ResultParser
         return deserializeResult.Select(x => x.ToMarker()).WhereNotNull().ToArray();
     }
 
-    internal static KogdaIgraGameInfo ParseGameInfo(string strResult)
+    internal static KogdaIgraGameInfo? TryParseGameInfo(string strResult)
     {
         var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions) ?? throw new Exception("Failed to parse result");
+        if (parsedResult.id is 0 || parsedResult.time is 0)
+        {
+            return null;
+        }
         var ret = new KogdaIgraGameInfo(
             parsedResult.id,
             parsedResult.name,

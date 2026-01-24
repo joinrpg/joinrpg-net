@@ -138,6 +138,6 @@ internal class KogdaIgraSyncService(
     public async Task<KogdaIgraGameInfo[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
     {
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(ids);
-        return [.. games.Select(g => ResultParser.ParseGameInfo(g.JsonGameData))];
+        return [.. games.Select(g => ResultParser.TryParseGameInfo(g.JsonGameData)!)];
     }
 }
