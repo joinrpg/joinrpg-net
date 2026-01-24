@@ -12,6 +12,7 @@ internal class JoinServiceCollectionProxy(IServiceCollection inner) : IJoinServi
             .AddScoped<TJob>()
             .AddScoped<IDailyJob, TJob>()
             .AddScoped<JobRunner<TJob>>()
+            .AddScoped<IJobRunner, JobRunner<TJob>>()
             .AddHostedService<MidnightJobBackgroundService<TJob>>();
         return this;
     }

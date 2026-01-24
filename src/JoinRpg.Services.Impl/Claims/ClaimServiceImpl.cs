@@ -222,7 +222,7 @@ internal class ClaimServiceImpl(
             (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
         // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
         {
-            impersonateAccessor.StartImpersonate(responsibleMaster.GetId(), responsibleMaster.ExtractDisplayName());
+            impersonateAccessor.StartImpersonate(responsibleMaster.GetId(), responsibleMaster.ExtractDisplayName(), responsibleMaster.Auth.IsAdmin);
             //TODO[Localize]
             await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
             impersonateAccessor.StopImpersonate();
