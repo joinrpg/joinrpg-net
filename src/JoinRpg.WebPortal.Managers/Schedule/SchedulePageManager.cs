@@ -79,6 +79,11 @@ public class SchedulePageManager(
             return mskTimeZone;
         }
 
+        if (offsets.Count == 1 && offsets[0] == TimeSpan.FromHours(0))
+        {
+            return TimeZoneInfo.Utc;
+        }
+
         logger.LogError("Не удалось определить таймзону для проекта, встречаются варианты: {timeZoneHours}",
             string.Join(",", offsets));
 
