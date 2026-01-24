@@ -2,20 +2,17 @@ using System.Reflection;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Notifications.Senders; // Не самое правильное место для этого, перенести
-using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
 public class MidnightJobBackgroundService<TJob>(
     IServiceProvider serviceProvider,
     ILogger<MidnightJobBackgroundService<TJob>> logger,
-    IOptions<DailyJobOptions> options,
     IHostApplicationLifetime hostApplicationLifetime
     ) : BackgroundService
     where TJob : class, IDailyJob
 {
     private static readonly string JobName = typeof(TJob).FullName!;
-    private bool skipWait = options.Value.DebugDailyJobMode;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -24,7 +21,7 @@ public class MidnightJobBackgroundService<TJob>(
         {
             var delay = typeof(TJob).GetCustomAttribute<JobDelayAttribute>()?.Delay;
 
-            await WaitUntilMidnight(stoppingToken, delay);
+            await WaitUntilMidnight(delay, stoppingToken);
 
             logger.LogInformation("Время запуска джобы... ");
             stoppingToken.ThrowIfCancellationRequested();
@@ -41,7 +38,7 @@ public class MidnightJobBackgroundService<TJob>(
                 try
                 {
                     var job = scope.ServiceProvider.GetRequiredService<JobRunner<TJob>>();
-                    await job.RunJob(stoppingToken, scope);
+                    await job.RunJob(scope, stoppingToken);
                     _ = await dailyJobRepository.TrySetJobCompleted(jobId);
                     logger.LogInformation("Successfully complete {jobName} on this instance", JobName);
                 }
@@ -57,14 +54,8 @@ public class MidnightJobBackgroundService<TJob>(
             }
         }
     }
-    private async Task WaitUntilMidnight(CancellationToken stoppingToken, TimeSpan? delay)
+    private async Task WaitUntilMidnight(TimeSpan? delay, CancellationToken stoppingToken)
     {
-        if (skipWait)
-        {
-            await Task.Delay(0, stoppingToken);
-            skipWait = false;
-            return;
-        }
         var now = DateTime.UtcNow;
         var midnight = now
             .Date.AddDays(1) // next midnight

@@ -152,6 +152,9 @@ dotnet_diagnostic.CA2016.severity = warning
 # CA1859: Use concrete types when possible for improved performance
 dotnet_diagnostic.CA1859.severity = warning
 
+# CA1068: CancellationToken parameters must come last
+dotnet_diagnostic.CA1068.severity = warning
+
 [*.{cs,vb}]
 #### Naming styles ####
 

@@ -53,27 +53,21 @@ public class CurrentUserAccessor : ICurrentUserAccessor, IImpersonateAccessor
         }
     }
 
-    private class ImpersonatedUser(UserIdentification userId, UserDisplayName displayName) : ICurrentUserAccessor
+    private class ImpersonatedUser(UserIdentification userId, UserDisplayName displayName, bool isAdmin) : ICurrentUserAccessor
     {
         public int? UserIdOrDefault { get; } = userId.Value;
 
         public UserDisplayName DisplayName { get; } = displayName;
 
-        public bool IsAdmin { get; } = false;
+        public bool IsAdmin { get; } = isAdmin;
 
         public AvatarIdentification? Avatar { get; } = null;
     }
 
-    /// <summary>
-    /// ctor
-    /// </summary>
-    public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor)
-    {
-        stack.Push(new CurrentUserFromHttpContext(httpContextAccessor));
-    }
+    public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor) => stack.Push(new CurrentUserFromHttpContext(httpContextAccessor));
 
     private ICurrentUserAccessor Current => stack.Peek();
-    private Stack<ICurrentUserAccessor> stack = new Stack<ICurrentUserAccessor>();
+    private readonly Stack<ICurrentUserAccessor> stack = new();
 
     public int? UserIdOrDefault => Current.UserIdOrDefault;
 
@@ -83,5 +77,5 @@ public class CurrentUserAccessor : ICurrentUserAccessor, IImpersonateAccessor
 
     public AvatarIdentification? Avatar => Current.Avatar;
     public void StopImpersonate() => stack.Pop();
-    void IImpersonateAccessor.StartImpersonate(UserIdentification userId, UserDisplayName displayName) => stack.Push(new ImpersonatedUser(userId, displayName));
+    void IImpersonateAccessor.StartImpersonate(UserIdentification userId, UserDisplayName displayName, bool isAdmin) => stack.Push(new ImpersonatedUser(userId, displayName, isAdmin));
 }

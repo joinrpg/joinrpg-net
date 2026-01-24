@@ -27,6 +27,6 @@ public interface ICurrentUserAccessor
 
 public interface IImpersonateAccessor
 {
-    void StartImpersonate(UserIdentification userId, UserDisplayName displayName);
+    void StartImpersonate(UserIdentification userId, UserDisplayName displayName, bool IsAdmin);
     void StopImpersonate();
 }

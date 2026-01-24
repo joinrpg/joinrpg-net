@@ -47,7 +47,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
             .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
-            .Configure<DailyJobOptions>(Configuration.GetSection("DailyJob"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));

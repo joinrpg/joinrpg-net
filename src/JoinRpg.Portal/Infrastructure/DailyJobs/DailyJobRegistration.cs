@@ -8,7 +8,6 @@ public static class DailyJobRegistration
 {
     public static void AddJoinDailyJob(this IJoinServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
-        services.AddOptions<DailyJobOptions>();
         services.AddDailyJobsDal(configuration, environment);
         //TODO invent way to construct every implementation of IDailyJob
         services.AddDailyJob<DoNothingMidnightJob>();
