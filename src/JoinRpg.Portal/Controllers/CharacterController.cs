@@ -50,7 +50,7 @@ public class CharacterController(
             new CharacterDetailsViewModel(currentUser,
                 character,
                 plots,
-                uriService, projectInfo));
+                projectInfo));
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]

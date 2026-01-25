@@ -20,6 +20,7 @@ public static class AccessArgumentsFactory
         return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
     }
 
+    [Obsolete("Pass projectInfo")]
     public static AccessArguments Create(Character character, int? userId)
     {
         ArgumentNullException.ThrowIfNull(character);
@@ -31,6 +32,24 @@ public static class AccessArgumentsFactory
             EditAllowed: character.Project.Active,
             Published: character.Project.Details.PublishPlot,
             CharacterPublic: character.IsPublic, IsCapitan: false);
+    }
+
+    public static AccessArguments Create(Character character, ICurrentUserAccessor user, ProjectInfo projectInfo) => Create(character, user.UserIdentificationOrDefault, projectInfo);
+
+    public static AccessArguments Create(Character character, UserIdentification? user, ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var playerIsApprovedClaim = SamePlayerId(user, UserIdentification.FromOptional(character.ApprovedClaim?.PlayerUserId));
+
+        return new AccessArguments(
+            MasterAccess: projectInfo.HasMasterAccess(user),
+            PlayerAccessToCharacter: playerIsApprovedClaim,
+            PlayerAccesToClaim: playerIsApprovedClaim,
+            EditAllowed: projectInfo.IsActive,
+            Published: projectInfo.PublishPlot,
+            CharacterPublic: character.IsPublic,
+            IsCapitan: false);
     }
 
     private static bool SamePlayerId(UserIdentification? left, UserIdentification? right)
@@ -54,12 +73,12 @@ public static class AccessArgumentsFactory
             IsCapitan: false);
     }
 
-    public static AccessArguments Create(Character character, ICurrentUserAccessor user, CharacterAccessMode mode = CharacterAccessMode.Usual)
+    public static AccessArguments Create(Character character, ICurrentUserAccessor user, ProjectInfo projectInfo, CharacterAccessMode mode = CharacterAccessMode.Usual)
     {
         ArgumentNullException.ThrowIfNull(character);
         return mode switch
         {
-            CharacterAccessMode.Usual => Create(character, user.UserIdOrDefault),
+            CharacterAccessMode.Usual => Create(character, user, projectInfo),
             CharacterAccessMode.Print => CreateForPrint(character, user.UserIdOrDefault),
             CharacterAccessMode.SendClaim => CreateForAdd(character, user.UserIdentification),
             _ => throw new NotImplementedException(),

@@ -9,7 +9,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
     protected new Character Character => base.Character!; //Character should always exists
 
     protected CharacterExistsStrategyBase(Claim? claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator, ProjectInfo projectInfo)
-        : base(claim, character, currentUserId, generator, projectInfo, AccessArgumentsFactory.Create(character, currentUserId))
+        : base(claim, character, currentUserId, generator, projectInfo, AccessArgumentsFactory.Create(character, new UserIdentification(currentUserId), projectInfo))
     {
     }
 

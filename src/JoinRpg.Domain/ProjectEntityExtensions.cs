@@ -140,7 +140,7 @@ public static class ProjectEntityExtensions
         return claim.PlayerUserId == currentUserIdOrDefault;
     }
 
-    [Obsolete("Используйте AccessArguments")]
+    //TODO добавить это в AccessArguments
     public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, Permission.CanEditRoles) && character.Project.Active;
 
     [Obsolete("Передавай сюда ProjectInfo")]
