@@ -44,11 +44,19 @@ internal class PostboxSenderJobService(
             ReplyToAddresses = [FormatAddress(sender.DisplayName.DisplayName, sender.Email.Value)],
         };
 
-        var response = await client.SendEmailAsync(request, stoppingToken);
+        try
+        {
+            var response = await client.SendEmailAsync(request, stoppingToken);
 
-        logger.LogInformation("Отправка сообщения {notificationMessage} на адрес {recipientEmail} успешна {sesMessageId}", message.MessageId, message.NotificationAddress.AsEmail(), response.MessageId);
+            logger.LogInformation("Отправка сообщения {notificationMessage} на адрес {recipientEmail} успешна {sesMessageId}", message.MessageId, message.NotificationAddress.AsEmail(), response.MessageId);
 
-        return SendingResult.Success();
+            return SendingResult.Success();
+        }
+        catch (LimitExceededException limitException)
+        {
+            logger.LogError(limitException, "Превышен лимит для отправки писем, измените настройки Postbox");
+            return SendingResult.CommonFailure();
+        }
     }
 
     internal static Body FormatBody(MarkdownString bodyString, UserDisplayName displayName)
