@@ -5,9 +5,6 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-    # https://github.com/dependabot/dependabot-core/issues/11479
-      - dependency-name: "Microsoft.NET.ILLink.Tasks"
-      - dependency-name: "Microsoft.NET.Sdk.WebAssembly.Pack"
     # https://github.com/aws/aws-sdk-net/issues/3610
       - dependency-name: "AWSSDK.S3"
     groups:
@@ -27,7 +24,6 @@ updates:
           - "patch"
       efcore:
         patterns:
-          - "Microsoft.AspNetCore.*"
           - "Microsoft.EntityFrameworkCore*"
           - "dotnet-ef"
         update-types:
