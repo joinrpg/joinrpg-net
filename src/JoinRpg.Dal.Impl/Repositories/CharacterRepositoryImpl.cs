@@ -21,11 +21,14 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
           }).ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds) => await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
-
-    public Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds)
+    public async Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
-        return GetCharacters(characterIds.First().ProjectId, [.. characterIds.EnsureSameProject().Select(c => c.CharacterId)]);
+        var characterIntIds = characterIds.EnsureSameProject().Select(c => c.CharacterId).ToList();
+        var projectId = characterIds.First().ProjectId;
+        return
+            await Ctx.Set<Character>()
+            .Include(x => x.ApprovedClaim)
+            .Where(cg => cg.ProjectId == projectId && characterIntIds.Contains(cg.CharacterId)).ToListAsync();
     }
 
     public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)

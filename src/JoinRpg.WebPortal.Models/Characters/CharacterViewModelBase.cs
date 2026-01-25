@@ -46,7 +46,7 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
 
     protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
     {
-        Fields = new CustomFieldsViewModel(field, projectInfo, AccessArgumentsFactory.Create(field, currentUserId));
+        Fields = new CustomFieldsViewModel(field, projectInfo, AccessArgumentsFactory.Create(field, new UserIdentification(currentUserId), projectInfo));
         CharactersHaveNameField = projectInfo.CharacterNameField is not null;
         AllowToSetGroups = projectInfo.AllowToSetGroups;
     }

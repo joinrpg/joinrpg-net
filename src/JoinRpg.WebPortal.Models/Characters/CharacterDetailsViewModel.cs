@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.WebComponents;
 
@@ -50,13 +49,12 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         ICurrentUserAccessor currentUserId,
         Character character,
         IReadOnlyCollection<PlotTextDto> plots,
-        IUriService uriService,
         ProjectInfo projectInfo)
     {
 
         PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserId.UserIdOrDefault);
 
-        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId.UserIdOrDefault) with { EditAllowed = false };
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId, projectInfo) with { EditAllowed = false };
 
         ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess);
         Navigation =

@@ -20,7 +20,7 @@ public class PlotDisplayViewModel
     {
         ArgumentNullException.ThrowIfNull(plots);
 
-        var accessArguments = AccessArgumentsFactory.Create(character, currentUser.UserIdOrDefault);
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUser, projectInfo);
 
         CharacterId = character.GetId();
         ShowEditControls = accessArguments.MasterAccess && accessArguments.EditAllowed;

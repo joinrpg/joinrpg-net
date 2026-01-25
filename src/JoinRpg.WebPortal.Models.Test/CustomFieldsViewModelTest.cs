@@ -1,5 +1,6 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.Access;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Characters;
 
 namespace JoinRpg.WebPortal.Models.Test;
@@ -28,7 +29,9 @@ public class CustomFieldsViewModelTest
         MockedProject.AssignFieldValues(Mock.Character,
             new FieldWithValue(Mock.PublicFieldInfo, "1"));
 
-        var vm = new CustomFieldsViewModel(character: Mock.Character, projectInfo: Mock.ProjectInfo, AccessArgumentsFactory.Create(Mock.Character, Mock.Player.UserId));
+        var vm = new CustomFieldsViewModel(character: Mock.Character, projectInfo: Mock.ProjectInfo,
+            AccessArgumentsFactory.Create(Mock.Character, new UserIdentification(Mock.Player.UserId), Mock.ProjectInfo)
+            );
 
         var publicField = vm.Field(Mock.PublicFieldInfo);
         _ = publicField.ShouldNotBeNull();
@@ -44,7 +47,7 @@ public class CustomFieldsViewModelTest
         var vm = new CustomFieldsViewModel(
             character: Mock.Character,
             projectInfo: Mock.ProjectInfo,
-            accessArguments: AccessArgumentsFactory.Create(Mock.Character, Mock.Player.UserId) with { EditAllowed = false });
+            accessArguments: AccessArgumentsFactory.Create(Mock.Character, new UserIdentification(Mock.Player.UserId), Mock.ProjectInfo) with { EditAllowed = false });
         var publicField = vm.Field(Mock.PublicFieldInfo);
         _ = publicField.ShouldNotBeNull();
         publicField.CanView.ShouldBeTrue();

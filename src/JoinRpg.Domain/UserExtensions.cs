@@ -6,6 +6,7 @@ public static class UserExtensions
 {
     public static UserIdentification GetId(this User user) => new UserIdentification(user.UserId);
 
+    [Obsolete("Это неэффективный метод, если у пользователя не загружены проекты. Лучше грузить UserInfo из репозитория")]
     public static UserInfo GetUserInfo(this User user)
     {
         var telegramId = TelegramId.FromOptional(user.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(user.Extra?.Telegram));

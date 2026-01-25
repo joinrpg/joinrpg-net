@@ -1,5 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Access;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.ClaimList;
@@ -12,7 +14,8 @@ namespace JoinRpg.Web.Models.Characters;
 public class CharacterNavigationViewModel(Character character, int? currentUserId, ProjectInfo projectInfo)
 {
     public CharacterNavigationPage Page { get; private set; }
-    public bool HasMasterAccess { get; } = character.HasMasterAccess(currentUserId);
+    private AccessArguments AccessArguments { get; } = AccessArgumentsFactory.Create(character, UserIdentification.FromOptional(currentUserId), projectInfo);
+    public bool HasMasterAccess => AccessArguments.MasterAccess;
     public bool CanEditRoles { get; } = character.HasEditRolesAccess(currentUserId);
 
     public bool CanAddClaim { get; private set; }

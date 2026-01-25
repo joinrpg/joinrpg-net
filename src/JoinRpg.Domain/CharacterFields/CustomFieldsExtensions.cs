@@ -84,6 +84,7 @@ public static class CustomFieldsExtensions
         return claim.GetFields(projectInfo).SingleOrDefault(f => f.Field.Id == id);
     }
 
+    [Obsolete]
     public static AccessArguments GetAccessArguments(
       this IFieldContainter entityWithFields,
       int userId)
