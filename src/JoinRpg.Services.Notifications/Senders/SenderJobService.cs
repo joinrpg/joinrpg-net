@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,16 +8,39 @@ using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications.Senders;
 
-internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
-    ILogger<SenderJobService<TSender>> logger,
-    IOptions<NotificationWorkerOptions> workerOptions,
-    IHostApplicationLifetime hostApplicationLifetime
-    ) : BackgroundService
+internal class SenderJobService<TSender> : BackgroundService
         where TSender : class, ISenderJob
 {
     private static readonly string JobName = typeof(TSender).FullName!;
 
-    private readonly NotificationWorkerOptions WorkerOptions = workerOptions.Value;
+    private readonly NotificationWorkerOptions WorkerOptions;
+    private readonly IServiceProvider serviceProvider;
+    private readonly ILogger<SenderJobService<TSender>> logger;
+    private readonly IHostApplicationLifetime hostApplicationLifetime;
+
+    private readonly Counter<int> numberOfIndividualFailuresCounter;
+    private readonly Counter<int> mumberOfIndividualTerminalFailuresCounter;
+    private readonly Counter<int> numberOfCommonFailuresCounter;
+    private readonly Counter<int> numberOfSuccessCounter;
+
+    public SenderJobService(IServiceProvider serviceProvider,
+        ILogger<SenderJobService<TSender>> logger,
+        IOptions<NotificationWorkerOptions> workerOptions,
+        IHostApplicationLifetime hostApplicationLifetime,
+        IMeterFactory meterFactory
+    )
+    {
+        this.serviceProvider = serviceProvider;
+        this.logger = logger;
+        this.hostApplicationLifetime = hostApplicationLifetime;
+        WorkerOptions = workerOptions.Value;
+        var meter = meterFactory.Create(JobName);
+        numberOfIndividualFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_failures");
+        mumberOfIndividualTerminalFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_terminal_failures");
+        numberOfCommonFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "common_failures");
+        numberOfSuccessCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "success");
+
+    }
 
     /// <summary>
     /// Counts the subsequent cooldowns.
@@ -132,11 +156,13 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
             catch (Exception exception)
             {
                 logger.LogError(exception, "Падение при отправке сообщения {messageId}", nextMessage.MessageId);
-                sendingResult = new SendingResult(Succeeded: false, Repeatable: true);
+                sendingResult = SendingResult.RepeatableFailure();
             }
 
             if (sendingResult.Succeeded)
             {
+
+                numberOfSuccessCounter.Add(1);
                 SuccessCounter++;
                 logger.LogInformation("Сообщение {messageId} отправлено", nextMessage.MessageId);
 
@@ -157,15 +183,29 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 SuccessCounter = 0;
                 FailureCounter++;
 
-                logger.LogWarning("Сообщение {messageId} не получилось отправить", nextMessage.MessageId);
-
-                if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
+                if (sendingResult.Common)
                 {
-                    var momentOfNextAttempt = DateTimeOffset.UtcNow.Add(GetNextAttemptDelay(nextMessage));
-                    await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt, nextMessage.Attempts + 1);
+                    numberOfCommonFailuresCounter.Add(1);
+                    logger.LogError("Произошла общая ошибка отправки при отправке сообщения {messageId}", nextMessage.MessageId);
+                    FailureCounter = WorkerOptions.MaxSubsequentFailures; // Сразу выходим в кулдаун, не ждем пока накопятся ошибки.
                 }
+                else if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
+                {
+                    numberOfIndividualFailuresCounter.Add(1);
+                    var momentOfNextAttempt = DateTimeOffset.UtcNow.Add(GetNextAttemptDelay(nextMessage));
+                    // увеличиваем общий счетчик ошибок по сообщению, если только проблема связана с ним
+                    var nextAttempt = nextMessage.Attempts + 1;
+
+                    logger.LogWarning("Сообщение {messageId} не получилось отправить, откладываем до {nextAttemptMoment}. Это будет попытка {attemptCount}", nextMessage.MessageId, momentOfNextAttempt, nextMessage.Attempts);
+                    await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt, nextAttempt);
+
+                }
+
                 else
                 {
+                    mumberOfIndividualTerminalFailuresCounter.Add(1);
+                    numberOfIndividualFailuresCounter.Add(1);
+                    logger.LogError("Сообщение {messageId} не получилось отправить, это уже {attemptCount} ошибка, помечаем как неуспешное", nextMessage.MessageId, nextMessage.Attempts);
                     await notificationRepository.MarkSendingFailed(nextMessage.MessageId, channel);
                 }
 
