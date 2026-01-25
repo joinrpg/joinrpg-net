@@ -15,7 +15,7 @@ internal class SenderJobService<TSender> : BackgroundService
 
     private readonly NotificationWorkerOptions WorkerOptions;
     private readonly IServiceProvider serviceProvider;
-    private readonly ILogger<SenderJobService<TSender>> logger;
+    private readonly ILogger<TSender> logger; // Чтобы логи писались с тем же источником, что у джобы, которую мы запускаем.
     private readonly IHostApplicationLifetime hostApplicationLifetime;
 
     private readonly Counter<int> numberOfIndividualFailuresCounter;
@@ -24,7 +24,7 @@ internal class SenderJobService<TSender> : BackgroundService
     private readonly Counter<int> numberOfSuccessCounter;
 
     public SenderJobService(IServiceProvider serviceProvider,
-        ILogger<SenderJobService<TSender>> logger,
+        ILogger<TSender> logger,
         IOptions<NotificationWorkerOptions> workerOptions,
         IHostApplicationLifetime hostApplicationLifetime,
         IMeterFactory meterFactory
