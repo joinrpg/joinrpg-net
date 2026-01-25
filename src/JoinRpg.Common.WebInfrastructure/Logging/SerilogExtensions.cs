@@ -45,7 +45,8 @@ internal static class SerilogExtensions
                 "Host", "Protocol", "Scheme", "ResponseContentType", "RequestMethod", "RequestPath",
                 "StatusCode", "Elapsed", "SourceContext", "RequestId", "ConnectionId", "EndpointName",
                 "RouteData", "ActionName", "ActionId", "ValidationState", "RazorPageHandler", "YcLevel",
-                "QueryString", "ViewComponentName", "ViewComponentId", "LoggedUser", "ProjectId", "jobName", "EventId"
+                "QueryString", "ViewComponentName", "ViewComponentId", "LoggedUser", "ProjectId", "jobName", "EventId",
+                "RemoteIpAddress",
             };
 
             loggerConfiguration.WriteTo.Console(formatter: new CustomJsonFormatter(topLevelPropertiesNames));
