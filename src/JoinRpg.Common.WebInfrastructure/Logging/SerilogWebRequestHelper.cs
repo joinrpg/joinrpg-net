@@ -14,6 +14,8 @@ internal static class SerilogWebRequestHelper
         diagnosticContext.Set("Protocol", request.Protocol);
         diagnosticContext.Set("Scheme", request.Scheme);
 
+        diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress);
+
         // Only set it if available. You're not sending sensitive data in a querystring right?!
         if (request.QueryString.HasValue)
         {
