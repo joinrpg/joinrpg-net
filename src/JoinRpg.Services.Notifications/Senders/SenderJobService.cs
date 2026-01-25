@@ -34,7 +34,7 @@ internal class SenderJobService<TSender> : BackgroundService
         this.logger = logger;
         this.hostApplicationLifetime = hostApplicationLifetime;
         WorkerOptions = workerOptions.Value;
-        var meter = meterFactory.Create(JobName);
+        var meter = meterFactory.Create("JoinRpg");
         numberOfIndividualFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_failures");
         mumberOfIndividualTerminalFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_terminal_failures");
         numberOfCommonFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "common_failures");

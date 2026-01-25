@@ -26,8 +26,8 @@ internal class NotificationsRepository : INotificationRepository
     {
         this.dbContext = dbContext;
         this.logger = logger;
-        var meter = meterFactory.Create("JoinRpg.Dal.Notifications.Repository");
-        successRaceCounter = meter.CreateCounter<int>("joinRpg.dal.notifications.repository.notifications_select_success");
+        var meter = meterFactory.Create("JoinRpg");
+        successRaceCounter = meter.CreateCounter<int>("joinrpg.dal.notifications.repository.notifications_select_success");
         executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
         lockRequestSql = BuildLockRequestSql();
