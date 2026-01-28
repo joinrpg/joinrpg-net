@@ -1,5 +1,4 @@
 using System.Diagnostics.Metrics;
-using System.Linq.Expressions;
 using JoinRpg.Dal.CommonEfCore;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
@@ -173,7 +172,7 @@ internal class NotificationsRepository : INotificationRepository
             throw new ArgumentNullException(nameof(attempts));
         }
 
-        Expression<Func<SetPropertyCalls<NotificationMessageChannel>, SetPropertyCalls<NotificationMessageChannel>>> updateExpression
+        Action<UpdateSettersBuilder<NotificationMessageChannel>> updateExpression
             = to switch
             {
                 NotificationMessageStatus.Sending => calls => calls
