@@ -13,22 +13,13 @@ updates:
           - "Microsoft.Extensions.*"
           - "System.Text.Json"
           - "System.Net.Http.Json"
-        update-types:
-          - "minor"
-          - "patch"
       aspnet:
         patterns:
           - "Microsoft.AspNetCore.*"
-        update-types:
-          - "minor"
-          - "patch"
       efcore:
         patterns:
           - "Microsoft.EntityFrameworkCore*"
           - "dotnet-ef"
-        update-types:
-          - "minor"
-          - "patch"
       xunit:
         patterns:
           - "xunit*"
