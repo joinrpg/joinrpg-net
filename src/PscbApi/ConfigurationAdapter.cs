@@ -1,14 +1,12 @@
-using JoinRpg.Dal.Impl;
-using PscbApi;
+using Microsoft.Extensions.Configuration;
 
-namespace JoinRpg.Portal.Infrastructure;
+namespace PscbApi;
 
 /// <summary>
 /// Read configuration
 /// </summary>
-public class ConfigurationAdapter(IConfiguration configuration) : IJoinDbContextConfiguration, IBankSecretsProvider
+public class ConfigurationAdapter(IConfiguration configuration) : IBankSecretsProvider
 {
-    string IJoinDbContextConfiguration.ConnectionString => configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     bool IBankSecretsProvider.Debug => configuration.GetValue<bool>("PaymentProviders:Pscb:Debug");
     bool IBankSecretsProvider.DebugOutput => configuration.GetValue<bool>("PaymentProviders:Pscb:DebugOutput");
     string IBankSecretsProvider.ApiEndpoint => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiEndpoint")!;

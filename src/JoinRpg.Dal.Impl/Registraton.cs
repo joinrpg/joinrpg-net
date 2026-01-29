@@ -3,6 +3,7 @@ using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Data.Write.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Dal.Impl;
@@ -20,7 +21,8 @@ public static class Registraton
             .AddTransient<IHotCharactersRepository, HotCharactersRepository>()
             .AddTransient<IUnifiedGridRepository, UnifiedGridRepository>()
             .AddTransient<IKogdaIgraRepository, KogdaIgraRepository>()
-            .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>();
+            .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>()
+            .AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 
         foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsAssignableTo(typeof(RepositoryImplBase)) && !t.IsAbstract))
         {
@@ -28,4 +30,10 @@ public static class Registraton
         }
         return services;
     }
+}
+
+internal class ConfigurationAdapter(IConfiguration configuration) : Dal.Impl.IJoinDbContextConfiguration
+{
+    public string ConnectionString => configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 }

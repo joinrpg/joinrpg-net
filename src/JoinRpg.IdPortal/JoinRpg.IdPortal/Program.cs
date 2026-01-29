@@ -1,8 +1,8 @@
+using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Dal.Impl;
-using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
 using JoinRpg.IdPortal.Components.Account;
 using JoinRpg.Interfaces;
@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseJoinSerilog("JoinRpg.IdPortal");
 
-
+builder.Services.AddJoinOpenTelemetry("JoinRpg.IdPortal");
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
@@ -28,8 +28,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 builder.Services.AddJoinDal();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 
 builder.Services
     .Configure<JoinRpgHostNamesOptions>(builder.Configuration.GetSection("JoinRpgHostNames"))

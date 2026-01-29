@@ -1,25 +1,24 @@
 using System.Reflection;
-using JoinRpg.Portal.Infrastructure.DailyJobs;
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace JoinRpg.Portal.Infrastructure;
+namespace JoinRpg.Common.WebInfrastructure;
 
 public static class OpenTelemetryRegistration
 {
-    public static void AddJoinOpenTelemetry(this IServiceCollection services)
+    public static void AddJoinOpenTelemetry(this IServiceCollection services, string serviceName, params IEnumerable<string> sourceNames)
     {
-        const string serviceName = "JoinRpg";
         _ = services.AddOpenTelemetry()
-            .ConfigureResource(builder =>
-            {
-
-                builder.AddService(serviceName: serviceName, serviceVersion: Assembly.GetEntryAssembly()!.GetName().Version?.ToString());
-            })
+            .ConfigureResource(builder
+            => builder.AddService(serviceName: serviceName, serviceVersion: Assembly.GetEntryAssembly()!.GetName().Version?.ToString()))
             .WithTracing(tracing =>
             {
-                tracing.AddSource(BackgroundServiceActivity.ActivitySourceName);
+                foreach (var sourceName in sourceNames)
+                {
+                    tracing.AddSource(sourceName);
+                }
                 tracing
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation();

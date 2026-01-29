@@ -1,5 +1,4 @@
 using JoinRpg.Helpers;
-using Microsoft.AspNetCore.Http;
 
 namespace Joinrpg.AspNetCore.Helpers;
 
