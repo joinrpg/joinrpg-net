@@ -34,8 +34,8 @@ public class KogdaIgraGame
 
     public string RegionName { get; set; } = "";
 
-    public DateTime Begin { get; set; }
-    public DateTime End { get; set; }
+    public DateTime? Begin { get; set; }
+    public DateTime? End { get; set; }
     public string MasterGroupName { get; set; }
     public string? SiteUri { get; set; }
 
