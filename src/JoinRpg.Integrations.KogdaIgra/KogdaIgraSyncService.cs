@@ -152,7 +152,7 @@ internal class KogdaIgraSyncService(
 
     private static KogdaIgraGameData? TryConvert(KogdaIgraGame g)
     {
-        if (g.LastUpdatedAt is null)
+        if (g.LastUpdatedAt is null || g.Begin is null || g.End is null)
         {
             return null;
         }
@@ -160,8 +160,8 @@ internal class KogdaIgraSyncService(
                     g.KogdaIgraGameId,
                     g.Name,
                     g.LastUpdatedAt.Value,
-                    DateOnly.FromDateTime(g.Begin.Date),
-                    DateOnly.FromDateTime(g.End.Date),
+                    DateOnly.FromDateTime(g.Begin.Value.Date),
+                    DateOnly.FromDateTime(g.End.Value.Date),
                     g.RegionName,
                     g.MasterGroupName,
                     Uri.TryCreate(g.SiteUri, UriKind.Absolute, out var u) ? u : null,
