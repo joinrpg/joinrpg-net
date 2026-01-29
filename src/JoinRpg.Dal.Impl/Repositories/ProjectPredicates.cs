@@ -43,7 +43,7 @@ internal static class ProjectPredicates
             ProjectListCriteria.MasterOrActiveClaim when userInfoId is not null => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userInfoId)).Or(MasterAccess(userInfoId))),
             ProjectListCriteria.ForCloning when userInfoId is not null => predicate.And(ForCloning(userInfoId)),
             ProjectListCriteria.HasSchedule => predicate.And(project => project.Details.ScheduleEnabled),
-            ProjectListCriteria.NoKogdaIgra => predicate.And(project => project.KogdaIgraGames.Count == 0),
+            ProjectListCriteria.KogdaIgraMissing => predicate.And(project => project.KogdaIgraGames.Count == 0).And(project => !project.Details.DisableKogdaIgraMapping),
             ProjectListCriteria.MasterGrantAccess when userInfoId is not null => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId.Value && projectAcl.CanGrantRights)),
             _ => throw new NotImplementedException(),
         };

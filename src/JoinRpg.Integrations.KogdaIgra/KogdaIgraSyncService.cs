@@ -133,15 +133,20 @@ internal class KogdaIgraSyncService(
         logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);
     }
 
-    public async Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications)
+    public async Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications, bool DisableKogdaIgraMapping)
     {
         if (!currentUserAccessor.IsAdmin)
         {
             throw new MustBeAdminException();
         }
+        if (DisableKogdaIgraMapping)
+        {
+            kogdaIgraIdentifications = [];
+        }
         var project = await unitOfWork.GetProjectRepository().GetProjectAsync(projectId);
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(kogdaIgraIdentifications);
         project.KogdaIgraGames.AssignLinksList(games);
+        project.Details.DisableKogdaIgraMapping = DisableKogdaIgraMapping;
         await unitOfWork.SaveChangesAsync();
     }
 

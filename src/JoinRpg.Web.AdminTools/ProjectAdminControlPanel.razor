@@ -12,17 +12,23 @@
 
 @if (model is not null)
 {
-  <JoinPanel>
-    <Header>Привязка к КогдаИгре</Header>
-    <Body>
-          <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args)" />
-           <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
-            <FormRowFor For="@(() => model.KogdaIgraIds)">
-              <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" />
-            </FormRowFor>
-           </JoinFormDialog>
-    </Body>
-  </JoinPanel>
+    <JoinPanel>
+        <Header>Привязка к КогдаИгре</Header>
+        <Body>
+            <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args)" />
+            <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
+                <FormRowFor For="@(() => model.DisableKogdaIgraMapping)">
+                    <CheckboxInput @bind-Value="model.DisableKogdaIgraMapping" />
+                </FormRowFor>
+                @if (!model.DisableKogdaIgraMapping)
+                {
+                    <FormRowFor For="@(() => model.KogdaIgraIds)">
+                        <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" />
+                    </FormRowFor>
+                }
+            </JoinFormDialog>
+        </Body>
+    </JoinPanel>
 }
 
 @* TODO Добавить сюда кнопки поставить доступ и закрыть проект *@
@@ -38,7 +44,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        model = new BindToKiModel { JoinProject = new ProjectLinkViewModel(Model.ProjectId, Model.ProjectName), KogdaIgraIds = Model.KogdaIgraLinkedIds };
+        model = new BindToKiModel { JoinProject = new ProjectLinkViewModel(Model.ProjectId, Model.ProjectName), KogdaIgraIds = Model.KogdaIgraLinkedIds, DisableKogdaIgraMapping = Model.DisableKogdaIgraMapping };
         await base.OnParametersSetAsync();
     }
 
@@ -49,7 +55,7 @@
             var result = await dialog.ShowModalAsync();
             if (result is not null)
             {
-                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(Model.ProjectId, result.KogdaIgraIds));
+                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(Model.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
                 NavigationManager.Refresh(forceReload: true);
             }
         }
@@ -64,6 +70,10 @@
         [Required]
         [Display(Name = "Игры на КИ")]
         public required KogdaIgraIdentification[] KogdaIgraIds { get; set; }
+
+
+        [Display(Name = "Не привязывать к КогдаИгре")]
+        public required bool DisableKogdaIgraMapping { get; set; }
 
         [ReadOnly(true)]
         public required ProjectLinkViewModel JoinProject { get; set; }

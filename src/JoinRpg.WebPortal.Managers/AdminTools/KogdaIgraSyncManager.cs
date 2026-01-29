@@ -65,6 +65,6 @@ internal class KogdaIgraSyncManager(
 
     public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
     {
-        await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications);
+        await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications, command.DisableKogdaIgraMapping);
     }
 }

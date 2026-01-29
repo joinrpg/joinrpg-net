@@ -12,6 +12,6 @@
 
 @if (currentUserAccessor.IsAdmin)
 {
-    var link = new ProjectAdminControlViewModel(Model.ProjectId, Model.ProjectName, [.. Model.KogdaIgras.Select(x => x.KogdaIgraId)]);
+    var link = new ProjectAdminControlViewModel(Model.ProjectId, Model.ProjectName, [.. Model.KogdaIgras.Select(x => x.KogdaIgraId)], Model.DisableKogdaIgraMapping);
     <component type="typeof(ProjectAdminControlPanel)" render-mode="WebAssembly" param-Model="@link" />
 }
