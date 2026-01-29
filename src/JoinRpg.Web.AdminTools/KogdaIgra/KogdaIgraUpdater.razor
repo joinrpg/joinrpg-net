@@ -53,17 +53,24 @@
     [Parameter]
     public SyncStatusViewModel? InitialModel { get; set; }
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         model = InitialModel ?? await Client.GetSyncStatus();
+        NotUpdated = await Client.GetKogdaIgraNotUpdated();
     }
 
-    private async Task OnSyncClicked()
+    private async Task OnSyncClicked(ButtonClickEventArgs args)
     {
-        NotUpdated = null;
-        resyncResult = await Client.ResyncKograIgra();
-        model = resyncResult.SyncStatus;
-        NotUpdated = await Client.GetKogdaIgraNotUpdated();
+        try {
+            NotUpdated = null;
+            resyncResult = await Client.ResyncKograIgra();
+            model = resyncResult.SyncStatus;
+            NotUpdated = await Client.GetKogdaIgraNotUpdated();
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
     }
 
 }

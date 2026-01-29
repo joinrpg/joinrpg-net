@@ -17,8 +17,5 @@
   <ItemGroup>
     <None Include="README.MD" Pack="true" PackagePath="\"/>
   </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="JoinRpg.Integrations.KogdaIgra" /> <!-- Надо отвязать хранение в БД от наших типов-->
-  </ItemGroup>
 
 </Project>
