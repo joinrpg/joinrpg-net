@@ -6,7 +6,7 @@ namespace JoinRpg.Integrations.KogdaIgra;
 
 public static class Registration
 {
-    public static void AddKogdaIgra(this IJoinServiceCollection services)
+    public static IJoinServiceCollection AddKogdaIgra(this IJoinServiceCollection services)
     {
         services.AddKogdaIgraClient();
 
@@ -16,5 +16,6 @@ public static class Registration
             .AddTransient<IKogdaIgraInfoService, KogdaIgraSyncService>()
             ;
         services.AddDailyJob<SyncKogdaIgraJob>();
+        return services;
     }
 }

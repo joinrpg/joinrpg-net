@@ -2,6 +2,7 @@
   <PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Common.BastiliaRatingClient\JoinRpg.Common.BastiliaRatingClient.csproj" />
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />

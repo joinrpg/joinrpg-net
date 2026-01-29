@@ -46,6 +46,7 @@ public static class Services
             services
             .AddDailyJob<DailyChangedPlayerClaimsNotificationJob>()
             .AddDailyJob<ProjectPerformCloseJob>()
+            .AddDailyJob<BastiliaGamesSyncDailyJob>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddSingleton<IVirtualUsersService, VirtualUsersService>()

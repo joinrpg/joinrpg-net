@@ -4,18 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.0.2-alpha</Version>
-    <Deterministic>true</Deterministic>
-    <PackageReadmeFile>README.MD</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="README.MD" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
