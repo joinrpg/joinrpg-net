@@ -2,6 +2,7 @@ using System.Globalization;
 using Autofac;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.BlobStorage;
+using JoinRpg.Common.BastiliaRatingClient;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Common.Telegram;
@@ -46,14 +47,19 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
+            .Configure<JoinRpgHostNamesOptions>(Configuration.GetSection("JoinRpgHostNames"))
             .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
 
         services.AddOptions<PostboxOptions>().BindConfiguration("Postbox");
+        services.AddOptions<BastiliaRatingOptions>().BindConfiguration("BastiliaRating");
 
-        services.AddKogdaIgra();
+        services
+            .AddKogdaIgra()
+            .AddBastiliaRatingClient()
+            ;
 
         _ = services.AddRouting(options => options.LowercaseUrls = true);
         var mvc = services

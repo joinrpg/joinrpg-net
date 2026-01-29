@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Common/">
+    <Project Path="src/JoinRpg.Common.BastiliaRatingClient/JoinRpg.Common.BastiliaRatingClient.csproj" Id="6a466ef2-b96b-473f-95df-04c08b04cae8" />
     <Project Path="src/JoinRpg.Common.EmailSending.Impl/JoinRpg.Common.EmailSending.Impl.csproj" />
     <Project Path="src/JoinRpg.Common.KogdaIgraClient/JoinRpg.Common.KogdaIgraClient.csproj" Id="881e9784-9199-4f85-b173-9e91a15403e2" />
     <Project Path="src/JoinRpg.Common.Telegram/JoinRpg.Common.Telegram.csproj" />
