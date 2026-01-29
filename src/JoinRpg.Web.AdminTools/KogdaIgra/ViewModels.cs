@@ -8,7 +8,8 @@ public record class JoinRpgSyncCandidateViewModel(
 
 public record class KogdaIgraBindViewModel(
     ProjectIdentification ProjectId,
-    KogdaIgraIdentification[] KogdaIgraIdentifications);
+    KogdaIgraIdentification[] KogdaIgraIdentifications,
+    bool DisableKogdaIgraMapping);
 
 public record class KogdaIgraShortViewModel(KogdaIgraIdentification KogdaIgraId, string Name, Uri KogdaIgraLink);
 

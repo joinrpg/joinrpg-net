@@ -7,7 +7,7 @@
 @inject IProjectListClient ProjectListClient
 @inject IKogdaIgraBindClient BindClient
 
-<KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus"/>
+<KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus" />
 
 @if (JoinCandidates is null)
 {
@@ -19,20 +19,26 @@ else if (JoinCandidates.Count == 0)
 }
 else
 {
-  <JoinPanelWithList Items="JoinCandidates">
-    <Header>Игры без привязки</Header>
-      <ItemTemplate>
+    <JoinPanelWithList Items="JoinCandidates">
+        <Header>Игры без привязки</Header>
+        <ItemTemplate>
             <ProjectLink Model="context" />
             <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args, context)" />
-  </ItemTemplate>
-  </JoinPanelWithList>
+        </ItemTemplate>
+    </JoinPanelWithList>
 
-  <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
+    <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
         @model.JoinProject.ProjectName
-    <FormRowFor For="@(() => model.KogdaIgraIds)">
-            <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" InitialList="KogdaIgraCandidates" />
-    </FormRowFor>
-  </JoinFormDialog>
+        <FormRowFor For="@(() => model.DisableKogdaIgraMapping)">
+            <CheckboxInput @bind-Value="model.DisableKogdaIgraMapping" />
+        </FormRowFor>
+        @if (!model.DisableKogdaIgraMapping)
+        {
+            <FormRowFor For="@(() => model.KogdaIgraIds)">
+                <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" InitialList="KogdaIgraCandidates" />
+            </FormRowFor>
+        }
+    </JoinFormDialog>
 }
 
 @code {
@@ -54,7 +60,7 @@ else
         JoinCandidatesFull = JoinCandidatesFull.Except(JoinCandidates).ToList();
         if (JoinCandidates.Count > 0)
         {
-            model = new BindToKiModel { JoinProject = JoinCandidates.First(), KogdaIgraIds = [] };
+            model = new BindToKiModel { JoinProject = JoinCandidates.First(), KogdaIgraIds = [], DisableKogdaIgraMapping = false };
         }
         KogdaIgraCandidates = await KogdaIgraClient.GetKogdaIgraCandidates();
         await base.OnParametersSetAsync();
@@ -64,11 +70,11 @@ else
     {
         try
         {
-            model = new BindToKiModel { JoinProject = project, KogdaIgraIds = [] };
+            model = new BindToKiModel { JoinProject = project, KogdaIgraIds = [], DisableKogdaIgraMapping = false };
             var result = await dialog.ShowModalAsync();
             if (result is not null)
             {
-                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, result.KogdaIgraIds));
+                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
                 JoinCandidates!.Remove(project);
                 if (JoinCandidatesFull!.Count > 0)
                 {
@@ -76,7 +82,7 @@ else
                     JoinCandidatesFull.RemoveAt(0);
                 }
             }
-            
+
         }
         finally
         {
@@ -89,6 +95,9 @@ else
         [Required]
         [Display(Name = "Игры на КИ")]
         public required KogdaIgraIdentification[] KogdaIgraIds { get; set; }
+
+        [Display(Name = "Не привязывать к КогдаИгре")]
+        public required bool DisableKogdaIgraMapping { get; set; }
 
         [ReadOnly(true)]
         public required ProjectLinkViewModel JoinProject { get; set; }

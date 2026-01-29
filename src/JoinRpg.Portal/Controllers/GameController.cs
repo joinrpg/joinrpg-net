@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
@@ -17,21 +18,22 @@ using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebPortal.Managers.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
 
 public class GameController(
     IProjectService projectService,
     IProjectRepository projectRepository,
-    IProjectMetadataRepository projectMetadataRepository
-    ) : Common.ControllerGameBase(projectRepository, projectService)
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor
+    ) : JoinControllerGameBase
 {
     [HttpGet("{projectId}/home")]
     [AllowAnonymous]
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
     public async Task<IActionResult> Details(ProjectIdentification projectId,
         [FromServices] IClaimsRepository claimsRepository,
-        [FromServices] ICurrentUserAccessor currentUserAccessor,
         [FromServices] IKogdaIgraSyncClient kiClient,
         [FromServices] ICaptainRulesRepository captainRulesRepository)
     {
@@ -49,11 +51,11 @@ public class GameController(
         {
             var claims = await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId);
             var captainAccess = await captainRulesRepository.GetCaptainRules(projectId, userId);
-            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, captainAccess));
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, details.DisableKogdaIgraMapping, captainAccess));
         }
         else
         {
-            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, []));
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, details.DisableKogdaIgraMapping, []));
         }
 
 
@@ -69,7 +71,7 @@ public class GameController(
     [MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<IActionResult> Edit(int projectId)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = await projectRepository.GetProjectAsync(projectId);
         return View(new EditProjectViewModel
         {
             ClaimApplyRules = project.Details.ClaimApplyRules?.Contents ?? "",
@@ -90,11 +92,11 @@ public class GameController(
     [MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
     {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
         try
         {
             await
-                ProjectService.EditProject(new EditProjectRequest
+                projectService.EditProject(new EditProjectRequest
                 {
                     ProjectId = new(viewModel.ProjectId),
                     ClaimApplyRules = viewModel.ClaimApplyRules,
@@ -118,11 +120,10 @@ public class GameController(
 
     [HttpGet("/{projectId}/close")]
     [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
-    public async Task<IActionResult> Close(int projectid)
+    public async Task<IActionResult> Close(ProjectIdentification projectid)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectid);
-        var isMaster =
-            project.HasMasterAccess(CurrentUserId, Permission.CanChangeProjectProperties);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectid);
+        var isMaster = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties);
         return View(new CloseProjectViewModel()
         {
             OriginalName = project.ProjectName,
@@ -141,19 +142,19 @@ public class GameController(
             return View(viewModel);
         }
 
+        ProjectIdentification projectId = new(viewModel.ProjectId);
+
         try
         {
-            ProjectIdentification projectId = new(viewModel.ProjectId);
-            await ProjectService.CloseProject(projectId, viewModel.PublishPlot);
-            return await RedirectToProject(viewModel.ProjectId);
+            await projectService.CloseProject(projectId, viewModel.PublishPlot);
+            return RedirectToAction("Details", new { viewModel.ProjectId });
         }
         catch (Exception ex)
         {
             ModelState.AddException(ex);
-            var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+            var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             viewModel.OriginalName = project.ProjectName;
-            viewModel.IsMaster =
-                project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+            viewModel.IsMaster = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties);
             return View(viewModel);
         }
     }

@@ -7,11 +7,12 @@ namespace JoinRpg.Portal.Test;
 
 public class RoutingTests
 {
-    [Theory]
+    [SkippableTheory]
     [ClassData(typeof(ControllerDataSource))]
 
     public void GameControllersShouldHaveProjectIdInRoute(TypeInfo controllerType)
     {
+        Skip.If(controllerType == typeof(GameController)); //This is special controller, we need to refactor it
         var routeAttribute = controllerType.GetCustomAttribute<RouteAttribute>();
         _ = routeAttribute.ShouldNotBeNull();
         routeAttribute.Template.ShouldStartWith("{projectId}");
@@ -21,8 +22,6 @@ public class RoutingTests
     [ClassData(typeof(LegacyControllerDataSource))]
     public void LegacyGameControllersShouldHaveProjectIdInRoute(TypeInfo controllerType)
     {
-        Skip.If(controllerType == typeof(GameController)); //This is special controller, we need to refactor it
-
         var routeAttribute = controllerType.GetCustomAttribute<RouteAttribute>();
         _ = routeAttribute.ShouldNotBeNull();
         routeAttribute.Template.ShouldStartWith("{projectId}");

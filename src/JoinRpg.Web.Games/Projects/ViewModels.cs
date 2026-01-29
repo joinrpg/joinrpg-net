@@ -30,7 +30,10 @@ public record class KogdaIgraCardViewModel(
     string MasterGroupName, Uri? SiteUri);
 
 [method: JsonConstructor]
-public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims, IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras, IReadOnlyCollection<CaptainAccessRule> captainAccessRules)
+public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims,
+    IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras,
+    bool disableKogdaIgraMapping,
+    IReadOnlyCollection<CaptainAccessRule> captainAccessRules)
 {
     public ProjectLifecycleStatus Status { get; set; } = project.ProjectStatus;
     public ProjectIdentification ProjectId { get; } = project.ProjectId;
@@ -52,6 +55,8 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public string Title => "Игра «" + ProjectName + "»";
 
     public IReadOnlyCollection<KogdaIgraCardViewModel> KogdaIgras { get; set; } = kogdaIgras;
+
+    public bool DisableKogdaIgraMapping { get; set; } = disableKogdaIgraMapping;
 }
 
 public record class ProjectListItemViewModel(ProjectShortInfo p) : ProjectLinkViewModel(p.ProjectId, p.ProjectName)

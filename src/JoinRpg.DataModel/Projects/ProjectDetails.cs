@@ -52,6 +52,8 @@ public class ProjectDetails : IValidatableObject
 
     public Project? ClonedFromProject { get; set; }
 
+    public bool DisableKogdaIgraMapping { get; set; }
+
     public ProjectCloneSettings ProjectCloneSettings { get; set; } = ProjectCloneSettings.CanBeClonedByMaster;
 
     public MandatoryStatus RequireRealName { get; set; } = MandatoryStatus.Optional;

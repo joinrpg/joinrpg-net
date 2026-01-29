@@ -8,7 +8,7 @@ public interface IKogdaIgraSyncService
 
 public interface IKogdaIgraBindService
 {
-    Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications);
+    Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications, bool DisableKogdaIgraMapping);
 }
 
 public interface IKogdaIgraInfoService
