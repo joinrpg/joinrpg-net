@@ -8,39 +8,21 @@ using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Notifications.Senders;
 
-internal class SenderJobService<TSender> : BackgroundService
+internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
+    ILogger<TSender> logger, // Чтобы логи писались с тем же контекстом, что и изнутри джобы
+    IOptions<NotificationWorkerOptions> workerOptions,
+    IHostApplicationLifetime hostApplicationLifetime
+    ) : BackgroundService
         where TSender : class, ISenderJob
 {
     private static readonly string JobName = typeof(TSender).FullName!;
 
-    private readonly NotificationWorkerOptions WorkerOptions;
-    private readonly IServiceProvider serviceProvider;
-    private readonly ILogger<TSender> logger; // Чтобы логи писались с тем же источником, что у джобы, которую мы запускаем.
-    private readonly IHostApplicationLifetime hostApplicationLifetime;
-
-    private readonly Counter<int> numberOfIndividualFailuresCounter;
-    private readonly Counter<int> mumberOfIndividualTerminalFailuresCounter;
-    private readonly Counter<int> numberOfCommonFailuresCounter;
-    private readonly Counter<int> numberOfSuccessCounter;
-
-    public SenderJobService(IServiceProvider serviceProvider,
-        ILogger<TSender> logger,
-        IOptions<NotificationWorkerOptions> workerOptions,
-        IHostApplicationLifetime hostApplicationLifetime,
-        IMeterFactory meterFactory
-    )
-    {
-        this.serviceProvider = serviceProvider;
-        this.logger = logger;
-        this.hostApplicationLifetime = hostApplicationLifetime;
-        WorkerOptions = workerOptions.Value;
-        var meter = meterFactory.Create("JoinRpg");
-        numberOfIndividualFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_failures");
-        mumberOfIndividualTerminalFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_terminal_failures");
-        numberOfCommonFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "common_failures");
-        numberOfSuccessCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "success");
-
-    }
+    private readonly NotificationWorkerOptions WorkerOptions = workerOptions.Value;
+    private static readonly Meter meter = new("JoinRpg");
+    private static readonly Counter<int> numberOfIndividualFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_failures");
+    private static readonly Counter<int> mumberOfIndividualTerminalFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "indvidual_terminal_failures");
+    private static readonly Counter<int> numberOfCommonFailuresCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "common_failures");
+    private static readonly Counter<int> numberOfSuccessCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "success");
 
     /// <summary>
     /// Counts the subsequent cooldowns.

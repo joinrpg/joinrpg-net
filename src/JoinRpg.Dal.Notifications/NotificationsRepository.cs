@@ -8,31 +8,19 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace JoinRpg.Dal.Notifications;
 
-internal class NotificationsRepository : INotificationRepository
+internal class NotificationsRepository(
+    NotificationsDataDbContext dbContext,
+    ILogger<NotificationsRepository> logger
+        ) : INotificationRepository
 {
-    private readonly Counter<int> successRaceCounter;
-    private readonly NotificationsDataDbContext dbContext;
-    private readonly ILogger<NotificationsRepository> logger;
-    private readonly IExecutionStrategy executionStrategy;
+    private readonly IExecutionStrategy executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
-    private readonly string lockRequestSql;
+    private readonly string lockRequestSql = BuildLockRequestSql(dbContext);
 
-    public NotificationsRepository(
-        NotificationsDataDbContext dbContext,
-        IMeterFactory meterFactory,
-        ILogger<NotificationsRepository> logger
-        )
-    {
-        this.dbContext = dbContext;
-        this.logger = logger;
-        var meter = meterFactory.Create("JoinRpg");
-        successRaceCounter = meter.CreateCounter<int>("joinrpg.dal.notifications.repository.notifications_select_success");
-        executionStrategy = dbContext.Database.CreateExecutionStrategy();
+    private static readonly Meter meter = new("JoinRpg");
+    private static readonly Counter<int> successRaceCounter = meter.CreateCounter<int>("joinrpg.dal.notifications.repository.notifications_select_success");
 
-        lockRequestSql = BuildLockRequestSql();
-    }
-
-    private string BuildLockRequestSql()
+    private static string BuildLockRequestSql(NotificationsDataDbContext dbContext)
     {
         var channelsTableName = dbContext.NotificationMessageChannels.EntityType.GetTableName();
         var channelStatusPropName = dbContext.NotificationMessageChannels.EntityType
