@@ -1,3 +1,4 @@
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;

@@ -1,21 +1,34 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JoinRpg.Integrations.KogdaIgra;
+namespace JoinRpg.Common.KogdaIgraClient;
 
 internal static class ResultParser
 {
-    private static JsonSerializerOptions serializerOptions = new() { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+    private static readonly JsonSerializerOptions serializerOptions = new() { NumberHandling = JsonNumberHandling.AllowReadingFromString };
     internal static KogdaIgraGameUpdateMarker[] ParseGameUpdateMarkers(string strResult)
     {
         var deserializeResult = JsonSerializer.Deserialize<kogda_igra_game_marker[]>(strResult) ?? throw new Exception("Failed to parse JSON");
-        return deserializeResult.Select(x => x.ToMarker()).WhereNotNull().ToArray();
+        return [.. deserializeResult.Select(x => x.ToMarker()).WhereNotNull()];
     }
 
     internal static KogdaIgraGameInfo? TryParseGameInfo(string strResult)
     {
         var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions) ?? throw new Exception("Failed to parse result");
         if (parsedResult.id is 0 || parsedResult.time is 0)
+        {
+            return null;
+        }
+        Uri? siteUri;
+        if (string.IsNullOrWhiteSpace(parsedResult.uri))
+        {
+            siteUri = null;
+        }
+        else if (!Uri.TryCreate(parsedResult.uri, UriKind.Absolute, out siteUri))
+        {
+            return null;
+        }
+        if (siteUri is not null && siteUri.Scheme != "http" && siteUri.Scheme != "https")
         {
             return null;
         }
@@ -28,7 +41,7 @@ internal static class ResultParser
             parsedResult.begin.AddDays(parsedResult.time - 1),
             parsedResult.sub_region_disp_name,
             parsedResult.mg,
-            parsedResult.uri);
+            siteUri);
         return ret;
     }
 

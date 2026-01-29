@@ -1,3 +1,4 @@
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
@@ -8,7 +9,7 @@ internal static class ViewModelBuilders
 {
     public static SyncStatusViewModel ToViewModel(this SyncStatus status) => new(status.CountOfGames, status.LastUpdated, status.PendingGamesCount);
 
-    public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGameInfo game, KogdaIgraOptions options)
+    public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGameData game, KogdaIgraOptions options)
     {
         return new KogdaIgraCardViewModel(
             new(game.Id),
@@ -18,7 +19,7 @@ internal static class ViewModelBuilders
             End: game.End,
             RegionName: game.RegionName,
             MasterGroupName: game.MasterGroupName,
-            SiteUri: string.IsNullOrWhiteSpace(game.SiteUri) ? null : new Uri(game.SiteUri)
+            SiteUri: game.SiteUri
             );
     }
 }

@@ -29,9 +29,8 @@
     </PropertyGroup>
     <!--
     this instruction automatically allows XXX.Tests to access internals of XXX.
-    Signed assemblies have to add friends manually because of public key requirement.
   -->
-    <ItemGroup Condition=" '$(SignAssembly)' != 'True'">
+    <ItemGroup>
       <InternalsVisibleTo Include="$(AssemblyName).Test" />
       <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>

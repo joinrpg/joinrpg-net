@@ -1,6 +1,6 @@
-namespace JoinRpg.Integrations.KogdaIgra;
+namespace JoinRpg.Common.KogdaIgraClient;
 
-public class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
+internal class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
 {
     private static readonly TimeZoneInfo mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
     public async Task<KogdaIgraGameUpdateMarker[]> GetChangedGamesSince(DateTimeOffset since)
