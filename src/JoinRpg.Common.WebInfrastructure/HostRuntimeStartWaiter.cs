@@ -1,7 +1,5 @@
-using Microsoft.Extensions.Hosting;
+namespace JoinRpg.Common.WebInfrastructure;
 
-namespace JoinRpg.Services.Notifications.Senders;
-// Не самое правильное место для этого, перенести
 public static class HostRuntimeStartWaiter
 {
     //https://andrewlock.net/finding-the-urls-of-an-aspnetcore-app-from-a-hosted-service-in-dotnet-6/
@@ -13,9 +11,7 @@ public static class HostRuntimeStartWaiter
         using var reg1 = lifetime.ApplicationStarted.Register(startedSource.SetResult);
         using var reg2 = stoppingToken.Register(cancelledSource.SetResult);
 
-        Task completedTask = await Task.WhenAny(
-            startedSource.Task,
-            cancelledSource.Task).ConfigureAwait(false);
+        _ = await Task.WhenAny(startedSource.Task, cancelledSource.Task);
 
         stoppingToken.ThrowIfCancellationRequested();
     }

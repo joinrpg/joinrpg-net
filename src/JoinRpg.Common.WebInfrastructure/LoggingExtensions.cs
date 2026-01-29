@@ -1,7 +1,5 @@
 using JoinRpg.Common.WebInfrastructure.Logging;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace JoinRpg.Common.WebInfrastructure;

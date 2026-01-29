@@ -6,6 +6,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.WebPortal.Managers.Projects;
 using Microsoft.AspNetCore.Authorization;
+using PscbApi;
 using CurrentProjectAccessor = JoinRpg.Portal.Infrastructure.CurrentProjectAccessor;
 
 namespace JoinRpg.Portal;

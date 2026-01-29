@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Joinrpg.Web.Identity;
+namespace Joinrpg.AspNetCore.Helpers;
 
 public static class ForwardedHeadersExtensions
 {
-
     public static IServiceCollection ConfigureForwardedHeaders(this IServiceCollection services)
     {
         return services.Configure<ForwardedHeadersOptions>(options =>

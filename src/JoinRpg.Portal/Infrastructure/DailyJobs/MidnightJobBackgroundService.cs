@@ -1,7 +1,7 @@
 using System.Reflection;
+using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Interfaces;
-using JoinRpg.Services.Notifications.Senders; // Не самое правильное место для этого, перенести
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 

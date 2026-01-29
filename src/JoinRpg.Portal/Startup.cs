@@ -1,6 +1,6 @@
 using System.Globalization;
 using Autofac;
-using Joinrpg.Web.Identity;
+using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Common.Telegram;
@@ -39,7 +39,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
     public void ConfigureServices(IJoinServiceCollection services)
     {
-        services.AddJoinOpenTelemetry();
+        services.AddJoinOpenTelemetry("JoinRpg", BackgroundServiceActivity.ActivitySourceName);
 
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
             .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))

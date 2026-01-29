@@ -75,7 +75,6 @@
     <Project Path="src/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
     <Project Path="src/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
   </Folder>
-  <Project Path="src/Joinrpg.AspNetCore.Helpers/Joinrpg.AspNetCore.Helpers.csproj" />
   <Project Path="src/JoinRpg.BlobStorage/JoinRpg.BlobStorage.csproj" />
   <Project Path="src/JoinRpg.CommonUI.Models/JoinRpg.CommonUI.Models.csproj" />
   <Project Path="src/JoinRpg.DataModel/JoinRpg.DataModel.csproj" />
