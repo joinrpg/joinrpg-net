@@ -1,3 +1,4 @@
+using JoinRpg.DataModel.Projects;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
@@ -36,6 +37,8 @@ internal static class ProjectPredicates
             predicate = predicate.And(p => p.Active);
         }
 
+        Expression<Func<KogdaIgraGame, bool>> kogdaIgraStaleExpression = KogdaIgraIsStaleFor(TimeSpan.FromDays(60));
+
         predicate = projectListSpecification.Criteria switch
         {
             ProjectListCriteria.All => predicate.And(p => true),
@@ -43,11 +46,18 @@ internal static class ProjectPredicates
             ProjectListCriteria.MasterOrActiveClaim when userInfoId is not null => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userInfoId)).Or(MasterAccess(userInfoId))),
             ProjectListCriteria.ForCloning when userInfoId is not null => predicate.And(ForCloning(userInfoId)),
             ProjectListCriteria.HasSchedule => predicate.And(project => project.Details.ScheduleEnabled),
-            ProjectListCriteria.KogdaIgraMissing => predicate.And(project => project.KogdaIgraGames.Count == 0).And(project => !project.Details.DisableKogdaIgraMapping),
+            ProjectListCriteria.KogdaIgraMissing
+            => predicate.And(project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression.Invoke(e)) == 0).And(project => !project.Details.DisableKogdaIgraMapping),
             ProjectListCriteria.MasterGrantAccess when userInfoId is not null => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId.Value && projectAcl.CanGrantRights)),
             _ => throw new NotImplementedException(),
         };
         return predicate;
+    }
+
+    private static Expression<Func<KogdaIgraGame, bool>> KogdaIgraIsStaleFor(TimeSpan timeSpan)
+    {
+        var date = DateTime.Now.Subtract(timeSpan);
+        return e => e.End > date;
     }
 
     private static Expression<Func<Project, bool>> ForCloning(UserIdentification userInfoId)

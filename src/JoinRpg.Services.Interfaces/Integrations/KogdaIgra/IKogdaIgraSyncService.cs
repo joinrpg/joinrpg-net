@@ -27,4 +27,4 @@ public record class KogdaIgraGameData(
     string RegionName,
     string MasterGroupName,
     Uri? SiteUri
-    );
+, bool IsActive);

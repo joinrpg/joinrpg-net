@@ -40,6 +40,7 @@ internal static class ResultParser
             parsedResult.begin,
             parsedResult.begin.AddDays(parsedResult.time - 1),
             parsedResult.sub_region_disp_name,
+            parsedResult.sub_region_name,
             parsedResult.mg,
             siteUri);
         return ret;
@@ -47,7 +48,7 @@ internal static class ResultParser
 
 #pragma warning disable IDE1006 // Naming Styles
     private record class kogda_igra_game_data(int id, string name, DateTimeOffset? update_date,
-        DateOnly begin, int time, string mg, string sub_region_disp_name, string uri)
+        DateOnly begin, int time, string mg, string sub_region_disp_name, string uri, string sub_region_name)
     {
 
     }

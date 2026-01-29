@@ -24,13 +24,20 @@ public class KogdaIgraGame
     public DateTimeOffset? LastUpdatedAt { get; set; }
 
     /// <summary>
-    /// Данные как они пришли с когдаигры. После привязки перекладываем в новые поля таблицы ProjectDetails
+    /// Данные как они пришли с когдаигры. 
     /// </summary>
     public string JsonGameData { get; set; }
 
     public string Name { get; set; }
 
     public bool Active { get; set; } = true;
+
+    public string RegionName { get; set; } = "";
+
+    public DateTime Begin { get; set; }
+    public DateTime End { get; set; }
+    public string MasterGroupName { get; set; }
+    public string? SiteUri { get; set; }
 
     /// <summary>
     /// Привязанные проекты. Пусто = ничего не привязано.

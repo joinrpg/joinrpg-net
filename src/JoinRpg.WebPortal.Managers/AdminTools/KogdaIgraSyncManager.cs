@@ -28,7 +28,7 @@ internal class KogdaIgraSyncManager(
     {
         var item = await kogdaIgraInfoService.GetGames(kogdaIgraIds);
 
-        return [.. item.Select(x => x.ToViewModel(kograIgraOptions.Value))];
+        return [.. item.Where(x => x.IsActive).Select(x => x.ToViewModel(kograIgraOptions.Value))];
     }
 
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated()

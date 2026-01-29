@@ -16,7 +16,8 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
     {
         return GetSet()
            .Where(UpdateRequestedPredicate())
-           .OrderByDescending(e => e.UpdateRequestedAt)
+           .OrderByDescending(e => e.Projects.Count)
+           .ThenByDescending(e => e.UpdateRequestedAt)
            ;
     }
 
@@ -31,6 +32,7 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
     async Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> IKogdaIgraRepository.GetActive()
     {
         var result = await GetSet()
+            .AsNoTracking()
             .Where(ki => ki.Active)
             .Where(ki => ki.LastUpdatedAt!.Value.Year > (DateTimeOffset.Now.Year - 2))
             .Where(ki => ki.Name.Length > 0)

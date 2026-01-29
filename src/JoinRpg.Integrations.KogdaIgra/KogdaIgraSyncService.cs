@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using System.Diagnostics.CodeAnalysis;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
@@ -71,16 +70,6 @@ internal class KogdaIgraSyncService(
         return status;
     }
 
-    [return: NotNullIfNotNull(nameof(info))]
-    private static KogdaIgraGameData? ToDomain(KogdaIgraGameInfo? info)
-    {
-        if (info is null)
-        {
-            return null;
-        }
-        return new KogdaIgraGameData(info.Id, info.Name, info.UpdateDate, info.Begin, info.End, info.RegionName, info.MasterGroupName, info.SiteUri);
-    }
-
     private async Task MarkUpdateRequested(KogdaIgraGameUpdateMarker[] updated)
     {
         foreach (var item in updated)
@@ -114,6 +103,11 @@ internal class KogdaIgraSyncService(
         dbRecord.JsonGameData = kiData.GameData;
         dbRecord.LastUpdatedAt = kiData.UpdateDate;
         dbRecord.UpdateRequestedAt = kiData.UpdateDate;
+        dbRecord.Begin = kiData.Begin.ToDateTime(new TimeOnly(0, 0));
+        dbRecord.End = kiData.End.ToDateTime(new TimeOnly(0, 0));
+        dbRecord.SiteUri = kiData.SiteUri?.AbsoluteUri;
+        dbRecord.MasterGroupName = kiData.MasterGroupName;
+        dbRecord.RegionName = kiData.RegionName;
         dbRecord.Active = true;
 
         await unitOfWork.SaveChangesAsync();
@@ -153,6 +147,24 @@ internal class KogdaIgraSyncService(
     public async Task<KogdaIgraGameData[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
     {
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(ids);
-        return [.. games.Select(g => ToDomain(ResultParser.TryParseGameInfo(g.JsonGameData)!))];
+        return [.. games.Select(g => TryConvert(g)).WhereNotNull()];
+    }
+
+    private static KogdaIgraGameData? TryConvert(KogdaIgraGame g)
+    {
+        if (g.LastUpdatedAt is null)
+        {
+            return null;
+        }
+        return new KogdaIgraGameData(
+                    g.KogdaIgraGameId,
+                    g.Name,
+                    g.LastUpdatedAt.Value,
+                    DateOnly.FromDateTime(g.Begin.Date),
+                    DateOnly.FromDateTime(g.End.Date),
+                    g.RegionName,
+                    g.MasterGroupName,
+                    Uri.TryCreate(g.SiteUri, UriKind.Absolute, out var u) ? u : null,
+                    g.Active);
     }
 }

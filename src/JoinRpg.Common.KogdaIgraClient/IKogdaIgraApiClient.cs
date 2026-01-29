@@ -19,6 +19,7 @@ public record class KogdaIgraGameInfo(
     DateOnly Begin,
     DateOnly End,
     string RegionName,
+    string RegionShortName,
     string MasterGroupName,
     Uri? SiteUri
     );
