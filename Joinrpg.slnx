@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Common/">
     <Project Path="src/JoinRpg.Common.EmailSending.Impl/JoinRpg.Common.EmailSending.Impl.csproj" />
+    <Project Path="src/JoinRpg.Common.KogdaIgraClient/JoinRpg.Common.KogdaIgraClient.csproj" Id="881e9784-9199-4f85-b173-9e91a15403e2" />
     <Project Path="src/JoinRpg.Common.Telegram/JoinRpg.Common.Telegram.csproj" />
     <Project Path="src/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
     <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
@@ -47,7 +48,7 @@
     <Project Path="src/JoinRpg.DataModel.Mocks/JoinRpg.DataModel.Mocks.csproj" />
     <Project Path="src/JoinRpg.Domain.Test/JoinRpg.Domain.Test.csproj" />
     <Project Path="src/JoinRpg.Helpers.Test/JoinRpg.Helpers.Test.csproj" />
-    <Project Path="src/JoinRpg.Integrations.KogdaIgra.Test/JoinRpg.Integrations.KogdaIgra.Test.csproj" />
+    <Project Path="src/JoinRpg.Integrations.KogdaIgra.Test/JoinRpg.Common.KogdaIgraClient.Test.csproj" />
     <Project Path="src/JoinRpg.IntegrationTests/JoinRpg.IntegrationTest.csproj" />
     <Project Path="src/JoinRpg.Markdown.Test/JoinRpg.Markdown.Test.csproj" />
     <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />

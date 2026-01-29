@@ -1,3 +1,5 @@
+using JoinRpg.Common.KogdaIgraClient;
+
 namespace JoinRpg.Integrations.KogdaIgra.Test;
 
 public class UpdatesMarkerParserTest

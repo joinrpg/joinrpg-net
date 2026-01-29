@@ -1,4 +1,6 @@
 using System.Data.Entity;
+using System.Diagnostics.CodeAnalysis;
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
 using JoinRpg.Interfaces;
@@ -69,7 +71,15 @@ internal class KogdaIgraSyncService(
         return status;
     }
 
-
+    [return: NotNullIfNotNull(nameof(info))]
+    private static KogdaIgraGameData? ToDomain(KogdaIgraGameInfo? info)
+    {
+        if (info is null)
+        {
+            return null;
+        }
+        return new KogdaIgraGameData(info.Id, info.Name, info.UpdateDate, info.Begin, info.End, info.RegionName, info.MasterGroupName, info.SiteUri);
+    }
 
     private async Task MarkUpdateRequested(KogdaIgraGameUpdateMarker[] updated)
     {
@@ -135,9 +145,9 @@ internal class KogdaIgraSyncService(
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<KogdaIgraGameInfo[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
+    public async Task<KogdaIgraGameData[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
     {
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(ids);
-        return [.. games.Select(g => ResultParser.TryParseGameInfo(g.JsonGameData)!)];
+        return [.. games.Select(g => ToDomain(ResultParser.TryParseGameInfo(g.JsonGameData)!))];
     }
 }

@@ -13,7 +13,18 @@ public interface IKogdaIgraBindService
 
 public interface IKogdaIgraInfoService
 {
-    Task<KogdaIgraGameInfo[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> id);
+    Task<KogdaIgraGameData[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> id);
 }
 
 public record class SyncStatus(int CountOfGames, DateTimeOffset LastUpdated, int PendingGamesCount) { }
+
+public record class KogdaIgraGameData(
+    int Id,
+    string Name,
+    DateTimeOffset UpdateDate,
+    DateOnly Begin,
+    DateOnly End,
+    string RegionName,
+    string MasterGroupName,
+    Uri? SiteUri
+    );

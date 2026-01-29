@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
+namespace JoinRpg.Common.KogdaIgraClient;
 
 public class KogdaIgraOptions
 {
