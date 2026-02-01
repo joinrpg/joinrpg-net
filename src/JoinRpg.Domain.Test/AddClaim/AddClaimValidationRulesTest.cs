@@ -94,7 +94,7 @@ public class AddClaimValidationRulesTest
     [Fact]
     public void AllowSendClaimEvenIfHasApprovedAccordingToSettings()
     {
-        var projectInfo = Mock.ProjectInfo.WithAllowManyClaims(true);
+        var projectInfo = Mock.ProjectInfo.WithAllowManyClaims(strictlyOneCharacter: false);
         var
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
         var another = Mock.CreateCharacter("another");

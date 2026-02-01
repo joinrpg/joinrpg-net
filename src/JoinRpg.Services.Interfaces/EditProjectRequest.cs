@@ -6,10 +6,4 @@ public class EditProjectRequest
     public required string ProjectName { get; set; }
     public required string ClaimApplyRules { get; set; }
     public required string ProjectAnnounce { get; set; }
-    public bool IsAcceptingClaims { get; set; }
-    public required bool MultipleCharacters { get; set; }
-    public required bool AutoAcceptClaims { get; set; }
-    public required bool IsAccommodationEnabled { get; set; }
-
-    public required CharacterIdentification? DefaultTemplateCharacterId { get; set; }
 }

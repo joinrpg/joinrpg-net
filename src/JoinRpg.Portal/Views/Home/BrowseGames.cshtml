@@ -1,20 +1,24 @@
-@model JoinRpg.Web.Models.HomeViewModel
+@using JoinRpg.WebPortal.Models
+@model HomeViewModel
 
 @{
   ViewBag.Title = "Все игры";
 }
-@if (Model.ActiveProjects.Any())
-{
-  <h3>Игры</h3>
 
-  <div class="row">
-    @foreach (var project in Model.ActiveProjects)
+<component type="typeof(JoinRpg.Web.Games.Projects.MyProjectPanel)"
+           param-Projects="@Model.MyProjects"
+           render-mode="Static" />
+
+@if (Model.AllProjects.Any())
+{
+  <h2 style="clear:both">Все Игры</h2>
+
+    @foreach (var project in Model.AllProjects)
     {
             <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
                        param-Model="@project"
                        render-mode="Static" />
     }
-  </div>
 }
 else
 {

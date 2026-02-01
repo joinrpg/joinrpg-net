@@ -1,8 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Games.Projects;
-using JoinRpg.Web.Models;
+using JoinRpg.WebPortal.Models;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
 
@@ -11,25 +10,46 @@ namespace JoinRpg.WebPortal.Managers.Projects;
 /// </summary>
 public class ProjectListManager(IProjectRepository projectRepository, ICurrentUserAccessor currentUser)
 {
-    public async Task<HomeViewModel> LoadModel(bool showInactive = false, int maxProjects = int.MaxValue)
+    public async Task<HomeViewModel> LoadModel(bool showInactive = false)
     {
+        var myProjects =
+            currentUser.UserIdentificationOrDefault is UserIdentification userId ?
+            await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault,
+            showInactive ? ProjectListSpecification.MyAllProjects : ProjectListSpecification.MyActiveProjects)
+            : [];
+
         var allProjects = await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault,
-            showInactive ? ProjectListSpecification.All : ProjectListSpecification.Active);
-
-        var projects =
-            allProjects
-                .Where(p => (showInactive && p.ActiveClaimsCount > 0) || p.HasMyMasterAccess || p.HasMyClaims || p.IsAcceptingClaims)
-                .OrderByDisplayPriority()
-                .ToList();
-
-        var alwaysShowProjects = allProjects.Where(p => p.HasMyMasterAccess || p.HasMyClaims).OrderByDisplayPriority().ToList();
-
-        var finalProjects = alwaysShowProjects.UnionUntilTotalCount(projects, maxProjects).Select(p => new ProjectListItemViewModel(p)).ToList();
+            showInactive ? ProjectListSpecification.AllPublic : ProjectListSpecification.ActivePublic);
 
         return new HomeViewModel
         {
-            ActiveProjects = finalProjects,
-            HasMoreProjects = projects.Count > finalProjects.Count,
+            MyProjects = [.. myProjects.Select(p => new ProjectListItemViewModel(p))],
+            AllProjects = [.. allProjects.Select(p => new ProjectListItemViewModel(p))],
+            HasMoreProjects = false,
+        };
+    }
+
+    public async Task<HomeViewModel> LoadHomeModel(int maxProjects)
+    {
+        var myProjects = currentUser.UserIdentificationOrDefault is UserIdentification userId
+            ? await projectRepository.GetProjectsBySpecification(userId, ProjectListSpecification.MyActiveProjects) : [];
+
+        var allProjects = await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault, ProjectListSpecification.ActivePublic);
+
+        var projects =
+            allProjects
+                .Except(myProjects)
+                .Where(p => p.IsAcceptingClaims)
+                .OrderByDescending(p => p.ActiveClaimsCount)
+                .Take(maxProjects + 1)
+                .Select(p => new ProjectListItemViewModel(p))
+                .ToList();
+
+        return new HomeViewModel
+        {
+            MyProjects = [.. myProjects.Select(p => new ProjectListItemViewModel(p))],
+            AllProjects = [.. projects.Take(maxProjects)],
+            HasMoreProjects = projects.Count > maxProjects,
         };
     }
 }

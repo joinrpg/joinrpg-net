@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon.Projects;
 
@@ -25,20 +24,8 @@ public class EditProjectViewModel
     [DisplayName("Анонс проекта"), UIHint("MarkdownString")]
     public string ProjectAnnounce { get; set; }
 
-    [Display(Name = "Заявки открыты?")]
-    public bool IsAcceptingClaims { get; set; }
-
     [DisplayName("Правила подачи заявок"), UIHint("MarkdownString")]
     public string ClaimApplyRules { get; set; }
-
-    [Display(Name = "Проверять, что игрок играет только одного персонажа",
-        Description =
-            "Если эта опция включена, при принятии заявки какого-то игрока на одну роль все другие заявки этого игрока будут автоматически отклонены.")]
-    public bool StrictlyOneCharacter { get; set; }
-
-    [Display(Name = "Автоматически принимать заявки",
-        Description = "Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
-    public bool AutoAcceptClaims { get; set; }
 
     [ReadOnly(true)]
     public string OriginalName { get; set; }
@@ -46,11 +33,6 @@ public class EditProjectViewModel
     public bool EnableAccomodation { get; set; }
 
     public bool Active { get; set; }
-
-    [Display(Name = "Шаблон персонажа по умолчанию", Description = "Кнопка «заявиться» будет идти именно на этот шаблон")]
-    public CharacterIdentification? DefaultTemplateCharacterId { get; set; }
-
-    public int? DefaultTemplateCharacterIdInt { get; set; }
 }
 
 public class CloseProjectViewModel

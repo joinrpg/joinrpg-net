@@ -64,6 +64,8 @@ public interface IProjectRepository : IDisposable
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)
 {
     public static ProjectListSpecification MyActiveProjects { get; } = new ProjectListSpecification(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: false);
+
+    public static ProjectListSpecification MyAllProjects { get; } = new ProjectListSpecification(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: true);
     public static ProjectListSpecification ForCloning { get; } = new ProjectListSpecification(ProjectListCriteria.ForCloning, LoadArchived: true);
     public static ProjectListSpecification ActiveWithMyMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: false);
     public static ProjectListSpecification ActiveProjectsWithSchedule { get; } = new ProjectListSpecification(ProjectListCriteria.HasSchedule, LoadArchived: false);
@@ -77,9 +79,13 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
     public static ProjectListSpecification All { get; } = new ProjectListSpecification(ProjectListCriteria.All, LoadArchived: true);
 
     public static ProjectListSpecification Active { get; } = new ProjectListSpecification(ProjectListCriteria.All, LoadArchived: false);
+
+    public static ProjectListSpecification ActivePublic { get; } = new ProjectListSpecification(ProjectListCriteria.Public, LoadArchived: false);
+
+    public static ProjectListSpecification AllPublic { get; } = new ProjectListSpecification(ProjectListCriteria.Public, LoadArchived: true);
 }
 
-public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, All };
+public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, All, Public };
 
 public record CharacterGroupHeaderDto(CharacterGroupIdentification CharacterGroupId, string Name, bool IsActive, bool IsPublic) : ILinkableWithName
 {

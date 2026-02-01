@@ -64,16 +64,10 @@ internal class CloneProjectHelper(
         await projectService.EditProject(
             new EditProjectRequest()
             {
-                AutoAcceptClaims = originalEntity.Details.AutoAcceptClaims,
                 ClaimApplyRules = originalEntity.Details.ClaimApplyRules?.Contents ?? "",
-                IsAcceptingClaims = false,
-                IsAccommodationEnabled = original.AccomodationEnabled,
-                MultipleCharacters = originalEntity.Details.EnableManyCharacters,
                 ProjectAnnounce = originalEntity.Details.ProjectAnnounce?.Contents ?? "",
                 ProjectId = projectId,
                 ProjectName = cloneRequest.ProjectName,
-                // Если у проекта был шаблон по умолчанию, и мы его скопировали — указываем его.
-                DefaultTemplateCharacterId = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null
             });
 
         await projectService.SetPublishSettings(projectId, ProjectCloneSettings.CloneDisabled, publishEnabled: false);
@@ -82,6 +76,10 @@ internal class CloneProjectHelper(
             checkInProgress: false,
             original.ProjectCheckInSettings.CheckInModuleEnabled,
             original.ProjectCheckInSettings.AllowSecondRoles);
+
+        await projectService.SetAccommodationSettings(projectId, original.AccomodationEnabled);
+
+        await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null });
 
         return everythingFine;
     }

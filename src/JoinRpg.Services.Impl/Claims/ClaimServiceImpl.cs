@@ -335,7 +335,7 @@ internal class ClaimServiceImpl(
 
         List<ClaimSimpleChangedNotification> notificationsList = [email];
 
-        if (!projectInfo.ClaimSettings.AllowManyCharacters)
+        if (projectInfo.ClaimSettings.StrictlyOneCharacter)
         {
             foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
             {

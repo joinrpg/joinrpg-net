@@ -6,11 +6,12 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class HotCharactersRepository(MyDbContext ctx) : IHotCharactersRepository
 {
-    public async Task<IReadOnlyCollection<CharacterWithProject>> GetHotCharactersFromAllProjects(KeySetPagination? pagination = null)
+    public async Task<IReadOnlyCollection<CharacterWithProject>> GetHotCharactersFromPublicProjects(KeySetPagination? pagination = null)
     {
         var query = ctx.ProjectsSet
             .AsExpandable()
             .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
+            .Where(ProjectPredicates.Public())
             .SelectMany(c => c.Characters)
             .Where(CharacterPredicates.Hot())
             .ApplyPaginationEf(pagination, c => c.CharacterId)

@@ -1,0 +1,119 @@
+@using JoinRpg.Web.ProjectCommon
+@inject IProjectSettingsClient settingsClient
+@implements IDisposable
+
+@if (Model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+@if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
+{
+    return;
+}
+
+<JoinPanel>
+    <Header>Настройки заявок</Header>
+    <Body>
+        <EditForm FormName="ProjectClaimSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                <ValidationSummary />
+                <DataAnnotationsValidator />
+
+                <FormRowFor For="@(() => Model.IsAcceptingClaims)">
+                    <CheckboxInput @bind-Value="Model.IsAcceptingClaims" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.IsPublicProject)">
+                    <CheckboxInput @bind-Value="Model.IsPublicProject" />
+                </FormRowFor>
+
+                @if (Model.IsAcceptingClaims)
+                {
+                    <FormRowFor For="@(() => Model.DefaultTemplateCharacterId)">
+                        <SingleCharacterSelector
+                        ProjectId="Model.ProjectId"
+                        @bind-SelectedCharacterId="@Model.DefaultTemplateCharacterId"
+                        TemplateOnly="true"
+                        AllowEmpty="true"
+                        />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.AutoAcceptClaims)">
+                        <CheckboxInput @bind-Value="Model.AutoAcceptClaims" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.StrictlyOneCharacter)">
+                        <CheckboxInput @bind-Value="Model.StrictlyOneCharacter" />
+                    </FormRowFor>
+                }
+
+                <FormRow>
+                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Настройки заявок сохранены</JoinAlert>
+}
+
+@code {
+    private EditContext? editContext;
+    private bool saving;
+    private bool success;
+    private bool formInvalid = true;
+    private ValidationMessageStore? messageStore;
+
+
+    [Parameter]
+    [SupplyParameterFromForm]
+    public ProjectClaimSettingsViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= await settingsClient.GetClaimSettings(ProjectId);
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+        formInvalid = !editContext.Validate();
+        StateHasChanged();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            saving = true;
+            await settingsClient.SaveClaimSettings(Model);
+            saving = false;
+            success = true;
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
+            saving = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+}

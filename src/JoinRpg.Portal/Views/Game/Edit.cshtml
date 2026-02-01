@@ -48,46 +48,6 @@ param-Active="Model.Active" />
         @if (Model.Active)
         {
             <div class="form-group">
-                @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-1">
-                    @Html.EditorFor(model => model.IsAcceptingClaims)
-                    @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new { @class = "text-danger" })
-                </div>
-            </div>
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.StrictlyOneCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.StrictlyOneCharacter)
-                    @Html.ValidationMessageFor(model => model.StrictlyOneCharacter, "", new { @class = "text-danger" })
-                    @Html.DescriptionFor(model => model.StrictlyOneCharacter)
-                </div>
-            </div>
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.AutoAcceptClaims, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.AutoAcceptClaims)
-                    @Html.ValidationMessageFor(model => model.AutoAcceptClaims, "", new { @class = "text-danger" })
-                    @Html.DescriptionFor(model => model.AutoAcceptClaims)
-                </div>
-            </div>
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.DefaultTemplateCharacterId, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    <component type="typeof(JoinRpg.Web.ProjectCommon.SingleCharacterSelector)"
-                    param-ProjectId="Model.ProjectId"
-                    param-Name="@("DefaultTemplateCharacterIdInt")"
-                    param-SelectedCharacterId="@(Model.DefaultTemplateCharacterId)"
-                    param-TemplateOnly="true"
-                    param-AllowEmpty="true"
-                    render-mode="WebAssembly" />
-                </div>
-            </div>
-
-
-            <div class="form-group">
                 @Html.LabelFor(model => model.EnableAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
                     @Html.EditorFor(model => model.EnableAccomodation)
@@ -104,6 +64,8 @@ param-Active="Model.Active" />
     </div>
 }
 
+<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectClaimSettingsPanel)" render-mode="WebAssembly"
+           param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
 
 <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectPublishSettingsPanel)" render-mode="WebAssembly"
            param-ProjectId="new ProjectIdentification (Model.ProjectId)" />

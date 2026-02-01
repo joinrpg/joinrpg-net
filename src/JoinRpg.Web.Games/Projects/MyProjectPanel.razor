@@ -1,0 +1,13 @@
+@if (Projects.Count > 0)
+{
+    <h2>Мои игры</h2>
+    @foreach (var project in Projects)
+    {
+        <ProjectCard Model="@project" />
+    }
+}
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<ProjectListItemViewModel> Projects { get; set; } = null!;
+}

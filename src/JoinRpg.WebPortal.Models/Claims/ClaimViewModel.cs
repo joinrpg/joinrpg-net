@@ -138,7 +138,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             .ToList();
         OtherClaimsFromThisPlayerCount =
             OtherClaimsFromThisPlayerCount =
-                claim.IsApproved || projectInfo.ClaimSettings.AllowManyCharacters
+                claim.IsApproved || !projectInfo.ClaimSettings.StrictlyOneCharacter
                     ? 0
                     : claim.OtherPendingClaimsForThisPlayer().Count();
 
@@ -173,7 +173,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         }
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
 
-        ParentGroups = new CharacterParentGroupsViewModel(claim.Character, claim.HasMasterAccess(currentUser));
+        ParentGroups = new CharacterParentGroupsViewModel(claim.Character, HasMasterAccess);
 
         Plot = new PlotDisplayViewModel(plotElements,
             currentUser,

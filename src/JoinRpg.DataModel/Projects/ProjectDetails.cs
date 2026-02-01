@@ -63,6 +63,7 @@ public class ProjectDetails : IValidatableObject
 
     public MandatoryStatus RequirePassport { get; set; } = MandatoryStatus.Optional;
     public MandatoryStatus RequireRegistrationAddress { get; set; } = MandatoryStatus.Optional;
+    public bool IsPublicProject { get; set; } = true;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

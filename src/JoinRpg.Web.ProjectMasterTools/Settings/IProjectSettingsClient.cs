@@ -6,4 +6,6 @@ public interface IProjectSettingsClient
     Task<ProjectPublishSettingsViewModel> GetPublishSettings(ProjectIdentification projectId);
     Task SaveContactSettings(ProjectContactsSettingsViewModel model);
     Task<ProjectContactsSettingsViewModel> GetContactSettings(ProjectIdentification projectId);
+    Task SaveClaimSettings(ProjectClaimSettingsViewModel model);
+    Task<ProjectClaimSettingsViewModel> GetClaimSettings(ProjectIdentification projectId);
 }

@@ -2,6 +2,7 @@ using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 
@@ -54,7 +55,7 @@ internal class ProjectService(
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
 
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles);
         _ = project.EnsureProjectActive();
 
         var group = Create(new CharacterGroup()
@@ -140,8 +141,6 @@ internal class ProjectService(
 
         await UnitOfWork.SaveChangesAsync();
     }
-
-
 
     public async Task GrantAccessAsAdmin(int projectId)
     {
@@ -250,14 +249,13 @@ internal class ProjectService(
         {
             project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
             project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
-            project.Details.EnableManyCharacters = request.MultipleCharacters;
             project.ProjectName = Required(request.ProjectName);
-            project.IsAcceptingClaims = request.IsAcceptingClaims && project.Active;
-
-            project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
-            project.Details.EnableAccommodation = request.IsAccommodationEnabled;
-            project.Details.DefaultTemplateCharacterId = request.DefaultTemplateCharacterId?.CharacterId;
         });
+    }
+
+    public async Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation)
+    {
+        await ChangeProjectProperties(projectId, project => project.Details.EnableAccommodation = enableAccommodation);
     }
 
     async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
@@ -292,6 +290,18 @@ internal class ProjectService(
             project.Details.RequireTelegram = settings.RequireTelegram;
             project.Details.RequirePassport = settings.RequirePassport;
             project.Details.RequireRegistrationAddress = settings.RequireRegistrationAddress;
+        });
+    }
+
+    public async Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings)
+    {
+        await ChangeProjectProperties(projectId, project =>
+        {
+            project.Details.EnableManyCharacters = !settings.StrictlyOneCharacter;
+            project.Details.IsPublicProject = settings.IsPublicProject;
+            project.IsAcceptingClaims = settings.IsAcceptingClaims && project.Active;
+            project.Details.AutoAcceptClaims = settings.AutoAcceptClaims;
+            project.Details.DefaultTemplateCharacterId = settings.DefaultTemplate?.CharacterId;
         });
     }
 

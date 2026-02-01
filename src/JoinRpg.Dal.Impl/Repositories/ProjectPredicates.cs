@@ -42,6 +42,7 @@ internal static class ProjectPredicates
         predicate = projectListSpecification.Criteria switch
         {
             ProjectListCriteria.All => predicate.And(p => true),
+            ProjectListCriteria.Public => predicate.And(p => p.Details.IsPublicProject),
             ProjectListCriteria.MasterAccess when userInfoId is not null => predicate.And(MasterAccess(userInfoId)),
             ProjectListCriteria.MasterOrActiveClaim when userInfoId is not null => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userInfoId)).Or(MasterAccess(userInfoId))),
             ProjectListCriteria.ForCloning when userInfoId is not null => predicate.And(ForCloning(userInfoId)),
@@ -66,4 +67,6 @@ internal static class ProjectPredicates
              project.Details.ProjectCloneSettings == ProjectCloneSettings.CanBeClonedByAnyone
              || (project.Details.ProjectCloneSettings == ProjectCloneSettings.CanBeClonedByMaster && MasterAccess(userInfoId).Compile()(project));
     }
+
+    internal static Expression<Func<Project, bool>> Public() => p => p.Details.IsPublicProject;
 }

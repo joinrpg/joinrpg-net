@@ -126,7 +126,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
             }
 
             // TODO вот здесь бы проверять по UserInfo
-            if (!projectInfo.ClaimSettings.AllowManyCharacters &&
+            if (projectInfo.ClaimSettings.StrictlyOneCharacter &&
                 project.Claims.OfUserApproved(userInfo.UserId.Value).Except([existingClaim]).Any())
             {
                 yield return AddClaimForbideReason.OnlyOneCharacter;

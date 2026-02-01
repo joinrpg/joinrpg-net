@@ -6,7 +6,7 @@ namespace JoinRpg.Data.Interfaces;
 
 public interface IHotCharactersRepository
 {
-    Task<IReadOnlyCollection<CharacterWithProject>> GetHotCharactersFromAllProjects(KeySetPagination? pagination = null);
+    Task<IReadOnlyCollection<CharacterWithProject>> GetHotCharactersFromPublicProjects(KeySetPagination? pagination = null);
 }
 public record class CharacterWithProject(
     CharacterIdentification CharacterId,

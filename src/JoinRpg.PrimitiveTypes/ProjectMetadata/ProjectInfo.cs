@@ -138,14 +138,14 @@ public record class ProjectInfo
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings);
     }
 
-    internal ProjectInfo WithAllowManyClaims(bool allowManyClaims)
+    internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
             AllowToSetGroups,
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
-            ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { AllowManyCharacters = allowManyClaims });
+            ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter });
     }
 }
 
@@ -165,6 +165,7 @@ public record ProjectProfileRequirementSettings(
 
 public record ProjectClaimSettings(
     CharacterIdentification? DefaultTemplate,
-    bool AllowManyCharacters,
-    bool AutoAcceptClaims
-    );
+    bool StrictlyOneCharacter,
+    bool AutoAcceptClaims,
+    bool IsAcceptingClaims,
+    bool IsPublicProject);
