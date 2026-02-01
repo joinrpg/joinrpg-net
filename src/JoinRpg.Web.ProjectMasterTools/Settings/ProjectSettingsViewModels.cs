@@ -40,3 +40,29 @@ public class ProjectContactsSettingsViewModel
     public required MandatorySenstiveContactsView RegistrationAddress { get; set; }
 
 }
+
+public class ProjectClaimSettingsViewModel
+{
+    public required ProjectIdentification ProjectId { get; set; }
+    public required ProjectName ProjectName { get; init; }
+    public required ProjectLifecycleStatus ProjectStatus { get; init; }
+
+    [Display(Name = "Принимать заявки",
+        Description = "Игроки смогут отсылать заявки на проект.")]
+    public required bool IsAcceptingClaims { get; set; }
+
+    [Display(Name = "Публичный проект",
+        Description = "Показывать этот проект на главной и разрешить рекламировать этот проект другим образом.")]
+    public required bool IsPublicProject { get; set; }
+    [Display(Name = "Шаблон персонажа по умолчанию", Description = "Кнопка «заявиться» будет идти именно на этот шаблон")]
+    public required CharacterIdentification? DefaultTemplateCharacterId { get; set; }
+
+    [Display(Name = "Автоматически принимать заявки",
+    Description = "Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
+    public required bool AutoAcceptClaims { get; set; }
+
+    [Display(Name = "Проверять, что игрок играет только одного персонажа",
+    Description =
+        "Если эта опция включена, при принятии заявки какого-то игрока на одну роль все другие заявки этого игрока будут автоматически отклонены.")]
+    public required bool StrictlyOneCharacter { get; set; }
+}

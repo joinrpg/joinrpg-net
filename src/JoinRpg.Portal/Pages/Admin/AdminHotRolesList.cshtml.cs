@@ -14,7 +14,7 @@ public class AdminHotRolesListModel(IHotCharactersRepository hotCharactersReposi
 {
     public async Task OnGetAsync()
     {
-        var hotCharacters = await hotCharactersRepository.GetHotCharactersFromAllProjects();
+        var hotCharacters = await hotCharactersRepository.GetHotCharactersFromPublicProjects();
         var kogdaIgraCards = await kogdaIgraSyncClient.GetKogdaIgraCards([.. hotCharacters.SelectMany(c => c.KogdaIgraLinkedIds)]);
         HotRoles = [.. hotCharacters.Select(dto => ToAdminHotRoleViewModel(dto, kogdaIgraCards))];
     }

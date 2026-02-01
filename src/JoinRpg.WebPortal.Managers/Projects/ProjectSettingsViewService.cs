@@ -7,6 +7,22 @@ namespace JoinRpg.WebPortal.Managers.Projects;
 
 internal class ProjectSettingsViewService(IProjectMetadataRepository projectMetadataRepository, IProjectService projectService) : IProjectSettingsClient
 {
+    async Task<ProjectClaimSettingsViewModel> IProjectSettingsClient.GetClaimSettings(ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new ProjectClaimSettingsViewModel()
+        {
+            ProjectId = projectId,
+            ProjectName = project.ProjectName,
+            ProjectStatus = project.ProjectStatus,
+            AutoAcceptClaims = project.ClaimSettings.AutoAcceptClaims,
+            DefaultTemplateCharacterId = project.ClaimSettings.DefaultTemplate,
+            IsAcceptingClaims = project.ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen,
+            IsPublicProject = project.ClaimSettings.IsPublicProject,
+            StrictlyOneCharacter = project.ClaimSettings.StrictlyOneCharacter,
+        };
+    }
+
     async Task<ProjectContactsSettingsViewModel> IProjectSettingsClient.GetContactSettings(ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
@@ -35,6 +51,12 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             ProjectStatus = project.ProjectStatus,
             PublishEnabled = project.PublishPlot,
         };
+    }
+
+    async Task IProjectSettingsClient.SaveClaimSettings(ProjectClaimSettingsViewModel model)
+    {
+        var settings = new ProjectClaimSettings(model.DefaultTemplateCharacterId, model.StrictlyOneCharacter, model.AutoAcceptClaims, model.IsAcceptingClaims, model.IsPublicProject);
+        await projectService.SetClaimSettings(model.ProjectId, settings);
     }
 
     async Task IProjectSettingsClient.SaveContactSettings(ProjectContactsSettingsViewModel model)

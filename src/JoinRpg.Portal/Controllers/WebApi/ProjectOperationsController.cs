@@ -9,11 +9,11 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 [IgnoreAntiforgeryToken]
 [RequireMaster]
 [ApiController]
-public class ProjectOperationsController : ControllerBase
+public class ProjectOperationsController(IProjectSettingsClient client) : ControllerBase
 {
 
     [HttpGet]
-    public async Task<ActionResult<ProjectPublishSettingsViewModel>> GetPublishSettings(ProjectIdentification projectId, [FromServices] IProjectSettingsClient client)
+    public async Task<ActionResult<ProjectPublishSettingsViewModel>> GetPublishSettings(ProjectIdentification projectId)
         => Ok(await client.GetPublishSettings(projectId));
 
     [HttpPost]
@@ -28,17 +28,30 @@ public class ProjectOperationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ProjectContactsSettingsViewModel>> GetContactSettings(ProjectIdentification projectId, [FromServices] IProjectSettingsClient client)
+    public async Task<ActionResult<ProjectContactsSettingsViewModel>> GetContactSettings(ProjectIdentification projectId)
         => Ok(await client.GetContactSettings(projectId));
 
     [HttpPost]
     public async Task<ActionResult> SaveContactSettings(
         ProjectIdentification projectId,
-        ProjectContactsSettingsViewModel model,
-        [FromServices] IProjectSettingsClient client)
+        ProjectContactsSettingsViewModel model)
     {
         model.ProjectId = projectId;
         await client.SaveContactSettings(model);
+        return Ok();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<ProjectClaimSettingsViewModel>> GetClaimSettings(ProjectIdentification projectId)
+        => Ok(await client.GetClaimSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> SaveClaimSettings(
+        ProjectIdentification projectId,
+        ProjectClaimSettingsViewModel model)
+    {
+        model.ProjectId = projectId;
+        await client.SaveClaimSettings(model);
         return Ok();
     }
 }

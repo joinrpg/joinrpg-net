@@ -24,7 +24,6 @@ namespace JoinRpg.Portal.Controllers;
 
 public class GameController(
     IProjectService projectService,
-    IProjectRepository projectRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
     ) : JoinControllerGameBase
@@ -69,7 +68,7 @@ public class GameController(
 
     [HttpGet("/{projectId}/project/settings")]
     [MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<IActionResult> Edit(int projectId)
+    public async Task<IActionResult> Edit(int projectId, [FromServices] IProjectRepository projectRepository)
     {
         var project = await projectRepository.GetProjectAsync(projectId);
         return View(new EditProjectViewModel
@@ -79,12 +78,8 @@ public class GameController(
             ProjectId = project.ProjectId,
             ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,
-            IsAcceptingClaims = project.IsAcceptingClaims,
-            StrictlyOneCharacter = !project.Details.EnableManyCharacters,
             Active = project.Active,
-            AutoAcceptClaims = project.Details.AutoAcceptClaims,
             EnableAccomodation = project.Details.EnableAccommodation,
-            DefaultTemplateCharacterId = CharacterIdentification.FromOptional(project.ProjectId, project.Details.DefaultTemplateCharacterId),
         });
     }
 
@@ -92,27 +87,26 @@ public class GameController(
     [MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
     {
-        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
+        ProjectIdentification projectId = new(viewModel.ProjectId);
+
         try
         {
             await
                 projectService.EditProject(new EditProjectRequest
                 {
-                    ProjectId = new(viewModel.ProjectId),
+                    ProjectId = projectId,
                     ClaimApplyRules = viewModel.ClaimApplyRules,
-                    IsAcceptingClaims = viewModel.IsAcceptingClaims,
-                    MultipleCharacters = !viewModel.StrictlyOneCharacter,
                     ProjectAnnounce = viewModel.ProjectAnnounce,
                     ProjectName = viewModel.ProjectName,
-                    AutoAcceptClaims = viewModel.AutoAcceptClaims,
-                    IsAccommodationEnabled = viewModel.EnableAccomodation,
-                    DefaultTemplateCharacterId = CharacterIdentification.FromOptional(viewModel.ProjectId, viewModel.DefaultTemplateCharacterIdInt),
                 });
 
-            return RedirectTo(new(project.ProjectId));
+            await projectService.SetAccommodationSettings(projectId, viewModel.EnableAccomodation);
+
+            return RedirectTo(projectId);
         }
         catch
         {
+            var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             viewModel.OriginalName = project.ProjectName;
             return View(viewModel);
         }

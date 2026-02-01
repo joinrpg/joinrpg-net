@@ -51,22 +51,4 @@ internal partial class CreateProjectService
                 FieldValues: fields
                 ));
     }
-
-    private async Task SetProjectSettings(ProjectIdentification projectId, ProjectName projectName, CharacterIdentification? defaultChar,
-        bool autoAcceptClaims, bool enableAccomodation)
-    {
-        await projectService.EditProject(
-            new EditProjectRequest()
-            {
-                AutoAcceptClaims = autoAcceptClaims,
-                ClaimApplyRules = "",
-                IsAcceptingClaims = false,
-                IsAccommodationEnabled = enableAccomodation,
-                MultipleCharacters = true,
-                ProjectAnnounce = "",
-                ProjectId = projectId,
-                ProjectName = projectName,
-                DefaultTemplateCharacterId = defaultChar,
-            });
-    }
 }

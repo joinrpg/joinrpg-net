@@ -1,4 +1,5 @@
-@model JoinRpg.Web.Models.HomeViewModel
+@using JoinRpg.WebPortal.Models
+@model HomeViewModel
 
 @{
     ViewBag.Title = ViewBag.IsProduction ?  "JoinRpg.RU" : "Dev.JoinRpg.RU";
@@ -38,11 +39,14 @@
     </div>
 </div>
 
+<component type="typeof(JoinRpg.Web.Games.Projects.MyProjectPanel)"
+           param-Projects="@Model.MyProjects"
+           render-mode="Static" />
 
-<h3>Игры</h3>
 
-<div class="row">
-    @foreach (var project in Model.ActiveProjects)
+<h2 style="clear:both">Куда поехать</h2>
+
+    @foreach (var project in Model.AllProjects)
     {
         <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
                    param-Model="@project"
@@ -58,4 +62,3 @@
 
             </div>
         }
-</div>

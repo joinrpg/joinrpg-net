@@ -38,4 +38,6 @@ public interface IProjectService
     Task GrantAccessAsAdmin(int projectId);
     Task SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled);
     Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings);
+    Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings);
+    Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation);
 }

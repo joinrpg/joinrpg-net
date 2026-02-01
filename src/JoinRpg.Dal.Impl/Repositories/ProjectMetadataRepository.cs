@@ -62,8 +62,11 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 project.Details.RequireRegistrationAddress),
             projectClaimSettings: new ProjectClaimSettings(
                 DefaultTemplate: CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
-                AllowManyCharacters: project.Details.EnableManyCharacters,
-                AutoAcceptClaims: project.Details.AutoAcceptClaims));
+                StrictlyOneCharacter: !project.Details.EnableManyCharacters,
+                AutoAcceptClaims: project.Details.AutoAcceptClaims,
+                IsAcceptingClaims: project.IsAcceptingClaims,
+                IsPublicProject: project.Details.IsPublicProject
+                ));
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {
