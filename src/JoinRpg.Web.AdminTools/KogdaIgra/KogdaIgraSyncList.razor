@@ -3,33 +3,15 @@
 @using Microsoft.JSInterop
 @using System.ComponentModel.DataAnnotations
 @using System.ComponentModel
-@inject IProjectListForAdminClient ProjectListClient
+
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus" />
 
-@if (JoinCandidates is null)
-{
-    <JoinLoadingMessage />
-}
-else if (JoinCandidates.Count == 0)
-{
-    <JoinAlert>Игр без привязки нет</JoinAlert>
-}
-else
-{
   <h3>Игры без привязки</h3>
-  <AdminProjectGrid Projects="JoinCandidates" />
-}
+  <AdminProjectGrid Criteria="ProjectSelectionCriteria.ActiveWithoutKogdaIgra" />
+
 
 @code {
     [Parameter]
     public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
-
-    public List<ProjectAdminListItemViewModel>? JoinCandidates = null;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        JoinCandidates = await ProjectListClient.GetProjectsForAdmin(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
-        await base.OnParametersSetAsync();
-    }
 }

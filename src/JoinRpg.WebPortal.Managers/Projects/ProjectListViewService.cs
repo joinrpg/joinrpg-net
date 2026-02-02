@@ -38,6 +38,8 @@ internal class ProjectListViewService(
             ProjectSelectionCriteria.ForCloning => ProjectListSpecification.ForCloning,
             ProjectSelectionCriteria.ActiveWithMyMasterAccess => ProjectListSpecification.ActiveWithMyMasterAccess,
             ProjectSelectionCriteria.ActiveWithoutKogdaIgra => ProjectListSpecification.ActiveProjectsWithoutKogdaIgra,
+            ProjectSelectionCriteria.All => ProjectListSpecification.All,
+            ProjectSelectionCriteria.Active => ProjectListSpecification.Active,
             _ => throw new NotImplementedException()
         };
     }

@@ -8,4 +8,8 @@ public record ProjectAdminListItemViewModel(
     string ProjectName,
     DateOnly LastUpdatedAt,
     IReadOnlyCollection<KogdaIgraCardViewModel>? KiLinks
-    ) : IProjectLinkViewModel;
+    ) : IProjectLinkViewModel
+{
+    public IEnumerable<KogdaIgraIdentification> KogdaIgraIds => KiLinks?.Select(x => x.KogdaIgraId) ?? [];
+    public bool DisableKogdaIgraMapping => KiLinks?.Count == 0;
+}

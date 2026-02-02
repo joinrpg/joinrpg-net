@@ -238,6 +238,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                         update.LastUpdated,
                         ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
                         project.KogdaIgraGames,
+                        project.Details.DisableKogdaIgraMapping,
                     };
 
         var result = await query.ToListAsync();
@@ -249,7 +250,12 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             new(x.ProjectName),
             x.ActiveClaimsCount,
             DateOnly.FromDateTime(x.LastUpdated),
-            [..x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()]
+            KiLinks:
+                (x.DisableKogdaIgraMapping, x.KogdaIgraGames.Count) switch{
+                    (true, _) => [],
+                    (false, 0 ) => null,
+                    (false, _) => [..x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
+                }
             ))];
     }
 
