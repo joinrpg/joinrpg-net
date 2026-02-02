@@ -203,18 +203,18 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return result.Where(CharacterPredicates.ByGroupPrecise(characterGroupIdentifications)).ToList();
     }
 
-    async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)
+    async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)
     {
         var filterPredicate = ProjectPredicates.BySpecification(userId, projectListSpecification);
-        return await GetProjectListInternal(userId, filterPredicate);
+        return await GetProjectPersonalizedListInternal(userId, filterPredicate);
     }
 
-    Task<ProjectShortInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
+    Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
     {
         var idArray = ids.Select(id => id.Value).ToArray();
-        return GetProjectListInternal(userId, project => idArray.Contains(project.ProjectId));
+        return GetProjectPersonalizedListInternal(userId, project => idArray.Contains(project.ProjectId));
     }
-    private async Task<ProjectShortInfo[]> GetProjectListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
+    private async Task<ProjectPersonalizedInfo[]> GetProjectPersonalizedListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
     {
         var masterPredicate = userId is null ? project => false : ProjectPredicates.MasterAccess(userId);
         var claimPredicate = userId is null ? project => false : ProjectPredicates.HasActiveClaim(userId);
@@ -240,7 +240,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         var result = await query.ToListAsync();
 
-        return [.. result.Select(x => new ProjectShortInfo(
+        return [.. result.Select(x => new ProjectPersonalizedInfo(
             new(x.ProjectId),
             ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
             x.PublishPlot,

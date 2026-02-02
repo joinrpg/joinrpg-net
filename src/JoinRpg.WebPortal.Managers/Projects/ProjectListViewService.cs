@@ -10,7 +10,7 @@ internal class ProjectListViewService(IProjectRepository projectRepository, ICur
     {
         ProjectListSpecification spec = GetSpecification(projectSelectionCriteria);
 
-        var projects = await projectRepository.GetProjectsBySpecification(currentUserAccessor.UserIdentification, spec);
+        var projects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUserAccessor.UserIdentification, spec);
         return [.. projects.Select(p => new ProjectLinkViewModel(new ProjectIdentification(p.ProjectId), p.ProjectName))];
     }
 

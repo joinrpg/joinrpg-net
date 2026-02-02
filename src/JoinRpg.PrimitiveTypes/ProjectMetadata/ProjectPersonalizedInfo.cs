@@ -1,6 +1,9 @@
 namespace JoinRpg.PrimitiveTypes.ProjectMetadata;
 
-public record ProjectShortInfo(
+/// <summary>
+/// Проект + отношение к проекту для текущего пользователя
+/// </summary>
+public record ProjectPersonalizedInfo(
     ProjectIdentification ProjectId,
     ProjectLifecycleStatus ProjectLifecycleStatus,
     bool PublishPlot,
@@ -17,7 +20,7 @@ public record ProjectShortInfo(
 
 public static class ProjectShortInfoSorter
 {
-    public static IOrderedEnumerable<ProjectShortInfo> OrderByDisplayPriority(this IEnumerable<ProjectShortInfo> projectShortInfos)
+    public static IOrderedEnumerable<ProjectPersonalizedInfo> OrderByDisplayPriority(this IEnumerable<ProjectPersonalizedInfo> projectShortInfos)
         => projectShortInfos
             .OrderByDescending(p => p.Active)
             .ThenByDescending(p => p.HasMyMasterAccess)

@@ -36,13 +36,13 @@ public class MainMenuViewComponent(
         return View("MainMenu", viewModel);
     }
 
-    private async Task<ProjectShortInfo[]> GetProjectLinks()
+    private async Task<ProjectPersonalizedInfo[]> GetProjectLinks()
     {
         var user = currentUserAccessor.UserIdOrDefault;
         if (user == null)
         {
             return [];
         }
-        return await projectRepository.GetProjectsBySpecification(currentUserAccessor.UserIdentification, ProjectListSpecification.MyActiveProjects);
+        return await projectRepository.GetPersonalizedProjectsBySpecification(currentUserAccessor.UserIdentification, ProjectListSpecification.MyActiveProjects);
     }
 }

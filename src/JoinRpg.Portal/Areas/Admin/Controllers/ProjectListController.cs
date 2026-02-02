@@ -17,7 +17,7 @@ public class ProjectListController(
 
     public async Task<IActionResult> Index()
     {
-        var allProjects = await projectRepository.GetProjectsBySpecification(CurrentUserAccessor.UserIdentification, ProjectListSpecification.All);
+        var allProjects = await projectRepository.GetPersonalizedProjectsBySpecification(CurrentUserAccessor.UserIdentification, ProjectListSpecification.All);
 
         var projects = allProjects.OrderByDisplayPriority().Select(p => new ProjectListItemViewModel(p)).ToList();
 
