@@ -1,0 +1,24 @@
+@typeparam TItem
+<table class="table table-bordered table-hover">
+    <thead>
+        @HeadContent
+    </thead>
+    <tbody>
+
+        @foreach (var item in Items)
+        {
+            @ItemTemplate(item)
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public RenderFragment? HeadContent { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TItem> Items { get; set; } = default!;
+}
