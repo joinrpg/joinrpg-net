@@ -1,5 +1,4 @@
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Blazor.Client;
@@ -8,7 +7,7 @@ public static class UriLocatorExtensions
 {
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
-        IUriLocator<ProjectLinkViewModel>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>
+        IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -30,7 +29,7 @@ public static class UriLocatorExtensions
 
         //end of TODO
 
-        Uri IUriLocator<ProjectLinkViewModel>.GetUri(ProjectLinkViewModel target) => new($"/{target.ProjectId.Value}/home", UriKind.Relative);
+        Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 
 
 
@@ -40,7 +39,7 @@ public static class UriLocatorExtensions
         var locator = new UriLocator();
         return serviceCollection
             .AddSingleton<IUriLocator<UserLinkViewModel>>(locator)
-            .AddSingleton<IUriLocator<ProjectLinkViewModel>>(locator)
+            .AddSingleton<IUriLocator<ProjectIdentification>>(locator)
             .AddSingleton<IUriLocator<CharacterGroupLinkSlimViewModel>>(locator)
             .AddSingleton<IUriLocator<ClaimIdentification>>(locator)
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
