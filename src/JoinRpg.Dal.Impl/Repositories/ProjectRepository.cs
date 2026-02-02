@@ -209,19 +209,54 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return await GetProjectPersonalizedListInternal(userId, filterPredicate);
     }
 
+    async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(ProjectListSpecification projectListSpecification)
+    {
+        var filterPredicate = ProjectPredicates.BySpecification(userInfoId: null, projectListSpecification);
+        return await GetProjectListInternal(filterPredicate);
+    }
+
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
     {
         var idArray = ids.Select(id => id.Value).ToArray();
         return GetProjectPersonalizedListInternal(userId, project => idArray.Contains(project.ProjectId));
     }
+    private async Task<ProjectShortInfo[]> GetProjectListInternal(Expression<Func<Project, bool>> filterPredicate)
+    {
+        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+
+        var query = from project in AllProjects.AsExpandable()
+                    join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+                    where filterPredicate.Compile()(project)
+                    select new
+                    {
+                        project.ProjectId,
+                        project.ProjectName,
+                        project.IsAcceptingClaims,
+                        project.Details.PublishPlot,
+                        project.Active,
+                        update.LastUpdated,
+                        ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                        project.KogdaIgraGames,
+                    };
+
+        var result = await query.ToListAsync();
+
+        return [.. result.Select(x => new ProjectShortInfo(
+            new(x.ProjectId),
+            ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
+            x.PublishPlot,
+            new(x.ProjectName),
+            x.ActiveClaimsCount,
+            DateOnly.FromDateTime(x.LastUpdated)
+            ))];
+    }
+
     private async Task<ProjectPersonalizedInfo[]> GetProjectPersonalizedListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
     {
         var masterPredicate = userId is null ? project => false : ProjectPredicates.MasterAccess(userId);
         var claimPredicate = userId is null ? project => false : ProjectPredicates.HasActiveClaim(userId);
 
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var activeOrOnHoldClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.ActiveOrOnHold);
-
 
         var query = from project in AllProjects.AsExpandable()
                     where filterPredicate.Compile()(project)

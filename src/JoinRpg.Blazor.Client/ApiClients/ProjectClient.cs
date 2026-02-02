@@ -1,14 +1,20 @@
+using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 
-public class ProjectListClient(HttpClient httpClient) : IProjectListClient
+public class ProjectListClient(HttpClient httpClient) : IProjectListClient, IProjectListForAdminClient
 {
     public async Task<List<ProjectLinkViewModel>> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
         return await httpClient.GetFromJsonAsync<List<ProjectLinkViewModel>>($"webapi/projects/GetProjects?criteria={projectSelectionCriteria}") ?? throw new Exception("Couldn't get result from server");
+    }
+
+    public async Task<List<ProjectAdminListItemViewModel>> GetProjectsForAdmin(ProjectSelectionCriteria projectSelectionCriteria)
+    {
+        return await httpClient.GetFromJsonAsync<List<ProjectAdminListItemViewModel>>($"webapi/projects/GetProjectsForAdmin?criteria={projectSelectionCriteria}") ?? throw new Exception("Couldn't get result from server");
     }
 }
 

@@ -1,0 +1,110 @@
+@using JoinRpg.Web.AdminTools.KogdaIgra
+@using JoinRpg.Web.ProjectCommon.Projects
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+@inject IKogdaIgraSyncClient KogdaIgraClient
+@inject IKogdaIgraBindClient BindClient
+
+<JoinBorderedTable Items="Projects" Context="project">
+    <HeadContent>
+        <tr>
+            <th>Проект</th>
+            <th>Обновлено</th>
+            <th>КогдаИгра</th>
+            <th>&nbsp;</th>
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        <tr>
+            <td><ProjectLink Model="project" /></td>
+            <td>@project.LastUpdatedAt</td>
+            <td>
+              @if (project.KiLinks is null)
+                {
+                    <text>Необходимо привязать к КогдаИгре</text>
+                } else if (project.KiLinks.Length == 0)
+                {
+                    <text>Проект не должен быть привязан к КогдаИгре</text>
+                } else
+                {
+                  <ul>
+                    @foreach(var kiLink in project.KiLinks)
+                    {
+                        <li><a href="@kiLink.KogdaIgraUri"> @kiLink.Name</a> (@kiLink.Begin — @kiLink.End) </li>
+                    }
+                    </ul>
+                }
+            </td>
+            <td>
+              @if (KogdaIgraCandidates?.Length> 0) {
+                <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args, project)" />
+              }
+            </td>
+        </tr>
+    </ItemTemplate>
+</JoinBorderedTable>
+
+    <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
+        @model.JoinProject.ProjectName
+        <FormRowFor For="@(() => model.DisableKogdaIgraMapping)">
+            <CheckboxInput @bind-Value="model.DisableKogdaIgraMapping" />
+        </FormRowFor>
+        @if (!model.DisableKogdaIgraMapping)
+        {
+            <FormRowFor For="@(() => model.KogdaIgraIds)">
+                <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" InitialList="KogdaIgraCandidates" />
+            </FormRowFor>
+        }
+    </JoinFormDialog>
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<ProjectAdminListItemViewModel> Projects { get; set; } = null!;
+
+    private JoinFormDialog<BindToKiModel> dialog = null!;
+    private BindToKiModel model = null!;
+
+    private KogdaIgraShortViewModel[]? KogdaIgraCandidates = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Projects.Count > 0)
+        {
+            model = new BindToKiModel { JoinProject = Projects.First(), KogdaIgraIds = [], DisableKogdaIgraMapping = false };
+        }
+        KogdaIgraCandidates = await KogdaIgraClient.GetKogdaIgraCandidates();
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task OpenBindDialogAsync(ButtonClickEventArgs args, ProjectAdminListItemViewModel project)
+    {
+        try
+        {
+            model = new BindToKiModel { JoinProject = project, KogdaIgraIds = [], DisableKogdaIgraMapping = false };
+            var result = await dialog.ShowModalAsync();
+            if (result is not null)
+            {
+                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private class BindToKiModel
+    {
+        [Required]
+        [Display(Name = "Игры на КИ")]
+        public required KogdaIgraIdentification[] KogdaIgraIds { get; set; }
+
+        [Display(Name = "Не привязывать к КогдаИгре")]
+        public required bool DisableKogdaIgraMapping { get; set; }
+
+        [ReadOnly(true)]
+        public required IProjectLinkViewModel JoinProject { get; set; }
+    }    
+}
+

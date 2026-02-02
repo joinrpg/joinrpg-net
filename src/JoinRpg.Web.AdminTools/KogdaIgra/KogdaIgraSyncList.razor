@@ -3,9 +3,7 @@
 @using Microsoft.JSInterop
 @using System.ComponentModel.DataAnnotations
 @using System.ComponentModel
-@inject IKogdaIgraSyncClient KogdaIgraClient
-@inject IProjectListClient ProjectListClient
-@inject IKogdaIgraBindClient BindClient
+@inject IProjectListForAdminClient ProjectListClient
 
 <KogdaIgraUpdater InitialModel="KogdaIgraSyncStatus" />
 
@@ -19,89 +17,19 @@ else if (JoinCandidates.Count == 0)
 }
 else
 {
-    <JoinPanelWithList Items="JoinCandidates">
-        <Header>Игры без привязки</Header>
-        <ItemTemplate>
-            <ProjectLink Model="context" />
-            <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args, context)" />
-        </ItemTemplate>
-    </JoinPanelWithList>
-
-    <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
-        @model.JoinProject.ProjectName
-        <FormRowFor For="@(() => model.DisableKogdaIgraMapping)">
-            <CheckboxInput @bind-Value="model.DisableKogdaIgraMapping" />
-        </FormRowFor>
-        @if (!model.DisableKogdaIgraMapping)
-        {
-            <FormRowFor For="@(() => model.KogdaIgraIds)">
-                <KogdaIgraGameSelector @bind-KogdaIgraIds="model.KogdaIgraIds" InitialList="KogdaIgraCandidates" />
-            </FormRowFor>
-        }
-    </JoinFormDialog>
+  <h3>Игры без привязки</h3>
+  <AdminProjectGrid Projects="JoinCandidates" />
 }
 
 @code {
     [Parameter]
     public SyncStatusViewModel? KogdaIgraSyncStatus { get; set; }
 
-    public List<ProjectLinkViewModel>? JoinCandidates = null;
-    public List<ProjectLinkViewModel>? JoinCandidatesFull = null;
-
-    private BindToKiModel model = null!;
-    private JoinFormDialog<BindToKiModel> dialog = null!;
-
-    public KogdaIgraShortViewModel[]? KogdaIgraCandidates = [];
+    public List<ProjectAdminListItemViewModel>? JoinCandidates = null;
 
     protected override async Task OnParametersSetAsync()
     {
-        JoinCandidatesFull = await ProjectListClient.GetProjects(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
-        JoinCandidates = JoinCandidatesFull.Count > 50 ? JoinCandidatesFull.Take(50).ToList() : JoinCandidatesFull;
-        JoinCandidatesFull = JoinCandidatesFull.Except(JoinCandidates).ToList();
-        if (JoinCandidates.Count > 0)
-        {
-            model = new BindToKiModel { JoinProject = JoinCandidates.First(), KogdaIgraIds = [], DisableKogdaIgraMapping = false };
-        }
-        KogdaIgraCandidates = await KogdaIgraClient.GetKogdaIgraCandidates();
+        JoinCandidates = await ProjectListClient.GetProjectsForAdmin(ProjectSelectionCriteria.ActiveWithoutKogdaIgra);
         await base.OnParametersSetAsync();
     }
-
-    private async Task OpenBindDialogAsync(ButtonClickEventArgs args, ProjectLinkViewModel project)
-    {
-        try
-        {
-            model = new BindToKiModel { JoinProject = project, KogdaIgraIds = [], DisableKogdaIgraMapping = false };
-            var result = await dialog.ShowModalAsync();
-            if (result is not null)
-            {
-                await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
-                JoinCandidates!.Remove(project);
-                if (JoinCandidatesFull!.Count > 0)
-                {
-                    JoinCandidates.Add(JoinCandidatesFull[0]);
-                    JoinCandidatesFull.RemoveAt(0);
-                }
-            }
-
-        }
-        finally
-        {
-            args.ExitProgressState = true;
-        }
-    }
-
-    private class BindToKiModel
-    {
-        [Required]
-        [Display(Name = "Игры на КИ")]
-        public required KogdaIgraIdentification[] KogdaIgraIds { get; set; }
-
-        [Display(Name = "Не привязывать к КогдаИгре")]
-        public required bool DisableKogdaIgraMapping { get; set; }
-
-        [ReadOnly(true)]
-        public required ProjectLinkViewModel JoinProject { get; set; }
-    }
-
-
 }

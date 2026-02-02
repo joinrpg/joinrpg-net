@@ -51,6 +51,11 @@ public interface IProjectRepository : IDisposable
     Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification);
 
     /// <summary>
+    /// Без учета данных о доступе к проектам и наличия заявки, более быстрый метод
+    /// </summary>
+    Task<ProjectShortInfo[]> GetProjectsBySpecification(ProjectListSpecification projectListSpecification);
+
+    /// <summary>
     /// Проекты грузятся всегда относительно какого-то пользователя.
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>
