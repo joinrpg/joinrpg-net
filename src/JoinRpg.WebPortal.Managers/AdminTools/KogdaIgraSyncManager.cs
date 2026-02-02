@@ -11,8 +11,7 @@ internal class KogdaIgraSyncManager(
     ILogger<KogdaIgraSyncManager> logger,
     IKogdaIgraRepository kogdaIgraRepository,
     IOptions<KogdaIgraOptions> kograIgraOptions,
-    IKogdaIgraBindService kogdaIgraBindService,
-    IKogdaIgraInfoService kogdaIgraInfoService
+    IKogdaIgraBindService kogdaIgraBindService
     ) : IKogdaIgraSyncClient, IKogdaIgraBindClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
@@ -26,7 +25,7 @@ internal class KogdaIgraSyncManager(
 
     public async Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds)
     {
-        var item = await kogdaIgraInfoService.GetGames(kogdaIgraIds);
+        var item = await kogdaIgraRepository.GetDataByIds(kogdaIgraIds);
 
         return [.. item.Where(x => x.IsActive).Select(x => x.ToViewModel(kograIgraOptions.Value))];
     }

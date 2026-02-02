@@ -9,7 +9,9 @@ public record ProjectShortInfo(
     bool PublishPlot,
     ProjectName ProjectName,
     int ActiveClaimsCount,
-    DateOnly LastUpdatedAt)
+    DateOnly LastUpdatedAt,
+    IReadOnlyCollection<KogdaIgraGameData>? KiLinks
+    )
 {
     public bool Active => ProjectLifecycleStatus != ProjectLifecycleStatus.Archived;
 

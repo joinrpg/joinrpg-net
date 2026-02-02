@@ -1,4 +1,5 @@
 using JoinRpg.Common.KogdaIgraClient;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
@@ -12,8 +13,8 @@ internal static class ViewModelBuilders
     public static KogdaIgraCardViewModel ToViewModel(this KogdaIgraGameData game, KogdaIgraOptions options)
     {
         return new KogdaIgraCardViewModel(
-            new(game.Id),
-            KogdaIgraUri: new Uri(options.HostName, $"/game/{game.Id}/"),
+            game.Id,
+            KogdaIgraUri: new Uri(options.HostName, $"/game/{game.Id.Value}/"),
             Name: game.Name,
             Begin: game.Begin,
             End: game.End,

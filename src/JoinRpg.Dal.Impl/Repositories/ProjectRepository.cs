@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
@@ -247,7 +248,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             x.PublishPlot,
             new(x.ProjectName),
             x.ActiveClaimsCount,
-            DateOnly.FromDateTime(x.LastUpdated)
+            DateOnly.FromDateTime(x.LastUpdated),
+            [..x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()]
             ))];
     }
 

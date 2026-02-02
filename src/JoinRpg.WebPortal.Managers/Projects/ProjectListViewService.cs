@@ -1,10 +1,14 @@
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.WebPortal.Managers.AdminTools;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
 
-internal class ProjectListViewService(IProjectRepository projectRepository) : IProjectListClient, IProjectListForAdminClient
+internal class ProjectListViewService(
+    IProjectRepository projectRepository,
+    IOptions<KogdaIgraOptions> kograIgraOptions) : IProjectListClient, IProjectListForAdminClient
 {
     public async Task<List<ProjectLinkViewModel>> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
@@ -23,7 +27,7 @@ internal class ProjectListViewService(IProjectRepository projectRepository) : IP
             p.ProjectId,
             p.ProjectName,
             p.LastUpdatedAt,
-            KiLinks: null
+            KiLinks: p.KiLinks?.Select(x => x.ToViewModel(kograIgraOptions.Value)).ToList()
             ))];
     }
 

@@ -7,5 +7,5 @@ public record ProjectAdminListItemViewModel(
     ProjectIdentification ProjectId,
     string ProjectName,
     DateOnly LastUpdatedAt,
-    KogdaIgraCardViewModel[]? KiLinks
+    IReadOnlyCollection<KogdaIgraCardViewModel>? KiLinks
     ) : IProjectLinkViewModel;
