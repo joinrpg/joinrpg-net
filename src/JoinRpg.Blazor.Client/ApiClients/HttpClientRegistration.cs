@@ -1,3 +1,4 @@
+using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
@@ -33,6 +34,7 @@ public static class HttpClientRegistration
         return builder
                 .AddHttpClient<IProjectInfoClient, ProjectInfoClient>()
                 .AddHttpClient<IProjectListClient, ProjectListClient>()
+                .AddHttpClient<IProjectListForAdminClient, ProjectListClient>()
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IProjectSettingsClient, ProjectSettingsClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()

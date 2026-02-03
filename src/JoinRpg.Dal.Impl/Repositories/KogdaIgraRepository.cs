@@ -1,5 +1,7 @@
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.DataModel.Projects;
+using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -41,16 +43,35 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
         return [.. result.Select(x => (new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name))];
     }
 
-    async Task<KogdaIgraGame> IKogdaIgraRepository.GetById(int kogdaIgraId)
-    {
-        return await Ctx.Set<KogdaIgraGame>().FindAsync(kogdaIgraId);
-    }
-
     public Task<int> GetNotUpdatedCount() => GetNotUpdatedQuery().CountAsync();
 
     async Task<ICollection<KogdaIgraGame>> IKogdaIgraRepository.GetByIds(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIdentifications)
     {
         var ids = kogdaIgraIdentifications.Select(x => x.Value).ToArray();
         return await Ctx.Set<KogdaIgraGame>().Where(ki => ids.Contains(ki.KogdaIgraGameId)).ToListAsync();
+    }
+
+    async Task<IReadOnlyCollection<KogdaIgraGameData>> IKogdaIgraRepository.GetDataByIds(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIdentifications)
+    {
+        var ids = kogdaIgraIdentifications.Select(x => x.Value).ToArray();
+        var list = await Ctx.Set<KogdaIgraGame>().Where(ki => ids.Contains(ki.KogdaIgraGameId)).ToListAsync();
+        return [.. list.Select(TryConvert).WhereNotNull()];
+    }
+
+    internal static KogdaIgraGameData? TryConvert(KogdaIgraGame g)
+    {
+        if (g.LastUpdatedAt is null || g.Begin is null || g.End is null)
+        {
+            return null;
+        }
+        return new KogdaIgraGameData(
+                    new(g.KogdaIgraGameId),
+                    g.Name,
+                    DateOnly.FromDateTime(g.Begin.Value.Date),
+                    DateOnly.FromDateTime(g.End.Value.Date),
+                    g.RegionName,
+                    g.MasterGroupName,
+                    Uri.TryCreate(g.SiteUri, UriKind.Absolute, out var u) ? u : null,
+                    g.Active);
     }
 }

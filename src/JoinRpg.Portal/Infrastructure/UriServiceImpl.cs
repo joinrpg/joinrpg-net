@@ -19,7 +19,7 @@ internal class UriServiceImpl(
     IUriLocator<UserLinkViewModel>,
     IUriLocator<CharacterGroupLinkSlimViewModel>,
     IUriLocator<CharacterLinkSlimViewModel>,
-    IUriLocator<ProjectLinkViewModel>,
+    IUriLocator<ProjectIdentification>,
     IProjectUriLocator,
     ICharacterUriLocator,
     IUriLocator<PlotFolderIdentification>,
@@ -110,7 +110,7 @@ internal class UriServiceImpl(
          GetUri(new Linkable(target.CharacterGroupId));
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
-    Uri IUriLocator<ProjectLinkViewModel>.GetUri(ProjectLinkViewModel target) => GetUri(new Linkable(target.ProjectId));
+    Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("MyClaim", "Claim", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForGroup", "Claim", new { ProjectId = projectId.Value }));
     public Uri GetDetailsUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Details", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));

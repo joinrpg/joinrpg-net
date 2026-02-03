@@ -59,7 +59,7 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public bool DisableKogdaIgraMapping { get; set; } = disableKogdaIgraMapping;
 }
 
-public record class ProjectListItemViewModel(ProjectShortInfo p) : ProjectLinkViewModel(p.ProjectId, p.ProjectName)
+public record class ProjectListItemViewModel(ProjectPersonalizedInfo p) : ProjectLinkViewModel(p.ProjectId, p.ProjectName)
 {
     public bool IsMaster { get; } = p.HasMyMasterAccess;
     public bool IsActive { get; } = p.Active;

@@ -14,11 +14,11 @@ public class ProjectListManager(IProjectRepository projectRepository, ICurrentUs
     {
         var myProjects =
             currentUser.UserIdentificationOrDefault is UserIdentification userId ?
-            await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault,
+            await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserIdentificationOrDefault,
             showInactive ? ProjectListSpecification.MyAllProjects : ProjectListSpecification.MyActiveProjects)
             : [];
 
-        var allProjects = await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault,
+        var allProjects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserIdentificationOrDefault,
             showInactive ? ProjectListSpecification.AllPublic : ProjectListSpecification.ActivePublic);
 
         return new HomeViewModel
@@ -32,9 +32,9 @@ public class ProjectListManager(IProjectRepository projectRepository, ICurrentUs
     public async Task<HomeViewModel> LoadHomeModel(int maxProjects)
     {
         var myProjects = currentUser.UserIdentificationOrDefault is UserIdentification userId
-            ? await projectRepository.GetProjectsBySpecification(userId, ProjectListSpecification.MyActiveProjects) : [];
+            ? await projectRepository.GetPersonalizedProjectsBySpecification(userId, ProjectListSpecification.MyActiveProjects) : [];
 
-        var allProjects = await projectRepository.GetProjectsBySpecification(currentUser.UserIdentificationOrDefault, ProjectListSpecification.ActivePublic);
+        var allProjects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserIdentificationOrDefault, ProjectListSpecification.ActivePublic);
 
         var projects =
             allProjects

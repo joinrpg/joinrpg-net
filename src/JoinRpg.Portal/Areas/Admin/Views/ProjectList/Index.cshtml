@@ -1,20 +1,11 @@
-@using JoinRpg.Web.Games.Projects
-@model IEnumerable<ProjectListItemViewModel>
+@using JoinRpg.Web.AdminTools
 
+@using JoinRpg.Web.ProjectCommon.Projects
 @{
-    ViewBag.Title = "Все активные игры";
+    ViewBag.Title = "Игры: администратор";
 }
-<h3>Игры</h3>
 
-<div class="alert alert-info">
-    Это полный список активных игр, предназачен для администратора
-</div>
-
-<div class="row">
-    @foreach (var project in Model)
-    {
-        <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
-                   param-Model="@project"
-                   render-mode="Static" />
-    }
-</div>
+<component type="typeof(AdminProjectPanel)"
+ render-mode="WebAssemblyPrerendered"
+ />
+ 

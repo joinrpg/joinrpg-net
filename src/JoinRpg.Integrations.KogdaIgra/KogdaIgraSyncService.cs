@@ -13,7 +13,7 @@ internal class KogdaIgraSyncService(
     IKogdaIgraApiClient apiClient,
     ILogger<KogdaIgraSyncService> logger,
     ICurrentUserAccessor currentUserAccessor)
-    : IKogdaIgraSyncService, IKogdaIgraBindService, IKogdaIgraInfoService
+    : IKogdaIgraSyncService, IKogdaIgraBindService
 {
     public async Task<SyncStatus> GetSyncStatus()
     {
@@ -142,29 +142,5 @@ internal class KogdaIgraSyncService(
         project.KogdaIgraGames.AssignLinksList(games);
         project.Details.DisableKogdaIgraMapping = DisableKogdaIgraMapping;
         await unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task<KogdaIgraGameData[]> GetGames(IReadOnlyCollection<KogdaIgraIdentification> ids)
-    {
-        var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(ids);
-        return [.. games.Select(g => TryConvert(g)).WhereNotNull()];
-    }
-
-    private static KogdaIgraGameData? TryConvert(KogdaIgraGame g)
-    {
-        if (g.LastUpdatedAt is null || g.Begin is null || g.End is null)
-        {
-            return null;
-        }
-        return new KogdaIgraGameData(
-                    g.KogdaIgraGameId,
-                    g.Name,
-                    g.LastUpdatedAt.Value,
-                    DateOnly.FromDateTime(g.Begin.Value.Date),
-                    DateOnly.FromDateTime(g.End.Value.Date),
-                    g.RegionName,
-                    g.MasterGroupName,
-                    Uri.TryCreate(g.SiteUri, UriKind.Absolute, out var u) ? u : null,
-                    g.Active);
     }
 }

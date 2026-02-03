@@ -20,7 +20,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
     {
         var user = await userRepository.GetUserInfo(userId) ?? throw new JoinRpgEntityNotFoundException([userId], "User");
 
-        var userProjects = await projectRepository.GetProjectsBySpecification(userId, ProjectListSpecification.AllProjectsWithMasterAccess);
+        var userProjects = await projectRepository.GetPersonalizedProjectsBySpecification(userId, ProjectListSpecification.AllProjectsWithMasterAccess);
 
         var currentUser = User.Identity?.IsAuthenticated == true ? await userRepository.GetUserInfo(currentUserAccessor.UserIdentification) : null;
 
@@ -36,7 +36,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
 
         if (currentUser != null)
         {
-            var canGrantProjects = await projectRepository.GetProjectsBySpecification(currentUser.UserId, ProjectListSpecification.ActiveProjectsWithGrantMasterAccess);
+            var canGrantProjects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserId, ProjectListSpecification.ActiveProjectsWithGrantMasterAccess);
 
             userProfileViewModel.CanGrantAccessProjects = canGrantProjects.ToLinkViewModels().ToList();
 

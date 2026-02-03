@@ -16,8 +16,8 @@
     return;
 }
 
-<table class="table table-bordered table-hover">
-  <thead>
+<JoinBorderedTable Items="claimListItems" Context="item">
+  <HeadContent>
     <tr>
         <th>Персонаж</th>
         <th>Игрок</th>
@@ -26,11 +26,9 @@
         <th>Ответственный мастер</th>
         <th>Взнос</th>
     </tr>
-    </thead>
-    <tbody>
+    </HeadContent>
+    <ItemTemplate>
 
-    @foreach (var item in claimListItems.OrderBy(c => c.Character.BusyStatus))
-    {
         @if (item.Claims.Length == 0)
         {
             <tr>
@@ -110,14 +108,13 @@
                   </tr>
                 }
             }
-    }
-    </tbody>
-</table>
+    </ItemTemplate>
+</JoinBorderedTable>
 
 
     @code {
 
-    IReadOnlyCollection<UgItemForCaptainViewModel>? claimListItems;
+    IReadOnlyList<UgItemForCaptainViewModel>? claimListItems;
 
     private UgStatusFilterView StatusFilter { get; set; }
 
@@ -127,12 +124,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        claimListItems = await claimListClient.GetForCaptain(ProjectId, StatusFilter);
+        claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.BusyStatus).ToList();
         await base.OnInitializedAsync();
     }
 
-}
-@code {
     private async Task UpdateFilter(UgStatusFilterView args)
     {
         if (StatusFilter != args)
@@ -140,7 +135,7 @@
             StatusFilter = args;
             claimListItems = null;
             StateHasChanged();
-            claimListItems = await claimListClient.GetForCaptain(ProjectId, StatusFilter);
+            claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.BusyStatus).ToList();
         }
     }
 }

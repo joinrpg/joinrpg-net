@@ -1,0 +1,35 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@using System.ComponentModel.DataAnnotations
+@inject ILogger<AdminProjectPanel> logger
+<div style="margin:0.5em; margin-top:2em">
+    <span class="h3">Игры</span> <EnumSelector TValue="StatusEnum" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
+    <InfoIcon Title="@StatusFilter.GetDescription()" />
+</div>
+<AdminProjectGrid Criteria="@Criteria" />
+
+@code
+{
+    private ProjectSelectionCriteria Criteria { get; set; } = ProjectSelectionCriteria.All;
+    private StatusEnum StatusFilter { get; set; } = StatusEnum.All;
+
+    private enum StatusEnum
+    {
+        [Display(Name="Все игры", Description = "Все игры, включая закрытые")]
+        All,
+        [Display(Name = "Активные", Description = "Все активные (не закрытые) игры")]
+        Active,
+        [Display(Name = "Привязать к КогдаИгре", Description = "Нужно привязать к КогдаИгре")]
+        KogdaIgraNeeded
+    }
+    private async Task UpdateFilter(StatusEnum args)
+    {
+        logger.LogError("Update filter to {args}", args);
+        Criteria = args switch
+        {
+            StatusEnum.All => ProjectSelectionCriteria.All,
+            StatusEnum.KogdaIgraNeeded => ProjectSelectionCriteria.ActiveWithoutKogdaIgra,
+            StatusEnum.Active => ProjectSelectionCriteria.Active,
+            _ => throw new NotImplementedException(),
+        };
+    }
+}

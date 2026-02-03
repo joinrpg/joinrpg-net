@@ -15,7 +15,7 @@ public class GlobalScheduleController(IProjectRepository projectRepository, ICur
     [HttpGet, Authorize, Route("projects/active")]
     public async Task<IEnumerable<ProjectHeader>> GetActiveProjects()
     {
-        return (await projectRepository.GetProjectsBySpecification(currentUserAccessor.UserIdentification, ProjectListSpecification.ActiveProjectsWithSchedule))
+        return (await projectRepository.GetPersonalizedProjectsBySpecification(currentUserAccessor.UserIdentification, ProjectListSpecification.ActiveProjectsWithSchedule))
             .Select(p => new ProjectHeader { ProjectId = p.ProjectId, ProjectName = p.ProjectName });
     }
 }

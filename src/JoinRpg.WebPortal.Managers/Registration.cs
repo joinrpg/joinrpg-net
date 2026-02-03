@@ -1,3 +1,4 @@
+using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
@@ -36,7 +37,8 @@ public static class Registration
         .AddScoped<IResponsibleMasterRuleClient, ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService>()
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IMasterClient, ProjectMasterViewService>()
-        .AddScoped<IProjectListClient, ProjectListViewService>()
+        .AddTransient<IProjectListClient, ProjectListViewService>()
+        .AddTransient<IProjectListForAdminClient, ProjectListViewService>()
         .AddScoped<IPlotClient, Plots.PlotViewService>()
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<IKogdaIgraBindClient, AdminTools.KogdaIgraSyncManager>()

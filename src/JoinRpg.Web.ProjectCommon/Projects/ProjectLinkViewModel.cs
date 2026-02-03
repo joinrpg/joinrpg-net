@@ -1,3 +1,9 @@
 namespace JoinRpg.Web.ProjectCommon.Projects;
 
-public record ProjectLinkViewModel(ProjectIdentification ProjectId, string ProjectName);
+public interface IProjectLinkViewModel
+{
+    ProjectIdentification ProjectId { get; }
+    string ProjectName { get; }
+}
+
+public record ProjectLinkViewModel(ProjectIdentification ProjectId, string ProjectName) : IProjectLinkViewModel;

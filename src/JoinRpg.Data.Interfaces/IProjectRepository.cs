@@ -48,13 +48,18 @@ public interface IProjectRepository : IDisposable
     /// Проекты грузятся всегда относительно какого-то пользователя.
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>
-    Task<ProjectShortInfo[]> GetProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification);
+    Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification);
+
+    /// <summary>
+    /// Без учета данных о доступе к проектам и наличия заявки, более быстрый метод
+    /// </summary>
+    Task<ProjectShortInfo[]> GetProjectsBySpecification(ProjectListSpecification projectListSpecification);
 
     /// <summary>
     /// Проекты грузятся всегда относительно какого-то пользователя.
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>
-    Task<ProjectShortInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
+    Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
 
     Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId);
 

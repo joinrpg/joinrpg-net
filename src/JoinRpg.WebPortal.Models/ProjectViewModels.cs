@@ -7,7 +7,7 @@ namespace JoinRpg.Web.Models;
 
 public static class ProjectLinkViewModelBuilder
 {
-    public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(this IEnumerable<ProjectShortInfo> projects)
+    public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(this IEnumerable<ProjectPersonalizedInfo> projects)
         => projects.OrderByDisplayPriority().Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName));
 }
 

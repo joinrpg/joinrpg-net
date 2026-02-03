@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
@@ -203,25 +204,67 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return result.Where(CharacterPredicates.ByGroupPrecise(characterGroupIdentifications)).ToList();
     }
 
-    async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)
+    async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)
     {
         var filterPredicate = ProjectPredicates.BySpecification(userId, projectListSpecification);
-        return await GetProjectListInternal(userId, filterPredicate);
+        return await GetProjectPersonalizedListInternal(userId, filterPredicate);
     }
 
-    Task<ProjectShortInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
+    async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(ProjectListSpecification projectListSpecification)
+    {
+        var filterPredicate = ProjectPredicates.BySpecification(userInfoId: null, projectListSpecification);
+        return await GetProjectListInternal(filterPredicate);
+    }
+
+    Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
     {
         var idArray = ids.Select(id => id.Value).ToArray();
-        return GetProjectListInternal(userId, project => idArray.Contains(project.ProjectId));
+        return GetProjectPersonalizedListInternal(userId, project => idArray.Contains(project.ProjectId));
     }
-    private async Task<ProjectShortInfo[]> GetProjectListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
+    private async Task<ProjectShortInfo[]> GetProjectListInternal(Expression<Func<Project, bool>> filterPredicate)
+    {
+        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+
+        var query = from project in AllProjects.AsExpandable()
+                    join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+                    where filterPredicate.Compile()(project)
+                    select new
+                    {
+                        project.ProjectId,
+                        project.ProjectName,
+                        project.IsAcceptingClaims,
+                        project.Details.PublishPlot,
+                        project.Active,
+                        update.LastUpdated,
+                        ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                        project.KogdaIgraGames,
+                        project.Details.DisableKogdaIgraMapping,
+                    };
+
+        var result = await query.ToListAsync();
+
+        return [.. result.Select(x => new ProjectShortInfo(
+            new(x.ProjectId),
+            ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
+            x.PublishPlot,
+            new(x.ProjectName),
+            x.ActiveClaimsCount,
+            DateOnly.FromDateTime(x.LastUpdated),
+            KiLinks:
+                (x.DisableKogdaIgraMapping, x.KogdaIgraGames.Count) switch{
+                    (true, _) => [],
+                    (false, 0 ) => null,
+                    (false, _) => [..x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
+                }
+            ))];
+    }
+
+    private async Task<ProjectPersonalizedInfo[]> GetProjectPersonalizedListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
     {
         var masterPredicate = userId is null ? project => false : ProjectPredicates.MasterAccess(userId);
         var claimPredicate = userId is null ? project => false : ProjectPredicates.HasActiveClaim(userId);
 
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-        var activeOrOnHoldClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.ActiveOrOnHold);
-
 
         var query = from project in AllProjects.AsExpandable()
                     where filterPredicate.Compile()(project)
@@ -240,7 +283,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         var result = await query.ToListAsync();
 
-        return [.. result.Select(x => new ProjectShortInfo(
+        return [.. result.Select(x => new ProjectPersonalizedInfo(
             new(x.ProjectId),
             ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
             x.PublishPlot,

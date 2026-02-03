@@ -5,4 +5,6 @@ public enum ProjectSelectionCriteria
     ForCloning,
     ActiveWithMyMasterAccess,
     ActiveWithoutKogdaIgra,
+    Active,
+    All
 }
