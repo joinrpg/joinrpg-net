@@ -28,7 +28,7 @@ else
             <p> <b>ActivityId:</b> @Model.ActivityId </p>
         }
 
-        <p><b>RequestId</b>: @Model.RequestId</p>
+        <p><b>RequestId</b>: "@Model.RequestId"</p>
 
         @if (!string.IsNullOrWhiteSpace(Model.Path))
         {
