@@ -1,0 +1,61 @@
+@if (Projects.Count > 0)
+{
+    <h2>@Header</h2>
+    <div class="cards">
+
+        @foreach (var project in Projects.Take(8))
+        {
+            <div class="card">
+                <h4 title="@project.ProjectName" class="project-name">
+                    @if (project.LastKogdaIgraId is not null)
+                    {
+                        <a href="https://kogda-igra.ru/game/@(project.LastKogdaIgraId.Value)/"><CalendarIcon /></a>
+
+                        <text>&nbsp;</text>
+                    }
+                    <ProjectLink Model="project" />
+                </h4>
+                <div class="btn-group">
+                    @if (project.IsMaster)
+                    {
+                        <a href="/@(project.ProjectId.Value)/home"
+                           class="btn btn-info btn-sm"
+                           role="button"
+                           title="У меня есть права мастера на этой игре">Мой проект</a>
+                    }
+
+                    <a href="/@(project.ProjectId.Value)/roles"
+                       class="btn btn-primary btn-sm"
+                       role="button"
+                       title="Сетка ролей">
+                        Сетка ролей
+                    </a>
+
+                    @if (!project.IsMaster && project.PublishPlot)
+                    {
+                        <a href="/@(project.ProjectId.Value)/plot/index"
+                           class="btn btn-info btn-sm"
+                           role="button">
+                            Материалы
+                        </a>
+                    }
+
+                    @if (project.HasMyClaims || project.IsAcceptingClaims)
+                    {
+                        <MyClaimButton ProjectId="@project.ProjectId" HasMyClaims="@project.HasMyClaims" ProjectStatus="@project.Status" Size="@SizeStyleEnum.Small" />
+                    }
+                </div>
+            </div>
+
+        }
+    </div>
+}
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<ProjectListItemViewModel> Projects { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public string Header { get; set; } = null!;
+}

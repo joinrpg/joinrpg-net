@@ -2,63 +2,58 @@
 @model HomeViewModel
 
 @{
-    ViewBag.Title = ViewBag.IsProduction ?  "JoinRpg.RU" : "Dev.JoinRpg.RU";
+    ViewBag.Title = ViewBag.IsProduction ? "JoinRpg.RU" : "Dev.JoinRpg.RU";
 }
-<br/>
+<br />
 <div class="panel panel-default well">
     <div class="panel-body">
-        <h2 >@ViewBag.Title</h2>
+        <h2>@ViewBag.Title</h2>
         @if (ViewBag.IsProduction)
         {
-        <div>
-            <p>
-                Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База персонажей от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
-            </p>
+            <div>
+                <p>
+                    Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База персонажей от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
+                </p>
 
-            @Html.ActionLink("О проекте", "About", null,  null, new { @class = "btn btn-primary" })
-            <a href="https://docs.joinrpg.ru" class="btn btn-info">Документация</a>
-            @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
-            @Html.ActionLink("Как помочь?", "HowToHelp", null, null, new { @class = "btn btn-default" })
-        </div>
+                @Html.ActionLink("О проекте", "About", null, null, new { @class = "btn btn-primary" })
+                <a href="https://docs.joinrpg.ru" class="btn btn-info">Документация</a>
+                @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
+                @Html.ActionLink("Как помочь?", "HowToHelp", null, null, new { @class = "btn btn-default" })
+            </div>
         }
         else
         {
-        <div>
-            <div class="alert alert-danger">
-                Это тестовая версия JoinRpg.ru.<br/>Не используйте ее для реальной работы с игроками<br/>
-            Если вы игрок и забрели сюда случайно, вам <a href="https://joinrpg.ru">на основной сервер</a> 
-            </div>
+            <div>
+                <div class="alert alert-danger">
+                    Это тестовая версия JoinRpg.ru.<br />Не используйте ее для реальной работы с игроками<br />
+                    Если вы игрок и забрели сюда случайно, вам <a href="https://joinrpg.ru">на основной сервер</a>
+                </div>
 
-            @Html.ActionLink("О проекте", "About", null, null, new { @class = "btn btn-primary" })
-            <a href="https://docs.joinrpg.ru" class="btn btn-info">Документация</a>
-            @Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
-            <a href="https://joinrpg.ru" class="btn btn-info"> Перейти на основной сервер</a>
-        </div>
+                @Html.ActionLink("О проекте", "About", null, null, new { @class = "btn btn-primary" })
+                <a href="https://docs.joinrpg.ru" class="btn btn-info">Документация</a>
+                @Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
+                <a href="https://joinrpg.ru" class="btn btn-info"> Перейти на основной сервер</a>
+            </div>
         }
-        
+
     </div>
 </div>
 
-<component type="typeof(JoinRpg.Web.Games.Projects.MyProjectPanel)"
+<component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
            param-Projects="@Model.MyProjects"
+           param-Header="@("Мои игры")"
            render-mode="Static" />
 
+<component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
+           param-Projects="@Model.AllProjects"
+           param-Header="@("Куда поехать")"
+           render-mode="Static" />
 
-<h2 style="clear:both">Куда поехать</h2>
-
-    @foreach (var project in Model.AllProjects)
-    {
-        <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
-                   param-Model="@project"
-                   render-mode="Static" />
-    }
-        @if (Model.HasMoreProjects)
-        {
-            <div class="col-sm-12">
-                <div class="thumbnail">
-                    <div class="caption text-center">
-                         @Html.ActionLink("Еще игры...", "BrowseGames", "Home")  / @Html.ActionLink("Архив...", "GameArchive", "Home") </div>
-                </div>
-
-            </div>
-        }
+@if (Model.HasMoreProjects)
+{
+    <div class="panel panel-default">
+      <div class="panel-body">
+                @Html.ActionLink("Еще игры...", "BrowseGames", "Home")  / @Html.ActionLink("Архив...", "GameArchive", "Home")
+        </div>
+    </div>
+}
