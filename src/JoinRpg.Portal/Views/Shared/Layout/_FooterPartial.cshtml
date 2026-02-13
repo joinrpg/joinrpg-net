@@ -1,4 +1,4 @@
-    <footer>
+<footer>
     <hr />
     &copy; #<a href="https://leotsarev.ru">ЛеоЦарев</a>, <a href="http://bastilia.ru">Бастилия</a> и Друзья.
     <a asp-controller="Home" asp-action="Support">Поддержка</a>:
@@ -7,7 +7,7 @@
     <component type="typeof(JoinRpg.WebComponents.TelegramIcon)"
                render-mode="Static"
                param-Link="@("joinrpg")"
-               param-Collapse="true"/>
+               param-Collapse="true" />
     @await Html.HelpLink("", "").
     Информация о @Html.ActionLink("приеме платежей", "Index", "OnlinePayments").
     <a href="/privacy">Приватность</a>.

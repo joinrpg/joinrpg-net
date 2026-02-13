@@ -5,22 +5,12 @@
   ViewBag.Title = "Все игры";
 }
 
-<component type="typeof(JoinRpg.Web.Games.Projects.MyProjectPanel)"
+<component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
            param-Projects="@Model.MyProjects"
+           param-Header="@("Мои игры")"
            render-mode="Static" />
 
-@if (Model.AllProjects.Any())
-{
-  <h2 style="clear:both">Все Игры</h2>
-
-    @foreach (var project in Model.AllProjects)
-    {
-            <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCard)"
-                       param-Model="@project"
-                       render-mode="Static" />
-    }
-}
-else
-{
-  <h3>Архив игр пуст</h3>
-}
+<component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
+           param-Projects="@Model.AllProjects"
+           param-Header="@("Куда поехать")"
+           render-mode="Static" />
