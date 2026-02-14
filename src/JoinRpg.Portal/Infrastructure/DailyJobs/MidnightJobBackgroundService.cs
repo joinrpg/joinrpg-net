@@ -60,7 +60,7 @@ public class MidnightJobBackgroundService<TJob>(
         var midnight = now
             .Date.AddDays(1) // next midnight
             .Add(delay ?? TimeSpan.FromSeconds(5)) // Если ничего нет, запускаем через 5 секунд
-            .AddSeconds(Random.Shared.Next(5)); //let's different pods to start daily jobs at different times
+            .AddMilliseconds(Random.Shared.Next(5 * 1000)); //let's different pods to start daily jobs at different times
         logger.LogDebug("Время запуска джобы для нас будет {specialMidnight}", midnight);
         await Task.Delay(midnight - now, stoppingToken);
     }
