@@ -155,6 +155,9 @@ dotnet_diagnostic.CA1859.severity = warning
 # CA1068: CancellationToken parameters must come last
 dotnet_diagnostic.CA1068.severity = warning
 
+# IDE0005 Remove unnecessary using directives // требуется для работы reference trimmer
+dotnet_diagnostic.IDE0005.severity = warning
+
 [*.{cs,vb}]
 #### Naming styles ####
 
