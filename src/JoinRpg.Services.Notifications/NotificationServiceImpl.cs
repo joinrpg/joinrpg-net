@@ -83,13 +83,10 @@ public partial class NotificationServiceImpl(
 
         foreach (var recepient in notificationMessage.Recepients)
         {
-            if (recepient.Fields.Keys.Except(fields).Any())
-            {
-                throw new InvalidOperationException("Too many fields");
-            }
+            // Ничего страшного, если нам передадут лишние поля, которых нет в темплейте, но в обратную сторону это проблема
             if (fields.Except(recepient.Fields.Keys).Any())
             {
-                throw new InvalidOperationException("Not enough fields");
+                throw new InvalidOperationException($"Not enough fields: {string.Join(", ", fields.Except(recepient.Fields.Keys))}");
             }
         }
     }
