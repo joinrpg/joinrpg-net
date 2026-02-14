@@ -7,9 +7,10 @@ namespace JoinRpg.Portal.Controllers.Common;
 /// It's recommended that you inject ICurrentUserAccessor in your constructor
 /// </summary>
 [Obsolete]
-public abstract class LegacyJoinControllerBase : ControllerBase
+public abstract class LegacyJoinControllerBase : JoinMvcControllerBase
 {
 
+    [Obsolete]
     protected int CurrentUserId
     {
         get
@@ -24,6 +25,7 @@ public abstract class LegacyJoinControllerBase : ControllerBase
         }
     }
 
+    [Obsolete]
     protected int? CurrentUserIdOrDefault => User.GetUserIdOrDefault();
 
 }

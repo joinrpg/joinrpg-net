@@ -25,7 +25,7 @@ public class AccountController(
     IRecaptchaVerificator recaptchaVerificator,
     ExternalLoginProfileExtractor externalLoginProfileExtractor,
     ILogger<AccountController> logger
-    ) : Common.ControllerBase
+    ) : Common.JoinMvcControllerBase
 {
     [AllowAnonymous]
     public async Task<ActionResult> Login(string returnUrl) => View(await CreateLoginPageViewModelAsync(returnUrl));

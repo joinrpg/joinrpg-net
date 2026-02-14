@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -69,7 +68,7 @@ public class CheckInController(
         }
         catch (Exception ex)
         {
-            ModelState.AddException(ex);
+            AddModelException(ex);
             return View(model);
         }
     }
@@ -117,7 +116,7 @@ public class CheckInController(
         }
         catch (Exception ex)
         {
-            ModelState.AddException(ex);
+            AddModelException(ex);
             return await ShowCheckInForm(claim);
         }
     }
@@ -165,7 +164,7 @@ public class CheckInController(
         }
         catch (Exception ex)
         {
-            ModelState.AddException(ex);
+            AddModelException(ex);
             return await ShowSecondRole(new(model.ProjectId), model.ClaimId);
         }
     }

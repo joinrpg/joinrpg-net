@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 [AllowAnonymous]
-public class HomeController(ProjectListManager projectListManager) : Common.ControllerBase
+public class HomeController(ProjectListManager projectListManager) : Common.JoinMvcControllerBase
 {
     private const int ProjectsOnHomePage = 9;
 

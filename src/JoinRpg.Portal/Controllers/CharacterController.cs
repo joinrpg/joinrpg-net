@@ -3,7 +3,6 @@ using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -97,7 +96,7 @@ public class CharacterController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return View(viewModel.Fill(field, CurrentUserId, projectInfo));
         }
     }
@@ -173,7 +172,7 @@ public class CharacterController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             CharacterGroup? characterGroup;
             if (characterGroupId == null)
             {

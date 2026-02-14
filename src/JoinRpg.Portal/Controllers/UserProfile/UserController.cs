@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, YandexLogLink yandexLogLink,
-    IProjectRepository projectRepository, IClaimsRepository claimsRepository) : Common.ControllerBase()
+    IProjectRepository projectRepository, IClaimsRepository claimsRepository) : Common.JoinMvcControllerBase()
 {
     [HttpGet("user/{userId}")]
     [AllowAnonymous]

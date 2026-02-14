@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -145,7 +144,7 @@ public class GameController(
         }
         catch (Exception ex)
         {
-            ModelState.AddException(ex);
+            AddModelException(ex);
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             viewModel.OriginalName = project.ProjectName;
             viewModel.IsMaster = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties);

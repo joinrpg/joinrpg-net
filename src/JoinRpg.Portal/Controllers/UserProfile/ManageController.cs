@@ -29,7 +29,7 @@ public class ManageController(
     ExternalLoginProfileExtractor externalLoginProfileExtractor,
     ILogger<ManageController> logger,
     IAvatarService avatarService
-        ) : Common.ControllerBase
+        ) : Common.JoinMvcControllerBase
 {
     public IUserRepository UserRepository { get; } = userRepository;
 

@@ -3,12 +3,10 @@ using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using JoinRpg.Web.Models.Money;
@@ -21,7 +19,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/money/[action]")]
 public class FinancesController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IExportDataService exportDataService,
     IFinanceService financeService,
     IUriService uriService,
@@ -31,18 +28,16 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FinancesController> logger,
     IProjectMetadataRepository projectMetadataRepository
-        ) : ControllerGameBase(projectRepository, projectService)
+        ) : JoinControllerGameBase
 {
-    public ICurrentUserAccessor CurrentUserAccessor { get; } = currentUserAccessor;
-
     protected readonly IUserRepository UserRepository = userRepository;
 
     [HttpGet]
     [MasterAuthorize]
     public async Task<ActionResult> Setup(int projectid)
     {
-        var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-        return View(new FinanceSetupViewModel(project, CurrentUserId, CurrentUserAccessor.IsAdmin, vpu.PaymentsUser));
+        var project = await projectRepository.GetProjectForFinanceSetup(projectid);
+        return View(new FinanceSetupViewModel(project, currentUserAccessor.UserId, currentUserAccessor.IsAdmin, vpu.PaymentsUser));
     }
 
     [HttpGet]
@@ -57,7 +52,7 @@ public class FinancesController(
 
     private async Task<ActionResult> GetFinanceOperationsList(ProjectIdentification projectid, string export, Func<FinanceOperation, bool> predicate)
     {
-        var project = await ProjectRepository.GetProjectWithFinances(projectid);
+        var project = await projectRepository.GetProjectWithFinances(projectid);
         var viewModel = new FinOperationListViewModel(projectid, uriService,
             project.FinanceOperations.Where(predicate).ToArray());
 
@@ -83,7 +78,7 @@ public class FinancesController(
     public async Task<ActionResult> MoneySummary(ProjectIdentification projectId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var project = await ProjectRepository.GetProjectWithFinances(projectId);
+        var project = await projectRepository.GetProjectWithFinances(projectId);
         if (project == null)
         {
             return NotFound();
@@ -101,7 +96,7 @@ public class FinancesController(
             uriService,
             project.FinanceOperations.ToArray(),
             payments,
-            CurrentUserAccessor);
+            currentUserAccessor);
 
         return View(viewModel);
     }
@@ -165,7 +160,7 @@ public class FinancesController(
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> EditPaymentType(int projectid, int paymenttypeid)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectid);
+        var project = await projectRepository.GetProjectAsync(projectid);
         var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == paymenttypeid);
         if (paymentType == null)
         {
@@ -184,7 +179,7 @@ public class FinancesController(
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> EditPaymentType(EditPaymentTypeViewModel viewModel)
     {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
         var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == viewModel.PaymentTypeId);
         if (paymentType == null)
         {
@@ -198,7 +193,7 @@ public class FinancesController(
         }
         catch (Exception exc)
         {
-            ModelState.AddException(exc);
+            AddModelException(exc);
             return View(viewModel);
         }
     }
@@ -207,7 +202,7 @@ public class FinancesController(
     [HttpPost]
     public async Task<ActionResult> CreateFeeSetting(CreateProjectFeeSettingViewModel viewModel)
     {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
         if (project == null)
         {
             return NotFound();
@@ -224,8 +219,9 @@ public class FinancesController(
             });
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Ошибка");
             //TODO: Message that comment is not added
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
@@ -235,7 +231,7 @@ public class FinancesController(
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectid);
+        var project = await projectRepository.GetProjectAsync(projectid);
         if (project == null)
         {
             return NotFound();
@@ -246,8 +242,9 @@ public class FinancesController(
             await financeService.DeleteFeeSetting(projectid, projectFeeSettingId);
             return RedirectToAction("Setup", new { projectid });
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Ошибка");
             //TODO: Message that comment is not added
             return RedirectToAction("Setup", new { projectid });
         }
@@ -256,7 +253,7 @@ public class FinancesController(
     [HttpGet, AllowAnonymous]
     public async Task<ActionResult> SummaryByMaster(string token, int projectId)
     {
-        var project = await ProjectRepository.GetProjectWithFinances(projectId);
+        var project = await projectRepository.GetProjectWithFinances(projectId);
 
         var guid = new Guid(Convert.FromHexString(token));
 
@@ -284,7 +281,7 @@ public class FinancesController(
     [HttpPost]
     public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
     {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
         if (project == null)
         {
             return NotFound();
@@ -301,8 +298,9 @@ public class FinancesController(
             });
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Ошибка");
             //TODO: Message that comment is not added
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
@@ -312,7 +310,7 @@ public class FinancesController(
     [HttpGet]
     public async Task<ActionResult> ByMaster(ProjectIdentification projectId, int masterId)
     {
-        var project = await ProjectRepository.GetProjectWithFinances(projectId);
+        var project = await projectRepository.GetProjectWithFinances(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var transfers =
             await financeReportRepository.GetMoneyTransfersForMaster(projectId, masterId);
@@ -336,7 +334,7 @@ public class FinancesController(
             uriService,
             operations,
             payments,
-            CurrentUserAccessor,
+            currentUserAccessor,
             projectInfo);
         return View(viewModel);
     }

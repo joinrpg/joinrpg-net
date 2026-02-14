@@ -13,7 +13,7 @@ public class SearchController(
     ISearchService searchService,
     IProjectRepository projectRepository,
     IUriService uriService,
-    ICurrentUserAccessor currentUserAccessor) : Common.ControllerBase
+    ICurrentUserAccessor currentUserAccessor) : Common.JoinMvcControllerBase
 {
     public async Task<ActionResult> Index(string? searchString)
     {

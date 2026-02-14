@@ -7,7 +7,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -90,8 +89,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            logger.LogWarning(exception, "Проблема при отсылке заявки");
-            ModelState.AddException(exception);
+            AddModelException(exception);
             var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
             var source = await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
@@ -208,7 +206,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await Edit(projectId, claimId);
         }
     }
@@ -231,7 +229,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
     }
@@ -254,7 +252,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
     }
@@ -288,7 +286,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
     }
@@ -317,7 +315,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
     }
@@ -350,7 +348,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
     }
@@ -372,7 +370,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
 
@@ -406,7 +404,7 @@ public class ClaimController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return await ShowClaim(claim);
         }
     }

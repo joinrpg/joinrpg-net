@@ -9,7 +9,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 
 [AdminAuthorize]
 [Area("Admin")]
-public class UsersController : JoinRpg.Portal.Controllers.Common.ControllerBase
+public class UsersController : JoinRpg.Portal.Controllers.Common.JoinMvcControllerBase
 {
     private IUserService UserService { get; }
     private JoinUserManager UserManager { get; }
