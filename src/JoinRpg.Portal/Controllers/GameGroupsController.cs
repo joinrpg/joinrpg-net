@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -296,7 +295,7 @@ public class GameGroupsController(
         }
         catch (Exception e)
         {
-            ModelState.AddException(e);
+            AddModelException(e);
             return View(FillFromCharacterGroup(viewModel, group));
 
         }
@@ -318,7 +317,6 @@ public class GameGroupsController(
 
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
-    // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Delete(int projectId, int characterGroupId, IFormCollection collection)
     {
         var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
@@ -386,7 +384,7 @@ public class GameGroupsController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return View(FillFromCharacterGroup(viewModel, field));
         }
     }

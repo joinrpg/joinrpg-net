@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -30,14 +29,13 @@ public class PlotController(
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
     ILogger<PlotController> logger
-    ) : ControllerGameBase(projectRepository,
-        projectService)
+    ) : JoinControllerGameBase
 {
     [MasterAuthorize(Permission.CanManagePlots)]
     [HttpGet]
     public async Task<ActionResult> Create(int projectId)
     {
-        var project1 = await ProjectRepository.GetProjectAsync(projectId);
+        var project1 = await projectRepository.GetProjectAsync(projectId);
         return View(new AddPlotFolderViewModel
         {
             ProjectId = project1.ProjectId,
@@ -61,7 +59,7 @@ public class PlotController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return View(viewModel);
         }
     }
@@ -89,7 +87,7 @@ public class PlotController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             var folder = await plotRepository.GetPlotFolderAsync(new(viewModel.ProjectId, viewModel.PlotFolderId));
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
             viewModel.Fill(folder, currentUserAccessor, uriService, projectInfo);
@@ -157,7 +155,7 @@ public class PlotController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             var folder = await plotRepository.GetPlotFolderAsync(plotFolderId1);
             if (folder == null)
             {
@@ -185,7 +183,7 @@ public class PlotController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             var folder = await plotRepository.GetPlotFolderAsync(plotFolderId1);
             if (folder == null)
             {
@@ -262,7 +260,7 @@ public class PlotController(
         }
         var viewModel = new EditPlotElementViewModel(
             folder.Elements.Single(e => e.PlotElementId == elementId.PlotElementId),
-            folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots),
+            folder.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             version
             );
         return View(viewModel);
@@ -275,8 +273,8 @@ public class PlotController(
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
         try
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            if (project.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
+            var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+            if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
                 var targetGroups = targets.OrEmptyList().GetUnprefixedGroups(projectId);
                 var targetChars = targets.OrEmptyList().GetUnprefixedChars(projectId);
@@ -294,7 +292,7 @@ public class PlotController(
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Ошибка при изменении вводной {plotElementId}", plotelementid);
-            ModelState.AddException(ex);
+            AddModelException(ex);
             return await Edit(projectId, plotFolderId);
         }
     }
@@ -319,16 +317,16 @@ public class PlotController(
     }
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version, bool printMode)
+    public async Task<ActionResult> ShowElementVersion(ProjectIdentification projectId, int plotFolderId, int plotElementId, int version, bool printMode)
     {
         var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
         }
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
-          CurrentUserId,
+          currentUserAccessor.UserId,
             itemIdsToParticipateInSort: null, renderer: new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo), currentVersion: version, printMode: printMode));
     }
 

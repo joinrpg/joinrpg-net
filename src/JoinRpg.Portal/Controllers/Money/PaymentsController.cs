@@ -9,7 +9,7 @@ using PscbApi;
 
 namespace JoinRpg.Portal.Controllers.Money;
 
-public class PaymentsController : Common.ControllerBase
+public class PaymentsController : Common.JoinMvcControllerBase
 {
     private ICurrentUserAccessor CurrentUserAccessor { get; }
     private readonly IPaymentsService _payments;

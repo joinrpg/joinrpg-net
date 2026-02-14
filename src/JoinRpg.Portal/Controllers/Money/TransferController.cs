@@ -1,11 +1,11 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Money;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,14 +14,16 @@ namespace JoinRpg.Portal.Controllers.Money;
 [MasterAuthorize()]
 [Route("{projectId}/money/transfer/[action]")]
 public class TransferController(
-    IProjectRepository projectRepository,
-    IProjectService projectService,
-    IFinanceService financeService) : ControllerGameBase(projectRepository, projectService)
+    IProjectMetadataRepository projectMetadataRepository,
+    IFinanceService financeService,
+    ICurrentUserAccessor currentUserAccessor,
+    ILogger<TransferController> logger
+    ) : JoinControllerGameBase
 {
     [HttpGet]
-    public async Task<IActionResult> Create(int projectId)
+    public async Task<IActionResult> Create(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (project == null)
         {
             return NotFound();
@@ -30,7 +32,7 @@ public class TransferController(
         var viewModel = new CreateMoneyTransferViewModel
         {
             ProjectId = projectId,
-            Receiver = CurrentUserId,
+            Receiver = currentUserAccessor.UserId,
         };
 
         Fill(viewModel, project);
@@ -41,7 +43,7 @@ public class TransferController(
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Create(CreateMoneyTransferViewModel viewModel)
     {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        var project = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
         if (project == null)
         {
             return NotFound();
@@ -70,7 +72,7 @@ public class TransferController(
         }
         catch (Exception e)
         {
-            ModelState.AddException(e);
+            AddModelException(e);
             return View(viewModel);
         }
 
@@ -78,10 +80,10 @@ public class TransferController(
     }
 
 
-    private void Fill(CreateMoneyTransferViewModel viewModel, Project project)
+    private void Fill(CreateMoneyTransferViewModel viewModel, ProjectInfo project)
     {
         viewModel.HasAdminAccess =
-            project.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            project.HasMasterAccess(currentUserAccessor, PrimitiveTypes.Access.Permission.CanManageMoney);
     }
 
     [HttpPost]
@@ -108,8 +110,9 @@ public class TransferController(
         {
             await financeService.MarkTransfer(request);
         }
-        catch
+        catch (Exception exception)
         {
+            logger.LogError(exception, "Ошибка");
             //TODO handle error
             return RedirectToAction("MoneySummary", "Finances", new { request.ProjectId });
         }

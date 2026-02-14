@@ -2,13 +2,12 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Comments;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,21 +18,19 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/forums/{forumThreadId}/[action]")]
 public class ForumController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IForumService forumService,
     IForumRepository forumRepository,
     IClaimsRepository claimsRepository,
-    IClaimService claimService) : ControllerGameBase(projectRepository, projectService)
+    ICurrentUserAccessor currentUserAccessor,
+    IClaimService claimService) : JoinControllerGameBase
 {
-
-    #region Constructor & Services
-    #endregion
+    private int CurrentUserId => currentUserAccessor.UserId;
 
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
     [MasterAuthorize]
     public async Task<ActionResult> CreateThread(int projectId, int charactergroupid)
     {
-        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, charactergroupid);
+        var characterGroup = await projectRepository.GetGroupAsync(projectId, charactergroupid);
         if (characterGroup == null)
         {
             return NotFound();
@@ -45,7 +42,7 @@ public class ForumController(
     [MasterAuthorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateThread(CreateForumThreadViewModel viewModel)
     {
-        var group = (await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId)).EnsureActive();
+        var group = (await projectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId)).EnsureActive();
 
         viewModel.CharacterGroupName = group.CharacterGroupName;
         viewModel.ProjectName = group.Project.ProjectName;
@@ -66,7 +63,7 @@ public class ForumController(
         }
         catch (Exception exception)
         {
-            ModelState.AddException(exception);
+            AddModelException(exception);
             return View(viewModel);
         }
     }
@@ -153,12 +150,12 @@ public class ForumController(
     [HttpGet("~/{projectId}/forums")]
     public async Task<ActionResult> ListThreads(int projectid)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectid);
+        var project = await projectRepository.GetProjectAsync(projectid);
         if (project == null)
         {
             return NotFound();
         }
-        var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
+        var isMaster = project.HasMasterAccess(currentUserAccessor);
         IEnumerable<int>? groupIds;
         if (isMaster)
         {
@@ -178,14 +175,14 @@ public class ForumController(
     [HttpGet("~/{projectId}/roles/{characterGroupId}/forums")]
     public async Task<ActionResult> ListThreadsByGroup(int projectid, int characterGroupId)
     {
-        var group = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
+        var group = await projectRepository.GetGroupAsync(projectid, characterGroupId);
         if (group == null)
         {
             return NotFound();
         }
-        var isMaster = group.HasMasterAccess(CurrentUserIdOrDefault);
+        var isMaster = group.HasMasterAccess(currentUserAccessor);
         var threads = await forumRepository.GetThreads(projectid, isMaster, new[] { characterGroupId });
-        var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(CurrentUserIdOrDefault)), CurrentUserId);
+        var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentificationOrDefault)), CurrentUserId);
         return View(viewModel);
     }
 

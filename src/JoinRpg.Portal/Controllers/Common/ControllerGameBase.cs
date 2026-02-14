@@ -40,7 +40,7 @@ public abstract class ControllerGameBase(
 
 [TypeFilter<CaptureNoAccessExceptionFilter>]
 [DiscoverProjectFilter]
-public abstract class JoinControllerGameBase : ControllerBase
+public abstract class JoinControllerGameBase : JoinMvcControllerBase
 {
     protected ActionResult RedirectToIndex(Project project) => RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
 

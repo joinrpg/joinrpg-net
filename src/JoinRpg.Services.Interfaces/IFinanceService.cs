@@ -8,7 +8,7 @@ public class SetFinanceSettingsRequest
     public int ProjectId { get; set; }
     public bool WarnOnOverPayment { get; set; }
     public bool PreferentialFeeEnabled { get; set; }
-    public required string PreferentialFeeConditions { get; set; }
+    public required string? PreferentialFeeConditions { get; set; }
 }
 
 public class CreateFeeSettingRequest

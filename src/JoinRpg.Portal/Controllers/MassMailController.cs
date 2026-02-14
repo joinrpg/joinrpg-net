@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -68,8 +67,7 @@ public class MassMailController(
             viewModel.Claims = filteredClaims.ToClaimViewModels();
             viewModel.ToMyClaimsOnlyWarning = somethingFiltered;
             viewModel.ProjectName = project.ProjectName;
-            ModelState.AddException(exception);
-            ModelState.AddModelError("", "При отправке письма произошла ошибка");
+            AddModelException(exception);
             return View(viewModel);
         }
     }

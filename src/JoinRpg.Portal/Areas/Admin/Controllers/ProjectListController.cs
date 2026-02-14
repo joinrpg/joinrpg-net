@@ -6,7 +6,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers;
 [AdminAuthorize]
 [Area("Admin")]
 public class ProjectListController(
-    ) : Portal.Controllers.Common.ControllerBase
+    ) : Portal.Controllers.Common.JoinMvcControllerBase
 {
     public async Task<IActionResult> Index()
     {
