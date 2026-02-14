@@ -1,16 +1,15 @@
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.Admin;
 
-public class TestMessageModel : PageModel
+[AdminAuthorize]
+public class TestMessageModel(IAdminNotificationService adminNotificationService) : PageModel
 {
-    public void OnGet()
-    {
-    }
+    public void OnGet() { }
 
-    public async Task OnPostAsync([FromServices] IAdminNotificationService adminNotificationService)
+    public async Task OnPostAsync()
     {
         await adminNotificationService.SendTestMessage();
     }

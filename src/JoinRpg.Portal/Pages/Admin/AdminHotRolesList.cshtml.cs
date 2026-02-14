@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.Admin;
 
+[AdminAuthorize]
 public class AdminHotRolesListModel(IHotCharactersRepository hotCharactersRepository, IKogdaIgraSyncClient kogdaIgraSyncClient) : PageModel
 {
     public async Task OnGetAsync()
