@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Joinrpg.AspNetCore.Helpers;
+namespace JoinRpg.Common.WebInfrastructure;
 
 public static class ForwardedHeadersExtensions
 {

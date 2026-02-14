@@ -1,5 +1,4 @@
 using JoinRpg.Common.WebInfrastructure.Logging;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace JoinRpg.Common.WebInfrastructure;

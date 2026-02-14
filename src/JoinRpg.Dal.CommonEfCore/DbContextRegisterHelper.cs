@@ -10,14 +10,14 @@ namespace JoinRpg.Dal.CommonEfCore;
 
 public static class DbContextRegisterHelper
 {
-    public static void AddJoinEfCoreDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment, string connectionStringName)
+    public static bool AddJoinEfCoreDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment, string connectionStringName)
         where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName);
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            return;
+            return false;
         }
 
         services.AddDbContext<TContext>(
@@ -38,5 +38,7 @@ public static class DbContextRegisterHelper
                 connectionString,
                 name: $"{connectionStringName}-db",
                 failureStatus: HealthStatus.Degraded);
+
+        return true;
     }
 }

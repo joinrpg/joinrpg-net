@@ -11,7 +11,6 @@
   </Folder>
   <Folder Name="/Dal/">
     <Project Path="src/JoinRpg.Dal.CommonEfCore/JoinRpg.Dal.CommonEfCore.csproj" />
-    <Project Path="src/JoinRpg.Dal.DataProtection/JoinRpg.Dal.DataProtection.csproj" />
     <Project Path="src/JoinRpg.Dal.Impl/JoinRpg.Dal.Impl.csproj" />
     <Project Path="src/JoinRpg.Dal.JobService/JoinRpg.Dal.JobService.csproj" />
     <Project Path="src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj" />

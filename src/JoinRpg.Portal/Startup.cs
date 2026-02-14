@@ -1,6 +1,5 @@
 using System.Globalization;
 using Autofac;
-using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.BastiliaRatingClient;
 using JoinRpg.Common.EmailSending.Impl;
@@ -21,6 +20,7 @@ using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
+using JoinRpg.Portal.Infrastructure.XApi;
 using JoinRpg.Portal.Menu;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
@@ -40,8 +40,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
     public void ConfigureServices(IJoinServiceCollection services)
     {
-        services.AddJoinOpenTelemetry("JoinRpg", BackgroundServiceActivity.ActivitySourceName);
-
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
             .Configure<S3StorageOptions>(Configuration.GetSection("S3BlobStorage"))
             .Configure<JwtSecretOptions>(Configuration.GetSection("Jwt"))
@@ -90,17 +88,17 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             options.Conventions.ConfigureFilter(new RedirectAntiforgeryValidationFailedResultFilter());
         });
 
-        services.AddJoinDataProtection(Configuration, environment);
+        services.AddJoinWebPlatform(Configuration,
+            environment,
+            "JoinRpg",
+            dataProtectionConnectionStringName: "DataProtection",
+            telemetryServiceNames: [BackgroundServiceActivity.ActivitySourceName]);
 
         services.AddJoinDailyJob(Configuration, environment);
         services.AddNotificationsDal(Configuration, environment);
 
         services.AddJoinDomainServices();
 
-        if (environment.IsDevelopment())
-        {
-            services.AddDatabaseDeveloperPageExceptionFilter();
-        }
 
         _ = services.AddJoinAuth(
             Configuration.GetSection("Jwt").Get<JwtSecretOptions>(),
@@ -118,7 +116,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddCheck<HealthCheckLoadProjects>("Project load", tags: ["ready"]);
 
         services.AddJoinEmailSendingService();
-        services.ConfigureForwardedHeaders();
 
         _ = services.AddTransient<YandexLogLink>();
 
