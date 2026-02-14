@@ -60,11 +60,8 @@ internal static class AuthenticationConfigurator
 
     private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context)
     {
-        if (context.Request.Path.Value?.IsApiPath() == true)
-        {
-            context.Response.StatusCode = 401;
-        }
-        else if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectIdObj) && projectIdObj is int projectId)
+        // Тут не нужно различать ответ от API, потому что API сюда не приходят
+        if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectIdObj) && projectIdObj is int projectId)
         {
             context.Response.Redirect($"{context.RedirectUri}&projectId={projectId}");
         }

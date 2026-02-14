@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-namespace JoinRpg.Portal.Infrastructure;
+namespace JoinRpg.Portal.Infrastructure.XApi;
 
 internal static class Swagger
 {
@@ -48,12 +48,6 @@ internal static class Swagger
     {
         c.SwaggerEndpoint("v1/swagger.json", "My API V1");
         c.ConfigObject.DeepLinking = true;
-    }
-
-    internal static Task RedirectToSwagger(HttpContext ctx)
-    {
-        ctx.Response.Redirect("swagger/");
-        return Task.CompletedTask;
     }
 
     private class SwaggerXGameApiFilter : IDocumentFilter
