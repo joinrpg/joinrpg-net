@@ -9,9 +9,17 @@ public static class NotificationRegistration
 {
     public static IServiceCollection AddJoinNotificationLayerServices(this IServiceCollection services)
     {
-        services.AddOptionsWithValidateOnStart<PostboxOptions>();
         return services
             .AddTransient<INotificationService, NotificationServiceImpl>()
+            ;
+    }
+
+    public static IServiceCollection AddJoinNotificationJobs(this IServiceCollection services)
+    {
+        _ = services
+            .AddSingleton<IValidateOptions<PostboxOptions>, PostboxOptionsValidator>()
+            .AddOptionsWithValidateOnStart<PostboxOptions>();
+        return services
             .AddSingleton<PostboxClientFactory>()
             .AddSenderJob<UiSenderJobService>()
             .AddSenderJob<PostboxSenderJobService>()

@@ -17,6 +17,11 @@
     <Project Path="src/JoinRpg.Data.Interfaces/JoinRpg.Data.Interfaces.csproj" />
     <Project Path="src/JoinRpg.Data.Write.Interfaces/JoinRpg.Data.Write.Interfaces.csproj" />
   </Folder>
+  <Folder Name="/IdPortal/">
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Client/JoinRpg.IdPortal.Client.csproj" />
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Test/JoinRpg.IdPortal.Test.csproj" Id="8fb2fca5-89b5-4c67-9738-bf0ff06aad27" />
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj" />
+  </Folder>
   <Folder Name="/Services/">
     <Project Path="src/JoinRpg.Integrations.KogdaIgra/JoinRpg.Integrations.KogdaIgra.csproj" />
     <Project Path="src/JoinRpg.Services.Email/JoinRpg.Services.Email.csproj" />
@@ -78,8 +83,6 @@
   <Project Path="src/JoinRpg.CommonUI.Models/JoinRpg.CommonUI.Models.csproj" />
   <Project Path="src/JoinRpg.DataModel/JoinRpg.DataModel.csproj" />
   <Project Path="src/JoinRpg.Domain/JoinRpg.Domain.csproj" />
-  <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Client/JoinRpg.IdPortal.Client.csproj" />
-  <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj" />
   <Project Path="src/JoinRpg.Interfaces/JoinRpg.Interfaces.csproj" />
   <Project Path="src/JoinRpg.Portal/JoinRpg.Portal.csproj" />
   <Project Path="src/Joinrpg.Web.Identity/Joinrpg.Web.Identity.csproj" />

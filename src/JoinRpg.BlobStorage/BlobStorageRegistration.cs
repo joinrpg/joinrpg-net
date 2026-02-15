@@ -11,6 +11,7 @@ public static class BlobStorageRegistration
             .AddCheck<HealthCheckS3Storage>("S3 storage");
 
         return services
+            .AddHttpClient()
             .AddTransient<AvatarDownloader>()
             .AddTransient<IAvatarStorageService>(sp =>
         {
