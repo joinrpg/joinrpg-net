@@ -2,7 +2,6 @@ using System.Diagnostics;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.Interfaces;
-using JoinRpg.Interfaces.Email;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -10,10 +9,8 @@ namespace JoinRpg.Services.Notifications;
 
 public partial class NotificationServiceImpl(
     IUserRepository userRepository,
-    IEmailSendingService emailSendingService,
     INotificationRepository notificationRepository,
     IOptions<NotificationsOptions> notificationOptions,
-    IOptions<PostboxOptions> postboxOptions,
     ILogger<NotificationServiceImpl> logger
     ) : INotificationService
 {
@@ -31,8 +28,6 @@ public partial class NotificationServiceImpl(
         VerifyFieldsPresent(notificationMessage, templater);
 
         var users = await GetNotificationsForUsers(notificationMessage.Recepients, user => [directChannel]);
-
-        await SendEmailsUsingLegacy(notificationMessage, users);
 
         await SaveToQueue(notificationMessage, templater, users, DateTimeOffset.UtcNow);
     }
@@ -52,30 +47,12 @@ public partial class NotificationServiceImpl(
             NotificationChannel.Telegram,
             ]);
 
-        await SendEmailsUsingLegacy(notificationMessage, users);
-
         await SaveToQueue(notificationMessage, templater, users, DateTimeOffset.UtcNow);
     }
 
     private async Task SaveToQueue(NotificationEvent notificationMessage, NotifcationFieldsTemplater templater, NotificationRow[] users, DateTimeOffset createdAt)
         => await notificationRepository.InsertNotifications(
                 [.. users.Select(user => CreateMessageDto(notificationMessage, user, templater.Substitute(user.Recipient.Fields), createdAt))]);
-
-    private async Task SendEmailsUsingLegacy(NotificationEvent notificationMessage, NotificationRow[] users)
-    {
-        if (postboxOptions.Value.Enabled)
-        {
-            return; // Если postbox почему-то выключен, дублировать письма через старый механизм
-        }
-        var sender = await userRepository.GetRequiredUserInfo(notificationMessage.Initiator);
-        await emailSendingService.SendEmails(
-            notificationMessage.Header,
-            new MarkdownString(notificationMessage.TemplateText.TemplateContents + $"\n--\n\n{sender.DisplayName.DisplayName}"),
-            new RecepientData(sender.DisplayName, sender.Email),
-            [.. users
-            .Where(u => u.Email is not null)
-            .Select(u => new RecepientData(u.DisplayName, u.Email!, u.Recipient.Fields))]);
-    }
 
     private static void VerifyFieldsPresent(NotificationEvent notificationMessage, NotifcationFieldsTemplater templater)
     {

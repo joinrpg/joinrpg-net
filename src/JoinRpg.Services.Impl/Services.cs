@@ -57,6 +57,7 @@ public static class Services
             .AddTransient<MasterEmailService>()
             .AddTransient<ClaimNotificationTextBuilder>()
             .AddTransient<SubscribeCalculator>()
+            .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
             ;
     }
 

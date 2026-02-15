@@ -3,7 +3,6 @@
     <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />

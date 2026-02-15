@@ -10,7 +10,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Options"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Portal\JoinRpg.Portal.csproj" />

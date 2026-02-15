@@ -1,7 +1,4 @@
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Interfaces.Email;
-using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Email;
@@ -9,65 +6,59 @@ namespace JoinRpg.Services.Email;
 /// <summary>
 /// Service that send all email notifications
 /// </summary>
-internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingService messageService) : IEmailService
+internal partial class EmailServiceImpl(IUriService uriService) : IEmailService
 {
     #region general stuff
     private const string ChangedFieldsKey = "changedFields";
 
-    private string StandartGreeting() => $"Добрый день, {messageService.GetRecepientPlaceholderName()},\n";
+    private string StandartGreeting() => $"Добрый день, messageService.GetRecepientPlaceholderName(),\n";
     #endregion
 
     #region IEmailService implementation
 
-    public Task Email(NewClaimEmail model) => SendClaimEmail(model, "подана");
-
     public async Task Email(FieldsChangedEmail model)
     {
-        var projectEmailEnabled = model.GetEmailEnabled();
-        if (!projectEmailEnabled)
-        {
-            return;
-        }
+        return; // TODO move to NotificationService
 
-        var recipients = model
-          .GetRecipients()
-          .Select(r => r.ToRecepientData(
-            new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
-          .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[ChangedFieldsKey]))
-          //don't email if no changes are visible to user rights
-          .ToList();
+        //        var recipients = model
+        //          .GetRecipients()
+        //          .Select(r => r.ToRecepientData(
+        //            new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
+        //          .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[ChangedFieldsKey]))
+        //          //don't email if no changes are visible to user rights
+        //          .ToList();
 
-        string Target(bool forMessageBody) => model.IsCharacterMail
-            ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Name}"
-            : $"заявк{(forMessageBody ? "и" : "a")} {model.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
+        //        string Target(bool forMessageBody) => model.IsCharacterMail
+        //            ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Name}"
+        //            : $"заявк{(forMessageBody ? "и" : "a")} {model.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
-        var linkString = uriService.Get(model.Linkable);
+        //        var linkString = uriService.Get(model.Linkable);
 
-        if (recipients.Count != 0)
-        {
-            var text = $@"{StandartGreeting()},
-Данные {Target(true)} были изменены. Новые значения:
+        //        if (recipients.Count != 0)
+        //        {
+        //            var text = $@"{StandartGreeting()},
+        //Данные {Target(true)} были изменены. Новые значения:
 
-{messageService.GetUserDependentValue(ChangedFieldsKey)}
+        //{messageService.GetUserDependentValue(ChangedFieldsKey)}
 
-Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
+        //Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
 
-{model.Initiator.GetDisplayName()}
+        //{model.Initiator.GetDisplayName()}
 
-";
-            //All emails related to claim should have the same title, even if the change was made to a character
-            var claim = model.Claim;
+        //";
+        //            //All emails related to claim should have the same title, even if the change was made to a character
+        //            var claim = model.Claim;
 
-            var subject = claim != null
-                ? model.GetClaimEmailTitle(claim)
-                : $"{model.ProjectName}: {Target(false)}";
+        //            var subject = claim != null
+        //                ? model.GetClaimEmailTitle(claim)
+        //                : $"{model.ProjectName}: {Target(false)}";
 
-            await messageService.SendEmails(subject,
-                new MarkdownString(text),
-                model.Initiator.ToRecepientData(),
-                recipients);
-        }
+        //            await messageService.SendEmails(subject,
+        //                new MarkdownString(text),
+        //                model.Initiator.ToRecepientData(),
+        //                recipients);
+        //        }
     }
 
     public async Task Email(UnOccupyRoomEmail email)
@@ -112,15 +103,15 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
 
     private async Task SendRoomEmail(RoomEmailBase email, string body)
     {
-        await messageService.SendEmail(email, $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
-            $@"{StandartGreeting()}
-Изменен состав жителей комнаты {email.Room.ProjectAccommodationType.Name} {email.Room.Name} 
+        //        await messageService.SendEmail(email, $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
+        //            $@"{StandartGreeting()}
+        //Изменен состав жителей комнаты {email.Room.ProjectAccommodationType.Name} {email.Room.Name} 
 
-{body}
+        //{body}
 
-{email.Initiator.GetDisplayName()}
+        //{email.Initiator.GetDisplayName()}
 
-");
+        //");
     }
 
     public Task Email(NewInviteEmail email)
@@ -147,105 +138,63 @@ internal partial class EmailServiceImpl(IUriService uriService, IEmailSendingSer
     private async Task SendInviteEmail(InviteEmailModel email, string body)
     {
 
-        var messageTemplate = $@"{StandartGreeting()}
+        //        var messageTemplate = $@"{StandartGreeting()}
 
-{body}
+        //{body}
 
-Вы можете управлять приглашениями на странице Вашей заявки {{0}}
+        //Вы можете управлять приглашениями на странице Вашей заявки {{0}}
 
-{email.Initiator.GetDisplayName()}
+        //{email.Initiator.GetDisplayName()}
 
-";
+        //";
 
-        var sendTasks = email.Recipients.Select(emailRecipient =>
-        {
-            Claim? claim = email.GetClaimByPerson(emailRecipient);
-            return messageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-                                new MarkdownString(string.Format(messageTemplate, claim == null ? "" : uriService.Get(claim))),
-                                email.Initiator.ToRecepientData(),
-                                emailRecipient.ToRecepientData());
-        })
-            .ToList();
+        //        var sendTasks = email.Recipients.Select(emailRecipient =>
+        //        {
+        //            Claim? claim = email.GetClaimByPerson(emailRecipient);
+        //            return messageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
+        //                                new MarkdownString(string.Format(messageTemplate, claim == null ? "" : uriService.Get(claim))),
+        //                                email.Initiator.ToRecepientData(),
+        //                                emailRecipient.ToRecepientData());
+        //        })
+        //            .ToList();
 
-        await Task.WhenAll(sendTasks).ConfigureAwait(false);
+        //        await Task.WhenAll(sendTasks).ConfigureAwait(false);
     }
     #endregion
 
     /// <summary>
     /// Gets info about changed fields and other attributes for particular user (if available).
     /// </summary>
-    private string GetChangedFieldsInfoForUser(
-      EmailModelBase model,
-      User user)
-    {
-        if (model is not IEmailWithUpdatedFieldsInfo mailWithFields)
-        {
-            return "";
-        }
-        //Add project fields that user has right to view
-        var accessArguments = mailWithFields.FieldsContainer.GetAccessArguments(user.UserId);
+    //    private string GetChangedFieldsInfoForUser(
+    //      EmailModelBase model,
+    //      User user)
+    //    {
+    //        if (model is not IEmailWithUpdatedFieldsInfo mailWithFields)
+    //        {
+    //            return "";
+    //        }
+    //        //Add project fields that user has right to view
+    //        var accessArguments = mailWithFields.FieldsContainer.GetAccessArguments(user.UserId);
 
-        IEnumerable<MarkdownString> fieldString = mailWithFields
-          .UpdatedFields
-          .Where(f => f.Field.HasViewAccess(accessArguments))
-          .Select(updatedField =>
-            new MarkdownString(
-              $@"__**{updatedField.Field.Name}:**__
-{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.New.DisplayString, updatedField.PreviousDisplayString).Contents}"));
+    //        IEnumerable<MarkdownString> fieldString = mailWithFields
+    //          .UpdatedFields
+    //          .Where(f => f.Field.HasViewAccess(accessArguments))
+    //          .Select(updatedField =>
+    //            new MarkdownString(
+    //              $@"__**{updatedField.Field.Name}:**__
+    //{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.New.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
-        //Add info about other changed atttributes (no access rights validation)
-        IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
-          .OtherChangedAttributes
-          .Select(changedAttribute => new MarkdownString(
-            $@"__**{changedAttribute.Key}:**__
-{MarkdownTransformations.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
+    //        //Add info about other changed atttributes (no access rights validation)
+    //        IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
+    //          .OtherChangedAttributes
+    //          .Select(changedAttribute => new MarkdownString(
+    //            $@"__**{changedAttribute.Key}:**__
+    //{MarkdownTransformations.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
 
-        return string.Join(
-          "\n\n",
-          otherAttributesStrings
-            .Union(fieldString)
-            .Select(x => x.ToHtmlString()));
-    }
-
-    private async Task SendClaimEmail(ClaimEmailModel model, string? actionName = null, string text = "")
-    {
-        var projectEmailEnabled = model.GetEmailEnabled();
-        if (!projectEmailEnabled)
-        {
-            return;
-        }
-
-        var recipients = model
-          .GetRecipients()
-          .Select(r => r.ToRecepientData(new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
-          .ToList();
-
-        var commentExtraActionView = (CommonUI.Models.CommentExtraAction?)model.CommentExtraAction;
-
-        var extraText = commentExtraActionView?.GetDisplayName();
-
-        actionName ??= commentExtraActionView?.GetShortName() ?? "изменена";
-
-        if (extraText != null)
-        {
-            extraText = "**" + extraText + "**\n\n";
-        }
-
-        var text1 = $@"{StandartGreeting()}
-Заявка {model.Claim.Character.CharacterName} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
-{text}
-
-{messageService.GetUserDependentValue(ChangedFieldsKey)}
-{extraText}{model.Text.Contents}
-
-{model.Initiator.GetDisplayName()}
-
-Чтобы ответить на комментарий, перейдите на страницу заявки: {uriService.Get(model.Claim.CommentDiscussion)}
-";
-
-        await messageService.SendEmails(model.GetClaimEmailTitle(),
-            new MarkdownString(text1),
-            model.Initiator.ToRecepientData(),
-            recipients);
-    }
+    //        return string.Join(
+    //          "\n\n",
+    //          otherAttributesStrings
+    //            .Union(fieldString)
+    //            .Select(x => x.ToHtmlString()));
+    //    }
 }

@@ -1,5 +1,4 @@
 using JoinRpg.BlobStorage;
-using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Dal.Impl;
 using JoinRpg.IdPortal.Components;
@@ -43,8 +42,7 @@ builder.Services.AddUserServicesOnly();
 
 builder.Services
     .AddJoinIdentity()
-    .AddJoinBlobStorage()
-    .AddJoinEmailSendingService();
+    .AddJoinBlobStorage();
 
 var app = builder.Build();
 

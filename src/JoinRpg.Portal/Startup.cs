@@ -2,7 +2,6 @@ using System.Globalization;
 using Autofac;
 using JoinRpg.BlobStorage;
 using JoinRpg.Common.BastiliaRatingClient;
-using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Common.Telegram;
 using JoinRpg.Common.WebInfrastructure;
@@ -46,7 +45,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<JwtBearerOptions>(Configuration.GetSection("Jwt"))
             .Configure<NotificationsOptions>(Configuration.GetSection("Notifications"))
             .Configure<JoinRpgHostNamesOptions>(Configuration.GetSection("JoinRpgHostNames"))
-            .Configure<MailGunOptions>(Configuration.GetSection("MailGun"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
@@ -114,8 +112,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 tags: ["ready"])
 
             .AddCheck<HealthCheckLoadProjects>("Project load", tags: ["ready"]);
-
-        services.AddJoinEmailSendingService();
 
         _ = services.AddTransient<YandexLogLink>();
 

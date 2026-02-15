@@ -1,7 +1,8 @@
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.Services.Interfaces.Notification;
 
-namespace JoinRpg.Services.Email;
+namespace JoinRpg.Services.Impl;
 
 internal class AdminNotificationServiceImpl(
     INotificationService notificationService,
