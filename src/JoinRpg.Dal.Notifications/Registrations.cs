@@ -7,9 +7,9 @@ namespace JoinRpg.Dal.Notifications;
 
 public static class Registrations
 {
-    public static void AddNotificationsDal(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddNotificationsDal(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        services.AddJoinEfCoreDbContext<NotificationsDataDbContext>(configuration, environment, "Notifications");
-        services.AddTransient<INotificationRepository, NotificationsRepository>();
+        _ = services.AddJoinEfCoreDbContext<NotificationsDataDbContext>(configuration, environment, "Notifications");
+        return services.AddTransient<INotificationRepository, NotificationsRepository>();
     }
 }

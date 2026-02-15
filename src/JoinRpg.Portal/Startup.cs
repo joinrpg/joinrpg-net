@@ -123,6 +123,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinManagers()
             .AddJoinNotificationServices()
             .AddJoinNotificationLayerServices()
+            .AddJoinNotificationJobs()
             .AddJoinTelegram()
             .AddJoinBlobStorage();
 

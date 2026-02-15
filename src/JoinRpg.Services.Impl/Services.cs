@@ -49,7 +49,6 @@ public static class Services
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IPaymentsService, PaymentsService>()
-            .AddSingleton<IVirtualUsersService, VirtualUsersService>()
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<ClaimNotificationService>()
@@ -66,6 +65,7 @@ public static class Services
     {
         return services
             .AddTransient<IUserService, UserServiceImpl>()
+            .AddSingleton<IVirtualUsersService, VirtualUsersService>()
             .AddTransient<IAvatarService, UserServiceImpl>();
     }
 }
