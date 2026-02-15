@@ -10,7 +10,11 @@ namespace JoinRpg.Dal.CommonEfCore;
 
 public static class DbContextRegisterHelper
 {
-    public static bool AddJoinEfCoreDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment, string connectionStringName)
+    public static bool AddJoinEfCoreDbContext<TContext>(this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        string connectionStringName,
+        Action<DbContextOptionsBuilder>? optionsAction = null)
         where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName);
@@ -30,6 +34,7 @@ public static class DbContextRegisterHelper
                 .ConfigureWarnings(
                     b => b.Log(
                         (RelationalEventId.CommandExecuted, LogLevel.Debug)));
+            optionsAction?.Invoke(options);
         });
 
         services
