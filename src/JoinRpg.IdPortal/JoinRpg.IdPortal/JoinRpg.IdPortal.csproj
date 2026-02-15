@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\JoinRpg.BlobStorage\JoinRpg.BlobStorage.csproj" />
-    <ProjectReference Include="..\..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />

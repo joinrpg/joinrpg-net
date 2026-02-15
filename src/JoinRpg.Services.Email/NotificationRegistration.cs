@@ -8,7 +8,7 @@ public static class NotificationRegistration
     {
         return services
             .AddTransient<IEmailService, EmailServiceImpl>()
-            .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
+
             ;
     }
 }

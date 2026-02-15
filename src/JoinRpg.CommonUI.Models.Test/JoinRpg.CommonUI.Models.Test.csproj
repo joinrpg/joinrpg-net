@@ -21,6 +21,5 @@
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Options"/>
   </ItemGroup>
 </Project>
