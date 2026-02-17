@@ -1,8 +1,6 @@
-using JoinRpg.Dal.CommonEfCore;
-
 namespace JoinRpg.Dal.Notifications;
 
-public class NotificationsDataDbContext(DbContextOptions<NotificationsDataDbContext> options) : JoinPostgreSqlEfContextBase(options)
+public class NotificationsDataDbContext(DbContextOptions<NotificationsDataDbContext> options) : DbContext(options)
 {
     /// <inheritdoc />
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

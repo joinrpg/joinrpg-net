@@ -1,6 +1,4 @@
 using EntityFramework.Exceptions.Common;
-using JoinRpg.Data.Write.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Dal.JobService;
 

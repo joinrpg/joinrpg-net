@@ -1,4 +1,4 @@
-namespace JoinRpg.Data.Write.Interfaces;
+namespace JoinRpg.Common.WebInfrastructure.DailyJob;
 
 public interface IDailyJobRepository
 {

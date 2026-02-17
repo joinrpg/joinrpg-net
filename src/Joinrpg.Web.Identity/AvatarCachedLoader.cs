@@ -1,5 +1,5 @@
+using JoinRpg.Common.WebInfrastructure.Cache;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes;
 
 namespace Joinrpg.Web.Identity;

@@ -1,5 +1,4 @@
 using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.AspNetCore.Authentication.OAuth;
@@ -36,8 +35,6 @@ public static class IdentityConfigurator
             .AddScoped<ICurrentUserAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
             .AddScoped<IImpersonateAccessor>(s => s.GetRequiredService<CurrentUserAccessor>())
 
-            .AddScoped(typeof(PerRequestCache<,>))
-            .AddSingleton(typeof(SingletonCache<,>))
             .AddTransient<IAvatarLoader, AvatarCachedLoader>();
     }
 

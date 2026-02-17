@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace JoinRpg.Helpers;
+namespace JoinRpg.Common.WebInfrastructure.Cache;
 
 public class PerRequestCache<TKey, TValue>
     where TKey : notnull, IEquatable<TKey>
