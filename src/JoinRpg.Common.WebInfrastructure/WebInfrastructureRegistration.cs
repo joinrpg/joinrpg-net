@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebInfrastructure.Cache;
 using Microsoft.AspNetCore.Hosting;
 
 namespace JoinRpg.Common.WebInfrastructure;
@@ -17,5 +18,9 @@ public static class WebInfrastructureRegistration
         }
 
         services.ConfigureForwardedHeaders();
+
+        services
+            .AddScoped(typeof(PerRequestCache<,>))
+            .AddSingleton(typeof(SingletonCache<,>));
     }
 }

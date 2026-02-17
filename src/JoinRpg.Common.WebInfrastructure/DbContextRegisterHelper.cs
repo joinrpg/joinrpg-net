@@ -1,20 +1,14 @@
+using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace JoinRpg.Dal.CommonEfCore;
+namespace JoinRpg.Common.WebInfrastructure;
 
 public static class DbContextRegisterHelper
 {
-    public static bool AddJoinEfCoreDbContext<TContext>(this IServiceCollection services,
-        IConfiguration configuration,
-        IHostEnvironment environment,
-        string connectionStringName,
-        Action<DbContextOptionsBuilder>? optionsAction = null)
+    public static bool AddJoinEfCoreDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment, string connectionStringName)
         where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName);
@@ -30,11 +24,11 @@ public static class DbContextRegisterHelper
             options.UseNpgsql(connectionString);
             options.EnableSensitiveDataLogging(environment.IsDevelopment());
             options.EnableDetailedErrors(environment.IsDevelopment());
+            options.UseExceptionProcessor();
             options
                 .ConfigureWarnings(
                     b => b.Log(
                         (RelationalEventId.CommandExecuted, LogLevel.Debug)));
-            optionsAction?.Invoke(options);
         });
 
         services

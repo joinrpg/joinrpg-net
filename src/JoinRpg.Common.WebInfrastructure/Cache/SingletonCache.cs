@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace JoinRpg.Helpers;
+namespace JoinRpg.Common.WebInfrastructure.Cache;
 
 public class SingletonCache<TKey, TValue>
     where TKey : notnull, IEquatable<TKey>

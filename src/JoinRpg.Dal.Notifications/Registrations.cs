@@ -1,4 +1,4 @@
-using JoinRpg.Dal.CommonEfCore;
+using JoinRpg.Common.WebInfrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

@@ -1,6 +1,6 @@
 using System.Reflection;
 using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Data.Write.Interfaces;
+using JoinRpg.Common.WebInfrastructure.DailyJob;
 using JoinRpg.Interfaces;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;

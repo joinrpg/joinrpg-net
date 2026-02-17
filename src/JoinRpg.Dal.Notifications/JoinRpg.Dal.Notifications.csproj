@@ -5,7 +5,9 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Dal.CommonEfCore\JoinRpg.Dal.CommonEfCore.csproj" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" />
+    <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />
   </ItemGroup>
 

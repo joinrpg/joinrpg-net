@@ -1,5 +1,3 @@
-using JoinRpg.Data.Write.Interfaces;
-
 namespace JoinRpg.Dal.JobService;
 
 internal static class Queries
