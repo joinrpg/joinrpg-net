@@ -7,7 +7,6 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
 using JoinRpg.WebPortal.Managers;
@@ -21,7 +20,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{ProjectId}/fields/[action]")]
 public class GameFieldController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IFieldSetupService fieldSetupService,
     FieldSetupManager manager,
     ICurrentProjectAccessor currentProjectAccessor,

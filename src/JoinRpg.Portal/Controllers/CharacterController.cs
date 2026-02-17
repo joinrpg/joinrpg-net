@@ -3,12 +3,11 @@ using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.WebPortal.Managers.Plots;
@@ -21,15 +20,16 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/character/{characterid}/[action]")]
 public class CharacterController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     ICharacterRepository characterRepository,
-    IUriService uriService,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
     CharacterPlotViewService characterPlotViewService
-        ) : Common.ControllerGameBase(projectRepository, projectService)
+        ) : JoinControllerGameBase
 {
+
+    [Obsolete]
+    private int CurrentUserId => currentUser.UserId;
 
     [HttpGet("~/{projectId}/character/{characterid}/")]
     [HttpGet("~/{projectId}/character/{characterid}/details")]
@@ -118,7 +118,7 @@ public class CharacterController(
             targetGroupId = new CharacterGroupIdentification(ProjectId, charactergroupid.Value);
         }
 
-        CharacterGroup? characterGroup = await ProjectRepository.GetGroupAsync(targetGroupId);
+        CharacterGroup? characterGroup = await projectRepository.GetGroupAsync(targetGroupId);
 
 
         if (characterGroup == null)
@@ -176,12 +176,12 @@ public class CharacterController(
             CharacterGroup? characterGroup;
             if (characterGroupId == null)
             {
-                characterGroup = (await ProjectRepository.GetProjectAsync(viewModel.ProjectId))
+                characterGroup = (await projectRepository.GetProjectAsync(viewModel.ProjectId))
                     .RootGroup;
             }
             else
             {
-                characterGroup = await ProjectRepository.GetGroupAsync(characterGroupId);
+                characterGroup = await projectRepository.GetGroupAsync(characterGroupId);
                 if (characterGroup is null)
                 {
                     return NotFound();

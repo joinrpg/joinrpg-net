@@ -20,7 +20,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/checkin/[action]")]
 [MasterAuthorize()] //TODO specific permission
 public class CheckInController(
-    IProjectRepository projectRepository,
     IProjectService projectService,
     IClaimsRepository claimsRepository,
     IClaimService claimService,
