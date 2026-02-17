@@ -9,7 +9,6 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Plot;
@@ -22,7 +21,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/plot/[action]")]
 public class PlotController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IPlotService plotService,
     IPlotRepository plotRepository,
     IUriService uriService,

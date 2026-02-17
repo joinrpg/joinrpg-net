@@ -38,8 +38,7 @@ public class ClaimController(
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ICurrentUserAccessor currentUserAccessor,
-    CharacterPlotViewService characterPlotViewService,
-    ILogger<ClaimController> logger
+    CharacterPlotViewService characterPlotViewService
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]

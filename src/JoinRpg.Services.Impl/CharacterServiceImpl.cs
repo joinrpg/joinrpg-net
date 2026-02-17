@@ -11,7 +11,6 @@ namespace JoinRpg.Services.Impl;
 
 internal class CharacterServiceImpl(
     IUnitOfWork unitOfWork,
-    IEmailService emailService,
     FieldSaveHelper fieldSaveHelper,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor), ICharacterService
