@@ -24,7 +24,10 @@ public class ProjectListManager(IProjectRepository projectRepository, ICurrentUs
         return new HomeViewModel
         {
             MyProjects = [.. myProjects.Select(p => new ProjectListItemViewModel(p))],
-            AllProjects = [.. allProjects.Where(p => !myProjectIds.Contains(p.ProjectId)).Select(p => new ProjectListItemViewModel(p))],
+            AllProjects = [.. allProjects
+                .Where(p => !myProjectIds.Contains(p.ProjectId))
+                .OrderByDescending(p => p.ActiveClaimsCount)
+                .Select(p => new ProjectListItemViewModel(p))],
             HasMoreProjects = false,
         };
     }
@@ -41,6 +44,7 @@ public class ProjectListManager(IProjectRepository projectRepository, ICurrentUs
         var projects =
             allProjects
                 .Where(p => !myProjectIds.Contains(p.ProjectId))
+                .OrderByDescending(p => p.ActiveClaimsCount)
                 .Take(maxProjects + 1)
                 .Select(p => new ProjectListItemViewModel(p))
                 .ToList();
