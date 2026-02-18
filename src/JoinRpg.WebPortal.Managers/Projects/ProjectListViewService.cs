@@ -14,7 +14,8 @@ internal class ProjectListViewService(
     {
         ProjectListSpecification spec = GetSpecification(projectSelectionCriteria);
 
-        var projects = await projectRepository.GetProjectsBySpecification(spec);
+        // TODO вернуть
+        var projects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUserAccessor.UserIdentification, spec);
         return [.. projects.Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName))];
     }
 
