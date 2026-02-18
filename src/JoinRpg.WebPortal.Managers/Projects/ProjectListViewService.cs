@@ -8,7 +8,9 @@ namespace JoinRpg.WebPortal.Managers.Projects;
 
 internal class ProjectListViewService(
     IProjectRepository projectRepository,
-    IOptions<KogdaIgraOptions> kograIgraOptions) : IProjectListClient, IProjectListForAdminClient
+    IOptions<KogdaIgraOptions> kograIgraOptions,
+    ICurrentUserAccessor currentUserAccessor
+) : IProjectListClient, IProjectListForAdminClient
 {
     public async Task<List<ProjectLinkViewModel>> GetProjects(ProjectSelectionCriteria projectSelectionCriteria)
     {
