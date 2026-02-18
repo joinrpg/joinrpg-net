@@ -59,17 +59,26 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
     public bool DisableKogdaIgraMapping { get; set; } = disableKogdaIgraMapping;
 }
 
-public record class ProjectListItemViewModel(ProjectPersonalizedInfo p) : ProjectLinkViewModel(p.ProjectId, p.ProjectName)
+public record ProjectListItemViewModel(
+    bool IsMaster,
+    bool IsActive,
+    ProjectLifecycleStatus Status,
+    bool PublishPlot,
+    [property: Display(Name = "Заявки открыты?")] bool IsAcceptingClaims,
+    bool HasMyClaims,
+    KogdaIgraIdentification? LastKogdaIgraId,
+    ProjectIdentification ProjectId,
+    string ProjectName)
+    : ProjectLinkViewModel(ProjectId, ProjectName)
 {
-    public bool IsMaster { get; } = p.HasMyMasterAccess;
-    public bool IsActive { get; } = p.Active;
-    public ProjectLifecycleStatus Status = p.ProjectLifecycleStatus;
+    public ProjectListItemViewModel(ProjectPersonalizedInfo p) : this(p.HasMyMasterAccess, p.Active, p.ProjectLifecycleStatus, p.PublishPlot, p.IsAcceptingClaims, p.HasMyClaims, p.LastKogdaIgraId, p.ProjectId, p.ProjectName)
+    {
 
-    public bool PublishPlot { get; } = p.PublishPlot;
+    }
 
-    [Display(Name = "Заявки открыты?")]
-    public bool IsAcceptingClaims { get; } = p.IsAcceptingClaims;
+    public ProjectListItemViewModel(ProjectShortInfo p) : this(IsMaster: false, p.Active, p.ProjectLifecycleStatus, p.PublishPlot, p.IsAcceptingClaims, HasMyClaims: false,
+        p.KiLinks?.OrderByDescending(k => k.End).FirstOrDefault()?.Id, p.ProjectId, p.ProjectName)
+    {
 
-    public bool HasMyClaims { get; } = p.HasMyClaims;
-    public KogdaIgraIdentification? LastKogdaIgraId { get; set; } = p.LastKogdaIgraId;
+    }
 }

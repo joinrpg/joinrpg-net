@@ -48,7 +48,7 @@ public interface IProjectRepository : IDisposable
     /// Проекты грузятся всегда относительно какого-то пользователя.
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>
-    Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification);
+    Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification);
 
     /// <summary>
     /// Без учета данных о доступе к проектам и наличия заявки, более быстрый метод
@@ -68,18 +68,10 @@ public interface IProjectRepository : IDisposable
 
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)
 {
-    public static ProjectListSpecification MyActiveProjects { get; } = new ProjectListSpecification(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: false);
 
-    public static ProjectListSpecification MyAllProjects { get; } = new ProjectListSpecification(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: true);
-    public static ProjectListSpecification ForCloning { get; } = new ProjectListSpecification(ProjectListCriteria.ForCloning, LoadArchived: true);
-    public static ProjectListSpecification ActiveWithMyMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: false);
     public static ProjectListSpecification ActiveProjectsWithSchedule { get; } = new ProjectListSpecification(ProjectListCriteria.HasSchedule, LoadArchived: false);
 
     public static ProjectListSpecification ActiveProjectsWithoutKogdaIgra { get; } = new ProjectListSpecification(ProjectListCriteria.KogdaIgraMissing, LoadArchived: false);
-
-    public static ProjectListSpecification AllProjectsWithMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterAccess, LoadArchived: true);
-
-    public static ProjectListSpecification ActiveProjectsWithGrantMasterAccess { get; } = new ProjectListSpecification(ProjectListCriteria.MasterGrantAccess, LoadArchived: false);
 
     public static ProjectListSpecification All { get; } = new ProjectListSpecification(ProjectListCriteria.All, LoadArchived: true);
 
@@ -88,6 +80,26 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
     public static ProjectListSpecification ActivePublic { get; } = new ProjectListSpecification(ProjectListCriteria.Public, LoadArchived: false);
 
     public static ProjectListSpecification AllPublic { get; } = new ProjectListSpecification(ProjectListCriteria.Public, LoadArchived: true);
+    public static PersonalizedProjectListSpecification AllProjectsWithMasterAccess(UserIdentification userId)
+    => new(ProjectListCriteria.MasterAccess, LoadArchived: true, userId);
+
+    public static PersonalizedProjectListSpecification ActiveProjectsWithGrantMasterAccess(UserIdentification userId)
+        => new(ProjectListCriteria.MasterGrantAccess, LoadArchived: false, userId);
+    public static PersonalizedProjectListSpecification MyActiveProjects(UserIdentification userId)
+        => new(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: false, userId);
+
+    public static PersonalizedProjectListSpecification MyAllProjects(UserIdentification userId)
+        => new(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: true, userId);
+    public static PersonalizedProjectListSpecification ForCloning(UserIdentification userId)
+        => new(ProjectListCriteria.ForCloning, LoadArchived: true, userId);
+    public static PersonalizedProjectListSpecification ActiveWithMyMasterAccess(UserIdentification userId)
+        => new(ProjectListCriteria.MasterAccess, LoadArchived: false, userId);
+}
+
+public record PersonalizedProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived, UserIdentification UserId)
+    : ProjectListSpecification(Criteria, LoadArchived)
+{
+
 }
 
 public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, All, Public };

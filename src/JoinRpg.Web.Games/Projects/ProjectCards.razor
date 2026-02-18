@@ -3,7 +3,7 @@
     <h2>@Header</h2>
     <div class="cards">
 
-        @foreach (var project in Projects.Take(9))
+        @foreach (var project in Projects.Take(MaxGames ?? int.MaxValue))
         {
             <div class="card">
                 <h4 title="@project.ProjectName" class="project-name">
@@ -58,4 +58,7 @@
     [Parameter]
     [EditorRequired]
     public string Header { get; set; } = null!;
+
+    [Parameter]
+    public int? MaxGames { get; set; }
 }

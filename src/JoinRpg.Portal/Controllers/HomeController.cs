@@ -20,5 +20,5 @@ public class HomeController(ProjectListManager projectListManager) : Common.Join
 
     public async Task<ActionResult> BrowseGames() => View(await projectListManager.LoadModel());
 
-    public async Task<ActionResult> GameArchive() => View("BrowseGames", await projectListManager.LoadModel(true));
+    public async Task<ActionResult> GameArchive() => View(await projectListManager.LoadModel(true));
 }
