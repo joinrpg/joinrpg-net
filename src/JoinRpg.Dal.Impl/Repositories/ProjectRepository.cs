@@ -204,15 +204,15 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return result.Where(CharacterPredicates.ByGroupPrecise(characterGroupIdentifications)).ToList();
     }
 
-    async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(UserIdentification? userId, ProjectListSpecification projectListSpecification)
+    async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification)
     {
-        var filterPredicate = ProjectPredicates.BySpecification(userId, projectListSpecification);
-        return await GetProjectPersonalizedListInternal(userId, filterPredicate);
+        var filterPredicate = ProjectPredicates.BySpecification(projectListSpecification);
+        return await GetProjectPersonalizedListInternal(projectListSpecification.UserId, filterPredicate);
     }
 
     async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(ProjectListSpecification projectListSpecification)
     {
-        var filterPredicate = ProjectPredicates.BySpecification(userInfoId: null, projectListSpecification);
+        var filterPredicate = ProjectPredicates.BySpecification(projectListSpecification);
         return await GetProjectListInternal(filterPredicate);
     }
 

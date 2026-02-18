@@ -16,7 +16,7 @@ public class MyProfileController(IProjectRepository projectRepository, ICurrentU
     [HttpGet, Authorize, Route("projects/active")]
     public async Task<IEnumerable<ProjectHeader>> GetActiveProjects()
     {
-        return (await projectRepository.GetPersonalizedProjectsBySpecification(currentUserAccessor.UserIdentification, ProjectListSpecification.MyActiveProjects)).Select(
-            p => new ProjectHeader { ProjectId = p.ProjectId, ProjectName = p.ProjectName });
+        return (await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.MyActiveProjects(currentUserAccessor.UserIdentification)))
+            .Select(p => new ProjectHeader { ProjectId = p.ProjectId, ProjectName = p.ProjectName });
     }
 }

@@ -43,6 +43,6 @@ public class MainMenuViewComponent(
         {
             return [];
         }
-        return await projectRepository.GetPersonalizedProjectsBySpecification(currentUserAccessor.UserIdentification, ProjectListSpecification.MyActiveProjects);
+        return await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.MyActiveProjects(currentUserAccessor.UserIdentification));
     }
 }

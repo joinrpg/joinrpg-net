@@ -1,0 +1,16 @@
+@using JoinRpg.WebPortal.Models
+@model HomeViewModel
+
+@{
+  ViewBag.Title = "Все игры";
+}
+
+<component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
+           param-Projects="@Model.MyProjects"
+           param-Header="@("Мои игры")"
+           render-mode="Static" />
+
+<component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
+           param-Projects="@Model.AllProjects"
+           param-Header="@("Все игры")"
+           render-mode="Static" />

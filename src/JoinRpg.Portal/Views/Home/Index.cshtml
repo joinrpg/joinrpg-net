@@ -47,12 +47,13 @@
 <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
            param-Projects="@Model.AllProjects"
            param-Header="@("Куда поехать")"
+           param-MaxGames="@(9)"
            render-mode="Static" />
 
 @if (Model.HasMoreProjects)
 {
     <div class="panel panel-default">
-      <div class="panel-body">
+      <div class="panel-body" style="text-align: center">
                 @Html.ActionLink("Еще игры...", "BrowseGames", "Home")  / @Html.ActionLink("Архив...", "GameArchive", "Home")
         </div>
     </div>

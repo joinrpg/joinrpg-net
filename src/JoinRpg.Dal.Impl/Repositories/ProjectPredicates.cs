@@ -29,7 +29,7 @@ internal static class ProjectPredicates
         return project => project.Claims.Where(c => c.PlayerUserId == userInfoId.Value).Any(claimPredicate.Compile());
     }
 
-    public static Expression<Func<Project, bool>> BySpecification(UserIdentification? userInfoId, ProjectListSpecification projectListSpecification)
+    public static Expression<Func<Project, bool>> BySpecification(ProjectListSpecification projectListSpecification)
     {
         var predicate = PredicateBuilder.New<Project>();
         if (!projectListSpecification.LoadArchived)
@@ -37,19 +37,22 @@ internal static class ProjectPredicates
             predicate = predicate.And(p => p.Active);
         }
 
-        Expression<Func<KogdaIgraGame, bool>> kogdaIgraStaleExpression = KogdaIgraIsStaleFor(TimeSpan.FromDays(60));
+        Expression<Func<KogdaIgraGame, bool>> kogdaIgraStaleExpression60 = KogdaIgraIsStaleFor(TimeSpan.FromDays(60));
 
-        predicate = projectListSpecification.Criteria switch
+        predicate = projectListSpecification switch
         {
-            ProjectListCriteria.All => predicate.And(p => true),
-            ProjectListCriteria.Public => predicate.And(p => p.Details.IsPublicProject),
-            ProjectListCriteria.MasterAccess when userInfoId is not null => predicate.And(MasterAccess(userInfoId)),
-            ProjectListCriteria.MasterOrActiveClaim when userInfoId is not null => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userInfoId)).Or(MasterAccess(userInfoId))),
-            ProjectListCriteria.ForCloning when userInfoId is not null => predicate.And(ForCloning(userInfoId)),
-            ProjectListCriteria.HasSchedule => predicate.And(project => project.Details.ScheduleEnabled),
-            ProjectListCriteria.KogdaIgraMissing
-            => predicate.And(project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression.Invoke(e)) == 0).And(project => !project.Details.DisableKogdaIgraMapping),
-            ProjectListCriteria.MasterGrantAccess when userInfoId is not null => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId.Value && projectAcl.CanGrantRights)),
+            { Criteria: ProjectListCriteria.All } => predicate.And(p => true),
+            { Criteria: ProjectListCriteria.Public } => predicate.And(p => p.Details.IsPublicProject)
+                .And(project => projectListSpecification.LoadArchived || project.Details.DisableKogdaIgraMapping || project.KogdaIgraGames.Count() == 0 || project.KogdaIgraGames.Any(k => k.End > DateTime.Now)),
+            PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterAccess, UserId: var userId } => predicate.And(MasterAccess(userId)),
+            PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterOrActiveClaim, UserId: var userId }
+                => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userId)).Or(MasterAccess(userId))),
+            PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.ForCloning, UserId: var userId }
+                => predicate.And(ForCloning(userId)),
+            { Criteria: ProjectListCriteria.HasSchedule } => predicate.And(project => project.Details.ScheduleEnabled),
+            { Criteria: ProjectListCriteria.KogdaIgraMissing }
+                => predicate.And(project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression60.Invoke(e)) == 0).And(project => !project.Details.DisableKogdaIgraMapping),
+            PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterGrantAccess, UserId: var userId } => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userId.Value && projectAcl.CanGrantRights)),
             _ => throw new NotImplementedException(),
         };
         return predicate;

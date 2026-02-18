@@ -14,17 +14,17 @@ public class ProjectListManager(IProjectRepository projectRepository, ICurrentUs
     {
         var myProjects =
             currentUser.UserIdentificationOrDefault is UserIdentification userId ?
-            await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserIdentificationOrDefault,
-            showInactive ? ProjectListSpecification.MyAllProjects : ProjectListSpecification.MyActiveProjects)
+            await projectRepository.GetPersonalizedProjectsBySpecification(
+            showInactive ? ProjectListSpecification.MyAllProjects(userId) : ProjectListSpecification.MyActiveProjects(userId))
             : [];
 
-        var allProjects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserIdentificationOrDefault,
-            showInactive ? ProjectListSpecification.AllPublic : ProjectListSpecification.ActivePublic);
+        var allProjects = await projectRepository.GetProjectsBySpecification(showInactive ? ProjectListSpecification.AllPublic : ProjectListSpecification.ActivePublic);
+        var myProjectIds = myProjects.Select(x => x.ProjectId).ToList();
 
         return new HomeViewModel
         {
             MyProjects = [.. myProjects.Select(p => new ProjectListItemViewModel(p))],
-            AllProjects = [.. allProjects.Select(p => new ProjectListItemViewModel(p))],
+            AllProjects = [.. allProjects.Where(p => !myProjectIds.Contains(p.ProjectId)).Select(p => new ProjectListItemViewModel(p))],
             HasMoreProjects = false,
         };
     }
@@ -32,15 +32,15 @@ public class ProjectListManager(IProjectRepository projectRepository, ICurrentUs
     public async Task<HomeViewModel> LoadHomeModel(int maxProjects)
     {
         var myProjects = currentUser.UserIdentificationOrDefault is UserIdentification userId
-            ? await projectRepository.GetPersonalizedProjectsBySpecification(userId, ProjectListSpecification.MyActiveProjects) : [];
+            ? await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.MyActiveProjects(userId)) : [];
 
-        var allProjects = await projectRepository.GetPersonalizedProjectsBySpecification(currentUser.UserIdentificationOrDefault, ProjectListSpecification.ActivePublic);
+        var allProjects = await projectRepository.GetProjectsBySpecification(ProjectListSpecification.ActivePublic);
+
+        var myProjectIds = myProjects.Select(x => x.ProjectId).ToList();
 
         var projects =
             allProjects
-                .Except(myProjects)
-                .Where(p => p.IsAcceptingClaims)
-                .OrderByDescending(p => p.ActiveClaimsCount)
+                .Where(p => !myProjectIds.Contains(p.ProjectId))
                 .Take(maxProjects + 1)
                 .Select(p => new ProjectListItemViewModel(p))
                 .ToList();
