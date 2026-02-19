@@ -137,15 +137,27 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         DateTime inActiveSince)
     {
         var allQuery =
-            from beforeFilter in GetProjectWithLastUpdateQuery()
-            where beforeFilter.LastUpdated < inActiveSince
-            orderby beforeFilter.LastUpdated ascending
-            select beforeFilter;
+            from project in AllProjects.AsExpandable()
+            join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+            where update.LastUpdated < inActiveSince && project.Active
+            orderby update.LastUpdated ascending
+            select new ProjectWithUpdateDateDto
+            {
+                ProjectName = project.ProjectName,
+                LastUpdated = update.LastUpdated,
+                ProjectId = project.ProjectId,
+            };
 
         return await allQuery.ToListAsync();
     }
 
-    private IQueryable<ProjectWithUpdateDateDto> GetProjectWithLastUpdateQuery()
+    private class ProjectUpdateDateDto
+    {
+        public required int ProjectId { get; set; }
+        public required DateTime LastUpdated { get; set; }
+    }
+
+    private IQueryable<ProjectUpdateDateDto> GetProjectWithLastUpdateQuery()
     {
         var commentQuery = GetLastUpdateQuery<Comment>(comment => comment.LastEditTime);
         var characterQuery = GetLastUpdateQuery<Character>(character => character.UpdatedAt);
@@ -162,28 +174,25 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                     .Union(plotQuery)
                     .Union(plotElementQuery)
                     .Union(claimQuery)
-            group updated by new { updated.ProjectId, updated.ProjectName }
+            group updated by updated.ProjectId
             into gr
-            select new ProjectWithUpdateDateDto()
+            select new ProjectUpdateDateDto()
             {
-                ProjectId = gr.Key.ProjectId,
-                ProjectName = gr.Key.ProjectName,
+                ProjectId = gr.Key,
                 LastUpdated = gr.Max(g => g.LastUpdated),
             };
     }
 
-    private IQueryable<ProjectWithUpdateDateDto> GetLastUpdateQuery<T>(
+    private IQueryable<ProjectUpdateDateDto> GetLastUpdateQuery<T>(
         Expression<Func<T, DateTime>> lastUpdateExpression) where T : class, IProjectEntity
     {
         return from entity in Ctx.Set<T>().AsExpandable()
-               where entity.Project.Active
-               group new { entity } by entity.Project
+               group entity by entity.ProjectId
             into gr
-               select new ProjectWithUpdateDateDto
+               select new ProjectUpdateDateDto
                {
-                   ProjectId = gr.Key.ProjectId,
-                   ProjectName = gr.Key.ProjectName,
-                   LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
+                   ProjectId = gr.Key,
+                   LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g)),
                };
     }
 
