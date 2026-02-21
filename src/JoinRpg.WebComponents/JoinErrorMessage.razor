@@ -1,0 +1,6 @@
+﻿<JoinAlert Variation="VariationStyleEnum.Danger">@ChildContent</JoinAlert>
+
+@code{
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; } = @<text>Произошла ошибка...</text>;
+}
