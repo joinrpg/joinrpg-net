@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using JoinRpg.DataModel.Projects;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
@@ -8,7 +9,7 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx), IProjectRepository
 {
-    private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
+    private IQueryable<Project> AllProjects => Ctx.ProjectsSet.AsExpandable();
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
@@ -137,7 +138,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         DateTime inActiveSince)
     {
         var allQuery =
-            from project in AllProjects.AsExpandable()
+            from project in AllProjects
             join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
             where update.LastUpdated < inActiveSince && project.Active
             orderby update.LastUpdated ascending
@@ -221,8 +222,39 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(ProjectListSpecification projectListSpecification)
     {
+        if (projectListSpecification.Criteria == ProjectListCriteria.KogdaIgraMissing)
+        {
+            return await GetKogdaIgraMissingGames();
+        }
         var filterPredicate = ProjectPredicates.BySpecification(projectListSpecification);
         return await GetProjectListInternal(filterPredicate);
+    }
+
+    private async Task<ProjectShortInfo[]> GetKogdaIgraMissingGames()
+    {
+        var kogdaIgraStaleExpression60 = ProjectPredicates.KogdaIgraIsStaleFor(TimeSpan.FromDays(60));
+        Expression<Func<Project, bool>> hasNonStaleKogdaIgra = project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression60.Invoke(e)) > 0;
+        var filterPredicate = PredicateBuilder.New<Project>()
+                .And(project => project.Active)
+                .And(project => !hasNonStaleKogdaIgra.Invoke(project))
+                .And(project => !project.Details.DisableKogdaIgraMapping);
+        var projection = GetProjectListProjection();
+
+        var lastUpdateMax = DateTime.Now.AddDays(-60);
+
+        var query = from project in AllProjects
+                    join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+                    where filterPredicate.Invoke(project)
+                    let item = projection.Invoke(project, update)
+                    where item.KogdaIgraGames.Count() == 0 || item.LastUpdated > lastUpdateMax
+                    select item;
+
+
+
+        var result = await query.ToListAsync();
+
+        return [.. result.Select(BuildProjectShortInfo)];
+
     }
 
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
@@ -232,40 +264,54 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     }
     private async Task<ProjectShortInfo[]> GetProjectListInternal(Expression<Func<Project, bool>> filterPredicate)
     {
-        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
 
-        var query = from project in AllProjects.AsExpandable()
+        var projection = GetProjectListProjection();
+
+        var query = from project in AllProjects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
-                    where filterPredicate.Compile()(project)
-                    select new
-                    {
-                        project.ProjectId,
-                        project.ProjectName,
-                        project.IsAcceptingClaims,
-                        project.Details.PublishPlot,
-                        project.Active,
-                        update.LastUpdated,
-                        ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
-                        project.KogdaIgraGames,
-                        project.Details.DisableKogdaIgraMapping,
-                    };
+                    where filterPredicate.Invoke(project)
+                    select projection.Invoke(project, update);
 
         var result = await query.ToListAsync();
 
-        return [.. result.Select(x => new ProjectShortInfo(
-            new(x.ProjectId),
-            ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
-            x.PublishPlot,
-            new(x.ProjectName),
-            x.ActiveClaimsCount,
-            DateOnly.FromDateTime(x.LastUpdated),
-            KiLinks:
-                (x.DisableKogdaIgraMapping, x.KogdaIgraGames.Count) switch{
-                    (true, _) => [],
-                    (false, 0 ) => null,
-                    (false, _) => [..x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
-                }
-            ))];
+        return [.. result.Select(BuildProjectShortInfo)];
+    }
+
+    private static ProjectShortInfo BuildProjectShortInfo(ProjectListProjection x)
+    {
+        var kiGames = x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull().ToList();
+        return new ProjectShortInfo(
+                    new(x.ProjectId),
+                    ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
+                    x.PublishPlot,
+                    new(x.ProjectName),
+                    x.ActiveClaimsCount,
+                    DateOnly.FromDateTime(x.LastUpdated),
+                    KiLinks:
+                        (x.DisableKogdaIgraMapping, kiGames.Count) switch
+                        {
+                            (true, _) => [],
+                            (false, 0) => null,
+                            (false, _) => kiGames,
+                        }
+                    );
+    }
+
+    private static Expression<Func<Project, ProjectUpdateDateDto, ProjectListProjection>> GetProjectListProjection()
+    {
+        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        return (project, update) => new ProjectListProjection
+        {
+            ProjectId = project.ProjectId,
+            ProjectName = project.ProjectName,
+            IsAcceptingClaims = project.IsAcceptingClaims,
+            PublishPlot = project.Details.PublishPlot,
+            Active = project.Active,
+            LastUpdated = update.LastUpdated,
+            ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+            KogdaIgraGames = project.KogdaIgraGames.Where(x => x.Active),
+            DisableKogdaIgraMapping = project.Details.DisableKogdaIgraMapping
+        };
     }
 
     private async Task<ProjectPersonalizedInfo[]> GetProjectPersonalizedListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
@@ -275,7 +321,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
 
-        var query = from project in AllProjects.AsExpandable()
+        var query = from project in AllProjects
                     where filterPredicate.Compile()(project)
                     select new
                     {
@@ -287,7 +333,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                         IAmMaster = masterPredicate.Compile()(project),
                         HasMyClaims = claimPredicate.Compile()(project),
                         ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
-                        LastKogdaIgraId = (int?)project.KogdaIgraGames.OrderByDescending(x => x.KogdaIgraGameId).FirstOrDefault()!.KogdaIgraGameId
+                        LastKogdaIgraId = (int?)project.KogdaIgraGames.Where(x => x.Active).OrderByDescending(x => x.KogdaIgraGameId).FirstOrDefault()!.KogdaIgraGameId
                     };
 
         var result = await query.ToListAsync();
@@ -344,5 +390,18 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         }
 
         return (projectId, ids);
+    }
+
+    private class ProjectListProjection
+    {
+        public required int ProjectId { get; set; }
+        public required string ProjectName { get; set; }
+        public required bool IsAcceptingClaims { get; set; }
+        public required bool PublishPlot { get; set; }
+        public required bool Active { get; set; }
+        public required DateTime LastUpdated { get; set; }
+        public required int ActiveClaimsCount { get; set; }
+        public required IEnumerable<KogdaIgraGame> KogdaIgraGames { get; set; }
+        public required bool DisableKogdaIgraMapping { get; set; }
     }
 }

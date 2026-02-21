@@ -164,7 +164,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         return new PrimitiveTypes.ProjectMetadata.ProjectDetails(
             project.Details.ProjectAnnounce,
-            [.. project.KogdaIgraGames.Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))],
+            [.. project.KogdaIgraGames.Where(x => x.Active).Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))],
             project.Details.DisableKogdaIgraMapping);
     }
 }

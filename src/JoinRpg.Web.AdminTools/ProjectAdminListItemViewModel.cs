@@ -11,5 +11,5 @@ public record ProjectAdminListItemViewModel(
     ) : IProjectLinkViewModel
 {
     public IEnumerable<KogdaIgraIdentification> KogdaIgraIds => KiLinks?.Select(x => x.KogdaIgraId) ?? [];
-    public bool DisableKogdaIgraMapping => KiLinks?.Count == 0;
+    public bool DisableKogdaIgraMapping => KiLinks is not null && KiLinks.Count == 0;
 }
