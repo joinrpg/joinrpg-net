@@ -4,7 +4,7 @@
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
+    [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.None;
 
     private string style => BootstrapStyle.Build("alert", Variation, null);
 }

@@ -1,0 +1,47 @@
+﻿@{
+
+    var startWeekDay = Start.ToString("dddd");
+    var rangeWeekDay = Start.ToString("dddd") + "—" + End.ToString("dddd");
+
+    if (Start.Year != End.Year)
+    {
+         <Tooltip Title="@rangeWeekDay">
+            <text>@Start.ToShortDateString()&#x2013;@End.ToShortDateString()</text>
+        </Tooltip>
+        return;
+    }
+    var year = HideCurrentYear && Start.Year == DateTime.Now.Year ? "" : Start.Year.ToString();
+    if (Start.Month == End.Month && Start.Day == End.Day)
+    {
+        <Tooltip Title="@startWeekDay">
+            @Start.ToString("d MMMM")
+            @year
+        </Tooltip>
+    }
+    else if (Start.Month == End.Month)
+    {
+        <Tooltip Title="@rangeWeekDay">
+            <text>@Start.Day&#x2013;@End.ToString("d MMMM") @year</text>
+        </Tooltip>
+    }
+    else 
+    {
+        <Tooltip Title="@rangeWeekDay">
+            <text>@Start.ToString("d MMMM")&#x2013;@End.ToString("d MMMM") @year</text>
+        </Tooltip>
+    }
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public DateOnly Start { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public DateOnly End { get; set; }
+
+    [Parameter]
+    public bool HideCurrentYear { get; set; } = false;
+
+}
