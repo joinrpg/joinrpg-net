@@ -6,9 +6,10 @@ root = true
 # Default settings:
 # A newline ending every file
 [*]
+charset = utf-8
 insert_final_newline = true
 indent_style = space
-indent_size = 2
+indent_size = 4
 trim_trailing_whitespace = true
 max_line_length = 140
 

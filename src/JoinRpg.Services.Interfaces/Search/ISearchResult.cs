@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Services.Interfaces.Search;
 
 public record class SearchResult : ILinkable

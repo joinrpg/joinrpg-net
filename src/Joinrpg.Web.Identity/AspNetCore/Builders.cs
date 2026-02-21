@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity.AspNetCore;
 
