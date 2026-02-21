@@ -1,22 +1,30 @@
-@using JoinRpg.Web.AdminTools.KogdaIgra
+п»ї@using JoinRpg.Web.AdminTools.KogdaIgra
 @using JoinRpg.Web.ProjectCommon.Projects
 @using System.ComponentModel
 @using System.ComponentModel.DataAnnotations
 @inject IKogdaIgraSyncClient KogdaIgraClient
 @inject IKogdaIgraBindClient BindClient
 @inject IProjectListForAdminClient ProjectListClient
+@inject ILogger<AdminProjectGrid> logger
+
+@if (isError)
+{
+    <JoinErrorMessage />
+    return;
+}
 
 @if (Projects is null || isLoading)
 {
     <JoinLoadingMessage />
     return;
 }
+
 <JoinBorderedTable Items="Projects" Context="project">
     <HeadContent>
         <tr>
-            <th>Проект</th>
-            <th>Обновлено</th>
-            <th>КогдаИгра</th>
+            <th>РџСЂРѕРµРєС‚</th>
+            <th>РћР±РЅРѕРІР»РµРЅРѕ</th>
+            <th>РљРѕРіРґР°РРіСЂР°</th>
             <th>&nbsp;</th>
         </tr>
     </HeadContent>
@@ -25,20 +33,20 @@
             <td><ProjectLink Model="project" /></td>
             <td>@project.LastUpdatedAt</td>
             <td>
-                @if (project.KiLinks is null)
+                @if (project.DisableKogdaIgraMapping)
                 {
-                    <text>Необходимо привязать к КогдаИгре</text>
+                <text>РџСЂРѕРµРєС‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РїСЂРёРІСЏР·Р°РЅ Рє РљРѕРіРґР°РРіСЂРµ</text>
                 }
-                else if (project.DisableKogdaIgraMapping)
+                else if (project.KiLinks is null)
                 {
-                    <text>Проект не должен быть привязан к КогдаИгре</text>
+                    <text>РџСЂРѕРµРєС‚ РЅРµ РїСЂРёРІСЏР·Р°РЅ Рє РљРѕРіРґР°РРіСЂРµ</text>
                 }
-                else
+                else 
                 {
                     <ul>
                         @foreach (var kiLink in project.KiLinks)
                         {
-                            <li><a href="@kiLink.KogdaIgraUri"> @kiLink.Name</a> (@kiLink.Begin — @kiLink.End) </li>
+                            <li><a href="@kiLink.KogdaIgraUri"> @kiLink.Name</a> (<DateRangeDisplay Start="kiLink.Begin"  End="kiLink.End" />) </li>
                         }
                     </ul>
                 }
@@ -46,7 +54,7 @@
             <td>
                 @if (KogdaIgraCandidates?.Length > 0)
                 {
-                    <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args, project)" />
+                    <JoinButton Preset="ButtonPreset.Link" Title="РџСЂРёРІСЏР·Р°С‚СЊ..." OnClick="(args) => OpenBindDialogAsync(args, project)" />
                 }
             </td>
         </tr>
@@ -71,6 +79,7 @@
 @code
 {
     private bool isLoading = false;
+    private bool isError = false;
 
     [Parameter]
     [EditorRequired]
@@ -87,19 +96,37 @@
 
     protected override async Task OnInitializedAsync()
     {
-        KogdaIgraCandidates ??= await KogdaIgraClient.GetKogdaIgraCandidates();
+        try {
+            KogdaIgraCandidates ??= await KogdaIgraClient.GetKogdaIgraCandidates();
+        }
+        catch (Exception ex)
+        {
+            isError = true;
+            logger.LogError(ex, "РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РґР°РЅРЅС‹С…");
+        }
         await base.OnInitializedAsync();
     }
 
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
-        Projects = await ProjectListClient.GetProjectsForAdmin(Criteria);
-        isLoading = false;
-        if (Projects.Count > 0)
+        try
         {
-            model = new BindToKiModel { JoinProject = Projects.First(), KogdaIgraIds = [], DisableKogdaIgraMapping = false };
+            Projects = await ProjectListClient.GetProjectsForAdmin(Criteria);
+            
+            if (Projects.Count > 0)
+            {
+                model = new BindToKiModel { JoinProject = Projects.First(), KogdaIgraIds = [], DisableKogdaIgraMapping = false };
+            }
         }
+        catch (Exception ex)
+        {
+            isError = true;
+            logger.LogError(ex, "РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РґР°РЅРЅС‹С…");
+        }
+
+        isLoading = false;
+
         await base.OnParametersSetAsync();
     }
 
@@ -124,10 +151,10 @@
     private class BindToKiModel
     {
         [Required]
-        [Display(Name = "Игры на КИ")]
+        [Display(Name = "РРіСЂС‹ РЅР° РљР")]
         public required KogdaIgraIdentification[] KogdaIgraIds { get; set; }
 
-        [Display(Name = "Не привязывать к КогдаИгре")]
+        [Display(Name = "РќРµ РїСЂРёРІСЏР·С‹РІР°С‚СЊ Рє РљРѕРіРґР°РРіСЂРµ")]
         public required bool DisableKogdaIgraMapping { get; set; }
 
         [ReadOnly(true)]

@@ -50,15 +50,13 @@ internal static class ProjectPredicates
             PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.ForCloning, UserId: var userId }
                 => predicate.And(ForCloning(userId)),
             { Criteria: ProjectListCriteria.HasSchedule } => predicate.And(project => project.Details.ScheduleEnabled),
-            { Criteria: ProjectListCriteria.KogdaIgraMissing }
-                => predicate.And(project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression60.Invoke(e)) == 0).And(project => !project.Details.DisableKogdaIgraMapping),
             PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterGrantAccess, UserId: var userId } => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userId.Value && projectAcl.CanGrantRights)),
             _ => throw new NotImplementedException(),
         };
         return predicate;
     }
 
-    private static Expression<Func<KogdaIgraGame, bool>> KogdaIgraIsStaleFor(TimeSpan timeSpan)
+    internal static Expression<Func<KogdaIgraGame, bool>> KogdaIgraIsStaleFor(TimeSpan timeSpan)
     {
         var date = DateTime.Now.Subtract(timeSpan);
         return e => e.End > date;
