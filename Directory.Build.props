@@ -26,15 +26,20 @@
         <!-- Всегда публикуем с двумя тегами: latest и версия -->
         <ContainerImageTags>latest;$(Version)</ContainerImageTags>
 
+        <TargetFramework>net10.0</TargetFramework>
+        <NoWarn>$(NoWarn);NU1507</NoWarn>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+
     </PropertyGroup>
     <!--
     this instruction automatically allows XXX.Tests to access internals of XXX.
   -->
     <ItemGroup>
-      <InternalsVisibleTo Include="$(AssemblyName).Test" />
-      <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+        <InternalsVisibleTo Include="$(AssemblyName).Test" />
+        <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>
-  <ItemGroup>
-    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.4.5" />
-  </ItemGroup>
+    <ItemGroup>
+        <GlobalPackageReference Include="ReferenceTrimmer" Version="3.4.5" />
+    </ItemGroup>
 </Project>

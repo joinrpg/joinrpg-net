@@ -1,79 +1,77 @@
 <Project>
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
-    <TargetFramework>net10.0</TargetFramework>
-    <NoWarn>$(NoWarn);NU1507</NoWarn>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageVersion Include="AspNet.Security.OAuth.Vkontakte" Version="10.0.0" />
-    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
-    <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
-    <PackageVersion Include="Autofac" Version="9.0.0" />
-    <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.412.0" />
-    <PackageVersion Include="AWSSDK.SimpleEmailV2" Version="3.7.412.0" />
-    <PackageVersion Include="BitArmory.ReCaptcha" Version="5.0.1" />
-    <PackageVersion Include="ClosedXML" Version="0.105.0" />
-    <PackageVersion Include="coverlet.collector" Version="8.0.0" />
-    <PackageVersion Include="EntityFramework" Version="6.5.1" />
-    <PackageVersion Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.3" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.12.1" />
-    <PackageVersion Include="Ical.Net" Version="5.2.1" />
-    <PackageVersion Include="LinqKit.EntityFramework" Version="1.3.11" />
-    <PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.11" />
-    <PackageVersion Include="Markdig" Version="0.45.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Aspnetcore.Components.Webassembly.Server" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Build" Version="17.11.48" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
-    <PackageVersion Include="morelinq" Version="4.4.0" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
-    <PackageVersion Include="Serilog" Version="4.3.1" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-    <PackageVersion Include="Serilog.Expressions" Version="5.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageVersion Include="Shouldly" Version="4.3.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
-    <PackageVersion Include="System.Net.Http.Json" Version="10.0.0" />
-    <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
-    <PackageVersion Include="Telegram.Bot" Version="22.9.0" />
-    <PackageVersion Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
-    <PackageVersion Include="Verify.Xunit" Version="31.12.5" />
-    <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61" />
-  </ItemGroup>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+        <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageVersion Include="AspNet.Security.OAuth.Vkontakte" Version="10.0.0" />
+        <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+        <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
+        <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+        <PackageVersion Include="Autofac" Version="9.0.0" />
+        <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+        <PackageVersion Include="AWSSDK.S3" Version="3.7.412.0" />
+        <PackageVersion Include="AWSSDK.SimpleEmailV2" Version="3.7.412.0" />
+        <PackageVersion Include="BitArmory.ReCaptcha" Version="5.0.1" />
+        <PackageVersion Include="ClosedXML" Version="0.105.0" />
+        <PackageVersion Include="coverlet.collector" Version="8.0.0" />
+        <PackageVersion Include="EntityFramework" Version="6.5.1" />
+        <PackageVersion Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.3" />
+        <PackageVersion Include="HtmlAgilityPack" Version="1.12.1" />
+        <PackageVersion Include="Ical.Net" Version="5.2.1" />
+        <PackageVersion Include="LinqKit.EntityFramework" Version="1.3.11" />
+        <PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.11" />
+        <PackageVersion Include="Markdig" Version="0.45.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Aspnetcore.Components.Webassembly.Server" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Build" Version="17.11.48" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.2" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.2" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+        <PackageVersion Include="morelinq" Version="4.4.0" />
+        <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+        <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
+        <PackageVersion Include="Serilog" Version="4.3.1" />
+        <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+        <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+        <PackageVersion Include="Serilog.Expressions" Version="5.0.0" />
+        <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+        <PackageVersion Include="Shouldly" Version="4.3.0" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+        <PackageVersion Include="System.Net.Http.Json" Version="10.0.0" />
+        <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
+        <PackageVersion Include="Telegram.Bot" Version="22.9.0" />
+        <PackageVersion Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
+        <PackageVersion Include="Verify.Xunit" Version="31.12.5" />
+        <PackageVersion Include="xunit" Version="2.9.3" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+        <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61" />
+    </ItemGroup>
 </Project>
