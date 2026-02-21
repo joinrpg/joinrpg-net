@@ -1,17 +1,16 @@
-namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations;
+
+using System.Data.Entity.Migrations;
+
+public partial class RemoveSkype : DbMigration
 {
-    using System.Data.Entity.Migrations;
-
-    public partial class RemoveSkype : DbMigration
+    public override void Up()
     {
-        public override void Up()
-        {
-            DropColumn("dbo.UserExtras", "Skype");
-        }
+        DropColumn("dbo.UserExtras", "Skype");
+    }
 
-        public override void Down()
-        {
-            AddColumn("dbo.UserExtras", "Skype", c => c.String());
-        }
+    public override void Down()
+    {
+        AddColumn("dbo.UserExtras", "Skype", c => c.String());
     }
 }

@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 public interface IResponsibleMasterRuleClient

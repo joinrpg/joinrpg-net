@@ -6,8 +6,6 @@ namespace JoinRpg.PrimitiveTypes.Characters;
 
 public sealed class FieldWithValue
 {
-    private string? _value;
-
     private IReadOnlyList<int> SelectedIds { get; set; } = [];
 
     public FieldWithValue(ProjectFieldInfo field, string? value)
@@ -20,10 +18,10 @@ public sealed class FieldWithValue
 
     public string? Value
     {
-        get => _value;
+        get;
         set
         {
-            _value = value;
+            field = value;
             if (Field.HasValueList)
             {
                 SelectedIds = Value?.ParseToIntList() ?? [];

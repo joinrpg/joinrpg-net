@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Data.Interfaces.Subscribe;
 
 public class UserSubscriptionDto

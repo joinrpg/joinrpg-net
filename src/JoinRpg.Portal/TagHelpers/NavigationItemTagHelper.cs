@@ -41,12 +41,12 @@ public class NavLinkTagHelper : AnchorTagHelper
         var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
         var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 
-        if (!string.IsNullOrWhiteSpace(Controller) && Controller.ToLower() != currentController?.ToLower())
+        if (!string.IsNullOrWhiteSpace(Controller) && !Controller.Equals(currentController?.ToLower(), StringComparison.CurrentCultureIgnoreCase))
         {
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(Action) && Action.ToLower() != currentAction?.ToLower())
+        if (!string.IsNullOrWhiteSpace(Action) && !Action.Equals(currentAction?.ToLower(), StringComparison.CurrentCultureIgnoreCase))
         {
             return false;
         }

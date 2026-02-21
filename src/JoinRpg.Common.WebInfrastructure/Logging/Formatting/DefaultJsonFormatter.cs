@@ -17,12 +17,12 @@ namespace JoinRpg.Common.WebInfrastructure.Logging.Formatting;
 /// <remarks>Migrated from the original Serilog.Formatting.Json.JsonFormatter implementation.</remarks>
 internal abstract class DefaultJsonFormatter : ITextFormatter
 {
-    readonly bool _omitEnclosingObject;
-    readonly string _closingDelimiter;
-    readonly bool _renderMessage;
-    readonly bool _renderMessageTemplate;
-    readonly IFormatProvider _formatProvider;
-    readonly IDictionary<Type, Action<object, bool, TextWriter>> _literalWriters;
+    private readonly bool _omitEnclosingObject;
+    private readonly string _closingDelimiter;
+    private readonly bool _renderMessage;
+    private readonly bool _renderMessageTemplate;
+    private readonly IFormatProvider _formatProvider;
+    private readonly IDictionary<Type, Action<object, bool, TextWriter>> _literalWriters;
 
     /// <summary>
     /// Construct a <see cref="DefaultJsonFormatter"/>.
@@ -83,11 +83,20 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
     /// <param name="output">The output.</param>
     public void Format(LogEvent logEvent, TextWriter output)
     {
-        if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
-        if (output == null) throw new ArgumentNullException(nameof(output));
+        if (logEvent == null)
+        {
+            throw new ArgumentNullException(nameof(logEvent));
+        }
+
+        if (output == null)
+        {
+            throw new ArgumentNullException(nameof(output));
+        }
 
         if (!_omitEnclosingObject)
+        {
             output.Write("{");
+        }
 
         var delim = "";
         WriteTimestamp(logEvent.Timestamp, ref delim, output);
@@ -117,10 +126,14 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
         }
 
         if (logEvent.Exception != null)
+        {
             WriteException(logEvent.Exception, ref delim, output);
+        }
 
         if (logEvent.Properties.Count != 0)
+        {
             WriteProperties(logEvent.Properties, output);
+        }
 
         var tokensWithFormat = logEvent.MessageTemplate.Tokens
             .OfType<PropertyToken>()
@@ -147,8 +160,15 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
     /// <param name="writer">The function, which writes the values.</param>
     protected void AddLiteralWriter(Type type, Action<object, TextWriter> writer)
     {
-        if (type == null) throw new ArgumentNullException(nameof(type));
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        if (type == null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
 
         _literalWriters[type] = (v, _, w) => writer(v, w);
     }
@@ -270,10 +290,14 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
 
         var delim = "";
         if (typeTag != null)
+        {
             WriteJsonProperty("_typeTag", typeTag, ref delim, output);
+        }
 
         foreach (var property in properties)
+        {
             WriteJsonProperty(property.Name, property.Value, ref delim, output);
+        }
 
         output.Write("}");
     }
@@ -348,7 +372,7 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
         WriteString(value.ToString(), output);
     }
 
-    void WriteLiteral(object value, TextWriter output, bool forceQuotation = false)
+    private void WriteLiteral(object value, TextWriter output, bool forceQuotation = false)
     {
         if (value == null)
         {
@@ -366,49 +390,59 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
         WriteLiteralValue(value, output);
     }
 
-    static void WriteToString(object number, bool quote, TextWriter output)
+    private static void WriteToString(object number, bool quote, TextWriter output)
     {
-        if (quote) output.Write('"');
+        if (quote)
+        {
+            output.Write('"');
+        }
 
         var fmt = number as IFormattable;
         if (fmt != null)
+        {
             output.Write(fmt.ToString(null, CultureInfo.InvariantCulture));
+        }
         else
+        {
             output.Write(number.ToString());
+        }
 
-        if (quote) output.Write('"');
+        if (quote)
+        {
+            output.Write('"');
+        }
     }
 
-    static void WriteBoolean(bool value, TextWriter output)
+    private static void WriteBoolean(bool value, TextWriter output)
     {
         output.Write(value ? "true" : "false");
     }
 
-    static void WriteSingle(float value, TextWriter output)
+    private static void WriteSingle(float value, TextWriter output)
     {
         output.Write(value.ToString("R", CultureInfo.InvariantCulture));
     }
 
-    static void WriteDouble(double value, TextWriter output)
+    private static void WriteDouble(double value, TextWriter output)
     {
         output.Write(value.ToString("R", CultureInfo.InvariantCulture));
     }
 
-    static void WriteOffset(DateTimeOffset value, TextWriter output)
+    private static void WriteOffset(DateTimeOffset value, TextWriter output)
     {
         output.Write("\"");
         output.Write(value.ToString("o"));
         output.Write("\"");
     }
 
-    static void WriteDateTime(DateTime value, TextWriter output)
+    private static void WriteDateTime(DateTime value, TextWriter output)
     {
         output.Write("\"");
         output.Write(value.ToString("o"));
         output.Write("\"");
     }
 
-    static void WriteString(string value, TextWriter output)
+    private static void WriteString(string value, TextWriter output)
     {
         JsonValueFormatter.WriteQuotedJsonString(value, output);
     }

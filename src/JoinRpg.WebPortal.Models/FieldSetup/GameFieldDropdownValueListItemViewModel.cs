@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 

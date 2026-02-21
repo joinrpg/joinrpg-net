@@ -1,5 +1,3 @@
-using JoinRpg.Web.Models.CommonTypes;
-
 namespace JoinRpg.Web.Models;
 
 public class MoveControlParametersViewModel

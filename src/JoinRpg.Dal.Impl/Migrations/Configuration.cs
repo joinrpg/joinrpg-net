@@ -1,5 +1,4 @@
 using System.Data.Entity.Migrations;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl.Migrations;
 
