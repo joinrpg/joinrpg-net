@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.AdminTools.KogdaIgra
+@using JoinRpg.Web.AdminTools.KogdaIgra
 @using JoinRpg.Web.ProjectCommon.Projects
 @using System.ComponentModel
 @using System.ComponentModel.DataAnnotations
@@ -112,7 +112,7 @@
         isLoading = true;
         try
         {
-            Projects = await ProjectListClient.GetProjectsForAdmin(Criteria);
+            Projects = (await ProjectListClient.GetProjectsForAdmin(Criteria)).OrderByDescending(x => x.ProjectId).ToList();
             
             if (Projects.Count > 0)
             {
