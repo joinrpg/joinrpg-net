@@ -5,11 +5,18 @@ namespace JoinRpg.DataModel;
 public class ProjectFeeSetting
 {
     public int ProjectFeeSettingId { get; set; }
+
     public int ProjectId { get; set; }
+
     public virtual Project Project { get; set; }
+
+    [Obsolete("Date-dependent prices are now configured using PriveValue")]
     [Range(0, int.MaxValue, ErrorMessage = "Fee should be positive.")]
     public int Fee { get; set; }
+
+    [Obsolete("Date-dependent prices are now configured using PriveValue")]
     [Range(0, int.MaxValue, ErrorMessage = "Fee should be positive.")]
     public int? PreferentialFee { get; set; }
+
     public DateTime StartDate { get; set; }
 }
