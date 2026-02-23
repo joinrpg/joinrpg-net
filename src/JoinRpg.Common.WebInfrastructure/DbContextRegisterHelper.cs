@@ -8,7 +8,12 @@ namespace JoinRpg.Common.WebInfrastructure;
 
 public static class DbContextRegisterHelper
 {
-    public static bool AddJoinEfCoreDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment, string connectionStringName)
+    public static bool AddJoinEfCoreDbContext<TContext>(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        string connectionStringName,
+        Action<DbContextOptionsBuilder>? optionsBuilder = null)
         where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName);
@@ -29,6 +34,8 @@ public static class DbContextRegisterHelper
                 .ConfigureWarnings(
                     b => b.Log(
                         (RelationalEventId.CommandExecuted, LogLevel.Debug)));
+
+            optionsBuilder?.Invoke(options);
         });
 
         services
