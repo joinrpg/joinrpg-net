@@ -7,7 +7,7 @@ public record class UserIdentification(int Value) : SingleValueType<int>(Value),
     public static UserIdentification? FromOptional(int? userId)
         => userId is not null ? new UserIdentification(userId.Value) : null;
 
-    public static UserIdentification Parse(string value, IFormatProvider? provider) => Parse(value.AsSpan(), provider);
+    public static UserIdentification Parse(string value, IFormatProvider? provider = null) => Parse(value.AsSpan(), provider);
 
     public static bool TryParse(string? value, IFormatProvider? provider, [MaybeNullWhen(false)] out UserIdentification result) => TryParse(value.AsSpan(), provider, out result);
 
