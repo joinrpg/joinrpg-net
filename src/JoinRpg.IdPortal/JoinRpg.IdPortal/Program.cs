@@ -1,6 +1,7 @@
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
+using Microsoft.Extensions.Options;
 
 var app = WebApplication.CreateBuilder(args).ConfigureServices().Build();
 
@@ -35,5 +36,7 @@ app.MapJoinHealthChecks();
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.Map("/user/{userId:int}", (int userId, IOptions<JoinRpgHostNamesOptions> options) => TypedResults.Redirect("https://" + options.Value.MainHost + "/user/" + userId));
 
 app.Run();
