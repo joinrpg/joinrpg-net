@@ -3,8 +3,6 @@
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
         <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
-
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
     <ItemGroup>
         <PackageVersion Include="AspNet.Security.OAuth.Vkontakte" Version="10.0.0" />
