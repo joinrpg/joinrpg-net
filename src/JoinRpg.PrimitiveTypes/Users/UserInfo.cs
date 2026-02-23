@@ -20,6 +20,9 @@ public record class UserInfo(
 
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 
+    // Не реализовано
+    public bool PhoneNumberConfirmed { get; } = false;
+
     public UserProfileAccessReason GetAccess(UserInfo? currentUser)
     {
         if (currentUser == null)
