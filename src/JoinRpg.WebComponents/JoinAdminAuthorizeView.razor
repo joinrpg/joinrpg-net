@@ -1,0 +1,25 @@
+<AuthorizeView Roles="@Roles">
+    <Authorized>
+        @ChildContent
+    </Authorized>
+    <NotAuthorized>
+        <JoinAlert Variation="VariationStyleEnum.Danger">Доступ запрещён. Требуются права администратора.</JoinAlert>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string Roles { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Roles))
+        {
+            throw new ArgumentException("Roles не может быть пустым", nameof(Roles));
+        }
+    }
+}

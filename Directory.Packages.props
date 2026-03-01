@@ -14,6 +14,7 @@
         <PackageVersion Include="AWSSDK.S3" Version="3.7.412.0" />
         <PackageVersion Include="AWSSDK.SimpleEmailV2" Version="3.7.412.0" />
         <PackageVersion Include="BitArmory.ReCaptcha" Version="5.0.1" />
+        <PackageVersion Include="bunit" Version="2.5.3" />
         <PackageVersion Include="ClosedXML" Version="0.105.0" />
         <PackageVersion Include="coverlet.collector" Version="8.0.0" />
         <PackageVersion Include="EntityFramework" Version="6.5.1" />
@@ -25,6 +26,7 @@
         <PackageVersion Include="Markdig" Version="0.45.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components" Version="10.0.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.3" />
