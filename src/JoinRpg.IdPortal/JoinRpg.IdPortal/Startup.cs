@@ -3,6 +3,7 @@ using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Notifications;
 using JoinRpg.IdPortal.Components.Account;
+using JoinRpg.IdPortal.OAuthServer;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
@@ -35,6 +36,8 @@ public static class Startup
             .Configure<S3StorageOptions>(builder.Configuration.GetSection("S3BlobStorage"))
             .Configure<NotificationsOptions>(builder.Configuration.GetSection("Notifications"));
 
+        builder.Services.AddOptions<OAuthServerOptions>().BindConfiguration("OAuthServer");
+
         builder.Services.AddJoinExternalLogins(builder.Configuration.GetSection("Authentication"));
 
         builder.Services.AddJoinWebPlatform(builder.Configuration,
@@ -51,6 +54,8 @@ public static class Startup
             .AddJoinNotificationLayerServices()
             .AddNotificationsDal(builder.Configuration, builder.Environment)
             ;
+
+        builder.AddJoinOAuthServer();
 
         return builder;
     }

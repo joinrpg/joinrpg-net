@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <UserSecretsId>aspnet-JoinRpg.IdPortal-6b487ee5-6ae0-4a0a-9266-5afcd5e971f4</UserSecretsId>
@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <ProjectReference Include="..\..\JoinRpg.BlobStorage\JoinRpg.BlobStorage.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
@@ -18,6 +22,7 @@
     <ProjectReference Include="..\..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj" />
+    <ProjectReference Include="..\JoinRpg.IdPortal.OAuthServer\JoinRpg.IdPortal.OAuthServer.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
   </ItemGroup>

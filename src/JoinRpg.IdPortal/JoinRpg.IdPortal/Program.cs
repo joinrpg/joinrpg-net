@@ -1,6 +1,7 @@
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.IdPortal;
 using JoinRpg.IdPortal.Components;
+using JoinRpg.IdPortal.OAuthServer;
 using Microsoft.Extensions.Options;
 
 var app = WebApplication.CreateBuilder(args).ConfigureServices().Build();
@@ -38,5 +39,7 @@ app.MapJoinHealthChecks();
 app.MapAdditionalIdentityEndpoints();
 
 app.Map("/user/{userId:int}", (int userId, IOptions<JoinRpgHostNamesOptions> options) => TypedResults.Redirect("https://" + options.Value.MainHost + "/user/" + userId));
+
+app.MapJoinOAuthServer();
 
 app.Run();
