@@ -7,6 +7,10 @@
     {
        <div class="panel-body">@Body</div>
     }
+    else if (ChildContent is not null)
+    {
+        <div class="panel-body">@ChildContent</div>
+    }
     @if (Footer is not null)
     {
         <div class="panel-footer">@Footer</div>
@@ -16,6 +20,7 @@
 @code {
     [Parameter] public RenderFragment? Header { get; set; }
     [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Footer { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; } = null;
 
