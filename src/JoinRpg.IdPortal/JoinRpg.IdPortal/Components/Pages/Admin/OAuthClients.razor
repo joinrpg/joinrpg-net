@@ -1,35 +1,75 @@
 @page "/admin/oauthclients"
-@using JoinRpg.Common.WebInfrastructure
-@using JoinRpg.IdPortal.Components.Account
-@using JoinRpg.Interfaces
-@using Microsoft.Extensions.Options
 @using OpenIddict.Abstractions
-@inject IOpenIddictApplicationManager openIddictApplicationManager
-@inject IdentityRedirectManager RedirectManager
-@inject IOptions<JoinRpgHostNamesOptions> Options
+@inject IOpenIddictApplicationManager OpenIddictApplicationManager
 
-<PageTitle>id.joinrpg.ru</PageTitle>
+<PageTitle>OAuth-клиенты — id.joinrpg.ru</PageTitle>
 
+<JoinAdminAuthorizeView Roles="@Security.AdminRoleName">
+    <h3>OAuth-клиенты</h3>
 
-
-<AuthorizeView>
-    <Authorized>
-        @if (@context.User.IsInRole("Admin"))
-        {
-
-        }
-
-    </Authorized>
-</AuthorizeView>
+    @if (clients is null)
+    {
+        <JoinLoadingMessage />
+    }
+    else if (clients.Count == 0)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Info">Нет зарегистрированных клиентов.</JoinAlert>
+    }
+    else
+    {
+        <JoinBorderedTable Items="clients" Context="client">
+            <HeadContent>
+                <tr>
+                    <th>Идентификатор</th>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th>Разрешения</th>
+                </tr>
+            </HeadContent>
+            <ItemTemplate>
+                <tr>
+                    <td>@client.ClientId</td>
+                    <td>@client.DisplayName</td>
+                    <td>@client.ClientType</td>
+                    <td>@client.Permissions</td>
+                </tr>
+            </ItemTemplate>
+        </JoinBorderedTable>
+    }
+</JoinAdminAuthorizeView>
 
 @code
 {
+    private List<OAuthClientInfo>? clients;
 
-    protected async override Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        await foreach (var client in  openIddictApplicationManager.ListAsync())
+        var list = new List<OAuthClientInfo>();
+
+        await foreach (var client in OpenIddictApplicationManager.ListAsync())
         {
-            
+            var clientId = await OpenIddictApplicationManager.GetClientIdAsync(client);
+            var displayName = await OpenIddictApplicationManager.GetDisplayNameAsync(client);
+            var clientType = await OpenIddictApplicationManager.GetClientTypeAsync(client);
+            var permissions = await OpenIddictApplicationManager.GetPermissionsAsync(client);
+
+            list.Add(new OAuthClientInfo
+            {
+                ClientId = clientId ?? "—",
+                DisplayName = displayName ?? "—",
+                ClientType = clientType ?? "—",
+                Permissions = string.Join(", ", permissions),
+            });
         }
+
+        clients = list;
+    }
+
+    private sealed class OAuthClientInfo
+    {
+        public required string ClientId { get; init; }
+        public required string DisplayName { get; init; }
+        public required string ClientType { get; init; }
+        public required string Permissions { get; init; }
     }
 }
