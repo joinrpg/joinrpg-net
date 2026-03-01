@@ -10,6 +10,9 @@
 .vs/
 .idea/
 
+# Claude Code local settings (personal permissions)
+.claude/settings.local.json
+
 # Build results
 artifacts/
 
