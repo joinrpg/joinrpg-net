@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Http;
