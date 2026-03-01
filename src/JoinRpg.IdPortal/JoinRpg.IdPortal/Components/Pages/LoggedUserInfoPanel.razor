@@ -1,0 +1,23 @@
+@using JoinRpg.Common.WebInfrastructure
+@using JoinRpg.IdPortal.Components.Account
+@using JoinRpg.Interfaces
+@using Microsoft.Extensions.Options
+@inject IOptions<JoinRpgHostNamesOptions> Options
+@inject ICurrentUserAccessor CurrentUserAccessor
+
+<JoinPanel>
+    <h1>Добро пожаловать, @CurrentUserAccessor.DisplayName.DisplayName!</h1>
+    <ul>
+        <li><a href="https://@(Options.Value.MainHost)/user/me">Профиль</a></li>
+        <li><a href="https://@(Options.Value.MainHost)/manage/setupprofile">Настройки</a></li>
+        <li><a href="https://@(Options.Value.RatingHost)">Бастильский рейтинг</a></li>
+        <li><a href="https://@(Options.Value.KogdaIgraHost)">КогдаИгра</a></li>
+    </ul>
+    <form action="/Account/Logout" method="post">
+        <AntiforgeryToken />
+        <input type="hidden" value="" name="returnUrl" />
+        <p>
+            <JoinButton Submit="true" Preset="ButtonPreset.Logout" />
+        </p>
+    </form>
+</JoinPanel>
