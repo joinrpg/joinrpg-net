@@ -50,10 +50,10 @@ jobs:
       with:
         global-json-file: global.json
         cache: true
-        cache-dependency-path: "**/packages.lock.json"
+        cache-dependency-path: "Directory.Packages.props"
 
     - name: Restore
-      run: dotnet restore --locked-mode
+      run: dotnet restore
 
     - name: Format
       run: dotnet format --no-restore --verify-no-changes --severity error

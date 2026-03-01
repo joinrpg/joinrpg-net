@@ -6,7 +6,6 @@
     <ContainerRegistry>cr.yandex</ContainerRegistry>
     <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-idportal</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <ItemGroup>

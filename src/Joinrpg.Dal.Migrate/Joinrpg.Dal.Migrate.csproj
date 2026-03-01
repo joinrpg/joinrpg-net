@@ -6,7 +6,6 @@
     <ContainerRegistry>cr.yandex</ContainerRegistry>
     <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-dal-migrate</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
