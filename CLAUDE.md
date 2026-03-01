@@ -118,7 +118,7 @@ dotnet test src/JoinRpg.Domain.Test              # Конкретный тест
 - `JoinRpg.WebPortal.Managers` — подготовка ViewModels для веб-портала
 
 ### WebPortalShared (разделяемые UI-компоненты)
-- `JoinRpg.WebComponents` — базовые Razor-компоненты
+- `JoinRpg.WebComponents` — базовые Razor-компоненты. Для каждого компонента должны быть тесты на bUnit, дописывай их когда добавляешь компонент.
 - `JoinRpg.Web.ProjectCommon` — лёгкие Blazor-DTO и интерфейсы клиентов
 - `JoinRpg.Web.Games` — UI для игр
 - `JoinRpg.Web.Claims` — UI для заявок игроков

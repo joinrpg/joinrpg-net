@@ -60,6 +60,7 @@
     <Project Path="src/JoinRpg.Services.Notifications.Tests/JoinRpg.Services.Notifications.Tests.csproj" />
     <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
+    <Project Path="src/JoinRpg.WebComponents.Test/JoinRpg.WebComponents.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
   </Folder>
   <Folder Name="/WebPortalShared/">
