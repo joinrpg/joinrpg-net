@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using Joinrpg.Web.Identity;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization;

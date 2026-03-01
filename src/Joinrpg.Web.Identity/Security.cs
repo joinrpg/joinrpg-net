@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace Joinrpg.Web.Identity;
 
 public class Security
 {

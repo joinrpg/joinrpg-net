@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace Joinrpg.Web.Identity;
 
 internal partial class MyUserStore : IUserRoleStore<JoinIdentityUser>
