@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenIddict.AspNetCore" />
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
+    <ProjectReference Include="..\..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
+  </ItemGroup>
+
+</Project>

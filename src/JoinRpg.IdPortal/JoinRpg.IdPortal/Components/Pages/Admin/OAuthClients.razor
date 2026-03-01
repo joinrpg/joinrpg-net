@@ -1,0 +1,35 @@
+@page "/admin/oauthclients"
+@using JoinRpg.Common.WebInfrastructure
+@using JoinRpg.IdPortal.Components.Account
+@using JoinRpg.Interfaces
+@using Microsoft.Extensions.Options
+@using OpenIddict.Abstractions
+@inject IOpenIddictApplicationManager openIddictApplicationManager
+@inject IdentityRedirectManager RedirectManager
+@inject IOptions<JoinRpgHostNamesOptions> Options
+
+<PageTitle>id.joinrpg.ru</PageTitle>
+
+
+
+<AuthorizeView>
+    <Authorized>
+        @if (@context.User.IsInRole("Admin"))
+        {
+
+        }
+
+    </Authorized>
+</AuthorizeView>
+
+@code
+{
+
+    protected async override Task OnParametersSetAsync()
+    {
+        await foreach (var client in  openIddictApplicationManager.ListAsync())
+        {
+            
+        }
+    }
+}

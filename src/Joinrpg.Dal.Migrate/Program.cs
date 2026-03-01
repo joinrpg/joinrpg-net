@@ -3,6 +3,7 @@ using JoinRpg.Dal.JobService;
 using JoinRpg.Dal.Migrate.Ef6;
 using JoinRpg.Dal.Migrate.EfCore;
 using JoinRpg.Dal.Notifications;
+using JoinRpg.IdPortal.OAuthServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,5 +28,6 @@ internal class Program
                 services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection")!);
                 services.RegisterMigrator<JobScheduleDataDbContext>(hostContext.Configuration.GetConnectionString("DailyJob")!);
                 services.RegisterMigrator<NotificationsDataDbContext>(hostContext.Configuration.GetConnectionString("Notifications")!);
+                services.RegisterMigrator<IdPortalDbContext>(hostContext.Configuration.GetConnectionString("IdPortal")!);
             });
 }

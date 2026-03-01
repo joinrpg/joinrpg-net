@@ -18,6 +18,7 @@
   </Folder>
   <Folder Name="/IdPortal/">
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Client/JoinRpg.IdPortal.Client.csproj" />
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer/JoinRpg.IdPortal.OAuthServer.csproj" Id="cbd70223-978c-4afe-b74d-72a41aaddbe7" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Test/JoinRpg.IdPortal.Test.csproj" Id="8fb2fca5-89b5-4c67-9738-bf0ff06aad27" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj" />
   </Folder>
