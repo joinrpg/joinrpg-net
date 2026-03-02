@@ -22,10 +22,16 @@ public class OAuthRegistrator(
 
         foreach (var registration in options.Value.Registrations)
         {
-            if (await manager.FindByClientIdAsync(registration.ClientId, cancellationToken) is null)
+            var existing = await manager.FindByClientIdAsync(registration.ClientId, cancellationToken);
+            if (existing is null)
             {
                 logger.LogInformation("Creating OAuth client with ClientId={OAuthClientId}", registration.ClientId);
                 _ = await manager.CreateAsync(CreateDescriptor(registration), cancellationToken);
+            }
+            else
+            {
+                logger.LogInformation("Updating OAuth client with ClientId={OAuthClientId}", registration.ClientId);
+                await manager.UpdateAsync(existing, CreateDescriptor(registration), cancellationToken);
             }
         }
     }
@@ -43,6 +49,10 @@ public class OAuthRegistrator(
                     Permissions.Endpoints.Token,
                     Permissions.GrantTypes.AuthorizationCode,
                     Permissions.ResponseTypes.Code,
+                    Permissions.Prefixes.Scope + Scopes.OpenId,
+                    Permissions.Prefixes.Scope + Scopes.Email,
+                    Permissions.Prefixes.Scope + Scopes.Phone,
+                    Permissions.Prefixes.Scope + Scopes.Profile,
                 }
         };
         desc.RedirectUris.Add(registration.RedirectUri);
