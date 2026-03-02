@@ -63,6 +63,8 @@ public static class OAuthServerRegistration
 
                 options.AllowAuthorizationCodeFlow();
 
+                options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile);
+
                 //TODO разобраться с сертификатами
                 options.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
@@ -143,8 +145,11 @@ public static class OAuthServerRegistration
             claims[Claims.FamilyName] = userInfo.UserFullName.SurName;
             claims[Claims.MiddleName] = userInfo.UserFullName.FatherName;
 
-            var avatarInfo = await avatarLoader.GetAvatar(userInfo.SelectedAvatarId, 64);
-            claims[Claims.Picture] = avatarInfo.Uri;
+            if (userInfo.SelectedAvatarId is not null)
+            {
+                var avatarInfo = await avatarLoader.GetAvatar(userInfo.SelectedAvatarId, 64);
+                claims[Claims.Picture] = avatarInfo.Uri;
+            }
         }
 
         return TypedResults.Ok(claims);
@@ -179,14 +184,14 @@ public static class OAuthServerRegistration
 
             identity.SetClaim(Claims.Subject, currentUserAccessor.UserIdentification.ToString());
 
+            identity.SetScopes(request.GetScopes());
+
             identity.SetDestinations(static claim => claim.Type switch
             {
-                // Allow the "name" claim to be stored in both the access and identity tokens
-                // when the "profile" scope was granted (by calling principal.SetScopes(...)).
+                Claims.Subject
+                    => [Destinations.AccessToken, Destinations.IdentityToken],
                 Claims.Name when claim.Subject.HasScope(Scopes.Profile)
                     => [Destinations.AccessToken, Destinations.IdentityToken],
-
-                // Otherwise, only store the claim in the access tokens.
                 _ => [Destinations.AccessToken]
             });
 
