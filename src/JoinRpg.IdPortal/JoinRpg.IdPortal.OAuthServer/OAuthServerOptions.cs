@@ -10,6 +10,19 @@ public class OAuthServerOptions
         public required Uri RedirectUri { get; set; }
     }
 
+    public class OAuthServerCertificateOptions
+    {
+        public string? Base64 { get; set; }
+        public string? Password { get; set; }
+    }
+
+    public class OAuthServerCertificatesOptions
+    {
+        public OAuthServerCertificateOptions? Signing { get; set; }
+        public OAuthServerCertificateOptions? Encryption { get; set; }
+    }
+
     public required OAuthServerRegistrationOptions[] Registrations { get; set; }
+    public OAuthServerCertificatesOptions? Certificates { get; set; }
 }
 

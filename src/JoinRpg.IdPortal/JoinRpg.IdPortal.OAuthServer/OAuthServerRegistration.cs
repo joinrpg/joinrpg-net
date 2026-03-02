@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Interfaces;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -29,6 +31,9 @@ public static class OAuthServerRegistration
     public static WebApplicationBuilder AddJoinOAuthServer(this WebApplicationBuilder builder)
     {
         builder.Services.AddOptions<OAuthServerOptions>();
+
+        var oauthOptions = builder.Configuration.GetSection("OAuthServer").Get<OAuthServerOptions>();
+        var certOptions = oauthOptions?.Certificates;
 
         builder.Services.AddJoinEfCoreDbContext<IdPortalDbContext>(builder.Configuration, builder.Environment, "IdPortal",
             options =>
@@ -65,9 +70,27 @@ public static class OAuthServerRegistration
 
                 options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile);
 
-                //TODO разобраться с сертификатами
-                options.AddDevelopmentEncryptionCertificate()
-                       .AddDevelopmentSigningCertificate();
+                if (certOptions?.Signing?.Base64 is { } signingBase64)
+                {
+                    options.AddSigningCertificate(X509CertificateLoader.LoadPkcs12(
+                        Convert.FromBase64String(signingBase64),
+                        certOptions.Signing.Password));
+                }
+                else
+                {
+                    options.AddDevelopmentSigningCertificate();
+                }
+
+                if (certOptions?.Encryption?.Base64 is { } encryptionBase64)
+                {
+                    options.AddEncryptionCertificate(X509CertificateLoader.LoadPkcs12(
+                        Convert.FromBase64String(encryptionBase64),
+                        certOptions.Encryption.Password));
+                }
+                else
+                {
+                    options.AddDevelopmentEncryptionCertificate();
+                }
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core options.
                 options.UseAspNetCore()
