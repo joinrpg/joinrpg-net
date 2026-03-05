@@ -29,6 +29,7 @@ internal partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
                 AspNetSecurityStamp = "",
             },
             PasswordHash = user.PasswordHash,
+            PrefferedName = user.DisplayName?.DisplayName,
             Extra = new UserExtra
             {
                 SocialNetworksAccess = ContactsAccessType.Public,
