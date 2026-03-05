@@ -43,3 +43,5 @@ app.Map("/user/{userId:int}", (int userId, IOptions<JoinRpgHostNamesOptions> opt
 app.MapJoinOAuthServer();
 
 app.Run();
+
+public partial class Program { }

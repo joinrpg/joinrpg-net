@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace JoinRpg.IdPortal.Test;
 
 public class DiTest
