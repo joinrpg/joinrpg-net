@@ -29,18 +29,20 @@ public class ForgotPasswordScenario(IdPortalApplicationFactory factory)
         factory.CaptureEmail.LastResetPasswordUrl.ShouldContain("ResetPassword");
     }
 
-    [Fact(Skip = "TODO: fix")]
+    [Fact]
     public async Task ResetPassword_WithValidToken_ChangesPassword()
     {
-        // Step 1: Request password reset
+        const string newPassword = "NewPassword456!";
+
+        // Step 1: Request password reset for dedicated reset user
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         var forgotPage = await client.GetAsync("/Account/ForgotPassword");
         var doc = await forgotPage.AsHtmlDocument();
         var forgotFields = doc.GetFormFields();
-        forgotFields["Input.Email"] = IdPortalApplicationFactory.TestUserEmail;
+        forgotFields["Input.Email"] = IdPortalApplicationFactory.TestResetUserEmail;
 
-        await client.PostAsync("/Account/ForgotPassword", new FormUrlEncodedContent(forgotFields!));
+        await client.PostAsync(doc.GetFormAction("/Account/ForgotPassword"), new FormUrlEncodedContent(forgotFields!));
 
         var resetUrl = factory.CaptureEmail.LastResetPasswordUrl;
         resetUrl.ShouldNotBeNull();
@@ -57,11 +59,11 @@ public class ForgotPasswordScenario(IdPortalApplicationFactory factory)
 
         var resetDoc = await resetPage.AsHtmlDocument();
         var resetFields = resetDoc.GetFormFields();
-        resetFields["Input.Email"] = IdPortalApplicationFactory.TestUserEmail;
-        resetFields["Input.Password"] = "NewPassword456!";
-        resetFields["Input.ConfirmPassword"] = "NewPassword456!";
+        resetFields["Input.Email"] = IdPortalApplicationFactory.TestResetUserEmail;
+        resetFields["Input.Password"] = newPassword;
+        resetFields["Input.ConfirmPassword"] = newPassword;
 
-        var resetResponse = await client.PostAsync("/Account/ResetPassword", new FormUrlEncodedContent(resetFields!));
+        var resetResponse = await client.PostAsync(resetDoc.GetFormAction(resetPageUrl), new FormUrlEncodedContent(resetFields!));
 
         // Should redirect to confirmation
         resetResponse.StatusCode.ShouldBe(HttpStatusCode.Found);
@@ -72,10 +74,10 @@ public class ForgotPasswordScenario(IdPortalApplicationFactory factory)
         var loginPage = await loginClient.GetAsync("/Account/Login");
         var loginDoc = await loginPage.AsHtmlDocument();
         var loginFields = loginDoc.GetFormFields();
-        loginFields["Input.Email"] = IdPortalApplicationFactory.TestUserEmail;
-        loginFields["Input.Password"] = "NewPassword456!";
+        loginFields["Input.Email"] = IdPortalApplicationFactory.TestResetUserEmail;
+        loginFields["Input.Password"] = newPassword;
 
-        var loginResponse = await loginClient.PostAsync("/Account/Login", new FormUrlEncodedContent(loginFields!));
+        var loginResponse = await loginClient.PostAsync(loginDoc.GetFormAction("/Account/Login"), new FormUrlEncodedContent(loginFields!));
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         loginResponse.RequestMessage!.RequestUri!.AbsolutePath.ShouldBe("/");
     }

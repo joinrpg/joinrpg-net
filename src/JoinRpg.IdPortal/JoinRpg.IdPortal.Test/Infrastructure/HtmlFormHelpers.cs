@@ -47,6 +47,17 @@ public static class HtmlFormHelpers
         return doc;
     }
 
+    /// <summary>
+    /// Returns the form's action URL (used to post to the correct URL including query string, e.g. ReturnUrl).
+    /// Falls back to the provided fallback URL if the form has no action attribute.
+    /// </summary>
+    public static string GetFormAction(this HtmlDocument doc, string fallback)
+    {
+        var form = doc.DocumentNode.SelectSingleNode("//form");
+        var action = form?.GetAttributeValue("action", string.Empty);
+        return string.IsNullOrEmpty(action) ? fallback : action;
+    }
+
     public static string? GetTitle(this HtmlDocument doc)
     {
         var titleNode = doc.DocumentNode.SelectSingleNode("//head/title");

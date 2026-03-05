@@ -17,7 +17,7 @@ public class ProfileScenario(IdPortalApplicationFactory factory)
         response.Headers.Location?.ToString().ShouldContain("Login");
     }
 
-    [Fact(Skip = "TODO: fix - DisplayName not persisted by MyUserStore.CreateImpl")]
+    [Fact]
     public async Task Home_WhenAuthenticated_ShowsDisplayName()
     {
         // Login first
@@ -29,7 +29,7 @@ public class ProfileScenario(IdPortalApplicationFactory factory)
         fields["Input.Email"] = IdPortalApplicationFactory.TestUserEmail;
         fields["Input.Password"] = IdPortalApplicationFactory.TestUserPassword;
 
-        var loginResponse = await client.PostAsync("/Account/Login", new FormUrlEncodedContent(fields!));
+        var loginResponse = await client.PostAsync(doc.GetFormAction("/Account/Login"), new FormUrlEncodedContent(fields!));
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         loginResponse.RequestMessage!.RequestUri!.AbsolutePath.ShouldBe("/");
 
@@ -38,6 +38,6 @@ public class ProfileScenario(IdPortalApplicationFactory factory)
         homeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var homeDoc = await homeResponse.AsHtmlDocument();
-        homeDoc.DocumentNode.InnerHtml.ShouldContain(IdPortalApplicationFactory.TestDisplayName);
+        homeDoc.DocumentNode.InnerText.ShouldContain(IdPortalApplicationFactory.TestDisplayName);
     }
 }
