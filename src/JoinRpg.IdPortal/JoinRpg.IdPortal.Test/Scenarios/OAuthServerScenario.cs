@@ -7,7 +7,7 @@ namespace JoinRpg.IdPortal.Test.Scenarios;
 [Collection("IdPortal")]
 public class OAuthServerScenario(IdPortalApplicationFactory factory)
 {
-    [Fact(Skip = "TODO: fix")]
+    [Fact]
     public async Task AuthorizationCodeFlow_ReturnsAccessToken()
     {
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
@@ -25,13 +25,13 @@ public class OAuthServerScenario(IdPortalApplicationFactory factory)
         var loginPageResponse = await client.GetAsync(loginRedirect);
         loginPageResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        // Step 3: POST login credentials
+        // Step 3: POST login credentials to the form action URL (which preserves ReturnUrl)
         var loginDoc = await loginPageResponse.AsHtmlDocument();
         var loginFields = loginDoc.GetFormFields();
         loginFields["Input.Email"] = IdPortalApplicationFactory.TestUserEmail;
         loginFields["Input.Password"] = IdPortalApplicationFactory.TestUserPassword;
 
-        var loginResponse = await client.PostAsync("/Account/Login", new FormUrlEncodedContent(loginFields!));
+        var loginResponse = await client.PostAsync(loginDoc.GetFormAction(loginRedirect), new FormUrlEncodedContent(loginFields!));
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.Found);
 
         // Step 4: Follow redirect back to /connect/authorize
@@ -86,7 +86,7 @@ public class OAuthServerScenario(IdPortalApplicationFactory factory)
         tokenJson["token_type"]!.ToString()!.ToLowerInvariant().ShouldBe("bearer");
     }
 
-    [Fact(Skip = "TODO: fix")]
+    [Fact]
     public async Task UserInfo_WithValidToken_ReturnsClaims()
     {
         // First get a valid token
@@ -131,7 +131,7 @@ public class OAuthServerScenario(IdPortalApplicationFactory factory)
         loginFields["Input.Email"] = IdPortalApplicationFactory.TestUserEmail;
         loginFields["Input.Password"] = IdPortalApplicationFactory.TestUserPassword;
 
-        var loginResponse = await client.PostAsync("/Account/Login", new FormUrlEncodedContent(loginFields!));
+        var loginResponse = await client.PostAsync(loginDoc.GetFormAction(loginRedirect), new FormUrlEncodedContent(loginFields!));
         var afterLoginRedirect = loginResponse.Headers.Location?.ToString();
 
         if (afterLoginRedirect is null)

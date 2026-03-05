@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Abstractions;
+using OpenIddict.Server.AspNetCore;
 using Testcontainers.MsSql;
 using Testcontainers.PostgreSql;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -37,6 +38,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
     public const string TestUserEmail = "test@joinrpg.ru";
     public const string TestUserPassword = "TestPassword123!";
     public const string TestDisplayName = "Тестовый Пользователь";
+    public const string TestResetUserEmail = "reset@joinrpg.ru";
+    public const string TestResetUserPassword = "ResetPassword123!";
+    public const string TestUnconfirmedUserEmail = "unconfirmed@joinrpg.ru";
 
     async Task IAsyncLifetime.InitializeAsync()
     {
@@ -62,8 +66,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         await db.Database.MigrateAsync();
         Log("EF Core migrations done.");
 
-        Log("Creating test user...");
+        Log("Creating test users...");
         var userManager = scope.ServiceProvider.GetRequiredService<JoinUserManager>();
+
         var user = new JoinIdentityUser { UserName = TestUserEmail };
         user.DisplayName = new UserDisplayName(TestDisplayName, null);
         await userManager.CreateAsync(user, TestUserPassword);
@@ -71,7 +76,18 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
             ?? throw new InvalidOperationException("Test user not found after creation");
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         await userManager.ConfirmEmailAsync(user, token);
-        Log("Test user created and confirmed.");
+
+        var resetUser = new JoinIdentityUser { UserName = TestResetUserEmail };
+        await userManager.CreateAsync(resetUser, TestResetUserPassword);
+        resetUser = await userManager.FindByNameAsync(TestResetUserEmail)
+            ?? throw new InvalidOperationException("Reset test user not found after creation");
+        token = await userManager.GenerateEmailConfirmationTokenAsync(resetUser);
+        await userManager.ConfirmEmailAsync(resetUser, token);
+
+        var unconfirmedUser = new JoinIdentityUser { UserName = TestUnconfirmedUserEmail };
+        await userManager.CreateAsync(unconfirmedUser, TestUserPassword);
+
+        Log("Test users created.");
 
         Log("Registering OAuth client...");
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
@@ -133,6 +149,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
             services.AddTransient<INotificationService, NullNotificationService>();
 
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
+
+            services.Configure<OpenIddictServerAspNetCoreOptions>(options =>
+                options.DisableTransportSecurityRequirement = true);
         });
 
         _ = builder.UseTestServer();
