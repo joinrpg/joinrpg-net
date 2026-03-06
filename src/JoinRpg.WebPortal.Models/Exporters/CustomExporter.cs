@@ -81,7 +81,7 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
         return BoolColumn(func, memberName);
     }
 
-    private static ITableColumn BoolColumn(Expression<Func<TRow, bool>> func, string name)
+    private static TableColumn<string> BoolColumn(Expression<Func<TRow, bool>> func, string name)
     {
         var compiledFunc = func.Compile();
 

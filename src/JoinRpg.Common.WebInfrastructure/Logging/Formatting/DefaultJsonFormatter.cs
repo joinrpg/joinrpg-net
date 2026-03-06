@@ -22,7 +22,7 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
     private readonly bool _renderMessage;
     private readonly bool _renderMessageTemplate;
     private readonly IFormatProvider _formatProvider;
-    private readonly IDictionary<Type, Action<object, bool, TextWriter>> _literalWriters;
+    private readonly Dictionary<Type, Action<object, bool, TextWriter>> _literalWriters;
 
     /// <summary>
     /// Construct a <see cref="DefaultJsonFormatter"/>.
