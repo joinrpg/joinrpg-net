@@ -59,26 +59,26 @@ public enum FpsPlatform
 public class FpsBank
 {
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonProperty("logo")]
-    public string LogoUrl { get; set; }
+    public string LogoUrl { get; set; } = null!;
 
     [JsonProperty("url")]
-    public string PaymentUrl { get; set; }
+    public string PaymentUrl { get; set; } = null!;
 }
 
 public class FpsBanks
 {
     [JsonProperty("version")]
-    public string Version { get; set; }
+    public string Version { get; set; } = null!;
 
     [JsonProperty("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = null!;
 
     [JsonProperty("platform")]
     public FpsPlatform Platform { get; set; }
 
     [JsonProperty("members")]
-    public ICollection<FpsBank> Banks { get; set; }
+    public ICollection<FpsBank> Banks { get; set; } = null!;
 }

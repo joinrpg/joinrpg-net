@@ -13,10 +13,10 @@ public class PaymentRequestDescriptor
     /// <summary>
     /// Url to send request to
     /// </summary>
-    public string Url { get; set; }
+    public string Url { get; set; } = null!;
 
     /// <summary>
     /// Request data
     /// </summary>
-    public PaymentRequest Request { get; set; }
+    public PaymentRequest Request { get; set; } = null!;
 }

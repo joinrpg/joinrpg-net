@@ -18,7 +18,7 @@ public class BankResponseInfo
     /// Error description
     /// </summary>
     [JsonProperty("description")]
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
 
     /// <summary>
     /// Error code from the payments system

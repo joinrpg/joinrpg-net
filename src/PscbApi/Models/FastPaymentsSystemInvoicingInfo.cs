@@ -8,5 +8,5 @@ public class FastPaymentsSystemInvoicingInfo : PaymentInfoBase
     /// Payment data
     /// </summary>
     [JsonProperty("payment")]
-    public FastPaymentsSystemInvoicingData Payment { get; set; }
+    public FastPaymentsSystemInvoicingData Payment { get; set; } = null!;
 }

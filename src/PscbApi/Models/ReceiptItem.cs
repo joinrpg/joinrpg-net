@@ -21,7 +21,7 @@ public class ReceiptItem : IValidatableObject
     [Required]
     [MaxLength(64)]
     [JsonProperty("text")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Price (including VAT)
@@ -67,7 +67,7 @@ public class ReceiptItem : IValidatableObject
     /// Measurement unit of an item
     /// </summary>
     [JsonProperty("unit", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string Unit { get; set; }
+    public string Unit { get; set; } = null!;
 
     /// <inheritdoc />
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

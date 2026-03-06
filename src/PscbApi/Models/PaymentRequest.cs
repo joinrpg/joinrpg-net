@@ -12,15 +12,15 @@ public class PaymentRequest
     /// <summary>
     /// Marketplace identifier
     /// </summary>
-    public string marketPlace { get; set; }
+    public string marketPlace { get; set; } = null!;
 
     /// <summary>
     /// Encoded payment message
     /// </summary>
-    public string message { get; set; }
+    public string message { get; set; } = null!;
 
     /// <summary>
     /// Payment message signature
     /// </summary>
-    public string signature { get; set; }
+    public string signature { get; set; } = null!;
 }

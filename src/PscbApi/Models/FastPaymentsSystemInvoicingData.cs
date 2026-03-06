@@ -8,13 +8,13 @@ public class FastPaymentsSystemInvoicingData
     /// Unique payment Id (in bank database)
     /// </summary>
     [JsonProperty("paymentId")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Order Id specified by store
     /// </summary>
     [JsonProperty("orderId")]
-    public string OrderId { get; set; }
+    public string OrderId { get; set; } = null!;
 
     /// <summary>
     /// Order Id as to be displayed to Payer
@@ -54,7 +54,7 @@ public class FastPaymentsSystemInvoicingData
     public PscbPaymentMethod PaymentMethod { get; set; }
 
     [JsonProperty("qrCodePayload")]
-    public string QrCodeUrl { get; set; }
+    public string QrCodeUrl { get; set; } = null!;
 
     [JsonProperty("qrCodeImageUrl")]
     public string? QrCodeImageUrl { get; set; }
