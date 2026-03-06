@@ -253,9 +253,6 @@ public class ClaimListController(
         return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved);
     }
 
-    [HttpGet("~/my/claims")]
-    public ActionResult My() => RedirectToActionPermanent("Me", "User");
-
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Problems(ProjectIdentification projectId, string export)
     {

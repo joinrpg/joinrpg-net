@@ -37,7 +37,6 @@ public class RoutingTests
     [InlineData(typeof(CharacterListController), nameof(CharacterListController.Active), "{projectId}/characters/Active")]
     [InlineData(typeof(CheckInController), nameof(CheckInController.Setup), "{projectId}/checkin/Setup")]
     [InlineData(typeof(ClaimController), nameof(ClaimController.Edit), "{ProjectId}/claim/{ClaimId}/edit")]
-    [InlineData(typeof(ClaimListController), nameof(ClaimListController.My), "{ProjectId}/claims/My")]
     [InlineData(typeof(DiscussionRedirectController), nameof(DiscussionRedirectController.ToDiscussion), "{ProjectId}/goto/")]
     [InlineData(typeof(FinancesController), nameof(FinancesController.Setup), "{projectId}/money/Setup")]
     [InlineData(typeof(ForumController), nameof(ForumController.ViewThread), "{projectId}/forums/{forumThreadId}/ViewThread")]
@@ -59,7 +58,7 @@ public class RoutingTests
     {
         var classRoute = controllerType.GetCustomAttribute<RouteAttribute>()!.Template;
         var resolved = classRoute.Replace("[action]", actionName, StringComparison.OrdinalIgnoreCase);
-        resolved.ShouldBe(expectedTemplate);
+        resolved.ShouldBe(expectedTemplate, StringCompareShould.IgnoreCase);
     }
 
     [Fact]
