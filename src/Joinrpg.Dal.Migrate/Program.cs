@@ -1,10 +1,10 @@
 using JoinRpg.Common.WebInfrastructure.DataProtection;
+using JoinRpg.Common.WebInfrastructure.EfCoreMigration;
 using JoinRpg.Dal.JobService;
 using JoinRpg.Dal.Migrate.Ef6;
-using JoinRpg.Dal.Migrate.EfCore;
 using JoinRpg.Dal.Notifications;
 using JoinRpg.IdPortal.OAuthServer;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -24,10 +24,13 @@ internal class Program
                 _ = services.AddHostedService<MigrationsLauncher>();
 
                 services.AddScoped<IMigratorService, MigrateMyDbContextService>();
+                var configuration = hostContext.Configuration;
+                var environment = hostContext.HostingEnvironment;
 
-                services.RegisterMigrator<DataProtectionDbContext>(hostContext.Configuration.GetConnectionString("DataProtection")!);
-                services.RegisterMigrator<JobScheduleDataDbContext>(hostContext.Configuration.GetConnectionString("DailyJob")!);
-                services.RegisterMigrator<NotificationsDataDbContext>(hostContext.Configuration.GetConnectionString("Notifications")!);
-                services.RegisterMigrator<IdPortalDbContext>(hostContext.Configuration.GetConnectionString("IdPortal")!);
+
+                services.RegisterMigrator<DataProtectionDbContext>(configuration, environment, "DataProtection");
+                services.RegisterMigrator<JobScheduleDataDbContext>(configuration, environment, "DailyJob");
+                services.RegisterMigrator<NotificationsDataDbContext>(configuration, environment, "Notifications");
+                services.RegisterMigrator<IdPortalDbContext>(configuration, environment, "IdPortal");
             });
 }

@@ -1,5 +1,6 @@
 using System.Data.Entity.Migrations;
 using System.Data.Entity.Migrations.Infrastructure;
+using JoinRpg.Common.WebInfrastructure.EfCoreMigration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
