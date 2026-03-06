@@ -18,15 +18,6 @@ public class RoutingTests
         routeAttribute.Template.ShouldStartWith("{projectId}");
     }
 
-    [SkippableTheory]
-    [ClassData(typeof(LegacyControllerDataSource))]
-    public void LegacyGameControllersShouldHaveProjectIdInRoute(TypeInfo controllerType)
-    {
-        var routeAttribute = controllerType.GetCustomAttribute<RouteAttribute>();
-        _ = routeAttribute.ShouldNotBeNull();
-        routeAttribute.Template.ShouldStartWith("{projectId}");
-    }
-
     [Theory]
     [InlineData(typeof(PlotListController), nameof(PlotListController.Index), "{projectId}/plots/Index")]
     [InlineData(typeof(PlotListController), nameof(PlotListController.InWork), "{projectId}/plots/InWork")]
@@ -47,9 +38,6 @@ public class RoutingTests
         _ = route.ShouldNotBeNull();
         route.Template.ShouldBe("{projectId}/plot");
     }
-
-    [Obsolete]
-    private class LegacyControllerDataSource : FindDerivedClassesDataSourceBase<ControllerGameBase, Startup> { }
 
     private class ControllerDataSource : FindDerivedClassesDataSourceBase<JoinControllerGameBase, Startup> { }
 }

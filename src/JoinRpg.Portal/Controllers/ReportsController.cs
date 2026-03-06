@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Reports;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,14 +9,12 @@ namespace JoinRpg.Portal.Controllers;
 [MasterAuthorize()]
 [Route("{projectId}/reports")]
 public class ReportsController(
-    IProjectRepository projectRepository,
-    IProjectService projectService) : ControllerGameBase(projectRepository,
-        projectService)
+    IProjectRepository projectRepository) : JoinControllerGameBase
 {
     [HttpGet("2d/{gameReport2DTemplateId}")]
     public async Task<IActionResult> Report2D(int projectId, int gameReport2DTemplateId)
     {
-        var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
+        var field = await projectRepository.LoadGroupWithTreeAsync(projectId);
 
         if (field == null)
         {

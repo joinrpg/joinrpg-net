@@ -9,7 +9,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
@@ -20,14 +19,13 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/characters/[action]")]
 public class CharacterListController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IExportDataService exportDataService,
     IUriService uriService,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Character> problemValidator,
     ICharacterRepository characterRepository,
     ICurrentUserAccessor currentUserAccessor
-    ) : ControllerGameBase(projectRepository, projectService)
+    ) : JoinControllerGameBase
 {
     [HttpGet]
     public Task<ActionResult> Active(ProjectIdentification projectid, string export)
@@ -76,7 +74,7 @@ public class CharacterListController(
     [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
     public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
-        var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var characterGroup = await projectRepository.GetGroupAsync(projectId, characterGroupId);
 
         if (characterGroup == null)
         {
@@ -84,7 +82,7 @@ public class CharacterListController(
         }
 
         var groupIds = characterGroup.GetChildrenGroupsIdentificationRecursiveIncludingThis().ToList();
-        var characters = (await ProjectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
+        var characters = (await projectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 

@@ -4,7 +4,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Accommodation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +13,10 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/rooms/[action]")]
 public class AccommodationTypeController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IAccommodationService accommodationService,
     IAccommodationRepository accommodationRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUserAccessor) : Common.ControllerGameBase(projectRepository,
-        projectService)
+    ICurrentUserAccessor currentUserAccessor) : Common.JoinControllerGameBase
 {
 
     /// <summary>
@@ -52,7 +49,7 @@ public class AccommodationTypeController(
     public async Task<ActionResult> AddRoomType(int projectId)
     {
         return View(new RoomTypeViewModel(
-            await ProjectRepository.GetProjectAsync(projectId), CurrentUserId));
+            await projectRepository.GetProjectAsync(projectId), currentUserAccessor.UserId));
     }
 
     /// <summary>
@@ -69,7 +66,7 @@ public class AccommodationTypeController(
 
         var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return View(new RoomTypeViewModel(entity, CurrentUserId, pi));
+        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserId, pi));
     }
 
     /// <summary>
@@ -87,7 +84,7 @@ public class AccommodationTypeController(
 
         var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return View(new RoomTypeViewModel(entity, CurrentUserId, pi));
+        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserId, pi));
     }
 
     /// <summary>

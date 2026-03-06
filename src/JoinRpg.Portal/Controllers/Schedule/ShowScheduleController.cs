@@ -1,7 +1,5 @@
 using System.Text;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Schedule;
@@ -14,9 +12,7 @@ namespace JoinRpg.Portal.Controllers.Schedule;
 [AllowAnonymous] // Access to schedule checked by scheduleManager
 [Route("{projectId}/schedule")]
 public class ShowScheduleController(
-    IProjectRepository projectRepository,
-    IProjectService projectService,
-    SchedulePageManager manager) : Common.ControllerGameBase(projectRepository, projectService)
+    SchedulePageManager manager) : Common.JoinControllerGameBase
 {
     private ViewResult Error(int projectId, IEnumerable<ScheduleConfigProblemsViewModel> errors)
     {
