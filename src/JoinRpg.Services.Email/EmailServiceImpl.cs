@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Email;
 /// <summary>
 /// Service that send all email notifications
 /// </summary>
-internal partial class EmailServiceImpl(IUriService uriService) : IEmailService
+internal partial class EmailServiceImpl : IEmailService
 {
     #region general stuff
     private const string ChangedFieldsKey = "changedFields";
@@ -162,9 +162,6 @@ internal partial class EmailServiceImpl(IUriService uriService) : IEmailService
     }
     #endregion
 
-    /// <summary>
-    /// Gets info about changed fields and other attributes for particular user (if available).
-    /// </summary>
     //    private string GetChangedFieldsInfoForUser(
     //      EmailModelBase model,
     //      User user)

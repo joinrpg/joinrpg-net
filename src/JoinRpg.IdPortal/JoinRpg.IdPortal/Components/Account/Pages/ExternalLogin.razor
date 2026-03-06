@@ -20,13 +20,12 @@
 
 <PageTitle>Register</PageTitle>
 
-<StatusMessage Message="@message" />
+<StatusMessage />
 
 
 @code {
     public const string LoginCallbackAction = "LoginCallback";
 
-    private string? message;
     private ExternalLoginInfo? externalLoginInfo;
 
     [CascadingParameter]
