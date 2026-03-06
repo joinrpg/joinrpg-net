@@ -11,7 +11,7 @@ public class ReceiptData
     /// Receipt identifier
     /// </summary>
     [JsonProperty("receiptId")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Receipt type
@@ -23,7 +23,7 @@ public class ReceiptData
     /// Fiscal number of the document
     /// </summary>
     [JsonProperty("docNumber")]
-    public string DocumentNumber { get; set; }
+    public string DocumentNumber { get; set; } = null!;
 
     /// <summary>
     /// Date and time of fiscal document
@@ -41,23 +41,23 @@ public class ReceiptData
     /// Online register number
     /// </summary>
     [JsonProperty("kkt")]
-    public string RegisterNumber { get; set; }
+    public string RegisterNumber { get; set; } = null!;
 
     /// <summary>
     /// Fiscal number
     /// </summary>
     [JsonProperty("fiscalNumber")]
-    public string FiscalNumber { get; set; }
+    public string FiscalNumber { get; set; } = null!;
 
     /// <summary>
     /// Shift number
     /// </summary>
     [JsonProperty("shiftNumber")]
-    public string ShiftNumber { get; set; }
+    public string ShiftNumber { get; set; } = null!;
 
     /// <summary>
     /// Receipt number within shift
     /// </summary>
     [JsonProperty("receiptNumber")]
-    public string ReceiptNumber { get; set; }
+    public string ReceiptNumber { get; set; } = null!;
 }

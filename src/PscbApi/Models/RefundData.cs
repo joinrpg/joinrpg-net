@@ -11,7 +11,7 @@ public class RefundData
     /// Refund operation Id
     /// </summary>
     [JsonProperty("refundId")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Refund status

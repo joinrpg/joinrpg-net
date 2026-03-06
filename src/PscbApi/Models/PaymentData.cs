@@ -11,13 +11,13 @@ public class PaymentData
     /// Unique payment Id (in bank database)
     /// </summary>
     [JsonProperty("paymentId")]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Order Id specified by store
     /// </summary>
     [JsonProperty("orderId")]
-    public string OrderId { get; set; }
+    public string OrderId { get; set; } = null!;
 
     /// <summary>
     /// Order Id as to be displayed to Payer

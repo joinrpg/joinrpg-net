@@ -29,7 +29,7 @@ public class PaymentMessage : IValidatableObject
     /// </summary>
     [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 to 20 characters")]
     [JsonProperty("orderId")]
-    public string OrderId { get; set; }
+    public string OrderId { get; set; } = null!;
 
     /// <summary>
     /// Order Id as to be displayed to Payer
@@ -39,14 +39,14 @@ public class PaymentMessage : IValidatableObject
     /// </remarks>
     [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 to 20 characters")]
     [JsonProperty("showOrderId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string OrderIdDisplayValue { get; set; }
+    public string OrderIdDisplayValue { get; set; } = null!;
 
     /// <summary>
     /// Payments details, will be shown to Payer during payment process
     /// </summary>
     [MaxLength(2048)]
     [JsonProperty("details", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string Details { get; set; }
+    public string Details { get; set; } = null!;
 
     /// <summary>
     /// Payment method. If not set, all payment methods will be used. User must to choose one
@@ -60,14 +60,14 @@ public class PaymentMessage : IValidatableObject
     /// </summary>
     [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 up to 20 characters")]
     [JsonProperty("customerAccount")]
-    public string CustomerAccount { get; set; }
+    public string CustomerAccount { get; set; } = null!;
 
     /// <summary>
     /// Comment created by a Payer to hist payment
     /// </summary>
     [MaxLength(2048)]
     [JsonProperty("customerComment", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string CustomerComment { get; set; }
+    public string CustomerComment { get; set; } = null!;
 
     /// <summary>
     /// Payer email
@@ -75,7 +75,7 @@ public class PaymentMessage : IValidatableObject
     [MaxLength(512)]
     [EmailAddress]
     [JsonProperty("customerEmail", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string CustomerEmail { get; set; }
+    public string CustomerEmail { get; set; } = null!;
 
     /// <summary>
     /// Payer phone number in international format
@@ -90,14 +90,14 @@ public class PaymentMessage : IValidatableObject
     /// </summary>
     [MaxLength(1024)]
     [JsonProperty("successUrl", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string SuccessUrl { get; set; }
+    public string SuccessUrl { get; set; } = null!;
 
     /// <summary>
     /// Url to redirect after failed payment
     /// </summary>
     [MaxLength(1024)]
     [JsonProperty("failUrl", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string FailUrl { get; set; }
+    public string FailUrl { get; set; } = null!;
 
     /// <summary>
     /// Payment page language code according to ISO 639-1
@@ -107,7 +107,7 @@ public class PaymentMessage : IValidatableObject
     /// </remarks>
     [MaxLength(2)]
     [JsonProperty("displayLanguage", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string UILanguage { get; set; }
+    public string UILanguage { get; set; } = null!;
 
     /// <summary>
     /// true if this payment has to be recurrent
@@ -123,7 +123,7 @@ public class PaymentMessage : IValidatableObject
     /// </summary>
     [Required]
     [JsonProperty("data")]
-    public PaymentMessageData Data { get; set; }
+    public PaymentMessageData Data { get; set; } = null!;
 
     /// <summary>
     /// Random string

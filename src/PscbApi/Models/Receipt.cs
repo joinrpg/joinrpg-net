@@ -32,7 +32,7 @@ public class Receipt : IValidatableObject
     /// </summary>
     [Required]
     [JsonProperty("items")]
-    public ICollection<ReceiptItem> Items { get; set; }
+    public ICollection<ReceiptItem> Items { get; set; } = null!;
 
     // TODO: Add other fields
 
