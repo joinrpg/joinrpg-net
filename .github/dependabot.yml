@@ -26,8 +26,11 @@ updates:
       serilog:
         patterns:
           - "Serilog*"
+      testcontainers:
+        patterns:
+          - "Testcontainers.*"
+
   - package-ecosystem: "github-actions" 
     directory: "/" 
     schedule:
       interval: "daily"
-
