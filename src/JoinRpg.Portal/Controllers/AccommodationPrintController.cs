@@ -5,7 +5,6 @@ using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
@@ -15,14 +14,11 @@ namespace JoinRpg.Portal.Controllers;
 [MasterAuthorize()]
 [Route("{projectId}/rooms/report/")]
 public class AccommodationPrintController(
-    IProjectRepository projectRepository,
-    IProjectService projectService,
     IExportDataService exportDataService,
     IUriService uriService,
     IAccommodationRepository accommodationRepository,
     IProjectMetadataRepository projectMetadataRepository
-    ) : Common.ControllerGameBase(projectRepository,
-        projectService)
+    ) : Common.JoinControllerGameBase
 {
     [HttpGet]
     public async Task<ActionResult> MainReport(ProjectIdentification projectId, string export)

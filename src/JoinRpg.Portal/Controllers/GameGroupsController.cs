@@ -29,13 +29,13 @@ public class GameGroupsController(
     IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
-    ) : ControllerGameBase(projectRepository, projectService)
+    ) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
     [AllowAnonymous]
     public async Task<ActionResult> Index(ProjectIdentification projectId, int? characterGroupId)
     {
-        var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
         if (field == null)
         {
@@ -49,10 +49,10 @@ public class GameGroupsController(
           {
               ProjectId = field.Project.ProjectId,
               ProjectName = field.Project.ProjectName,
-              ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
-              HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
-              Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault, projectInfo),
-              Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Roles),
+              ShowEditControls = field.HasEditRolesAccess(currentUserAccessor.UserIdOrDefault),
+              HasMasterAccess = field.HasMasterAccess(currentUserAccessor.UserIdOrDefault),
+              Data = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo),
+              Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Roles),
           });
     }
 
@@ -61,7 +61,7 @@ public class GameGroupsController(
     [HttpGet("~/{projectId}/roles/all/report")]
     public async Task<ActionResult> Report(int projectId, int? characterGroupId)
     {
-        var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
         if (field == null)
         {
@@ -73,7 +73,7 @@ public class GameGroupsController(
           {
               ProjectId = field.Project.ProjectId,
               Data = CharacterGroupReportViewModel.GetGroups(field),
-              Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report),
+              Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Report),
               CheckinModuleEnabled = field.Project.Details.EnableCheckInModule,
           });
     }
@@ -85,7 +85,7 @@ public class GameGroupsController(
     [HttpGet]
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
-        var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
         if (field == null)
         {
             return NotFound();
@@ -98,7 +98,7 @@ public class GameGroupsController(
     [HttpGet("~/{projectId}/roles/hotjson")]
     public async Task<ActionResult> HotJson(int projectId, int characterGroupId, int? maxCount = null)
     {
-        var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
         if (field == null)
         {
             return NotFound();
@@ -112,7 +112,7 @@ public class GameGroupsController(
     private async Task<IEnumerable<CharacterViewModel>> GetHotCharacters(CharacterGroup field)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(field.GetId().ProjectId);
-        return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault, projectInfo)
+        return CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo)
           .SelectMany(
             g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
@@ -121,7 +121,7 @@ public class GameGroupsController(
     [AllowAnonymous]
     public async Task<ActionResult> IndexJson(ProjectIdentification projectId, int characterGroupId)
     {
-        var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
         if (field == null)
         {
             return NotFound();
@@ -136,7 +136,7 @@ public class GameGroupsController(
             field.Project.ProjectId,
             field.Project.ProjectName,
             ShowEditControls = hasMasterAccess,
-            Groups = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault, projectInfo).Select(
+            Groups = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo).Select(
                 g =>
                   new
                   {
@@ -163,7 +163,7 @@ public class GameGroupsController(
 
     private async Task<ActionResult> AllGroupsJson(ProjectIdentification projectId, bool includeSpecial)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = await projectRepository.GetProjectAsync(projectId);
         var cached = CheckCache(project.CharacterTreeModifiedAt);
         if (cached)
         {
@@ -172,7 +172,7 @@ public class GameGroupsController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var field = await ProjectRepository.LoadGroupWithTreeSlimAsync(projectId);
+        var field = await projectRepository.LoadGroupWithTreeSlimAsync(projectId);
         if (field == null)
         {
             return NotFound();
@@ -181,7 +181,7 @@ public class GameGroupsController(
         {
             field.Project.ProjectId,
             Groups =
-            new CharacterTreeBuilder(field, CurrentUserId, projectInfo).Generate()
+            new CharacterTreeBuilder(field, currentUserAccessor.UserId, projectInfo).Generate()
               .Where(g => includeSpecial || !g.IsSpecial)
               .Select(
                 g =>
@@ -233,7 +233,7 @@ public class GameGroupsController(
     [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
-        var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        var group = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
         if (group == null)
         {
@@ -264,7 +264,7 @@ public class GameGroupsController(
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
-        var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
+        var group = await projectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
         if (group == null)
         {
             return NotFound();
@@ -288,7 +288,7 @@ public class GameGroupsController(
         try
         {
             ProjectIdentification projectId = new(viewModel.ProjectId);
-            await ProjectService.EditCharacterGroup(new CharacterGroupIdentification(projectId, viewModel.CharacterGroupId),
+            await projectService.EditCharacterGroup(new CharacterGroupIdentification(projectId, viewModel.CharacterGroupId),
               viewModel.Name, viewModel.IsPublic, [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(projectId)], viewModel.Description);
 
             return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
@@ -305,7 +305,7 @@ public class GameGroupsController(
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Delete(int projectId, int characterGroupId)
     {
-        var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var field = await projectRepository.GetGroupAsync(projectId, characterGroupId);
 
         if (field == null)
         {
@@ -319,7 +319,7 @@ public class GameGroupsController(
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     public async Task<ActionResult> Delete(int projectId, int characterGroupId, IFormCollection collection)
     {
-        var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var field = await projectRepository.GetGroupAsync(projectId, characterGroupId);
 
         if (field == null)
         {
@@ -329,7 +329,7 @@ public class GameGroupsController(
         var project = field.Project;
         try
         {
-            await ProjectService.DeleteCharacterGroup(projectId, characterGroupId);
+            await projectService.DeleteCharacterGroup(projectId, characterGroupId);
 
             return RedirectToIndex(project);
         }
@@ -343,7 +343,7 @@ public class GameGroupsController(
     [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> AddGroup(int projectid, int charactergroupid)
     {
-        var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
+        var field = await projectRepository.GetGroupAsync(projectid, charactergroupid);
 
         if (field == null)
         {
@@ -361,7 +361,7 @@ public class GameGroupsController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
-        var field = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
+        var field = await projectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
         if (field == null)
         {
             return NotFound();
@@ -375,7 +375,7 @@ public class GameGroupsController(
         try
         {
             List<CharacterGroupIdentification> parentCharacterGroupIds = [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(new(viewModel.ProjectId))];
-            await ProjectService.AddCharacterGroup(
+            await projectService.AddCharacterGroup(
               new(viewModel.ProjectId),
               viewModel.Name, viewModel.IsPublic,
               parentCharacterGroupIds, viewModel.Description);
@@ -422,7 +422,7 @@ public class GameGroupsController(
 
         try
         {
-            await ProjectService.MoveCharacterGroup(CurrentUserId, projectId, charactergroupId, parentCharacterGroupId, direction);
+            await projectService.MoveCharacterGroup(currentUserAccessor.UserId, projectId, charactergroupId, parentCharacterGroupId, direction);
 
 
             return RedirectToIndex(projectId, currentRootGroupId);
@@ -440,12 +440,12 @@ public class GameGroupsController(
     [HttpGet, AllowAnonymous]
     public async Task<ActionResult> Details(int projectId, int characterGroupId)
     {
-        var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
         if (group == null)
         {
             return NotFound();
         }
-        var viewModel = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Home);
+        var viewModel = new CharacterGroupDetailsViewModel(group, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Home);
         return View(viewModel);
     }
 

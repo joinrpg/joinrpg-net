@@ -27,7 +27,7 @@ public class AclController(
     IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
     IProjectAccessService projectAccessService,
     ICurrentUserAccessor currentUserAccessor
-    ) : ControllerGameBase(projectRepository, projectService)
+    ) : JoinControllerGameBase
 {
     protected readonly IUserRepository UserRepository = userRepository;
 
@@ -78,7 +78,7 @@ public class AclController(
     [HttpGet]
     public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await projectRepository.GetProjectWithDetailsAsync(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(projectId);
@@ -98,7 +98,7 @@ public class AclController(
             ProjectAclId = projectaclid,
             ProjectId = projectId,
             ResponsibleMasterId = null,
-            SelfRemove = innerModel.UserId == CurrentUserId,
+            SelfRemove = innerModel.UserId == currentUserAccessor.UserId,
             UserId = innerModel.UserId,
         };
         return View("Delete", viewModel);
@@ -118,10 +118,11 @@ public class AclController(
             viewModel.InnerModel = await GetAclViewModel(new(viewModel.ProjectId), viewModel.ProjectAclId);
             return View(viewModel);
         }
-        if (viewModel.UserId == CurrentUserId)
+        if (viewModel.UserId == currentUserAccessor.UserId)
         {
             //We are removing ourself, need to redirect to public page
-            return await RedirectToProject(viewModel.ProjectId);
+            var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
+            return project == null ? NotFound() : RedirectToIndex(project);
         }
         return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
 
@@ -140,7 +141,7 @@ public class AclController(
     [MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Edit(ProjectIdentification projectId, int projectaclid)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = await projectRepository.GetProjectAsync(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
 
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(projectId, new(projectAcl.UserId));
@@ -187,13 +188,13 @@ public class AclController(
     [HttpPost("force-admin-access")]
     public async Task<ActionResult> ForceSet(int projectId, IFormCollection unused)
     {
-        await ProjectService.GrantAccessAsAdmin(projectId);
+        await projectService.GrantAccessAsAdmin(projectId);
         return RedirectToAction("Details", "Game", new { projectId });
     }
 
     private async Task<AclViewModel> GetAclViewModel(ProjectIdentification projectId, int projectaclid)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var project = await projectRepository.GetProjectAsync(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
         var claims = await claimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);

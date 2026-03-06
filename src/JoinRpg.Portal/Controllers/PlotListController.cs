@@ -5,7 +5,6 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +14,10 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/plots/[action]")]
 public class PlotListController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IPlotRepository plotRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser
-    ) : ControllerGameBase(projectRepository, projectService)
+    ) : JoinControllerGameBase
 {
     [RequireMasterOrPublish]
     [HttpGet]
@@ -48,7 +46,7 @@ public class PlotListController(
     [RequireMasterOrPublish]
     public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
     {
-        var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
         if (group == null)
         {
             return NotFound();
@@ -60,7 +58,7 @@ public class PlotListController(
         var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
         var folders = await plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
 
-        var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
+        var groupNavigation = new CharacterGroupDetailsViewModel(group, currentUser.UserIdOrDefault, GroupNavigationPage.Plots);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
         var list = PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(folders, currentUser, projectInfo, "Сюжеты группы «" + group.CharacterGroupName + "»");

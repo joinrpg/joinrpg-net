@@ -10,7 +10,6 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Exporters;
@@ -21,7 +20,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{ProjectId}/claims/[action]")]
 public class ClaimListController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
     IExportDataService exportDataService,
     IClaimsRepository claimsRepository,
     IUriService uriService,
@@ -29,7 +27,7 @@ public class ClaimListController(
     IProblemValidator<Claim> claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
-        ) : Common.ControllerGameBase(projectRepository, projectService)
+        ) : Common.JoinControllerGameBase
 {
 
     #region implementation
@@ -41,7 +39,7 @@ public class ClaimListController(
 
         if (exportType == null)
         {
-            var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
+            var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
             var view = new ClaimListViewModel(currentUserAccessor, claims, projectId, unreadComments, title, projectInfo, claimValidator);
             return View("Index", view);
         }
@@ -100,7 +98,7 @@ public class ClaimListController(
 
         if (exportType == null)
         {
-            var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, CurrentUserId, hasMasterAccess: true);
+            var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
             var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
             return View("ByGroup", view);
         }
@@ -160,7 +158,7 @@ public class ClaimListController(
     [MasterAuthorize()]
     public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
     {
-        var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
 
         if (group == null)
         {
@@ -176,7 +174,7 @@ public class ClaimListController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> DiscussingForGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
-        var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
         if (group == null)
         {
             return NotFound();
