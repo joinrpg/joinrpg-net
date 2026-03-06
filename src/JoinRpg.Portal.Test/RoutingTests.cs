@@ -1,6 +1,8 @@
 using System.Reflection;
 using JoinRpg.Portal.Controllers;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Controllers.Money;
+using JoinRpg.Portal.Controllers.Schedule;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Test;
@@ -28,11 +30,31 @@ public class RoutingTests
     }
 
     [Theory]
-    [InlineData(typeof(PlotListController), nameof(PlotListController.Index), "{projectId}/plots/Index")]
+    [InlineData(typeof(AccommodationPrintController), nameof(AccommodationPrintController.MainReport), "{projectId}/rooms/report/")]
+    [InlineData(typeof(AccommodationTypeController), nameof(AccommodationTypeController.AddRoomType), "{projectId}/rooms/AddRoomType")]
+    [InlineData(typeof(AclController), nameof(AclController.Add), "{projectId}/masters")]
+    [InlineData(typeof(CharacterController), nameof(CharacterController.Details), "{projectId}/character/{characterid}/Details")]
+    [InlineData(typeof(CharacterListController), nameof(CharacterListController.Active), "{projectId}/characters/Active")]
+    [InlineData(typeof(CheckInController), nameof(CheckInController.Setup), "{projectId}/checkin/Setup")]
+    [InlineData(typeof(ClaimController), nameof(ClaimController.Edit), "{ProjectId}/claim/{ClaimId}/edit")]
+    [InlineData(typeof(ClaimListController), nameof(ClaimListController.My), "{ProjectId}/claims/My")]
+    [InlineData(typeof(DiscussionRedirectController), nameof(DiscussionRedirectController.ToDiscussion), "{ProjectId}/goto/")]
+    [InlineData(typeof(FinancesController), nameof(FinancesController.Setup), "{projectId}/money/Setup")]
+    [InlineData(typeof(ForumController), nameof(ForumController.ViewThread), "{projectId}/forums/{forumThreadId}/ViewThread")]
+    [InlineData(typeof(GameFieldController), nameof(GameFieldController.Create), "{ProjectId}/fields/Create")]
+    [InlineData(typeof(GameGroupsController), nameof(GameGroupsController.Edit), "{projectId}/roles/{characterGroupId}/Edit")]
+    [InlineData(typeof(GameSubscribeController), nameof(GameSubscribeController.ByMaster), "{projectId}/subscribe/ByMaster")]
+    [InlineData(typeof(GameToolsController), nameof(GameToolsController.Apis), "{projectId}/tools/Apis")]
+    [InlineData(typeof(MassMailController), nameof(MassMailController.ForClaims), "{projectId}/massmail/ForClaims")]
     [InlineData(typeof(PlotListController), nameof(PlotListController.InWork), "{projectId}/plots/InWork")]
     [InlineData(typeof(PlotListController), nameof(PlotListController.FlatList), "{projectId}/plots/FlatList")]
-    [InlineData(typeof(PlotController), "CreateElement", "{projectId}/plots/CreateElement")]
-    [InlineData(typeof(PlotController), "Edit", "{projectId}/plots/Edit")]
+    [InlineData(typeof(PlotListController), nameof(PlotListController.Ready), "{projectId}/plots/Ready")]
+    [InlineData(typeof(PlotController), nameof(PlotController.CreateElement), "{projectId}/plots/CreateElement")]
+    [InlineData(typeof(PlotController), nameof(PlotController.Edit), "{projectId}/plots/Edit")]
+    [InlineData(typeof(PrintController), nameof(PrintController.Character), "{projectId}/print/Character")]
+    [InlineData(typeof(ReportsController), nameof(ReportsController.Report2D), "{projectId}/reports")]
+    [InlineData(typeof(ShowScheduleController), nameof(ShowScheduleController.Ical), "{projectId}/schedule")]
+    [InlineData(typeof(TransferController), nameof(TransferController.Create), "{projectId}/money/transfer/Create")]
     public void ControllerActionResolvesToExpectedRoute(Type controllerType, string actionName, string expectedTemplate)
     {
         var classRoute = controllerType.GetCustomAttribute<RouteAttribute>()!.Template;
