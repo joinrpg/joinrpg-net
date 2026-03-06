@@ -6,7 +6,8 @@
     private EditContext? EditContext {get;set;}
 
     [Parameter]
-    public string Value { get; set; }
+    [EditorRequired]
+    public string Value { get; set; } = "";
 
     [Parameter]
     public EventCallback<string> ValueChanged { get; set; }
