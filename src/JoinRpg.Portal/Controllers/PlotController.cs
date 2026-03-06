@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
-[Route("{projectId}/plot/[action]")]
+[Route("{projectId}/plots/[action]")]
 public class PlotController(
     IProjectRepository projectRepository,
     IPlotService plotService,
