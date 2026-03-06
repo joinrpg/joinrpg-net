@@ -23,6 +23,7 @@ public class PlotListController(
 {
     [RequireMasterOrPublish]
     [HttpGet]
+    [HttpGet("~/{projectId}/plots")]
     public async Task<ActionResult> Index(ProjectIdentification projectId) => await PlotList(projectId, pf => true);
 
     [RequireMasterOrPublish]
