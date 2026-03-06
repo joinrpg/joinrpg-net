@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace JoinRpg.Dal.Migrate.EfCore;
+namespace JoinRpg.Common.WebInfrastructure.EfCoreMigration;
 
 internal class MigrateEfCoreHostService<TContext>(
     TContext dbContext,
