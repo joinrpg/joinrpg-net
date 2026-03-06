@@ -22,7 +22,7 @@ public class FieldSaveHelperTest
         protected override void MarkAsUsed(IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields, Project project) { }
     }
 
-    private FieldSaveHelper InitFieldSaveHelper() => new MockedFieldSaveHelper(testOutputHelper);
+    private MockedFieldSaveHelper InitFieldSaveHelper() => new MockedFieldSaveHelper(testOutputHelper);
 
     [Fact]
     public void SaveOnAddTest()

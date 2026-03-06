@@ -97,7 +97,7 @@ public static class CharacterGroupListViewModel
             return characters.Select(character => GenerateCharacter(character, characterGroup, characters));
         }
 
-        private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, IReadOnlyList<Character> siblings)
+        private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, Character[] siblings)
         {
             var acceptingClaims = arg.IsAcceptingClaims(projectInfo);
             var vm = new CharacterViewModel
