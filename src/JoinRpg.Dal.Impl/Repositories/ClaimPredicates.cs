@@ -34,9 +34,6 @@ internal static class ClaimPredicates
 
     public static Expression<Func<Claim, bool>> GetResponsible(int masterUserId) => claim => claim.ResponsibleMasterUserId == masterUserId;
 
-    [Obsolete]
-    public static Expression<Func<Claim, bool>> GetForUser(int userId) => claim => claim.PlayerUserId == userId;
-
     public static Expression<Func<Claim, bool>> GetForUser(UserIdentification userId)
     {
         var id = userId.Value;

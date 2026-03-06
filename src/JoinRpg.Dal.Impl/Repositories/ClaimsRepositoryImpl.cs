@@ -133,7 +133,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         return GetClaimsImpl(projectId, active, ClaimPredicates.GetInGroupPredicate(characterGroupsIds));
     }
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
-        => GetClaimsImpl(projectId, claimStatusSpec, ClaimPredicates.GetForUser(userId));
+        => GetClaimsImpl(projectId, claimStatusSpec, ClaimPredicates.GetForUser(new UserIdentification(userId)));
 
     public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId)
     {
