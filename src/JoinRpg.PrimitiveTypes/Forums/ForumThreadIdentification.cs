@@ -18,7 +18,7 @@ public record class ForumThreadIdentification(ProjectIdentification ProjectId, i
     public static ForumThreadIdentification Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
 
-    static ForumThreadIdentification IParsable<ForumThreadIdentification>.Parse(string value, IFormatProvider? provider)
+    public static ForumThreadIdentification Parse(string value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
     static bool IParsable<ForumThreadIdentification>.TryParse(string? value, IFormatProvider? provider, [NotNullWhen(true)] out ForumThreadIdentification? result)
         => TryParse(value.AsSpan(), provider, out result);
