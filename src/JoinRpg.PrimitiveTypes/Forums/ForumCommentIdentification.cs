@@ -29,7 +29,7 @@ public record class ForumCommentIdentification(ForumThreadIdentification ThreadI
     public static ForumCommentIdentification Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
 
-    static ForumCommentIdentification IParsable<ForumCommentIdentification>.Parse(string value, IFormatProvider? provider)
+    public static ForumCommentIdentification Parse(string value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
     static bool IParsable<ForumCommentIdentification>.TryParse(string? value, IFormatProvider? provider, [NotNullWhen(true)] out ForumCommentIdentification? result)
         => TryParse(value.AsSpan(), provider, out result);

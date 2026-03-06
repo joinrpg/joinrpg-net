@@ -137,4 +137,32 @@ public class IdentificationCommonTest
         var deserialized = JsonSerializer.Deserialize(serialized, type).ShouldNotBeNull();
         deserialized.ShouldBeEquivalentTo(instance);
     }
+
+    [SkippableTheory]
+    [ClassData(typeof(IdentificationDataSource))]
+    public void ShouldRoundTripThroughText(Type type)
+    {
+        Skip.If(SkipISpanParsable.Contains(type.Name));
+        var instance = TryEasyConstruct(type);
+        var serialized = instance.ToString().ShouldNotBeNull();
+        var parseMethod = type.GetMethod("Parse", [typeof(string), typeof(IFormatProvider)]).ShouldNotBeNull();
+        var deserialized = parseMethod.Invoke(null, [serialized, null]);
+        deserialized.ShouldBeEquivalentTo(instance);
+    }
+
+    [SkippableTheory]
+    [ClassData(typeof(IdentificationDataSource))]
+    public void ShouldHaveParseMethodDirectlyNotAtInterface(Type type)
+    {
+        Skip.If(SkipISpanParsable.Contains(type.Name));
+        type.GetMethod("Parse", [typeof(string), typeof(IFormatProvider)]).ShouldNotBeNull();
+    }
+
+    [SkippableTheory]
+    [ClassData(typeof(IdentificationDataSource))]
+    public void ShouldHaveSpanParseMethodDirectlyNotAtInterface(Type type)
+    {
+        Skip.If(SkipISpanParsable.Contains(type.Name));
+        type.GetMethod("Parse", [typeof(ReadOnlySpan<char>), typeof(IFormatProvider)]).ShouldNotBeNull();
+    }
 }

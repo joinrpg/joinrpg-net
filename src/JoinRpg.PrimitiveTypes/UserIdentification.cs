@@ -15,7 +15,7 @@ public record class UserIdentification(int Value) : SingleValueType<int>(Value),
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
     public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out UserIdentification result)
     {
-        if (IdentificationParseHelper.TryParse1(value, provider, [nameof(UserIdentification), "Project"]) is int id)
+        if (IdentificationParseHelper.TryParse1(value, provider, [nameof(UserIdentification), "UserId"]) is int id)
         {
             result = new UserIdentification(id);
             return true;
