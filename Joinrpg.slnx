@@ -47,6 +47,10 @@
     <File Path="manifests/prod/.env" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/JoinRpg.IdPortal/">
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer.Test/JoinRpg.IdPortal.OAuthServer.Test.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="src/JoinRpg.CommonUI.Models.Test/JoinRpg.CommonUI.Models.Test.csproj" />
     <Project Path="src/JoinRpg.DataModel.Mocks/JoinRpg.DataModel.Mocks.csproj" />
