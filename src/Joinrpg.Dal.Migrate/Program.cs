@@ -31,6 +31,6 @@ internal class Program
                 services.RegisterMigrator<DataProtectionDbContext>(configuration, environment, "DataProtection");
                 services.RegisterMigrator<JobScheduleDataDbContext>(configuration, environment, "DailyJob");
                 services.RegisterMigrator<NotificationsDataDbContext>(configuration, environment, "Notifications");
-                services.RegisterMigrator<IdPortalDbContext>(configuration, environment, "IdPortal");
+                services.RegisterMigrator<IdPortalDbContext>(configuration, environment, "IdPortal", options => options.UseOpenIddict());
             });
 }
