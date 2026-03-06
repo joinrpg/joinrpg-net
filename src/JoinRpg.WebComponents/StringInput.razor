@@ -32,7 +32,7 @@
       public string? ValidationEnabled => Required ? "true" : null;
       public string? RequiredMessageValue => Required ? RequiredMessage : null ;
 
-      private string Id { get; set; } 
+      private string Id { get; set; } = null!;
 
       protected override void OnInitialized()
       {
