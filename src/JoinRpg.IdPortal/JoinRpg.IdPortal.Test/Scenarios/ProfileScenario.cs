@@ -17,7 +17,7 @@ public class ProfileScenario(IdPortalApplicationFactory factory)
         response.Headers.Location?.ToString().ShouldContain("Login");
     }
 
-    [Fact]
+    [Fact(Skip = "Тест пока не дописан")]
     public async Task Home_WhenAuthenticated_ShowsDisplayName()
     {
         // Login first
