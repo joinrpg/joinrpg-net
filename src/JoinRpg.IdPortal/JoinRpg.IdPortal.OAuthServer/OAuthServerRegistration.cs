@@ -94,7 +94,8 @@ public static class OAuthServerRegistration
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core options.
                 options.UseAspNetCore()
-                       .EnableAuthorizationEndpointPassthrough();
+                       .EnableAuthorizationEndpointPassthrough()
+                       .EnableUserInfoEndpointPassthrough();
             })
                 .AddValidation(options =>
                 {
@@ -151,7 +152,7 @@ public static class OAuthServerRegistration
 
         if (user.HasScope(Scopes.Email))
         {
-            claims[Claims.Email] = userInfo.Email;
+            claims[Claims.Email] = userInfo.Email.Value;
             claims[Claims.EmailVerified] = userInfo.EmailConfirmed;
         }
 
