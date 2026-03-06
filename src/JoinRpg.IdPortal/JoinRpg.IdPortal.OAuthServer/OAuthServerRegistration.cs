@@ -130,7 +130,7 @@ public static class OAuthServerRegistration
         return app;
     }
 
-    private async static Task<Results<ForbidHttpResult, Ok<Dictionary<string, object?>>>> GetUserInfoMethod(
+    internal async static Task<Results<ForbidHttpResult, Ok<Dictionary<string, object?>>>> GetUserInfoMethod(
         ClaimsPrincipal user,
         IUserRepository userRepository,
         IOptions<JoinRpgHostNamesOptions> hostNameOptions,
@@ -165,9 +165,9 @@ public static class OAuthServerRegistration
         if (user.HasScope(Scopes.Profile))
         {
             claims[Claims.Name] = userInfo.UserFullName.FullName;
-            claims[Claims.GivenName] = userInfo.UserFullName.BornName;
-            claims[Claims.FamilyName] = userInfo.UserFullName.SurName;
-            claims[Claims.MiddleName] = userInfo.UserFullName.FatherName;
+            claims[Claims.GivenName] = userInfo.UserFullName.BornName?.Value;
+            claims[Claims.FamilyName] = userInfo.UserFullName.SurName?.Value;
+            claims[Claims.MiddleName] = userInfo.UserFullName.FatherName?.Value;
 
             if (userInfo.SelectedAvatarId is not null)
             {
