@@ -21,6 +21,7 @@
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer/JoinRpg.IdPortal.OAuthServer.csproj" Id="cbd70223-978c-4afe-b74d-72a41aaddbe7" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Test/JoinRpg.IdPortal.Test.csproj" Id="8fb2fca5-89b5-4c67-9738-bf0ff06aad27" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj" />
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer.Test/JoinRpg.IdPortal.OAuthServer.Test.csproj" />
   </Folder>
   <Folder Name="/Services/">
     <Project Path="src/JoinRpg.Integrations.KogdaIgra/JoinRpg.Integrations.KogdaIgra.csproj" />
@@ -47,10 +48,6 @@
     <File Path="manifests/dev/.env" />
     <File Path="manifests/prod/.env" />
     <File Path="README.md" />
-  </Folder>
-  <Folder Name="/src/" />
-  <Folder Name="/src/JoinRpg.IdPortal/">
-    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer.Test/JoinRpg.IdPortal.OAuthServer.Test.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="src/JoinRpg.CommonUI.Models.Test/JoinRpg.CommonUI.Models.Test.csproj" />
