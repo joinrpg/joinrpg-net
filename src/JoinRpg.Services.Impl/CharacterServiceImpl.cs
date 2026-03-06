@@ -26,8 +26,8 @@ internal class CharacterServiceImpl(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(addCharacterRequest.ProjectId));
 
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-        _ = project.EnsureProjectActive();
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
+        _ = projectInfo.EnsureProjectActive();
 
         var character = new Character
         {

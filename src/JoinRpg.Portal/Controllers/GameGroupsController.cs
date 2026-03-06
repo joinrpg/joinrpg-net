@@ -50,7 +50,7 @@ public class GameGroupsController(
               ProjectId = field.Project.ProjectId,
               ProjectName = field.Project.ProjectName,
               ShowEditControls = field.HasEditRolesAccess(currentUserAccessor.UserIdOrDefault),
-              HasMasterAccess = field.HasMasterAccess(currentUserAccessor.UserIdOrDefault),
+              HasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor),
               Data = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo),
               Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Roles),
           });

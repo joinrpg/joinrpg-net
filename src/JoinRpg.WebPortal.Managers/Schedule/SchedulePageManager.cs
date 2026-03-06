@@ -283,7 +283,7 @@ public class SchedulePageManager(
             {
                 return true;
             }
-            if (project.HasMasterAccess(currentUserAccessor))
+            if (projectInfo.HasMasterAccess(currentUserAccessor))
             {
                 return true;
             }
