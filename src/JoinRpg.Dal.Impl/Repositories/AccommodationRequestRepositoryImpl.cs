@@ -2,13 +2,12 @@ using JoinRpg.PrimitiveTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(ctx),
-    IAccommodationRequestRepository
+public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : IAccommodationRequestRepository
 {
     public async Task<IReadOnlyCollection<AccommodationRequest>>
         GetAccommodationRequestForProject(int projectId)
     {
-        return await Ctx.Set<AccommodationRequest>()
+        return await ctx.Set<AccommodationRequest>()
             .Where(request => request.ProjectId == projectId)
             .ToListAsync().ConfigureAwait(false);
     }
@@ -16,7 +15,7 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImp
     public async Task<IReadOnlyCollection<AccommodationRequest>>
         GetAccommodationRequestForClaim(int claimId)
     {
-        return await Ctx.Set<AccommodationRequest>().Where(request =>
+        return await ctx.Set<AccommodationRequest>().Where(request =>
                 request.Subjects.Any(subject => subject.ClaimId == claimId))
             .Include(request => request.Subjects)
             .Include(request => request.Subjects.Select(cl => cl.Player))
@@ -26,7 +25,7 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImp
     public async Task<IReadOnlyCollection<Claim>>
         GetClaimsWithSameAccommodationType(int accommodationTypeId)
     {
-        return await Ctx.Set<AccommodationRequest>().Where(request =>
+        return await ctx.Set<AccommodationRequest>().Where(request =>
                 request.AccommodationTypeId == accommodationTypeId)
             .SelectMany(request => request.Subjects)
             .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
@@ -37,7 +36,7 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImp
     public async Task<IReadOnlyCollection<Claim>>
         GetClaimsWithSameAccommodationTypeToInvite(int accommodationTypeId)
     {
-        return await Ctx.Set<AccommodationRequest>().Where(request =>
+        return await ctx.Set<AccommodationRequest>().Where(request =>
                 request.AccommodationTypeId == accommodationTypeId &&
                  request.AccommodationId == null)
             .SelectMany(request => request.Subjects)
@@ -49,7 +48,7 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImp
     public async Task<IReadOnlyCollection<Claim>> GetClaimsWithSameAccommodationRequest(
         int accommodationRequestId)
     {
-        var tmp = await Ctx.Set<AccommodationRequest>()
+        var tmp = await ctx.Set<AccommodationRequest>()
             .Where(request => request.Id == accommodationRequestId)
             .SelectMany(request => request.Subjects)
             .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
@@ -61,12 +60,12 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : RepositoryImp
     public async Task<IEnumerable<Claim>> GetClaimsWithOutAccommodationRequest(
         int projectId)
     {
-        var projectClaims = await Ctx.Set<Claim>()
+        var projectClaims = await ctx.Set<Claim>()
             .Where(claim => claim.ProjectId == projectId)
             .Include(claim => claim.Player)
             .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .ToListAsync().ConfigureAwait(false);
-        var claimsWithAccommodationRequest = await Ctx.Set<AccommodationRequest>()
+        var claimsWithAccommodationRequest = await ctx.Set<AccommodationRequest>()
             .Where(request => request.ProjectId == projectId)
             .SelectMany(request => request.Subjects)
             .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)

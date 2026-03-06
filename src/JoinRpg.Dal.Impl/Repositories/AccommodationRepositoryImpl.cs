@@ -3,12 +3,12 @@ using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-public class AccommodationRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(ctx), IAccommodationRepository
+public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationRepository
 {
     public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(
         int projectId)
     {
-        return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId)
+        return await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId)
             .Include(x => x.ProjectAccommodations)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -18,7 +18,7 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(c
     public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
         GetClaimAccommodationReport(int project)
     {
-        return await Ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
+        return await ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
             .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active))
             .Where(claim => claim.ProjectId == project)
             .Select(
@@ -41,7 +41,7 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(c
     public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project)
     {
 
-        return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
+        return await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
             .Include(x => x.Project)
             .Select(x => new RoomTypeInfoRow()
             {
@@ -57,7 +57,7 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : RepositoryImplBase(c
 
     public async Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId)
     {
-        return await Ctx.Set<ProjectAccommodationType>().Where(a => a.Id == roomTypeId)
+        return await ctx.Set<ProjectAccommodationType>().Where(a => a.Id == roomTypeId)
             .Include(x => x.ProjectAccommodations)
             .SingleAsync()
             .ConfigureAwait(false);

@@ -4,14 +4,14 @@ using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-internal class FinanceOperationsRepository(MyDbContext ctx) : RepositoryImplBase(ctx), IFinanceOperationsRepository
+internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperationsRepository
 {
     /// <summary>
     /// Грузит операции, которые не перешли в финальный статус
     /// </summary>
     public async Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(KeySetPagination? pagination)
     {
-        var query = Ctx.Set<FinanceOperation>()
+        var query = ctx.Set<FinanceOperation>()
                 .AsExpandable()
                 .Where(fo => fo.State != FinanceOperationState.Declined && fo.State != FinanceOperationState.Approved)
                 .Where(fo => fo.OperationType == FinanceOperationType.Online)

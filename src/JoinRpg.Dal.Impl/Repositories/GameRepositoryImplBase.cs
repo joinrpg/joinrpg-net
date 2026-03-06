@@ -2,8 +2,11 @@ using System.Diagnostics;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
-internal abstract class GameRepositoryImplBase(MyDbContext ctx) : RepositoryImplBase(ctx)
+internal abstract class GameRepositoryImplBase(MyDbContext ctx) : IDisposable
 {
+    protected MyDbContext Ctx { get; } = ctx;
+
+    public void Dispose() { }
     protected Task LoadMasters(int projectId)
     {
         Debug.WriteLine($"{nameof(LoadMasters)} started");

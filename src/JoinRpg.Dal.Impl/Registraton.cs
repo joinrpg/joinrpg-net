@@ -1,6 +1,7 @@
-using System.Reflection;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces.AdminTools;
+using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Data.Write.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -22,12 +23,19 @@ public static class Registraton
             .AddTransient<IUnifiedGridRepository, UnifiedGridRepository>()
             .AddTransient<IKogdaIgraRepository, KogdaIgraRepository>()
             .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>()
+            .AddTransient<IProjectRepository, ProjectRepository>()
+            .AddTransient<ICharacterRepository, CharacterRepositoryImpl>()
+            .AddTransient<IPlotRepository, PlotRepositoryImpl>()
+            .AddTransient<IForumRepository, ForumRepositoryImpl>()
+            .AddTransient<IFinanceReportRepository, FinanceReportRepositoryImpl>()
+            .AddTransient<IClaimsRepository, ClaimsRepositoryImpl>()
+            .AddTransient<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>()
+            .AddTransient<IAccommodationRepository, AccommodationRepositoryImpl>()
+            .AddTransient<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>()
+            .AddTransient<IResponsibleMasterRulesRepository, ResponsibleMasterRulesRepository>()
+            .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 
-        foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsAssignableTo(typeof(RepositoryImplBase)) && !t.IsAbstract))
-        {
-            _ = services.AddTransient(type.GetInterfaces().Where(x => x.FullName!.StartsWith("JoinRpg")).Single(), type);
-        }
         return services;
     }
 }
