@@ -12,7 +12,7 @@
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Notifications\JoinRpg.Dal.Notifications.csproj" />
-    <ProjectReference Include="..\JoinRpg.IdPortal\JoinRpg.IdPortal\JoinRpg.IdPortal.csproj" />
+    <ProjectReference Include="..\JoinRpg.IdPortal\JoinRpg.IdPortal.OAuthServer\JoinRpg.IdPortal.OAuthServer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
