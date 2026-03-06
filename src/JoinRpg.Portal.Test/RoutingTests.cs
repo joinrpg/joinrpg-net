@@ -27,6 +27,27 @@ public class RoutingTests
         routeAttribute.Template.ShouldStartWith("{projectId}");
     }
 
+    [Theory]
+    [InlineData(typeof(PlotListController), nameof(PlotListController.Index), "{projectId}/plots/Index")]
+    [InlineData(typeof(PlotListController), nameof(PlotListController.InWork), "{projectId}/plots/InWork")]
+    [InlineData(typeof(PlotListController), nameof(PlotListController.FlatList), "{projectId}/plots/FlatList")]
+    [InlineData(typeof(PlotController), "CreateElement", "{projectId}/plots/CreateElement")]
+    [InlineData(typeof(PlotController), "Edit", "{projectId}/plots/Edit")]
+    public void ControllerActionResolvesToExpectedRoute(Type controllerType, string actionName, string expectedTemplate)
+    {
+        var classRoute = controllerType.GetCustomAttribute<RouteAttribute>()!.Template;
+        var resolved = classRoute.Replace("[action]", actionName, StringComparison.OrdinalIgnoreCase);
+        resolved.ShouldBe(expectedTemplate);
+    }
+
+    [Fact]
+    public void PlotLegacyRedirectShouldCatchOldPrefix()
+    {
+        var route = typeof(PlotLegacyRedirectController).GetCustomAttribute<RouteAttribute>();
+        _ = route.ShouldNotBeNull();
+        route.Template.ShouldBe("{projectId}/plot");
+    }
+
     [Obsolete]
     private class LegacyControllerDataSource : FindDerivedClassesDataSourceBase<ControllerGameBase, Startup> { }
 
