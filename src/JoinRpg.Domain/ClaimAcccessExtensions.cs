@@ -56,7 +56,7 @@ public static class ClaimAcccessExtensions
             return true;
         }
 
-        return claim.HasMasterAccess(userId, permission);
+        return claim.HasMasterAccess(UserIdentification.FromOptional(userId), permission);
     }
 
 }

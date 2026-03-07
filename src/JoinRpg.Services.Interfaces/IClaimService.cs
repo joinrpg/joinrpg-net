@@ -46,7 +46,7 @@ public interface IClaimService
     /// </returns>
     Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId);
 
-    Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
+    Task ConcealComment(int projectId, int commentId, int commentDiscussionId);
     Task AllowSensitiveData(ClaimIdentification projectId);
     Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId);
 }

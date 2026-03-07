@@ -191,7 +191,7 @@ public class FieldSetupManager
         {
             Page = page,
             ProjectId = project.ProjectId,
-            CanEditFields = project.HasMasterAccess(CurrentUser.UserId, Permission.CanChangeFields)
+            CanEditFields = project.HasMasterAccess(CurrentUser, Permission.CanChangeFields)
                 && project.Active,
         };
     }

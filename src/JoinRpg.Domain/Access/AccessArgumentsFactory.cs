@@ -26,7 +26,7 @@ public static class AccessArgumentsFactory
         ArgumentNullException.ThrowIfNull(character);
 
         return new AccessArguments(
-            MasterAccess: character.HasMasterAccess(userId),
+            MasterAccess: character.HasMasterAccess(UserIdentification.FromOptional(userId)),
             PlayerAccessToCharacter: character.HasPlayerAccess(userId),
             PlayerAccesToClaim: character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false,
             EditAllowed: character.Project.Active,
@@ -121,7 +121,7 @@ public static class AccessArgumentsFactory
         ArgumentNullException.ThrowIfNull(claim);
 
         return new AccessArguments(
-            MasterAccess: claim.HasMasterAccess(userId),
+            MasterAccess: claim.HasMasterAccess(UserIdentification.FromOptional(userId)),
             PlayerAccessToCharacter: claim.Character.HasPlayerAccess(userId),
             PlayerAccesToClaim: claim.HasPlayerAccesToClaim(userId),
             EditAllowed: claim.Project.Active,

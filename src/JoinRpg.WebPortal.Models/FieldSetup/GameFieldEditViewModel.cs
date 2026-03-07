@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.ProjectCommon.Fields;
 
@@ -70,7 +71,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         IsActive = field.IsActive;
         HasValueList = field.HasValueList();
         WasEverUsed = field.WasEverUsed;
-        CanEditFields = field.HasMasterAccess(currentUserId, Permission.CanChangeFields);
+        CanEditFields = field.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanChangeFields);
         CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
         SupportsMassAdding = field.SupportsMassAdding();
 

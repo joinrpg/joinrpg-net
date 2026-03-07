@@ -13,8 +13,8 @@ public class CommentViewModel
     {
         DeepLevel = deepLevel;
         IsVisibleToPlayer = comment.IsVisibleToPlayer;
-        HasMasterAccess = comment.Project.HasMasterAccess(currentUserId);
-        CanModerateFinance = comment.Project.HasMasterAccess(currentUserId, Permission.CanManageMoney) ||
+        HasMasterAccess = comment.Project.HasMasterAccess(new UserIdentification(currentUserId));
+        CanModerateFinance = comment.Project.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney) ||
                              comment.Finance?.PaymentType?.UserId == currentUserId;
         IsCommentByPlayer = comment.IsCommentByPlayer;
         Author = comment.Author;

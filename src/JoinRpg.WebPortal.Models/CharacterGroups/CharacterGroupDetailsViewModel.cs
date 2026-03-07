@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models.CharacterGroups;
@@ -21,7 +22,7 @@ public class CharacterGroupDetailsViewModel(CharacterGroup group, int? currentUs
 {
     public GroupNavigationPage Page { get; } = page;
 
-    public bool HasMasterAccess { get; } = group.HasMasterAccess(currentUser);
+    public bool HasMasterAccess { get; } = group.HasMasterAccess(UserIdentification.FromOptional(currentUser));
     public bool ShowEditControls { get; } = group.HasEditRolesAccess(currentUser);
     public bool IsSpecial { get; } = group.IsSpecial;
     public bool IsRootGroup { get; } = group.IsRoot;

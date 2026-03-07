@@ -149,8 +149,8 @@ public class PlotElementListItemViewModel : IProjectIdAware
         ElementType = (PlotElementTypeView)e.ElementType;
         ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
-        HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(currentUserId, Permission.CanManagePlots) && e.Project.Active;
-        HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
+        HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanManagePlots) && e.Project.Active;
+        HasMasterAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId));
         HasEditAccess = HasMasterAccess && e.Project.Active;
 
         ModifiedDateTime = currentVersionText.ModifiedDateTime;

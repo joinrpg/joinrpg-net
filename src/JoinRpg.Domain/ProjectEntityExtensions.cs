@@ -12,9 +12,7 @@ public static class ProjectEntityExtensions
     [Obsolete("Передавай сюда ProjectInfo")]
     public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)
     {
-        ArgumentNullException.ThrowIfNull(entity);
-
-        return currentUserAccessor.UserIdOrDefault is int userId && entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == userId);
+        return currentUserAccessor.UserIdentificationOrDefault is { } userId && entity.HasMasterAccess(userId, permission);
     }
 
     [Pure]
@@ -29,7 +27,7 @@ public static class ProjectEntityExtensions
 
     [Pure]
     [Obsolete("Передавай сюда ProjectInfo")]
-    public static bool HasMasterAccess(this IProjectEntity entity, [NotNullWhen(true)] int? currentUserId, Permission permission = Permission.None)
+    public static bool HasMasterAccess(this IProjectEntity entity, [NotNullWhen(true)] UserIdentification? currentUserId, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -71,7 +69,7 @@ public static class ProjectEntityExtensions
             throw new NoAccessToProjectException(field.Project, currentUserId);
         }
 
-        if (!field.HasMasterAccess(currentUserId, permission))
+        if (!field.HasMasterAccess(UserIdentification.FromOptional(currentUserId), permission))
         {
             throw new NoAccessToProjectException(field.Project, currentUserId, permission);
         }
@@ -103,7 +101,7 @@ public static class ProjectEntityExtensions
 
         var playerAccess = currentUserIdOrDefault != null && character.ApprovedClaim?.PlayerUserId == currentUserIdOrDefault;
 
-        return playerAccess || character.HasMasterAccess(currentUserIdOrDefault);
+        return playerAccess || character.HasMasterAccess(UserIdentification.FromOptional(currentUserIdOrDefault));
     }
 
     public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)
@@ -114,7 +112,7 @@ public static class ProjectEntityExtensions
     }
 
     //TODO добавить это в AccessArguments
-    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, Permission.CanEditRoles) && character.Project.Active;
+    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanEditRoles) && character.Project.Active;
 
     [Obsolete("Передавай сюда ProjectInfo")]
     public static T EnsureProjectActive<T>(this T entity)
@@ -134,7 +132,7 @@ public static class ProjectEntityExtensions
     }
 
     [Obsolete]
-    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId);
+    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId);
 
     public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
     {
@@ -169,7 +167,7 @@ public static class ProjectEntityExtensions
     {
         ArgumentNullException.ThrowIfNull(forumThread);
 
-        return forumThread.HasMasterAccess(currentUserId) || forumThread.HasPlayerAccess(currentUserId);
+        return forumThread.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId);
     }
 
     [Pure]

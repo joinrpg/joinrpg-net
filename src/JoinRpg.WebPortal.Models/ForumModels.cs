@@ -14,7 +14,7 @@ public class ForumThreadViewModel : IEntityWithCommentsViewModel
     {
         RootComments = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
         ProjectId = forumThread.ProjectId;
-        HasMasterAccess = forumThread.HasMasterAccess(currentUserId);
+        HasMasterAccess = forumThread.HasMasterAccess(new UserIdentification(currentUserId));
         Header = forumThread.Header;
         ProjectName = forumThread.Project.ProjectName;
         CommentDiscussionId = forumThread.CommentDiscussionId;
@@ -74,7 +74,7 @@ public class ForumThreadListViewModel
         ProjectId = project.ProjectId;
         RootGroupId = project.RootGroup.CharacterGroupId;
         Items = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
-        HasMasterAccess = project.HasMasterAccess(currentUserId);
+        HasMasterAccess = project.HasMasterAccess(new UserIdentification(currentUserId));
     }
 
     public IEnumerable<ForumThreadListItemViewModel> Items { get; }
@@ -96,7 +96,7 @@ public class ForumThreadListItemViewModel
 {
     public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId)
     {
-        var masterAccess = thread.HasMasterAccess(currentUserId);
+        var masterAccess = thread.HasMasterAccess(new UserIdentification(currentUserId));
         ProjectId = thread.Project.ProjectId;
         Header = thread.Header;
         Topicstarter = thread.Topicstarter;

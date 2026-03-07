@@ -85,7 +85,7 @@ public class ForumController(
     private async Task<ForumThread> GetForumThread(int projectid, int forumThreadId)
     {
         var forumThread = await forumRepository.GetThread(new(projectid, forumThreadId));
-        var isMaster = forumThread.HasMasterAccess(CurrentUserId);
+        var isMaster = forumThread.HasMasterAccess(currentUserAccessor);
         var isPlayer = forumThread.IsVisibleToPlayer &&
                        (await claimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
                          claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
@@ -189,7 +189,7 @@ public class ForumController(
     [HttpPost("~/{projectId}/forums/concealcomment")]
     public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
     {
-        await claimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
+        await claimService.ConcealComment(projectid, commentid, commentDiscussionId);
         var discussion =
                await forumRepository.GetDiscussion(projectid, commentDiscussionId);
         return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);

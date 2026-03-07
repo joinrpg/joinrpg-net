@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -74,8 +74,8 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// </summary>
     public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
 
-    public RoomTypeViewModel(ProjectAccommodationType entity, int userId, ProjectInfo projectInfo)
-        : this(entity.Project, userId)
+    public RoomTypeViewModel(ProjectAccommodationType entity, UserIdentification userId, ProjectInfo projectInfo)
+        : this(entity.Project, userId, projectInfo)
     {
         if (entity.ProjectId == 0 || entity.Id == 0)
         {
@@ -141,12 +141,12 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Rooms = rl;
     }
 
-    public RoomTypeViewModel(Project project, int userId)
+    public RoomTypeViewModel(Project project, UserIdentification userId, ProjectInfo projectInfo)
     {
         Project = project;
         ProjectId = project.ProjectId;
-        CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
-        CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
+        CanManageRooms = projectInfo.HasMasterAccess(userId, Permission.CanManageAccommodation);
+        CanAssignRooms = projectInfo.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
     }
 
     public RoomTypeViewModel()
