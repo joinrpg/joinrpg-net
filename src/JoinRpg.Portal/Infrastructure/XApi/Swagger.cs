@@ -1,70 +1,70 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Swagger;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace JoinRpg.Portal.Infrastructure.XApi;
 
 internal static class Swagger
 {
-    internal static void ConfigureSwagger(SwaggerGenOptions c)
+    internal static IServiceCollection AddJoinXApiSwagger(this IServiceCollection services)
     {
-        var securityScheme = new OpenApiSecurityScheme
+        return services.AddOpenApi("v1", options =>
         {
-            Name = "JWT Authentication",
-            Description = "Enter JWT Bearer token **_only_**",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer", // must be lower case
-            BearerFormat = "JWT",
-            Reference = new OpenApiReference
+            _ = options.AddDocumentTransformer((document, _, _) =>
             {
-                Id = JwtBearerDefaults.AuthenticationScheme,
-                Type = ReferenceType.SecurityScheme
-            }
-        };
-        c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
-        c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {securityScheme, []}
-            });
-
-        c.SwaggerDoc("v1", new OpenApiInfo()
-        {
-            Title = "My API",
-            Version = "v1"
+                document.Info = new OpenApiInfo { Title = "My API", Version = "v1" };
+                return Task.CompletedTask;
+            })
+            .AddDocumentTransformer(new JwtSecuritySchemeTransformer())
+            .AddDocumentTransformer(new XGameApiPathFilter());
         });
-        c.IncludeXmlComments(Assembly.GetExecutingAssembly());
-        c.IncludeXmlComments(typeof(XGameApi.Contract.AuthenticationResponse).Assembly);
-
-        c.DocumentFilter<SwaggerXGameApiFilter>();
     }
-
-    internal static void Configure(SwaggerOptions options) { }
-
     internal static void ConfigureUI(SwaggerUIOptions c)
     {
-        c.SwaggerEndpoint("v1/swagger.json", "My API V1");
+        c.SwaggerEndpoint("/openapi/v1.json", "My API V1");
         c.ConfigObject.DeepLinking = true;
     }
 
-    private class SwaggerXGameApiFilter : IDocumentFilter
+    private sealed class JwtSecuritySchemeTransformer : IOpenApiDocumentTransformer
     {
-        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         {
-            foreach (var item in swaggerDoc.Paths.ToList())
+            var securityScheme = new OpenApiSecurityScheme
             {
-                var key = item.Key.ToLower();
-                if (!key.IsExternalApiPath())
+                Name = "JWT Authentication",
+                Description = "Enter JWT Bearer token **_only_**",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+            };
+
+            document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+            document.Components.SecuritySchemes[JwtBearerDefaults.AuthenticationScheme] = securityScheme;
+
+            var schemeRef = new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, document);
+            document.Security ??= [];
+            document.Security.Add(new OpenApiSecurityRequirement { { schemeRef, [] } });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class XGameApiPathFilter : IOpenApiDocumentTransformer
+    {
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            foreach (var item in document.Paths.ToList())
+            {
+                if (!item.Key.ToLower().IsExternalApiPath())
                 {
-                    _ = swaggerDoc.Paths.Remove(item.Key);
+                    _ = document.Paths.Remove(item.Key);
                 }
             }
 
+            return Task.CompletedTask;
         }
-
-
     }
 }
