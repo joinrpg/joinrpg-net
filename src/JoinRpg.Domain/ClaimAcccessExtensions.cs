@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;
@@ -33,34 +32,6 @@ public static class ClaimAcccessExtensions
             throw new NoAccessToProjectException(claim, currentUserId);
         }
         return claim;
-    }
-
-    [Obsolete]
-    public static bool HasAccess(this Claim claim,
-        int? userId,
-        Expression<Func<ProjectAcl, bool>> permission,
-        ExtraAccessReason reasons = ExtraAccessReason.None)
-    {
-        ArgumentNullException.ThrowIfNull(claim);
-
-        ArgumentNullException.ThrowIfNull(permission);
-
-        if (userId == null)
-        {
-            return false;
-        }
-
-        if (reasons.HasFlag(ExtraAccessReason.Player) && claim.PlayerUserId == userId)
-        {
-            return true;
-        }
-
-        if (reasons.HasFlag(ExtraAccessReason.ResponsibleMaster) && claim.ResponsibleMasterUserId == userId)
-        {
-            return true;
-        }
-
-        return claim.HasMasterAccess(userId, permission);
     }
 
     public static bool HasAccess(this Claim claim,

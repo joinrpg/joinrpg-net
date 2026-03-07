@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
@@ -10,6 +11,7 @@ namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
 
 internal class ResponsibleMasterRuleViewService(
     IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
+    IProjectMetadataRepository projectMetadataRepository,
     IRespMasterRuleService service,
     IProjectRepository projectRepository,
     ICurrentUserAccessor currentUserAccessor) : IResponsibleMasterRuleClient
@@ -24,6 +26,8 @@ internal class ResponsibleMasterRuleViewService(
             .ToList();
 
         var project = await projectRepository.GetProjectAsync(projectId);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var defaultUser = project.GetDefaultResponsibleMaster();
         sortedGroups.Add(
             ResponsibleMasterRuleViewModel.CreateSpecial(
@@ -32,9 +36,9 @@ internal class ResponsibleMasterRuleViewService(
 
         return new ResponsibleMasterRuleListViewModel(
                 Items: sortedGroups,
-                HasEditAccess: project.HasMasterAccess(
-                    currentUserAccessor.UserIdOrDefault,
-                    acl => acl.CanManageClaims
+                HasEditAccess: projectInfo.HasMasterAccess(
+                    currentUserAccessor,
+                    Permission.CanManageClaims
                     )
             );
     }

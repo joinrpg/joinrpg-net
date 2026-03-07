@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CommonTypes;
@@ -190,7 +191,7 @@ public class FieldSetupManager
         {
             Page = page,
             ProjectId = project.ProjectId,
-            CanEditFields = project.HasMasterAccess(CurrentUser.UserId, pa => pa.CanChangeFields)
+            CanEditFields = project.HasMasterAccess(CurrentUser.UserId, Permission.CanChangeFields)
                 && project.Active,
         };
     }

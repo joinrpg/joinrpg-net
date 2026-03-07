@@ -71,9 +71,9 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, linkRenderer);
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
 
-        HasEditAccess = folder.HasMasterAccess(currentUser) && folder.Project.Active;
-        HasPlotEditorAccess = folder.HasMasterAccess(currentUser, Permission.CanManagePlots) && folder.Project.Active;
-        HasMasterAccess = folder.HasMasterAccess(currentUser);
+        HasEditAccess = projectInfo.HasMasterAccess(currentUser) && projectInfo.IsActive;
+        HasPlotEditorAccess = projectInfo.HasMasterAccess(currentUser, Permission.CanManagePlots) && projectInfo.IsActive;
+        HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
     }
 
     public EditPlotFolderViewModel() { } //For binding

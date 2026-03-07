@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims.Finances;
 
 namespace JoinRpg.Domain;
@@ -181,7 +182,7 @@ public static class FinanceExtensions
     public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {
         if (!finance.Claim.HasAccess(currentUserId,
-                acl => acl.CanManageMoney) &&
+                Permission.CanManageMoney) &&
             finance.PaymentType?.UserId != currentUserId)
         {
             throw new NoAccessToProjectException(finance, currentUserId);
