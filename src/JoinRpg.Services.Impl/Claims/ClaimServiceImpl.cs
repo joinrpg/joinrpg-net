@@ -199,7 +199,7 @@ internal class ClaimServiceImpl(
         };
 
         // Т.к. CreateClaimCommentWithNotification ожидает, что комментарий уже существует
-        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
         await UnitOfWork.SaveChangesAsync();
 
