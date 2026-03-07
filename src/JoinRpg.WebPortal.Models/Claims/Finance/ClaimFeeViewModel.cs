@@ -42,7 +42,7 @@ public class ClaimFeeViewModel
             Balance[fo.State] += fo.MoneyAmount;
         }
 
-        HasMasterAccess = claim.HasMasterAccess(currentUserId);
+        HasMasterAccess = projectInfo.HasMasterAccess(new PrimitiveTypes.UserIdentification(currentUserId));
         HasFeeAdminAccess = claim.HasAccess(currentUserId, Permission.CanManageMoney);
 
         PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
