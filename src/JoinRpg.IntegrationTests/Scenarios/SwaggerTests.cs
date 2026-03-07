@@ -9,7 +9,7 @@ public class SwaggerTests(JoinApplicationFactory factory) : IClassFixture<JoinAp
     {
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("swagger/v1/swagger.json");
+        var response = await client.GetAsync("/openapi/v1.json");
 
         _ = response.EnsureSuccessStatusCode();
     }
