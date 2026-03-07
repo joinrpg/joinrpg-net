@@ -816,7 +816,7 @@ internal class PaymentsService(
         }
 
         if (!recurrentPayment.Claim.HasPlayerAccesToClaim(CurrentUserId)
-              && !recurrentPayment.HasMasterAccess(CurrentUserId, Permission.CanManageMoney))
+              && !recurrentPayment.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney))
         {
             throw new JoinRpgInvalidUserException();
         }

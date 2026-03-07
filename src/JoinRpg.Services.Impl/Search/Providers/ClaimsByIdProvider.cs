@@ -28,7 +28,7 @@ internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
               .ToListAsync();
 
         return results
-          .Where(claim => claim.HasMasterAccess(currentUserId))
+          .Where(claim => claim.HasMasterAccess(UserIdentification.FromOptional(currentUserId)))
           .Select(claim => new SearchResult
           {
               LinkType = LinkType.Claim,

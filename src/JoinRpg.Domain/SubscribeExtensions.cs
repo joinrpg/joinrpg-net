@@ -70,7 +70,7 @@ public static class SubscribeExtensions
         //TODO: currently there're no need to check for user access to entity but in general it's good to have
         return users
             .WhereNotNull()
-            .Where(u => !mastersOnly || entity.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
+            .Where(u => !mastersOnly || entity.HasMasterAccess(new UserIdentification(u.UserId))); //remove player if we doing something not player visible
     }
 
     public static IEnumerable<User> GetSubscriptions(this ProjectAccommodation room)

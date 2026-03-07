@@ -873,8 +873,7 @@ internal class ClaimServiceImpl(
 
     public async Task ConcealComment(int projectId,
         int commentId,
-        int commentDiscussionId,
-        int currentUserId)
+        int commentDiscussionId)
     {
         var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
         var childComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
@@ -885,7 +884,7 @@ internal class ClaimServiceImpl(
             throw new JoinRpgEntityNotFoundException(commentId, nameof(Comment));
         }
 
-        if (comment.HasMasterAccess(currentUserId) && !childComments.Any() &&
+        if (comment.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
             comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
         {
             comment.IsVisibleToPlayer = false;

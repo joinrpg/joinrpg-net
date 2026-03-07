@@ -48,8 +48,9 @@ public class AccommodationTypeController(
     [HttpGet]
     public async Task<ActionResult> AddRoomType(int projectId)
     {
+        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new RoomTypeViewModel(
-            await projectRepository.GetProjectAsync(projectId), currentUserAccessor.UserId));
+            await projectRepository.GetProjectAsync(projectId), currentUserAccessor.UserIdentification, pi));
     }
 
     /// <summary>
@@ -66,7 +67,7 @@ public class AccommodationTypeController(
 
         var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserId, pi));
+        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserIdentification, pi));
     }
 
     /// <summary>
@@ -84,7 +85,7 @@ public class AccommodationTypeController(
 
         var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
 
-        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserId, pi));
+        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserIdentification, pi));
     }
 
     /// <summary>

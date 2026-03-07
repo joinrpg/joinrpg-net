@@ -40,6 +40,6 @@ internal class WorldObjectProviderBase
     {
         return
           entity.Id != searchedEntityId
-          || entity.Project.HasMasterAccess(currentUserId);
+          || entity.Project.HasMasterAccess(UserIdentification.FromOptional(currentUserId));
     }
 }

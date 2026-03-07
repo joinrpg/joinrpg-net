@@ -19,5 +19,5 @@ public static class CommentExtensions
         return commentDiscussion.Comments.Where(c => c.IsVisibleTo(currentUserId)).Count(comment => watermark < comment.Id);
     }
 
-    public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId) => comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(currentUserId);
+    public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId) => comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(new UserIdentification(currentUserId));
 }

@@ -60,7 +60,7 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
     private static IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, int? currentUserId,
         Func<Claim, bool> predicate)
     {
-        return field.HasMasterAccess(currentUserId)
+        return field.HasMasterAccess(UserIdentification.FromOptional(currentUserId))
             ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim))
             : [];
     }

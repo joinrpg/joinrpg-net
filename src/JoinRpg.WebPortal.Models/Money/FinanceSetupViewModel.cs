@@ -2,6 +2,7 @@ using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Web.Models;
@@ -33,7 +34,7 @@ public class FinanceSetupViewModel
         IsAdmin = isAdmin;
         ProjectName = project.ProjectName;
         ProjectId = project.ProjectId;
-        HasEditAccess = project.HasMasterAccess(currentUserId, Permission.CanManageMoney);
+        HasEditAccess = project.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
 
         var potentialCashPaymentTypes =
             project.ProjectAcls

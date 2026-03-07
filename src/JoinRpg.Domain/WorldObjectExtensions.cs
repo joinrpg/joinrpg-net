@@ -7,6 +7,6 @@ public static class WorldObjectExtensions
     {
         ArgumentNullException.ThrowIfNull(cg);
 
-        return cg.IsPublic || cg.Project.Details.PublishPlot || cg.HasMasterAccess(currentUserId);
+        return cg.IsPublic || cg.Project.Details.PublishPlot || cg.HasMasterAccess(UserIdentification.FromOptional(currentUserId));
     }
 }
