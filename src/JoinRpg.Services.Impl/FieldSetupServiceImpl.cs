@@ -3,6 +3,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Services.Impl;
 
@@ -13,7 +14,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         if (project.GetTimeSlotFieldOrDefault() != null && request.FieldType == ProjectFieldType.ScheduleTimeSlotField)
         {
@@ -48,7 +49,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         var field = await ProjectRepository.GetProjectField(request.ProjectFieldId);
 
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         // If we are changing field.CanPlayerEdit, we should update variants to match
         if (field.CanPlayerEdit != request.CanPlayerEdit)
@@ -90,7 +91,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         ProjectField field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         var project = field.Project;
         if (field.IsName())
@@ -131,7 +132,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         var field = await ProjectRepository.GetProjectField(request.ProjectFieldId);
 
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         var variant = CreateFieldValueVariantImpl(request, field);
 
@@ -147,7 +148,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
             request.ProjectFieldId,
             request.ProjectFieldDropdownValueId);
 
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         SetFieldVariantPropsFromRequest(request, field);
 
@@ -301,7 +302,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     public async Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId, int projectFieldId, int valueId)
     {
         var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-        _ = value.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = value.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
         DeleteFieldVariantValueImpl(value);
         await UnitOfWork.SaveChangesAsync();
         return value;
@@ -326,7 +327,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     public async Task MoveField(int projectId, int projectcharacterfieldid, short direction)
     {
         var field = await ProjectRepository.GetProjectField(projectId, projectcharacterfieldid);
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         field.Project.Details.FieldsOrdering
             = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
@@ -336,7 +337,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     public async Task MoveFieldVariant(int projectid, int projectFieldId, int projectFieldVariantId, short direction)
     {
         var field = await ProjectRepository.GetProjectField(projectid, projectFieldId);
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         field.ValuesOrdering =
           field.GetFieldValuesContainer()
@@ -350,7 +351,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         var field = await ProjectRepository.GetProjectField(projectFieldId);
 
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
         {
@@ -378,7 +379,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
           ? null
           : await ProjectRepository.GetProjectField(projectId, (int)afterFieldId);
 
-        _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         field.Project.Details.FieldsOrdering
             = field.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
@@ -390,7 +391,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
         project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.NameField?.ProjectFieldId);
         project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.DescriptionField?.ProjectFieldId);
@@ -402,7 +403,7 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
         var project = await ProjectRepository.GetProjectAsync(projectId);
 
-        var field = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields).ProjectFields.Single(f => f.ProjectFieldId == projectFieldId);
+        var field = project.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields).ProjectFields.Single(f => f.ProjectFieldId == projectFieldId);
         var container = field.GetFieldValuesContainer();
         container.SortBy(x => x.Label);
         field.ValuesOrdering = container.GetStoredOrder();

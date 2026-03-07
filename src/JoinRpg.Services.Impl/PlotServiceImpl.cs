@@ -20,7 +20,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         }
 
         var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId.Value);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots).EnsureProjectActive();
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
         var startTimeUtc = DateTime.UtcNow;
         var plotFolder = new PlotFolder
         {
@@ -60,7 +60,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-        _ = folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots).EnsureProjectActive();
+        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
 
         folder.TodoField = todoField;
         folder.IsActive = true; //Restore if deleted
@@ -221,7 +221,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
     {
         var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
-        _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles).EnsureProjectActive();
+        _ = character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
 
         var plots = await PlotRepository.GetPlotsForCharacter(character);
 

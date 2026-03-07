@@ -152,7 +152,7 @@ internal class CharacterServiceImpl(
     {
         var parentCharacterGroup =
             await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
-        _ = parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+        _ = parentCharacterGroup.RequestMasterAccess(currentUserId, Permission.CanEditRoles);
         _ = parentCharacterGroup.EnsureProjectActive();
 
         var item = parentCharacterGroup.Characters.Single(i => i.CharacterId == characterId);

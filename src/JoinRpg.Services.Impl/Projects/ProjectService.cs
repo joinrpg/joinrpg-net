@@ -89,7 +89,7 @@ internal class ProjectService(
     {
         var parentCharacterGroup =
             await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
-        _ = parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+        _ = parentCharacterGroup.RequestMasterAccess(currentUserId, Permission.CanEditRoles);
         _ = parentCharacterGroup.EnsureProjectActive();
 
         var thisCharacterGroup =
@@ -169,7 +169,7 @@ internal class ProjectService(
             return project;
         }
 
-        return project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+        return project.RequestMasterAccess(CurrentUserId, Permission.CanChangeProjectProperties);
     }
 
     public async Task EditCharacterGroup(CharacterGroupIdentification characterGroupId,
@@ -180,7 +180,7 @@ internal class ProjectService(
     {
         var characterGroup =
             (await ProjectRepository.GetGroupAsync(characterGroupId))
-            .RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles)
+            .RequestMasterAccess(CurrentUserId, Permission.CanEditRoles)
             .EnsureProjectActive();
 
         if (characterGroup.IsRoot || characterGroup.IsSpecial) //We shoud not edit root group or special group
@@ -205,7 +205,7 @@ internal class ProjectService(
     {
         var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId) ?? throw new DbEntityValidationException();
 
-        _ = characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+        _ = characterGroup.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles);
         _ = characterGroup.EnsureProjectActive();
 
         foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))

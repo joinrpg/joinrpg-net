@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;
@@ -89,8 +88,4 @@ public static class ClaimAcccessExtensions
         return claim.HasMasterAccess(userId, permission);
     }
 
-    public static bool HasAccess(this Claim claim,
-    ICurrentUserAccessor userId,
-    Permission permission = Permission.None,
-    ExtraAccessReason reasons = ExtraAccessReason.None) => claim.HasAccess(userId.UserIdOrDefault, Permission.None, reasons);
 }
