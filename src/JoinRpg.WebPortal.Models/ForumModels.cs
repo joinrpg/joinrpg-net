@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models;

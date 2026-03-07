@@ -1,5 +1,4 @@
 using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Email;
 
