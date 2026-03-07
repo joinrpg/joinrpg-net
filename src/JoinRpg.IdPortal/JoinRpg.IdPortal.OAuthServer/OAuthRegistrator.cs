@@ -55,7 +55,11 @@ public class OAuthRegistrator(
                     Permissions.Prefixes.Scope + Scopes.Profile,
                 }
         };
-        desc.RedirectUris.Add(registration.RedirectUri);
+        foreach (var uri in registration.RedirectUris)
+        {
+            desc.RedirectUris.Add(uri);
+        }
+
         return desc;
     }
 

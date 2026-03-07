@@ -7,7 +7,7 @@ public class OAuthServerOptions
         public required string ClientId { get; set; }
         public required string ClientSecret { get; set; }
 
-        public required Uri RedirectUri { get; set; }
+        public required Uri[] RedirectUris { get; set; }
     }
 
     public class OAuthServerCertificateOptions
