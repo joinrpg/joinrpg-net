@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
 using JoinRpg.PrimitiveTypes;
+using JoinRpg.PrimitiveTypes.Access;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models;
@@ -13,7 +14,7 @@ public class CommentViewModel
         DeepLevel = deepLevel;
         IsVisibleToPlayer = comment.IsVisibleToPlayer;
         HasMasterAccess = comment.Project.HasMasterAccess(currentUserId);
-        CanModerateFinance = comment.Project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) ||
+        CanModerateFinance = comment.Project.HasMasterAccess(currentUserId, Permission.CanManageMoney) ||
                              comment.Finance?.PaymentType?.UserId == currentUserId;
         IsCommentByPlayer = comment.IsCommentByPlayer;
         Author = comment.Author;

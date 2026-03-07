@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Accommodation;
@@ -144,8 +145,8 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     {
         Project = project;
         ProjectId = project.ProjectId;
-        CanManageRooms = project.HasMasterAccess(userId, acl => acl.CanManageAccommodation);
-        CanAssignRooms = project.HasMasterAccess(userId, acl => acl.CanSetPlayersAccommodations);
+        CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
+        CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
     }
 
     public RoomTypeViewModel()

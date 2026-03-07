@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Linq.Expressions;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes.Access;
@@ -9,15 +8,6 @@ namespace JoinRpg.Domain;
 
 public static class ProjectEntityExtensions
 {
-    [Pure]
-    [Obsolete("Передавай сюда ProjectInfo")]
-    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Expression<Func<ProjectAcl, bool>> requiredAccess)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-
-        return entity.Project.ProjectAcls.Where(acl => requiredAccess.Compile()(acl)).Any(pa => pa.UserId == currentUserId);
-    }
-
     [Pure]
     [Obsolete("Передавай сюда ProjectInfo")]
     public static bool HasMasterAccess(this IProjectEntity entity, ICurrentUserAccessor currentUserAccessor, Permission permission = Permission.None)

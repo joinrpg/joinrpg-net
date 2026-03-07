@@ -5,6 +5,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Impl.Claims;
@@ -815,7 +816,7 @@ internal class PaymentsService(
         }
 
         if (!recurrentPayment.Claim.HasPlayerAccesToClaim(CurrentUserId)
-              && !recurrentPayment.HasMasterAccess(CurrentUserId, a => a.CanManageMoney))
+              && !recurrentPayment.HasMasterAccess(CurrentUserId, Permission.CanManageMoney))
         {
             throw new JoinRpgInvalidUserException();
         }
@@ -904,7 +905,7 @@ internal class PaymentsService(
 
         if (!internalCall)
         {
-            if (!recurrentPayment.Claim.HasAccess(CurrentUserId, e => e.CanManageMoney))
+            if (!recurrentPayment.Claim.HasAccess(CurrentUserId, Permission.CanManageMoney))
             {
                 throw new JoinRpgInvalidUserException();
             }
