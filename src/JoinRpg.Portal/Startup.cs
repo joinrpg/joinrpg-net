@@ -101,9 +101,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = services.AddJoinAuth(
             Configuration.GetSection("Jwt").Get<JwtSecretOptions>(),
             environment,
-            Configuration.GetSection("Authentication"));
-
-        _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
+            Configuration.GetSection("Authentication"))
+            .AddJoinXApiSwagger();
 
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
@@ -164,9 +163,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         _ = app.UseJoinRequestLogging();
 
-        _ = app
-            .UseSwagger(Swagger.Configure)
-            .UseSwaggerUI(Swagger.ConfigureUI);
+        _ = app.MapOpenApi();
+        app.UseSwaggerUI(Swagger.ConfigureUI);
 
         app.MapJoinHealthChecks();
 
