@@ -106,7 +106,7 @@ internal class FinanceOperationsImpl(
             case PaymentTypeKind.Cash:
                 if (!IsCurrentUserAdmin)
                 {
-                    _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
                 }
 
                 break;
@@ -117,7 +117,7 @@ internal class FinanceOperationsImpl(
                     // Regular master with finance management permissions can disable online payments
                     if (paymentType.IsActive)
                     {
-                        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
                     }
                     // ...but to enable them back he must have admin permissions
                     else
@@ -148,7 +148,7 @@ internal class FinanceOperationsImpl(
         bool isDefault)
     {
         var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
 
         var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
@@ -175,7 +175,7 @@ internal class FinanceOperationsImpl(
     public async Task CreateFeeSetting(CreateFeeSettingRequest request)
     {
         var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
 
         if (request.StartDate < DateTime.UtcNow.Date.AddDays(-1))
         {
@@ -204,7 +204,7 @@ internal class FinanceOperationsImpl(
     public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
         var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
 
         var feeSetting =
             project.ProjectFeeSettings.Single(pt =>
@@ -240,7 +240,7 @@ internal class FinanceOperationsImpl(
     public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
     {
         var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
 
         project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
         project.Details.PreferentialFeeEnabled = request.PreferentialFeeEnabled;
@@ -386,7 +386,7 @@ internal class FinanceOperationsImpl(
 
         if (request.Sender != CurrentUserId && request.Receiver != CurrentUserId)
         {
-            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
         }
 
         CheckOperationDate(request.OperationDate);
@@ -468,7 +468,7 @@ internal class FinanceOperationsImpl(
                 break;
 
             default: //admin tries to approve with superpowers
-                _ = moneyTransfer.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                _ = moneyTransfer.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
                 moneyTransfer.ResultState = request.Approved
                     ? MoneyTransferState.Approved
                     : MoneyTransferState.Declined;

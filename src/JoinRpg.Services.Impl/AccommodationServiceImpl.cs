@@ -2,6 +2,7 @@ using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -66,7 +67,7 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
             .Where(r => r.ProjectId == request.ProjectId && request.AccommodationRequestIds.Contains(r.Id))
             .ToListAsync();
 
-        _ = room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+        _ = room.Project.RequestMasterAccess(CurrentUserId, Permission.CanSetPlayersAccommodations);
 
         foreach (var accommodationRequest in accommodationRequests)
         {
@@ -122,7 +123,7 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
     private async Task UnOccupyRoomImpl(ProjectAccommodation room,
         IReadOnlyCollection<AccommodationRequest> accommodationRequests)
     {
-        _ = room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+        _ = room.Project.RequestMasterAccess(CurrentUserId, Permission.CanSetPlayersAccommodations);
 
         foreach (var request in accommodationRequests)
         {

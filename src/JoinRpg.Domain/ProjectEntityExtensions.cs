@@ -51,13 +51,6 @@ public static class ProjectEntityExtensions
         return field.RequestMasterAccess(currentUserAccessor.UserIdentificationOrDefault, permission);
     }
 
-    [Obsolete("Используй projectInfo")]
-    public static T RequestMasterAccess<T>(this T field, [NotNull] int? currentUserId, Permission permission = Permission.None)
-        where T : IProjectEntity
-    {
-        return field.RequestMasterAccess(currentUserId, acl => permission.GetPermssionExpression()(acl));
-    }
-
     public static ProjectInfo RequestMasterAccess(this ProjectInfo projectInfo, [NotNull] UserIdentification? currentUserId, Permission permission = Permission.None)
     {
         if (currentUserId is null)
@@ -77,7 +70,7 @@ public static class ProjectEntityExtensions
     public static T RequestMasterAccess<T>(this T field,
         [NotNull]
         int? currentUserId,
-        Expression<Func<ProjectAcl, bool>>? accessType)
+        Permission permission = Permission.None)
     where T : IProjectEntity
     {
         ArgumentNullException.ThrowIfNull(field);
@@ -88,19 +81,9 @@ public static class ProjectEntityExtensions
             throw new NoAccessToProjectException(field.Project, currentUserId);
         }
 
-        if (accessType == null)
+        if (!field.HasMasterAccess(currentUserId, permission))
         {
-            if (!field.HasMasterAccess(currentUserId))
-            {
-                throw new NoAccessToProjectException(field.Project, currentUserId);
-            }
-        }
-        else
-        {
-            if (!field.HasMasterAccess(currentUserId, acl => accessType.Compile()(acl)))
-            {
-                throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
-            }
+            throw new NoAccessToProjectException(field.Project, currentUserId, permission);
         }
 
         return field;
@@ -160,6 +143,7 @@ public static class ProjectEntityExtensions
         }
     }
 
+    [Obsolete]
     public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId);
 
     public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)

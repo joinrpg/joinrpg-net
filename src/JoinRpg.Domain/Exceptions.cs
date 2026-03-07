@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
@@ -186,12 +185,12 @@ public class NoAccessToProjectException : JoinRpgProjectException
     public int? UserId { get; }
 
     [Obsolete("Use ctor that accepts ProjectInfo")]
-    public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)
-      : base(new ProjectIdentification(project.ProjectId), $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}") => UserId = userId;
-
-    [Obsolete("Use ctor that accepts ProjectInfo")]
-    public NoAccessToProjectException(Project project, int? userId)
-      : base(new ProjectIdentification(project.ProjectId), $"No access to project {project.ProjectName} for user {userId}") => UserId = userId;
+    public NoAccessToProjectException(Project project, int? userId, Permission permission = Permission.None)
+      : base(new ProjectIdentification(project.ProjectId), $"No access to project {project.ProjectName} for user {userId}. Required access: {permission}")
+    {
+        UserId = userId;
+        Permission = permission;
+    }
 
     public NoAccessToProjectException(ProjectInfo project, int? userId, Permission permission = Permission.None)
        : base(project.ProjectId, $"No access to project {project.ProjectName} for user {userId}")

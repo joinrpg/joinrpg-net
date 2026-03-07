@@ -2,6 +2,7 @@ using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 
@@ -15,7 +16,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
         var project = await ProjectRepository.GetProjectAsync(grantAccessRequest.ProjectId);
         if (!IsCurrentUserAdmin)
         {
-            _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanGrantRights);
         }
 
         _ = project.EnsureProjectActive();
@@ -42,7 +43,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
         var project = await ProjectRepository.GetProjectAsync(projectId);
         if (userId != CurrentUserId)
         {
-            _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanGrantRights);
         }
 
         if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
@@ -104,7 +105,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
     public async Task ChangeAccess(ChangeAccessRequest changeAccessRequest)
     {
         var project = await ProjectRepository.GetProjectAsync(changeAccessRequest.ProjectId);
-        _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanGrantRights);
 
         var acl = project.ProjectAcls.Single(
             a => a.ProjectId == changeAccessRequest.ProjectId && a.UserId == changeAccessRequest.UserId);
