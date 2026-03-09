@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
@@ -15,6 +16,11 @@ public class JoinApplicationFactory : WebApplicationFactory<Startup>
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IHostedService>();
+        });
+        builder.ConfigureLogging(logging =>
+        {
+            logging.SetMinimumLevel(LogLevel.Warning);
+            logging.AddConsole();
         });
         _ = builder.UseTestServer();
     }

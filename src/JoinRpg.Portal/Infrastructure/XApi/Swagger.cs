@@ -56,6 +56,11 @@ internal static class Swagger
     {
         public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         {
+            if (document.Paths is null)
+            {
+                return Task.CompletedTask;
+            }
+
             foreach (var item in document.Paths.ToList())
             {
                 if (!item.Key.ToLower().IsExternalApiPath())

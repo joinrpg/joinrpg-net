@@ -11,6 +11,12 @@ public class SwaggerTests(JoinApplicationFactory factory) : IClassFixture<JoinAp
 
         var response = await client.GetAsync("/openapi/v1.json");
 
-        _ = response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Fail(
+                $"Expected success from /openapi/v1.json but got {(int)response.StatusCode}.\n" +
+                $"Response body:\n{body}");
+        }
     }
 }
