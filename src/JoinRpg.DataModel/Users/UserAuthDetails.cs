@@ -8,6 +8,8 @@ public class UserAuthDetails
 
     public DateTime RegisterDate { get; set; }
 
+    public DateTimeOffset? LastLoginDate { get; set; }
+
     public bool IsAdmin { get; set; }
 
 

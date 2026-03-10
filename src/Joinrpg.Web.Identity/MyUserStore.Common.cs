@@ -77,10 +77,12 @@ internal partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
         return await LoadUserImpl(user => user.UserId == userId, ct);
     }
 
-    private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default)
+    private Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default) => LoadUser(joinIdentityUser.Id, ct);
+
+    private async Task<DbUser> LoadUser(int userId, CancellationToken ct = default)
     {
-        logger.LogDebug("LoadUser = {userId}", joinIdentityUser.Id);
-        return (await LoadUserImpl(user => user.UserId == joinIdentityUser.Id, ct)) ?? throw new InvalidOperationException("Пользователь не найден");
+        logger.LogDebug("LoadUser = {userId}", userId);
+        return (await LoadUserImpl(user => user.UserId == userId, ct)) ?? throw new InvalidOperationException("Пользователь не найден");
     }
 
     private async Task<DbUser?> TryLoadUser(JoinIdentityUser joinIdentityUser, CancellationToken ct = default)
@@ -97,4 +99,10 @@ internal partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
         .Include(u => u.ProjectAcls)
         .SingleOrDefaultAsync(predicate, ct);
 
+    internal async Task UpdateLastLoginDateAsync(int userId, CancellationToken ct = default)
+    {
+        var dbUser = await LoadUser(userId, ct);
+        dbUser.Auth.LastLoginDate = DateTimeOffset.UtcNow;
+        _ = await ctx.SaveChangesAsync(ct);
+    }
 }

@@ -19,6 +19,7 @@ public static class IdentityConfigurator
                 options.SignIn.RequireConfirmedEmail = true;
             })
             .AddDefaultTokenProviders()
+            .AddSignInManager<JoinSignInManager>()
             .AddUserStore<MyUserStore>()
             .AddRoleStore<MyUserStore>();
 
