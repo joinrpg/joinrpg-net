@@ -29,6 +29,9 @@ updates:
       testcontainers:
         patterns:
           - "Testcontainers.*"
+      openiddict:
+        patterns:
+          - "OpenIddict.*"
 
   - package-ecosystem: "github-actions" 
     directory: "/" 
