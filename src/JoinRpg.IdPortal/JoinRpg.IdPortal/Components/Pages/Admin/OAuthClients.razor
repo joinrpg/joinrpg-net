@@ -24,6 +24,7 @@
                     <th>Название</th>
                     <th>Тип</th>
                     <th>Разрешения</th>
+                    <th>Redirect URIs</th>
                 </tr>
             </HeadContent>
             <ItemTemplate>
@@ -32,6 +33,14 @@
                     <td>@client.DisplayName</td>
                     <td>@client.ClientType</td>
                     <td>@client.Permissions</td>
+                    <td>
+                        <ul>
+                            @foreach (var redirectUri in client.RedirectUris)
+                            {
+                                <li><a href="@redirectUri">@redirectUri</a></li>
+                            }
+                        </ul>
+                    </td>
                 </tr>
             </ItemTemplate>
         </JoinBorderedTable>
@@ -52,6 +61,7 @@
             var displayName = await OpenIddictApplicationManager.GetDisplayNameAsync(client);
             var clientType = await OpenIddictApplicationManager.GetClientTypeAsync(client);
             var permissions = await OpenIddictApplicationManager.GetPermissionsAsync(client);
+            var redirectUris = await OpenIddictApplicationManager.GetRedirectUrisAsync(client);
 
             list.Add(new OAuthClientInfo
             {
@@ -59,6 +69,7 @@
                 DisplayName = displayName ?? "—",
                 ClientType = clientType ?? "—",
                 Permissions = string.Join(", ", permissions),
+                RedirectUris = redirectUris,
             });
         }
 
@@ -71,5 +82,6 @@
         public required string DisplayName { get; init; }
         public required string ClientType { get; init; }
         public required string Permissions { get; init; }
+        public required IReadOnlyList<string> RedirectUris { get; init; }
     }
 }
