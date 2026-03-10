@@ -71,6 +71,13 @@ jobs:
         name: test-results
         path: TestResults
 
+    - name: Verify publish
+      if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+      run: |
+        dotnet publish --no-restore --os linux --arch x64 -c Release ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+        dotnet publish --no-restore --os linux --arch x64 -c Release ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+        dotnet publish --no-restore --os linux --arch x64 -c Release ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+
     #Rest of the pipeline implies write api privileges and can't be run on PRs
 
     - name: Log in to Yandex Container Registry
