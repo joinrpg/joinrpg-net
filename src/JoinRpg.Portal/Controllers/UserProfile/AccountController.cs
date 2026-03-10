@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
-using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
@@ -19,7 +18,7 @@ namespace JoinRpg.Portal.Controllers;
 [Authorize]
 public class AccountController(
     JoinUserManager userManager,
-    ApplicationSignInManager signInManager,
+    JoinSignInManager signInManager,
     IAccountEmailService<JoinIdentityUser> emailService,
     IOptions<RecaptchaOptions> recaptchaOptions,
     IRecaptchaVerificator recaptchaVerificator,

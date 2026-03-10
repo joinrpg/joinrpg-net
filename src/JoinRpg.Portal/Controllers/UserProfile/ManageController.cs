@@ -3,7 +3,6 @@ using JoinRpg.Common.Telegram;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.PrimitiveTypes;
@@ -22,7 +21,7 @@ namespace JoinRpg.Portal.Controllers;
 [Authorize]
 public class ManageController(
     JoinUserManager userManager,
-    ApplicationSignInManager signInManager,
+    JoinSignInManager signInManager,
     IUserRepository userRepository,
     IUserService userService,
     ICurrentUserAccessor currentUserAccessor,

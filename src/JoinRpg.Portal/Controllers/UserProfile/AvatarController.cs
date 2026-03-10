@@ -1,6 +1,5 @@
 using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Identity;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Avatars;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +11,7 @@ namespace JoinRpg.Portal.Controllers.UserProfile;
 public class AvatarController(
     ICurrentUserAccessor currentUserAccessor,
     IAvatarService avatarService,
-    ApplicationSignInManager signInManager,
+    JoinSignInManager signInManager,
     JoinUserManager userManager) : Controller
 {
     [HttpPost("manage/avatars/choose")]
