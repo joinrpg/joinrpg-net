@@ -2,14 +2,19 @@ name: dependabot validate
 
 on:
   pull_request:
-    paths:
-      - '.github/dependabot.yml'
+
 jobs:
   validate:
-    permissions:
-      pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - name: Check if dependabot config changed
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq '.[].filename' | grep -c '^\.github/dependabot\.yml$' || true)
+          echo "changed=$([ "$CHANGED" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v6
+        if: steps.changes.outputs.changed == 'true'
       - uses: marocchino/validate-dependabot@v3
-        id: validate
+        if: steps.changes.outputs.changed == 'true'
