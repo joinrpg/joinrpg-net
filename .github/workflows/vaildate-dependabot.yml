@@ -18,3 +18,4 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
       - uses: marocchino/validate-dependabot@v3
         if: steps.changes.outputs.changed == 'true'
+        id: validate
