@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -32,16 +33,34 @@ public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity, IV
 
     public MarkdownString MasterDescription { get; set; }
 
+    #region Finance
+
     /// <summary>
-    /// Price associated with this value.
+    /// Base price associated with this field value.
     /// </summary>
+    /// <remarks>
+    /// Actual price depends on current date via <see cref="PriceValue"/> objects.
+    /// </remarks>
     public int Price { get; set; }
+
+    /// <summary>
+    /// The name used to display in receipt.
+    /// When not specified, the <see cref="Label"/> property value will be taken but truncated to 64 characters.
+    /// </summary>
+    [StringLength(64)]
+    public string? ReceiptName { get; set; }
+
+    /// <summary>
+    /// Collection of related price values.
+    /// </summary>
+    public ICollection<PriceValue>? PriceValues { get; set; }
+
+    #endregion
 
     /// <summary>
     /// External value for external IT systems
     /// </summary>
     public string? ProgrammaticValue { get; set; }
-
 
     public virtual CharacterGroup? CharacterGroup { get; set; }
 
