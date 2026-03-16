@@ -81,7 +81,7 @@ public class CharacterApiController(
     /// <param name="projectId">Project ID</param>
     /// <param name="characterId">Character ID</param>
     /// <param name="fieldValues">
-    /// Key = FieldId, Value = field value.
+    /// Key = FieldId, Value = field value (for Select/Multiselect - id of value)
     /// Skipped values will be left unchanged</param>
     [HttpPost]
     [Route("{characterId}/fields")]
