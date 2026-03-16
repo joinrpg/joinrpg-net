@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.DataModel;
@@ -13,9 +14,60 @@ public class ProjectDetails : IValidatableObject
     public bool EnableManyCharacters { get; set; }
     public bool PublishPlot { get; set; }
 
+    #region Finance
+
     public bool FinanceWarnOnOverPayment { get; set; } = true;
+
+    /// <summary>
+    /// The minimal required payment to be made to stop increasing the total price depending on date.
+    /// </summary>
+    /// <remarks>
+    /// This property is not mutually exclusive with <see cref="MinPaidPercentToFixPrice"/>.
+    /// When both defined, price will be fixed when the first condition has met.
+    /// </remarks>
+    [Range(0, int.MaxValue)]
+    public int? MinPaymentToFixPrice { get; set; }
+
+    /// <summary>
+    /// The minimal required payment in percent from total to be made to stop increasing the total price depending on date.
+    /// </summary>
+    /// <remarks>
+    /// This property is not mutually exclusive with <see cref="MinPaymentToFixPrice"/>.
+    /// When both defined, price will be fixed when the first condition has met.
+    /// </remarks>
+    [Range(0, 100)]
+    public int? MinPaidPercentToFixPrice { get; set; }
+
+    /// <summary>
+    /// When true, a discount could be set for a claim payment.
+    /// </summary>
+    public bool EnableDiscounts { get; set; }
+
+    /// <summary>
+    /// Describes the conditions a user should meet to get a discount.
+    /// </summary>
+    public MarkdownString DiscountConditions { get; set; } = new();
+
+    /// <summary>
+    /// Defines how the primary position in receipt should be identified.
+    /// </summary>
+    /// <remarks>The <see cref="ReceiptItemType.IncludeIntoPrimary"/> is not allowed here.</remarks>
+    public ReceiptItemType PrimaryPaymentReceiptItemType { get; set; } = ReceiptItemType.Service;
+
+    /// <summary>
+    /// The named used to display in receipt.
+    /// When not specified, it will be automatically combined from the project's name and the word "Билет".
+    /// </summary>
+    [StringLength(64)]
+    public string? PrimaryPaymentReceiptName { get; set; }
+
+    [Obsolete("Use the Discountable instead")]
     public bool PreferentialFeeEnabled { get; set; } = false;
+
+    [Obsolete("Use the DiscountConditions instead")]
     public MarkdownString PreferentialFeeConditions { get; set; } = new MarkdownString();
+
+    #endregion
 
     public bool EnableCheckInModule { get; set; } = false;
     public bool CheckInProgress { get; set; } = false;
