@@ -15,7 +15,7 @@
                     <br />
                     foreach (var tagName in Item.TagNames)
                     {
-                        <a href="@("/" + Item.PlotFolderId.ProjectId.Value.ToString() + "/plot/bytag?tagName=" + tagName)">#@tagName</a>
+                        <a href="@("/" + Item.PlotFolderId.ProjectId.Value.ToString() + "/plots/bytag?tagName=" + tagName)">#@tagName</a>
                         <text> </text>
                     }
                 }
@@ -70,8 +70,8 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        createElementUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/createelement?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
-        deletePlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/delete?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
-        reorderPlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plot/reorderfolder";
+        createElementUri = $"/{Item.PlotFolderId.ProjectId.Value}/plots/createelement?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
+        deletePlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plots/delete?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
+        reorderPlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plots/reorderfolder";
     }
 }
