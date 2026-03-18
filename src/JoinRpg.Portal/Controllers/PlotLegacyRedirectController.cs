@@ -8,5 +8,5 @@ public class PlotLegacyRedirectController : Controller
 {
     [HttpGet("{**path}")]
     public IActionResult LegacyRedirect(int projectId, string? path = null)
-        => RedirectPermanent($"/{projectId}/plots/{path}");
+        => RedirectPermanent($"/{projectId}/plots/{path}{Request.QueryString}");
 }

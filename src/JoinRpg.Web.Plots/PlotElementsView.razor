@@ -73,7 +73,7 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        endpoint = $"/{CharacterId.ProjectId.Value}/plot/ReorderByCharacter?characterId={CharacterId.CharacterId}";
+        endpoint = $"/{CharacterId.ProjectId.Value}/plots/ReorderByCharacter?characterId={CharacterId.CharacterId}";
         itemIds = [.. PlotTexts.Select(x => x.PlotVersionId.PlotElementId.ToString())];
     }
 }
