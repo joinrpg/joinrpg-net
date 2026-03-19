@@ -12,9 +12,9 @@ public class ClaimHeaderInfo
     /// <summary>
     /// Name of characters
     /// </summary>
-    public string CharacterName { get; set; }
+    public string CharacterName { get; set; } = null!;
     /// <summary>
     /// Player
     /// </summary>
-    public PlayerInfo Player { get; set; }
+    public PlayerInfo Player { get; set; } = null!;
 }

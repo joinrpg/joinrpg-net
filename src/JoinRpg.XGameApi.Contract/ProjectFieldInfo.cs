@@ -8,7 +8,7 @@ public class ProjectFieldInfo
     /// <summary>
     /// Name
     /// </summary>
-    public string FieldName { get; set; }
+    public string FieldName { get; set; } = null!;
 
     /// <summary>
     /// Id
@@ -23,15 +23,15 @@ public class ProjectFieldInfo
     /// <summary>
     /// Field type string
     /// </summary>
-    public string FieldType { get; set; }
+    public string FieldType { get; set; } = null!;
 
     /// <summary>
     /// Variants
     /// </summary>
-    public IEnumerable<ProjectFieldVariant> ValueList { get; set; }
+    public IEnumerable<ProjectFieldVariant> ValueList { get; set; } = null!;
 
     /// <summary>
     /// Programmatic Value. Ignored by Joinrpg, to use by external system
     /// </summary>
-    public string ProgrammaticValue { get; set; }
+    public string? ProgrammaticValue { get; set; }
 }

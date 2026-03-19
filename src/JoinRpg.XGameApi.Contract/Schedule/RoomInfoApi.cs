@@ -12,5 +12,5 @@ public class RoomInfoApi
     /// <summary>
     /// Name of room (plain text)
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }

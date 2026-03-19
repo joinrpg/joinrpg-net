@@ -12,5 +12,5 @@ public class GroupHeader
     /// <summary>
     /// Name
     /// </summary>
-    public string CharacterGroupName { get; set; }
+    public string CharacterGroupName { get; set; } = null!;
 }

@@ -8,11 +8,11 @@ public class ProgramItemInfoApi
     /// <summary>
     /// Name of program item (plain text)
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     /// <summary>
     /// Authors of program item
     /// </summary>
-    public IEnumerable<AuthorInfoApi> Authors { get; set; }
+    public IEnumerable<AuthorInfoApi> Authors { get; set; } = null!;
     /// <summary>
     /// Time when program item starts (with timezone)
     /// </summary>
@@ -24,12 +24,12 @@ public class ProgramItemInfoApi
     /// <summary>
     /// Information about used rooms
     /// </summary>
-    public IEnumerable<RoomInfoApi> Rooms { get; set; }
+    public IEnumerable<RoomInfoApi> Rooms { get; set; } = null!;
 
     /// <summary>
     /// Description of program item (plain text)
     /// </summary>
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
 
     /// <summary>
     /// Id of program item. Stable, never changes. Ids for different projects can't overlap.
@@ -41,14 +41,14 @@ public class ProgramItemInfoApi
     /// Html is passed through sanitizer on server side and PROBABLY safe.
     /// But your requirements could vary, so it may be wise to sanitize again.
     /// </summary>
-    public string DescriptionHtml { get; set; }
+    public string DescriptionHtml { get; set; } = null!;
 
     /// <summary>
-    /// Description of program item (Markdown). 
+    /// Description of program item (Markdown).
     /// Beware: this is user input and should be treated as untrusted.
     /// If you will render this to HTML, you have to sanitize AFTER rendering.
     /// </summary>
-    public string DescriptionMarkdown { get; set; }
+    public string DescriptionMarkdown { get; set; } = null!;
 
     /// <summary>
     /// Id of project which program items belongs to. Stable, never changes.
@@ -58,5 +58,5 @@ public class ProgramItemInfoApi
     /// <summary>
     /// Uri to the details of program item. Points to joinrpg.ru UI
     /// </summary>
-    public Uri ProgramItemDetailsUri { get; set; }
+    public Uri ProgramItemDetailsUri { get; set; } = null!;
 }

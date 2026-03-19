@@ -8,5 +8,5 @@ public class HandoutItem
     /// <summary>
     /// Label
     /// </summary>
-    public string Label { get; set; }
+    public string Label { get; set; } = null!;
 }

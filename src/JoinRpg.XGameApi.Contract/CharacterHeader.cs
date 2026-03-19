@@ -20,5 +20,5 @@ public class CharacterHeader
     /// <summary>
     /// URI to full profile
     /// </summary>
-    public string CharacterLink { get; set; }
+    public string CharacterLink { get; set; } = null!;
 }

@@ -38,17 +38,17 @@ public class CharacterInfo
     /// <summary>
     /// Groups that character part of (directly)
     /// </summary>
-    public IOrderedEnumerable<GroupHeader> Groups { get; set; }
+    public IOrderedEnumerable<GroupHeader> Groups { get; set; } = null!;
 
     /// <summary>
-    /// Groups that character part of 
+    /// Groups that character part of
     /// </summary>
-    public IOrderedEnumerable<GroupHeader> AllGroups { get; set; }
+    public IOrderedEnumerable<GroupHeader> AllGroups { get; set; } = null!;
 
     /// <summary>
     /// Field values
     /// </summary>
-    public IEnumerable<FieldValue> Fields { get; set; }
+    public IEnumerable<FieldValue> Fields { get; set; } = null!;
 
     /// <summary>
     /// This is legacy field. Please look into PlayerInfo
@@ -59,20 +59,20 @@ public class CharacterInfo
     /// <summary>
     /// Character name
     /// </summary>
-    public string CharacterName { get; set; }
+    public string CharacterName { get; set; } = null!;
 
     /// <summary>
     /// This is legacy field. Please use into Fields to get character description.
     /// In future will be removed.
     /// </summary>
     [Obsolete]
-    public string CharacterDescription { get; set; }
+    public string? CharacterDescription { get; set; }
 
 
     /// <summary>
     /// Only set if player present (BusyStatus = HasPlayer)
     /// </summary>
-    public CharacterPlayerInfo PlayerInfo { get; set; }
+    public CharacterPlayerInfo? PlayerInfo { get; set; }
 }
 
 /// <summary>

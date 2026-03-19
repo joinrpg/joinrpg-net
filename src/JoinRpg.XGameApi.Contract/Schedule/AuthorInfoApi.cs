@@ -8,7 +8,7 @@ public class AuthorInfoApi
     /// <summary>
     /// Display name (plain text)
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Id of user which represents author in joinrpg. Stable, never changes. 
