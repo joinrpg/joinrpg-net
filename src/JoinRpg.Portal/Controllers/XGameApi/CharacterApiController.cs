@@ -1,3 +1,4 @@
+using System.Text.Json;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -5,6 +6,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
 
@@ -85,9 +87,21 @@ public class CharacterApiController(
     /// Skipped values will be left unchanged</param>
     [HttpPost]
     [Route("{characterId}/fields")]
-    public async Task<string> SetCharacterFields(int projectId, int characterId, Dictionary<int, string?> fieldValues)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult<string>> SetCharacterFields(int projectId, int characterId, [FromBody] Dictionary<int, JsonElement> fieldValues)
     {
-        await characterService.SetFields(new CharacterIdentification(projectId, characterId), fieldValues);
+        Dictionary<int, string?> converted;
+        try
+        {
+            converted = FieldValueConverter.ConvertToStringValues(fieldValues);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
         return "ok";
     }
 
