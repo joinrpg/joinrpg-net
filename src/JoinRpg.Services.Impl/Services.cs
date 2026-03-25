@@ -1,7 +1,6 @@
 using System.Reflection;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl.Claims;
-using JoinRpg.Services.Impl.Notifications;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
@@ -44,7 +43,6 @@ public static class Services
     {
         return
             services
-            .AddDailyJob<DailyChangedPlayerClaimsNotificationJob>()
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
