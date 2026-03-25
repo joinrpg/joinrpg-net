@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Domain.Access;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
@@ -42,9 +43,15 @@ public class CharacterController(
 
     private async Task<ActionResult> ShowCharacter(Character character)
     {
-        var plots = await characterPlotViewService.GetPlotsForCharacter(character.GetId());
-
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(character.ProjectId));
+
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUser, projectInfo);
+        if (!accessArguments.CanViewCharacterAtAll)
+        {
+            return NotFound();
+        }
+
+        var plots = await characterPlotViewService.GetPlotsForCharacter(character.GetId());
         return View("Details",
             new CharacterDetailsViewModel(currentUser,
                 character,

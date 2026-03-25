@@ -6,7 +6,6 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
 

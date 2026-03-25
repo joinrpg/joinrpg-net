@@ -27,6 +27,16 @@ public record class AccessArguments(
     public bool CanViewCharacterName => MasterAccess || PlayerAccessToCharacter || CharacterPublic || IsCapitan;
 
     /// <summary>
+    /// true if the character page is accessible to the current user at all.
+    /// A character page is visible if:
+    /// - the character is public (<see cref="CharacterPublic"/>), OR
+    /// - the viewer has master access to the project (<see cref="MasterAccess"/>), OR
+    /// - the viewer is the approved player for this character (<see cref="PlayerAccessToCharacter"/>), OR
+    /// - the project has published plots, which opens all characters to readers (<see cref="Published"/>).
+    /// </summary>
+    public bool CanViewCharacterAtAll => CharacterPublic || MasterAccess || PlayerAccessToCharacter || Published;
+
+    /// <summary>
     /// true, if there is master or player access to the claim
     /// </summary>
     public bool AnyAccessToClaim => PlayerAccesToClaim || MasterAccess;
