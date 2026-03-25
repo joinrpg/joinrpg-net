@@ -27,6 +27,16 @@ public record class AccessArguments(
     public bool CanViewCharacterName => MasterAccess || PlayerAccessToCharacter || CharacterPublic || IsCapitan;
 
     /// <summary>
+    /// true, если страница персонажа доступна текущему пользователю.
+    /// Страница персонажа видна, если:
+    /// - персонаж публичный (<see cref="CharacterPublic"/>), ИЛИ
+    /// - пользователь является мастером проекта (<see cref="MasterAccess"/>), ИЛИ
+    /// - пользователь является утверждённым игроком этого персонажа (<see cref="PlayerAccessToCharacter"/>), ИЛИ
+    /// - в проекте опубликованы вводные, что открывает всех персонажей читателям (<see cref="Published"/>).
+    /// </summary>
+    public bool CanViewCharacterAtAll => CharacterPublic || MasterAccess || PlayerAccessToCharacter || Published;
+
+    /// <summary>
     /// true, if there is master or player access to the claim
     /// </summary>
     public bool AnyAccessToClaim => PlayerAccesToClaim || MasterAccess;
