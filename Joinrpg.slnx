@@ -59,6 +59,7 @@
     <Project Path="src/JoinRpg.Markdown.Test/JoinRpg.Markdown.Test.csproj" />
     <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
     <Project Path="src/JoinRpg.PrimitiveTypes.Test/JoinRpg.PrimitiveTypes.Test.csproj" />
+    <Project Path="src/JoinRpg.Services.Export.Test/JoinRpg.Services.Export.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Impl.Test/JoinRpg.Services.Impl.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Notifications.Tests/JoinRpg.Services.Notifications.Tests.csproj" />
     <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
