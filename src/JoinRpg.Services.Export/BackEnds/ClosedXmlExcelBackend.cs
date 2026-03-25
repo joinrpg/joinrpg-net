@@ -52,7 +52,7 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
 
     internal static string TruncateIfTooLong(string value)
     {
-        const string prefix = "(обрезано)";
+        const string prefix = "(обрезано) ";
         const string suffix = "...";
         if (value.Length <= ExcelMaxCellLength)
         {
