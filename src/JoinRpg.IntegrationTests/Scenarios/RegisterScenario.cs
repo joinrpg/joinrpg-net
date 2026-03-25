@@ -20,6 +20,14 @@ public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<Jo
     {
         var client = factory.CreateClient();
 
+        // Get the registration page first to obtain the antiforgery token
+        var getResponse = await client.GetAsync("account/register");
+        getResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var getDoc = await getResponse.AsHtmlDocument();
+        var antiforgeryToken = getDoc.DocumentNode
+            .SelectSingleNode("//input[@name='__RequestVerificationToken']")?
+            .GetAttributeValue("value", "");
+
         var response = await client.PostAsync("account/register",
             new FormUrlEncodedContent(
                 new[]
@@ -29,6 +37,7 @@ public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<Jo
                     new KeyValuePair<string?, string?>("ConfirmPassword", "12345678"),
                     new KeyValuePair<string?, string?>("RulesApproved", "true"),
                     new KeyValuePair<string?, string?>("g-recaptcha-response", "ignored"),
+                    new KeyValuePair<string?, string?>("__RequestVerificationToken", antiforgeryToken),
                 }));
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);

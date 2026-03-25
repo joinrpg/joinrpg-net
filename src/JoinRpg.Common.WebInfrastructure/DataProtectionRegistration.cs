@@ -1,7 +1,6 @@
 using JoinRpg.Common.WebInfrastructure.DataProtection;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Common.WebInfrastructure;
 

@@ -13,7 +13,7 @@ public class MyProfileController(IProjectRepository projectRepository, ICurrentU
     /// <summary>
     /// All active projects that current user has access
     /// </summary>
-    [HttpGet, Authorize, Route("projects/active")]
+    [HttpGet, Authorize("XApiUser"), Route("projects/active")]
     public async Task<IEnumerable<ProjectHeader>> GetActiveProjects()
     {
         return (await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.MyActiveProjects(currentUserAccessor.UserIdentification)))

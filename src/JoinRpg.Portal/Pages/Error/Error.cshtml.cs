@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.Error;
 
+[AllowAnonymous]
+[IgnoreAntiforgeryToken]
 public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 {
     public void OnGet() => FillErrorData();
