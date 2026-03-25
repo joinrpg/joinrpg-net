@@ -37,6 +37,10 @@ dotnet format --verify-no-changes --severity error        # Проверка (CI
 git commit --edit -m "предложенное сообщение коммита"
 ```
 
+### GitHub: создание PR после завершения issue
+
+При работе в контексте GitHub (через claude-code-action) после завершения работы по issue — сразу создавать PR, не ожидая отдельной просьбы.
+
 ### Тесты
 
 ```bash
