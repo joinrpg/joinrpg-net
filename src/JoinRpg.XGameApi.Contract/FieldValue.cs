@@ -13,9 +13,9 @@ public class FieldValue
     /// <summary>
     /// Actual value. If dropdown, id of variant
     /// </summary>
-    public string Value { get; set; }
+    public string? Value { get; set; }
     /// <summary>
     /// Value how it meant to be displayed. If dropdown, label of variant
     /// </summary>
-    public string DisplayString { get; set; }
+    public string? DisplayString { get; set; }
 }

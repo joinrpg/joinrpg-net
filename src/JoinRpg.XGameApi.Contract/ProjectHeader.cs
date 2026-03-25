@@ -12,5 +12,5 @@ public class ProjectHeader
     /// <summary>
     /// Name
     /// </summary>
-    public string ProjectName { get; set; }
+    public required string ProjectName { get; set; }
 }

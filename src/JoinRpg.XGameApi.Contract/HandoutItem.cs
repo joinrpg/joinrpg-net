@@ -8,5 +8,5 @@ public class HandoutItem
     /// <summary>
     /// Label
     /// </summary>
-    public string Label { get; set; }
+    public required string Label { get; set; }
 }

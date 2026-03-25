@@ -12,7 +12,7 @@ public class ProjectFieldVariant
     /// <summary>
     /// Label
     /// </summary>
-    public string Label { get; set; }
+    public required string Label { get; set; }
     /// <summary>
     /// Active/deleted. Note that deleted variants can still occur!
     /// </summary>
@@ -20,13 +20,13 @@ public class ProjectFieldVariant
     /// <summary>
     /// Descripton (HTML)
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
     /// <summary>
     /// Master Descripton (HTML)
     /// </summary>
-    public string MasterDescription { get; set; }
+    public string? MasterDescription { get; set; }
     /// <summary>
     /// Programmatic Value. Ignored by Joinrpg, to use by external system
     /// </summary>
-    public string ProgrammaticValue { get; set; }
+    public string? ProgrammaticValue { get; set; }
 }

@@ -1,6 +1,5 @@
 namespace JoinRpg.XGameApi.Contract;
 
-#nullable enable
 /// <summary>
 /// Player contacts
 /// </summary>
