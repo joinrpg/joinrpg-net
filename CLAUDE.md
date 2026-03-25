@@ -39,7 +39,19 @@ git commit --edit -m "предложенное сообщение коммита
 
 ### GitHub: создание PR после завершения issue
 
-При работе в контексте GitHub (через claude-code-action) после завершения работы по issue — сразу создавать PR, не ожидая отдельной просьбы.
+**ОБЯЗАТЕЛЬНО**: При работе в контексте GitHub (через claude-code-action) — после коммита кода сразу создавать PR через `gh pr create`. Не предоставлять ссылку «Create PR» — создавать PR самостоятельно. Не ждать отдельной просьбы.
+
+```bash
+gh pr create --title "feat: описание" --body "$(cat <<'EOF'
+## Что сделано
+- ...
+
+Closes #НОМЕР
+
+Generated with [Claude Code](https://claude.ai/code)
+EOF
+)"
+```
 
 ### Тесты
 
