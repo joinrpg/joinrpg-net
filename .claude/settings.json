@@ -7,7 +7,8 @@
       "Bash(dotnet format*)",
       "Bash(dotnet restore*)",
       "Bash(dotnet publish*)",
-      "Bash(dotnet ef*)"
+      "Bash(dotnet ef*)",
+      "Bash(gh pr:*)"
     ]
   }
 }
