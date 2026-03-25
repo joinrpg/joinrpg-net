@@ -17,6 +17,7 @@ public class SearchController(
 {
     public async Task<ActionResult> Index(string? searchString)
     {
+        searchString = searchString?.Trim();
         var searchResults =
             string.IsNullOrEmpty(searchString)
                 ? []
