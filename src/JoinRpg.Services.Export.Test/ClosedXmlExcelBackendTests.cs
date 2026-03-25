@@ -54,7 +54,6 @@ public class ClosedXmlExcelBackendTests
     public void ExcelFileWithLongValue_CanBeCreatedWithoutException()
     {
         var value = new string('х', 100_000);
-        var exception = Record.Exception(() => GenerateExcelWithValue(value));
-        exception.ShouldBeNull();
+        Should.NotThrow(() => GenerateExcelWithValue(value));
     }
 }
