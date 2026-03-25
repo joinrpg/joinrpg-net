@@ -32,5 +32,5 @@ public class ClaimCheckInValidationResult
     /// <summary>
     /// Handouts to deliver
     /// </summary>
-    public HandoutItem[] Handouts { get; set; }
+    public HandoutItem[] Handouts { get; set; } = [];
 }

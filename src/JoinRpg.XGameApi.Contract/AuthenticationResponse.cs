@@ -8,7 +8,7 @@ public class AuthenticationResponse
     /// <summary>
     /// Bearer token
     /// </summary>
-    public string access_token { get; set; }
+    public required string access_token { get; set; }
     /// <summary>
     /// Always same
     /// </summary>

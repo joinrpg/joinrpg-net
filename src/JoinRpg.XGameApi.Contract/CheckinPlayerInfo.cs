@@ -12,13 +12,13 @@ public class CheckinPlayerInfo
     /// <summary>
     /// Nick name
     /// </summary>
-    public string NickName { get; set; }
+    public required string NickName { get; set; }
     /// <summary>
     /// Fulll name
     /// </summary>
-    public string FullName { get; set; }
+    public required string FullName { get; set; }
     /// <summary>
     /// Other nicks to search
     /// </summary>
-    public string OtherNicks { get; set; }
+    public string? OtherNicks { get; set; }
 }

@@ -12,9 +12,9 @@ public class ProjectFieldsMetadata
     /// <summary>
     /// Name
     /// </summary>
-    public string ProjectName { get; set; }
+    public required string ProjectName { get; set; }
     /// <summary>
     /// Fields
     /// </summary>
-    public IEnumerable<ProjectFieldInfo> Fields { get; set; }
+    public required IEnumerable<ProjectFieldInfo> Fields { get; set; }
 }
