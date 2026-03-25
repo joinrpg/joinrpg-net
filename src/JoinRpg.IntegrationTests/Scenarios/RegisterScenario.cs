@@ -7,7 +7,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 
 public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
-    [Fact(Skip = "DB not working on CI")]
+    [Fact]
     public async Task RegistrationPageShouldOpen()
     {
         var client = factory.CreateClient();
@@ -15,7 +15,7 @@ public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<Jo
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "DB not working on CI")]
+    [Fact]
     public async Task RegistrationShouldBePossible()
     {
         var client = factory.CreateClient();

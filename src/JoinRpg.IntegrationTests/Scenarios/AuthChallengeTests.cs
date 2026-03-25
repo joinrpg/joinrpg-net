@@ -6,7 +6,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 
 public class AuthChallengeTests(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
-    [Fact(Skip = "DB not working on CI")]
+    [Fact]
     public async Task ApiShouldReturn401()
     {
         var client = factory.CreateClient();
@@ -15,7 +15,7 @@ public class AuthChallengeTests(JoinApplicationFactory factory) : IClassFixture<
     }
 
 
-    [Fact(Skip = "DB not working on CI")]
+    [Fact]
     public async Task PortalShouldRedirect()
     {
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
