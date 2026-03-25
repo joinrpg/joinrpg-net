@@ -26,7 +26,7 @@ public class ProjectFieldInfo
     public required string FieldType { get; set; }
 
     /// <summary>
-    /// Variants
+    /// Variants. Null if field type does not support variants (e.g. text fields).
     /// </summary>
     public IEnumerable<ProjectFieldVariant>? ValueList { get; set; }
 

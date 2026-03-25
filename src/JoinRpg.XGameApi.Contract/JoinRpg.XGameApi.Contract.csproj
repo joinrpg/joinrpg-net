@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Nullable>enable</Nullable>
     <LangVersion>13</LangVersion>
   </PropertyGroup>
   <ItemGroup>

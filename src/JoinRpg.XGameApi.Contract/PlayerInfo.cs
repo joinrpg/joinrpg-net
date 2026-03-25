@@ -5,4 +5,4 @@ namespace JoinRpg.XGameApi.Contract;
 /// <param name="FullName"> Fulll name </param>
 /// <param name="AvatarUrl"></param>
 /// <param name="PlayerContacts"></param>
-public record PlayerInfo(int PlayerId, string NickName, string FullName, string? AvatarUrl, PlayerContacts PlayerContacts);
+public record PlayerInfo(int PlayerId, string NickName, string FullName, string AvatarUrl, PlayerContacts PlayerContacts);
