@@ -48,6 +48,19 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
 
     public void WriteHeaders(IEnumerable<ITableColumn> columns) => WriteRow(columns.Select(c => new Cell(c.Name)));
 
+    internal const int ExcelMaxCellLength = 32767;
+
+    internal static string TruncateIfTooLong(string value)
+    {
+        const string prefix = "(обрезано)";
+        const string suffix = "...";
+        if (value.Length <= ExcelMaxCellLength)
+        {
+            return value;
+        }
+        return prefix + value[..(ExcelMaxCellLength - prefix.Length - suffix.Length)] + suffix;
+    }
+
     private void SetCell(int columnIndex, Cell cell)
     {
         var xlCell = Sheet.Cell(currentRowIndex, columnIndex);
@@ -65,7 +78,8 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
                 xlCell.GetHyperlink().ExternalAddress = uri;
                 break;
             default:
-                _ = xlCell.SetValue(InvalidCharactersRegex().Replace(cell.Content?.ToString() ?? "", ""));
+                var strValue = InvalidCharactersRegex().Replace(cell.Content?.ToString() ?? "", "");
+                _ = xlCell.SetValue(TruncateIfTooLong(strValue));
                 break;
         }
     }
