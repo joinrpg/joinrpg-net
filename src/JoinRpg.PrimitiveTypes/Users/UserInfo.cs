@@ -16,8 +16,6 @@ public record class UserInfo(
     bool VerifiedProfileFlag,
     string? PhoneNumber)
 {
-    public UserNotificationSettings NotificationSettings { get; } = new UserNotificationSettings(true);//TODO из базы грузить
-
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 
     // Не реализовано
@@ -68,4 +66,3 @@ public record class UserSocialNetworks(
     int? AllrpgInfoId,
     string? VkId,
     ContactsAccessType SocialNetworksAccess);
-public record class UserNotificationSettings(bool TelegramDigestEnabled);
