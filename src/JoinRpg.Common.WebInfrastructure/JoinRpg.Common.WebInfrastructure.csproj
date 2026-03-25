@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <PackageId>JoinRpg.Common.WebInfrastructure</PackageId>
+    <Description>ASP.NET Core web infrastructure: Serilog logging, OpenTelemetry, EF Core PostgreSQL, health checks, data protection, background tasks.</Description>
+    <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
