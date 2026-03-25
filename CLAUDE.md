@@ -161,3 +161,4 @@ dotnet test src/JoinRpg.Domain.Test              # Конкретный тест
 - **Локализация**: строки видимые пользователю — только в `JoinRpg.Portal` и `JoinRpg.Services.Email`. В остальных проектах — `TODO[Localize]` при нарушении.
 - **DI**: Autofac. Модули регистрируются в `Startup.cs`/`Program.cs` через `ConfigureContainer()`.
 - **Новые поля в DataModel**: согласовывать изменения с @leotsarev.
+- **Версия .NET SDK**: не обновлять вручную в `global.json`. Там прописан `"rollForward": "latestFeature"` — SDK автоматически использует последнюю доступную feature-версию. Dependabot обновляет только NuGet-пакеты, но не SDK, и это нормально.
