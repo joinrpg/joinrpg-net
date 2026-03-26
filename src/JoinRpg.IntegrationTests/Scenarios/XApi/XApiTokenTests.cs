@@ -35,8 +35,7 @@ public class XApiTokenTests(XApiMasterFixture fixture)
     [Fact]
     public async Task ValidCredentials_ReturnsToken()
     {
-        var anonymousXApi = new XApiClient(fixture.AnonymousClient);
-        var auth = await anonymousXApi.LoginAsync(XApiMasterFixture.MasterEmail, XApiMasterFixture.MasterPassword);
+        var auth = await fixture.AnonymousXApiClient.LoginAsync(XApiMasterFixture.MasterEmail, XApiMasterFixture.MasterPassword);
         auth.access_token.ShouldNotBeNullOrEmpty();
         auth.token_type.ShouldBe("bearer");
     }

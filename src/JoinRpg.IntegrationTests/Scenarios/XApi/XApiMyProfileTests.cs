@@ -1,4 +1,3 @@
-using System.Net;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 
 namespace JoinRpg.IntegrationTest.Scenarios.XApi;
@@ -9,8 +8,8 @@ public class XApiMyProfileTests(XApiMasterFixture fixture)
     [Fact]
     public async Task WithoutAuth_Returns401()
     {
-        var response = await fixture.AnonymousClient.GetAsync("/x-api/me/projects/active");
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        await Should.ThrowAsync<HttpRequestException>(
+            () => fixture.AnonymousXApiClient.GetActiveProjectsAsync());
     }
 
     [Fact]

@@ -25,6 +25,15 @@ public class XApiMasterFixture : IAsyncLifetime
 
     public HttpClient AnonymousClient => Factory.CreateClient();
 
+    public XApiClient AnonymousXApiClient => new XApiClient(Factory.CreateClient());
+
+    public XApiClient CreateAuthorizedXApiClient(string token)
+    {
+        var httpClient = Factory.CreateClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return new XApiClient(httpClient);
+    }
+
     public async Task InitializeAsync()
     {
         await ((IAsyncLifetime)Factory).InitializeAsync();
@@ -53,10 +62,10 @@ public class XApiMasterFixture : IAsyncLifetime
             var createProjectService = scope.ServiceProvider.GetRequiredService<ICreateProjectService>();
             var result = await createProjectService.CreateProject(
                 CreateProjectRequest.Create(
-                    new ProjectName("Тестовый Проект"),
+                    new ProjectName("Тестовая Игра"),
                     ProjectTypeDto.EmptyProject,
                     null,
-                    ProjectCopySettingsDto.SettingsAndFields));
+                    default));
 
             ProjectId = result switch
             {
@@ -75,11 +84,7 @@ public class XApiMasterFixture : IAsyncLifetime
         var anonymousXApi = new XApiClient(anonymousClient);
         var authResponse = await anonymousXApi.LoginAsync(MasterEmail, MasterPassword);
 
-        // Create authorized client
-        var authorizedHttpClient = Factory.CreateClient();
-        authorizedHttpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", authResponse.access_token);
-        MasterClient = new XApiClient(authorizedHttpClient);
+        MasterClient = CreateAuthorizedXApiClient(authResponse.access_token);
     }
 
     public async Task DisposeAsync()
