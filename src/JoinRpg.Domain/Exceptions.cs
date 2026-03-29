@@ -244,4 +244,10 @@ public class ProjectAccomodationNotFound : JoinRpgBaseException
 
 public class JoinRpgAccountOperationFailedException(string message) : JoinRpgBaseException(message) { }
 
+public class FieldCannotHaveValueException(ProjectFieldIdentification fieldId)
+    : JoinRpgBaseException($"Поле {fieldId} не может хранить значения (тип Header).")
+{
+    public ProjectFieldIdentification FieldId { get; } = fieldId;
+}
+
 public class JoinRpgProjectMisconfiguredException(ProjectIdentification projectId, string message) : JoinRpgProjectException(projectId, message);

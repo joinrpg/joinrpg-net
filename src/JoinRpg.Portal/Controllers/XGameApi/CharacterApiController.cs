@@ -8,6 +8,7 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
+using FieldCannotHaveValueException = JoinRpg.Domain.FieldCannotHaveValueException;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
@@ -144,7 +145,14 @@ public class CharacterApiController(
         {
             return BadRequest(ex.Message);
         }
-        await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
+        try
+        {
+            await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
+        }
+        catch (FieldCannotHaveValueException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         return "ok";
     }
 
