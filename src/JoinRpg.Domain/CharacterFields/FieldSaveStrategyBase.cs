@@ -95,6 +95,11 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         {
             var field = fields[keyValuePair.Key];
 
+            if (!field.Field.CanHaveValue)
+            {
+                throw new ArgumentException($"Поле {keyValuePair.Key} является заголовком и не может принимать значения");
+            }
+
             EnsureEditAccess(field);
 
             var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);

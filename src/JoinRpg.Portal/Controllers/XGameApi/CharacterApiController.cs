@@ -135,16 +135,15 @@ public class CharacterApiController(
     [ProducesDefaultResponseType]
     public async Task<ActionResult<string>> SetCharacterFields(int projectId, int characterId, [FromBody] Dictionary<int, JsonElement> fieldValues)
     {
-        Dictionary<int, string?> converted;
         try
         {
-            converted = FieldValueConverter.ConvertToStringValues(fieldValues);
+            var converted = FieldValueConverter.ConvertToStringValues(fieldValues);
+            await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
-        await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
         return "ok";
     }
 
