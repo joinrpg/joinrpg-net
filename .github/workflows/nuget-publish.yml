@@ -62,7 +62,8 @@ jobs:
         id: iam-token
         run: |
           echo '${{ secrets.YANDEX_CR_SA_KEY_JSON }}' > /tmp/sa-key.json
-          IAM_TOKEN=$(yc iam create-token --service-account-key /tmp/sa-key.json)
+          yc config set service-account-key /tmp/sa-key.json
+          IAM_TOKEN=$(yc iam create-token)
           rm /tmp/sa-key.json
           echo "::add-mask::$IAM_TOKEN"
           echo "iam_token=$IAM_TOKEN" >> "$GITHUB_OUTPUT"
