@@ -29,17 +29,18 @@ public class CharacterApiController(
         [FromQuery]
         DateTime? modifiedSince = null)
     {
-        return (await characterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(
-            character =>
-                new CharacterHeader
-                {
-                    CharacterId = character.CharacterId,
-                    UpdatedAt = character.UpdatedAt,
-                    IsActive = character.IsActive,
-                    CharacterLink =
-                        $"/x-game-api/{projectId}/characters/{character.CharacterId}/",
-                });
+        return (await characterRepository.GetCharacterHeaders(projectId, modifiedSince))
+            .Select(character => BuildCharacterHeader(projectId, character.CharacterId, character.UpdatedAt, character.IsActive));
     }
+
+    private static CharacterHeader BuildCharacterHeader(int projectId, int characterId, DateTime updatedAt, bool isActive) =>
+        new CharacterHeader
+        {
+            CharacterId = characterId,
+            UpdatedAt = updatedAt,
+            IsActive = isActive,
+            CharacterLink = $"/x-game-api/{projectId}/characters/{characterId}/",
+        };
 
     /// <summary>
     /// Character details
@@ -74,6 +75,49 @@ public class CharacterApiController(
                 CharacterName = character.Name,
                 PlayerInfo = ApiInfoBuilder.CreatePlayerInfo(character.ApprovedClaim, projectInfo),
             };
+    }
+
+    /// <summary>
+    /// Create new character
+    /// </summary>
+    [HttpPost]
+    [Route("")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult<CharacterHeader>> CreateCharacter(int projectId, [FromBody] CreateCharacterRequest request)
+    {
+        CharacterTypeInfo characterTypeInfo;
+        try
+        {
+            characterTypeInfo = CreateCharacterRequestMapper.ToCharacterTypeInfo(request);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        Dictionary<int, string?> convertedFields;
+        try
+        {
+            convertedFields = FieldValueConverter.ConvertToStringValues(request.FieldValues);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        var characterId = await characterService.AddCharacter(new AddCharacterRequest(
+            new ProjectIdentification(projectId),
+            [],
+            characterTypeInfo,
+            convertedFields));
+
+        var characterView = await characterRepository.GetCharacterViewAsync(projectId, characterId.CharacterId);
+        return CreatedAtAction(
+            nameof(GetOne),
+            new { projectId, characterId = characterId.CharacterId },
+            BuildCharacterHeader(projectId, characterView.CharacterId, characterView.UpdatedAt, characterView.IsActive));
     }
 
     /// <summary>

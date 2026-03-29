@@ -2,7 +2,6 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
@@ -58,7 +57,7 @@ public class XApiMasterFixture : IAsyncLifetime
         return new UserIdentification(user.Id);
     }
 
-    internal async Task<ProjectIdentification> CreateNewProject(UserIdentification userId)
+    internal async Task<ProjectIdentification> CreateNewProject(UserIdentification userId, ProjectTypeDto projectType = ProjectTypeDto.Larp)
     {
         using var scope2 = Factory.Services.CreateScope();
         // Create project as master user via service
@@ -72,7 +71,7 @@ public class XApiMasterFixture : IAsyncLifetime
             var result = await createProjectService.CreateProject(
                 CreateProjectRequest.Create(
                     new ProjectName("Тестовая Игра"),
-                    ProjectTypeDto.Larp,
+                    projectType,
                     null,
                     default));
 
@@ -82,25 +81,6 @@ public class XApiMasterFixture : IAsyncLifetime
                 PartiallySuccessCreateProjectResult r => r.ProjectId,
                 _ => throw new InvalidOperationException($"Failed to create project: {result}"),
             };
-        }
-        finally
-        {
-            impersonator.StopImpersonate();
-        }
-    }
-
-    internal async Task<CharacterIdentification> CreateNewCharacter(UserIdentification userId, ProjectIdentification projectId)
-    {
-        using var scope2 = Factory.Services.CreateScope();
-        // Create project as master user via service
-        var impersonator = scope2.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
-
-        var displayName = MasterDisplayName; // Load from db by UserId
-        impersonator.StartImpersonate(userId, displayName, IsAdmin: false);
-        try
-        {
-            var characterService = scope2.ServiceProvider.GetRequiredService<ICharacterService>();
-            return await characterService.AddCharacter(new AddCharacterRequest(projectId, [], CharacterTypeInfo.Default(), new Dictionary<int, string?>()));
         }
         finally
         {

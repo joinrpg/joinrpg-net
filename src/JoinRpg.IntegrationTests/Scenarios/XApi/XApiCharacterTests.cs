@@ -1,4 +1,5 @@
 using JoinRpg.IntegrationTest.TestInfrastructure;
+using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.IntegrationTest.Scenarios.XApi;
 
@@ -30,8 +31,8 @@ public class XApiCharacterTests(XApiMasterFixture fixture)
     public async Task CanCreateCharacter()
     {
         var newProjectId = await fixture.CreateNewProject(fixture.MasterUserId);
-        var characterId = await fixture.CreateNewCharacter(fixture.MasterUserId, newProjectId);
-        var result = await fixture.MasterClient.GetCharacterAsync(newProjectId, characterId.CharacterId);
-        result.CharacterId.ShouldBe(characterId.CharacterId);
+        var header = await fixture.MasterClient.CreateCharacterAsync(newProjectId, new CreateCharacterRequest());
+        var result = await fixture.MasterClient.GetCharacterAsync(newProjectId, header.CharacterId);
+        result.CharacterId.ShouldBe(header.CharacterId);
     }
 }
