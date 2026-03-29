@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <None Include="**/*" Exclude="*.proj" />
+  </ItemGroup>
+</Project>

@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/.github/">
+    <Project Path=".github/github-files.proj" />
+  </Folder>
   <Folder Name="/Common/">
     <Project Path="src/JoinRpg.Common.BastiliaRatingClient/JoinRpg.Common.BastiliaRatingClient.csproj" Id="6a466ef2-b96b-473f-95df-04c08b04cae8" />
     <Project Path="src/JoinRpg.Common.KogdaIgraClient/JoinRpg.Common.KogdaIgraClient.csproj" Id="881e9784-9199-4f85-b173-9e91a15403e2" />
@@ -35,7 +38,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".config/dotnet-tools.json" />
     <File Path=".editorconfig" />
-    <File Path=".github/dependabot.yml" />
     <File Path=".gitignore" />
     <File Path="CLAUDE.md" />
     <File Path="code_placement.txt" />
