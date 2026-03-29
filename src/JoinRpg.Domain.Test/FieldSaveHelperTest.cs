@@ -355,7 +355,7 @@ public class FieldSaveHelperTest
                 },
                 mock.ProjectInfo));
 
-        exception.FieldName.ShouldBe("Поле с вариантами");
+        exception.FieldId.ShouldBe(dropdownField.Id);
         exception.VariantId.ShouldBe(99999);
     }
 
