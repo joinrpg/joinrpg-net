@@ -250,3 +250,10 @@ public class FieldCannotHaveValueException(string fieldName) : JoinRpgBaseExcept
 {
     public string FieldName { get; } = fieldName;
 }
+
+public class FieldValueInvalidException(string fieldName, int variantId)
+    : JoinRpgBaseException($"Поле \"{fieldName}\": значение {variantId} не является допустимым вариантом")
+{
+    public string FieldName { get; } = fieldName;
+    public int VariantId { get; } = variantId;
+}
