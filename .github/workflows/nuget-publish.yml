@@ -6,7 +6,7 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  YANDEX_REGISTRY_URI: https://registry.yandexcloud.net/crp3fr717nr1rn78qeij
+  YANDEX_REGISTRY_URI: https://registry.yandexcloud.net/nuget/v3/cn1338n5jes0hr8iks12/
 
 jobs:
   publish-nuget:
@@ -71,7 +71,7 @@ jobs:
       - name: Add Yandex Cloud Registry NuGet source
         run: >-
           dotnet nuget add source
-          "${{ env.YANDEX_REGISTRY_URI }}/nuget/v3/index.json"
+          "${{ env.YANDEX_REGISTRY_URI }}"
           --name yandex-joinrpg
           --username iam
           --password "${{ steps.iam-token.outputs.iam_token }}"
