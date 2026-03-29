@@ -140,7 +140,7 @@ public class CharacterApiController(
             var converted = FieldValueConverter.ConvertToStringValues(fieldValues);
             await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
         }
-        catch (ArgumentException ex)
+        catch (FieldCannotHaveValueException ex)
         {
             return BadRequest(ex.Message);
         }

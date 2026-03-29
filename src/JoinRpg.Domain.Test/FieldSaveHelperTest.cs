@@ -238,6 +238,25 @@ public class FieldSaveHelperTest
     }
 
     [Fact]
+    public void TryToSetHeaderField()
+    {
+        var mock = new MockedProject();
+        var headerField = mock.CreateField("Header field", fieldType: ProjectFieldType.Header);
+
+        var character = mock.Character;
+
+        _ = Should.Throw<FieldCannotHaveValueException>(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                character,
+                new Dictionary<int, string?>()
+                {
+                    { headerField.Id.ProjectFieldId, "some value" },
+                },
+                mock.ProjectInfo));
+    }
+
+    [Fact]
     public void TryToSkipMandatoryField()
     {
         _original = new MockedProject();

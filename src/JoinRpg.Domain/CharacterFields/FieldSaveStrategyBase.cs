@@ -97,7 +97,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             if (!field.Field.CanHaveValue)
             {
-                throw new ArgumentException($"Поле {keyValuePair.Key} является заголовком и не может принимать значения");
+                throw new FieldCannotHaveValueException(keyValuePair.Key);
             }
 
             EnsureEditAccess(field);
