@@ -152,6 +152,10 @@ public class CharacterApiController(
         {
             return BadRequest(ex.Message);
         }
+        catch (FieldValueInvalidException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         return "ok";
     }
 
