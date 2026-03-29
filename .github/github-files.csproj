@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <!-- Opt out of global analysis tools that don't apply to files-only project -->
+    <EnableReferenceTrimmer>false</EnableReferenceTrimmer>
+    <WarningsAsErrors>false</WarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Show all .github files in Solution Explorer without listing each one -->
+    <None Include="**/*" Exclude="*.csproj" />
+  </ItemGroup>
+</Project>
