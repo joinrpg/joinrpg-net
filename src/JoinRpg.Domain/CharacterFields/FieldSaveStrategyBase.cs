@@ -82,7 +82,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
             {
                 if (!validIds.Contains(id))
                 {
-                    throw new FieldValueInvalidException(field.Field.Name, id);
+                    throw new FieldValueInvalidException(field.Field.Id, id);
                 }
             }
         }
