@@ -95,6 +95,11 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         {
             var field = fields[keyValuePair.Key];
 
+            if (!field.Field.CanHaveValue)
+            {
+                throw new FieldCannotHaveValueException(keyValuePair.Key);
+            }
+
             EnsureEditAccess(field);
 
             var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);

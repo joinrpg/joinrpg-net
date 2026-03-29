@@ -88,6 +88,71 @@ public class XApiMasterFixture : IAsyncLifetime
         }
     }
 
+    
+    internal async Task<ProjectFieldIdentification> CreateField(
+        UserIdentification userId,
+        ProjectIdentification projectId,
+        ProjectFieldType fieldType,
+        string name)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var impersonator = scope.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+        impersonator.StartImpersonate(userId, MasterDisplayName, IsAdmin: false);
+        try
+        {
+            var fieldSetupService = scope.ServiceProvider.GetRequiredService<IFieldSetupService>();
+            return await fieldSetupService.AddField(new CreateFieldRequest(
+                projectId,
+                fieldType,
+                name,
+                fieldHint: "",
+                canPlayerEdit: false,
+                canPlayerView: true,
+                isPublic: true,
+                FieldBoundTo.Character,
+                MandatoryStatus.Optional,
+                [],
+                validForNpc: true,
+                includeInPrint: true,
+                showForUnapprovedClaims: false,
+                price: 0,
+                masterFieldHint: "",
+                programmaticValue: null));
+        }
+        finally
+        {
+            impersonator.StopImpersonate();
+        }
+    }
+
+    internal async Task<int> CreateFieldVariant(
+        UserIdentification userId,
+        ProjectFieldIdentification fieldId,
+        string label)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var impersonator = scope.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+        impersonator.StartImpersonate(userId, MasterDisplayName, IsAdmin: false);
+        try
+        {
+            var fieldSetupService = scope.ServiceProvider.GetRequiredService<IFieldSetupService>();
+            var variantId = await fieldSetupService.CreateFieldValueVariant(new CreateFieldValueVariantRequest(
+                fieldId,
+                label,
+                description: null,
+                masterDescription: null,
+                programmaticValue: null,
+                price: 0,
+                playerSelectable: true,
+                timeSlotOptions: null));
+            return variantId.ProjectFieldVariantId;
+        }
+        finally
+        {
+            impersonator.StopImpersonate();
+        }
+    }
+
     public async Task DisposeAsync()
     {
         await ((IAsyncLifetime)Factory).DisposeAsync();
