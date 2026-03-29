@@ -143,7 +143,7 @@ public class XApiMasterFixture : IAsyncLifetime
                 masterDescription: null,
                 programmaticValue: null,
                 price: 0,
-                playerSelectable: true,
+                playerSelectable: false,
                 timeSlotOptions: null));
             return result.ProjectFieldVariantId;
         }
