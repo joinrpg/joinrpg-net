@@ -60,13 +60,13 @@ public class CharacterApiController(
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
                 Groups = ApiInfoBuilder.ToGroupHeaders(character.DirectGroups),
                 AllGroups = ApiInfoBuilder.ToGroupHeaders(character.AllGroups),
-                Fields = character.GetFields(projectInfo).Where(field => field.HasViewableValue)
+                Fields = [..character.GetFields(projectInfo).Where(field => field.HasViewableValue)
                     .Select(field => new FieldValue
                     {
                         ProjectFieldId = field.Field.Id.ProjectFieldId,
                         Value = field.Value,
                         DisplayString = field.DisplayString,
-                    }),
+                    })],
 #pragma warning disable CS0612 // Type or member is obsolete
                 PlayerUserId = character.ApprovedClaim?.PlayerUserId,
 #pragma warning restore CS0612 // Type or member is obsolete

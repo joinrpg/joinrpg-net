@@ -38,17 +38,17 @@ public class CharacterInfo
     /// <summary>
     /// Groups that character part of (directly)
     /// </summary>
-    public required IOrderedEnumerable<GroupHeader> Groups { get; set; }
+    public required GroupHeader[] Groups { get; set; }
 
     /// <summary>
     /// Groups that character part of
     /// </summary>
-    public required IOrderedEnumerable<GroupHeader> AllGroups { get; set; }
+    public required GroupHeader[] AllGroups { get; set; }
 
     /// <summary>
     /// Field values
     /// </summary>
-    public required IEnumerable<FieldValue> Fields { get; set; }
+    public required FieldValue[] Fields { get; set; }
 
     /// <summary>
     /// This is legacy field. Please look into PlayerInfo

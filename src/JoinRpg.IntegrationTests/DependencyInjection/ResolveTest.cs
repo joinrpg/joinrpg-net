@@ -2,7 +2,6 @@ using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Portal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.IntegrationTest.DependencyInjection;
 

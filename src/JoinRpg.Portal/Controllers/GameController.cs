@@ -17,7 +17,6 @@ using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.WebPortal.Managers.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
 

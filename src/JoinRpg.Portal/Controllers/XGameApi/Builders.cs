@@ -8,17 +8,17 @@ namespace JoinRpg.Portal.Controllers.XGameApi;
 
 public class ApiInfoBuilder
 {
-    public static IOrderedEnumerable<GroupHeader> ToGroupHeaders(
+    public static GroupHeader[] ToGroupHeaders(
     IReadOnlyCollection<Data.Interfaces.GroupHeader> characterDirectGroups)
     {
-        return characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)
+        return [.. characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)
             .Select(
                 group => new GroupHeader
                 {
                     CharacterGroupId = group.CharacterGroupId,
                     CharacterGroupName = group.CharacterGroupName,
                 })
-            .OrderBy(group => group.CharacterGroupId);
+            .OrderBy(group => group.CharacterGroupId)];
     }
 
     public static CharacterPlayerInfo? CreatePlayerInfo(Claim? claim, ProjectInfo projectInfo)

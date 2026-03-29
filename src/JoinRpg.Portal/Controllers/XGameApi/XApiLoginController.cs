@@ -35,11 +35,11 @@ public class XApiLoginController(JoinUserManager userManager, IOptions<JwtBearer
         var user = await userManager.FindByEmailAsync(username);
         if (user == null)
         {
-            return Forbid();
+            return Forbid(JwtBearerDefaults.AuthenticationScheme);
         }
         if (!await userManager.CheckPasswordAsync(user, password))
         {
-            return Forbid();
+            return Forbid(JwtBearerDefaults.AuthenticationScheme);
         }
         JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
         return Ok(new AuthenticationResponse

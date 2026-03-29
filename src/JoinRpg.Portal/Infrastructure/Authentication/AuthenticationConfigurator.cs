@@ -30,12 +30,17 @@ internal static class AuthenticationConfigurator
 
         _ = services.ConfigureApplicationCookie(SetCookieOptions());
 
-        _ = services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder(
-            JwtBearerDefaults.AuthenticationScheme,
-            IdentityConstants.ApplicationScheme
-            )
-            .RequireAuthenticatedUser()
-          .Build())
+        _ = services.AddAuthorization(o =>
+          {
+              o.DefaultPolicy = new AuthorizationPolicyBuilder(
+                  JwtBearerDefaults.AuthenticationScheme,
+                  IdentityConstants.ApplicationScheme)
+                  .RequireAuthenticatedUser()
+                  .Build();
+              o.AddPolicy("XApiUser", policy => policy
+                  .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                  .RequireAuthenticatedUser());
+          })
             .AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>()
             .AddAuthentication()
             .AddJwtBearer(o =>
