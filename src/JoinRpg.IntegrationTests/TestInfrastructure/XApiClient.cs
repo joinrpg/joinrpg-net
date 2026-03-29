@@ -87,6 +87,22 @@ public class XApiClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<CharacterHeader>())!;
     }
 
+    /// <summary>POST /x-game-api/{projectId}/characters/{characterId}/fields — set character field values</summary>
+    public async Task SetCharacterFieldsAsync(int projectId, int characterId, Dictionary<int, object?> fieldValues)
+    {
+        var response = await httpClient.PostAsJsonAsync(
+            $"/x-game-api/{projectId}/characters/{characterId}/fields", fieldValues);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>Like SetCharacterFieldsAsync but returns the HTTP status code instead of throwing</summary>
+    public async Task<System.Net.HttpStatusCode> SetCharacterFieldsRawAsync(int projectId, int characterId, Dictionary<int, object?> fieldValues)
+    {
+        var response = await httpClient.PostAsJsonAsync(
+            $"/x-game-api/{projectId}/characters/{characterId}/fields", fieldValues);
+        return response.StatusCode;
+    }
+
     public static async Task<XApiClient> CreateXApiClient(HttpClient httpClient, string masterEmail, string masterPassword)
     {
         var xapi = new XApiClient(httpClient);

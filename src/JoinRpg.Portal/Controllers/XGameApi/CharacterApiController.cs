@@ -144,7 +144,14 @@ public class CharacterApiController(
         {
             return BadRequest(ex.Message);
         }
-        await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
+        try
+        {
+            await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
+        }
+        catch (FieldCannotHaveValueException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         return "ok";
     }
 
