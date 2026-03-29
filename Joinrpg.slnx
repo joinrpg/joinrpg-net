@@ -32,10 +32,12 @@
     <Project Path="src/JoinRpg.Services.Notifications/JoinRpg.Services.Notifications.csproj" />
     <Project Path="src/PscbApi/PscbApi.csproj" />
   </Folder>
+  <Folder Name="/.github/">
+    <Project Path=".github/github-files.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".config/dotnet-tools.json" />
     <File Path=".editorconfig" />
-    <File Path=".github/dependabot.yml" />
     <File Path=".gitignore" />
     <File Path="CLAUDE.md" />
     <File Path="code_placement.txt" />
