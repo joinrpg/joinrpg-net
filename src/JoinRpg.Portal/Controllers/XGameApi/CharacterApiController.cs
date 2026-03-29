@@ -77,6 +77,55 @@ public class CharacterApiController(
     }
 
     /// <summary>
+    /// Create new character
+    /// </summary>
+    [HttpPost]
+    [Route("")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult<CharacterHeader>> CreateCharacter(int projectId, [FromBody] CreateCharacterRequest request)
+    {
+        CharacterTypeInfo characterTypeInfo;
+        try
+        {
+            characterTypeInfo = CreateCharacterRequestMapper.ToCharacterTypeInfo(request);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        Dictionary<int, string?> convertedFields;
+        try
+        {
+            convertedFields = FieldValueConverter.ConvertToStringValues(request.FieldValues);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        var characterId = await characterService.AddCharacter(new AddCharacterRequest(
+            new ProjectIdentification(projectId),
+            [],
+            characterTypeInfo,
+            convertedFields));
+
+        var characterView = await characterRepository.GetCharacterViewAsync(projectId, characterId.CharacterId);
+        return CreatedAtAction(
+            nameof(GetOne),
+            new { projectId, characterId = characterId.CharacterId },
+            new CharacterHeader
+            {
+                CharacterId = characterView.CharacterId,
+                UpdatedAt = characterView.UpdatedAt,
+                IsActive = characterView.IsActive,
+                CharacterLink = $"/x-game-api/{projectId}/characters/{characterView.CharacterId}/",
+            });
+    }
+
+    /// <summary>
     /// Allows to set character fields as master
     /// </summary>
     /// <param name="projectId">Project ID</param>
