@@ -6,7 +6,7 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  YANDEX_REGISTRY_URI: https://cr.yandex/crp3fr717nr1rn78qeij
+  YANDEX_REGISTRY_URI: https://registry.yandexcloud.net/crp3fr717nr1rn78qeij
 
 jobs:
   publish-nuget:
