@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
@@ -13,9 +12,9 @@ namespace JoinRpg.IntegrationTest.TestInfrastructure;
 /// </summary>
 public class XApiMasterFixture : IAsyncLifetime
 {
-    public const string MasterEmail = "master@integrationtest.joinrpg.ru";
-    public const string MasterPassword = "TestPassword123!";
-    public const string MasterDisplayName = "Мастер Тестовый";
+    internal const string MasterEmail = "master@integrationtest.joinrpg.ru";
+    internal const string MasterPassword = "TestPassword123!";
+    private const string MasterDisplayName = "Мастер Тестовый";
 
     public JoinApplicationFactory Factory { get; } = new();
 
@@ -23,22 +22,26 @@ public class XApiMasterFixture : IAsyncLifetime
 
     public XApiClient MasterClient { get; private set; } = null!;
 
-    public HttpClient AnonymousClient => Factory.CreateClient();
-
     public XApiClient AnonymousXApiClient => new XApiClient(Factory.CreateClient());
-
-    public XApiClient CreateAuthorizedXApiClient(string token)
-    {
-        var httpClient = Factory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return new XApiClient(httpClient);
-    }
 
     public async Task InitializeAsync()
     {
         await ((IAsyncLifetime)Factory).InitializeAsync();
 
+        UserIdentification userId = await CreateMasterUser();
+        var displayName = new UserDisplayName(MasterDisplayName, null);
+
+        ProjectId = await CreateNewProject(userId, displayName);
+
+
+        var httpClient = Factory.CreateClient();
+        MasterClient = await XApiClient.CreateXApiClient(httpClient, MasterEmail, MasterPassword);
+    }
+
+    private async Task<UserIdentification> CreateMasterUser()
+    {
         using var scope = Factory.Services.CreateScope();
+
         var userManager = scope.ServiceProvider.GetRequiredService<JoinUserManager>();
 
         // Create master user
@@ -51,26 +54,29 @@ public class XApiMasterFixture : IAsyncLifetime
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         await userManager.ConfirmEmailAsync(user, token);
 
-        var userId = new UserIdentification(user.Id);
-        var displayName = new UserDisplayName(MasterDisplayName, null);
+        return new UserIdentification(user.Id);
+    }
 
+    private async Task<ProjectIdentification> CreateNewProject(UserIdentification userId, UserDisplayName displayName)
+    {
+        using var scope2 = Factory.Services.CreateScope();
         // Create project as master user via service
-        var impersonator = scope.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+        var impersonator = scope2.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
         impersonator.StartImpersonate(userId, displayName, IsAdmin: false);
         try
         {
-            var createProjectService = scope.ServiceProvider.GetRequiredService<ICreateProjectService>();
+            var createProjectService = scope2.ServiceProvider.GetRequiredService<ICreateProjectService>();
             var result = await createProjectService.CreateProject(
                 CreateProjectRequest.Create(
                     new ProjectName("Тестовая Игра"),
-                    ProjectTypeDto.EmptyProject,
+                    ProjectTypeDto.Larp,
                     null,
                     default));
 
-            ProjectId = result switch
+            return result switch
             {
-                SuccessCreateProjectResult r => r.ProjectId.Value,
-                PartiallySuccessCreateProjectResult r => r.ProjectId.Value,
+                SuccessCreateProjectResult r => r.ProjectId,
+                PartiallySuccessCreateProjectResult r => r.ProjectId,
                 _ => throw new InvalidOperationException($"Failed to create project: {result}"),
             };
         }
@@ -78,13 +84,6 @@ public class XApiMasterFixture : IAsyncLifetime
         {
             impersonator.StopImpersonate();
         }
-
-        // Get JWT token
-        var anonymousClient = Factory.CreateClient();
-        var anonymousXApi = new XApiClient(anonymousClient);
-        var authResponse = await anonymousXApi.LoginAsync(MasterEmail, MasterPassword);
-
-        MasterClient = CreateAuthorizedXApiClient(authResponse.access_token);
     }
 
     public async Task DisposeAsync()

@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
@@ -76,5 +77,16 @@ public class XApiClient(HttpClient httpClient)
         var response = await httpClient.GetAsync($"/x-game-api/{projectId}/claims/{claimId}");
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<ClaimInfo>())!;
+    }
+
+    public static async Task<XApiClient> CreateXApiClient(HttpClient httpClient, string masterEmail, string masterPassword)
+    {
+        var xapi = new XApiClient(httpClient);
+
+        // Get JWT token
+        var authResponse = await xapi.LoginAsync(masterEmail, masterPassword);
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.access_token);
+        return xapi;
     }
 }

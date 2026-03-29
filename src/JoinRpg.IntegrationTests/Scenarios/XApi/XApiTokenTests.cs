@@ -9,7 +9,7 @@ public class XApiTokenTests(XApiMasterFixture fixture)
     [Fact]
     public async Task InvalidGrantType_Returns400()
     {
-        var response = await fixture.AnonymousClient.PostAsync("/x-api/token",
+        var response = await fixture.Factory.CreateClient().PostAsync("/x-api/token",
             new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string?, string?>("username", XApiMasterFixture.MasterEmail),
@@ -22,7 +22,7 @@ public class XApiTokenTests(XApiMasterFixture fixture)
     [Fact]
     public async Task WrongPassword_Returns403()
     {
-        var response = await fixture.AnonymousClient.PostAsync("/x-api/token",
+        var response = await fixture.Factory.CreateClient().PostAsync("/x-api/token",
             new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string?, string?>("username", XApiMasterFixture.MasterEmail),
