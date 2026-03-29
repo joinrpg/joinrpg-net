@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Characters;
 
@@ -66,13 +67,27 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
     {
-        return field.Field.Type switch
+        var normalized = field.Field.Type switch
         {
             ProjectFieldType.Checkbox => toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
                                 ? FieldWithValue.CheckboxValueOn
                                 : "",
             _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
         };
+
+        if (normalized is not null && field.Field.HasValueList)
+        {
+            var validIds = field.Field.Variants.Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
+            foreach (var id in normalized.ParseToIntList())
+            {
+                if (!validIds.Contains(id))
+                {
+                    throw new FieldValueInvalidException(field.Field.Id, id);
+                }
+            }
+        }
+
+        return normalized;
     }
 
     public void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
