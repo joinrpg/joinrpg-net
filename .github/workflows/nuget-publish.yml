@@ -1,0 +1,83 @@
+name: Publish NuGet packages
+
+on:
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  YANDEX_REGISTRY_URI: https://cr.yandex/crp3fr717nr1rn78qeij
+
+jobs:
+  publish-nuget:
+    name: Pack and publish ${{ matrix.project }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        project:
+          - src/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj
+          # Добавить новые проекты сюда:
+          # - src/SomeOtherProject/SomeOtherProject.csproj
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git Version
+        id: version
+        run: iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/AntonSmolkov/HandyPoshScripts/v1.0.2/DevOps/SemVerCalc_GitHubFlow_Actions.ps1'))
+        shell: pwsh
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "Directory.Packages.props"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Pack
+        run: >-
+          dotnet pack ${{ matrix.project }}
+          --no-restore
+          -c Release
+          -p:Version=${{ env.CALCULATED_VERSION }}
+          -o ./nuget-output
+
+      - name: Install yc CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i /opt/yc -n
+          echo "/opt/yc/bin" >> $GITHUB_PATH
+
+      - name: Obtain IAM token
+        id: iam-token
+        run: |
+          echo '${{ secrets.YANDEX_CR_SA_KEY_JSON }}' > /tmp/sa-key.json
+          IAM_TOKEN=$(yc iam create-token --service-account-key /tmp/sa-key.json)
+          rm /tmp/sa-key.json
+          echo "::add-mask::$IAM_TOKEN"
+          echo "iam_token=$IAM_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Add Yandex Cloud Registry NuGet source
+        run: >-
+          dotnet nuget add source
+          "${{ env.YANDEX_REGISTRY_URI }}/nuget/v3/index.json"
+          --name yandex-joinrpg
+          --username iam
+          --password "${{ steps.iam-token.outputs.iam_token }}"
+          --store-password-in-clear-text
+
+      - name: Push to Yandex Cloud Registry
+        run: >-
+          dotnet nuget push ./nuget-output/*.nupkg
+          --source yandex-joinrpg
+          --skip-duplicate
