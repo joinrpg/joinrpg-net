@@ -2,6 +2,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
@@ -81,6 +82,70 @@ public class XApiMasterFixture : IAsyncLifetime
                 PartiallySuccessCreateProjectResult r => r.ProjectId,
                 _ => throw new InvalidOperationException($"Failed to create project: {result}"),
             };
+        }
+        finally
+        {
+            impersonator.StopImpersonate();
+        }
+    }
+
+    internal async Task<ProjectFieldIdentification> CreateField(
+        UserIdentification userId,
+        ProjectIdentification projectId,
+        ProjectFieldType fieldType,
+        string name)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var impersonator = scope.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+        impersonator.StartImpersonate(userId, MasterDisplayName, IsAdmin: false);
+        try
+        {
+            var fieldSetupService = scope.ServiceProvider.GetRequiredService<IFieldSetupService>();
+            return await fieldSetupService.AddField(new CreateFieldRequest(
+                projectId,
+                fieldType,
+                name,
+                fieldHint: "",
+                canPlayerEdit: false,
+                canPlayerView: false,
+                isPublic: false,
+                FieldBoundTo.Character,
+                MandatoryStatus.Optional,
+                showForGroups: [],
+                validForNpc: false,
+                includeInPrint: false,
+                showForUnapprovedClaims: false,
+                price: 0,
+                masterFieldHint: "",
+                programmaticValue: null));
+        }
+        finally
+        {
+            impersonator.StopImpersonate();
+        }
+    }
+
+    internal async Task<int> CreateFieldVariant(
+        UserIdentification userId,
+        ProjectFieldIdentification fieldId,
+        string label)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var impersonator = scope.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+        impersonator.StartImpersonate(userId, MasterDisplayName, IsAdmin: false);
+        try
+        {
+            var fieldSetupService = scope.ServiceProvider.GetRequiredService<IFieldSetupService>();
+            var result = await fieldSetupService.CreateFieldValueVariant(new CreateFieldValueVariantRequest(
+                fieldId,
+                label,
+                description: null,
+                masterDescription: null,
+                programmaticValue: null,
+                price: 0,
+                playerSelectable: true,
+                timeSlotOptions: null));
+            return result.ProjectFieldVariantId;
         }
         finally
         {

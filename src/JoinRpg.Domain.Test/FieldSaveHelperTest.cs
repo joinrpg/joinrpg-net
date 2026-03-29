@@ -303,6 +303,24 @@ public class FieldSaveHelperTest
 
         mock.Character.JsonData.ShouldBe("{}");
     }
+
+    [Fact]
+    public void TryToSetHeaderField()
+    {
+        _original = new MockedProject();
+        var mock = new MockedProject();
+        var headerField = mock.CreateField("Заголовок", fieldType: ProjectFieldType.Header);
+
+        _ = Should.Throw<FieldCannotHaveValueException>(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string?>()
+                {
+                    { headerField.Id.ProjectFieldId, "значение" },
+                },
+                mock.ProjectInfo));
+    }
 }
 
 public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
