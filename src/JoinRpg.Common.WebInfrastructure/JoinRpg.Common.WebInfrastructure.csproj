@@ -7,7 +7,12 @@
         <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
         <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.MD</PackageReadmeFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.MD" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
