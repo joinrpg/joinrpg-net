@@ -25,4 +25,13 @@ public class XApiCharacterTests(XApiMasterFixture fixture)
         await Should.ThrowAsync<HttpRequestException>(
             () => fixture.MasterClient.GetCharacterAsync(fixture.ProjectId, characterId: 999999));
     }
+
+    [Fact]
+    public async Task CanCreateCharacter()
+    {
+        var newProjectId = await fixture.CreateNewProject(fixture.MasterUserId);
+        var characterId = await fixture.CreateNewCharacter(fixture.MasterUserId, newProjectId);
+        var result = await fixture.MasterClient.GetCharacterAsync(newProjectId, characterId.CharacterId);
+        result.CharacterId.ShouldBe(characterId.CharacterId);
+    }
 }

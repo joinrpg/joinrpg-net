@@ -2,6 +2,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
@@ -14,11 +15,13 @@ public class XApiMasterFixture : IAsyncLifetime
 {
     internal const string MasterEmail = "master@integrationtest.joinrpg.ru";
     internal const string MasterPassword = "TestPassword123!";
-    private const string MasterDisplayName = "Мастер Тестовый";
+    private readonly UserDisplayName MasterDisplayName = new("Мастер Тестовый", FullName: null);
 
     public JoinApplicationFactory Factory { get; } = new();
 
-    public int ProjectId { get; private set; }
+    public ProjectIdentification ProjectId { get; private set; } = null!;
+
+    public UserIdentification MasterUserId { get; private set; } = null!;
 
     public XApiClient MasterClient { get; private set; } = null!;
 
@@ -28,10 +31,8 @@ public class XApiMasterFixture : IAsyncLifetime
     {
         await ((IAsyncLifetime)Factory).InitializeAsync();
 
-        UserIdentification userId = await CreateMasterUser();
-        var displayName = new UserDisplayName(MasterDisplayName, null);
-
-        ProjectId = await CreateNewProject(userId, displayName);
+        MasterUserId = await CreateMasterUser();
+        ProjectId = await CreateNewProject(MasterUserId);
 
 
         var httpClient = Factory.CreateClient();
@@ -57,11 +58,13 @@ public class XApiMasterFixture : IAsyncLifetime
         return new UserIdentification(user.Id);
     }
 
-    private async Task<ProjectIdentification> CreateNewProject(UserIdentification userId, UserDisplayName displayName)
+    internal async Task<ProjectIdentification> CreateNewProject(UserIdentification userId)
     {
         using var scope2 = Factory.Services.CreateScope();
         // Create project as master user via service
         var impersonator = scope2.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+
+        var displayName = MasterDisplayName; // Load from db by UserId
         impersonator.StartImpersonate(userId, displayName, IsAdmin: false);
         try
         {
@@ -79,6 +82,25 @@ public class XApiMasterFixture : IAsyncLifetime
                 PartiallySuccessCreateProjectResult r => r.ProjectId,
                 _ => throw new InvalidOperationException($"Failed to create project: {result}"),
             };
+        }
+        finally
+        {
+            impersonator.StopImpersonate();
+        }
+    }
+
+    internal async Task<CharacterIdentification> CreateNewCharacter(UserIdentification userId, ProjectIdentification projectId)
+    {
+        using var scope2 = Factory.Services.CreateScope();
+        // Create project as master user via service
+        var impersonator = scope2.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
+
+        var displayName = MasterDisplayName; // Load from db by UserId
+        impersonator.StartImpersonate(userId, displayName, IsAdmin: false);
+        try
+        {
+            var characterService = scope2.ServiceProvider.GetRequiredService<ICharacterService>();
+            return await characterService.AddCharacter(new AddCharacterRequest(projectId, [], CharacterTypeInfo.Default(), new Dictionary<int, string?>()));
         }
         finally
         {
