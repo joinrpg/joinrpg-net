@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 
@@ -122,6 +123,29 @@ public record class ProjectFieldInfo(
     public bool IsPublic => ProjectFieldVisibility == ProjectFieldVisibility.Public;
 
     public bool CanPlayerView => ProjectFieldVisibility != ProjectFieldVisibility.MasterOnly;
+
+    /// <summary>
+    /// Validates that the list of variant IDs being assigned is valid.
+    /// Inactive variants can be preserved if they were already set, but only active variants can be newly added.
+    /// </summary>
+    public void ValidateVariantList(IReadOnlyList<int> newVariantIds, IReadOnlyList<int> existingVariantIds)
+    {
+        var activeIds = Variants.Where(v => v.IsActive).Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
+        var allIds = Variants.Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
+
+        foreach (var id in newVariantIds)
+        {
+            if (activeIds.Contains(id))
+            {
+                continue;
+            }
+
+            if (!allIds.Contains(id) || !existingVariantIds.Contains(id))
+            {
+                throw new FieldValueInvalidException(Id, id);
+            }
+        }
+    }
 
     public override string ToString() => $"ProjectFieldInfo(Id={Id}, Name=\"{Name}\")";
 }

@@ -77,14 +77,9 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
         if (normalized is not null && field.Field.HasValueList)
         {
-            var validIds = field.Field.Variants.Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
-            foreach (var id in normalized.ParseToIntList())
-            {
-                if (!validIds.Contains(id))
-                {
-                    throw new FieldValueInvalidException(field.Field.Id, id);
-                }
-            }
+            var newIds = normalized.ParseToIntList();
+            var existingIds = field.Value?.ParseToIntList() ?? [];
+            field.Field.ValidateVariantList(newIds, existingIds);
         }
 
         return normalized;

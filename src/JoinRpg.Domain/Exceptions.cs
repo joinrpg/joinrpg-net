@@ -1,5 +1,4 @@
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Claims;
 
@@ -252,9 +251,3 @@ public class FieldCannotHaveValueException(string fieldName) : JoinRpgBaseExcept
     public string FieldName { get; } = fieldName;
 }
 
-public class FieldValueInvalidException(ProjectFieldIdentification fieldId, int variantId)
-    : JoinRpgBaseException($"Поле {fieldId}: значение {variantId} не является допустимым вариантом")
-{
-    public ProjectFieldIdentification FieldId { get; } = fieldId;
-    public int VariantId { get; } = variantId;
-}
