@@ -7,10 +7,10 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
 {
-    public async Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> GetNotUpdated()
+    public async Task<KogdaIgraListItem[]> GetNotUpdated()
     {
-        var result = await GetNotUpdatedQuery().Take(100).Select(ki => new { ki.KogdaIgraGameId, ki.Name }).ToListAsync();
-        return [.. result.Select(x => (new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name))];
+        var result = await GetNotUpdatedQuery().Take(100).Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin }).ToListAsync();
+        return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
     }
 
     public Task<KogdaIgraGame[]> GetNotUpdatedObjects() => GetNotUpdatedQuery().Take(100).ToArrayAsync();
@@ -31,16 +31,16 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
 
     private static Expression<Func<KogdaIgraGame, bool>> UpdateRequestedPredicate() => e => e.LastUpdatedAt == null || e.LastUpdatedAt < e.UpdateRequestedAt;
 
-    async Task<(KogdaIgraIdentification KogdaIgraId, string Name)[]> IKogdaIgraRepository.GetActive()
+    async Task<KogdaIgraListItem[]> IKogdaIgraRepository.GetActive()
     {
         var result = await GetSet()
             .AsNoTracking()
             .Where(ki => ki.Active)
             .Where(ki => ki.LastUpdatedAt!.Value.Year > (DateTimeOffset.Now.Year - 2))
             .Where(ki => ki.Name.Length > 0)
-            .Select(ki => new { ki.KogdaIgraGameId, ki.Name })
+            .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin })
             .ToListAsync();
-        return [.. result.Select(x => (new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name))];
+        return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
     }
 
     public Task<int> GetNotUpdatedCount() => GetNotUpdatedQuery().CountAsync();
