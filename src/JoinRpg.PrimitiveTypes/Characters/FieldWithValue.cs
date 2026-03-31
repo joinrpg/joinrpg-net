@@ -70,6 +70,29 @@ public sealed class FieldWithValue
 
     public const string CheckboxValueOn = "on";
 
+    /// <summary>
+    /// Нормализует значение перед присваиванием полю. Для полей с вариантами проверяет корректность идентификаторов вариантов.
+    /// </summary>
+    public string? NormalizeValueBeforeAssign(string? toAssign)
+    {
+        var normalized = Field.Type switch
+        {
+            ProjectFieldType.Checkbox => toAssign?.StartsWith(CheckboxValueOn) == true
+                                ? CheckboxValueOn
+                                : "",
+            _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
+        };
+
+        if (normalized is not null && Field.HasValueList)
+        {
+            var newIds = normalized.ParseToIntList();
+            var existingIds = Value?.ParseToIntList() ?? [];
+            Field.ValidateVariantList(newIds, existingIds);
+        }
+
+        return normalized;
+    }
+
     public int GetCurrentFee()
     {
         if (!Field.SupportsPricing)

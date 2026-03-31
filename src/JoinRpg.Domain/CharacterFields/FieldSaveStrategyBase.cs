@@ -65,26 +65,6 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     protected abstract void SetCharacterNameFromPlayer();
 
-    private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
-    {
-        var normalized = field.Field.Type switch
-        {
-            ProjectFieldType.Checkbox => toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
-                                ? FieldWithValue.CheckboxValueOn
-                                : "",
-            _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
-        };
-
-        if (normalized is not null && field.Field.HasValueList)
-        {
-            var newIds = normalized.ParseToIntList();
-            var existingIds = field.Value?.ParseToIntList() ?? [];
-            field.Field.ValidateVariantList(newIds, existingIds);
-        }
-
-        return normalized;
-    }
-
     public void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
     {
         foreach (var field in fields.Values.Where(
@@ -93,7 +73,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         {
             var newValue = GenerateDefaultValue(field);
 
-            var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
+            var normalizedValue = field.NormalizeValueBeforeAssign(newValue);
 
             _ = AssignFieldValue(field, normalizedValue);
         }
@@ -112,7 +92,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             EnsureEditAccess(field);
 
-            var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
+            var normalizedValue = field.NormalizeValueBeforeAssign(keyValuePair.Value);
 
             if (normalizedValue is null && FieldIsMandatory(field))
             {

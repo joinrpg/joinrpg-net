@@ -77,11 +77,11 @@ public record class ProjectFieldInfo(
     public bool IsDescription { get; } = FieldSettings.DescriptionField == Id;
 
     /// <summary>
-    /// Special field - schedule time slot
+    /// Специальное поле — временной слот расписания
     /// </summary>
     public bool IsTimeSlot => Type == ProjectFieldType.ScheduleTimeSlotField;
     /// <summary>
-    /// Special field - schedule room slot
+    /// Специальное поле — слот помещения в расписании
     /// </summary>
     public bool IsRoomSlot => Type == ProjectFieldType.ScheduleRoomField;
 
@@ -125,8 +125,8 @@ public record class ProjectFieldInfo(
     public bool CanPlayerView => ProjectFieldVisibility != ProjectFieldVisibility.MasterOnly;
 
     /// <summary>
-    /// Validates that the list of variant IDs being assigned is valid.
-    /// Inactive variants can be preserved if they were already set, but only active variants can be newly added.
+    /// Проверяет, что список идентификаторов вариантов для присвоения корректен.
+    /// Неактивные варианты можно сохранить, если они уже были установлены, но добавить можно только активный вариант.
     /// </summary>
     public void ValidateVariantList(IReadOnlyList<int> newVariantIds, IReadOnlyList<int> existingVariantIds)
     {
