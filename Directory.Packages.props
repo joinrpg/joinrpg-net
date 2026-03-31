@@ -14,7 +14,7 @@
         <PackageVersion Include="AWSSDK.S3" Version="3.7.412.0" />
         <PackageVersion Include="AWSSDK.SimpleEmailV2" Version="3.7.412.0" />
         <PackageVersion Include="BitArmory.ReCaptcha" Version="5.0.1" />
-        <PackageVersion Include="bunit" Version="2.6.2" />
+        <PackageVersion Include="bunit" Version="2.7.2" />
         <PackageVersion Include="ClosedXML" Version="0.105.0" />
         <PackageVersion Include="coverlet.collector" Version="8.0.1" />
         <PackageVersion Include="EntityFramework" Version="6.5.1" />
