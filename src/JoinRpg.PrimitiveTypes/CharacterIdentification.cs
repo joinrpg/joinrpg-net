@@ -3,12 +3,11 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
-public record CharacterIdentification(
+[ProjectEntityId(ShortName = "CharacterId")]
+public partial record CharacterIdentification(
     ProjectIdentification ProjectId,
     int CharacterId) : IProjectEntityId, IComparable<CharacterIdentification>
 {
-    public int Id => CharacterId;
-
     public CharacterIdentification(int projectId, int characterId) : this(new(projectId), characterId)
     {
 
@@ -27,8 +26,4 @@ public record CharacterIdentification(
     }
 
     public static IEnumerable<CharacterIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new CharacterIdentification(projectId, g));
-
-    public override string ToString() => $"CharacterId({CharacterId}, {ProjectId})";
-
-    int IComparable<CharacterIdentification>.CompareTo(CharacterIdentification? other) => Comparer<int>.Default.Compare(Id, other?.Id ?? -1);
 }

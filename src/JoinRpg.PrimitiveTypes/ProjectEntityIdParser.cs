@@ -53,6 +53,12 @@ public static class ProjectEntityIdParser
             return true;
         }
 
+        if (PlotVersionIdentification.TryParse(value, null, out var pv))
+        {
+            id = pv;
+            return true;
+        }
+
         if (PlotElementIdentification.TryParse(value, null, out var pe))
         {
             id = pe;
@@ -65,11 +71,35 @@ public static class ProjectEntityIdParser
             return true;
         }
 
-        /*if (ClaimIdentification.TryParse(value, null, out var claim))
+        if (ClaimIdentification.TryParse(value, null, out var claim))
         {
             id = claim;
             return true;
-        }*/
+        }
+
+        if (CharacterIdentification.TryParse(value, null, out var character))
+        {
+            id = character;
+            return true;
+        }
+
+        if (CharacterGroupIdentification.TryParse(value, null, out var charGroup))
+        {
+            id = charGroup;
+            return true;
+        }
+
+        if (ProjectFieldVariantIdentification.TryParse(value, null, out var pfv))
+        {
+            id = pfv;
+            return true;
+        }
+
+        if (ProjectFieldIdentification.TryParse(value, null, out var pfi))
+        {
+            id = pfi;
+            return true;
+        }
 
         id = null;
         return false;

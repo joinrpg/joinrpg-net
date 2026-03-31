@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
-public record CharacterGroupIdentification(
+[ProjectEntityId(ShortName = "CharacterGroupId")]
+public partial record CharacterGroupIdentification(
     ProjectIdentification ProjectId,
     int CharacterGroupId) : IProjectEntityId, IComparable<CharacterGroupIdentification>
 {
@@ -12,7 +13,6 @@ public record CharacterGroupIdentification(
     {
 
     }
-    int IProjectEntityId.Id => CharacterGroupId;
 
     public static CharacterGroupIdentification? FromOptional(int ProjectId, int? CharacterGroupId)
     {
@@ -27,5 +27,4 @@ public record CharacterGroupIdentification(
     }
 
     public static IEnumerable<CharacterGroupIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new CharacterGroupIdentification(projectId, g));
-    int IComparable<CharacterGroupIdentification>.CompareTo(CharacterGroupIdentification? other) => Comparer<int>.Default.Compare(CharacterGroupId, other?.CharacterGroupId ?? -1);
 }

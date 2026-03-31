@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
-public record ProjectFieldVariantIdentification(ProjectFieldIdentification FieldId, int ProjectFieldVariantId) : IProjectEntityId, IComparable<ProjectFieldVariantIdentification>
+[ProjectEntityId(ShortName = "ProjectFieldVariantId")]
+public partial record ProjectFieldVariantIdentification(ProjectFieldIdentification FieldId, int ProjectFieldVariantId) : IProjectEntityId, IComparable<ProjectFieldVariantIdentification>
 {
     public ProjectFieldVariantIdentification(int ProjectId, int ProjectFieldId, int ProjectFieldVariantId) : this(new ProjectFieldIdentification(ProjectId, ProjectFieldId), ProjectFieldVariantId)
     {
@@ -15,11 +16,6 @@ public record ProjectFieldVariantIdentification(ProjectFieldIdentification Field
 
     }
 
-
-    public ProjectIdentification ProjectId => FieldId.ProjectId;
-
-    int IProjectEntityId.Id => ProjectFieldVariantId;
-
     public static ProjectFieldVariantIdentification? FromOptional(ProjectFieldIdentification? fieldId, int? projectFieldVariantId)
     {
         return (fieldId, projectFieldVariantId) switch
@@ -29,6 +25,4 @@ public record ProjectFieldVariantIdentification(ProjectFieldIdentification Field
             _ => new(fieldId, projectFieldVariantId.Value)
         };
     }
-
-    int IComparable<ProjectFieldVariantIdentification>.CompareTo(ProjectFieldVariantIdentification? other) => Comparer<int>.Default.Compare(ProjectFieldVariantId, other?.ProjectFieldVariantId ?? -1);
 }
