@@ -15,17 +15,17 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         using System;
         namespace JoinRpg.PrimitiveTypes;
 
-        /// <summary>Source generator marker for IProjectEntityId implementations.</summary>
+        /// <summary>Маркер для генератора реализаций IProjectEntityId.</summary>
         [AttributeUsage(AttributeTargets.Class)]
         internal sealed class ProjectEntityIdAttribute : Attribute
         {
-            /// <summary>Short prefix used in ToString (e.g. "ClaimId"). Defaults to TypeName minus "Identification" suffix.</summary>
+            /// <summary>Короткий префикс для ToString (например "ClaimId"). По умолчанию — TypeName минус суффикс "Identification" плюс суффикс "Id".</summary>
             public string? ShortName { get; set; }
 
-            /// <summary>Additional prefixes accepted during parsing (e.g. old formats).</summary>
+            /// <summary>Дополнительные префиксы для парсинга (например, старые форматы).</summary>
             public string[]? AdditionalPrefixes { get; set; }
 
-            /// <summary>Set to true to skip generating IComparable (use when type needs custom comparison logic).</summary>
+            /// <summary>Установить true, чтобы пропустить генерацию IComparable (для типов с нестандартной логикой сравнения).</summary>
             public bool SkipComparable { get; set; }
         }
         """;
@@ -62,7 +62,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return null;
         }
 
-        // Extract attribute properties
+        // Извлекаем свойства атрибута
         string? shortName = null;
         var additionalPrefixes = new List<string>();
         bool skipComparable = false;
@@ -89,13 +89,13 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             }
         }
 
-        // Default ShortName: strip "Identification" suffix
+        // ShortName по умолчанию: TypeName минус суффикс "Identification" плюс суффикс "Id"
         const string identSuffix = "Identification";
         shortName ??= typeSymbol.Name.EndsWith(identSuffix)
-            ? typeSymbol.Name.Substring(0, typeSymbol.Name.Length - identSuffix.Length)
+            ? typeSymbol.Name.Substring(0, typeSymbol.Name.Length - identSuffix.Length) + "Id"
             : typeSymbol.Name;
 
-        // Get primary constructor parameters from syntax
+        // Получаем параметры основного конструктора из синтаксиса
         if (recordDecl.ParameterList == null)
         {
             return null;
@@ -108,7 +108,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return null;
         }
 
-        // Resolve parameter types via semantic model
+        // Определяем типы параметров через семантическую модель
         var parameters = new List<ParameterInfo>();
         foreach (var param in paramList)
         {
@@ -133,22 +133,22 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return null;
         }
 
-        // Compute flat leaf expressions
+        // Вычисляем плоские листовые выражения (leaf int expressions)
         var flatLeaves = ComputeFlatLeaves(parameters, ctx.SemanticModel.Compilation);
         if (flatLeaves == null)
         {
             return null;
         }
 
-        // Determine namespace
+        // Определяем пространство имён
         var ns = typeSymbol.ContainingNamespace.IsGlobalNamespace
             ? null
             : typeSymbol.ContainingNamespace.ToDisplayString();
 
-        // Determine if we need to generate ProjectId property
+        // Нужен ли свой ProjectId property (если первый параметр — не ProjectIdentification)
         bool needsProjectIdProperty = parameters[0].Kind != ParamKind.ProjectIdentification;
 
-        // Determine the last int param name (for IComparable and IProjectEntityId.Id)
+        // Последний int-параметр (для IComparable и IProjectEntityId.Id)
         string? lastIntParamName = null;
         for (int i = parameters.Count - 1; i >= 0; i--)
         {
@@ -163,8 +163,11 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return null;
         }
 
-        // Determine first nested param name (for ProjectId property)
+        // Первый вложенный параметр (для свойства ProjectId)
         string? firstNestedParamName = needsProjectIdProperty ? parameters[0].Name : null;
+
+        // Информация о параметрах конструктора с количеством листьев для каждого
+        var primaryParams = BuildPrimaryParamInfos(parameters, ctx.SemanticModel.Compilation);
 
         return new TypeGenerationInfo(
             FullTypeName: $"{(ns != null ? ns + "." : "")}{typeSymbol.Name}",
@@ -176,8 +179,26 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             FlatLeafExpressions: flatLeaves,
             NeedsProjectIdProperty: needsProjectIdProperty,
             FirstNestedParamName: firstNestedParamName,
-            LastIntParamName: lastIntParamName
+            LastIntParamName: lastIntParamName,
+            PrimaryParams: primaryParams
         );
+    }
+
+    private static IReadOnlyList<PrimaryParamInfo> BuildPrimaryParamInfos(
+        List<ParameterInfo> parameters, Compilation compilation)
+    {
+        var result = new List<PrimaryParamInfo>();
+        foreach (var param in parameters)
+        {
+            var leaves = GetLeafExpressions(param.Name, param.TypeSymbol, param.Kind, compilation);
+            int leafCount = leaves?.Count ?? 1;
+            result.Add(new PrimaryParamInfo(
+                Name: param.Name,
+                TypeName: param.TypeSymbol.Name,
+                Kind: param.Kind,
+                LeafCount: leafCount));
+        }
+        return result;
     }
 
     private static List<string>? ComputeFlatLeaves(
@@ -216,7 +237,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
     private static List<string>? ExpandNestedType(
         string accessor, INamedTypeSymbol type, Compilation compilation)
     {
-        // Find the primary constructor of the nested type (look for [JsonConstructor])
+        // Ищем основной конструктор вложенного типа
         var primaryCtor = FindPrimaryConstructor(type);
         if (primaryCtor == null)
         {
@@ -248,7 +269,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
 
     private static IMethodSymbol? FindPrimaryConstructor(INamedTypeSymbol type)
     {
-        // For records: find constructor with [JsonConstructor] attribute
+        // Для record-типов: ищем конструктор с атрибутом [JsonConstructor]
         var jsonCtorAttr = type.InstanceConstructors
             .FirstOrDefault(c => c.GetAttributes()
                 .Any(a => a.AttributeClass?.Name == "JsonConstructorAttribute"));
@@ -257,7 +278,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return jsonCtorAttr;
         }
 
-        // Fallback: find constructor that starts with ProjectIdentification or IProjectEntityId
+        // Запасной вариант: ищем конструктор, начинающийся с ProjectIdentification или IProjectEntityId
         return type.InstanceConstructors
             .Where(c => !c.IsImplicitlyDeclared && c.Parameters.Length > 0)
             .OrderByDescending(c => c.Parameters.Length)
@@ -286,7 +307,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return ParamKind.ProjectIdentification;
         }
 
-        // Check if it implements IProjectEntityId
+        // Проверяем реализацию IProjectEntityId в уже скомпилированном коде
         var iProjectEntityIdType = compilation.GetTypeByMetadataName("JoinRpg.PrimitiveTypes.IProjectEntityId");
         if (iProjectEntityIdType != null &&
             type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iProjectEntityIdType)))
@@ -294,7 +315,44 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             return ParamKind.NestedEntityId;
         }
 
+        // Также проверяем наличие атрибута [ProjectEntityId] — такие типы реализуют IProjectEntityId
+        // через генерируемый код, поэтому в hand-written источнике интерфейс может отсутствовать
+        if (type.GetAttributes().Any(a => a.AttributeClass?.Name == "ProjectEntityIdAttribute"))
+        {
+            return ParamKind.NestedEntityId;
+        }
+
         return ParamKind.Unknown;
+    }
+
+    /// <summary>Преобразует leaf-выражение в имя параметра конструктора.</summary>
+    private static string LeafToParamName(string leafExpr)
+    {
+        // Убираем суффикс ".Value" (для ProjectIdentification.Value)
+        string withoutValue = leafExpr.EndsWith(".Value")
+            ? leafExpr.Substring(0, leafExpr.Length - 6)
+            : leafExpr;
+        // Берём последний компонент пути (после последней точки)
+        int dotIdx = withoutValue.LastIndexOf('.');
+        string lastComp = dotIdx >= 0 ? withoutValue.Substring(dotIdx + 1) : withoutValue;
+        // Делаем первую букву строчной
+        return char.ToLower(lastComp[0]) + lastComp.Substring(1);
+    }
+
+    /// <summary>
+    /// Строит выражение для реконструкции параметра из листовых int-значений.
+    /// leafParamNames[0] может быть как int (flat constructor), так и ProjectIdentification (2nd-level constructor).
+    /// </summary>
+    private static string BuildReconstructExpression(PrimaryParamInfo param, string[] leafParamNames)
+    {
+        return param.Kind switch
+        {
+            ParamKind.Int => leafParamNames[0],
+            ParamKind.ProjectIdentification => $"new ProjectIdentification({leafParamNames[0]})",
+            // Для NestedEntityId: new NT(leaf1, leaf2, ...) — C# выбирает нужный конструктор по типу leaf1
+            ParamKind.NestedEntityId => $"new {param.TypeName}({string.Join(", ", leafParamNames)})",
+            _ => "/* Ошибка: неизвестный тип параметра */"
+        };
     }
 
     private static string GenerateCode(TypeGenerationInfo info)
@@ -305,6 +363,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine("using System;");
         sb.AppendLine("using System.Collections.Generic;");
         sb.AppendLine("using System.Diagnostics.CodeAnalysis;");
+        sb.AppendLine("using System.Linq;");
         sb.AppendLine();
 
         if (info.Namespace != null)
@@ -313,14 +372,21 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        sb.AppendLine($"public partial record {info.TypeName} : ISpanParsable<{info.TypeName}>");
+        // Генерируемые интерфейсы
+        var interfaces = new List<string> { "IProjectEntityId", $"ISpanParsable<{info.TypeName}>" };
+        if (!info.SkipComparable)
+        {
+            interfaces.Add($"IComparable<{info.TypeName}>");
+        }
+
+        sb.AppendLine($"public partial record {info.TypeName} : {string.Join(", ", interfaces)}");
         sb.AppendLine("{");
 
-        // IProjectEntityId.Id - public so it's accessible directly on the type
+        // Свойство Id из IProjectEntityId
         sb.AppendLine($"    public int Id => {info.LastIntParamName};");
         sb.AppendLine();
 
-        // ProjectId property (only if first param is not ProjectIdentification)
+        // Свойство ProjectId (только если первый параметр — не ProjectIdentification)
         if (info.NeedsProjectIdProperty && info.FirstNestedParamName != null)
         {
             sb.AppendLine($"    public ProjectIdentification ProjectId => {info.FirstNestedParamName}.ProjectId;");
@@ -332,7 +398,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine($"    public override string ToString() => $\"{info.ShortName}({toStringBody})\";");
         sb.AppendLine();
 
-        // IComparable - public so nested types can call it directly
+        // IComparable<T>
         if (!info.SkipComparable)
         {
             sb.AppendLine($"    public int CompareTo({info.TypeName}? other)");
@@ -340,10 +406,106 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        // ISpanParsable
-        int leafCount = info.FlatLeafExpressions.Count;
+        // Листовые имена параметров для конструкторов
+        var leafParamNames = info.FlatLeafExpressions.Select(LeafToParamName).ToList();
+        int leafCount = leafParamNames.Count;
 
-        // Build prefixes array
+        // Конструктор с плоскими int-параметрами (для всех типов с 2+ параметрами)
+        if (leafCount >= 2)
+        {
+            var intParams = string.Join(", ", leafParamNames.Select(n => $"int {n}"));
+            var ctorArgs = BuildConstructorArgs(info.PrimaryParams, leafParamNames);
+            sb.AppendLine($"    public {info.TypeName}({intParams})");
+            sb.AppendLine($"        : this({ctorArgs}) {{ }}");
+            sb.AppendLine();
+        }
+
+        // Конструктор с ProjectIdentification (для типов, где первый параметр — вложенный IProjectEntityId)
+        if (leafCount >= 3 && info.PrimaryParams[0].Kind == ParamKind.NestedEntityId)
+        {
+            var projParams = $"ProjectIdentification {leafParamNames[0]}, " +
+                string.Join(", ", leafParamNames.Skip(1).Select(n => $"int {n}"));
+            var projArgs = BuildConstructorArgs(info.PrimaryParams, leafParamNames);
+            sb.AppendLine($"    public {info.TypeName}({projParams})");
+            sb.AppendLine($"        : this({projArgs}) {{ }}");
+            sb.AppendLine();
+        }
+
+        // Метод FromOptional — все параметры nullable
+        GenerateFromOptional(sb, info);
+
+        // Метод FromList — только для (ProjectIdentification, int) типов
+        if (info.PrimaryParams.Count == 2 &&
+            info.PrimaryParams[0].Kind == ParamKind.ProjectIdentification &&
+            info.PrimaryParams[1].Kind == ParamKind.Int)
+        {
+            var entityIdParam = info.PrimaryParams[1].Name;
+            sb.AppendLine($"    public static IEnumerable<{info.TypeName}> FromList(IEnumerable<int> list, ProjectIdentification projectId)");
+            sb.AppendLine($"        => list.Select(id => new {info.TypeName}(projectId, id));");
+            sb.AppendLine();
+        }
+
+        // Реализация ISpanParsable<T>
+        GenerateISpanParsable(sb, info, leafParamNames);
+
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
+    private static string BuildConstructorArgs(
+        IReadOnlyList<PrimaryParamInfo> primaryParams, List<string> leafParamNames)
+    {
+        var args = new List<string>();
+        int leafIdx = 0;
+        foreach (var param in primaryParams)
+        {
+            var paramLeaves = leafParamNames.Skip(leafIdx).Take(param.LeafCount).ToArray();
+            leafIdx += param.LeafCount;
+            args.Add(BuildReconstructExpression(param, paramLeaves));
+        }
+        return string.Join(", ", args);
+    }
+
+    private static void GenerateFromOptional(StringBuilder sb, TypeGenerationInfo info)
+    {
+        // Строим параметры: int → int?, остальные reference types → T?
+        var optParams = new List<string>();
+        var nullChecks = new List<string>();
+        var ctorArgs = new List<string>();
+
+        foreach (var param in info.PrimaryParams)
+        {
+            var paramNameLower = char.ToLower(param.Name[0]) + param.Name.Substring(1);
+            if (param.Kind == ParamKind.Int)
+            {
+                optParams.Add($"int? {paramNameLower}");
+                nullChecks.Add($"{paramNameLower} is not null");
+                ctorArgs.Add($"{paramNameLower}.Value");
+            }
+            else
+            {
+                // ProjectIdentification и NestedEntityId — reference types, nullable через ?
+                optParams.Add($"{param.TypeName}? {paramNameLower}");
+                nullChecks.Add($"{paramNameLower} is not null");
+                ctorArgs.Add(paramNameLower);
+            }
+        }
+
+        var paramsStr = string.Join(", ", optParams);
+        var checksStr = string.Join(" && ", nullChecks);
+        var argsStr = string.Join(", ", ctorArgs);
+
+        sb.AppendLine($"    public static {info.TypeName}? FromOptional({paramsStr})");
+        sb.AppendLine($"        => {checksStr} ? new {info.TypeName}({argsStr}) : null;");
+        sb.AppendLine();
+    }
+
+    private static void GenerateISpanParsable(
+        StringBuilder sb, TypeGenerationInfo info, List<string> leafParamNames)
+    {
+        int leafCount = leafParamNames.Count;
+
+        // Строим массив префиксов
         var prefixes = new List<string> { $"\"{info.ShortName}\"", $"nameof({info.TypeName})" };
         foreach (var ap in info.AdditionalPrefixes)
         {
@@ -352,7 +514,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
 
         var prefixesStr = string.Join(", ", prefixes);
 
-        // Build TryParseN call
+        // Выбираем нужный TryParseN и аргументы для конструктора
         string tryParseCall;
         string constructorArgs;
 
@@ -378,10 +540,9 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         }
         else
         {
-            // Not supported - emit a compile error comment
-            sb.AppendLine($"    // ERROR: Unsupported leaf count {leafCount}");
-            sb.AppendLine("}");
-            return sb.ToString();
+            // Не поддерживается — выдаём ошибку компиляции
+            sb.AppendLine($"    // ОШИБКА: не поддерживается количество листьев {leafCount}");
+            return;
         }
 
         sb.AppendLine($"    public static {info.TypeName} Parse(ReadOnlySpan<char> value, IFormatProvider? provider)");
@@ -404,14 +565,18 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine("        result = null;");
         sb.AppendLine("        return false;");
         sb.AppendLine("    }");
-
-        sb.AppendLine("}");
-        return sb.ToString();
     }
 
     private enum ParamKind { Int, ProjectIdentification, NestedEntityId, Unknown }
 
     private sealed record ParameterInfo(string Name, INamedTypeSymbol TypeSymbol, ParamKind Kind);
+
+    private sealed record PrimaryParamInfo(
+        string Name,      // Имя параметра, например "ClaimId"
+        string TypeName,  // Имя типа, например "ClaimIdentification" или "int"
+        ParamKind Kind,   // Вид параметра
+        int LeafCount     // Количество листовых int-значений
+    );
 
     private sealed record TypeGenerationInfo(
         string FullTypeName,
@@ -423,6 +588,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         List<string> FlatLeafExpressions,
         bool NeedsProjectIdProperty,
         string? FirstNestedParamName,
-        string LastIntParamName
+        string LastIntParamName,
+        IReadOnlyList<PrimaryParamInfo> PrimaryParams
     );
 }

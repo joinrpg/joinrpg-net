@@ -6,10 +6,8 @@ namespace JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 [ProjectEntityId(ShortName = "PaymentType")]
 public partial record PaymentTypeIdentification(
     ProjectIdentification ProjectId,
-    int PaymentTypeId) : IProjectEntityId, IComparable<PaymentTypeIdentification>, ISpanParsable<PaymentTypeIdentification>
+    int PaymentTypeId)
 {
-    public PaymentTypeIdentification(int projectId, int paymentTypeId) : this(new(projectId), paymentTypeId) { }
-
     public static PaymentTypeIdentification? FromOptional(int ProjectId, int? paymentTypeId)
     {
         if (paymentTypeId is null || paymentTypeId == -1)
@@ -21,6 +19,4 @@ public partial record PaymentTypeIdentification(
             return new PaymentTypeIdentification(ProjectId, paymentTypeId.Value);
         }
     }
-
-    public static IEnumerable<PaymentTypeIdentification> FromList(IEnumerable<int> list, ProjectIdentification projectId) => list.Select(g => new PaymentTypeIdentification(projectId, g));
 }
