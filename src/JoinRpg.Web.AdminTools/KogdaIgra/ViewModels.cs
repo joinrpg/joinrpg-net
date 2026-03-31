@@ -11,7 +11,7 @@ public record class KogdaIgraBindViewModel(
     KogdaIgraIdentification[] KogdaIgraIdentifications,
     bool DisableKogdaIgraMapping);
 
-public record class KogdaIgraShortViewModel(KogdaIgraIdentification KogdaIgraId, string Name, Uri KogdaIgraLink);
+public record class KogdaIgraShortViewModel(KogdaIgraIdentification KogdaIgraId, string Name, Uri KogdaIgraLink, int? Year);
 
 public record class ResyncOperationResultsViewModel(bool OperationSuccessful, string OperationStatusMessage, SyncStatusViewModel SyncStatus);
 

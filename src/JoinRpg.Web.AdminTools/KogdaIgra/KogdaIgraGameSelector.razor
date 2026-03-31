@@ -37,7 +37,7 @@ else
             new IntSelectListItem(
               Value: master.KogdaIgraId,
               Text: master.Name,
-              Subtext: "",
+              Subtext: master.Year?.ToString() ?? "",
               ExtraSearch: ""))
            .ToArray();
     }
