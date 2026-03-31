@@ -63,8 +63,6 @@ public class SchedulePageManager(
         return serializer.SerializeToString(calendar) ?? ""; //TODO stream
     }
 
-    private static readonly TimeZoneInfo mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-
     private TimeZoneInfo? GuessTimeZone(ScheduleResult result)
     {
         var offsets = result.AllItems.Select(i => i.StartTime.Offset).Distinct().ToList();
@@ -74,14 +72,13 @@ public class SchedulePageManager(
             return null;
         }
 
-        if (offsets.Count == 1 && offsets[0] == TimeSpan.FromHours(3))
+        if (offsets.Count == 1)
         {
-            return mskTimeZone;
-        }
-
-        if (offsets.Count == 1 && offsets[0] == TimeSpan.FromHours(0))
-        {
-            return TimeZoneInfo.Utc;
+            var tz = TimeZoneGuesser.GuessTimeZoneByOffset(offsets[0]);
+            if (tz != null)
+            {
+                return tz;
+            }
         }
 
         logger.LogError("Не удалось определить таймзону для проекта, встречаются варианты: {timeZoneHours}",
