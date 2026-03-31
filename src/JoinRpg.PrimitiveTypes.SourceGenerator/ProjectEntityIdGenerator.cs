@@ -22,11 +22,8 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             /// <summary>Короткий префикс для ToString (например "ClaimId"). По умолчанию — TypeName минус суффикс "Identification" плюс суффикс "Id".</summary>
             public string? ShortName { get; set; }
 
-            /// <summary>Дополнительные префиксы для парсинга (например, старые форматы).</summary>
+            /// <summary>Дополнительные префиксы для парсинга (например, старые форматы). По умолчанию ShortName без суффикса "Id" добавляется автоматически.</summary>
             public string[]? AdditionalPrefixes { get; set; }
-
-            /// <summary>Установить true, чтобы FromOptional(int, int?) также исключал значение -1 (для типов, где -1 означает отсутствие значения).</summary>
-            public bool NegativeOneIsNone { get; set; }
         }
         """;
 
@@ -65,17 +62,12 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         // Извлекаем свойства атрибута
         string? shortName = null;
         var additionalPrefixes = new List<string>();
-        bool negativeOneIsNone = false;
 
         foreach (var namedArg in attrData.NamedArguments)
         {
             if (namedArg.Key == "ShortName" && namedArg.Value.Value is string sn)
             {
                 shortName = sn;
-            }
-            else if (namedArg.Key == "NegativeOneIsNone" && namedArg.Value.Value is bool nine)
-            {
-                negativeOneIsNone = nine;
             }
             else if (namedArg.Key == "AdditionalPrefixes" && !namedArg.Value.IsNull)
             {
@@ -94,6 +86,17 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         shortName ??= typeSymbol.Name.EndsWith(identSuffix)
             ? typeSymbol.Name.Substring(0, typeSymbol.Name.Length - identSuffix.Length) + "Id"
             : typeSymbol.Name;
+
+        // Авто-добавляем ShortName без суффикса "Id" как дополнительный префикс
+        const string idSuffix = "Id";
+        if (shortName.EndsWith(idSuffix) && shortName.Length > idSuffix.Length)
+        {
+            var autoPrefix = shortName.Substring(0, shortName.Length - idSuffix.Length);
+            if (!additionalPrefixes.Contains(autoPrefix))
+            {
+                additionalPrefixes.Insert(0, autoPrefix);
+            }
+        }
 
         // Получаем параметры основного конструктора из синтаксиса
         if (recordDecl.ParameterList == null)
@@ -176,7 +179,6 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             ShortName: shortName,
             AdditionalPrefixes: additionalPrefixes.ToArray(),
             SkipComparable: HasHandWrittenCompareTo(typeSymbol),
-            NegativeOneIsNone: negativeOneIsNone,
             FlatLeafExpressions: flatLeaves,
             NeedsProjectIdProperty: needsProjectIdProperty,
             FirstNestedParamName: firstNestedParamName,
@@ -446,9 +448,8 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         // Метод FromOptional — все параметры nullable
         GenerateFromOptional(sb, info);
 
-        // Метод FromOptional(int, int?) с проверкой -1 — для (ProjectIdentification, int) типов с NegativeOneIsNone = true
-        if (info.NegativeOneIsNone &&
-            info.PrimaryParams.Count == 2 &&
+        // Метод FromOptional(int, int?) с проверкой -1 — для всех (ProjectIdentification, int) типов (-1 всегда считается null)
+        if (info.PrimaryParams.Count == 2 &&
             info.PrimaryParams[0].Kind == ParamKind.ProjectIdentification &&
             info.PrimaryParams[1].Kind == ParamKind.Int)
         {
@@ -610,7 +611,6 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         string ShortName,
         string[] AdditionalPrefixes,
         bool SkipComparable,
-        bool NegativeOneIsNone,
         List<string> FlatLeafExpressions,
         bool NeedsProjectIdProperty,
         string? FirstNestedParamName,

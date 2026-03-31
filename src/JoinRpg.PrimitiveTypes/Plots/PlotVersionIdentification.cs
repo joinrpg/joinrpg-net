@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes.Plots;
 
 [method: JsonConstructor]
-[ProjectEntityId(AdditionalPrefixes = ["PlotVersion"])]
+[ProjectEntityId]
 public partial record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version)
     : IComparable<PlotVersionIdentification>
 {
