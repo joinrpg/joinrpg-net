@@ -25,8 +25,8 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             /// <summary>Дополнительные префиксы для парсинга (например, старые форматы).</summary>
             public string[]? AdditionalPrefixes { get; set; }
 
-            /// <summary>Установить true, чтобы пропустить генерацию IComparable (для типов с нестандартной логикой сравнения).</summary>
-            public bool SkipComparable { get; set; }
+            /// <summary>Установить true, чтобы FromOptional(int, int?) также исключал значение -1 (для типов, где -1 означает отсутствие значения).</summary>
+            public bool NegativeOneIsNone { get; set; }
         }
         """;
 
@@ -65,7 +65,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         // Извлекаем свойства атрибута
         string? shortName = null;
         var additionalPrefixes = new List<string>();
-        bool skipComparable = false;
+        bool negativeOneIsNone = false;
 
         foreach (var namedArg in attrData.NamedArguments)
         {
@@ -73,9 +73,9 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             {
                 shortName = sn;
             }
-            else if (namedArg.Key == "SkipComparable" && namedArg.Value.Value is bool sc)
+            else if (namedArg.Key == "NegativeOneIsNone" && namedArg.Value.Value is bool nine)
             {
-                skipComparable = sc;
+                negativeOneIsNone = nine;
             }
             else if (namedArg.Key == "AdditionalPrefixes" && !namedArg.Value.IsNull)
             {
@@ -175,7 +175,8 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
             TypeName: typeSymbol.Name,
             ShortName: shortName,
             AdditionalPrefixes: additionalPrefixes.ToArray(),
-            SkipComparable: skipComparable,
+            SkipComparable: HasHandWrittenCompareTo(typeSymbol),
+            NegativeOneIsNone: negativeOneIsNone,
             FlatLeafExpressions: flatLeaves,
             NeedsProjectIdProperty: needsProjectIdProperty,
             FirstNestedParamName: firstNestedParamName,
@@ -293,6 +294,17 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
                 return firstParamTypeName == "ProjectIdentification" ||
                        c.Parameters[0].Type.AllInterfaces.Any(i => i.Name == "IProjectEntityId");
             });
+    }
+
+    /// <summary>Проверяет, есть ли в типе hand-written реализация CompareTo (включая explicit interface implementations).</summary>
+    private static bool HasHandWrittenCompareTo(INamedTypeSymbol typeSymbol)
+    {
+        return typeSymbol.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Where(m => !m.IsImplicitlyDeclared)
+            .Any(m =>
+                (m.Name == "CompareTo" && m.Parameters.Length == 1) ||
+                m.ExplicitInterfaceImplementations.Any(ei => ei.Name == "CompareTo"));
     }
 
     private static ParamKind ClassifyParamType(INamedTypeSymbol type, Compilation compilation)
@@ -433,6 +445,19 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
 
         // Метод FromOptional — все параметры nullable
         GenerateFromOptional(sb, info);
+
+        // Метод FromOptional(int, int?) с проверкой -1 — для (ProjectIdentification, int) типов с NegativeOneIsNone = true
+        if (info.NegativeOneIsNone &&
+            info.PrimaryParams.Count == 2 &&
+            info.PrimaryParams[0].Kind == ParamKind.ProjectIdentification &&
+            info.PrimaryParams[1].Kind == ParamKind.Int)
+        {
+            var entityParam = info.PrimaryParams[1].Name;
+            var entityParamLower = char.ToLower(entityParam[0]) + entityParam.Substring(1);
+            sb.AppendLine($"    public static {info.TypeName}? FromOptional(int projectId, int? {entityParamLower})");
+            sb.AppendLine($"        => {entityParamLower} is not null && {entityParamLower} != -1 ? new {info.TypeName}(projectId, {entityParamLower}.Value) : null;");
+            sb.AppendLine();
+        }
 
         // Метод FromList — только для (ProjectIdentification, int) типов
         if (info.PrimaryParams.Count == 2 &&
@@ -585,6 +610,7 @@ public class ProjectEntityIdGenerator : IIncrementalGenerator
         string ShortName,
         string[] AdditionalPrefixes,
         bool SkipComparable,
+        bool NegativeOneIsNone,
         List<string> FlatLeafExpressions,
         bool NeedsProjectIdProperty,
         string? FirstNestedParamName,
