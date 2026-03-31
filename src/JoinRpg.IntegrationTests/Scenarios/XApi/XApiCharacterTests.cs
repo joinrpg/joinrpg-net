@@ -180,6 +180,20 @@ public class XApiCharacterTests(XApiMasterFixture fixture)
     }
 
     [Fact]
+    public async Task SetDropdownField_InvalidVariantId_Returns400()
+    {
+        var projectId = await fixture.CreateNewProject(fixture.MasterUserId);
+        var character = await fixture.MasterClient.CreateCharacterAsync(projectId, new CreateCharacterRequest());
+        var fieldId = await fixture.CreateField(fixture.MasterUserId, projectId, ProjectFieldType.Dropdown, "Выпадающий список");
+        _ = await fixture.CreateFieldVariant(fixture.MasterUserId, fieldId, "Вариант А");
+
+        var statusCode = await fixture.MasterClient.SetCharacterFieldsRawAsync(projectId, character.CharacterId,
+            new Dictionary<int, object?> { [fieldId.ProjectFieldId] = 99999 });
+
+        statusCode.ShouldBe(System.Net.HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task CanClearField()
     {
         var projectId = await fixture.CreateNewProject(fixture.MasterUserId);

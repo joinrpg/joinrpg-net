@@ -321,6 +321,191 @@ public class FieldSaveHelperTest
                 },
                 mock.ProjectInfo));
     }
+
+    [Fact]
+    public void TryToSetInvalidDropdownValue()
+    {
+        var mock = new MockedProject();
+        const int validVariantId = 100;
+        var dropdownField = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.FieldName = "Поле с вариантами";
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = validVariantId,
+                    Label = "Вариант 1",
+                    IsActive = true,
+                    PlayerSelectable = false,
+                    Description = new MarkdownString(),
+                    MasterDescription = new MarkdownString(),
+                },
+            ];
+        });
+
+        var exception = Should.Throw<FieldValueInvalidException>(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string?>
+                {
+                    { dropdownField.Id.ProjectFieldId, "99999" },
+                },
+                mock.ProjectInfo));
+
+        exception.FieldId.ShouldBe(dropdownField.Id);
+        exception.VariantId.ShouldBe(99999);
+    }
+
+    [Fact]
+    public void SetValidDropdownValue()
+    {
+        var mock = new MockedProject();
+        const int validVariantId = 100;
+        var dropdownField = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.FieldName = "Поле с вариантами";
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = validVariantId,
+                    Label = "Вариант 1",
+                    IsActive = true,
+                    PlayerSelectable = false,
+                    Description = new MarkdownString(),
+                    MasterDescription = new MarkdownString(),
+                },
+            ];
+        });
+
+        Should.NotThrow(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string?>
+                {
+                    { dropdownField.Id.ProjectFieldId, validVariantId.ToString() },
+                },
+                mock.ProjectInfo));
+
+        mock.Character.JsonData.ShouldContain(validVariantId.ToString());
+    }
+
+    [Fact]
+    public void TryToSetInvalidMultiSelectValue()
+    {
+        var mock = new MockedProject();
+        const int validVariantId = 200;
+        var multiSelectField = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.MultiSelect;
+            f.FieldName = "Мультивыбор";
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = validVariantId,
+                    Label = "Вариант A",
+                    IsActive = true,
+                    PlayerSelectable = false,
+                    Description = new MarkdownString(),
+                    MasterDescription = new MarkdownString(),
+                },
+            ];
+        });
+
+        // "200,99999" — первое значение корректное, второе нет
+        _ = Should.Throw<FieldValueInvalidException>(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string?>
+                {
+                    { multiSelectField.Id.ProjectFieldId, $"{validVariantId},99999" },
+                },
+                mock.ProjectInfo));
+    }
+
+    [Fact]
+    public void TryToAddInactiveDropdownVariant()
+    {
+        var mock = new MockedProject();
+        const int inactiveVariantId = 101;
+        var dropdownField = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.FieldName = "Поле с вариантами";
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = inactiveVariantId,
+                    Label = "Неактивный вариант",
+                    IsActive = false,
+                    PlayerSelectable = false,
+                    Description = new MarkdownString(),
+                    MasterDescription = new MarkdownString(),
+                },
+            ];
+        });
+
+        var exception = Should.Throw<FieldValueInvalidException>(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string?>
+                {
+                    { dropdownField.Id.ProjectFieldId, inactiveVariantId.ToString() },
+                },
+                mock.ProjectInfo));
+
+        exception.FieldId.ShouldBe(dropdownField.Id);
+        exception.VariantId.ShouldBe(inactiveVariantId);
+    }
+
+    [Fact]
+    public void PreserveExistingInactiveDropdownVariant()
+    {
+        var mock = new MockedProject();
+        const int inactiveVariantId = 101;
+        var dropdownField = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.FieldName = "Поле с вариантами";
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = inactiveVariantId,
+                    Label = "Неактивный вариант",
+                    IsActive = false,
+                    PlayerSelectable = false,
+                    Description = new MarkdownString(),
+                    MasterDescription = new MarkdownString(),
+                },
+            ];
+        });
+
+        // Предварительно устанавливаем неактивный вариант на персонаже
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(dropdownField, inactiveVariantId.ToString()));
+
+        // Сохранение того же неактивного варианта должно работать (он уже был установлен)
+        Should.NotThrow(() =>
+            InitFieldSaveHelper().SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string?>
+                {
+                    { dropdownField.Id.ProjectFieldId, inactiveVariantId.ToString() },
+                },
+                mock.ProjectInfo));
+
+        mock.Character.JsonData.ShouldContain(inactiveVariantId.ToString());
+    }
 }
 
 public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator

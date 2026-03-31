@@ -250,3 +250,4 @@ public class FieldCannotHaveValueException(string fieldName) : JoinRpgBaseExcept
 {
     public string FieldName { get; } = fieldName;
 }
+

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.PrimitiveTypes.Characters;
 
@@ -64,17 +65,6 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     protected abstract void SetCharacterNameFromPlayer();
 
-    private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
-    {
-        return field.Field.Type switch
-        {
-            ProjectFieldType.Checkbox => toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
-                                ? FieldWithValue.CheckboxValueOn
-                                : "",
-            _ => string.IsNullOrEmpty(toAssign) ? null : toAssign,
-        };
-    }
-
     public void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
     {
         foreach (var field in fields.Values.Where(
@@ -83,7 +73,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         {
             var newValue = GenerateDefaultValue(field);
 
-            var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
+            var normalizedValue = field.NormalizeValueBeforeAssign(newValue);
 
             _ = AssignFieldValue(field, normalizedValue);
         }
@@ -102,7 +92,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             EnsureEditAccess(field);
 
-            var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
+            var normalizedValue = field.NormalizeValueBeforeAssign(keyValuePair.Value);
 
             if (normalizedValue is null && FieldIsMandatory(field))
             {

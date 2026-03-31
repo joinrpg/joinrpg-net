@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.Access;
 
@@ -76,11 +77,11 @@ public record class ProjectFieldInfo(
     public bool IsDescription { get; } = FieldSettings.DescriptionField == Id;
 
     /// <summary>
-    /// Special field - schedule time slot
+    /// Специальное поле — временной слот расписания
     /// </summary>
     public bool IsTimeSlot => Type == ProjectFieldType.ScheduleTimeSlotField;
     /// <summary>
-    /// Special field - schedule room slot
+    /// Специальное поле — слот помещения в расписании
     /// </summary>
     public bool IsRoomSlot => Type == ProjectFieldType.ScheduleRoomField;
 
@@ -122,6 +123,29 @@ public record class ProjectFieldInfo(
     public bool IsPublic => ProjectFieldVisibility == ProjectFieldVisibility.Public;
 
     public bool CanPlayerView => ProjectFieldVisibility != ProjectFieldVisibility.MasterOnly;
+
+    /// <summary>
+    /// Проверяет, что список идентификаторов вариантов для присвоения корректен.
+    /// Неактивные варианты можно сохранить, если они уже были установлены, но добавить можно только активный вариант.
+    /// </summary>
+    public void ValidateVariantList(IReadOnlyList<int> newVariantIds, IReadOnlyList<int> existingVariantIds)
+    {
+        var activeIds = Variants.Where(v => v.IsActive).Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
+        var allIds = Variants.Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
+
+        foreach (var id in newVariantIds)
+        {
+            if (activeIds.Contains(id))
+            {
+                continue;
+            }
+
+            if (!allIds.Contains(id) || !existingVariantIds.Contains(id))
+            {
+                throw new FieldValueInvalidException(Id, id);
+            }
+        }
+    }
 
     public override string ToString() => $"ProjectFieldInfo(Id={Id}, Name=\"{Name}\")";
 }

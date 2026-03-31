@@ -14,3 +14,10 @@ public class ProjectDeactivatedException(ProjectIdentification projectId)
 
 public class PaymentTypeInfoDeactivatedException(PaymentTypeIdentification paymentTypeIdentification)
     : JoinRpgProjectException(paymentTypeIdentification.ProjectId, $"{paymentTypeIdentification} деактивирован");
+
+public class FieldValueInvalidException(ProjectFieldIdentification fieldId, int variantId)
+    : JoinRpgBaseException($"Поле {fieldId}: значение {variantId} не является допустимым вариантом")
+{
+    public ProjectFieldIdentification FieldId { get; } = fieldId;
+    public int VariantId { get; } = variantId;
+}
