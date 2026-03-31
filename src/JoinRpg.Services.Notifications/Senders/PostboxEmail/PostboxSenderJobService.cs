@@ -57,6 +57,17 @@ internal class PostboxSenderJobService(
             logger.LogError(limitException, "Превышен лимит для отправки писем, измените настройки Postbox");
             return SendingResult.CommonFailure();
         }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Ошибка отправки email. To={to}, From={from}, ReplyTo={replyTo}, Subject={subject}",
+                string.Join(", ", request.Destination.ToAddresses),
+                request.FromEmailAddress,
+                string.Join(", ", request.ReplyToAddresses),
+                request.Content.Simple.Subject.Data);
+            throw;
+        }
     }
 
     internal static Body FormatBody(MarkdownString bodyString, UserDisplayName displayName)
