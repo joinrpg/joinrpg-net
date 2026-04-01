@@ -4,22 +4,17 @@ namespace JoinRpg.PrimitiveTypes.Test;
 
 public class IdentificationCommonTest
 {
-    private static string[] SkipISpanParsable = [];
-
-    [SkippableTheory()]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldImplementISpanParsable(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
-
         type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)).ShouldBeTrue();
     }
 
-    [SkippableTheory()]
+    [Theory]
     [ClassData(typeof(ProjectIdDataSource))]
     public void ShouldImplementPolymorphicParse(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
 
         var x = TryEasyConstruct(type);
         ProjectEntityIdParser.TryParseId(x.ToString(), out var id).ShouldBeTrue();
@@ -113,11 +108,10 @@ public class IdentificationCommonTest
         deserialized.ShouldBeEquivalentTo(instance);
     }
 
-    [SkippableTheory]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldRoundTripThroughText(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
         var instance = TryEasyConstruct(type);
         var serialized = instance.ToString().ShouldNotBeNull();
         var parseMethod = type.GetMethod("Parse", [typeof(string), typeof(IFormatProvider)]).ShouldNotBeNull();
@@ -125,19 +119,17 @@ public class IdentificationCommonTest
         deserialized.ShouldBeEquivalentTo(instance);
     }
 
-    [SkippableTheory]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldHaveParseMethodDirectlyNotAtInterface(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
         type.GetMethod("Parse", [typeof(string), typeof(IFormatProvider)]).ShouldNotBeNull();
     }
 
-    [SkippableTheory]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldHaveSpanParseMethodDirectlyNotAtInterface(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
         type.GetMethod("Parse", [typeof(ReadOnlySpan<char>), typeof(IFormatProvider)]).ShouldNotBeNull();
     }
 }

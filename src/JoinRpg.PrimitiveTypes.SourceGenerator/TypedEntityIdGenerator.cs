@@ -201,8 +201,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             return true;
         }
 
-        // Тип помечен [TypedEntityId] (или устаревшим [ProjectEntityId]) — рекурсивно проверяем его параметры
-        if (type.GetAttributes().Any(a => a.AttributeClass?.Name is "TypedEntityIdAttribute" or "ProjectEntityIdAttribute"))
+        // Тип помечен [TypedEntityId] — рекурсивно проверяем его параметры
+        if (type.GetAttributes().Any(a => a.AttributeClass?.Name == "TypedEntityIdAttribute"))
         {
             var ctor = FindPrimaryConstructor(type);
             if (ctor != null)
@@ -333,8 +333,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             return ParamKind.Int;
         }
 
-        // Тип помечен [TypedEntityId] (или устаревшим [ProjectEntityId]) — это вложенный типизированный Id
-        if (type.GetAttributes().Any(a => a.AttributeClass?.Name is "TypedEntityIdAttribute" or "ProjectEntityIdAttribute"))
+        // Тип помечен [TypedEntityId] — это вложенный типизированный Id
+        if (type.GetAttributes().Any(a => a.AttributeClass?.Name == "TypedEntityIdAttribute"))
         {
             return ParamKind.NestedEntityId;
         }
