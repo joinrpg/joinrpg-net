@@ -6,6 +6,6 @@ namespace JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
 [TypedEntityId]
 public partial record PaymentTypeIdentification(
     ProjectIdentification ProjectId,
-    int PaymentTypeId)
+    int PaymentTypeId) : IProjectEntityId
 {
 }

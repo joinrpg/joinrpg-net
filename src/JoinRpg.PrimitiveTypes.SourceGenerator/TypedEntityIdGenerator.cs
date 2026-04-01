@@ -153,7 +153,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             ? null
             : typeSymbol.ContainingNamespace.ToDisplayString();
 
-        // Последний int-параметр (для IComparable и IProjectEntityId.Id)
+        // Последний int-параметр (для IComparable и Id)
         string? lastIntParamName = null;
         for (int i = parameters.Count - 1; i >= 0; i--)
         {
@@ -171,9 +171,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         // Информация о параметрах конструктора с количеством листьев для каждого
         var primaryParams = BuildPrimaryParamInfos(parameters, ctx.SemanticModel.Compilation);
 
-        // Должен ли тип реализовывать IProjectEntityId — если хотя бы один параметр содержит ProjectId
-        bool implementsIProjectEntityId = parameters.Any(p =>
-            IsOrContainsIProjectEntityId(p.TypeSymbol, ctx.SemanticModel.Compilation));
+        // Вычисляем вложенные свойства через раскручивание цепочки первых параметров NestedEntityId
+        var nestedProperties = ComputeNestedProperties(typeSymbol, parameters, ctx.SemanticModel.Compilation);
 
         return new TypeGenerationInfo(
             FullTypeName: $"{(ns != null ? ns + "." : "")}{typeSymbol.Name}",
@@ -185,40 +184,56 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             FlatLeafExpressions: flatLeaves,
             LastIntParamName: lastIntParamName,
             PrimaryParams: primaryParams,
-            ImplementsIProjectEntityId: implementsIProjectEntityId
+            NestedProperties: nestedProperties
         );
     }
 
-    /// <summary>Рекурсивно проверяет, реализует ли тип IProjectEntityId (напрямую или через вложенные параметры).</summary>
-    private static bool IsOrContainsIProjectEntityId(INamedTypeSymbol type, Compilation compilation)
+    /// <summary>
+    /// Раскручивает цепочку первых параметров NestedEntityId и собирает свойства для генерации.
+    /// Например, для ForumCommentIdentification(ForumThreadIdentification ThreadId, ...) генерирует
+    /// ProjectId => ThreadId.ProjectId, следуя по цепочке первых параметров.
+    /// Свойства, уже объявленные вручную в типе, пропускаются (но цепочка продолжается).
+    /// </summary>
+    private static List<NestedPropertyInfo> ComputeNestedProperties(
+        INamedTypeSymbol currentType,
+        List<ParameterInfo> parameters,
+        Compilation compilation)
     {
-        var iProjectEntityIdType = compilation.GetTypeByMetadataName("JoinRpg.PrimitiveTypes.IProjectEntityId");
+        var result = new List<NestedPropertyInfo>();
 
-        // Тип напрямую реализует IProjectEntityId
-        if (iProjectEntityIdType != null &&
-            type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iProjectEntityIdType)))
-        {
-            return true;
-        }
+        if (parameters.Count == 0 || parameters[0].Kind != ParamKind.NestedEntityId)
+            return result;
 
-        // Тип помечен [TypedEntityId] — рекурсивно проверяем его параметры
-        if (type.GetAttributes().Any(a => a.AttributeClass?.Name == "TypedEntityIdAttribute"))
+        var currentTypeSym = parameters[0].TypeSymbol;
+        var accessor = parameters[0].Name;
+
+        while (true)
         {
-            var ctor = FindPrimaryConstructor(type);
-            if (ctor != null)
+            var ctor = FindPrimaryConstructor(currentTypeSym);
+            if (ctor == null || ctor.Parameters.Length == 0) break;
+
+            var firstInner = ctor.Parameters[0];
+            if (firstInner.Type is not INamedTypeSymbol firstInnerType) break;
+
+            var firstInnerKind = ClassifyParamType(firstInnerType, compilation);
+            if (firstInnerKind != ParamKind.NestedEntityId) break;
+
+            var propName = firstInner.Name;
+            var innerAccessor = $"{accessor}.{propName}";
+
+            // Генерируем свойство только если оно не объявлено вручную
+            if (!currentType.GetMembers(propName).OfType<IPropertySymbol>()
+                .Any(p => !p.IsImplicitlyDeclared))
             {
-                foreach (var param in ctor.Parameters)
-                {
-                    if (param.Type is INamedTypeSymbol paramType &&
-                        IsOrContainsIProjectEntityId(paramType, compilation))
-                    {
-                        return true;
-                    }
-                }
+                result.Add(new NestedPropertyInfo(propName, firstInnerType.Name, innerAccessor));
             }
+
+            // Продолжаем цепочку вне зависимости от того, сгенерировали ли свойство
+            currentTypeSym = firstInnerType;
+            accessor = innerAccessor;
         }
 
-        return false;
+        return result;
     }
 
     private static IReadOnlyList<PrimaryParamInfo> BuildPrimaryParamInfos(
@@ -392,12 +407,10 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         }
 
         // Генерируемые интерфейсы
-        var interfaces = new List<string>();
-        if (info.ImplementsIProjectEntityId)
+        var interfaces = new List<string>
         {
-            interfaces.Add("IProjectEntityId");
-        }
-        interfaces.Add($"ISpanParsable<{info.TypeName}>");
+            $"ISpanParsable<{info.TypeName}>"
+        };
         if (!info.SkipComparable)
         {
             interfaces.Add($"IComparable<{info.TypeName}>");
@@ -406,20 +419,15 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine($"public partial record {info.TypeName} : {string.Join(", ", interfaces)}");
         sb.AppendLine("{");
 
-        // Свойства Id и ProjectId из IProjectEntityId
-        if (info.ImplementsIProjectEntityId)
-        {
-            sb.AppendLine($"    public int Id => {info.LastIntParamName};");
-            sb.AppendLine();
+        // Свойство Id — генерируется безусловно для всех TypedEntityId
+        sb.AppendLine($"    public int Id => {info.LastIntParamName};");
+        sb.AppendLine();
 
-            // Генерируем ProjectId только если ни один параметр не называется "ProjectId"
-            // (иначе свойство уже создано primary constructor как record property)
-            if (!info.PrimaryParams.Any(p => p.Name == "ProjectId"))
-            {
-                var firstNestedParam = info.PrimaryParams.First(p => p.Kind == ParamKind.NestedEntityId);
-                sb.AppendLine($"    public ProjectIdentification ProjectId => {firstNestedParam.Name}.ProjectId;");
-                sb.AppendLine();
-            }
+        // Вложенные свойства, полученные раскручиванием цепочки первых параметров NestedEntityId
+        foreach (var nestedProp in info.NestedProperties)
+        {
+            sb.AppendLine($"    public {nestedProp.PropTypeName} {nestedProp.PropName} => {nestedProp.Accessor};");
+            sb.AppendLine();
         }
 
         // ToString
@@ -610,6 +618,12 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         int LeafCount     // Количество листовых int-значений
     );
 
+    private sealed record NestedPropertyInfo(
+        string PropName,      // Имя свойства, например "ProjectId"
+        string PropTypeName,  // Имя типа свойства, например "ProjectIdentification"
+        string Accessor       // Выражение для получения значения, например "ThreadId.ProjectId"
+    );
+
     private sealed record TypeGenerationInfo(
         string FullTypeName,
         string? Namespace,
@@ -620,6 +634,6 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         List<string> FlatLeafExpressions,
         string LastIntParamName,
         IReadOnlyList<PrimaryParamInfo> PrimaryParams,
-        bool ImplementsIProjectEntityId
+        IReadOnlyList<NestedPropertyInfo> NestedProperties
     );
 }

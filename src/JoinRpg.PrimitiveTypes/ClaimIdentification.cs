@@ -6,7 +6,7 @@ namespace JoinRpg.PrimitiveTypes;
 [TypedEntityId]
 public partial record ClaimIdentification(
     ProjectIdentification ProjectId,
-    int ClaimId) : ILinkable
+    int ClaimId) : IProjectEntityId, ILinkable
 {
     public LinkType LinkType => LinkType.Claim;
 

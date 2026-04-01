@@ -4,6 +4,6 @@ namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record ProjectFieldVariantIdentification(ProjectFieldIdentification FieldId, int ProjectFieldVariantId)
+public partial record ProjectFieldVariantIdentification(ProjectFieldIdentification FieldId, int ProjectFieldVariantId) : IProjectEntityId
 {
 }

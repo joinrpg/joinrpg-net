@@ -6,6 +6,6 @@ namespace JoinRpg.PrimitiveTypes;
 [TypedEntityId]
 public partial record CharacterIdentification(
     ProjectIdentification ProjectId,
-    int CharacterId)
+    int CharacterId) : IProjectEntityId
 {
 }
