@@ -4,6 +4,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.PrimitiveTypes.SourceGenerator\JoinRpg.PrimitiveTypes.SourceGenerator.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
     <InternalsVisibleTo Include="JoinRpg.Domain.Test" />
     <InternalsVisibleTo Include="JoinRpg.WebPortal.Models.Test" />

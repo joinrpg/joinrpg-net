@@ -4,9 +4,8 @@ namespace JoinRpg.PrimitiveTypes.Test;
 
 public class IdentificationCommonTest
 {
-    // Это временный вайтлист. Не надо добавлять сюда ничего
-    public static string[] SkipISpanParsable = ["AvatarIdentification", "CharacterGroupIdentification", "CharacterIdentification", "ClaimIdentification",
-    "PlotVersionIdentification", "ProjectFieldIdentification", "ProjectFieldVariantIdentification"];
+    // AvatarIdentification не реализует IProjectEntityId, поэтому исключается
+    public static string[] SkipISpanParsable = ["AvatarIdentification"];
 
     [SkippableTheory()]
     [ClassData(typeof(IdentificationDataSource))]

@@ -54,19 +54,43 @@ internal static class IdentificationParseHelper
         {
             if (val.StartsWith(prefix))
             {
-                val = val[prefix.Length..];
+                var rest = val.Slice(prefix.Length);
+                // Only strip prefix if followed by '(' or end of string (word boundary)
+                if (rest.IsEmpty || rest[0] == '(')
+                {
+                    val = rest;
+                    break;
+                }
             }
         }
-        if (val.StartsWith("("))
+        if (!val.IsEmpty && val[0] == '(')
         {
-            val = val[1..];
+            val = val.Slice(1);
         }
-        if (val.EndsWith(")"))
+        if (!val.IsEmpty && val[val.Length - 1] == ')')
         {
-            val = val[..^1];
+            val = val.Slice(0, val.Length - 1);
         }
 
         return val;
+    }
+
+    internal static (int i1, int i2, int i3, int i4)? TryParse4(ReadOnlySpan<char> value, IFormatProvider? provider, params ReadOnlySpan<string> prefixes)
+    {
+        ReadOnlySpan<char> val = RemovePrefixes(value, prefixes);
+        Span<Range> ranges = stackalloc Range[4];
+        var count = SplitIdentifier(val, ranges);
+        if (count == 4
+           && ProjectIdentification.TryParse(val[ranges[0]], provider, out var i1)
+           && int.TryParse(val[ranges[1]], provider, out var i2)
+           && int.TryParse(val[ranges[2]], provider, out var i3)
+           && int.TryParse(val[ranges[3]], provider, out var i4)
+           )
+        {
+            return (i1, i2, i3, i4);
+        }
+
+        return null;
     }
 
     internal static int SplitIdentifier(ReadOnlySpan<char> val, Span<Range> ranges) => val.SplitAny(ranges, "-,", StringSplitOptions.TrimEntries);
