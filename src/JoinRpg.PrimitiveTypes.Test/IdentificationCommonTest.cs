@@ -4,8 +4,7 @@ namespace JoinRpg.PrimitiveTypes.Test;
 
 public class IdentificationCommonTest
 {
-    // AvatarIdentification не реализует IProjectEntityId, поэтому исключается
-    public static string[] SkipISpanParsable = ["AvatarIdentification"];
+    private static string[] SkipISpanParsable = [];
 
     [SkippableTheory()]
     [ClassData(typeof(IdentificationDataSource))]
@@ -25,14 +24,6 @@ public class IdentificationCommonTest
         var x = TryEasyConstruct(type);
         ProjectEntityIdParser.TryParseId(x.ToString(), out var id).ShouldBeTrue();
         id.ShouldBe(x);
-    }
-
-    [Theory]
-    [ClassData(typeof(WhiteListDataSource))]
-    public void WhiteListIsActual(Type type)
-    {
-        // Если это тест начал падать, надо удалить тип из вайтлиста
-        _ = Should.Throw<ArgumentException>(() => type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)));
     }
 
     [Theory]
@@ -76,22 +67,7 @@ public class IdentificationCommonTest
         {
             return;
         }
-        var parameters = new List<object?>() { new ProjectIdentification(1) };
-        for (var paramCount = 2; paramCount < 5; paramCount++)
-        {
-            parameters.Add(paramCount);
-            try
-            {
-                var instance = Activator.CreateInstance(type, parameters.ToArray());
-                return;
-            }
-            catch
-            {
-
-            }
-
-        }
-        true.ShouldBeFalse("There is no easy constructor for type");
+        TryEasyConstruct(type).ShouldNotBeNull();
     }
 
     [Theory]
