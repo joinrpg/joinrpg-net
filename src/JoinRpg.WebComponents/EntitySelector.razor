@@ -1,0 +1,67 @@
+@typeparam TKey where TKey : notnull, IParsable<TKey>, IEquatable<TKey>
+
+@if (ShowSearch)
+{
+    <input type="search"
+           placeholder="Поиск..."
+           @bind="searchText"
+           @bind:event="oninput" />
+}
+<select name="@Name"
+        multiple="@Multiple"
+        @onchange="OnSelectionChangedAsync">
+    @foreach (var item in FilteredValues)
+    {
+        <option value="@item.Key.ToString()"
+                selected="@IsSelected(item.Key)"
+                disabled="@item.Disabled">@item.Text@if (!string.IsNullOrEmpty(item.Subtext))
+            {
+                <text> — @item.Subtext</text>
+            }
+        </option>
+    }
+</select>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public EntitySelectorItem<TKey>[] PossibleValues { get; set; } = [];
+    [Parameter] public TKey[] SelectedKeys { get; set; } = [];
+    [Parameter] public EventCallback<TKey[]> SelectedKeysChanged { get; set; }
+    [Parameter] public bool Multiple { get; set; }
+
+    private string searchText = "";
+
+    private bool ShowSearch => PossibleValues.Length > 10;
+
+    private IEnumerable<EntitySelectorItem<TKey>> FilteredValues =>
+        string.IsNullOrEmpty(searchText)
+            ? PossibleValues
+            : PossibleValues.Where(x =>
+                x.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                x.ExtraSearch.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+    private bool IsSelected(TKey key) => SelectedKeys.Contains(key);
+
+    private async Task OnSelectionChangedAsync(ChangeEventArgs e)
+    {
+        IEnumerable<string> stringValues;
+        if (e.Value is string single)
+        {
+            stringValues = [single];
+        }
+        else if (e.Value is object?[] multiple)
+        {
+            stringValues = multiple.OfType<string>();
+        }
+        else
+        {
+            stringValues = [];
+        }
+
+        var keys = stringValues
+            .Where(v => !string.IsNullOrEmpty(v))
+            .Select(v => TKey.Parse(v, null))
+            .ToArray();
+        await SelectedKeysChanged.InvokeAsync(keys);
+    }
+}

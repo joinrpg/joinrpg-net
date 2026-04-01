@@ -1,4 +1,4 @@
-﻿@using JoinRpg.PrimitiveTypes
+@using JoinRpg.PrimitiveTypes
 @inject IMasterClient client
 
 @if (items is null)
@@ -7,10 +7,10 @@
 }
 else
 {
-  <IntSelector
+  <EntitySelector TKey="int"
                Name="@Name"
-               SelectedValues="@Selected"
-               SelectedValuesChanged="@HandleSelectedChanged"
+               SelectedKeys="@Selected"
+               SelectedKeysChanged="@HandleSelectedChanged"
                PossibleValues="items"
                Multiple="false"
                />
@@ -27,8 +27,8 @@ else
     [Parameter] public MasterViewModel? Master{ get; set; }
     [Parameter] public EventCallback<MasterViewModel?> MasterChanged { get; set; }
 
-    private int[] Selected { get; set; } = new int[0];
-    private IntSelectListItem[] items = null!;
+    private int[] Selected { get; set; } = [];
+    private EntitySelectorItem<int>[]? items = null;
     private List<MasterViewModel> masters = null!;
 
     protected override async Task OnInitializedAsync()
@@ -37,8 +37,8 @@ else
         items = masters
           .Where(master => !IdsToRemove.Contains(master.MasterId))
           .Select(master =>
-            new IntSelectListItem(
-              Value: master.MasterId,
+            new EntitySelectorItem<int>(
+              Key: master.MasterId,
               Text: master.DisplayName.DisplayName,
               Subtext: master.DisplayName.FullName ?? "",
               ExtraSearch: master.DisplayName.FullName ?? ""))
@@ -50,11 +50,11 @@ else
         base.OnParametersSet();
         if (MasterId is not null)
         {
-            Selected = new int[] { MasterId.Value };
+            Selected = [MasterId.Value];
         }
         else if (Master is not null)
         {
-            Selected = new int[] { Master.MasterId };
+            Selected = [Master.MasterId];
         }
     }
 
