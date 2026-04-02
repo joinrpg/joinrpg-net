@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
-[ProjectEntityId]
+[TypedEntityId]
 public partial record CharacterGroupIdentification(
     ProjectIdentification ProjectId,
-    int CharacterGroupId)
+    int CharacterGroupId) : IProjectEntityId
 {
 }

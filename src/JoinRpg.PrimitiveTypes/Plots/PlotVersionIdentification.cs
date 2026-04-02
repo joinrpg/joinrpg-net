@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes.Plots;
 
 [method: JsonConstructor]
-[ProjectEntityId]
+[TypedEntityId]
 public partial record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version)
-    : IComparable<PlotVersionIdentification>
+    : IProjectEntityId, IComparable<PlotVersionIdentification>
 {
     public PlotFolderIdentification PlotFolderId => PlotElementId.PlotFolderId;
 

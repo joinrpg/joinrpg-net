@@ -4,35 +4,21 @@ namespace JoinRpg.PrimitiveTypes.Test;
 
 public class IdentificationCommonTest
 {
-    // AvatarIdentification не реализует IProjectEntityId, поэтому исключается
-    public static string[] SkipISpanParsable = ["AvatarIdentification"];
-
-    [SkippableTheory()]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldImplementISpanParsable(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
-
         type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)).ShouldBeTrue();
     }
 
-    [SkippableTheory()]
+    [Theory]
     [ClassData(typeof(ProjectIdDataSource))]
     public void ShouldImplementPolymorphicParse(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
 
         var x = TryEasyConstruct(type);
         ProjectEntityIdParser.TryParseId(x.ToString(), out var id).ShouldBeTrue();
         id.ShouldBe(x);
-    }
-
-    [Theory]
-    [ClassData(typeof(WhiteListDataSource))]
-    public void WhiteListIsActual(Type type)
-    {
-        // Если это тест начал падать, надо удалить тип из вайтлиста
-        _ = Should.Throw<ArgumentException>(() => type.IsAssignableTo(typeof(ISpanParsable<>).MakeGenericType(type)));
     }
 
     [Theory]
@@ -76,22 +62,7 @@ public class IdentificationCommonTest
         {
             return;
         }
-        var parameters = new List<object?>() { new ProjectIdentification(1) };
-        for (var paramCount = 2; paramCount < 5; paramCount++)
-        {
-            parameters.Add(paramCount);
-            try
-            {
-                var instance = Activator.CreateInstance(type, parameters.ToArray());
-                return;
-            }
-            catch
-            {
-
-            }
-
-        }
-        true.ShouldBeFalse("There is no easy constructor for type");
+        TryEasyConstruct(type).ShouldNotBeNull();
     }
 
     [Theory]
@@ -137,11 +108,10 @@ public class IdentificationCommonTest
         deserialized.ShouldBeEquivalentTo(instance);
     }
 
-    [SkippableTheory]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldRoundTripThroughText(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
         var instance = TryEasyConstruct(type);
         var serialized = instance.ToString().ShouldNotBeNull();
         var parseMethod = type.GetMethod("Parse", [typeof(string), typeof(IFormatProvider)]).ShouldNotBeNull();
@@ -149,19 +119,17 @@ public class IdentificationCommonTest
         deserialized.ShouldBeEquivalentTo(instance);
     }
 
-    [SkippableTheory]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldHaveParseMethodDirectlyNotAtInterface(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
         type.GetMethod("Parse", [typeof(string), typeof(IFormatProvider)]).ShouldNotBeNull();
     }
 
-    [SkippableTheory]
+    [Theory]
     [ClassData(typeof(IdentificationDataSource))]
     public void ShouldHaveSpanParseMethodDirectlyNotAtInterface(Type type)
     {
-        Skip.If(SkipISpanParsable.Contains(type.Name));
         type.GetMethod("Parse", [typeof(ReadOnlySpan<char>), typeof(IFormatProvider)]).ShouldNotBeNull();
     }
 }

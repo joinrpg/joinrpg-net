@@ -3,10 +3,10 @@ using System.Text.Json.Serialization;
 namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
-[ProjectEntityId]
+[TypedEntityId]
 public partial record ClaimIdentification(
     ProjectIdentification ProjectId,
-    int ClaimId) : ILinkable
+    int ClaimId) : IProjectEntityId, ILinkable
 {
     public LinkType LinkType => LinkType.Claim;
 
