@@ -4,7 +4,7 @@ namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
 [TypedEntityId(ShortName = "Project")]
-public partial record ProjectIdentification(int Value) : SingleValueType<int>(Value), ILinkable, IProjectEntityId
+public partial record ProjectIdentification(int Value) : ILinkable, IProjectEntityId
 {
     LinkType ILinkable.LinkType => LinkType.Project;
 

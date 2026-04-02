@@ -4,6 +4,6 @@ namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record class UserIdentification(int Value) : SingleValueType<int>(Value)
+public partial record class UserIdentification(int Value)
 {
 }

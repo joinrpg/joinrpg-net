@@ -202,7 +202,9 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         var result = new List<NestedPropertyInfo>();
 
         if (parameters.Count == 0 || parameters[0].Kind != ParamKind.NestedEntityId)
+        {
             return result;
+        }
 
         var currentTypeSym = parameters[0].TypeSymbol;
         var accessor = parameters[0].Name;
@@ -210,13 +212,22 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         while (true)
         {
             var ctor = FindPrimaryConstructor(currentTypeSym);
-            if (ctor == null || ctor.Parameters.Length == 0) break;
+            if (ctor == null || ctor.Parameters.Length == 0)
+            {
+                break;
+            }
 
             var firstInner = ctor.Parameters[0];
-            if (firstInner.Type is not INamedTypeSymbol firstInnerType) break;
+            if (firstInner.Type is not INamedTypeSymbol firstInnerType)
+            {
+                break;
+            }
 
             var firstInnerKind = ClassifyParamType(firstInnerType, compilation);
-            if (firstInnerKind != ParamKind.NestedEntityId) break;
+            if (firstInnerKind != ParamKind.NestedEntityId)
+            {
+                break;
+            }
 
             var propName = firstInner.Name;
             var innerAccessor = $"{accessor}.{propName}";
@@ -421,6 +432,10 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
 
         // Свойство Id — генерируется безусловно для всех TypedEntityId
         sb.AppendLine($"    public int Id => {info.LastIntParamName};");
+        sb.AppendLine();
+
+        // Неявное преобразование к int
+        sb.AppendLine($"    public static implicit operator int({info.TypeName} self) => self.{info.LastIntParamName};");
         sb.AppendLine();
 
         // Вложенные свойства, полученные раскручиванием цепочки первых параметров NestedEntityId
