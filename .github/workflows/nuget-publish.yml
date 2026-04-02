@@ -82,3 +82,4 @@ jobs:
           dotnet nuget push ./nuget-output/*.nupkg
           --source yandex-joinrpg
           --skip-duplicate
+          --api-key "${{ steps.iam-token.outputs.iam_token }}"
