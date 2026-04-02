@@ -6,4 +6,5 @@ namespace JoinRpg.PrimitiveTypes.Plots;
 [TypedEntityId]
 public partial record PlotFolderIdentification(ProjectIdentification ProjectId, int PlotFolderId) : IProjectEntityId
 {
+    public static implicit operator int(PlotFolderIdentification self) => self.PlotFolderId;
 }

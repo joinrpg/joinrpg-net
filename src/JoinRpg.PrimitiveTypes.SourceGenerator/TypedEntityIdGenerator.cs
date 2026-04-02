@@ -434,9 +434,12 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine($"    public int Id => {info.LastIntParamName};");
         sb.AppendLine();
 
-        // Неявное преобразование к int
-        sb.AppendLine($"    public static implicit operator int({info.TypeName} self) => self.{info.LastIntParamName};");
-        sb.AppendLine();
+        // Неявное преобразование к int — только для не составных id (ровно одно свойство)
+        if (info.PrimaryParams.Count == 1)
+        {
+            sb.AppendLine($"    public static implicit operator int({info.TypeName} self) => self.{info.LastIntParamName};");
+            sb.AppendLine();
+        }
 
         // Вложенные свойства, полученные раскручиванием цепочки первых параметров NestedEntityId
         foreach (var nestedProp in info.NestedProperties)
