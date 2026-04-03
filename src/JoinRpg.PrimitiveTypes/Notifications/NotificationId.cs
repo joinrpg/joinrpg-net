@@ -1,4 +1,7 @@
+using System.Text.Json.Serialization;
+
 namespace JoinRpg.PrimitiveTypes.Notifications;
 
-public record NotificationId(int Value) : SingleValueType<int>(Value);
-
+[method: JsonConstructor]
+[TypedEntityId]
+public partial record NotificationId(int Value);
