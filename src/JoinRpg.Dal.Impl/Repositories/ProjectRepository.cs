@@ -232,29 +232,23 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     private async Task<ProjectShortInfo[]> GetKogdaIgraMissingGames()
     {
-        var kogdaIgraStaleExpression60 = ProjectPredicates.KogdaIgraIsStaleFor(TimeSpan.FromDays(60));
-        Expression<Func<Project, bool>> hasNonStaleKogdaIgra = project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression60.Invoke(e)) > 0;
-        var filterPredicate = PredicateBuilder.New<Project>()
-                .And(project => project.Active)
-                .And(project => !hasNonStaleKogdaIgra.Invoke(project))
-                .And(project => !project.Details.DisableKogdaIgraMapping);
         var projection = GetProjectListProjection();
 
-        var lastUpdateMax = DateTime.Now.AddDays(-60);
+        var now = DateTime.Now;
+        var lastUpdateMax = now.AddDays(-60);
 
         var query = from project in AllProjects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
-                    where filterPredicate.Invoke(project)
-                    let item = projection.Invoke(project, update)
-                    where item.KogdaIgraGames.Count() == 0 || item.LastUpdated > lastUpdateMax
-                    select item;
-
-
+                    where project.Active && !project.Details.DisableKogdaIgraMapping
+                    let hasActiveOrFutureGame = project.KogdaIgraGames.Any(g => g.Active && g.End >= now)
+                    let hasAnyGame = project.KogdaIgraGames.Any(g => g.Active)
+                    where !hasActiveOrFutureGame
+                    where !hasAnyGame || update.LastUpdated > lastUpdateMax
+                    select projection.Invoke(project, update);
 
         var result = await query.ToListAsync();
 
         return [.. result.Select(BuildProjectShortInfo)];
-
     }
 
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
