@@ -31,6 +31,11 @@ public static class ProjectEntityExtensions
     {
         ArgumentNullException.ThrowIfNull(entity);
 
+        if (currentUserId is null)
+        {
+            return false;
+        }
+
         return entity.Project.ProjectAcls.Where(acl => permission.GetPermssionExpression()(acl)).Any(pa => pa.UserId == currentUserId);
     }
 
