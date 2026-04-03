@@ -237,9 +237,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         var now = DateTime.Now;
         var lastUpdateMax = now.AddDays(-60);
 
-        // Показываем проект как кандидата привязки если:
-        // 1. Нет КИ-привязки вообще, ИЛИ
-        // 2. Все привязанные КИ-игры уже завершились (End < now) И в проекте продолжается активность (<60 дней)
         var query = from project in AllProjects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
                     where project.Active && !project.Details.DisableKogdaIgraMapping
