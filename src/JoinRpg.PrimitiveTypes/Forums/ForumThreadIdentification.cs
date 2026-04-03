@@ -4,6 +4,6 @@ namespace JoinRpg.PrimitiveTypes.Forums;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record class ForumThreadIdentification(ProjectIdentification ProjectId, int ThreadId) : IProjectEntityId
+public partial record struct ForumThreadIdentification(ProjectIdentification ProjectId, int ThreadId) : IProjectEntityId
 {
 }

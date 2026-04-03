@@ -919,7 +919,7 @@ internal class ClaimServiceImpl(
             logger.LogError("Некорректно настроен проект донатов {donateProjectId}", donateProjectId);
             throw new JoinRpgProjectMisconfiguredException(donateProjectId, "У проекта должен быть шаблон по умолчанию");
         }
-        return await AddClaimFromUser(projectInfo.ClaimSettings.DefaultTemplate, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
+        return await AddClaimFromUser(projectInfo.ClaimSettings.DefaultTemplate.Value, claimText: "", fields: new Dictionary<int, string?>(), sensitiveDataAllowed: false);
     }
 
     public static void SetParentCommentAndCheck((Comment, ClaimSimpleChangedNotification) result, Comment parentComment, ClaimOperationType claimOperationType)

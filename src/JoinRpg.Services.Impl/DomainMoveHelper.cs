@@ -4,7 +4,16 @@ internal static class DomainMoveHelper
 {
 
     public static string MoveAfter<TId>(TId targetId, TId? afterId, string? storedOrder, IEnumerable<TId> idList, bool preserveOrder = false)
-        where TId : IProjectEntityId
+        where TId : class, IProjectEntityId
+    {
+        var voc = VirtualOrderContainerFacade.Create(idList.Select(x => IdWrapper.Create(x)), storedOrder, preserveOrder);
+
+        var resultOrder = voc.MoveAfter(targetId.Id, afterId?.Id).GetStoredOrder();
+        return resultOrder;
+    }
+
+    public static string MoveAfter<TId>(TId targetId, TId? afterId, string? storedOrder, IEnumerable<TId> idList, bool preserveOrder = false)
+        where TId : struct, IProjectEntityId
     {
         var voc = VirtualOrderContainerFacade.Create(idList.Select(x => IdWrapper.Create(x)), storedOrder, preserveOrder);
 

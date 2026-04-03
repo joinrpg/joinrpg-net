@@ -16,7 +16,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         namespace JoinRpg.PrimitiveTypes;
 
         /// <summary>Маркер для генератора реализаций типизированных идентификаторов.</summary>
-        [AttributeUsage(AttributeTargets.Class)]
+        [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
         internal sealed class TypedEntityIdAttribute : Attribute
         {
             /// <summary>Короткий префикс для ToString (например "ClaimId"). По умолчанию — TypeName минус суффикс "Identification" плюс суффикс "Id".</summary>
@@ -133,7 +133,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
                 // Неизвестный тип — не можем сгенерировать код
                 return null;
             }
-            parameters.Add(new ParameterInfo(param.Identifier.Text, paramTypeSymbol, paramKind));
+            bool isParamStruct = paramTypeSymbol.TypeKind == TypeKind.Struct;
+            parameters.Add(new ParameterInfo(param.Identifier.Text, paramTypeSymbol, paramKind, isParamStruct));
         }
 
         if (parameters.Count == 0)
@@ -174,6 +175,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         // Вычисляем вложенные свойства через раскручивание цепочки первых параметров NestedEntityId
         var nestedProperties = ComputeNestedProperties(typeSymbol, parameters, ctx.SemanticModel.Compilation);
 
+        bool isStruct = recordDecl.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword);
+
         return new TypeGenerationInfo(
             FullTypeName: $"{(ns != null ? ns + "." : "")}{typeSymbol.Name}",
             Namespace: ns,
@@ -184,7 +187,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             FlatLeafExpressions: flatLeaves,
             LastIntParamName: lastIntParamName,
             PrimaryParams: primaryParams,
-            NestedProperties: nestedProperties
+            NestedProperties: nestedProperties,
+            IsStruct: isStruct
         );
     }
 
@@ -259,7 +263,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
                 Name: param.Name,
                 TypeName: param.TypeSymbol.Name,
                 Kind: param.Kind,
-                LeafCount: leafCount));
+                LeafCount: leafCount,
+                IsStruct: param.IsStruct));
         }
         return result;
     }
@@ -427,7 +432,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             interfaces.Add($"IComparable<{info.TypeName}>");
         }
 
-        sb.AppendLine($"public partial record {info.TypeName} : {string.Join(", ", interfaces)}");
+        string recordKind = info.IsStruct ? "record struct" : "record";
+        sb.AppendLine($"public partial {recordKind} {info.TypeName} : {string.Join(", ", interfaces)}");
         sb.AppendLine("{");
 
         // Свойство Id — генерируется безусловно для всех TypedEntityId
@@ -456,8 +462,17 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         // IComparable<T>
         if (!info.SkipComparable)
         {
-            sb.AppendLine($"    public int CompareTo({info.TypeName}? other)");
-            sb.AppendLine($"        => Comparer<int>.Default.Compare({info.LastIntParamName}, other?.{info.LastIntParamName} ?? -1);");
+            if (info.IsStruct)
+            {
+                // Для struct: IComparable<T>.CompareTo(T other) без nullable
+                sb.AppendLine($"    public int CompareTo({info.TypeName} other)");
+                sb.AppendLine($"        => Comparer<int>.Default.Compare({info.LastIntParamName}, other.{info.LastIntParamName});");
+            }
+            else
+            {
+                sb.AppendLine($"    public int CompareTo({info.TypeName}? other)");
+                sb.AppendLine($"        => Comparer<int>.Default.Compare({info.LastIntParamName}, other?.{info.LastIntParamName} ?? -1);");
+            }
             sb.AppendLine();
         }
 
@@ -479,9 +494,11 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         GenerateFromOptional(sb, info);
 
         // Метод FromOptional(firstLeaf, int?) — для (NestedEntityId с 1 листом, int) типов
+        // Не генерируем для struct-типов: неявная конвертация struct→int создаёт неоднозначность с FromOptional(T?, int?)
         if (info.PrimaryParams.Count == 2 &&
             info.PrimaryParams[0].Kind == ParamKind.NestedEntityId &&
             info.PrimaryParams[0].LeafCount == 1 &&
+            !info.PrimaryParams[0].IsStruct &&
             info.PrimaryParams[1].Kind == ParamKind.Int)
         {
             var entityParam = info.PrimaryParams[1].Name;
@@ -542,10 +559,11 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             }
             else
             {
-                // NestedEntityId — reference type, nullable через ?
+                // NestedEntityId — nullable через ?
                 optParams.Add($"{param.TypeName}? {paramNameLower}");
                 nullChecks.Add($"{paramNameLower} is not null");
-                ctorArgs.Add(paramNameLower);
+                // Для value types нужен .Value для распаковки из Nullable<T>
+                ctorArgs.Add(param.IsStruct ? $"{paramNameLower}.Value" : paramNameLower);
             }
         }
 
@@ -620,20 +638,22 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine($"            result = new {info.TypeName}({constructorArgs});");
         sb.AppendLine("            return true;");
         sb.AppendLine("        }");
-        sb.AppendLine("        result = null;");
+        string nullResult = info.IsStruct ? "default" : "null";
+        sb.AppendLine($"        result = {nullResult};");
         sb.AppendLine("        return false;");
         sb.AppendLine("    }");
     }
 
     private enum ParamKind { Int, NestedEntityId, Unknown }
 
-    private sealed record ParameterInfo(string Name, INamedTypeSymbol TypeSymbol, ParamKind Kind);
+    private sealed record ParameterInfo(string Name, INamedTypeSymbol TypeSymbol, ParamKind Kind, bool IsStruct);
 
     private sealed record PrimaryParamInfo(
         string Name,      // Имя параметра, например "ClaimId"
         string TypeName,  // Имя типа, например "ClaimIdentification" или "int"
         ParamKind Kind,   // Вид параметра
-        int LeafCount     // Количество листовых int-значений
+        int LeafCount,    // Количество листовых int-значений
+        bool IsStruct     // Является ли тип value type (record struct)
     );
 
     private sealed record NestedPropertyInfo(
@@ -652,6 +672,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         List<string> FlatLeafExpressions,
         string LastIntParamName,
         IReadOnlyList<PrimaryParamInfo> PrimaryParams,
-        IReadOnlyList<NestedPropertyInfo> NestedProperties
+        IReadOnlyList<NestedPropertyInfo> NestedProperties,
+        bool IsStruct
     );
 }

@@ -38,8 +38,8 @@ internal class ProjectListViewService(
     {
         return projectSelectionCriteria switch
         {
-            ProjectSelectionCriteria.ForCloning when userId is not null => ProjectListSpecification.ForCloning(userId),
-            ProjectSelectionCriteria.ActiveWithMyMasterAccess when userId is not null => ProjectListSpecification.ActiveWithMyMasterAccess(userId),
+            ProjectSelectionCriteria.ForCloning when userId is not null => ProjectListSpecification.ForCloning(userId.Value),
+            ProjectSelectionCriteria.ActiveWithMyMasterAccess when userId is not null => ProjectListSpecification.ActiveWithMyMasterAccess(userId.Value),
             ProjectSelectionCriteria.ActiveWithoutKogdaIgra => ProjectListSpecification.ActiveProjectsWithoutKogdaIgra,
             ProjectSelectionCriteria.All => ProjectListSpecification.All,
             ProjectSelectionCriteria.Active => ProjectListSpecification.Active,

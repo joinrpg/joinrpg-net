@@ -4,6 +4,6 @@ namespace JoinRpg.PrimitiveTypes.Claims;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record class ClaimCommentIdentification(ClaimIdentification ClaimId, int CommentId) : IProjectEntityId
+public partial record struct ClaimCommentIdentification(ClaimIdentification ClaimId, int CommentId) : IProjectEntityId
 {
 }

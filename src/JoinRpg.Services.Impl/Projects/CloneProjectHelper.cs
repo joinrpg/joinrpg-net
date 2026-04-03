@@ -24,11 +24,11 @@ internal class CloneProjectHelper(
     ILogger logger)
 {
     private readonly Dictionary<CharacterIdentification, CharacterIdentification> CharacterMapping = [];
-    private List<CharacterIdentification> TryMapOriginalCharacterIds(IEnumerable<int> enumerable) => [.. CharacterIdentification.FromList(enumerable, original.ProjectId).Select(id => CharacterMapping.GetValueOrDefault(id)).WhereNotNull()];
+    private List<CharacterIdentification> TryMapOriginalCharacterIds(IEnumerable<int> enumerable) => [.. CharacterIdentification.FromList(enumerable, original.ProjectId).Select(id => CharacterMapping.TryGetValue(id, out var mapped) ? (CharacterIdentification?)mapped : null).WhereNotNull()];
 
     private readonly Dictionary<CharacterGroupIdentification, CharacterGroupIdentification> GroupMapping = [];
     private readonly Dictionary<CharacterGroupIdentification, CharacterGroupIdentification> SpecialGroupMapping = [];
-    private List<CharacterGroupIdentification> TryMapGroups(IEnumerable<CharacterGroupIdentification> originalShowForGroups) => [.. originalShowForGroups.Select(g => GroupMapping.GetValueOrDefault(g)).WhereNotNull()];
+    private List<CharacterGroupIdentification> TryMapGroups(IEnumerable<CharacterGroupIdentification> originalShowForGroups) => [.. originalShowForGroups.Select(g => GroupMapping.TryGetValue(g, out var mapped) ? (CharacterGroupIdentification?)mapped : null).WhereNotNull()];
     private List<CharacterGroupIdentification> TryMapOriginalGroupIds(IEnumerable<int> intList) => TryMapGroups(CharacterGroupIdentification.FromList(intList, original.ProjectId));
 
     private readonly Dictionary<ProjectFieldIdentification, ProjectFieldIdentification> FieldMapping = [];
@@ -79,7 +79,7 @@ internal class CloneProjectHelper(
 
         await projectService.SetAccommodationSettings(projectId, original.AccomodationEnabled);
 
-        await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null });
+        await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is CharacterIdentification dt ? (CharacterMapping.TryGetValue(dt, out var mappedTemplate) ? mappedTemplate : (CharacterIdentification?)null) : null });
 
         return everythingFine;
     }
@@ -281,8 +281,7 @@ internal class CloneProjectHelper(
                 .Where(fv => fv.HasEditableValue) // Только те поля, у которых есть какое-то значение
                 )
             {
-                var newFieldId = FieldMapping.GetValueOrDefault(originalFieldValue.Field.Id);
-                if (newFieldId is null)
+                if (!FieldMapping.TryGetValue(originalFieldValue.Field.Id, out var newFieldId))
                 {
                     continue; // Это поле было удалено, следовательно его значение мы не переносим.
                 }
@@ -323,8 +322,7 @@ internal class CloneProjectHelper(
         List<ProjectFieldVariantIdentification> values = [];
         foreach (var originalValue in originalFieldValue.GetDropdownValues())
         {
-            var newFieldValue = VariantMapping.GetValueOrDefault(originalValue.Id);
-            if (newFieldValue is not null) // Если не нашли, значит этот вариант удалили, следовательно мы его не переносим
+            if (VariantMapping.TryGetValue(originalValue.Id, out var newFieldValue)) // Если не нашли, значит этот вариант удалили, следовательно мы его не переносим
             {
                 values.Add(newFieldValue);
             }

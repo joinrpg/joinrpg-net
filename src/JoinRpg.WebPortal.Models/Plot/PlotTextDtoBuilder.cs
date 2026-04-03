@@ -18,7 +18,7 @@ public static class PlotTextDtoBuilder
             Published = element.Published == version.Version,
             Content = version.Content,
             TodoField = version.TodoField,
-            Id = element.GetVersionId(version.Version),
+            Id = element.GetVersionId(version.Version).GetValueOrDefault(),
             IsActive = element.IsActive,
             Target = element.ToTarget(),
         };

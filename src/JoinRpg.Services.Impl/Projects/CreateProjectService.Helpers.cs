@@ -42,7 +42,7 @@ internal partial class CreateProjectService
         var fields = new Dictionary<int, string?>();
         if (name is not null)
         {
-            fields.Add(name.ProjectFieldId, slotName);
+            fields.Add(name.Value.ProjectFieldId, slotName);
         }
         return await characterService.AddCharacter(new AddCharacterRequest(
                 projectId,
