@@ -4,4 +4,4 @@ namespace JoinRpg.PrimitiveTypes.Notifications;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record NotificationId(int Value);
+public partial record struct NotificationId(int Value);

@@ -19,7 +19,7 @@ else
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter][EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    [Parameter][EditorRequired] public ProjectIdentification ProjectId { get; set; } = default;
     [Parameter] public int? SelectedId { get; set; } 
     [Parameter] public EventCallback<int[]> SelectedIdsChanged { get; set; }
     [Parameter] public EventCallback<PlotFolderDto[]> SelectedChanged { get; set; }

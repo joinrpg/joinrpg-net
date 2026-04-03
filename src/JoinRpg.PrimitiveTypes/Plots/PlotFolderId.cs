@@ -4,7 +4,7 @@ namespace JoinRpg.PrimitiveTypes.Plots;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record PlotFolderIdentification(ProjectIdentification ProjectId, int PlotFolderId) : IProjectEntityId
+public partial record struct PlotFolderIdentification(ProjectIdentification ProjectId, int PlotFolderId) : IProjectEntityId
 {
     public static implicit operator int(PlotFolderIdentification self) => self.PlotFolderId;
 }

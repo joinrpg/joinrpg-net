@@ -106,10 +106,10 @@ public class PlotController(
         PlotElement? originalElement = null;
         if (copyFrom is not null)
         {
-            var originalElementFolder = await plotRepository.GetPlotFolderAsync(copyFrom.PlotFolderId);
+            var originalElementFolder = await plotRepository.GetPlotFolderAsync(copyFrom.Value.PlotFolderId);
             if (originalElementFolder is not null && originalElementFolder.ProjectId == projectId)
             {
-                originalElement = originalElementFolder.Elements.Single(e => e.PlotElementId == copyFrom.PlotElementId);
+                originalElement = originalElementFolder.Elements.Single(e => e.PlotElementId == copyFrom.Value.PlotElementId);
             }
         }
 
@@ -117,7 +117,7 @@ public class PlotController(
         return View(new AddPlotElementViewModel()
         {
             ProjectId = projectId,
-            PlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId,
+            PlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId.PlotFolderId,
             HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             Content = originalElement?.LastVersion().Content.Contents ?? AddPlotElementViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersion().TodoField ?? "",
@@ -332,7 +332,7 @@ public class PlotController(
     public async Task<RedirectToActionResult> ReorderFolder(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
     {
         var plotFolderId = PlotFolderIdentification.Parse(viewModel.ElementIdentification, provider: null);
-        var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        var afterPlotFolderId = PlotFolderIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? (PlotFolderIdentification?)r : null;
         await plotService.ReorderPlots(plotFolderId, afterPlotFolderId);
         return RedirectToAction("Index", "PlotList", new { projectId = projectId.Value });
     }
@@ -341,7 +341,7 @@ public class PlotController(
     public async Task<RedirectToActionResult> ReorderElements(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
     {
         var targetId = PlotElementIdentification.Parse(viewModel.ElementIdentification, provider: null);
-        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? (PlotElementIdentification?)r : null;
         await plotService.ReorderPlotElements(targetId, afterId);
         return RedirectToAction("Edit", "Plot", new { projectId = projectId.Value, PlotFolderId = targetId.PlotFolderId.PlotFolderId });
     }
@@ -350,7 +350,7 @@ public class PlotController(
     public async Task<RedirectToActionResult> ReorderByCharacter(ProjectIdentification projectId, int characterId, ElementMoveCommandViewModel viewModel)
     {
         var targetId = PlotElementIdentification.Parse(viewModel.ElementIdentification, provider: null);
-        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? r : null;
+        var afterId = PlotElementIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var r) ? (PlotElementIdentification?)r : null;
         await plotService.ReorderPlotByChar(new CharacterIdentification(projectId, characterId), targetId, afterId);
         return RedirectToAction("Details", "Character", new { projectId = projectId.Value, characterId });
     }

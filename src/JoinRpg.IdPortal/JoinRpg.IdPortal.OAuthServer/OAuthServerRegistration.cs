@@ -170,7 +170,7 @@ public static class OAuthServerRegistration
 
             if (userInfo.SelectedAvatarId is not null)
             {
-                var avatarInfo = await avatarLoader.GetAvatar(userInfo.SelectedAvatarId, 64);
+                var avatarInfo = await avatarLoader.GetAvatar(userInfo.SelectedAvatarId.Value, 64);
                 claims[Claims.Picture] = avatarInfo.Uri;
             }
         }

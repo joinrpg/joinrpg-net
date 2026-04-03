@@ -4,7 +4,7 @@ namespace JoinRpg.PrimitiveTypes.Plots;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record class PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version)
+public partial record struct PlotVersionIdentification(PlotElementIdentification PlotElementId, int Version)
     : IProjectEntityId, IComparable<PlotVersionIdentification>
 {
     public PlotFolderIdentification PlotFolderId => PlotElementId.PlotFolderId;
@@ -12,12 +12,12 @@ public partial record class PlotVersionIdentification(PlotElementIdentification 
     public PlotVersionIdentification Next() => this with { Version = Version + 1 };
     public PlotVersionIdentification? Prev() => Version == 0 ? null : this with { Version = Version - 1 };
 
-    int IComparable<PlotVersionIdentification>.CompareTo(PlotVersionIdentification? other)
+    int IComparable<PlotVersionIdentification>.CompareTo(PlotVersionIdentification other)
     {
-        if (PlotElementId == other?.PlotElementId)
+        if (PlotElementId == other.PlotElementId)
         {
             return Comparer<int>.Default.Compare(Version, other.Version);
         }
-        return PlotElementId.CompareTo(other?.PlotElementId);
+        return PlotElementId.CompareTo(other.PlotElementId);
     }
 }

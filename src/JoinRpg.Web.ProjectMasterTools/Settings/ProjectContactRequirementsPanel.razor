@@ -67,7 +67,7 @@
     public ProjectContactsSettingsViewModel Model { get; set; } = null!;
 
     [Parameter]
-    public ProjectIdentification ProjectId { get; set; } = null!;
+    public ProjectIdentification ProjectId { get; set; } = default;
 
     protected override async Task OnInitializedAsync()
     {

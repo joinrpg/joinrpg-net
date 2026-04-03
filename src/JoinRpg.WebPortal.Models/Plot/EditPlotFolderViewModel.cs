@@ -127,7 +127,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         bool printMode = false)
     {
         CurrentVersion = currentVersion ?? e.LastVersion().Version;
-        CurrentVersion2 = e.GetVersionId(CurrentVersion);
+        CurrentVersion2 = e.GetVersionId(CurrentVersion).GetValueOrDefault();
 
         var prevVersionText = e.SpecificVersion(CurrentVersion - 1);
         var currentVersionText = e.SpecificVersion(CurrentVersion);

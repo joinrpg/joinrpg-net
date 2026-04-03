@@ -4,7 +4,7 @@ namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record ClaimIdentification(
+public partial record struct ClaimIdentification(
     ProjectIdentification ProjectId,
     int ClaimId) : IProjectEntityId, ILinkable
 {

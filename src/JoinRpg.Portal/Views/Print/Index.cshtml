@@ -1,4 +1,5 @@
 @using JoinRpg.Web.Models.CommonTypes
+@using JoinRpg.PrimitiveTypes
 @model JoinRpg.Web.Models.Print.PrintIndexViewModel
 
 @functions
@@ -12,7 +13,7 @@
 
     IEnumerable<Chunk> SplitByChunks(int chunkSize = 100)
     {
-        yield return new Chunk() { Name = "[все]", CharacterIds = new CompressedIntList(Model.CharacterIds).ToString() };
+        yield return new Chunk() { Name = "[все]", CharacterIds = new CompressedIntList(Model.CharacterIds.Cast<IProjectEntityId>()).ToString() };
 
         if (Model.CharacterIds.Count > chunkSize)
         {
@@ -27,7 +28,7 @@
                 yield return new Chunk()
                 {
                     Name = $"[{i + 1}–{i + characters.Length}]",
-                    CharacterIds = new CompressedIntList(characters).ToString(),
+                    CharacterIds = new CompressedIntList(characters.Cast<IProjectEntityId>()).ToString(),
                 };
             }
         }

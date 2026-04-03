@@ -316,7 +316,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         _ = targetFolder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
 
-        targetFolder.ElementsOrdering = DomainMoveHelper.MoveAfter(plotElementId,
+        targetFolder.ElementsOrdering = DomainMoveHelper.MoveAfter<PlotElementIdentification>(plotElementId,
             afterPlotElementId,
             targetFolder.ElementsOrdering,
             targetFolder.Elements.Select(x => new PlotElementIdentification(x.ProjectId, x.PlotFolderId, x.PlotElementId)),
@@ -336,7 +336,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         var plots = await PlotRepository.GetPlotsBySpecification(new PlotSpecification(plotTarget, PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot));
 
-        var resultOrder = DomainMoveHelper.MoveAfter(targetId, afterId, character.PlotElementOrderData, plots.Select(x => x.Id.PlotElementId), preserveOrder: true);
+        var resultOrder = DomainMoveHelper.MoveAfter<PlotElementIdentification>(targetId, afterId, character.PlotElementOrderData, plots.Select(x => x.Id.PlotElementId), preserveOrder: true);
         character.PlotElementOrderData = resultOrder;
 
         await UnitOfWork.SaveChangesAsync();

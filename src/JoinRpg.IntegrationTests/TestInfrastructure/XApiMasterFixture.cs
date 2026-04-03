@@ -19,9 +19,9 @@ public class XApiMasterFixture : IAsyncLifetime
 
     public JoinApplicationFactory Factory { get; } = new();
 
-    public ProjectIdentification ProjectId { get; private set; } = null!;
+    public ProjectIdentification ProjectId { get; private set; } = default;
 
-    public UserIdentification MasterUserId { get; private set; } = null!;
+    public UserIdentification MasterUserId { get; private set; } = default;
 
     public XApiClient MasterClient { get; private set; } = null!;
 

@@ -18,7 +18,7 @@ public interface IOperationsAwareView
 
     string? CountString { get; }
 
-    string ClaimIdCompressed() => new CompressedIntList(ClaimIds).ToString();
+    string ClaimIdCompressed() => new CompressedIntList(ClaimIds.Cast<IProjectEntityId>()).ToString();
 
-    string CharacterIdCompressed() => new CompressedIntList(CharacterIds).ToString();
+    string CharacterIdCompressed() => new CompressedIntList(CharacterIds.Cast<IProjectEntityId>()).ToString();
 }

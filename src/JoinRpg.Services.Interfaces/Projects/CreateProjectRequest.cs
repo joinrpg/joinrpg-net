@@ -17,7 +17,7 @@ public record CreateProjectRequest
     {
         if (CopyFromId is not null && ProjectType == ProjectTypeDto.CopyFromAnother)
         {
-            return new CloneProjectRequest(ProjectName, CopyFromId, CopySettings);
+            return new CloneProjectRequest(ProjectName, CopyFromId.Value, CopySettings);
         }
         if (ProjectType != ProjectTypeDto.CopyFromAnother)
         {

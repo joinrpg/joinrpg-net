@@ -316,8 +316,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     private async Task<ProjectPersonalizedInfo[]> GetProjectPersonalizedListInternal(UserIdentification? userId, Expression<Func<Project, bool>> filterPredicate)
     {
-        var masterPredicate = userId is null ? project => false : ProjectPredicates.MasterAccess(userId);
-        var claimPredicate = userId is null ? project => false : ProjectPredicates.HasActiveClaim(userId);
+        var masterPredicate = userId is null ? project => false : ProjectPredicates.MasterAccess(userId.Value);
+        var claimPredicate = userId is null ? project => false : ProjectPredicates.HasActiveClaim(userId.Value);
 
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
 

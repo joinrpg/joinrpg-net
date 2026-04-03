@@ -51,7 +51,7 @@ else
         base.OnParametersSet();
         if (ClaimId is not null)
         {
-            Selected = new int[] { ClaimId.ClaimId };
+            Selected = new int[] { ClaimId.Value.ClaimId };
         }
         else if (Claim is not null)
         {

@@ -4,4 +4,4 @@ namespace JoinRpg.PrimitiveTypes;
 
 [method: JsonConstructor]
 [TypedEntityId(ShortName = "KogdaIgra")]
-public partial record KogdaIgraIdentification(int Value);
+public partial record struct KogdaIgraIdentification(int Value);
