@@ -64,6 +64,11 @@ dotnet test src/JoinRpg.Domain.Test              # Конкретный тест
 
 При создании новых классов или проектов — читать [docs/structure.md](docs/structure.md).
 
+### LINQ-запросы и LinqKit
+
+EF-предикаты и проекции пишутся через `Expression<Func<...>>` + LinqKit.
+Подробнее — [docs/linq-queries.md](docs/linq-queries.md).
+
 ### Blazor WebAssembly (islands, ADR001)
 
 Небольшие интерактивные виджеты Blazor встраиваются в Razor-страницы.
