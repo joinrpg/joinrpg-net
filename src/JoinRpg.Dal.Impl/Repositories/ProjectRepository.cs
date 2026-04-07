@@ -233,17 +233,11 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     private async Task<ProjectShortInfo[]> GetKogdaIgraMissingGames()
     {
         var projection = GetProjectListProjection();
-
-        var now = DateTime.Now;
-        var lastUpdateMax = now.AddDays(-60);
+        var predicate = KogdaIgraMissingGamesPredicate.GetPredicate(DateTime.Now);
 
         var query = from project in AllProjects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
-                    where project.Active && !project.Details.DisableKogdaIgraMapping
-                    let hasActiveOrFutureGame = project.KogdaIgraGames.Any(g => g.Active && g.End >= now)
-                    let hasAnyGame = project.KogdaIgraGames.Any(g => g.Active)
-                    where !hasActiveOrFutureGame
-                    where !hasAnyGame || update.LastUpdated > lastUpdateMax
+                    where predicate.Invoke(project, update.LastUpdated)
                     select projection.Invoke(project, update);
 
         var result = await query.ToListAsync();
