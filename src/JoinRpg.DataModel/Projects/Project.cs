@@ -30,16 +30,23 @@ public class Project : IProjectEntity
 
     public virtual ICollection<Claim> Claims { get; set; }
 
-    public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
-
     public virtual ProjectDetails Details { get; set; }
 
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
 
     Project IProjectEntity.Project => this;
 
+    #region Finance
+
     public virtual ICollection<ProjectFeeSetting> ProjectFeeSettings { get; set; }
+
     public virtual ICollection<PaymentType> PaymentTypes { get; set; }
+
+    public virtual ICollection<MoneyTransfer> MoneyTransfers { get; set; }
+
+    public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
+
+    #endregion
 
     public DateTime CharacterTreeModifiedAt { get; set; }
 
@@ -52,8 +59,6 @@ public class Project : IProjectEntity
     #endregion
 
     public virtual ICollection<GameReport2DTemplate> GameReport2DTemplates { get; set; }
-
-    public virtual ICollection<MoneyTransfer> MoneyTransfers { get; set; }
 
     public virtual HashSet<KogdaIgraGame> KogdaIgraGames { get; set; } = null!;
 }

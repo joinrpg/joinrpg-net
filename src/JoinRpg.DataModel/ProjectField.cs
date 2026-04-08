@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
 using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
@@ -44,15 +45,55 @@ public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObj
     public bool ShowOnUnApprovedClaims { get; set; }
 
     /// <summary>
-    /// Price associated with current field.
-    /// Will be used in payment calculations.
-    /// Value usage differs on FieldType. Value will be:
-    /// - Number: multiplied with entered number
-    /// - CheckBox: used if checkbox was checked
-    /// - Dropdown, Multiselect: ignored, see values for prices
-    /// - String, Text, Header: ignored
+    /// When true, this field may have assigned prices.
     /// </summary>
+    /// <remarks>
+    /// Has effect only when field has certain <see cref="FieldType"/>:
+    /// <ul>
+    /// <li><see cref="ProjectFieldType.Checkbox"/></li>
+    /// <li><see cref="ProjectFieldType.Number"/></li>
+    /// <li><see cref="ProjectFieldType.Dropdown"/></li>
+    /// <li><see cref="ProjectFieldType.MultiSelect" /></li>
+    /// </ul>
+    /// </remarks>
+    public bool Payable { get; set; }
+
+    /// <summary>
+    /// Base price associated with this field.
+    /// </summary>
+    /// <remarks>
+    /// Actual price depends on current date via <see cref="PriceValue"/> objects.
+    /// </remarks>
     public int Price { get; set; }
+
+    /// <summary>
+    /// Defines how this field should be interpreted when preparing a receipt.
+    /// </summary>
+    public ReceiptItemType ReceiptItemType { get; set; }
+
+    /// <summary>
+    /// The name used to display in receipt. When not specified, the <see cref="FieldName"/> is used.
+    /// </summary>
+    /// <remarks>
+    /// When <see cref="FieldType"/> is <see cref="ProjectFieldType.Dropdown"/> or <see cref="ProjectFieldType.MultiSelect"/>
+    /// this value has to be specified independently in each <see cref="ProjectFieldDropdownValue"/>.
+    /// </remarks>
+    [StringLength(64)]
+    public string? ReceiptName { get; set; }
+
+    /// <summary>
+    /// When true, a discount can be applied to price of this field.
+    /// </summary>
+    /// <remarks>
+    /// Whereas the relative discount set in <see cref="Claim.DiscountPercent"/> will only affect the total sum while calculation,
+    /// the <see cref="Claim.DiscountedPrice"/> will exclude discountable field from total calculation.
+    /// </remarks>
+    public bool Discountable { get; set; }
+
+    /// <summary>
+    /// Collection of related price values.
+    /// </summary>
+    public ICollection<PriceValue>? PriceValues { get; set; }
 
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 

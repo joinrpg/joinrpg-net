@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Helpers;
@@ -7,7 +8,7 @@ using JoinRpg.PrimitiveTypes.Claims;
 namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
-public class Claim : IProjectEntity, ILinkable, IFieldContainter
+public class Claim : IProjectEntity, ILinkable, IFieldContainter, IValidatableObject
 {
     public int ClaimId { get; set; }
     public int CharacterId { get; set; }
@@ -82,10 +83,31 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     #region Finance
 
     /// <summary>
+    /// The date when necessary amout to stop increasing of the total price has been paid.
+    /// </summary>
+    public DateTime? FixedPaymentDate { get; set; }
+
+    /// <summary>
+    /// Discounted price to be paid for this claim.
+    /// When set, total price will not be automatically recalculated depending on the current date.
+    /// Mutually exclusive with <see cref="DiscountPercent"/>.
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int? DiscountedPrice { get; set; }
+
+    /// <summary>
+    /// Discount percent for this claim. Do not affect the total price recalculation depending on the current date.
+    /// Mutually exclusive with <see cref="DiscountedPrice"/>.
+    /// </summary>
+    [Range(0, 100)]
+    public int? DiscountPercent { get; set; }
+
+    /// <summary>
     /// Fee to pay by player, manually set by master.
     /// If null (default), actual fee will be automatically selected
     /// from the project's list of payments.
     /// </summary>
+    [Obsolete("Use the DiscountedPrice or DiscountPercent instead")]
     public int? CurrentFee { get; set; }
 
     /// <summary>
@@ -104,6 +126,7 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     /// </summary>
     public virtual ICollection<RecurrentPayment> RecurrentPayments { get; set; }
 
+    [Obsolete("Set the discount directly")]
     public bool PreferentialFeeUser { get; set; }
 
     /// <summary>
@@ -139,4 +162,14 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
 
     #endregion
 
+    /// <inheritdoc />
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (DiscountedPrice.HasValue && DiscountPercent.HasValue)
+        {
+            yield return new ValidationResult(
+                "Only one type of discount could be set",
+                [nameof(DiscountedPrice), nameof(DiscountPercent)]);
+        }
+    }
 }
