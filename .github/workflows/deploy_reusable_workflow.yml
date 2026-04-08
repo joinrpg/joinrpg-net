@@ -70,7 +70,7 @@ jobs:
           version: v1.31.0
 
       - name: Set kubeconfig
-        uses: azure/k8s-set-context@v4
+        uses: azure/k8s-set-context@v5
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
