@@ -12,11 +12,13 @@ namespace JoinRpg.Common.Telegram;
 
 internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger<TelegramNotificationServiceImpl> logger) : ITelegramNotificationService
 {
+    private const int TelegramMaxMessageLength = 4096;
+
     public async Task SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
     {
         try
         {
-            _ = await client.SendMessage(new ChatId(telegramId.Id), contents.SanitizeHtml(), ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
+            _ = await client.SendMessage(new ChatId(telegramId.Id), contents.SanitizeHtml(TelegramMaxMessageLength), ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
             logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}", telegramId);
         }
         catch (ApiRequestException exception)
