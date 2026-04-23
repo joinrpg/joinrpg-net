@@ -30,11 +30,20 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Run Claude Code
+      - name: Run Claude Code via Kimi API
         id: claude
         uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_BASE_URL: https://api.kimi.com/coding/
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.KIMI_API_KEY }}
+          ANTHROPIC_MODEL: kimi-k2.6
+          ANTHROPIC_DEFAULT_OPUS_MODEL: kimi-k2.6
+          ANTHROPIC_DEFAULT_SONNET_MODEL: kimi-k2.6
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: kimi-k2.6
+          CLAUDE_CODE_SUBAGENT_MODEL: kimi-k2.6
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # OAuth token для установки CLI (можно оставить пустым если не требуется)
+          claude_code_oauth_token: ${{ secrets.KIMI_API_KEY }}
 
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
