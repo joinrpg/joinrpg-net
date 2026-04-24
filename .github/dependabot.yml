@@ -1,9 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/" 
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    rebase-strategy: "disabled"
     ignore:
     # https://github.com/aws/aws-sdk-net/issues/3610
       - dependency-name: "AWSSDK.S3"
