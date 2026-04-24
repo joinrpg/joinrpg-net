@@ -81,8 +81,7 @@
                 <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">
                   <button type="button" class="btn btn-default" style="margin-right: auto;" data-dismiss="modal">Отмена</button>
                   <div>
-                    <button type="submit" id="onp_dlgPayOnline1Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.BankCard" class="btn btn-secondary" style="font-size: larger;" title="@PaymentMethodViewModel.BankCard.GetDescription()">@PaymentMethodViewModel.BankCard.GetDisplayName()</button>
-                    <button type="submit" id="onp_dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-success" style="font-size: larger; margin-left: 0.5em;" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
+                    <button type="submit" id="onp_dlgPayOnline1Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.BankCard" class="btn btn-success" style="font-size: larger;" title="@PaymentMethodViewModel.BankCard.GetDescription()">@PaymentMethodViewModel.BankCard.GetDisplayName()</button>
                   </div>
                 </div>
             }
@@ -96,14 +95,11 @@ function onlinePaymentMoneyChangeHandler()
   const edMoney = document.getElementById('onp_money');
   const checkBox = document.getElementById('onp_contract');
   const submitBtn1 = document.getElementById('onp_dlgPayOnline1Submit');
-  const submitBtn2 = document.getElementById('onp_dlgPayOnline2Submit');
   const money = parseInt(edMoney.value);
   if (money >= 1 && money <= 100000 && checkBox.checked) {
       submitBtn1.removeAttribute('disabled');
-      submitBtn2.removeAttribute('disabled');
   } else {
       submitBtn1.setAttribute('disabled', '');
-      submitBtn2.setAttribute('disabled', '');
   }
 }
 

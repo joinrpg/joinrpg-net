@@ -307,6 +307,11 @@ internal class PaymentsService(
         // Loading claim
         var claim = await GetClaimAsync(request.ProjectId, request.ClaimId);
 
+        if (request.Method == PaymentMethod.FastPaymentsSystem)
+        {
+            throw new PaymentException(claim.Project, $"The {request.Method} is currently not available");
+        }
+
         // Checking access rights
         if (claim.PlayerUserId != CurrentUserId)
         {
