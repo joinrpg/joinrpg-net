@@ -8,7 +8,7 @@ internal static class IdentificationParseHelper
         Span<Range> ranges = stackalloc Range[3];
         var count = SplitIdentifier(val, ranges);
         if (count == 3
-           && ProjectIdentification.TryParse(val[ranges[0]], provider, out var i1)
+           && int.TryParse(val[ranges[0]], provider, out var i1)
            && int.TryParse(val[ranges[1]], provider, out var i2)
            && int.TryParse(val[ranges[2]], provider, out var i3)
            )
@@ -25,7 +25,7 @@ internal static class IdentificationParseHelper
         Span<Range> ranges = stackalloc Range[2];
         var count = SplitIdentifier(val, ranges);
         if (count == 2
-           && ProjectIdentification.TryParse(val[ranges[0]], provider, out var i1)
+           && int.TryParse(val[ranges[0]], provider, out var i1)
            && int.TryParse(val[ranges[1]], provider, out var i2)
            )
         {
@@ -81,7 +81,7 @@ internal static class IdentificationParseHelper
         Span<Range> ranges = stackalloc Range[4];
         var count = SplitIdentifier(val, ranges);
         if (count == 4
-           && ProjectIdentification.TryParse(val[ranges[0]], provider, out var i1)
+           && int.TryParse(val[ranges[0]], provider, out var i1)
            && int.TryParse(val[ranges[1]], provider, out var i2)
            && int.TryParse(val[ranges[2]], provider, out var i3)
            && int.TryParse(val[ranges[3]], provider, out var i4)
