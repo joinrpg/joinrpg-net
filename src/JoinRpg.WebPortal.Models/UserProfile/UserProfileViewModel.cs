@@ -1,9 +1,6 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon.Projects;

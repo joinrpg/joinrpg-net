@@ -1,8 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
-using JoinRpg.PrimitiveTypes.Characters;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Characters;
 using Xunit.Abstractions;
 
 namespace JoinRpg.Domain.Test;

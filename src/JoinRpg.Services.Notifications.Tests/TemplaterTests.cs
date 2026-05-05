@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Notifications;
+using JoinRpg.DomainTypes.Notifications;
 
 namespace JoinRpg.Services.Notifications.Tests;
 

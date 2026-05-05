@@ -2,7 +2,7 @@ using System.Data.Entity;
 using System.Linq.Expressions;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Users;
 using Microsoft.Extensions.Logging;
 using DbUser = JoinRpg.DataModel.User;
 

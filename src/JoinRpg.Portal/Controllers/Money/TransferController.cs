@@ -3,8 +3,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
 using Microsoft.AspNetCore.Mvc;
@@ -83,7 +81,7 @@ public class TransferController(
     private void Fill(CreateMoneyTransferViewModel viewModel, ProjectInfo project)
     {
         viewModel.HasAdminAccess =
-            project.HasMasterAccess(currentUserAccessor, PrimitiveTypes.Access.Permission.CanManageMoney);
+            project.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney);
     }
 
     [HttpPost]

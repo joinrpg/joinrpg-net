@@ -1,5 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Portal.Controllers.XGameApi;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.Portal.Test.XGameApi;

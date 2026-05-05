@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
+    <ProjectReference Include="..\JoinRpg.PrimitiveTypes.SourceGenerator\JoinRpg.PrimitiveTypes.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="JoinRpg.Domain.Test" />
+    <InternalsVisibleTo Include="JoinRpg.WebPortal.Models.Test" />
+    <InternalsVisibleTo Include="JoinRpg.DataModel.Mocks" />
+  </ItemGroup>
+
+</Project>

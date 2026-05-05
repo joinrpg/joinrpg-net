@@ -1,6 +1,8 @@
+
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain.Access;
 

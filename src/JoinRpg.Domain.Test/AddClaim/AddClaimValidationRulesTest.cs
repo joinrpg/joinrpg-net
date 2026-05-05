@@ -1,7 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
@@ -40,7 +40,7 @@ public class AddClaimValidationRulesTest
     [Fact]
     public void CantSendClaimIfNoSlotsChar()
     {
-        Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
+        Mock.Character.CharacterType = CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = 0;
         ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.SlotsExhausted, Mock.ProjectInfo);
     }
@@ -49,7 +49,7 @@ public class AddClaimValidationRulesTest
     [Fact]
     public void CantSendClaimIfCharacterIsNpc()
     {
-        Mock.Character.CharacterType = PrimitiveTypes.CharacterType.NonPlayer;
+        Mock.Character.CharacterType = CharacterType.NonPlayer;
         ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.Npc, Mock.ProjectInfo);
     }
 

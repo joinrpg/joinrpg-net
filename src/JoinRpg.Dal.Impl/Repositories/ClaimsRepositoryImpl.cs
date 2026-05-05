@@ -1,6 +1,6 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

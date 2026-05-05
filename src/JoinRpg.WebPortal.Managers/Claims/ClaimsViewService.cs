@@ -1,7 +1,7 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectCommon.Claims;

@@ -1,8 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models;

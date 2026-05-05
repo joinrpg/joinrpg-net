@@ -1,6 +1,5 @@
 using JoinRpg.DataModel.Projects;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

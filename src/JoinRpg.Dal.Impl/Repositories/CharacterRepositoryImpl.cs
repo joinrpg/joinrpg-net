@@ -1,6 +1,7 @@
 using JoinRpg.DataModel.Extensions;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -136,7 +137,7 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
         return await Ctx.Set<Character>()
           .Where(c => c.ProjectId == projectId)
           .Where(c => c.IsActive)
-          .Where(c => c.CharacterType == PrimitiveTypes.CharacterType.Slot)
+          .Where(c => c.CharacterType == CharacterType.Slot)
           .OrderBy(c => c.CharacterName)
           .ToListAsync();
     }

@@ -1,5 +1,4 @@
-@using JoinRpg.PrimitiveTypes.ProjectMetadata
-@using JoinRpg.Web.ProjectCommon.Claims
+
 @inject IUriLocator<ClaimIdentification> uriLocator
 
 <JoinButton Link="@uri.AbsoluteUri" Size="@Size" Title="@Claim.PlayerName.ToLongString()" Preset="ButtonPreset.Claim" Label="@Claim.CharacterName" />

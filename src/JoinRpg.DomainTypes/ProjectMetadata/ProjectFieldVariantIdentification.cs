@@ -1,0 +1,9 @@
+using System.Text.Json.Serialization;
+
+namespace JoinRpg.DomainTypes;
+
+[method: JsonConstructor]
+[TypedEntityId]
+public partial record ProjectFieldVariantIdentification(ProjectFieldIdentification FieldId, int ProjectFieldVariantId) : IProjectEntityId
+{
+}

@@ -1,6 +1,5 @@
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Authorization;

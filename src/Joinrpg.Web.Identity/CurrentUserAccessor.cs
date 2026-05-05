@@ -1,6 +1,4 @@
 using System.Security.Claims;
-using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Http;
 
 namespace Joinrpg.Web.Identity;

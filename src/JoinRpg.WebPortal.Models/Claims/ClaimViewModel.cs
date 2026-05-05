@@ -1,15 +1,11 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;

@@ -3,8 +3,8 @@ using System.Data.Entity.Validation;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Characters;
-using JoinRpg.PrimitiveTypes.Plots;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 

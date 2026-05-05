@@ -1,5 +1,4 @@
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.IntegrationTest.Scenarios.XApi;

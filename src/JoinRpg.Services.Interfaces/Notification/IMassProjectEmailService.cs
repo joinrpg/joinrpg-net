@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Plots;
+using JoinRpg.DomainTypes.Plots;
 
 namespace JoinRpg.Services.Interfaces.Notification;
 

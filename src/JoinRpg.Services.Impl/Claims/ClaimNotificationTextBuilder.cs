@@ -1,6 +1,5 @@
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Users;
 
 namespace JoinRpg.Services.Impl.Claims;
 

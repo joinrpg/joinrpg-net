@@ -3,8 +3,7 @@ using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Services.Impl;
 

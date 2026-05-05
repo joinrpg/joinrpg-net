@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 

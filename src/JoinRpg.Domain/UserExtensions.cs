@@ -1,4 +1,5 @@
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain;
 

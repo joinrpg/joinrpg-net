@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models.CharacterGroups;

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models.Money;

@@ -1,5 +1,5 @@
-using JoinRpg.PrimitiveTypes.Forums;
-using JoinRpg.PrimitiveTypes.Plots;
+using JoinRpg.DomainTypes.Forums;
+using JoinRpg.DomainTypes.Plots;
 
 namespace JoinRpg.Domain;
 

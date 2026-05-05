@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 

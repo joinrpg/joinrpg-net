@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.DataModel;
 

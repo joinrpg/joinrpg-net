@@ -297,12 +297,12 @@ public class MyDbContext : DbContext, IUnitOfWork
     private static void ConfigureProjectDetails(DbModelBuilder modelBuilder)
     {
         _ = modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
-        _ = modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
+        _ = modelBuilder.Entity<DataModel.ProjectDetails>().HasKey(pd => pd.ProjectId);
         modelBuilder.Entity<KogdaIgraGame>()
             .HasMany(kig => kig.Projects)
             .WithMany(p => p.KogdaIgraGames);
 
-        modelBuilder.Entity<ProjectDetails>()
+        modelBuilder.Entity<DataModel.ProjectDetails>()
             .HasOptional(pd => pd.ClonedFromProject)
             .WithMany()
             .HasForeignKey(pd => pd.ClonedFromProjectId)

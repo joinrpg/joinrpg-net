@@ -1,5 +1,5 @@
 using System.Diagnostics.Contracts;
-using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DataModel.Extensions;
 

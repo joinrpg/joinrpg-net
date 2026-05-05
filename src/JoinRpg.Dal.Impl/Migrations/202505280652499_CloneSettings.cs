@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations;
 
 using System.Data.Entity.Migrations;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
+
 
 public partial class CloneSettings : DbMigration
 {

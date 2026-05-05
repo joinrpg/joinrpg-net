@@ -1,9 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.Web.Models.Characters;

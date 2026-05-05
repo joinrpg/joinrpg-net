@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel.Finances;
 
 namespace JoinRpg.Web.Models;

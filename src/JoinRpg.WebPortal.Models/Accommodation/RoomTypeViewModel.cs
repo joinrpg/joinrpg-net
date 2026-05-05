@@ -1,10 +1,6 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Accommodation;
 

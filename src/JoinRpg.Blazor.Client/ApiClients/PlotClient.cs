@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Plots;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Blazor.Client.ApiClients;

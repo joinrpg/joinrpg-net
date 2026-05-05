@@ -1,8 +1,7 @@
 using System.Collections.Immutable;
 using JoinRpg.DataModel.Projects;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

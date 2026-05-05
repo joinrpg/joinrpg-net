@@ -1,8 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models;
@@ -42,7 +40,7 @@ public class ClaimFeeViewModel
             Balance[fo.State] += fo.MoneyAmount;
         }
 
-        HasMasterAccess = projectInfo.HasMasterAccess(new PrimitiveTypes.UserIdentification(currentUserId));
+        HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
         HasFeeAdminAccess = claim.HasAccess(currentUserId, Permission.CanManageMoney);
 
         PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;

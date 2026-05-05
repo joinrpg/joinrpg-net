@@ -3,7 +3,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Print;
 using JoinRpg.WebPortal.Managers.Plots;

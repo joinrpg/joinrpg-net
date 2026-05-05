@@ -5,8 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Helpers;

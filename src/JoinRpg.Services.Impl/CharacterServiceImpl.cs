@@ -3,7 +3,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
-using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 

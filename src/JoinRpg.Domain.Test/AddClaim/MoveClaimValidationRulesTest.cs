@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
@@ -13,7 +14,7 @@ public class MoveClaimValidationRulesTest
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         var slot = Mock.CreateCharacter("slot");
-        slot.CharacterType = PrimitiveTypes.CharacterType.Slot;
+        slot.CharacterType = CharacterType.Slot;
         slot.CharacterSlotLimit = 0;
         ShouldDisAllowMove(claim, slot, AddClaimForbideReason.SlotsExhausted);
     }
@@ -31,7 +32,7 @@ public class MoveClaimValidationRulesTest
     {
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
         var another = Mock.CreateCharacter("another");
-        another.CharacterType = PrimitiveTypes.CharacterType.Slot;
+        another.CharacterType = CharacterType.Slot;
         another.CharacterSlotLimit = null;
         ShouldDisAllowMove(claim, another, AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot);
     }

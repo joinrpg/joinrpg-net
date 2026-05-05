@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Joinrpg.Web.Identity;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;

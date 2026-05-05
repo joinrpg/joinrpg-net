@@ -1,5 +1,4 @@
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

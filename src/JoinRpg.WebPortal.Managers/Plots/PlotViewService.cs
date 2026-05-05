@@ -1,5 +1,5 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.PrimitiveTypes.Plots;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Plots;
 

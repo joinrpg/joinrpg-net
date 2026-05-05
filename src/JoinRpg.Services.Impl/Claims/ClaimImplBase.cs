@@ -1,9 +1,8 @@
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;

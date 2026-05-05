@@ -1,5 +1,4 @@
 using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.Extensions.Configuration;

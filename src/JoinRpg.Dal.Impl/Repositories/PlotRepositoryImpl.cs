@@ -1,5 +1,5 @@
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.Plots;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

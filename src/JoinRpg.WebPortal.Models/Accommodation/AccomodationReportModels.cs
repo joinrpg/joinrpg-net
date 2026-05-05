@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Web.Models.Accommodation;
 
 public class AccomodationReportListItemViewModel : ILinkable

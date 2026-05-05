@@ -1,9 +1,8 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;

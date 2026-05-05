@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Services.Interfaces.Characters;
 
 /// <summary>

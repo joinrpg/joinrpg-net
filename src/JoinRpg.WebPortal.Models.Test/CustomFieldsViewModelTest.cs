@@ -1,7 +1,6 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.Access;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.WebPortal.Models.Test;
 

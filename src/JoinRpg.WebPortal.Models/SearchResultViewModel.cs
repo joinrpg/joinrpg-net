@@ -1,4 +1,3 @@
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Games.Projects;

@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.DataModel.Projects;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 

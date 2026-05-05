@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Portal.Menu;
 
 public record class DonateOptions

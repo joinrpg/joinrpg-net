@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models;

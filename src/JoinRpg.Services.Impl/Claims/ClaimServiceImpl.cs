@@ -3,8 +3,9 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;

@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Masters;
 
 namespace JoinRpg.WebPortal.Models.Test;

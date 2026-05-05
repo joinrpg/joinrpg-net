@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.CheckIn;
 

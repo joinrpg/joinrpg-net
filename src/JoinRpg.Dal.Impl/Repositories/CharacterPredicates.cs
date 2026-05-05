@@ -1,5 +1,6 @@
 using System.Data.Entity.SqlServer;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

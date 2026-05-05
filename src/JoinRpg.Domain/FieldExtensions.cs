@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Domain;
 
 public static class FieldExtensions

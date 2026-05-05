@@ -1,5 +1,5 @@
 using JoinRpg.Domain.Problems;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Domain;
 

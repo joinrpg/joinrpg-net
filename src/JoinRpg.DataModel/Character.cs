@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.DataModel;
 

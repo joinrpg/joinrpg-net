@@ -24,7 +24,7 @@ public class MetaDataApiController(IProjectMetadataRepository projectMetadataRep
                 ProjectId = project.ProjectId,
                 ProjectName = project.ProjectName,
                 Fields = project.SortedFields.Select(field =>
-                    new ProjectFieldInfo
+                    new JoinRpg.XGameApi.Contract.ProjectFieldInfo
                     {
                         FieldName = field.Name,
                         ProjectFieldId = field.Id.ProjectFieldId,
@@ -32,7 +32,7 @@ public class MetaDataApiController(IProjectMetadataRepository projectMetadataRep
                         FieldType = field.Type.ToString(),
                         ProgrammaticValue = field.ProgrammaticValue,
                         ValueList = field.SortedVariants.Select(variant =>
-                            new ProjectFieldVariant
+                            new JoinRpg.XGameApi.Contract.ProjectFieldVariant
                             {
                                 ProjectFieldVariantId = variant.Id.ProjectFieldVariantId,
                                 Label = variant.Label,

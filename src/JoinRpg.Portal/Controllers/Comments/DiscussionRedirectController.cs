@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Comments;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

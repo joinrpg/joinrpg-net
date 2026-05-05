@@ -1,7 +1,6 @@
 namespace JoinRpg.Web.Models.Masters;
 
-using JoinRpg.PrimitiveTypes.Access;
-using static JoinRpg.PrimitiveTypes.Access.Permission;
+using static JoinRpg.DomainTypes.ProjectMetadata.Permission;
 
 public record class PermissionBadgeViewModel(Permission Permission, bool Value)
 {

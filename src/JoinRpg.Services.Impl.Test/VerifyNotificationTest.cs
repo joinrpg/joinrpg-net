@@ -1,8 +1,8 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.Users;
 using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl.Test;

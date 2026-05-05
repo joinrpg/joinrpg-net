@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Claims;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

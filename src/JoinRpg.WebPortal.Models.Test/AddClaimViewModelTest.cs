@@ -1,6 +1,7 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.WebPortal.Models.Test;
 
@@ -28,7 +29,7 @@ public class AddClaimViewModelTest
     public void CantSendClaimIfProjectDisabled()
     {
         Mock.Project.IsAcceptingClaims = false;
-        var projectInfo = Mock.ProjectInfo.WithChangedStatus(PrimitiveTypes.ProjectMetadata.ProjectLifecycleStatus.ActiveClaimsClosed);
+        var projectInfo = Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.ActiveClaimsClosed);
 
         var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, projectInfo);
         vm.CanSendClaim().ShouldBeFalse();
@@ -39,7 +40,7 @@ public class AddClaimViewModelTest
     [Fact]
     public void CantSendClaimToNPC()
     {
-        Mock.Character.CharacterType = PrimitiveTypes.CharacterType.NonPlayer;
+        Mock.Character.CharacterType = CharacterType.NonPlayer;
         var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeFalse();
@@ -48,7 +49,7 @@ public class AddClaimViewModelTest
     [Fact]
     public void CanSendClaimToSlot()
     {
-        Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
+        Mock.Character.CharacterType = CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = null;
         var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeTrue();
@@ -58,7 +59,7 @@ public class AddClaimViewModelTest
     [Fact]
     public void CantSendClaimIfNoSlotsChar()
     {
-        Mock.Character.CharacterType = PrimitiveTypes.CharacterType.Slot;
+        Mock.Character.CharacterType = CharacterType.Slot;
         Mock.Character.CharacterSlotLimit = 0;
         var vm = AddClaimViewModel.Create(Mock.Character, Mock.PlayerInfo, Mock.ProjectInfo);
         vm.CanSendClaim().ShouldBeFalse();

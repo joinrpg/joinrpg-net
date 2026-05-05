@@ -1,4 +1,3 @@
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.ClaimList;
 

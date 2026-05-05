@@ -1,7 +1,3 @@
-
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Interfaces.Email;
 
 public sealed class RecepientData(string displayName, string email, IReadOnlyDictionary<string, string>? recipientSpecificValues = null)
@@ -15,7 +11,7 @@ public sealed class RecepientData(string displayName, string email, IReadOnlyDic
 
     }
 
-    public RecepientData(UserDisplayName displayName1, PrimitiveTypes.Email email, IReadOnlyDictionary<string, string>? recipientSpecificValues = null)
+    public RecepientData(UserDisplayName displayName1, Common.PrimitiveTypes.Email email, IReadOnlyDictionary<string, string>? recipientSpecificValues = null)
         : this(displayName1.DisplayName, email.Value, recipientSpecificValues)
     {
     }

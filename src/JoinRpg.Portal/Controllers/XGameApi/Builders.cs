@@ -1,7 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;

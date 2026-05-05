@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Services.Impl;
 

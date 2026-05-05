@@ -1,11 +1,12 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
+using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Users;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;

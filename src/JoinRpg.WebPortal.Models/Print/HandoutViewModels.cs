@@ -1,8 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Plots;
 

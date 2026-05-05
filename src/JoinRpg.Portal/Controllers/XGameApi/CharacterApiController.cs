@@ -1,8 +1,8 @@
 using System.Text.Json;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;

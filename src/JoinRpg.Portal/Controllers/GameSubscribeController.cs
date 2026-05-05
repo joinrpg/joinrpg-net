@@ -3,7 +3,6 @@ using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
