@@ -63,4 +63,4 @@ jobs:
           -p:Version=${{ env.CALCULATED_VERSION }}
       
       - name: NuGet push
-        run: dotnet nuget push artifacts/${{ matrix.project }}.${{ env.CALCULATED_VERSION }}.nupkg --api-key ${{steps.nuget-login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push artifacts/package/release/${{ matrix.project }}.${{ env.CALCULATED_VERSION }}.nupkg --api-key ${{steps.nuget-login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
