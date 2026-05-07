@@ -168,7 +168,7 @@
                 <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
                    class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
             
-            @Html.MoveControl(model => item, "Move")
+            @await Html.MoveControlAsync(model => item, "Move")
             </div>
             }
         </td>

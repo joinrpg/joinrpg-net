@@ -8,8 +8,7 @@ namespace JoinRpg.Portal;
 
 public static class MoveControlHtmlHelper
 {
-
-    public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
+    public static async Task<IHtmlContent> MoveControlAsync<TModel, TValue>(this IHtmlHelper<TModel> self,
       Expression<Func<TModel, TValue>> expression, string actionName,
       string? controllerName, int? parentObjectId = null)
         where TValue : IMovableListItem
@@ -26,15 +25,15 @@ public static class MoveControlHtmlHelper
             ParentObjectId = parentObjectId ?? item.ProjectId
         };
 
-        return self.Partial("_MoveControlPartial", paramters);
+        return await self.PartialAsync("_MoveControlPartial", paramters);
     }
 
-    public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
+    public static async Task<IHtmlContent> MoveControlAsync<TModel, TValue>(this IHtmlHelper<TModel> self,
       Expression<Func<TModel, TValue>> expression, string actionName)
         where TValue : IMovableListItem
     {
         var currentController = GetRequiredString(self.ViewContext.RouteData, "controller");
-        return self.MoveControl(expression, actionName, currentController);
+        return await self.MoveControlAsync(expression, actionName, currentController);
     }
 
     private static string? GetRequiredString(RouteData routeData, string keyName)

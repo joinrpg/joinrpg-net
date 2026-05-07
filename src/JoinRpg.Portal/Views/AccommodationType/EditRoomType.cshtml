@@ -11,6 +11,11 @@
     <li class="active"><a href="#">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
     <li><a href="@Url.Action("EditRoomTypeRooms", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id })">Комнаты</a></li>
 </ul>
-@(Model.CanManageRooms
-    ? Html.Partial("_RoomTypeEdit", Model)
-    : Html.Partial("_RoomTypeOverview", Model))
+@if (Model.CanManageRooms)
+{
+    <partial name="_RoomTypeEdit" model="Model" />
+}
+else
+{
+    <partial name="_RoomTypeOverview" model="Model" />
+}
