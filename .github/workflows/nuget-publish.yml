@@ -53,11 +53,11 @@ jobs:
         run: echo "PROJECT_FILENAME=$(dotnet sln list | grep ${{ matrix.project }})" >> $GITHUB_OUTPUT 
 
       - name: Restore
-        run: dotnet restore ${{ steps.locate-project.outputs.PROJECT_FILENAME }}"
+        run: dotnet restore ${{ steps.locate-project.outputs.PROJECT_FILENAME }}
 
       - name: Pack
         run: >-
-          dotnet pack  ${{ steps.locate-project.outputs.PROJECT_FILENAME }}"
+          dotnet pack  ${{ steps.locate-project.outputs.PROJECT_FILENAME }}
           --no-restore
           -c Release
           -p:Version=${{ env.CALCULATED_VERSION }}
