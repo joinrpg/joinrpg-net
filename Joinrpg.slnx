@@ -84,10 +84,7 @@
     <Project Path="src/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
     <Project Path="src/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
   </Folder>
-  <Project Path="docs/Docs.csproj">
-    <BuildType Project="Debug" />
-    <Platform Project="x86" />
-  </Project>
+  <Project Path="docs/Docs.csproj" />
   <Project Path="src/JoinRpg.BlobStorage/JoinRpg.BlobStorage.csproj" />
   <Project Path="src/JoinRpg.CommonUI.Models/JoinRpg.CommonUI.Models.csproj" />
   <Project Path="src/JoinRpg.DataModel/JoinRpg.DataModel.csproj" />
@@ -96,3 +93,4 @@
   <Project Path="src/JoinRpg.Portal/JoinRpg.Portal.csproj" />
   <Project Path="src/Joinrpg.Web.Identity/Joinrpg.Web.Identity.csproj" />
 </Solution>
+
