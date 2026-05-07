@@ -17,11 +17,17 @@ jobs:
     strategy:
       matrix:
         project:
-          - src/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj
+          - JoinRpg.Common.WebInfrastructure
           # Добавить новые проекты сюда:
-          # - src/SomeOtherProject/SomeOtherProject.csproj
+          # - SomeOtherProject.csproj
 
     steps:
+      - name: NuGet Login (trusted publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: leotsarev
+          
       - name: Checkout Repo
         uses: actions/checkout@v6
         with:
@@ -42,19 +48,19 @@ jobs:
           cache: true
           cache-dependency-path: "Directory.Packages.props"
 
+      - name: Locate project
+        run: $env:PROJECT_FILENAME = dotnet sln list | Select-String ${{ matrix.project }}
+
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore ${{ env.PROJECT_FILENAME }}
 
       - name: Pack
         run: >-
-          dotnet pack ${{ matrix.project }}
+          dotnet pack ${{ env.PROJECT_FILENAME }}
           --no-restore
           -c Release
           -p:Version=${{ env.CALCULATED_VERSION }}
           -o ./nuget-output
-
-      - name: Publish to NuGet.org (Trusted Publishing)
-        uses: nuget/nuget-github-actions/publish@v1
-        with:
-          path-to-nupkg: ./nuget-output/*.nupkg
-          skip-duplicate: true
+      
+      - name: NuGet push
+        run: dotnet nuget push artifacts/${{ matrix.project }}.nupkg --api-key ${{steps.nuget-login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
