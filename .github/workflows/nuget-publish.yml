@@ -49,18 +49,19 @@ jobs:
           cache-dependency-path: "Directory.Packages.props"
 
       - name: Locate project
-        run: export PROJECT_FILENAME=$(dotnet sln list | grep ${{ matrix.project }})
+        id: locate-project
+        run: echo "PROJECT_FILENAME=$(dotnet sln list | grep ${{ matrix.project }}))" >> $GITHUB_OUTPUT 
 
       - name: Restore
-        run: dotnet restore ${{ env.PROJECT_FILENAME }}
+        run: dotnet restore ${{ steps.locate-project.outputs.PROJECT_FILENAME }}"
 
       - name: Pack
         run: >-
-          dotnet pack ${{ env.PROJECT_FILENAME }}
+          dotnet pack  ${{ steps.locate-project.outputs.PROJECT_FILENAME }}"
           --no-restore
           -c Release
           -p:Version=${{ env.CALCULATED_VERSION }}
-          -o ./nuget-output
+          # -o ./nuget-output
       
       - name: NuGet push
         run: dotnet nuget push artifacts/${{ matrix.project }}.nupkg --api-key ${{steps.nuget-login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
