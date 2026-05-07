@@ -6,7 +6,6 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  YANDEX_REGISTRY_URI: https://registry.yandexcloud.net/nuget/v3/cn1338n5jes0hr8iks12/index.json
 
 jobs:
   publish-nuget:
@@ -14,6 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      id-token: write  # 🔐 Для trusted publishing через OIDC
     strategy:
       matrix:
         project:
@@ -53,33 +53,8 @@ jobs:
           -p:Version=${{ env.CALCULATED_VERSION }}
           -o ./nuget-output
 
-      - name: Install yc CLI
-        run: |
-          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i /opt/yc -n
-          echo "/opt/yc/bin" >> $GITHUB_PATH
-
-      - name: Obtain IAM token
-        id: iam-token
-        run: |
-          echo '${{ secrets.YANDEX_CR_SA_KEY_JSON }}' > /tmp/sa-key.json
-          yc config set service-account-key /tmp/sa-key.json
-          IAM_TOKEN=$(yc iam create-token)
-          rm /tmp/sa-key.json
-          echo "::add-mask::$IAM_TOKEN"
-          echo "iam_token=$IAM_TOKEN" >> "$GITHUB_OUTPUT"
-
-      - name: Add Yandex Cloud Registry NuGet source
-        run: >-
-          dotnet nuget add source
-          "${{ env.YANDEX_REGISTRY_URI }}"
-          --name yandex-joinrpg
-          --username iam
-          --password "${{ steps.iam-token.outputs.iam_token }}"
-          --store-password-in-clear-text
-
-      - name: Push to Yandex Cloud Registry
-        run: >-
-          dotnet nuget push ./nuget-output/*.nupkg
-          --source yandex-joinrpg
-          --skip-duplicate
-          --api-key "${{ steps.iam-token.outputs.iam_token }}"
+      - name: Publish to NuGet.org (Trusted Publishing)
+        uses: nuget/nuget-github-actions/publish@v1
+        with:
+          path-to-nupkg: ./nuget-output/*.nupkg
+          skip-duplicate: true
