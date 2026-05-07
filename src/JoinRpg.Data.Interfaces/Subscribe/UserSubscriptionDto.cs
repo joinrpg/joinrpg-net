@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Users;
+
 namespace JoinRpg.Data.Interfaces.Subscribe;
 
 public class UserSubscriptionDto

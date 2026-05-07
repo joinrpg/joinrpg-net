@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />

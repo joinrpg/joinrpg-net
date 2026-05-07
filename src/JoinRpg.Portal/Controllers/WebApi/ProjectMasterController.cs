@@ -1,5 +1,4 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,4 +1,3 @@
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;

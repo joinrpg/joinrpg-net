@@ -1,6 +1,5 @@
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Notifications;
 
 namespace JoinRpg.Data.Write.Interfaces.Notifications;
 

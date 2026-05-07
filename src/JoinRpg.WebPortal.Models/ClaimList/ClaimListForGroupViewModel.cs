@@ -1,8 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.ClaimList;

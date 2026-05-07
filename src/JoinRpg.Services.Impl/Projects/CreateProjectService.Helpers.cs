@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Interfaces.Characters;
 
 namespace JoinRpg.Services.Impl.Projects;

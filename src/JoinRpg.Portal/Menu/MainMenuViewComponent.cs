@@ -3,8 +3,6 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Models;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu;

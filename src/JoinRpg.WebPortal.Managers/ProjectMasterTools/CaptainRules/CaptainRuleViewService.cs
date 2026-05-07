@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;

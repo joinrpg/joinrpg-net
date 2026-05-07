@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain;
 

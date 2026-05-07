@@ -1,7 +1,7 @@
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.RazorPages;

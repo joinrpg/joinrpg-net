@@ -1,9 +1,8 @@
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Forums;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Forums;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;

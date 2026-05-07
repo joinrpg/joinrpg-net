@@ -1,4 +1,3 @@
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Authorization;

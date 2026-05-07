@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models.Claims;

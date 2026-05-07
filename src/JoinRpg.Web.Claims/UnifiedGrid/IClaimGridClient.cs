@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Web.Claims.UnifiedGrid;
 
 public interface IUnifiedGridClient

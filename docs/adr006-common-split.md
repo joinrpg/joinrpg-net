@@ -33,7 +33,8 @@ src/JoinRpg.Common.PrimitiveTypes/
 │   ├── UserIdentification.cs
 │   └── AvatarIdentification.cs
 ├── AvatarInfo.cs
-└── KogdaIgraIdentification.cs
+├── KogdaIgraIdentification.cs
+└── IdentificationParseHelper.cs
 ```
 
 ## Структура `JoinRpg.DomainTypes`
@@ -45,6 +46,15 @@ src/JoinRpg.DomainTypes/
 │   ├── SubscriptionOptions.cs
 │   └── UserInfo.cs
 ├── Characters/
+|   ├── Claims/
+│   │   ├── ClaimIdentification.cs
+│   │   ├── ClaimCommentIdentification.cs
+│   │   ├── ClaimEnums.cs
+│   │   ├── CommentExtraAction.cs
+│   │   ├── CaptainAccessRule.cs
+│   │   └── Finances/
+│   │       ├── ClaimBalance.cs
+│   │       └── FinanceOperationIdentification.cs
 │   ├── CharacterIdentification.cs
 │   ├── CharacterGroupIdentification.cs
 │   ├── CharacterTypeInfo.cs
@@ -79,15 +89,6 @@ src/JoinRpg.DomainTypes/
 │       ├── PaymentTypeInfo.cs
 │       ├── PaymentTypeKind.cs
 │       └── ProjectFinanceSettings.cs
-├── Claims/
-│   ├── ClaimIdentification.cs
-│   ├── ClaimCommentIdentification.cs
-│   ├── ClaimEnums.cs
-│   ├── CommentExtraAction.cs
-│   ├── CaptainAccessRule.cs
-│   └── Finances/
-│       ├── ClaimBalance.cs
-│       └── FinanceOperationIdentification.cs
 ├── Forums/
 │   ├── ForumThreadIdentification.cs
 │   └── ForumCommentIdentification.cs
@@ -112,9 +113,6 @@ src/JoinRpg.DomainTypes/
 │   └── ILinkableWithName.cs
 ├── LinkType.cs
 ├── Targets.cs
-├── Helpers/
-│   ├── ProjectEntityIdParser.cs
-│   └── IdentificationParseHelper.cs (открытый вопрос)
 └── ProjectEntityIdParser.cs
 ```
 
@@ -144,25 +142,14 @@ src/JoinRpg.DomainTypes/
 - Проекты, использующие только общие типы, ссылаются на `JoinRpg.Common.PrimitiveTypes`
 - Проекты, использующие доменные типы, ссылаются на `JoinRpg.DomainTypes`
 
-## Открытые вопросы
-
-1. **`IdentificationParseHelper`** – требуется разделение на:
-   - `CommonIdentificationParseHelper` (в общем проекте) – `RemovePrefixes`, `SplitIdentifier`, `TryParse1`
-   - `DomainIdentificationParseHelper` (в доменном проекте) – `TryParse2`, `TryParse3`, `TryParse4` (зависит от `ProjectIdentification`)
-
-2. **Source Generator** (`JoinRpg.PrimitiveTypes.SourceGenerator`) – требует обновления для работы с двумя разными `IdentificationParseHelper`. Атрибут `TypedEntityIdAttribute` должен быть доступен в обоих проектах.
-
-3. **Обновление зависимостей** – необходимо обновить 13 проектов, ссылающихся на `JoinRpg.PrimitiveTypes`.
 
 ## Шаги выполнения
 
 1. Создать проекты `JoinRpg.Common.PrimitiveTypes` и `JoinRpg.DomainTypes`
 2. Перенести файлы согласно структуре выше
-3. Реорганизовать `IdentificationParseHelper`
-4. Обновить Source Generator
-5. Создать тестовые проекты и разделить тесты
-6. Обновить зависимости во всех проектах
-7. Удалить старый проект `JoinRpg.PrimitiveTypes`
+3. Создать тестовые проекты и разделить тесты
+4. Обновить зависимости во всех проектах
+5. Удалить старый проект `JoinRpg.PrimitiveTypes`
 
 ## Последствия
 

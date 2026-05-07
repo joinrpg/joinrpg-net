@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <UserSecretsId>aspnet-JoinRpg.IdPortal-6b487ee5-6ae0-4a0a-9266-5afcd5e971f4</UserSecretsId>

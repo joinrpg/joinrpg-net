@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace JoinRpg.Web.Models;
 
 public class FinanceGlobalSettingsViewModel

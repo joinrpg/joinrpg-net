@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Money;

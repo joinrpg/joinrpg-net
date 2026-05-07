@@ -1,9 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Logging;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;

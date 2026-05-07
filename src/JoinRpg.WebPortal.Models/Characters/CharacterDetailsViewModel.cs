@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.WebComponents;
 

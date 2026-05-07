@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Masters;

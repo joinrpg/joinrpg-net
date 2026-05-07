@@ -5,12 +5,10 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
@@ -453,7 +451,7 @@ public class ClaimController(
                     FeeChange = viewModel.FeeChange,
                     Money = viewModel.Money,
                     OperationDate = viewModel.OperationDate,
-                    PaymentTypeId = new PrimitiveTypes.ProjectMetadata.Payments.PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId),
+                    PaymentTypeId = new DomainTypes.ProjectMetadata.Payments.PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId),
                 });
 
             return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });

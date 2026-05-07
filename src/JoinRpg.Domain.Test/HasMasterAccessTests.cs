@@ -1,7 +1,5 @@
 #pragma warning disable CS0618 // тестируем устаревший метод, который содержал баг
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
 
 namespace JoinRpg.Domain.Test;
 

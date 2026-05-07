@@ -3,8 +3,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Models.Accommodation;
 

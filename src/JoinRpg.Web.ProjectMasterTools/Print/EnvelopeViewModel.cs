@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.ProjectMasterTools.Print;

@@ -1,12 +1,9 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Characters;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.CharacterGroups;
 

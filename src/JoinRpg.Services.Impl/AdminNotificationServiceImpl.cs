@@ -1,5 +1,5 @@
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;

@@ -2,10 +2,9 @@ using System.Text.RegularExpressions;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Notifications;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email;

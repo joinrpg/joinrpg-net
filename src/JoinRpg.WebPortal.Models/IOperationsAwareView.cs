@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.Web.Models;
 
 public interface IOperationsAwareView

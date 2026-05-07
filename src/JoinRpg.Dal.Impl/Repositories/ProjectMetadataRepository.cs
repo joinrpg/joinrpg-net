@@ -1,7 +1,6 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel.Extensions;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -158,11 +157,11 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         }
     }
 
-    public async Task<PrimitiveTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
+    public async Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
     {
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
-        return new PrimitiveTypes.ProjectMetadata.ProjectDetails(
+        return new DomainTypes.ProjectMetadata.ProjectDetails(
             project.Details.ProjectAnnounce,
             [.. project.KogdaIgraGames.Where(x => x.Active).Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))],
             project.Details.DisableKogdaIgraMapping);

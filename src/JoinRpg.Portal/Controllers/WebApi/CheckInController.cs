@@ -13,6 +13,5 @@ public class CheckInController : ControllerBase
     public CheckInController(ICheckInClient checkInClient) => this.checkInClient = checkInClient;
 
     [HttpGet]
-    public async Task<CheckInStatViewModel> GetStats(int projectId)
-        => await checkInClient.GetCheckInStats(new PrimitiveTypes.ProjectIdentification(projectId));
+    public async Task<CheckInStatViewModel> GetStats(ProjectIdentification projectId) => await checkInClient.GetCheckInStats(projectId);
 }

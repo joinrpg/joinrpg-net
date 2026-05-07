@@ -1,11 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
-using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Games.Projects;

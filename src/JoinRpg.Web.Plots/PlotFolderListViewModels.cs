@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes.Access;
-
 namespace JoinRpg.Web.Plots;
 
 public record class PlotFolderListItemViewModel(

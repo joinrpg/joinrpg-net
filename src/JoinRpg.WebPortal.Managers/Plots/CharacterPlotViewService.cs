@@ -2,9 +2,8 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.Plots;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.WebPortal.Managers.Plots;
 
@@ -102,7 +101,7 @@ public class CharacterPlotViewService(
         return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x), x.PlotElementOrderData));
     }
 
-    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode, PrimitiveTypes.ProjectMetadata.ProjectInfo projectInfo)
+    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode, ProjectInfo projectInfo)
     {
         //TODO introduce method that loads only required data
         var characters = await characterRepository.GetAllCharacters(projectId);

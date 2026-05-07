@@ -1,5 +1,6 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Data.Interfaces;
 

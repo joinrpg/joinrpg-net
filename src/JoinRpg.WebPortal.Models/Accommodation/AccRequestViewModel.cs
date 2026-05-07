@@ -1,7 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Models.Accommodation;

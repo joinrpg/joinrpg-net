@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 

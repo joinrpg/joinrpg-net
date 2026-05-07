@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 

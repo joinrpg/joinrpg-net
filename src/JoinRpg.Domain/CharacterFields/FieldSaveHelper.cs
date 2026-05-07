@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Domain.CharacterFields;

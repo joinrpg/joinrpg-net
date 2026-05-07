@@ -1,8 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
@@ -40,7 +40,7 @@ public static class ItemBuilder
             );
     }
 
-    private static UgClaimForCaptainViewModel BuildClaimItem(UgClaim ugClaim, ProjectInfo projectInfo, PrimitiveTypes.Access.AccessArguments accessArguments)
+    private static UgClaimForCaptainViewModel BuildClaimItem(UgClaim ugClaim, ProjectInfo projectInfo, AccessArguments accessArguments)
     {
         var claim = ugClaim.Claim;
         var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);

@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.Forums;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Forums;
 
 namespace JoinRpg.Services.Impl;
 

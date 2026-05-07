@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Services.Interfaces.Projects;
 
 public record CreateProjectRequest

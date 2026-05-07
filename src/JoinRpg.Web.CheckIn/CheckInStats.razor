@@ -1,5 +1,6 @@
-﻿@inject ICheckInClient Client
+@inject ICheckInClient Client
 @implements IDisposable
+@using JoinRpg.DomainTypes
 @using Timer = System.Timers.Timer
 
 <h2>Статистика регистрации</h2>
@@ -37,7 +38,7 @@
 
     private async Task RefreshAsync()
     {
-        Model = await Client.GetCheckInStats(new PrimitiveTypes.ProjectIdentification(ProjectId));
+        Model = await Client.GetCheckInStats(new ProjectIdentification(ProjectId));
         Loaded = true;
         StateHasChanged();
     }

@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 
 namespace JoinRpg.Data.Interfaces;
 

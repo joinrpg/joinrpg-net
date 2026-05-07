@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace JoinRpg.Web.Models.FieldSetup;
 
 public class FieldSettingsViewModel : IFieldNavigationAware

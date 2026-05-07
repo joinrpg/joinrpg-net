@@ -9,7 +9,7 @@ public class EnumTests
     [Fact]
     public void CommentExtraActionEnum()
     {
-        EnumerationTestComparer.EnsureSame<PrimitiveTypes.Claims.CommentExtraAction, CommentExtraAction>();
+        EnumerationTestComparer.EnsureSame<DomainTypes.Claims.CommentExtraAction, CommentExtraAction>();
     }
 
     [Fact]

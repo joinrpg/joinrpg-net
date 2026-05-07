@@ -1,7 +1,7 @@
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces.Avatars;
 
 namespace JoinRpg.Services.Impl;

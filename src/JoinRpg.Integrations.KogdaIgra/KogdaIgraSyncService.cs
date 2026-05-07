@@ -2,8 +2,8 @@ using System.Data.Entity;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
+using JoinRpg.DomainTypes;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Integrations.KogdaIgra;

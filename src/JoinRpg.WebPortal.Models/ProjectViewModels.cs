@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.Web.Models;

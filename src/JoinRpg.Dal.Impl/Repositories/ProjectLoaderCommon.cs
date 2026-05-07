@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-
 namespace JoinRpg.Dal.Impl.Repositories;
 
 internal static class ProjectLoaderCommon

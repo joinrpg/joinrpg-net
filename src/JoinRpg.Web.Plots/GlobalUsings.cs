@@ -1,2 +1,2 @@
-global using JoinRpg.PrimitiveTypes;
-global using JoinRpg.PrimitiveTypes.Plots;
+global using JoinRpg.DomainTypes;
+global using JoinRpg.DomainTypes.Plots;

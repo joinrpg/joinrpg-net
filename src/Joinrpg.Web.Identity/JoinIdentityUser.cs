@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace Joinrpg.Web.Identity;
 
 public class JoinIdentityUser

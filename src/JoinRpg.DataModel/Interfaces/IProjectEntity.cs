@@ -1,5 +1,3 @@
-using JoinRpg.PrimitiveTypes;
-
 namespace JoinRpg.DataModel;
 
 public interface IProjectEntity : IProjectEntityWithId

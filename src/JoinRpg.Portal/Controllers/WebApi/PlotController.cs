@@ -1,7 +1,5 @@
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Plots;
 using JoinRpg.Web.Plots;
 using Microsoft.AspNetCore.Mvc;
 

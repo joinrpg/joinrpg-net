@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;

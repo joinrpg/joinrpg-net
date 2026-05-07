@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Web.ProjectMasterTools.Subscribe;
 

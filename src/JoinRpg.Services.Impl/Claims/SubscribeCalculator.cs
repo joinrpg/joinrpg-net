@@ -1,9 +1,10 @@
+
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Notifications;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Notifications;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Services.Impl.Claims;
 

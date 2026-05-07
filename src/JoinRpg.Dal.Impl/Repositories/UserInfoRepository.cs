@@ -1,7 +1,8 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel.Users;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Users;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

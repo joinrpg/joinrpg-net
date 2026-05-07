@@ -1,6 +1,6 @@
+using JoinRpg.DomainTypes.Forums;
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces.Notifications;
-using JoinRpg.PrimitiveTypes.Forums;
-using JoinRpg.PrimitiveTypes.Notifications;
 using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl;

@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Forums;
+using JoinRpg.DomainTypes.Forums;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 

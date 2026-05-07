@@ -1,12 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Characters;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectMasterTools.Fields;

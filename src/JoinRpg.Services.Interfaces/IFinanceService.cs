@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.PrimitiveTypes.ProjectMetadata.Payments;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Services.Interfaces;
 

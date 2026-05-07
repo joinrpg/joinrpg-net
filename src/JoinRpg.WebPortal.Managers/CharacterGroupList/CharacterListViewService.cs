@@ -31,7 +31,7 @@ public class CharacterListViewService(ICharacterRepository characterRepository, 
     }
 
     private static CharacterDto CreateDto(Character c) => new(
-        new PrimitiveTypes.CharacterIdentification(c.ProjectId, c.CharacterId),
+        new CharacterIdentification(c.ProjectId, c.CharacterId),
         c.CharacterName,
         LimitDescription(c.Description.ToPlainText().ToString()),
         c.IsPublic);

@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using AspNet.Security.OAuth.Vkontakte;
 using Joinrpg.Web.Identity;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Identity;

@@ -1,4 +1,3 @@
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Claims;
 using Microsoft.AspNetCore.Mvc;
 

@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal\JoinRpg.IdPortal.csproj" />
   </ItemGroup>

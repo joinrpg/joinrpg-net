@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Domain;
 

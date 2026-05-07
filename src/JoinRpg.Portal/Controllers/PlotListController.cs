@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.PrimitiveTypes;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
 using Microsoft.AspNetCore.Mvc;

@@ -1,10 +1,7 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Access;
 using JoinRpg.Web.ProjectCommon.Fields;
 
 namespace JoinRpg.Web.Models.FieldSetup;

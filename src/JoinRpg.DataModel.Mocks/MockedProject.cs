@@ -1,10 +1,11 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Characters;
-using JoinRpg.PrimitiveTypes.Claims;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
-using JoinRpg.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.DataModel.Mocks;
 
@@ -142,7 +143,7 @@ public class MockedProject
         setup(field);
         Project.ProjectFields.Add(field);
         ReInitProjectInfo();
-        return ProjectInfo.GetFieldById(new PrimitiveTypes.ProjectFieldIdentification(new PrimitiveTypes.ProjectIdentification(Project.ProjectId), field.ProjectFieldId));
+        return ProjectInfo.GetFieldById(new ProjectFieldIdentification(new ProjectIdentification(Project.ProjectId), field.ProjectFieldId));
     }
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)

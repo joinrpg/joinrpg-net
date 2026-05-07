@@ -9,6 +9,6 @@ public class ProjectListViewServiceTests
     [ClassData(typeof(EnumTheoryDataGenerator<ProjectSelectionCriteria>))]
     public void HasSpecification(ProjectSelectionCriteria criteria)
     {
-        ProjectListViewService.GetSpecification(new PrimitiveTypes.UserIdentification(1), criteria).ShouldNotBeNull();
+        ProjectListViewService.GetSpecification(new UserIdentification(1), criteria).ShouldNotBeNull();
     }
 }

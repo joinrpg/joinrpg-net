@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.Plots;
 
 namespace JoinRpg.Data.Interfaces;
 

@@ -1,9 +1,8 @@
 using System.Collections.ObjectModel;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
-using JoinRpg.PrimitiveTypes.Access;
-using JoinRpg.PrimitiveTypes.Characters;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Domain;

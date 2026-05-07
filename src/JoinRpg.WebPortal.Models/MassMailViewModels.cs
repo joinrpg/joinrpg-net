@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using JoinRpg.Web.ProjectCommon.Claims;
 
 namespace JoinRpg.Web.Models;

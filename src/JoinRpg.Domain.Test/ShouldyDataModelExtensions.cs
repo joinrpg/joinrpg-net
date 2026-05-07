@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
 
 internal static class ShouldyDataModelExtensions
 {

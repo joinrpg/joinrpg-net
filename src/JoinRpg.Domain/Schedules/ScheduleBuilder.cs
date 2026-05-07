@@ -1,4 +1,4 @@
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.Schedules;
 
@@ -38,7 +38,7 @@ public class ScheduleBuilder(IReadOnlyCollection<Character> characters, ProjectI
 
         var allItems = new List<ProgramItemPlaced>();
 
-        foreach (var character in characters.Where(ch => ch.CharacterType != PrimitiveTypes.CharacterType.Slot))
+        foreach (var character in characters.Where(ch => ch.CharacterType != CharacterType.Slot))
         {
             var programItem = new ProgramItem(character);
             var slots = SelectSlots(programItem, character);

@@ -1,7 +1,8 @@
 using System.Diagnostics.Metrics;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.CommonEfCore;
+using JoinRpg.DomainTypes;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
 using LinqKit;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;

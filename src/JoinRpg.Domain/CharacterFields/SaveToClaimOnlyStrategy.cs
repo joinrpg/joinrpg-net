@@ -1,24 +1,20 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.Domain.Access;
-using JoinRpg.PrimitiveTypes.Characters;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.CharacterFields;
 
-internal class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
+internal class SaveToClaimOnlyStrategy(Claim claim,
+    int currentUserId,
+    IFieldDefaultValueGenerator generator,
+    ProjectInfo projectInfo) : FieldSaveStrategyBase(claim,
+    character: null,
+    currentUserId,
+    generator,
+    projectInfo,
+    AccessArgumentsFactory.Create(claim, currentUserId))
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
-
-    public SaveToClaimOnlyStrategy(Claim claim,
-        int currentUserId,
-        IFieldDefaultValueGenerator generator,
-        ProjectInfo projectInfo) : base(claim,
-        character: null,
-        currentUserId,
-        generator,
-        projectInfo,
-        AccessArgumentsFactory.Create(claim, currentUserId))
-    {
-    }
 
     protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
     {

@@ -7,7 +7,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Interfaces;
 

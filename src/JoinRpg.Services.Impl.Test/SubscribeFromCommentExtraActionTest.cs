@@ -1,4 +1,5 @@
-using JoinRpg.PrimitiveTypes.Claims;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl.Test;

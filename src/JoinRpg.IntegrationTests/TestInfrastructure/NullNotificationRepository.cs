@@ -1,7 +1,7 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.Notifications;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
@@ -26,5 +26,5 @@ internal class NullNotificationRepository : INotificationRepository
         UserIdentification userId,
         NotificationChannel notificationChannel,
         KeySetPagination pagination)
-        => Task.FromResult<IReadOnlyCollection<NotificationHistoryDto>>(Array.Empty<NotificationHistoryDto>());
+        => Task.FromResult<IReadOnlyCollection<NotificationHistoryDto>>([]);
 }

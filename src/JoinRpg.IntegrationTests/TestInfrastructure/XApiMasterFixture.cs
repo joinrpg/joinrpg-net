@@ -1,7 +1,7 @@
 using Joinrpg.Web.Identity;
+using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.DomainTypes;
 using JoinRpg.Interfaces;
-using JoinRpg.PrimitiveTypes;
-using JoinRpg.PrimitiveTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 

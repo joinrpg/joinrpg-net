@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
-using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization;
