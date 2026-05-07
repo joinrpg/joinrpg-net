@@ -36,7 +36,7 @@
                        class="btn btn-default"><i class="glyphicon glyphicon-heart"></i></a>
                 }
         </div></td>
-        <td>@Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)</td>
+        <td>@await Html.MoveControlAsync(model => item, "MoveValue", "GameField", item.ProjectFieldId)</td>
     </tr>
 }
 </table></div>
