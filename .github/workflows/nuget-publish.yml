@@ -49,7 +49,7 @@ jobs:
           cache-dependency-path: "Directory.Packages.props"
 
       - name: Locate project
-        run: $env:PROJECT_FILENAME = dotnet sln list | Select-String ${{ matrix.project }}
+        run: export PROJECT_FILENAME=$(dotnet sln list | grep ${{ matrix.project }})
 
       - name: Restore
         run: dotnet restore ${{ env.PROJECT_FILENAME }}
