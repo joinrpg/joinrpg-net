@@ -6,8 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>JoinRpg.Common.PrimitiveTypes</PackageId>
+    <Description>Common primitive types for JoinRpg (emails, user IDs, etc.)</Description>
+    <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.PrimitiveTypes.SourceGenerator\JoinRpg.PrimitiveTypes.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes.SourceGenerator\JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

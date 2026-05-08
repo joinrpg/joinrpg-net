@@ -18,6 +18,8 @@ jobs:
       matrix:
         project:
           - JoinRpg.Common.WebInfrastructure
+          - JoinRpg.Common.PrimitiveTypes
+          - JoinRpg.Common.PrimitiveTypes.SourceGenerator
           # Добавить новые проекты сюда:
           # - SomeOtherProject.csproj
 

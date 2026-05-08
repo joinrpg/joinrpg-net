@@ -8,7 +8,7 @@
     <Project Path="src/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
     <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
     <Project Path="src/JoinRpg.Markdown/JoinRpg.Markdown.csproj" />
-    <Project Path="src/JoinRpg.PrimitiveTypes.SourceGenerator/JoinRpg.PrimitiveTypes.SourceGenerator.csproj" />
+    <Project Path="src/JoinRpg.Common.PrimitiveTypes.SourceGenerator/JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" />
   </Folder>
   <Folder Name="/Dal/">
     <Project Path="src/JoinRpg.Dal.Impl/JoinRpg.Dal.Impl.csproj" />
