@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
-    <ProjectReference Include="..\JoinRpg.PrimitiveTypes.SourceGenerator\JoinRpg.PrimitiveTypes.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes.SourceGenerator\JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
   </ItemGroup>
 
