@@ -37,12 +37,16 @@ public static class Registration
     }
 }
 
-internal class HealthCheckTelegram(TelegramBotClient client) : IHealthCheck
+internal class HealthCheckTelegram(ITelegramNotificationService service) : IHealthCheck
 {
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var x = await client.GetMe(cancellationToken);
-        return new HealthCheckResult(HealthStatus.Healthy, description: "Подключен " + x.Username ?? "нет имени");
+        var username = await service.GetMyUserName(cancellationToken);
+        if (username is null)
+        {
+            return new HealthCheckResult(HealthStatus.Degraded, "Telegram выключен");
+        }
+        return new HealthCheckResult(HealthStatus.Healthy, description: "Подключен " + username);
     }
 }
