@@ -13,6 +13,8 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
 {
     private const int TelegramMaxMessageLength = 4096;
 
+    public async Task<string?> GetMyUserName(CancellationToken cancellationToken) => (await client.GetMe(cancellationToken)).Username;
+
     public async Task SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
     {
         try
@@ -37,6 +39,8 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
 
 internal class StubTelegramNotificationService(ILogger<StubTelegramNotificationService> logger) : ITelegramNotificationService
 {
+    public Task<string?> GetMyUserName(CancellationToken cancellationToken) => Task.FromResult<string?>(null);
+
     public Task SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
     {
         logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}: {message}", telegramId, contents);
