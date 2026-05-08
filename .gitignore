@@ -135,10 +135,7 @@ UpgradeLog*.htm
 
 #Join-Rpg specfic ignores
 #We will store our API keys here
-/Secret.config
 *.pubxml
-
-appsettings.Development.json
 
 #generated kubeconfig
 /scripts/github-actions-*
