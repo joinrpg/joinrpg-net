@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebInfrastructure.Cache;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace JoinRpg.Common.WebInfrastructure;
 
@@ -21,6 +22,7 @@ public static class WebInfrastructureRegistration
 
         services
             .AddScoped(typeof(PerRequestCache<,>))
-            .AddSingleton(typeof(SingletonCache<,>));
+            .AddSingleton(typeof(SingletonCache<,>))
+            .AddSingleton<IHealthCheckPublisher, HealthCheckMetricsPublisher>();
     }
 }
