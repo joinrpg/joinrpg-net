@@ -1,5 +1,6 @@
 @inject IProjectRolesListClient Client
 @inject ILogger<ProjectRolesListGrid> logger
+@inject NavigationManager NavigationManager
 @if (_model is null)
 {
   <JoinLoadingMessage />
@@ -12,20 +13,13 @@
     <p>
       Сетки ролей позволяют мастерам и игрокам просматривать список персонажей и заявок в виде таблицы с настраиваемыми колонками.
     </p>
-    @if (Adding)
+    @if (_model.HasEditAccess)
     {
-      <ProjectRolesListForm OnSubmit="PerformAdd" OnCancelAdd="() => Adding = false" ProjectId="@ProjectId" />
+        <JoinButton Preset="ButtonPreset.Add" OnClick='() => NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist/edit")' Title="Добавить сетку ролей" Label="Добавить сетку"/>
     }
     else
     {
-      if (_model.HasEditAccess)
-      {
-        <JoinButton Preset="ButtonPreset.Add" OnClick="() => Adding = true" Title="Добавить сетку ролей" Label="Добавить сетку"/>
-      }
-      else
-      {
         <JoinButton Preset="ButtonPreset.Add" Disabled="true" Title="Для управления настройками нужны права редактировать ролевку" Label="Добавить сетку"/>
-      }
     }
   </Body>
   <ItemTemplate>
@@ -46,8 +40,6 @@
     [Parameter]
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; }
-
-    public bool Adding { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
@@ -75,28 +67,6 @@
         {
             logger.LogError(exc, "Ошибка при удалении сетки ролей");
             items.Insert(idx, item);
-        }
-    }
-
-    async Task PerformAdd(AddProjectRolesListViewModel addedModel)
-    {
-        Adding = false;
-
-        var rule = addedModel.ToDomain(ProjectId, -1);
-
-        _model!.Items.Insert(
-          0,
-          new ProjectRolesListItemViewModel(rule, null)
-        );
-
-        try
-        {
-            _model = await Client.Create(ProjectId, addedModel);
-        }
-        catch (Exception exc)
-        {
-            logger.LogError(exc, "Ошибка при добавлении сетки ролей");
-            _model!.Items.RemoveAt(0);
         }
     }
 }

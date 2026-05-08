@@ -1,6 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.Users;
-
 namespace JoinRpg.Services.Interfaces;
 
 public interface IUserService

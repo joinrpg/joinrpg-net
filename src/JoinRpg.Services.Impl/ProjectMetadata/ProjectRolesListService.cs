@@ -56,6 +56,12 @@ internal class ProjectRolesListService(
         logger.LogInformation("Удалена сетка ролей {ProjectRolesListId}", entity.ProjectRolesListId);
     }
 
+    public async Task<ProjectRolesList> GetByIdAsync(ProjectRolesListIdentification id)
+    {
+        var entity = await GetEntityOrThrow(id);
+        return ToDomain(entity);
+    }
+
     private async Task<DataModel.ProjectRolesList> GetEntityOrThrow(ProjectRolesListIdentification id)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);

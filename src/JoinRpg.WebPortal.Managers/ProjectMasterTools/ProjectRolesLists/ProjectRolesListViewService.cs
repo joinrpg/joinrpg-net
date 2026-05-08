@@ -42,6 +42,11 @@ internal class ProjectRolesListViewService(
             groupNames);
     }
 
+    public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification id)
+    {
+        return await service.GetByIdAsync(id);
+    }
+
     public async Task Remove(ProjectRolesListIdentification id)
     {
         await service.RemoveAsync(id);

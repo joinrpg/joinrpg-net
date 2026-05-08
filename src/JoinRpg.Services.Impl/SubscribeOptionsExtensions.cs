@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Services.Impl;
 

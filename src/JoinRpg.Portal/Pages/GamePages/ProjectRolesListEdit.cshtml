@@ -1,0 +1,16 @@
+@page "/{projectId:int}/tools/roleslist/edit/{id:int?}"
+@using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
+@model JoinRpg.Portal.Pages.GamePages.ProjectRolesListEditModel
+
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Редактирование сетки ролей" : "Создание сетки ролей";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<ProjectRolesListEditForm>(RenderMode.WebAssembly, new
+{
+    Model.ProjectId,
+    Model.IsEditMode,
+    Model.Model
+}))

@@ -1,0 +1,107 @@
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.WebComponents
+@using Microsoft.AspNetCore.Components.Forms
+@inject ILogger<ProjectRolesListEditForm> Logger
+@inject IProjectRolesListClient Client
+@inject NavigationManager NavigationManager
+
+<EditForm Model="_model" OnValidSubmit="OnSave">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <FormHorizontal>
+        <FormRowFor For="@(() => _model.Name)">
+            <JoinTextInput @bind-Value="_model.Name" />
+        </FormRowFor>
+        <FormRowFor For="@(() => _model.CharacterGroupId)">
+            <SingleCharacterGroupSelector ProjectId="@ProjectId" @bind-SelectedGroupId="_model.CharacterGroupId" />
+        </FormRowFor>
+        <FormRowFor For="@(() => _model.PublicMode)">
+            <CheckboxInput @bind-Value="_model.PublicMode" />
+        </FormRowFor>
+        <FormRowFor For="@(() => _model.ContactsColumn)">
+            <EnumRadioButtonGroup @bind-SelectedValue="_model.ContactsColumn" />
+        </FormRowFor>
+        <FormRowFor For="@(() => _model.GroupsColumn)">
+            <EnumRadioButtonGroup @bind-SelectedValue="_model.GroupsColumn" />
+        </FormRowFor>
+        <br />
+        <JoinButton Preset="ButtonPreset.Save" Submit="true" Label="@SaveButtonLabel" Disabled="@_saving" /> |
+        <JoinButton Preset="ButtonPreset.Cancel" OnClick="HandleCancel" Label="Назад к списку" Disabled="@_saving" />
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="alert alert-danger">@_error</div>
+        }
+    </FormHorizontal>
+</EditForm>
+
+@code {
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; }
+
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    [Parameter]
+    public EditProjectRolesListViewModel? Model { get; set; }
+
+    private EditProjectRolesListViewModel _model = new();
+    private bool _saving = false;
+    private string? _error = null;
+
+    private string SaveButtonLabel => IsEditMode ? "Сохранить изменения" : "Создать сетку";
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Model != null)
+        {
+            _model = Model;
+        }
+    }
+
+    private async Task OnSave()
+    {
+        _saving = true;
+        _error = null;
+        try
+        {
+            if (IsEditMode)
+            {
+                var domainModel = _model.ToDomain();
+                await Client.Update(domainModel);
+            }
+            else
+            {
+                await Client.Create(ProjectId, _model);
+            }
+            NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Ошибка сохранения: {ex.Message}";
+            Logger.LogError(ex, "Ошибка сохранения сетки ролей");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task HandleCancel()
+    {
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist");
+        }
+    }
+}

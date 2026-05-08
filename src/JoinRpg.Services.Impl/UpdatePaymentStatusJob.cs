@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces.Finances;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Impl;
 

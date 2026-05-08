@@ -15,6 +15,13 @@ internal class ProjectRolesListClientImpl(
              ?? throw new Exception("Couldn't get result from server");
     }
 
+    public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification id)
+    {
+        return await httpClient.GetFromJsonAsync<ProjectRolesList>(
+             $"webapi/project-roles-list/getbyid?targetId={id}")
+             ?? throw new Exception("Couldn't get result from server");
+    }
+
     public async Task Remove(ProjectRolesListIdentification id)
     {
         try
@@ -49,7 +56,7 @@ internal class ProjectRolesListClientImpl(
         }
     }
 
-    public async Task<ProjectRolesListViewModel> Update(DomainTypes.ProjectMetadata.ProjectRolesList model)
+    public async Task<ProjectRolesListViewModel> Update(ProjectRolesList model)
     {
         try
         {
