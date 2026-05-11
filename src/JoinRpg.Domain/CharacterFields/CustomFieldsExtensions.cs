@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 using Newtonsoft.Json;
@@ -75,29 +74,9 @@ public static class CustomFieldsExtensions
             claim.DeserializeFieldValues());
     }
 
-    public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Claim claim, ProjectInfo projectInfo)
-        => claim.GetFields(projectInfo).ToDictionary(f => f.Field.Id);
-
     public static FieldWithValue? GetSingleField(this Claim claim, ProjectInfo projectInfo, ProjectFieldIdentification id)
     {
         return claim.GetFields(projectInfo).SingleOrDefault(f => f.Field.Id == id);
     }
 
-    [Obsolete]
-    public static AccessArguments GetAccessArguments(
-      this IFieldContainter entityWithFields,
-      int userId)
-    {
-        ArgumentNullException.ThrowIfNull(entityWithFields);
-
-        if (entityWithFields is Claim claim)
-        {
-            return AccessArgumentsFactory.Create(claim, userId);
-        }
-        if (entityWithFields is Character character)
-        {
-            return AccessArgumentsFactory.Create(character, userId);
-        }
-        throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
-    }
 }
