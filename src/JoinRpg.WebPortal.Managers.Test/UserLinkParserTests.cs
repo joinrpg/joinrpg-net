@@ -1,3 +1,5 @@
+using JoinRpg.WebPortal.Managers.Claims;
+
 namespace JoinRpg.WebPortal.Managers.Test;
 
 public class UserLinkParserTests

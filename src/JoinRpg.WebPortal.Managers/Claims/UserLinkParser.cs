@@ -1,4 +1,4 @@
-namespace JoinRpg.WebPortal.Managers;
+namespace JoinRpg.WebPortal.Managers.Claims;
 
 public static class UserLinkParser
 {

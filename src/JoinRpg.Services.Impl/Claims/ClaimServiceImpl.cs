@@ -942,5 +942,10 @@ internal class ClaimServiceImpl(
     {
         return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
+
+    public async Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId)
+    {
+        throw new NotImplementedException();
+    }
 }
 
