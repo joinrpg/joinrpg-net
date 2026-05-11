@@ -1,0 +1,34 @@
+<div class="rule-list-row">
+
+  <div>
+    <h5>@Model.RolesList.Name</h5>
+    @if (Model.CharacterGroupName != null)
+    {
+      <p>Группа: @Model.CharacterGroupName</p>
+    }
+    <p>Колонок полей: @Model.RolesList.Fields.Count</p>
+    <p>Видимость: @(Model.RolesList.PublicMode ? "Публичная" : "Только для мастеров")</p>
+  </div>
+  <div class="filler">
+
+  </div>
+  <div>
+    <JoinButton Preset="ButtonPreset.Delete" 
+      OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
+      Label="Удалить сетку"
+      DisabledTitle="Для управления сетками ролей нужны права администратора заявок"
+      Disabled="!HasEditAccess"
+      />
+  </div>
+</div>
+@code {
+
+    [Parameter]
+    public ProjectRolesListItemViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<ProjectRolesListItemViewModel> OnRemoveCallback { get; set; }
+
+    [Parameter]
+    public bool HasEditAccess { get; set; }
+}

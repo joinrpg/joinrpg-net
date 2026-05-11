@@ -1,10 +1,12 @@
 using System.Reflection;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Services.Impl;
@@ -46,6 +48,7 @@ public static class Services
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
+            .AddTransient<IProjectRolesListService, ProjectRolesListService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()

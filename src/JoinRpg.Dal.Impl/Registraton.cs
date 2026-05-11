@@ -1,7 +1,9 @@
 using JoinRpg.Dal.Impl.Repositories;
+using JoinRpg.Dal.Impl.Repositories.ProjectMetadata;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
+using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Data.Write.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +35,7 @@ public static class Registraton
             .AddTransient<IAccommodationRepository, AccommodationRepositoryImpl>()
             .AddTransient<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>()
             .AddTransient<IResponsibleMasterRulesRepository, ResponsibleMasterRulesRepository>()
+            .AddTransient<IProjectRolesListRepository, ProjectRolesListRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 

@@ -27,12 +27,19 @@ public class ProjectRolesListController(IProjectRolesListClient client) : Contro
 
     [HttpPost]
     [RequireMaster(Permission.CanEditRoles)]
-    public async Task<ActionResult<ProjectRolesListViewModel>> AddOrChange([FromQuery] ProjectIdentification projectId, [FromBody] DomainTypes.ProjectMetadata.ProjectRolesList model)
+    public async Task<ActionResult<ProjectRolesListViewModel>> Create([FromQuery] ProjectIdentification projectId, [FromBody] AddProjectRolesListViewModel model)
+    {
+        return Ok(await client.Create(projectId, model));
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanEditRoles)]
+    public async Task<ActionResult<ProjectRolesListViewModel>> Update([FromQuery] ProjectIdentification projectId, [FromBody] DomainTypes.ProjectMetadata.ProjectRolesList model)
     {
         if (model.ProjectRolesListId.ProjectId != projectId)
         {
             return BadRequest();
         }
-        return Ok(await client.AddOrChange(model));
+        return Ok(await client.Update(model));
     }
 }

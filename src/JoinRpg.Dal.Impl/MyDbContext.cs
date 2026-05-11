@@ -150,7 +150,7 @@ public class MyDbContext : DbContext, IUnitOfWork
             .WithMany(p => p.ProjectRolesLists)
             .HasForeignKey(prl => prl.ProjectId)
             .WillCascadeOnDelete(true);
-        
+
         modelBuilder.Entity<JoinRpg.DataModel.ProjectRolesList>()
             .HasIndex(prl => prl.ProjectId);
 

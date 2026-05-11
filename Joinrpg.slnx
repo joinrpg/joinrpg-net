@@ -69,6 +69,7 @@
     <Project Path="src/JoinRpg.WebComponents.Test/JoinRpg.WebComponents.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
+    <Project Path="src/JoinRpg.Web.ProjectMasterTools.Tests/JoinRpg.Web.ProjectMasterTools.Tests.csproj" />
   </Folder>
   <Folder Name="/WebPortalShared/">
     <Project Path="src/JoinRpg.Blazor.Client/JoinRpg.Blazor.Client.csproj" />
