@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.Test;
@@ -96,7 +97,7 @@ public class CustomFieldsExtensionsTest
 
     private void VerifyClaim(Claim claim, User viewerUser, ProjectInfo projectInfo, params ProjectFieldInfo[] expectedFields)
     {
-        var accessPredicate = claim.GetAccessArguments(viewerUser.UserId);
+        var accessPredicate = AccessArgumentsFactory.Create(claim, viewerUser.UserId, projectInfo);
 
         var userVisibleFields = claim.GetFields(projectInfo).Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();
 
@@ -105,7 +106,7 @@ public class CustomFieldsExtensionsTest
 
     private void VerifyCharacter(User viewerUser, params ProjectFieldInfo[] expectedFields)
     {
-        var accessPredicate = projectMock.Character.GetAccessArguments(viewerUser.UserId);
+        var accessPredicate = AccessArgumentsFactory.Create(projectMock.Character, viewerUser.GetId(), projectMock.ProjectInfo);
 
         IList<FieldWithValue> userVisibleFields = projectMock.Character.GetFields(projectMock.ProjectInfo)
             .Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();

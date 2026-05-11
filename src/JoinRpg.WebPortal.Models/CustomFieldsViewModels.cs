@@ -261,7 +261,7 @@ public class CustomFieldsViewModel
     /// Called from Claim and Claim list
     /// </summary>
     public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo)
-      : this(AccessArgumentsFactory.Create(claim, currentUserId), claim.Character, claim.GetFields(projectInfo), overrideValues: null, projectInfo)
+      : this(AccessArgumentsFactory.Create(claim, currentUserId, projectInfo), claim.Character, claim.GetFields(projectInfo), overrideValues: null, projectInfo)
     {
     }
 

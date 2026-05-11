@@ -121,7 +121,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Player = claim.Player;
         PlayerLink = UserLinks.Create(playerInfo, ViewMode.Show);
         ProjectName = claim.Project.ProjectName;
-        Status = ClaimStatusBuilders.CreateFullStatus(claim, AccessArgumentsFactory.Create(claim, currentUser));
+        Status = ClaimStatusBuilders.CreateFullStatus(claim, AccessArgumentsFactory.Create(claim, currentUser, projectInfo));
         CharacterId = claim.CharacterId;
         CharacterActive = claim.Character.IsActive;
         CharacterAutoCreated = claim.Character.AutoCreated;
