@@ -1,0 +1,12 @@
+@page "/{projectId:int}/tools/roleslist"
+@using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
+
+@model JoinRpg.Portal.Pages.GamePages.ProjectRolesListModel
+
+@{
+    ViewData["Title"] = "Сетки ролей";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<ProjectRolesList>(RenderMode.WebAssembly, new {Model.ProjectId}))
