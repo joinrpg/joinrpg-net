@@ -1,15 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace JoinRpg.Common.PrimitiveTypes;
 
-public record Email : SingleValueType<string>, ISpanParsable<Email>
+[TypedStringValue]
+public partial record Email(string Value)
 {
-    public Email(string value)
-        : base(CheckEmail(value))
-    {
-
-    }
-    public static string CheckEmail(string value)
+    internal static string? CustomValidateAndCanonicalize(string value)
     {
         if (!value.Contains('@'))
         {
@@ -17,25 +11,5 @@ public record Email : SingleValueType<string>, ISpanParsable<Email>
         }
         return value;
     }
-
     public string UserPart => string.Join("", Value.TakeWhile(ch => ch != '@'));
-
-    public override string ToString() => $"Email({Value})";
-    public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out Email result)
-    {
-        ReadOnlySpan<char> val = IdentificationParseHelper.RemovePrefixes(value, [nameof(Email)]);
-        if (val.Contains('@'))
-        {
-            result = new Email(val.ToString());
-            return true;
-        }
-        result = null!;
-        return false;
-    }
-    public static Email Parse(string value, IFormatProvider? provider = null) => Parse(value.AsSpan(), provider);
-
-    public static bool TryParse(string? value, IFormatProvider? provider, [MaybeNullWhen(false)] out Email result) => TryParse(value.AsSpan(), provider, out result);
-
-    public static Email Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
-        => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
 }

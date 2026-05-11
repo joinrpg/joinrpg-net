@@ -16,7 +16,7 @@ public record UserDisplayName(
 
         if (!string.IsNullOrWhiteSpace(fullName.PrefferedName?.Value))
         {
-            return fullName.PrefferedName;
+            return fullName.PrefferedName.Value;
         }
         if (!string.IsNullOrWhiteSpace(fullName.FullName))
         {

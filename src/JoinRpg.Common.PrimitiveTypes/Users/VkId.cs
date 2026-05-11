@@ -1,5 +1,4 @@
 namespace JoinRpg.Common.PrimitiveTypes;
 
-public record VkId(string Value) : SingleValueType<string>(Value)
-{
-}
+[TypedStringValue]
+public partial record VkId(string Value);

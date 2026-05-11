@@ -5,9 +5,9 @@ namespace JoinRpg.Common.PrimitiveTypes;
 
 public record TelegramId(long Id, PrefferedName? UserName) : ISpanParsable<TelegramId>
 {
-    public static TelegramId? FromOptional(long? id, PrefferedName? userName) => id is null ? null : new TelegramId(id.Value, userName);
+    public static TelegramId? FromOptional(long? id, PrefferedName? userName) => id is null ? null : new TelegramId(id.Value, NormalizeUserName(userName));
 
-    public static TelegramId? FromOptional(string? key, PrefferedName? userName) => string.IsNullOrWhiteSpace(key) ? null : new TelegramId(long.Parse(key), userName);
+    public static TelegramId? FromOptional(string? key, PrefferedName? userName) => string.IsNullOrWhiteSpace(key) ? null : new TelegramId(long.Parse(key), NormalizeUserName(userName));
 
     public static bool TryParse([NotNullWhen(true)] ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out TelegramId result)
     {
@@ -18,7 +18,8 @@ public record TelegramId(long Id, PrefferedName? UserName) : ISpanParsable<Teleg
            && long.TryParse(val[ranges[0]], provider, out var i1)
            )
         {
-            result = new TelegramId(i1, PrefferedName.FromOptional(val[ranges[1]].TrimStart('@').ToString()));
+            var usernameSpan = val[ranges[1]].TrimStart('@');
+            result = new TelegramId(i1, string.IsNullOrWhiteSpace(usernameSpan.ToString()) ? null : new PrefferedName(usernameSpan.ToString()));
             return true;
         }
 
@@ -41,7 +42,8 @@ public record TelegramId(long Id, PrefferedName? UserName) : ISpanParsable<Teleg
     public static TelegramId Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
         => TryParse(value, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(value));
 
+    private static PrefferedName? NormalizeUserName(PrefferedName? userName) => userName is null || string.IsNullOrWhiteSpace(userName.Value) ? null : userName;
 
-    public override string ToString() => UserName is null ? $"Telegram({Id})" : $"Telegram({Id}, @{UserName.Value})";
+    public override string ToString() => UserName is null || string.IsNullOrWhiteSpace(UserName.Value) ? $"Telegram({Id})" : $"Telegram({Id}, @{UserName.Value})";
 
 }
