@@ -172,11 +172,13 @@
                                 Настройки капитанов команд
                             </a>
                         </li>
+                        @*
                         <li>
                             <a asp-page="/GamePages/ProjectRolesList" asp-route-projectId="@Model.ProjectId">
-                                Сетки ролей (настройки)
+                                Настройки сетки ролей
                             </a>
                         </li>
+                        *@
                         @if (Model.CheckInModuleEnabled)
                         {
                             <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
