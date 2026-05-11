@@ -4,19 +4,19 @@
   SelectedCharacterIds="@selectedIds"
   SelectedCharactersChanged="HandleSelectedChanged"
   Multiple="false"
-  TemplateOnly="@TemplateOnly"
+  ListType="@ListType"
   AllowEmpty="@AllowEmpty"
   />
 
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter] public int ProjectId { get; set; }
+    [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; }
     [Parameter] public CharacterIdentification? SelectedCharacterId { get; set; }
     [Parameter] public EventCallback<CharacterIdentification?> SelectedCharacterIdChanged { get; set; }
     [Parameter] public CharacterDto? SelectedCharacter { get; set; }
     [Parameter] public EventCallback<CharacterDto> SelectedCharacterChanged { get; set; }
-    [Parameter] public bool TemplateOnly { get; set; } = false;
+    [Parameter] public CharacterListType ListType { get; set; } = CharacterListType.All;
     [Parameter] public bool AllowEmpty { get; set; } = false;
 
     private CharacterIdentification[] selectedIds = [];
