@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DomainTypes;
@@ -20,6 +21,12 @@ public static class ProjectEntityIdParser
         if (ProjectIdentification.TryParse(value, null, out var project))
         {
             id = project;
+            return true;
+        }
+
+        if (ProjectRolesListIdentification.TryParse(value, null, out var prli))
+        {
+            id = prli;
             return true;
         }
 
