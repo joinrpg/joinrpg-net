@@ -7,23 +7,21 @@ using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroupList;
 
-public class CharacterListViewService(ICharacterRepository characterRepository, IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : ICharactersClient
+public class CharacterListViewService(
+    ICharacterRepository characterRepository,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor) : ICharactersClient
 {
-    public async Task<List<CharacterDto>> GetCharacters(int projectId)
+    public async Task<List<CharacterDto>> GetCharacters(ProjectIdentification projectId, CharacterListType listType)
     {
-        var characters = await characterRepository.GetAllCharacters(projectId);
-        return await ToFilteredList(characters, projectId);
-    }
-
-    public async Task<List<CharacterDto>> GetTemplateCharacters(int projectId)
-    {
-        var characters = await characterRepository.GetActiveTemplateCharacters(projectId);
-        return await ToFilteredList(characters, projectId);
-    }
-
-    private async Task<List<CharacterDto>> ToFilteredList(IEnumerable<Character> characters, int projectId)
-    {
-        var project = await projectRepository.GetProjectAsync(projectId);
+        IEnumerable<Character> characters = listType switch
+        {
+            CharacterListType.All => await characterRepository.GetAllCharacters(projectId),
+            CharacterListType.AllTemplates => await characterRepository.GetActiveTemplateCharacters(projectId),
+            CharacterListType.Available => await characterRepository.GetAvailableCharacters(projectId),
+            _ => throw new ArgumentOutOfRangeException(nameof(listType), listType, null)
+        };
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         var masterAccess = project.HasMasterAccess(currentUserAccessor);
         return [.. characters
             .Select(CreateDto)
@@ -33,7 +31,7 @@ public class CharacterListViewService(ICharacterRepository characterRepository, 
     private static CharacterDto CreateDto(Character c) => new(
         new CharacterIdentification(c.ProjectId, c.CharacterId),
         c.CharacterName,
-        LimitDescription(c.Description.ToPlainText().ToString()),
+        LimitDescription(c.Description.ToPlainTextAndEscapeHtml().ToString()),
         c.IsPublic);
 
     private static string LimitDescription(string v)

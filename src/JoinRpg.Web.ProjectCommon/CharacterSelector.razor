@@ -22,7 +22,7 @@ else
 
     [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
-    [Parameter] [EditorRequired] public int ProjectId { get; set; }
+    [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; }
 
     [Parameter] public CharacterIdentification[] SelectedCharacterIds { get; set; } = [];
     [Parameter] public EventCallback<CharacterIdentification[]> SelectedCharacterIdsChanged { get; set; }
@@ -30,7 +30,7 @@ else
 
     [Parameter] public EventCallback<CharacterDto[]> SelectedCharactersChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;
-    [Parameter] public bool TemplateOnly { get; set; } = false;
+    [Parameter] public CharacterListType ListType { get; set; } = CharacterListType.All;
     [Parameter] public bool AllowEmpty { get; set; } = false;
 
     public string SelectedCharactersText{ get; private set; } = "";
@@ -68,9 +68,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        chars = TemplateOnly
-          ? await client.GetTemplateCharacters(ProjectId) 
-          : await client.GetCharacters(ProjectId);
+        chars = await client.GetCharacters(ProjectId, ListType);
         var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId)).ToArray();
         if (AllowEmpty)
         {

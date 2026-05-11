@@ -10,8 +10,5 @@ public class CharactersListController(ICharactersClient viewService) : Controlle
 {
     //TODO add caching here
     [HttpGet]
-    public async Task<List<CharacterDto>> GetCharacters(int projectId) => await viewService.GetCharacters(projectId);
-
-    [HttpGet]
-    public async Task<List<CharacterDto>> GetTemplateCharacters(int projectId) => await viewService.GetTemplateCharacters(projectId);
+    public async Task<List<CharacterDto>> GetCharactersByType(ProjectIdentification projectId, CharacterListType listType = CharacterListType.All) => await viewService.GetCharacters(projectId, listType);
 }
