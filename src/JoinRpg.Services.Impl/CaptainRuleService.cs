@@ -35,7 +35,7 @@ internal class CaptainRuleService(IUnitOfWork unitOfWork,
             {
                 CanApprove = captainAccessSetting.CanApprove,
                 CaptainAccessRuleEntityId = -1,
-                CaptainUserId = captainAccessSetting.Player.Value,
+                CaptainUserId = captainAccessSetting.Player,
                 CharacterGroupId = captainAccessSetting.CharacterGroup.CharacterGroupId,
                 ProjectId = captainAccessSetting.ProjectId,
             };
@@ -59,8 +59,8 @@ internal class CaptainRuleService(IUnitOfWork unitOfWork,
 
         var rule = await UnitOfWork.GetDbSet<CaptainAccessRuleEntity>()
             .Where(x => x.CharacterGroupId == captainAccessSetting.CharacterGroup.CharacterGroupId &&
-            x.ProjectId == captainAccessSetting.CharacterGroup.ProjectId
-            && x.CaptainUserId == captainAccessSetting.Player)
+            x.ProjectId == captainAccessSetting.CharacterGroup.ProjectId.Value
+            && x.CaptainUserId == captainAccessSetting.Player.Value)
             .SingleOrDefaultAsync();
         return rule;
     }
