@@ -97,7 +97,7 @@ public class CustomFieldsExtensionsTest
 
     private void VerifyClaim(Claim claim, User viewerUser, ProjectInfo projectInfo, params ProjectFieldInfo[] expectedFields)
     {
-        var accessPredicate = AccessArgumentsFactory.Create(claim, viewerUser.UserId);
+        var accessPredicate = AccessArgumentsFactory.Create(claim, viewerUser.UserId, projectInfo);
 
         var userVisibleFields = claim.GetFields(projectInfo).Where(f => f.Field.HasViewAccess(accessPredicate)).ToList();
 

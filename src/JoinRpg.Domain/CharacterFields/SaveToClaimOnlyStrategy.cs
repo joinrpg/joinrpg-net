@@ -12,7 +12,7 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     currentUserId,
     generator,
     projectInfo,
-    AccessArgumentsFactory.Create(claim, currentUserId))
+    AccessArgumentsFactory.Create(claim, currentUserId, projectInfo))
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
 

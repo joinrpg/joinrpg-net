@@ -22,20 +22,6 @@ public static class AccessArgumentsFactory
         return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
     }
 
-    [Obsolete("Pass projectInfo")]
-    public static AccessArguments Create(Character character, int? userId)
-    {
-        ArgumentNullException.ThrowIfNull(character);
-
-        return new AccessArguments(
-            MasterAccess: character.HasMasterAccess(UserIdentification.FromOptional(userId)),
-            PlayerAccessToCharacter: character.HasPlayerAccess(userId),
-            PlayerAccesToClaim: character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false,
-            EditAllowed: character.Project.Active,
-            Published: character.Project.Details.PublishPlot,
-            CharacterPublic: character.IsPublic, IsCapitan: false);
-    }
-
     public static AccessArguments Create(Character character, ICurrentUserAccessor user, ProjectInfo projectInfo) => Create(character, user.UserIdentificationOrDefault, projectInfo);
 
     public static AccessArguments Create(Character character, UserIdentification? user, ProjectInfo projectInfo)
@@ -118,12 +104,12 @@ public static class AccessArgumentsFactory
           CharacterPublic: character.IsPublic, IsCapitan: false);
     }
 
-    public static AccessArguments Create(Claim claim, int? userId)
+    public static AccessArguments Create(Claim claim, int? userId, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claim);
 
         return new AccessArguments(
-            MasterAccess: claim.HasMasterAccess(UserIdentification.FromOptional(userId)),
+            MasterAccess: projectInfo.HasMasterAccess(UserIdentification.FromOptional(userId)),
             PlayerAccessToCharacter: claim.Character.HasPlayerAccess(userId),
             PlayerAccesToClaim: claim.HasPlayerAccesToClaim(userId),
             EditAllowed: claim.Project.Active,
@@ -131,7 +117,7 @@ public static class AccessArgumentsFactory
             CharacterPublic: claim.Character.IsPublic, IsCapitan: false);
     }
 
-    public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId) => Create(claim, userId.UserIdOrDefault);
+    public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId, ProjectInfo projectInfo) => Create(claim, userId.UserIdOrDefault, projectInfo);
 
     public static PlotAccessArguments CreatePlot(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor)
     {

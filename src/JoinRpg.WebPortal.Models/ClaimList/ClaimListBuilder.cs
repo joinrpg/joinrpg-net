@@ -18,7 +18,7 @@ public static class ClaimListBuilder
     internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo,
        IProblemValidator<Claim> claimValidator, Dictionary<int, int> unreadComments)
     {
-        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
+        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
         var balance = claim.CalculateClaimBalance(projectInfo);
         (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
 
@@ -44,7 +44,7 @@ public static class ClaimListBuilder
 
     internal static ClaimListItemForExportViewModel BuildItemForExport(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)
     {
-        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId);
+        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
         (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
         var balance = claim.CalculateClaimBalance(projectInfo);
 
