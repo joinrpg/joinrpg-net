@@ -56,4 +56,6 @@ public class Project : IProjectEntity
     public virtual ICollection<MoneyTransfer> MoneyTransfers { get; set; }
 
     public virtual HashSet<KogdaIgraGame> KogdaIgraGames { get; set; } = null!;
+
+    public virtual ICollection<ProjectRolesList> ProjectRolesLists { get; set; }
 }

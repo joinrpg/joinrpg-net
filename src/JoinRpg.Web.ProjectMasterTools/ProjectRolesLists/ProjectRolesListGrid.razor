@@ -1,0 +1,102 @@
+@inject IProjectRolesListClient Client
+@inject ILogger<ProjectRolesListGrid> logger
+@if (_model is null)
+{
+  <JoinLoadingMessage />
+  return;
+}
+
+<JoinPanelWithList Items="@_model.Items">
+  <Header>Сетки ролей</Header>
+  <Body>
+    <p>
+      Сетки ролей позволяют мастерам и игрокам просматривать список персонажей и заявок в виде таблицы с настраиваемыми колонками.
+    </p>
+    @if (Adding)
+    {
+      <ProjectRolesListForm OnSubmit="PerformAdd" OnCancelAdd="() => Adding = false" ProjectId="@ProjectId" />
+    }
+    else
+    {
+      if (_model.HasEditAccess)
+      {
+        <JoinButton Preset="ButtonPreset.Add" OnClick="() => Adding = true" Title="Добавить сетку ролей" Label="Добавить сетку"/>
+      }
+      else
+      {
+        <JoinButton Preset="ButtonPreset.Add" Disabled="true" Title="Для управления настройками нужны права редактировать ролевку" Label="Добавить сетку"/>
+      }
+    }
+  </Body>
+  <ItemTemplate>
+    <ProjectRolesListRow
+      Model="@context"
+      OnRemoveCallback="OnRemoveRow"
+      HasEditAccess="@_model.HasEditAccess"
+      @key="@context.RolesList" />
+  </ItemTemplate>
+</JoinPanelWithList>
+
+@code {
+    private ProjectRolesListViewModel? _model;
+
+    [Parameter]
+    public ProjectRolesListViewModel? InitialModel { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    public bool Adding { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (InitialModel != null)
+        {
+            _model = InitialModel;
+        }
+        else
+        {
+            _model = await Client.GetList(ProjectId);
+        }
+    }
+
+    async Task OnRemoveRow(ProjectRolesListItemViewModel item)
+    {
+        var items = _model!.Items;
+        var idx = items.IndexOf(item);
+
+        items.RemoveAt(idx);
+        try
+        {
+            await Client.Remove(item.RolesList.ProjectRolesListId);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Ошибка при удалении сетки ролей");
+            items.Insert(idx, item);
+        }
+    }
+
+    async Task PerformAdd(AddProjectRolesListViewModel addedModel)
+    {
+        Adding = false;
+
+        var rule = addedModel.ToDomain(ProjectId, -1);
+
+        _model!.Items.Insert(
+          0,
+          new ProjectRolesListItemViewModel(rule, null)
+        );
+
+        try
+        {
+            _model = await Client.Create(ProjectId, addedModel);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Ошибка при добавлении сетки ролей");
+            _model!.Items.RemoveAt(0);
+        }
+    }
+}

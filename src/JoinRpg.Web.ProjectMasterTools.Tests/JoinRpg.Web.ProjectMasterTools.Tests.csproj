@@ -5,9 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bunit" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Shouldly" />
-    <PackageReference Include="xunit"  />
+    <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -15,9 +16,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
-    <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />
-    <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
+    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
   </ItemGroup>
 
 </Project>

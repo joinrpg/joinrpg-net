@@ -17,6 +17,8 @@ public class MyDbContext : DbContext, IUnitOfWork
 {
     public DbSet<Project> ProjectsSet => Set<Project>();
 
+    public DbSet<JoinRpg.DataModel.ProjectRolesList> ProjectRolesListsSet => Set<JoinRpg.DataModel.ProjectRolesList>();
+
     public DbSet<User> UserSet => Set<User>();
 
     public DbSet<Claim> ClaimSet => Set<Claim>();
@@ -141,6 +143,16 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         ConfigureOptionalDependPropertyFor<ProjectFieldDropdownValue, CharacterGroup>(modelBuilder, v => v.CharacterGroup, v => v.CharacterGroupId);
         ConfigureOptionalDependPropertyFor<ProjectField, CharacterGroup>(modelBuilder, v => v.CharacterGroup, v => v.CharacterGroupId);
+
+        // ProjectRolesList configuration
+        modelBuilder.Entity<JoinRpg.DataModel.ProjectRolesList>()
+            .HasRequired(prl => prl.Project)
+            .WithMany(p => p.ProjectRolesLists)
+            .HasForeignKey(prl => prl.ProjectId)
+            .WillCascadeOnDelete(true);
+
+        modelBuilder.Entity<JoinRpg.DataModel.ProjectRolesList>()
+            .HasIndex(prl => prl.ProjectId);
 
         modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
             .WillCascadeOnDelete(false);

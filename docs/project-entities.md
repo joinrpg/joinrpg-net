@@ -19,3 +19,7 @@
 1. Добавить его в ProjectInfo
 1. Добавить загрузку этой сущности в ProjectLoaderCommon.GetProjectWithFieldsAsync чтобы не плодить LazyLoad
 1. Добавить меппинг из БД в ProjectMetadataRepository.CreateInfoFromProject
+
+## Дополнительные материалы
+
+- [Миграции Entity Framework](ef-migrations.md) — как создавать и применять миграции

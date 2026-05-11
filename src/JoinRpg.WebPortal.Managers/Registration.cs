@@ -9,11 +9,13 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
+using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Claims;
+using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.WebPortal.Managers.Projects;
 using JoinRpg.WebPortal.Managers.Subscribe;
 using JoinRpg.WebPortal.Managers.UnifiedGrid;
@@ -36,6 +38,7 @@ public static class Registration
         .AddScoped<ICheckInClient, CheckInViewService>()
         .AddScoped<IResponsibleMasterRuleClient, ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService>()
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
+        .AddScoped<IProjectRolesListClient, ProjectRolesListViewService>()
         .AddScoped<IMasterClient, ProjectMasterViewService>()
         .AddTransient<IProjectListClient, ProjectListViewService>()
         .AddTransient<IProjectListForAdminClient, ProjectListViewService>()

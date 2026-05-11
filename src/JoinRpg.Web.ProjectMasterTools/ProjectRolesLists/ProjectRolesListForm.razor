@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Components.Forms
+@inject ILogger<ProjectRolesListForm> Logger
+
+<EditForm Model="_model" OnValidSubmit="OnAdd">
+    <FormHorizontal>
+        <FormRow Label="Название">
+            <InputText @bind-Value="_model.Name" />
+            <ValidationMessage For="@(() => _model.Name)" />
+        </FormRow>
+        <FormRow Label="Публичный режим">
+            <CheckboxInput @bind-Value="_model.PublicMode" />
+        </FormRow>
+        <br />
+        <JoinButton Preset="ButtonPreset.Add" Submit="true" /> |
+        <JoinButton Preset="ButtonPreset.Cancel" OnClick="OnCancelAdd" />
+    </FormHorizontal>
+</EditForm>
+
+@code {
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<AddProjectRolesListViewModel> OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnCancelAdd { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; }
+
+    private AddProjectRolesListViewModel _model = new();
+
+    private async Task OnAdd()
+    {
+        await OnSubmit.InvokeAsync(_model);
+    }
+}

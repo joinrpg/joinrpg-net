@@ -9,6 +9,7 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
+using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
@@ -49,6 +50,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IClaimListClient, ClaimHttpClient>()
                 .AddHttpClient<IUnifiedGridClient, ClaimHttpClient>()
                 .AddHttpClient<ICaptainRuleClient, CaptainRuleClientImpl>()
+                .AddHttpClient<IProjectRolesListClient, ProjectRolesListClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>();
     }
 }

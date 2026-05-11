@@ -65,7 +65,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 AutoAcceptClaims: project.Details.AutoAcceptClaims,
                 IsAcceptingClaims: project.IsAcceptingClaims,
                 IsPublicProject: project.Details.IsPublicProject
-                ));
+                ),
+            projectRolesLists: CreateRolesLists(project));
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {
@@ -154,6 +155,28 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                         );
                 }
             }
+        }
+
+        IReadOnlyCollection<DomainTypes.ProjectMetadata.ProjectRolesList> CreateRolesLists(Project project)
+        {
+            var result = new List<DomainTypes.ProjectMetadata.ProjectRolesList>();
+            foreach (var entity in project.ProjectRolesLists)
+            {
+                var fields = entity.FieldIds
+                    .Select(fieldId => new ProjectFieldIdentification(projectId, fieldId))
+                    .ToList();
+
+                result.Add(new DomainTypes.ProjectMetadata.ProjectRolesList(
+                    new ProjectRolesListIdentification(projectId, entity.ProjectRolesListId),
+                    entity.Name,
+                    CharacterGroupIdentification.FromOptional(projectId, entity.CharacterGroupId),
+                    entity.PublicMode,
+                    fields,
+                    entity.ContactsColumn,
+                    entity.GroupsColumn
+                ));
+            }
+            return result;
         }
     }
 

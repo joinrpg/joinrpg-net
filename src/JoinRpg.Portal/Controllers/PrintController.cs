@@ -8,7 +8,6 @@ using JoinRpg.Web.Models.Print;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 
 namespace JoinRpg.Portal.Controllers;
 
