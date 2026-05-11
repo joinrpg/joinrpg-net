@@ -943,9 +943,66 @@ internal class ClaimServiceImpl(
         return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 
-    public async Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId)
+    public async Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, IReadOnlyDictionary<int, string?> fields)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(characterId);
+        ArgumentNullException.ThrowIfNull(userId);
+        ArgumentNullException.ThrowIfNull(commentText);
+        ArgumentNullException.ThrowIfNull(fields);
+
+        logger.LogDebug("About to add claim from master to character {characterId} for user {userId}", characterId, userId);
+
+        var source = await CharactersRepository.GetCharacterAsync(characterId);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
+        var playerUser = await UserRepository.GetRequiredUserInfo(userId);
+
+        // Проверяем, что текущий пользователь (мастер) имеет право управлять заявками
+        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+
+        // Проверяем, что персонаж может принимать заявки (пока со всеми проверками, включая ProjectClaimsClosed и ValidateContacts)
+        // TODO: Придумать способ, чтобы разрешить посылать приглашения, даже если заявки закрыты.
+        source.EnsureCanAddClaim(playerUser, projectInfo);
+
+        User responsibleMaster = source.GetResponsibleMaster();
+
+        var claim = new Claim()
+        {
+            CharacterId = characterId.CharacterId,
+            Character = source,
+            ProjectId = characterId.ProjectId,
+            Project = source.Project, // это нужно при операциях с полями, к сожалению
+            PlayerUserId = userId.Value,
+            PlayerAcceptedDate = Now,
+            CreateDate = Now,
+            ClaimStatus = ClaimStatus.AddedByMaster,
+            ResponsibleMasterUserId = responsibleMaster.UserId,
+            ResponsibleMasterUser = responsibleMaster,
+            LastUpdateDateTime = Now,
+            PlayerAllowedSenstiveData = false, // Мастер не может дать разрешение на чувствительные данные от имени игрока
+            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
+        };
+
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
+        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
+        await UnitOfWork.SaveChangesAsync();
+
+        // Создаём комментарий о приглашении
+        var (_, email) = CommentHelper.CreateClaimCommentWithNotification(
+            commentText,
+            claim,
+            projectInfo,
+            CommentExtraAction.NewClaim,
+            ClaimOperationType.MasterVisibleChange,
+            Now
+        );
+
+        await UnitOfWork.SaveChangesAsync();
+
+        await claimNotificationService.SendNotification(email);
+
+        var claimId = claim.GetId();
+        logger.LogInformation("Claim ({claimId}) was successfully created by master for character {characterId} for user {userId}", claimId, characterId, userId);
+        return claimId;
     }
 }
 

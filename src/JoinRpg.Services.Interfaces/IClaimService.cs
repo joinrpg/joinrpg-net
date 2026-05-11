@@ -11,7 +11,7 @@ public interface IClaimService
         IReadOnlyDictionary<int, string?> fields,
         bool sensitiveDataAllowed);
 
-    Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId);
+    Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, IReadOnlyDictionary<int, string?> fields);
 
     Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 

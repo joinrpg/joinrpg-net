@@ -10,6 +10,6 @@ internal class InvitePlayerViewService(
     public async Task<ClaimIdentification> InvitePlayer(CharacterIdentification characterId, string userLink)
     {
         var userId = UserLinkParser.ParseUserLink(userLink);
-        return await claimService.AddClaimFromMaster(characterId, new UserIdentification(userId));
+        return await claimService.AddClaimFromMaster(characterId, new UserIdentification(userId), "Мастер пригласил вас на роль", new Dictionary<int, string?>());
     }
 }
