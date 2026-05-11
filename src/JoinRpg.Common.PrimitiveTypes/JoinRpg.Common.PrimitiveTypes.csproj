@@ -15,7 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes.SourceGenerator\JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <!-- Using NuGet package instead of ProjectReference to avoid recompilation issues with language server -->
+    <PackageReference Include="JoinRpg.Common.PrimitiveTypes.SourceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
