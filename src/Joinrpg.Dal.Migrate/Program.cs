@@ -21,7 +21,7 @@ internal class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
-                _ = services.AddHostedService<MigrationsLauncher>();
+                services.AddMigrationsLauncher();
 
                 services.AddScoped<IMigratorService, MigrateMyDbContextService>();
                 var configuration = hostContext.Configuration;

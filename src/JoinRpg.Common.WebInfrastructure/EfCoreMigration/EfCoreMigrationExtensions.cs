@@ -16,4 +16,6 @@ public static class EfCoreMigrationExtensions
             .AddScoped<IMigratorService, MigrateEfCoreHostService<TContext>>()
             .AddJoinEfCoreDbContext<TContext>(configuration, environment, connectionStringName, optionsBuilder);
     }
+
+    public static IServiceCollection AddMigrationsLauncher(this IServiceCollection services) => services.AddHostedService<MigrationsLauncher>();
 }
