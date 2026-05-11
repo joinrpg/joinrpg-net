@@ -47,7 +47,7 @@ public static class IdentificationParseHelper
         return null;
     }
 
-    internal static ReadOnlySpan<char> RemovePrefixes(ReadOnlySpan<char> value, ReadOnlySpan<string> prefixes)
+    public static ReadOnlySpan<char> RemovePrefixes(ReadOnlySpan<char> value, ReadOnlySpan<string> prefixes)
     {
         var val = value.Trim();
         foreach (var prefix in prefixes)
@@ -93,5 +93,5 @@ public static class IdentificationParseHelper
         return null;
     }
 
-    internal static int SplitIdentifier(ReadOnlySpan<char> val, Span<Range> ranges) => val.SplitAny(ranges, "-,", StringSplitOptions.TrimEntries);
+    public static int SplitIdentifier(ReadOnlySpan<char> val, Span<Range> ranges) => val.SplitAny(ranges, "-,", StringSplitOptions.TrimEntries);
 }
