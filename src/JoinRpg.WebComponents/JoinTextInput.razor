@@ -1,5 +1,5 @@
 @using System.Linq.Expressions
-<input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" />
+<input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" />
 
 @code {
     [CascadingParameter]
@@ -14,6 +14,9 @@
 
     [Parameter]
     public Expression<Func<string>> ValueExpression { get; set; } = default!;
+
+    [Parameter]
+    public string? Placeholder { get; set; }
 
     private FieldIdentifier FieldIdentifier { get; set; }
 
