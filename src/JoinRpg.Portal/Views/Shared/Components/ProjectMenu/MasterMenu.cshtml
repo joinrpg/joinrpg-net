@@ -120,6 +120,11 @@
                         <li>@Html.ActionLink("Игрокам нужно заполнить", "SomeFieldsToFill", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
+                        <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
+                            <a asp-page="/GamePages/InvitePlayer" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
+                                Пригласить игрока
+                            </a>
+                        </li>
                         @if (Model.BigGroups.Any())
                         {
                             <li role="separator" class="dropdown-header">По группам:</li>
