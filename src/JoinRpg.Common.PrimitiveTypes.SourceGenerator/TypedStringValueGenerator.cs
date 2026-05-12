@@ -102,6 +102,12 @@ public class TypedStringValueGenerator : IIncrementalGenerator
                      i.TypeArguments.Length == 1 &&
                      i.TypeArguments[0].Equals(typeSymbol, SymbolEqualityComparer.Default));
 
+        bool hasIComparable = typeSymbol.AllInterfaces
+            .Any(i => i.IsGenericType &&
+                     i.OriginalDefinition.ToString() == "System.IComparable<T>" &&
+                     i.TypeArguments.Length == 1 &&
+                     i.TypeArguments[0].Equals(typeSymbol, SymbolEqualityComparer.Default));
+
         // Проверяем наличие пользовательских методов
         bool hasCustomValidateMethod = typeSymbol.GetMembers("CustomValidateAndCanonicalize")
             .Any(m => m is IMethodSymbol method &&
@@ -157,7 +163,8 @@ public class TypedStringValueGenerator : IIncrementalGenerator
             HasFromOptionalMethod: hasFromOptionalMethod,
             HasImplicitOperatorFromString: hasImplicitOperatorFromString,
             HasImplicitOperatorToString: hasImplicitOperatorToString,
-            HasParseMethods: hasParseMethods
+            HasParseMethods: hasParseMethods,
+            HasIComparable: hasIComparable
         );
     }
 
@@ -186,6 +193,11 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         if (!info.HasISpanParsable && !info.HasParseMethods)
         {
             interfaces.Add($"ISpanParsable<{info.TypeName}>");
+        }
+
+        if (!info.HasIComparable)
+        {
+            interfaces.Add($"IComparable<{info.TypeName}>");
         }
 
         var interfaceString = interfaces.Count > 0 ? " : " + string.Join(", ", interfaces) : "";
@@ -239,6 +251,13 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         if (!info.HasIEquatableString)
         {
             sb.AppendLine($"    public bool Equals(string? other) => Value == other;");
+            sb.AppendLine();
+        }
+
+        // IComparable<T>
+        if (!info.HasIComparable)
+        {
+            sb.AppendLine($"    public int CompareTo({info.TypeName}? other) => Value.CompareTo(other?.Value);");
             sb.AppendLine();
         }
 
@@ -316,6 +335,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         bool HasFromOptionalMethod,
         bool HasImplicitOperatorFromString,
         bool HasImplicitOperatorToString,
-        bool HasParseMethods
+        bool HasParseMethods,
+        bool HasIComparable
     );
 }
