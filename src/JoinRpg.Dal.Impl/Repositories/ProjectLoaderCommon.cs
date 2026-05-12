@@ -12,7 +12,8 @@ internal static class ProjectLoaderCommon
          .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
          .Include(p => p.PaymentTypes.Select(p => p.User))
          .Include(p => p.KogdaIgraGames)
-         .Include(p => p.ProjectRolesLists.Select(prl => prl.CharacterGroup))
+         .Include(p => p.ProjectRolesLists)
+         .Include(p => p.CharacterGroups)
          .SingleOrDefaultAsync(p => p.ProjectId == project);
     }
 

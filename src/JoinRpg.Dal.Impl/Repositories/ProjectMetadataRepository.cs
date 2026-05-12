@@ -35,6 +35,10 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
+
+
+        var groups = CharacterGroupDictionaryBuilder.Build(project, projectId);
+
         return new ProjectInfo(
             projectId,
             new(project.ProjectName),
@@ -43,12 +47,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             fieldSettings,
             financeSettings,
             project.Details.EnableAccommodation,
-
-            //TODO в этих двух полях LazyLoad
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
-            rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId),
-            //TODO в этих двух полях LazyLoad
-
+            rootCharacterGroupId: project.RootGroup.GetId(),
             masters: CreateMasterList(project),
             publishPlot: project.Details.PublishPlot,
             projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule, project.Details.CheckInProgress, project.Details.AllowSecondRoles),
@@ -66,7 +66,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 IsAcceptingClaims: project.IsAcceptingClaims,
                 IsPublicProject: project.Details.IsPublicProject
                 ),
-            projectRolesLists: CreateRolesLists(project));
+            projectRolesLists: CreateRolesLists(project),
+            groups: groups);
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {
