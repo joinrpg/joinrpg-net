@@ -1,0 +1,106 @@
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.WebComponents
+@using Microsoft.AspNetCore.Components.Forms
+@using JoinRpg.DomainTypes.ProjectMetadata
+@inject IInvitePlayerClient InvitePlayerClient
+@inject NavigationManager NavigationManager
+
+@if (loading)
+{
+    <JoinLoadingMessage Message="Отправка приглашения..." />
+    return;
+}
+
+<JoinPanel>
+    <Header>Пригласить игрока</Header>
+    <Body>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">@successMessage</JoinAlert>
+        }
+
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+           <FormHorizontal>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <FormRowFor For="@(() => model.CharacterId)" Required="true">
+                    <SingleCharacterSelector @bind-SelectedCharacterId="@selectedCharacterId" ProjectId="@ProjectId" AllowEmpty="false" ListType="CharacterListType.Available" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => model.UserLink)" Required="true">
+                    <JoinTextInput @bind-Value="model.UserLink" Placeholder="123, /users/123, https://joinrpg.ru/users/123" />
+                </FormRowFor>
+
+                <FormRow>
+                    <JoinButton Submit="true" Preset="ButtonPreset.Save" Label="Пригласить" ProgressLabel="Приглашаем..." InProgress="@loading" AutoProgress="false" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; }
+
+    private InvitePlayerViewModel model = new();
+    private bool loading = false;
+    private string? errorMessage = null;
+    private string? successMessage = null;
+
+    private CharacterIdentification? selectedCharacterId
+    {
+        get => model.CharacterId > 0 ? new CharacterIdentification(ProjectId, model.CharacterId) : null;
+        set
+        {
+            if (value is null)
+            {
+                model.CharacterId = 0;
+            }
+            else
+            {
+                if (value.ProjectId == ProjectId)
+                {
+                    model.CharacterId = value.CharacterId;
+                }
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        model.ProjectId = ProjectId;
+        base.OnInitialized();
+    }
+
+    private async Task HandleSubmit()
+    {
+        loading = true;
+        errorMessage = null;
+        successMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var claimId = await InvitePlayerClient.InvitePlayer(model.CharacterIdentification, model.UserLink);
+            successMessage = $"Игрок успешно приглашён. Заявка создана: {claimId.ClaimId}";
+            NavigationManager.NavigateTo($"/{claimId.ProjectId.Value}/claim/{claimId.ClaimId}/edit", forceLoad: true);
+            model = new InvitePlayerViewModel { ProjectId = ProjectId };
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}

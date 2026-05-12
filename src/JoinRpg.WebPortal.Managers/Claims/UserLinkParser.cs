@@ -1,10 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace JoinRpg.WebPortal.Managers.Claims;
 
 public static class UserLinkParser
 {
-    public static bool TryParseUserLink(ReadOnlySpan<char> link, out int userId)
+    public static bool TryParseUserLink(ReadOnlySpan<char> link, [NotNullWhen(true)] out UserIdentification? userId)
     {
-        userId = 0;
+        userId = null;
 
         var trimmedLink = link.Trim();
 
@@ -46,20 +48,15 @@ public static class UserLinkParser
         trimmedLink = trimmedLink.TrimEnd('/');
 
         // Now trimmedLink should be just a number
-        if (!int.TryParse(trimmedLink, out userId) || userId <= 0)
+        if (!UserIdentification.TryParse(trimmedLink, null, out userId))
         {
-            userId = 0;
+            userId = null;
             return false;
         }
         return true;
     }
 
-    public static bool TryParseUserLink(string link, out int userId)
-    {
-        return TryParseUserLink(link.AsSpan(), out userId);
-    }
-
-    public static int ParseUserLink(string link)
+    public static UserIdentification ParseUserLink(string link)
     {
         if (!TryParseUserLink(link.AsSpan(), out var userId))
         {

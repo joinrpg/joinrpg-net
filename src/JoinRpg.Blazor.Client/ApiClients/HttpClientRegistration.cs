@@ -51,6 +51,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IUnifiedGridClient, ClaimHttpClient>()
                 .AddHttpClient<ICaptainRuleClient, CaptainRuleClientImpl>()
                 .AddHttpClient<IProjectRolesListClient, ProjectRolesListClientImpl>()
-                .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>();
+                .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
+                .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>();
     }
 }

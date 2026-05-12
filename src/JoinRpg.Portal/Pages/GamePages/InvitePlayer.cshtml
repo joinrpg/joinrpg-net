@@ -1,0 +1,12 @@
+@page "/{projectId:int}/claims/invite-player"
+@using JoinRpg.Web.Claims
+
+@model JoinRpg.Portal.Pages.GamePages.InvitePlayerModel
+
+@{
+    ViewData["Title"] = "Пригласить игрока";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<InvitePlayer>(RenderMode.WebAssembly, new { Model.ProjectId }))

@@ -16,10 +16,9 @@ public class UserLinkParserTests
     [InlineData(" /users/123 ", 123)]
     public void TryParseUserLink_ValidFormats_ReturnsTrue(string link, int expectedUserId)
     {
-        var result = UserLinkParser.TryParseUserLink(link, out var userId);
+        var userId = UserLinkParser.ParseUserLink(link);
 
-        result.ShouldBeTrue();
-        userId.ShouldBe(expectedUserId);
+        userId.Value.ShouldBe(expectedUserId);
     }
 
     [Theory]
@@ -36,10 +35,9 @@ public class UserLinkParserTests
     [InlineData("0")]
     public void TryParseUserLink_InvalidFormats_ReturnsFalse(string? link)
     {
-        var result = UserLinkParser.TryParseUserLink(link!, out var userId);
+        var result = UserLinkParser.TryParseUserLink(link!, out var _);
 
         result.ShouldBeFalse();
-        userId.ShouldBe(0);
     }
 
     [Theory]
@@ -50,7 +48,7 @@ public class UserLinkParserTests
     {
         var userId = UserLinkParser.ParseUserLink(link);
 
-        userId.ShouldBe(expectedUserId);
+        userId.Value.ShouldBe(expectedUserId);
     }
 
     [Theory]

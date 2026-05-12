@@ -49,6 +49,7 @@ public static class Registration
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
+        .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
 
         ;
     }
