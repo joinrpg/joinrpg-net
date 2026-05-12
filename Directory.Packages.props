@@ -73,7 +73,7 @@
         <PackageVersion Include="Testcontainers.MsSql" Version="4.11.0" />
         <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />
         <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
-        <PackageVersion Include="Telegram.Bot" Version="22.9.6.2" />
+        <PackageVersion Include="Telegram.Bot" Version="22.10.0" />
         <PackageVersion Include="Vereyon.Web.HtmlSanitizer" Version="1.8.0" />
         <PackageVersion Include="Verify.Xunit" Version="31.12.5" />
         <PackageVersion Include="xunit" Version="2.9.3" />
