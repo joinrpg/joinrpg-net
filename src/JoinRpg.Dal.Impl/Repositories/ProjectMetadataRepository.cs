@@ -35,6 +35,48 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> BuildGroupsDictionary(Project project, ProjectIdentification projectId)
+        {
+            var groupById = project.CharacterGroups.ToDictionary(x => x.CharacterGroupId);
+
+            var childGroupsMap = new Dictionary<int, List<CharacterGroupIdentification>>();
+            foreach (var group in project.CharacterGroups)
+            {
+                foreach (var parentId in group.ParentCharacterGroupIds)
+                {
+                    if (!childGroupsMap.TryGetValue(parentId, out List<CharacterGroupIdentification>? value))
+                    {
+                        value = [];
+                        childGroupsMap[parentId] = value;
+                    }
+
+                    value.Add(group.GetId());
+                }
+            }
+
+            var dict = new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>();
+            foreach (var group in project.CharacterGroups)
+            {
+                var groupId = group.GetId();
+
+                var groupInfo = new CharacterGroupInfo(
+                    Id: groupId,
+                    Name: group.CharacterGroupName,
+                    IsRoot: group.IsRoot,
+                    IsActive: group.IsActive,
+                    IsPublic: group.IsPublic,
+                    IsSpecial: group.IsSpecial,
+                    ChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
+                    ParentGroupIds: [.. group.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))]
+                );
+                dict[groupId] = groupInfo;
+            }
+
+            return dict;
+        }
+
+        var groups = BuildGroupsDictionary(project, projectId);
+
         return new ProjectInfo(
             projectId,
             new(project.ProjectName),
@@ -43,12 +85,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             fieldSettings,
             financeSettings,
             project.Details.EnableAccommodation,
-
-            //TODO в этих двух полях LazyLoad
             allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
-            rootCharacterGroupId: new CharacterGroupIdentification(projectId, project.RootGroup.CharacterGroupId),
-            //TODO в этих двух полях LazyLoad
-
+            rootCharacterGroupId: project.RootGroup.GetId(),
             masters: CreateMasterList(project),
             publishPlot: project.Details.PublishPlot,
             projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule, project.Details.CheckInProgress, project.Details.AllowSecondRoles),
@@ -66,7 +104,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 IsAcceptingClaims: project.IsAcceptingClaims,
                 IsPublicProject: project.Details.IsPublicProject
                 ),
-            projectRolesLists: CreateRolesLists(project));
+            projectRolesLists: CreateRolesLists(project),
+            groups: groups);
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {

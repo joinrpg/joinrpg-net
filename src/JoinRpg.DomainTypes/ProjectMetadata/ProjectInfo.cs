@@ -47,6 +47,8 @@ public record class ProjectInfo
     public ProjectClaimSettings ClaimSettings { get; }
     public IReadOnlyCollection<ProjectRolesList> ProjectRolesLists { get; }
 
+    public IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> Groups { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         ProjectName projectName,
@@ -66,7 +68,8 @@ public record class ProjectInfo
         DateOnly createDate,
         ProjectProfileRequirementSettings profileRequirementSettings,
         ProjectClaimSettings projectClaimSettings,
-        IReadOnlyCollection<ProjectRolesList> projectRolesLists)
+        IReadOnlyCollection<ProjectRolesList> projectRolesLists,
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> groups)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -96,6 +99,7 @@ public record class ProjectInfo
         ProfileRequirementSettings = profileRequirementSettings;
         ClaimSettings = projectClaimSettings;
         ProjectRolesLists = projectRolesLists;
+        Groups = groups;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -128,7 +132,7 @@ public record class ProjectInfo
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, AllowToSetGroups,
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists);
+            ProjectRolesLists, Groups);
     }
 
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
@@ -139,7 +143,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists);
+            ProjectRolesLists, Groups);
     }
 
     internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
@@ -150,7 +154,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
-            ProjectRolesLists);
+            ProjectRolesLists, Groups);
     }
 }
 
