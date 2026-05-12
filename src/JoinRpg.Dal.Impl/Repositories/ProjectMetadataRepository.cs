@@ -35,47 +35,9 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
-        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> BuildGroupsDictionary(Project project, ProjectIdentification projectId)
-        {
-            var groupById = project.CharacterGroups.ToDictionary(x => x.CharacterGroupId);
 
-            var childGroupsMap = new Dictionary<int, List<CharacterGroupIdentification>>();
-            foreach (var group in project.CharacterGroups)
-            {
-                foreach (var parentId in group.ParentCharacterGroupIds)
-                {
-                    if (!childGroupsMap.TryGetValue(parentId, out List<CharacterGroupIdentification>? value))
-                    {
-                        value = [];
-                        childGroupsMap[parentId] = value;
-                    }
 
-                    value.Add(group.GetId());
-                }
-            }
-
-            var dict = new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>();
-            foreach (var group in project.CharacterGroups)
-            {
-                var groupId = group.GetId();
-
-                var groupInfo = new CharacterGroupInfo(
-                    Id: groupId,
-                    Name: group.CharacterGroupName,
-                    IsRoot: group.IsRoot,
-                    IsActive: group.IsActive,
-                    IsPublic: group.IsPublic,
-                    IsSpecial: group.IsSpecial,
-                    ChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
-                    ParentGroupIds: [.. group.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))]
-                );
-                dict[groupId] = groupInfo;
-            }
-
-            return dict;
-        }
-
-        var groups = BuildGroupsDictionary(project, projectId);
+        var groups = CharacterGroupDictionaryBuilder.Build(project, projectId);
 
         return new ProjectInfo(
             projectId,
