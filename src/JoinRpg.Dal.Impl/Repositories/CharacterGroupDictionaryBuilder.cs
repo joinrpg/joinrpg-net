@@ -7,6 +7,8 @@ public static class CharacterGroupDictionaryBuilder
         ProjectIdentification projectId)
     {
         var childGroupsMap = new Dictionary<int, List<CharacterGroupIdentification>>();
+        var parentGroupsMap = new Dictionary<int, List<CharacterGroupIdentification>>();
+
         foreach (var group in project.CharacterGroups)
         {
             foreach (var parentId in group.ParentCharacterGroupIds)
@@ -16,15 +18,80 @@ public static class CharacterGroupDictionaryBuilder
                     value = [];
                     childGroupsMap[parentId] = value;
                 }
-
                 value.Add(group.GetId());
+
+                if (!parentGroupsMap.TryGetValue(group.CharacterGroupId, out List<CharacterGroupIdentification>? parentList))
+                {
+                    parentList = [];
+                    parentGroupsMap[group.CharacterGroupId] = parentList;
+                }
+                parentList.Add(new CharacterGroupIdentification(projectId, parentId));
             }
+        }
+
+        // Кэши для рекурсивных обходов
+        var allChildrenCache = new Dictionary<int, List<CharacterGroupIdentification>>();
+        var allParentsCache = new Dictionary<int, List<CharacterGroupIdentification>>();
+
+        List<CharacterGroupIdentification> GetAllChildGroups(int groupId)
+        {
+            if (allChildrenCache.TryGetValue(groupId, out var cached))
+            {
+                return cached;
+            }
+
+            var result = new HashSet<CharacterGroupIdentification>();
+            if (childGroupsMap.TryGetValue(groupId, out var directChildren))
+            {
+                foreach (var child in directChildren)
+                {
+                    result.Add(child);
+                    // Рекурсивно добавляем всех детей детей
+                    foreach (var grandChild in GetAllChildGroups(child.CharacterGroupId))
+                    {
+                        result.Add(grandChild);
+                    }
+                }
+            }
+
+            var list = result.ToList();
+            allChildrenCache[groupId] = list;
+            return list;
+        }
+
+        List<CharacterGroupIdentification> GetAllParentGroups(int groupId)
+        {
+            if (allParentsCache.TryGetValue(groupId, out var cached))
+            {
+                return cached;
+            }
+
+            var result = new HashSet<CharacterGroupIdentification>();
+            if (parentGroupsMap.TryGetValue(groupId, out var directParents))
+            {
+                foreach (var parent in directParents)
+                {
+                    result.Add(parent);
+                    // Рекурсивно добавляем всех родителей родителей
+                    foreach (var grandParent in GetAllParentGroups(parent.CharacterGroupId))
+                    {
+                        result.Add(grandParent);
+                    }
+                }
+            }
+
+            var list = result.ToList();
+            allParentsCache[groupId] = list;
+            return list;
         }
 
         var dict = new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>();
         foreach (var group in project.CharacterGroups)
         {
             var groupId = group.GetId();
+
+            var allChildGroups = GetAllChildGroups(group.CharacterGroupId);
+            var allParentGroups = GetAllParentGroups(group.CharacterGroupId);
 
             var groupInfo = new CharacterGroupInfo(
                 Id: groupId,
@@ -33,8 +100,10 @@ public static class CharacterGroupDictionaryBuilder
                 IsActive: group.IsActive,
                 IsPublic: group.IsPublic,
                 IsSpecial: group.IsSpecial,
-                ChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
-                ParentGroupIds: group.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id)).ToList()
+                DirectChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
+                DirectParentGroupIds: parentGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
+                AllChildGroups: allChildGroups,
+                AllParentGroups: allParentGroups
             );
             dict[groupId] = groupInfo;
         }

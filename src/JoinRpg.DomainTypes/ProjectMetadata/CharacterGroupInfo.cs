@@ -7,6 +7,8 @@ public record CharacterGroupInfo(
     bool IsActive,
     bool IsPublic,
     bool IsSpecial,
-    IReadOnlyCollection<CharacterGroupIdentification> ChildGroupIds,
-    IReadOnlyCollection<CharacterGroupIdentification> ParentGroupIds
+    IReadOnlyCollection<CharacterGroupIdentification> DirectChildGroupIds,
+    IReadOnlyCollection<CharacterGroupIdentification> DirectParentGroupIds,
+    IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
+    IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups
 );
