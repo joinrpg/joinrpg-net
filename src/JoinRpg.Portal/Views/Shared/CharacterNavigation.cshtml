@@ -50,7 +50,7 @@
                 Подать заявку
             </nav-link>
         }
-        @if (Model.CanManageClaims && Model.ClaimId == null && Model.CanAddClaim)
+        @if (Model.CanManageClaims && Model.CanAddClaim)
         {
             <nav-link
                 asp-page="/GamePages/InvitePlayer"
