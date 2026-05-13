@@ -124,6 +124,16 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
           .OrderBy(c => c.CharacterName).ToListAsync();
     }
 
+    public async Task<IEnumerable<Character>> GetAvailableNonSlotCharacters(int projectId)
+    {
+        return await Ctx.Set<Character>()
+          .Where(c => c.ProjectId == projectId && c.IsAcceptingClaims && c.IsActive &&
+                      c.CharacterType != CharacterType.Slot &&
+                      !c.Project.Claims.Any(claim => (claim.ClaimStatus == ClaimStatus.Approved ||
+                                        claim.ClaimStatus == ClaimStatus.CheckedIn) && claim.CharacterId == c.CharacterId))
+          .OrderBy(c => c.CharacterName).ToListAsync();
+    }
+
     public async Task<IEnumerable<Character>> GetAllCharacters(int projectId)
     {
         return await Ctx.Set<Character>()
