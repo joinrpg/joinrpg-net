@@ -9,4 +9,4 @@
 
 <h3>@ViewData["Title"]</h3>
 
-@(await Html.RenderComponentAsync<InvitePlayer>(RenderMode.WebAssembly, new { Model.ProjectId }))
+@(await Html.RenderComponentAsync<InvitePlayer>(RenderMode.WebAssembly, new { Model.ProjectId, PreselectedCharacterId = Model.CharacterId.HasValue ? new CharacterIdentification(Model.ProjectId, Model.CharacterId.Value) : (CharacterIdentification?)null }))

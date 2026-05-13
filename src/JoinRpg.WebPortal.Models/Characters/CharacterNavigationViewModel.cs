@@ -15,6 +15,7 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
     private AccessArguments AccessArguments { get; } = AccessArgumentsFactory.Create(character, UserIdentification.FromOptional(currentUserId), projectInfo);
     public bool HasMasterAccess => AccessArguments.MasterAccess;
     public bool CanEditRoles { get; } = character.HasEditRolesAccess(currentUserId);
+    public bool CanManageClaims { get; } = projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanManageClaims);
 
     public bool CanAddClaim { get; private set; }
     public int? ClaimId { get; private set; }
