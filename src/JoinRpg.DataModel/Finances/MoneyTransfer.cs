@@ -40,15 +40,6 @@ public class MoneyTransfer : IProjectEntity
     public virtual TransferText TransferText { get; set; }
 }
 
-public enum MoneyTransferState
-{
-    Approved,
-    Declined,
-    PendingForReceiver,
-    PendingForSender,
-    PendingForBoth,
-}
-
 public class TransferText
 {
     public int MoneyTransferId { get; set; }

@@ -4,7 +4,7 @@
 @model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
 @{
     AccommodationInvite[] items = Model.IncomingInvite
-        .Where(item => item.IsAccepted != AccommodationRequest.InviteState.Accepted)
+        .Where(item => item.IsAccepted != InviteState.Accepted)
         .ToArray();
     if (items.Length == 0)
         return;
@@ -17,7 +17,7 @@
             {
                <tr>
                     <td style="vertical-align: middle; border: none;">@Html.DisplayFor(model => invite.From.Player)</td>
-                    @if (invite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                    @if (invite.IsAccepted == InviteState.Unanswered)
                     {
                         <td style="border: none;">
                             <div style="display: flex; flex-direction: row; align-items: center;">

@@ -148,7 +148,7 @@ public class ClaimController(
         var requestForAccommodation = await accommodationRequestRepository
             .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
         var acceptedRequest = requestForAccommodation
-            .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
+            .FirstOrDefault(request => request.IsAccepted == InviteState.Accepted);
 
         var incomingInvite = await accommodationInviteRepository.GetIncomingInviteForClaim(claim);
         var outgoingInvite = await accommodationInviteRepository.GetOutgoingInviteForClaim(claim);
@@ -734,7 +734,7 @@ public class ClaimController(
         int projectId,
         int claimId,
         int inviteId,
-        AccommodationRequest.InviteState inviteState)
+        InviteState inviteState)
     {
         var claim = await claimsRepository.GetClaim(projectId, claimId);
         if (claim is null)
@@ -749,14 +749,14 @@ public class ClaimController(
 
         switch (inviteState)
         {
-            case AccommodationRequest.InviteState.Canceled:
-            case AccommodationRequest.InviteState.Declined:
+            case InviteState.Canceled:
+            case InviteState.Declined:
                 await accommodationInviteService.CancelOrDeclineAccommodationInvite(
                     inviteId,
                     inviteState);
                 break;
 
-            case AccommodationRequest.InviteState.Accepted:
+            case InviteState.Accepted:
                 await accommodationInviteService.AcceptAccommodationInvite(projectId, inviteId);
                 break;
         }
@@ -767,17 +767,17 @@ public class ClaimController(
     [ValidateAntiForgeryToken]
     [HttpPost]
     public Task<IActionResult> CancelInviteAsync(int projectId, int claimId, int inviteId)
-        => InviteActionAsync(projectId, claimId, inviteId, AccommodationRequest.InviteState.Canceled);
+        => InviteActionAsync(projectId, claimId, inviteId, InviteState.Canceled);
 
     [ValidateAntiForgeryToken]
     [HttpPost]
     public Task<IActionResult> DeclineInviteAsync(int projectId, int claimId, int inviteId)
-        => InviteActionAsync(projectId, claimId, inviteId, AccommodationRequest.InviteState.Declined);
+        => InviteActionAsync(projectId, claimId, inviteId, InviteState.Declined);
 
     [ValidateAntiForgeryToken]
     [HttpPost]
     public Task<IActionResult> AcceptInviteAsync(int projectId, int claimId, int inviteId)
-        => InviteActionAsync(projectId, claimId, inviteId, AccommodationRequest.InviteState.Accepted);
+        => InviteActionAsync(projectId, claimId, inviteId, InviteState.Accepted);
 
     [HttpGet]
     [Authorize]
