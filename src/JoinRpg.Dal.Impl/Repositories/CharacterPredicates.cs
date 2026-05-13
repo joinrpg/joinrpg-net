@@ -9,6 +9,14 @@ internal static class CharacterPredicates
 {
     internal static Expression<Func<Character, bool>> Hot() => character => character.IsHot && character.IsActive && character.ApprovedClaim == null;
 
+    internal static Expression<Func<Character, bool>> IsAvailable(ProjectIdentification projectId)
+        => character => character.ProjectId == projectId.Value
+            && character.IsAcceptingClaims
+            && character.IsActive
+            && !character.Project.Claims.Any(claim =>
+                (claim.ClaimStatus == ClaimStatus.Approved || claim.ClaimStatus == ClaimStatus.CheckedIn)
+                && claim.CharacterId == character.CharacterId);
+
     internal static Expression<Func<Character, bool>> ByGroupImprecise(IReadOnlyCollection<CharacterGroupIdentification> groups)
     {
         if (groups.Count == 0)

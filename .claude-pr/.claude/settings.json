@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build*)",
+      "Bash(dotnet run*)",
+      "Bash(dotnet test*)",
+      "Bash(dotnet format*)",
+      "Bash(dotnet restore*)",
+      "Bash(dotnet publish*)",
+      "Bash(dotnet ef*)",
+      "Bash(gh pr:*)",
+      "Bash(gh run view:*)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}
