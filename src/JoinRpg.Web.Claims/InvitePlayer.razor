@@ -36,6 +36,10 @@
                     <JoinTextInput @bind-Value="model.UserLink" Placeholder="123, /users/123, https://joinrpg.ru/users/123" />
                 </FormRowFor>
 
+                <FormRowFor For="@(() => model.ClaimText)">
+                    <InputTextArea @bind-Value="model.ClaimText" class="form-control" rows="4" />
+                </FormRowFor>
+
                 <FormRow>
                     <JoinButton Submit="true" Preset="ButtonPreset.Save" Label="Пригласить" ProgressLabel="Приглашаем..." InProgress="@loading" AutoProgress="false" />
                 </FormRow>
@@ -48,6 +52,9 @@
     [Parameter]
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; }
+
+    [Parameter]
+    public CharacterIdentification? PreselectedCharacterId { get; set; }
 
     private InvitePlayerViewModel model = new();
     private bool loading = false;
@@ -76,6 +83,10 @@
     protected override void OnInitialized()
     {
         model.ProjectId = ProjectId;
+        if (PreselectedCharacterId is not null && PreselectedCharacterId.ProjectId == ProjectId)
+        {
+            model.CharacterId = PreselectedCharacterId.CharacterId;
+        }
         base.OnInitialized();
     }
 
@@ -88,7 +99,7 @@
 
         try
         {
-            var claimId = await InvitePlayerClient.InvitePlayer(model.CharacterIdentification, model.UserLink);
+            var claimId = await InvitePlayerClient.InvitePlayer(model.CharacterIdentification, model.UserLink, model.ClaimText);
             successMessage = $"Игрок успешно приглашён. Заявка создана: {claimId.ClaimId}";
             NavigationManager.NavigateTo($"/{claimId.ProjectId.Value}/claim/{claimId.ClaimId}/edit", forceLoad: true);
             model = new InvitePlayerViewModel { ProjectId = ProjectId };

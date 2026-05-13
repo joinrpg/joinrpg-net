@@ -13,4 +13,7 @@ public class InvitePlayerModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public required ProjectIdentification ProjectId { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public int? CharacterId { get; set; }
 }

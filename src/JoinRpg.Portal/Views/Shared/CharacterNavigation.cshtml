@@ -50,6 +50,15 @@
                 Подать заявку
             </nav-link>
         }
+        @if (Model.CanManageClaims && Model.CanAddClaim)
+        {
+            <nav-link
+                asp-page="/GamePages/InvitePlayer"
+                asp-route-projectId="@Model.ProjectId"
+                asp-route-characterId="@Model.CharacterId">
+                Пригласить игрока
+            </nav-link>
+        }
         @if (Model.DiscussedClaims.Any())
         {
             <li role="presentation" class="dropdown">
