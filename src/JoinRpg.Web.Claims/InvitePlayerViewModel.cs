@@ -18,7 +18,7 @@ public class InvitePlayerViewModel
 
     [Display(Name = "Сообщение игроку",
          Description = "Все, что вы хотите сообщить игроку дополнительно")]
-    public string ClaimText { get; set; } = "";
+    public string ClaimText { get; set; } = "Мастер пригласил вас на роль";
 
     public string ProjectName { get; set; } = "";
 
