@@ -53,6 +53,9 @@
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; }
 
+    [Parameter]
+    public CharacterIdentification? PreselectedCharacterId { get; set; }
+
     private InvitePlayerViewModel model = new();
     private bool loading = false;
     private string? errorMessage = null;
@@ -80,6 +83,10 @@
     protected override void OnInitialized()
     {
         model.ProjectId = ProjectId;
+        if (PreselectedCharacterId is not null && PreselectedCharacterId.ProjectId == ProjectId)
+        {
+            model.CharacterId = PreselectedCharacterId.CharacterId;
+        }
         base.OnInitialized();
     }
 
