@@ -1,3 +1,4 @@
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace JoinRpg.Portal.Pages.GamePages;
 
 [RequireMaster(Permission.CanManageClaims)]
+[ProjectShouldBeActive]
 public class InvitePlayerModel : PageModel
 {
     public void OnGet()
