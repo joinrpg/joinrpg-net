@@ -16,6 +16,10 @@ public class InvitePlayerViewModel
     [Description("ID пользователя, относительный или полный URL (например: 123, /users/123, https://joinrpg.ru/users/123)")]
     public string UserLink { get; set; } = "";
 
+    [Display(Name = "Сообщение игроку",
+         Description = "Все, что вы хотите сообщить игроку дополнительно")]
+    public string ClaimText { get; set; } = "";
+
     public string ProjectName { get; set; } = "";
 
     public CharacterIdentification CharacterIdentification => new CharacterIdentification(new ProjectIdentification(ProjectId), CharacterId);
