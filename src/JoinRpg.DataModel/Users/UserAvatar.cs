@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Users;
+
 namespace JoinRpg.DataModel.Users;
 
 #nullable enable
@@ -22,24 +24,9 @@ public class UserAvatar
     public virtual User User { get; set; } = null!;
 
     /// <summary>
-    /// Defines source how avatar was obtained
-    /// </summary>
-    public enum Source
-    {
-        /// <summary>
-        /// https://gravatar.com/
-        /// </summary>
-        GrAvatar,
-        /// <summary>
-        /// Using social network provider
-        /// </summary>
-        SocialNetwork,
-    }
-
-    /// <summary>
     /// How avatar was obtained
     /// </summary>
-    public Source AvatarSource { get; set; }
+    public AvatarSource AvatarSource { get; set; }
 
     /// <summary>
     /// What provider is it? Google, VKontakte, etc

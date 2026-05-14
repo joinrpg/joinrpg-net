@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DomainTypes.Claims.Finances;
 
 namespace JoinRpg.DataModel.Finances;
 
@@ -38,15 +39,6 @@ public class MoneyTransfer : IProjectEntity
 
 
     public virtual TransferText TransferText { get; set; }
-}
-
-public enum MoneyTransferState
-{
-    Approved,
-    Declined,
-    PendingForReceiver,
-    PendingForSender,
-    PendingForBoth,
 }
 
 public class TransferText

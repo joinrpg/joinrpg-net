@@ -173,7 +173,7 @@ public class UserServiceImpl(
 
         var userAvatar = new UserAvatar()
         {
-            AvatarSource = UserAvatar.Source.SocialNetwork,
+            AvatarSource = AvatarSource.SocialNetwork,
             IsActive = true,
             ProviderId = providerId,
             OriginalUri = avatarUri.AbsoluteUri,
@@ -226,7 +226,7 @@ public class UserServiceImpl(
         }
 
         if (
-            user.Avatars.FirstOrDefault(fd => fd.AvatarSource == UserAvatar.Source.GrAvatar && fd.IsActive) is UserAvatar grAvatar
+            user.Avatars.FirstOrDefault(fd => fd.AvatarSource == AvatarSource.GrAvatar && fd.IsActive) is UserAvatar grAvatar
             )
         {
             user.SelectedAvatar = grAvatar;
@@ -237,7 +237,7 @@ public class UserServiceImpl(
         // We do not need to cache avatar here — or GrAvatar will not be automatically updated 
         var userAvatar = new UserAvatar()
         {
-            AvatarSource = UserAvatar.Source.GrAvatar,
+            AvatarSource = AvatarSource.GrAvatar,
             IsActive = true,
             ProviderId = null,
             OriginalUri = GravatarHelper.GetLink(user.Email, 64).AbsoluteUri,

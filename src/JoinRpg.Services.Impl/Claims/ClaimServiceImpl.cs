@@ -570,7 +570,7 @@ internal class ClaimServiceImpl(
                 {
                     ProjectId = projectId,
                     AccommodationTypeId = acr.AccommodationTypeId,
-                    IsAccepted = AccommodationRequest.InviteState.Accepted,
+                    IsAccepted = InviteState.Accepted,
                     Subjects = [claim]
                 });
 
@@ -632,7 +632,7 @@ internal class ClaimServiceImpl(
             ProjectId = projectId,
             Subjects = [claim],
             AccommodationTypeId = roomTypeId,
-            IsAccepted = AccommodationRequest.InviteState.Accepted,
+            IsAccepted = InviteState.Accepted,
         };
 
         _ = UnitOfWork

@@ -1,5 +1,8 @@
 global using JoinRpg.Common.PrimitiveTypes;
 global using JoinRpg.DomainTypes;
+global using JoinRpg.DomainTypes.Claims.Accommodation;
+global using JoinRpg.DomainTypes.Claims.Finances;
 global using JoinRpg.DomainTypes.ProjectMetadata;
+global using JoinRpg.DomainTypes.Users;
 global using JoinRpg.Helpers;
 global using MarkdownString = JoinRpg.DataModel.MarkdownString;

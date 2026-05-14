@@ -1,6 +1,6 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DomainTypes.Claims.Accommodation;
 
 namespace JoinRpg.DataModel;
 
@@ -24,17 +24,4 @@ public class AccommodationRequest
     public virtual ProjectAccommodation? Accommodation { get; set; }
 
     public InviteState IsAccepted { get; set; }
-
-    //TODO[Localize]
-    public enum InviteState
-    {
-        [Description("Не отвечено")]
-        Unanswered,
-        [Description("Принято")]
-        Accepted,
-        [Description("Отклонено")]
-        Declined,
-        [Description("Отменено")]
-        Canceled,
-    }
 }

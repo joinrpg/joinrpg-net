@@ -15,7 +15,7 @@ public interface IAccommodationInviteService
         int accommodationRequestId);
 
     Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
-        AccommodationRequest.InviteState newState);
+        InviteState newState);
 
     Task<AccommodationInvite?> AcceptAccommodationInvite(int projectId,
         int inviteId);

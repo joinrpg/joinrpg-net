@@ -1,6 +1,6 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JoinRpg.DomainTypes.Claims.Accommodation;
 
 namespace JoinRpg.DataModel;
 
@@ -17,35 +17,8 @@ public class AccommodationInvite
     public int ToClaimId { get; set; }
     [ForeignKey("ToClaimId")]
     public virtual Claim To { get; set; }
-    public AccommodationRequest.InviteState IsAccepted { get; set; }
+    public InviteState IsAccepted { get; set; }
     public ResolveDescription ResolveDescription { get; set; } = ResolveDescription.Unspecified;
-}
-
-//TODO[Localize]
-public enum ResolveDescription
-{
-    [Description("Не указан")]
-    Unspecified,
-    [Description("Отправлено")]
-    Open,
-    [Description("Принято игроком")]
-    Accepted,
-    [Description("Принято автоматически")]
-    AcceptedAuto,
-    [Description("Принято мастером")]
-    AcceptedByMaster,
-    [Description("Отколнено игроком")]
-    Declined,
-    [Description("Отколнено автоматически")]
-    DeclinedAuto,
-    [Description("Отколнено мастером")]
-    DeclinedByMaster,
-    [Description("Отколнено принятием другого приглашения")]
-    DeclinedWithAcceptOther,
-    [Description("Отозвано")]
-    Canceled,
-    [Description("Связанная заявка отозвана")]
-    ClaimCanceled,
 }
 
 /*

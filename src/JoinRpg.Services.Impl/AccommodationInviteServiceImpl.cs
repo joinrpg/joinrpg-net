@@ -67,7 +67,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             ProjectId = projectId,
             FromClaimId = senderClaimId,
             ToClaimId = receiverClaimId,
-            IsAccepted = AccommodationRequest.InviteState.Unanswered,
+            IsAccepted = InviteState.Unanswered,
         };
 
         _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
@@ -161,7 +161,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
                 ProjectId = projectId,
                 FromClaimId = senderClaimId,
                 ToClaimId = receiverClaim.ClaimId,
-                IsAccepted = AccommodationRequest.InviteState.Unanswered,
+                IsAccepted = InviteState.Unanswered,
             };
 
             _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
@@ -245,7 +245,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             _ = UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
         }
 
-        inviteRequest.IsAccepted = AccommodationRequest.InviteState.Accepted;
+        inviteRequest.IsAccepted = InviteState.Accepted;
         inviteRequest.ResolveDescription = ResolveDescription.Accepted;
         await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
@@ -266,11 +266,11 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
     }
 
     public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
-        AccommodationRequest.InviteState newState)
+        InviteState newState)
     {
         var acceptedStates = new[]
         {
-            AccommodationRequest.InviteState.Declined, AccommodationRequest.InviteState.Canceled,
+            InviteState.Declined, InviteState.Canceled,
         };
 
         if (!acceptedStates.Contains(newState))
@@ -290,7 +290,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         }
 
         inviteRequest.IsAccepted = newState;
-        inviteRequest.ResolveDescription = newState == AccommodationRequest.InviteState.Canceled
+        inviteRequest.ResolveDescription = newState == InviteState.Canceled
             ? ResolveDescription.Canceled
             : ResolveDescription.Declined;
         await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
@@ -329,7 +329,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         {
             claims.Add(accommodationInvite.FromClaimId);
             claims.Add(accommodationInvite.ToClaimId);
-            accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
+            accommodationInvite.IsAccepted = InviteState.Declined;
             accommodationInvite.ResolveDescription = ResolveDescription.ClaimCanceled;
         }
 
@@ -360,7 +360,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
     private async Task<AccommodationRequest> GetAccommodationRequestByClaim(int claimId) =>
         await UnitOfWork.GetDbSet<AccommodationRequest>()
             .Where(request => request.Subjects.Any(subject => subject.ClaimId == claimId))
-            .Where(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted)
+            .Where(request => request.IsAccepted == InviteState.Accepted)
             .Include(request => request.Subjects)
             .Include(request => request.AccommodationType)
             .Include(request => request.Accommodation)
@@ -374,7 +374,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .Where(invite => invite.ToClaimId == claimId)
             .Where(invite => invite.Id != inviteId)
             .ToListAsync().ConfigureAwait(false);
-        var stateToDecline = new[] { AccommodationRequest.InviteState.Unanswered };
+        var stateToDecline = new[] { InviteState.Unanswered };
         foreach (var accommodationInvite in inviteRequests)
         {
             if (!stateToDecline.Contains(accommodationInvite.IsAccepted))
@@ -382,7 +382,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
                 continue;
             }
 
-            accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
+            accommodationInvite.IsAccepted = InviteState.Declined;
             accommodationInvite.ResolveDescription = ResolveDescription.DeclinedWithAcceptOther;
         }
 

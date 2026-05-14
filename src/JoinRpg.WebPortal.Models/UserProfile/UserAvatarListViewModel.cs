@@ -41,8 +41,8 @@ public record UserAvatarListItemViewModel(
     {
         return ua.AvatarSource switch
         {
-            UserAvatar.Source.GrAvatar => "Сервис gravatar.com",
-            UserAvatar.Source.SocialNetwork => "Социальная сеть " + ua.ProviderId,
+            AvatarSource.GrAvatar => "Сервис gravatar.com",
+            AvatarSource.SocialNetwork => "Социальная сеть " + ua.ProviderId,
             _ => "Неизвестный источник аватарки",
         };
     }
