@@ -1,12 +1,9 @@
 using System.Net;
-using HtmlAgilityPack;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
-using Microsoft.Extensions.DependencyInjection;
-using Shouldly;
 
 namespace JoinRpg.IntegrationTests.TestInfrastructure;
 
@@ -42,16 +39,16 @@ public static class TestUserProjectHelpers
     {
         var userManager = serviceProvider.GetRequiredService<JoinUserManager>();
         email ??= $"test-{Guid.NewGuid()}@example.com";
-        
+
         var user = new JoinIdentityUser { UserName = email };
         await userManager.CreateAsync(user, password);
-        
+
         user = await userManager.FindByNameAsync(email)
             ?? throw new InvalidOperationException("User not found");
-        
+
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         await userManager.ConfirmEmailAsync(user, token);
-        
+
         return (new UserIdentification(user.Id), email);
     }
 
@@ -71,7 +68,7 @@ public static class TestUserProjectHelpers
     {
         var impersonator = serviceProvider.GetRequiredService<IImpersonateAccessor>();
         impersonator.StartImpersonate(userId, new UserDisplayName("Тестовый Мастер", null), IsAdmin: false);
-        
+
         try
         {
             var createProjectService = serviceProvider.GetRequiredService<ICreateProjectService>();
@@ -81,7 +78,7 @@ public static class TestUserProjectHelpers
                     projectType,
                     null,
                     default));
-            
+
             return result switch
             {
                 SuccessCreateProjectResult r => r.ProjectId,
@@ -110,13 +107,13 @@ public static class TestUserProjectHelpers
         // Получить страницу входа для antiforgery токена
         var loginGetResponse = await client.GetAsync("account/login");
         loginGetResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        
+
         var loginDoc = await loginGetResponse.AsHtmlDocument();
         var antiforgeryToken = loginDoc.DocumentNode
             .SelectSingleNode("//input[@name='__RequestVerificationToken']")?
             .GetAttributeValue("value", "")
             ?? throw new InvalidOperationException("Antiforgery token not found");
-        
+
         // Выполнить вход
         var loginPostResponse = await client.PostAsync("account/login",
             new FormUrlEncodedContent(
@@ -126,10 +123,10 @@ public static class TestUserProjectHelpers
                     new KeyValuePair<string?, string?>("Password", password),
                     new KeyValuePair<string?, string?>("__RequestVerificationToken", antiforgeryToken),
                 }));
-        
+
         // Вход должен быть успешным
         loginPostResponse.IsSuccessStatusCode.ShouldBeTrue();
-        
+
         return client;
     }
 }
