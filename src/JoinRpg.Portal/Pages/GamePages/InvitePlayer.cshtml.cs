@@ -1,5 +1,3 @@
-using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -7,16 +5,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace JoinRpg.Portal.Pages.GamePages;
 
 [RequireMaster(Permission.CanManageClaims)]
-public class InvitePlayerModel(IProjectMetadataRepository projectMetadataRepository) : PageModel
+[ProjectShouldBeActive]
+public class InvitePlayerModel : PageModel
 {
-    public async Task<IActionResult> OnGet()
+    public void OnGet()
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(ProjectId);
-        if (!projectInfo.IsActive)
-        {
-            throw new ProjectDeactivatedException(ProjectId);
-        }
-        return Page();
     }
 
     [BindProperty(SupportsGet = true)]
