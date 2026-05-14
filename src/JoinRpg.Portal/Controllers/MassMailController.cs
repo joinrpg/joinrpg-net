@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 [MasterAuthorize()]
+[ProjectShouldBeActive]
 [Route("{projectId}/massmail/[action]")]
 public class MassMailController(
     IClaimsRepository claimRepository,
@@ -74,10 +74,6 @@ public class MassMailController(
         var claims = (await claimRepository.GetClaimHeadersWithPlayer(claimIds.ToClaimIds(projectId))).ToList();
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        if (!project.IsActive)
-        {
-            throw new ProjectDeactivatedException(projectId);
-        }
         var canSendMassEmails = project.HasMasterAccess(currentUserAccessor.UserIdentification, Permission.CanSendMassMails);
         var filteredClaims = canSendMassEmails ? claims : [.. claims.Where(c => c.ResponsibleMasterUserId == currentUserAccessor.UserIdentification)];
         return (project, filteredClaims, filteredClaims.Count != claims.Count);
