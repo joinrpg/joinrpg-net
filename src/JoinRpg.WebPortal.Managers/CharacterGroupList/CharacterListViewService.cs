@@ -19,6 +19,7 @@ public class CharacterListViewService(
             CharacterListType.All => await characterRepository.GetAllCharacters(projectId),
             CharacterListType.AllTemplates => await characterRepository.GetActiveTemplateCharacters(projectId),
             CharacterListType.Available => await characterRepository.GetAvailableCharacters(projectId),
+            CharacterListType.AvailableNonSlots => await characterRepository.GetAvailableNonSlotCharacters(projectId),
             _ => throw new ArgumentOutOfRangeException(nameof(listType), listType, null)
         };
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
