@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel.Users;
+namespace JoinRpg.DomainTypes.Users;
 
 /// <summary>
 /// Defines source how avatar was obtained

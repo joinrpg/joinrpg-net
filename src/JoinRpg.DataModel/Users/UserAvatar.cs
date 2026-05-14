@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Users;
+
 namespace JoinRpg.DataModel.Users;
 
 #nullable enable

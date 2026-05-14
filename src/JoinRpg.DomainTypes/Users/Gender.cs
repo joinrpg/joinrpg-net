@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.DomainTypes.Users;
 
 public enum Gender : byte
 {

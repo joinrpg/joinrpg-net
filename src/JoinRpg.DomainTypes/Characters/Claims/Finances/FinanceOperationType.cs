@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.DomainTypes.Claims.Finances;
 
 /// <summary>
 /// Types of finance operations

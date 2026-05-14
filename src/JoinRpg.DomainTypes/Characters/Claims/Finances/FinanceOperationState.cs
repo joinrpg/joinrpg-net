@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.DomainTypes.Claims.Finances;
 
 public enum FinanceOperationState
 {

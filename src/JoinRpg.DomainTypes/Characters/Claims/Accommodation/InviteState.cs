@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace JoinRpg.DataModel;
+namespace JoinRpg.DomainTypes.Claims.Accommodation;
 
 //TODO[Localize]
 public enum InviteState

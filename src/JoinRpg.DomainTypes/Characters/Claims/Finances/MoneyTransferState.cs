@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel.Finances;
+namespace JoinRpg.DomainTypes.Claims.Finances;
 
 public enum MoneyTransferState
 {

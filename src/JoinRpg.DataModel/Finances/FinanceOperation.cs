@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DomainTypes.Claims.Finances;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
