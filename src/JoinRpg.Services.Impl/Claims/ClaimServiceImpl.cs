@@ -324,7 +324,7 @@ internal class ClaimServiceImpl(
 
         if (claim.Character.CharacterType == CharacterType.Slot)
         {
-            var character = await CreateCharacterFromSlot(claim.Character, claim.Player);
+            var character = await CreateCharacterFromSlot(claim.Character, claim.Player, projectInfo);
             claim.Character = character;
             claim.CharacterId = character.CharacterId;
         }
@@ -375,7 +375,7 @@ internal class ClaimServiceImpl(
         }
     }
 
-    private async Task<Character> CreateCharacterFromSlot(Character slot, User player)
+    private async Task<Character> CreateCharacterFromSlot(Character slot, User player, ProjectInfo projectInfo)
     {
 
         switch (slot.CharacterSlotLimit)
@@ -427,7 +427,7 @@ internal class ClaimServiceImpl(
             UpdatedById = player.UserId,
         };
 
-        var plots = await PlotRepository.GetPlotsForCharacter(slot);
+        var plots = await PlotRepository.GetDirectPlotsForCharacter(slot.GetId());
 
         foreach (var plot in plots)
         {

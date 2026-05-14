@@ -9,7 +9,7 @@ public interface IPlotRepository : IDisposable
 
     Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId);
     Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId);
-    Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character);
+    Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification characterId);
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
 
     [Obsolete]

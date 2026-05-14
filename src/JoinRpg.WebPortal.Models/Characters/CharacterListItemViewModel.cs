@@ -110,7 +110,7 @@ public class CharacterListItemViewModel : ILinkable
         Problems = problemValidator.Validate(character, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
 
         Groups = new CharacterParentGroupsViewModel(character,
-            projectInfo.HasMasterAccess(new UserIdentification(currentUserId)));
+            projectInfo.HasMasterAccess(new UserIdentification(currentUserId)), projectInfo);
 
         Responsible = character.GetResponsibleMaster();
     }

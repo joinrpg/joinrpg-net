@@ -169,7 +169,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         }
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
 
-        ParentGroups = new CharacterParentGroupsViewModel(claim.Character, HasMasterAccess);
+        ParentGroups = new CharacterParentGroupsViewModel(claim.Character, HasMasterAccess, projectInfo);
 
         Plot = new PlotDisplayViewModel(plotElements,
             currentUser,

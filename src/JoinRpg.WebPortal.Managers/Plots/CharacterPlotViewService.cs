@@ -98,7 +98,7 @@ public class CharacterPlotViewService(
 
         characters = [.. characters.Where(c => AccessArgumentsFactory.Create(c, currentUser, projectInfo, characterAccessMode).CharacterPlotAccess)];
 
-        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x), x.PlotElementOrderData));
+        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x, projectInfo), x.PlotElementOrderData));
     }
 
     private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode, ProjectInfo projectInfo)
@@ -108,16 +108,16 @@ public class CharacterPlotViewService(
 
         characters = [.. characters.Where(c => AccessArgumentsFactory.Create(c, currentUser, projectInfo, characterAccessMode).CharacterPlotAccess)];
 
-        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x), x.PlotElementOrderData));
+        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x, projectInfo), x.PlotElementOrderData));
     }
 
     private record ChPlotInfo(TargetsInfo Targets, string Ordering);
 
-    private TargetsInfo ToTarget(Character character)
+    private TargetsInfo ToTarget(Character character, ProjectInfo projectInfo)
     {
         return new TargetsInfo(
         [new(new(character.ProjectId, character.CharacterId), character.CharacterName)],
-            [.. character.GetParentGroupsToTop().Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))]);
+            [.. character.GetParentGroupsToTop(projectInfo).Select(x => new GroupTarget(x.Id, x.Name))]);
     }
 
     public async Task<IReadOnlyList<PlotTextDto>> GetPlotsForCharacter(CharacterIdentification characterId)

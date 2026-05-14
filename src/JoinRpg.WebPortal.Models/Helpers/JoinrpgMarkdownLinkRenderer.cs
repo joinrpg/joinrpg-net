@@ -19,7 +19,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
     private delegate void RenderFunc(HtmlRenderer renderer, string match, int index, string extra);
     private delegate void CharRenderFunc(HtmlRenderer renderer, Character character, string extra);
-    private delegate void CharGroupRenderFunc(HtmlRenderer renderer, CharacterGroup characterGroup, IReadOnlyCollection<Character> characters, string extra);
+    private delegate void CharGroupRenderFunc(HtmlRenderer renderer, CharacterGroupInfo characterGroup, IReadOnlyCollection<Character> characters, string extra);
     private delegate void FieldColumnRenderFunc(HtmlRenderer renderer, Character character, ProjectInfo projectInfo, Dictionary<ProjectFieldIdentification, FieldWithValue> fields);
 
     public JoinrpgMarkdownLinkRenderer(Project project, ProjectInfo projectInfo)
@@ -48,13 +48,13 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
 
 
 
-        public static Column Groups = new("Группы", (renderer, character, _, _) => GroupListRenderer(renderer, character, g => true));
-        public static Column PublicGroups = new("Группы", (renderer, character, _, _) => GroupListRenderer(renderer, character, g => g.IsPublic));
+        public static Column Groups = new("Группы", (renderer, character, projectInfo, _) => GroupListRenderer(renderer, character, g => true, projectInfo));
+        public static Column PublicGroups = new("Группы", (renderer, character, projectInfo, _) => GroupListRenderer(renderer, character, g => g.IsPublic, projectInfo));
 
-        private static void GroupListRenderer(HtmlRenderer renderer, Character character, Func<CharacterGroup, bool> groupPredicate)
+        private static void GroupListRenderer(HtmlRenderer renderer, Character character, Func<CharacterGroupInfo, bool> groupPredicate, ProjectInfo projectInfo)
         {
             var sep = "";
-            foreach (var group in character.GetIntrestingGroupsForDisplayToTop().Where(groupPredicate))
+            foreach (var group in character.GetIntrestingGroupsForDisplayToTop(projectInfo).Where(groupPredicate))
             {
                 renderer.Write(sep);
                 sep = ", ";
@@ -65,7 +65,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         public static Column CharacterName = new Column("Персонаж", (renderer, character, _, _) => CharacterLinkImpl(renderer, character, ""));
     }
 
-    private void ExperimentalTableFunc(HtmlRenderer renderer, CharacterGroup group, IReadOnlyCollection<Character> characters, string extra)
+    private void ExperimentalTableFunc(HtmlRenderer renderer, CharacterGroupInfo group, IReadOnlyCollection<Character> characters, string extra)
     {
         if (!renderer.EnableHtmlForBlock)
         {
@@ -149,7 +149,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         return columns;
     }
 
-    private void GroupListFunc(HtmlRenderer renderer, CharacterGroup group, IReadOnlyCollection<Character> ch, string extra)
+    private void GroupListFunc(HtmlRenderer renderer, CharacterGroupInfo group, IReadOnlyCollection<Character> ch, string extra)
     {
         GroupHeader(renderer, group, extra);
         bool sep = false;
@@ -172,10 +172,10 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         }
     }
 
-    private void GroupListFullFunc(HtmlRenderer renderer, CharacterGroup group, IReadOnlyCollection<Character> characters, string extra)
+    private void GroupListFullFunc(HtmlRenderer renderer, CharacterGroupInfo group, IReadOnlyCollection<Character> characters, string extra)
     {
         GroupHeader(renderer, group, extra);
-        RenderInnerMarkdown(renderer, group.Description);
+        RenderInnerMarkdown(renderer, Project.CharacterGroups.Single(x => x.CharacterGroupId == group.Id.CharacterGroupId).Description);
         foreach (var character in characters)
         {
             if (renderer.EnableHtmlForBlock)
@@ -207,7 +207,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         }
     }
 
-    private void GroupHeader(HtmlRenderer renderer, CharacterGroup group, string extra)
+    private void GroupHeader(HtmlRenderer renderer, CharacterGroupInfo group, string extra)
     {
         if (renderer.EnableHtmlForInline)
         {
@@ -232,15 +232,15 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         }
     }
 
-    private void GroupName(HtmlRenderer renderer, CharacterGroup characterGroup, IReadOnlyCollection<Character> characters, string extra) => GroupLinkImpl(renderer, characterGroup, extra);
+    private void GroupName(HtmlRenderer renderer, CharacterGroupInfo characterGroup, IReadOnlyCollection<Character> characters, string extra) => GroupLinkImpl(renderer, characterGroup, extra);
 
-    private static void GroupLinkImpl(HtmlRenderer renderer, CharacterGroup group, string extra)
+    private static void GroupLinkImpl(HtmlRenderer renderer, CharacterGroupInfo group, string extra)
     {
         if (renderer.EnableHtmlForInline)
         {
-            renderer.Write($"<a href=\"/{group.ProjectId}/roles/{group.CharacterGroupId}/details\">");
+            renderer.Write($"<a href=\"/{group.Id.ProjectId}/roles/{group.Id.CharacterGroupId}/details\">");
         }
-        renderer.Write(extra == "" ? group.CharacterGroupName : extra);
+        renderer.Write(extra == "" ? group.Name : extra);
         if (renderer.EnableHtmlForInline)
         {
             renderer.Write("</a>");
@@ -364,19 +364,21 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     {
         return (renderer, match, index, extra) =>
         {
-            var group = Project.CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == index);
+            var groupId = new CharacterGroupIdentification(Project.ProjectId, index);
+            var group = projectInfo.Groups[groupId];
             if (group == null)
             {
                 Fail(renderer, match, index, extra);
                 return;
             }
+
+            var groupsIds = projectInfo.GetChildGroupIdsIncludingThis(groupId).ToArray();
+
             IReadOnlyCollection<Character> ch = [
-                ..group.GetOrderedCharacters().Where(chr => chr.IsActive)
-                    .Union(
-                        group.GetOrderedChildrenGroupsRecursive().SelectMany(g => g.GetOrderedCharacters().Where(chr => chr.IsActive))
-                        )
-                    .Distinct()
+                ..Project.CharacterGroups.Where(g => groupsIds.Contains(g.GetId())).SelectMany(g =>  g.GetOrderedCharacters().Where(chr => chr.IsActive)).Distinct()
                     ];
+
+
             inner(renderer, group, ch, extra);
         };
     }

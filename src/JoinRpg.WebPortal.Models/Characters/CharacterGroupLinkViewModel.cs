@@ -14,12 +14,22 @@ public class CharacterGroupLinkViewModel : ILinkable
     public int ProjectId { get; }
     public bool IsActive { get; }
 
+    [Obsolete]
     public CharacterGroupLinkViewModel(CharacterGroup group)
     {
         CharacterGroupId = group.CharacterGroupId;
         Name = group.CharacterGroupName;
         IsPublic = group.IsPublic;
         ProjectId = group.ProjectId;
+        IsActive = group.IsActive;
+    }
+
+    public CharacterGroupLinkViewModel(CharacterGroupInfo group)
+    {
+        CharacterGroupId = group.Id.CharacterGroupId;
+        Name = group.Name;
+        IsPublic = group.IsPublic;
+        ProjectId = group.Id.ProjectId;
         IsActive = group.IsActive;
     }
 }

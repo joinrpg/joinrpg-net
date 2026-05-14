@@ -69,20 +69,20 @@ public class CharacterListController(
         return Export(list, exportType.Value, projectInfo);
     }
 
-    [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
-    public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupId, string export)
+    [HttpGet("~/{ProjectId}/characters/bygroup/{characterGroupIdInt}")]
+    public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupIdInt, string export)
     {
-        var characterGroup = await projectRepository.GetGroupAsync(projectId, characterGroupId);
+        var characterGroupId = new CharacterGroupIdentification(projectId, characterGroupIdInt);
+        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId);
 
         if (characterGroup == null)
         {
             return NotFound();
         }
 
-        var groupIds = characterGroup.GetChildrenGroupsIdentificationRecursiveIncludingThis().ToList();
-        var characters = (await projectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
-
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId).ToList();
+        var characters = (await projectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
 
         var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,
           characters, characterGroup, projectInfo, problemValidator);

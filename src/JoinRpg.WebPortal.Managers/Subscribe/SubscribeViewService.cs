@@ -17,17 +17,20 @@ internal class SubscribeViewService(IUriService uriService,
     IFinanceReportRepository financeReportRepository,
     ICurrentUserAccessor currentUserAccessor,
     IGameSubscribeService gameSubscribeService,
-    IClaimsRepository claimsRepository
+    IClaimsRepository claimsRepository,
+    IProjectMetadataRepository projectMetadataRepository
         ) : IGameSubscribeClient
 {
     public async Task<ClaimSubscribeViewModel> GetSubscribeForClaim(int projectId, int claimId)
     {
         var currentUser = await userRepository.GetWithSubscribe(currentUserAccessor.UserId);
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+
         var claim = await claimsRepository.GetClaim(projectId, claimId);
 
 
-        return GetFullSubscriptionTooltip(claim.Character.GetParentGroupsToTop(), currentUser.Subscriptions, claimId);
+        return GetFullSubscriptionTooltip(claim.Character.GetParentGroupsToTop(projectInfo), currentUser.Subscriptions, claimId);
     }
 
     public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
@@ -53,7 +56,7 @@ internal class SubscribeViewService(IUriService uriService,
         });
     }
 
-    private static ClaimSubscribeViewModel GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
+    private static ClaimSubscribeViewModel GetFullSubscriptionTooltip(IEnumerable<CharacterGroupInfo> parents,
     IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
     {
         var claimStatusChangeGroup = "";
@@ -78,7 +81,7 @@ internal class SubscribeViewService(IUriService uriService,
         {
             foreach (var subscr in subscriptions)
             {
-                if (par.CharacterGroupId == subscr.CharacterGroupId &&
+                if (par.Id.Id == subscr.CharacterGroupId &&
                     !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
                       subscrTooltip.FieldChange && subscrTooltip.MoneyOperation))
                 {
@@ -90,22 +93,22 @@ internal class SubscribeViewService(IUriService uriService,
                     if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
                     {
                         subscrTooltip.ClaimStatusChange = true;
-                        claimStatusChangeGroup = par.CharacterGroupName;
+                        claimStatusChangeGroup = par.Name;
                     }
                     if (subscr.Comments && !subscrTooltip.Comments)
                     {
                         subscrTooltip.Comments = true;
-                        commentsGroup = par.CharacterGroupName;
+                        commentsGroup = par.Name;
                     }
                     if (subscr.FieldChange && !subscrTooltip.FieldChange)
                     {
                         subscrTooltip.FieldChange = true;
-                        fieldChangeGroup = par.CharacterGroupName;
+                        fieldChangeGroup = par.Name;
                     }
                     if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
                     {
                         subscrTooltip.MoneyOperation = true;
-                        moneyOperationGroup = par.CharacterGroupName;
+                        moneyOperationGroup = par.Name;
                     }
                 }
             }

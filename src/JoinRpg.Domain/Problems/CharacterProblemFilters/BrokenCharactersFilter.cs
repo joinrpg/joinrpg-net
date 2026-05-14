@@ -4,7 +4,7 @@ internal class BrokenCharactersFilter : IProblemFilter<Character>
 {
     public IEnumerable<ClaimProblem> GetProblems(Character character, ProjectInfo projectInfo)
     {
-        var groups = character.GetParentGroupsToTop().Where(g => g.IsActive && !g.IsSpecial).ToArray();
+        var groups = character.GetParentGroupsToTop(projectInfo).Where(g => g.IsActive && !g.IsSpecial).ToArray();
         if (!groups.Any())
         {
             yield return new ClaimProblem(ClaimProblemType.NoParentGroup, ProblemSeverity.Fatal);
@@ -15,15 +15,15 @@ internal class BrokenCharactersFilter : IProblemFilter<Character>
         }
     }
 
-    private IEnumerable<ClaimProblem> GetProblemFroGroup(CharacterGroup group)
+    private IEnumerable<ClaimProblem> GetProblemFroGroup(CharacterGroupInfo group)
     {
         if (group.IsRoot)
         {
             yield break;
         }
-        if (!group.ParentCharacterGroupIds.Any() || group.ParentCharacterGroupIds.Any(id => id == group.CharacterGroupId))
+        if (!group.DirectParentGroupIds.Any() || group.DirectParentGroupIds.Any(id => id == group.Id))
         {
-            yield return new ClaimProblem(ClaimProblemType.GroupIsBroken, ProblemSeverity.Fatal, group.CharacterGroupName);
+            yield return new ClaimProblem(ClaimProblemType.GroupIsBroken, ProblemSeverity.Fatal, group.Name);
         }
     }
 }

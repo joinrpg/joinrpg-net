@@ -35,8 +35,6 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
-
-
         var groups = CharacterGroupDictionaryBuilder.Build(project, projectId);
 
         return new ProjectInfo(

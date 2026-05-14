@@ -17,13 +17,13 @@ public class CharacterParentGroupsViewModel
     [ReadOnly(true), DisplayName("Входит в группы")]
     public IReadOnlyCollection<CharacterGroupLinkViewModel> ParentGroups { get; }
 
-    public CharacterParentGroupsViewModel(Character character, bool hasMasterAccess)
+    public CharacterParentGroupsViewModel(Character character, bool hasMasterAccess, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);
 
         HasMasterAccess = hasMasterAccess;
         ParentGroups = character
-          .GetParentGroupsToTop()
+          .GetParentGroupsToTop(projectInfo)
           .Where(group => !group.IsRoot && !group.IsSpecial)
           .Select(g => new CharacterGroupLinkViewModel(g)).ToList();
         HasAnyGroups = ParentGroups.Count > 0;
@@ -55,7 +55,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
 
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId, projectInfo) with { EditAllowed = false };
 
-        ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess);
+        ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess, projectInfo);
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
             currentUserId.UserIdOrDefault, projectInfo);

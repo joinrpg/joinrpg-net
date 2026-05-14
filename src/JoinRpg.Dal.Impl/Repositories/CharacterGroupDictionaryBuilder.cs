@@ -1,3 +1,5 @@
+using JoinRpg.Helpers;
+
 namespace JoinRpg.Dal.Impl.Repositories;
 
 public static class CharacterGroupDictionaryBuilder
@@ -27,6 +29,17 @@ public static class CharacterGroupDictionaryBuilder
                 }
                 parentList.Add(new CharacterGroupIdentification(projectId, parentId));
             }
+        }
+
+        // Отсортировать дочерние группы
+        foreach (var group in project.CharacterGroups)
+        {
+            if (string.IsNullOrEmpty(group.ChildCharactersOrdering))
+            {
+                continue; // Не сохранено порядка, common case
+            }
+            var unsorted = childGroupsMap[group.CharacterGroupId];
+            childGroupsMap[group.CharacterGroupId] = [.. unsorted.OrderByStoredOrder(k => k.Id, group.ChildGroupsOrdering)];
         }
 
         // Кэши для рекурсивных обходов
@@ -85,6 +98,8 @@ public static class CharacterGroupDictionaryBuilder
             return list;
         }
 
+        var rootGroupId = project.RootGroup.GetId();
+
         var dict = new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>();
         foreach (var group in project.CharacterGroups)
         {
@@ -100,6 +115,7 @@ public static class CharacterGroupDictionaryBuilder
                 IsActive: group.IsActive,
                 IsPublic: group.IsPublic,
                 IsSpecial: group.IsSpecial,
+                IsIntresting: !group.IsRoot && group.IsActive && (!group.IsSpecial || group.ParentCharacterGroupIds.Any(parentId => parentId != rootGroupId.Id)),
                 DirectChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
                 DirectParentGroupIds: parentGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
                 AllChildGroups: allChildGroups,

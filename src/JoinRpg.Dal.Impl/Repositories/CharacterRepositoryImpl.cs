@@ -1,7 +1,6 @@
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Claims;
-using JoinRpg.Helpers;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -105,12 +104,7 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
               {
                   IsActive = activeClaimPredicate.Invoke(claim),
               }).ToListAsync(),
-            DirectGroups = directGroups,
-            AllGroups = directGroups
-            .SelectMany(g => g.FlatTree(group => group.ParentGroupIds._parentCharacterGroupIds.Select(id => allGroups[id])))
-            .Where(g => g.IsActive)
-            .Distinct()
-            .ToList()
+            DirectGroups = directGroups
         };
         return view;
     }

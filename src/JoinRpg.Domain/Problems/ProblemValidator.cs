@@ -27,7 +27,7 @@ internal class ProblemValidator<TObject>(
 
         FieldWithValue[] fieldWithValues = GetFields(obj, projectInfo).Where(f => fields.Contains(f.Field.Id)).ToArray();
 
-        return ValidateFieldsInternal(obj, fieldWithValues);
+        return ValidateFieldsInternal(obj, fieldWithValues, projectInfo);
     }
 
     public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(TObject obj, ProjectInfo projectInfo)
@@ -36,12 +36,12 @@ internal class ProblemValidator<TObject>(
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         FieldWithValue[] fieldWithValues = GetFields(obj, projectInfo);
-        return ValidateFieldsInternal(obj, fieldWithValues);
+        return ValidateFieldsInternal(obj, fieldWithValues, projectInfo);
     }
 
-    private IEnumerable<FieldRelatedProblem> ValidateFieldsInternal(TObject obj, FieldWithValue[] fieldWithValues)
+    private IEnumerable<FieldRelatedProblem> ValidateFieldsInternal(TObject obj, FieldWithValue[] fieldWithValues, ProjectInfo projectInfo)
     {
-        var target = characterBulkLoader.LoadCharacter(GetClaimSource(obj));
+        var target = characterBulkLoader.LoadCharacter(GetClaimSource(obj), projectInfo);
 
         foreach (var fieldWithValue in fieldWithValues)
         {

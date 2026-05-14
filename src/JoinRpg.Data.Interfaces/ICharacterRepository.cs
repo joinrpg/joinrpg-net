@@ -41,7 +41,6 @@ public class CharacterView : IFieldContainter
     public Claim? ApprovedClaim { get; set; }
     public required IReadOnlyCollection<ClaimHeader> Claims { get; set; }
     public required IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
-    public required IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
     public required string JsonData { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
