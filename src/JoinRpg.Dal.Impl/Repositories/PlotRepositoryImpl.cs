@@ -19,22 +19,14 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId);
     }
 
-    public async Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character)
+    public async Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification character)
     {
-        var ids =
-          character.Groups.SelectMany(group => group.FlatTree(g => g.ParentGroups))
-            .Select(g => g.CharacterGroupId)
-            .Distinct()
-            .ToList(); //ToList required here so all lazy loads are finished before we are starting making condition below.
         return
           await Ctx.Set<PlotElement>()
             .Include(e => e.Texts)
             .Include(e => e.TargetCharacters)
             .Include(e => e.TargetGroups)
-            .Where(
-              e =>
-                e.TargetCharacters.Any(ch => ch.CharacterId == character.CharacterId) ||
-                e.TargetGroups.Any(g => ids.Contains(g.CharacterGroupId)))
+            .Where(e => e.TargetCharacters.Any(ch => ch.CharacterId == character.CharacterId))
             .ToListAsync();
     }
 

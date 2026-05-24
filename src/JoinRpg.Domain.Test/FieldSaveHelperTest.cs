@@ -43,8 +43,8 @@ public class FieldSaveHelperTest
             .ShouldBe(_original.Character.JsonData,
                 "Adding claim should not modify any character fields");
 
-        mock.Character.Groups.Select(g => g.CharacterGroupId).ShouldBe(
-            mock.Character.Groups.Select(g => g.CharacterGroupId),
+        mock.Character.ParentCharacterGroupIds.ShouldBe(
+            mock.Character.ParentCharacterGroupIds,
             "Adding claim should not modify any character groups");
 
         claim.JsonData.ShouldBe($"{{\"{mock.CharacterFieldInfo.Id.ProjectFieldId}\":\"test\"}}");
@@ -212,10 +212,7 @@ public class FieldSaveHelperTest
         ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
             _original.Character.JsonData,
             "Adding claim should not modify any character fields");
-        mock.Character.Groups.Select(g => g.CharacterGroupId).ToList().ShouldBe(
-            (IEnumerable<int>)_original.Character.Groups.Select(g => g.CharacterGroupId)
-                .ToList(),
-            "Adding claim should not modify any character groups");
+        mock.Character.ParentCharacterGroupIds.ToList().ShouldBe(_original.Character.ParentCharacterGroupIds.ToList(), "Adding claim should not modify any character groups");
         ShouldBeTestExtensions.ShouldBe(claim.JsonData,
             $"{{\"{mock.CharacterFieldInfo.Id.ProjectFieldId}\":\"test\"}}");
     }

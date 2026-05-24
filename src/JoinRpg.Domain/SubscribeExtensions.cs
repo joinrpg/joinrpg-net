@@ -5,18 +5,6 @@ namespace JoinRpg.Domain;
 public static class SubscribeExtensions
 {
     public static IEnumerable<User> GetSubscriptions(
-      this ForumThread forumThread,
-      IEnumerable<User?>? extraRecipients,
-      bool isVisibleToPlayer)
-    {
-        return
-          forumThread.Subscriptions //get subscriptions on forum
-            .Select(u => u.User) //Select users
-            .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
-            .VerifySubscriptions(isVisibleToPlayer, forumThread);
-    }
-
-    public static IEnumerable<User> GetSubscriptions(
       this Character character,
       Func<UserSubscription, bool> predicate,
       IEnumerable<User>? extraRecipients = null,

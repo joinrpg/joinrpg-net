@@ -1,7 +1,7 @@
 using Joinrpg.AspNetCore.Helpers;
-using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
@@ -70,7 +70,7 @@ public class CharacterController(
             ProjectName = field.Project.ProjectName,
             CharacterTypeInfo = view.CharacterTypeInfo,
             Name = field.CharacterName,
-            ParentCharacterGroupIds = CharacterGroupIdentification.FromList(field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToArray(), projectId).ToArray(),
+            ParentCharacterGroupIds = [.. field.GetParentGroupsToTop(projectInfo).Where(gr => !gr.IsSpecial).Select(pg => pg.Id)],
         }.Fill(field, CurrentUserId, projectInfo));
     }
 

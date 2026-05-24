@@ -31,7 +31,7 @@ public static class CharacterAndGroupPrefixer
         return [.. CharacterGroupIdentification.FromList(targets.UnprefixNumbers(GroupFieldPrefix), projectIdentification)];
     }
 
-    public static List<string> GetParentGroupsForEdit(this IWorldObject field) => field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();
+    public static List<string> GetParentGroupsForEdit(this CharacterGroup field) => field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();
 
     public static List<string> AsPossibleParentForEdit(this CharacterGroup field) => new List<int> { field.CharacterGroupId }.PrefixAsGroups().ToList();
 

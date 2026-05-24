@@ -49,6 +49,7 @@ public class MockedProject
 
         var rootGroup = CreateCharacterGroup();
         rootGroup.IsRoot = true;
+        Group = CreateCharacterGroup();
 
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
 
@@ -57,7 +58,7 @@ public class MockedProject
         HideForUnApprovedClaimInfo = CreateField("Hide on unapproved", canPlayerEdit: true, showOnUnApprovedClaims: false);
         PublicFieldInfo = CreateField("Public", projectFieldVisibility: ProjectFieldVisibility.Public, canPlayerEdit: false, showOnUnApprovedClaims: true);
 
-        Group = CreateCharacterGroup();
+
 
         Character = CreateCharacter("Some Character");
     }
@@ -92,7 +93,7 @@ public class MockedProject
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
     }
 
-    public CharacterGroup CreateCharacterGroup()
+    public CharacterGroup CreateCharacterGroup(bool skipReinit = false)
     {
         var id = Project.CharacterGroups.GetNextId();
         var characterGroup = new CharacterGroup

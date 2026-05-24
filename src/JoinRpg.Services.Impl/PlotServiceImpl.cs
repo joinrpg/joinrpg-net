@@ -9,7 +9,8 @@ namespace JoinRpg.Services.Impl;
 
 public class PlotServiceImpl(IUnitOfWork unitOfWork,
     IMassProjectEmailService massProjectEmailService,
-    ICurrentUserAccessor currentUserAccessor) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPlotService
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPlotService
 {
     public async Task<PlotFolderIdentification> CreatePlotFolder(ProjectIdentification projectId, string masterTitle, string todo)
     {
@@ -222,7 +223,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
         _ = character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
 
-        var plots = await PlotRepository.GetPlotsForCharacter(character);
+        var plots = await PlotRepository.GetDirectPlotsForCharacter(new CharacterIdentification(projectId, parentCharacterId));
 
         var voc = character.GetCharacterPlotContainer(plots);
         var element = plots.Single(p => p.PlotElementId == plotElementId);
@@ -326,12 +327,13 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
     public async Task ReorderPlotByChar(CharacterIdentification characterId, PlotElementIdentification targetId, PlotElementIdentification? afterId)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
 
         var character = await CharactersRepository.GetCharacterAsync(characterId);
 
-        _ = character.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManagePlots).EnsureProjectActive();
 
-        var plotTarget = ToTarget(character);
+        var plotTarget = ToTarget(character, projectInfo);
 
         var plots = await PlotRepository.GetPlotsBySpecification(new PlotSpecification(plotTarget, PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot));
 
@@ -342,10 +344,10 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     }
 
 
-    private static TargetsInfo ToTarget(Character character)
+    private static TargetsInfo ToTarget(Character character, ProjectInfo projectInfo)
     {
         return new TargetsInfo(
         [new(new(character.ProjectId, character.CharacterId), character.CharacterName)],
-            [.. character.GetParentGroupsToTop().Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))]);
+            [.. character.GetParentGroupsToTop(projectInfo).Select(x => new GroupTarget(x.Id, x.Name))]);
     }
 }

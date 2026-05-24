@@ -11,8 +11,7 @@ namespace JoinRpg.Services.Impl.Claims;
 internal class SubscribeCalculator(
     IUserSubscribeRepository userSubscribeRepository,
     ICharacterRepository characterRepository,
-    IClaimsRepository claimsRepository,
-    IProjectRepository projectRepository
+    IClaimsRepository claimsRepository
     )
 {
     internal async Task<IReadOnlyCollection<NotificationRecepient>> GetRecepients(SubscribeCalculateArgs args, ProjectInfo projectInfo)
@@ -32,7 +31,7 @@ internal class SubscribeCalculator(
         var characters = await characterRepository.GetCharacters(characterIds);
 
         var character = await userSubscribeRepository.GetForCharAndGroups(
-            [.. characters.SelectMany(x => x.GetParentGroupIdsToTop()).Distinct()],
+            [.. characters.SelectMany(x => x.GetParentGroupIdsToTop(projectInfo)).Distinct()],
             characterIds);
         AddIfPredicateAndNotAlreadyPresent(character, SubscriptionReason.SubscribedMaster);
 
@@ -57,9 +56,7 @@ internal class SubscribeCalculator(
 
         AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
 
-        var groups = await projectRepository.LoadGroups(args.Groups);
-
-        var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. groups.SelectMany(g => g.GetChildrenGroupsIdentificationRecursiveIncludingThis())], ClaimStatusSpec.Approved);
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. projectInfo.GetChildGroupIdsIncludingThis(args.Groups)], ClaimStatusSpec.Approved);
 
         AddUserInfoHeaderIfNotPresent(list, claims.Select(c => c.Player), SubscriptionReason.Forum);
 

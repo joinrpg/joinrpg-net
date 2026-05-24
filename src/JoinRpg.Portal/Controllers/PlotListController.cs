@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -15,7 +14,8 @@ public class PlotListController(
     IProjectRepository projectRepository,
     IPlotRepository plotRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUser
+    ICurrentUserAccessor currentUser,
+    ICharacterRepository characterRepository
     ) : JoinControllerGameBase
 {
     [RequireMasterOrPublish]
@@ -43,24 +43,29 @@ public class PlotListController(
 
     [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/plots")]
     [RequireMasterOrPublish]
-    public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
+    public async Task<ActionResult> ForGroup(ProjectIdentification projectId, int characterGroupId)
     {
-        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
-        if (group == null)
+
+        var characterGroupId2 = new CharacterGroupIdentification(projectId, characterGroupId);
+        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId2);
+
+        if (characterGroup == null)
         {
             return NotFound();
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var characterGroupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
+
         //TODO slow 
-        var characterGroups = group.GetChildrenGroupsRecursive().Union([group]).ToList();
-        var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
-        var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
-        var folders = await plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
+        var characters = await projectRepository.GetCharacterByGroups(characterGroupIds);
 
-        var groupNavigation = new CharacterGroupDetailsViewModel(group, currentUser.UserIdOrDefault, GroupNavigationPage.Plots);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var folders = await plotRepository.GetPlotsForTargets(projectId, [.. characters.Select(x => x.CharacterId)], [.. characterGroupIds.Select(x => x.Id)]);
 
-        var list = PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(folders, currentUser, projectInfo, "Сюжеты группы «" + group.CharacterGroupName + "»");
+        var groupNavigation = new CharacterGroupDetailsViewModel(characterGroup, currentUser.UserIdOrDefault, GroupNavigationPage.Plots);
+
+
+        var list = PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(folders, currentUser, projectInfo, "Сюжеты группы «" + characterGroup.CharacterGroupName + "»");
 
         return View("ForGroup", new PlotFolderListViewModelForGroup(list, groupNavigation));
     }

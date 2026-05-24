@@ -154,33 +154,40 @@ public class ClaimListController(
 
     [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/claims")]
     [MasterAuthorize()]
-    public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> ListForGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
-        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
+        var characterGroupId2 = new CharacterGroupIdentification(projectId, characterGroupId);
+        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId2);
 
-        if (group == null)
+        if (characterGroup == null)
         {
             return NotFound();
         }
-        var groupIds = group.GetChildrenGroupsIdRecursiveIncludingThis();
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
         var claims = await claimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, groupIds);
 
-        return await ShowMasterClaimListForGroup(group, export, "Заявки в группу (все)", claims,
+        return await ShowMasterClaimListForGroup(characterGroup, export, "Заявки в группу (все)", claims,
             GroupNavigationPage.ClaimsActive, ClaimStatusSpec.Active);
     }
 
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> DiscussingForGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
-        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
-        if (group == null)
+        var characterGroupId2 = new CharacterGroupIdentification(projectId, characterGroupId);
+        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId2);
+
+        if (characterGroup == null)
         {
             return NotFound();
         }
-        var groupIds = group.GetChildrenGroupsIdRecursiveIncludingThis();
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
         var claims = await claimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, groupIds);
 
-        return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки в группу (все)",
+        return await ShowMasterClaimListForGroup(characterGroup, export, "Обсуждаемые заявки в группу (все)",
             claims, GroupNavigationPage.ClaimsDiscussing, ClaimStatusSpec.Active);
     }
 

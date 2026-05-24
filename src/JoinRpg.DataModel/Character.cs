@@ -22,8 +22,7 @@ public class Character : IWorldObject, IFieldContainter, ICreatedUpdatedTrackedF
 
     public virtual Project Project { get; set; }
 
-    IEnumerable<CharacterGroup> IWorldObject.ParentGroups => Groups;
-
+    [Obsolete("Use groups from ProjectInfo")]
     public IEnumerable<CharacterGroup> Groups => Project.CharacterGroups.Where(c => ParentCharacterGroupIds.Contains(c.CharacterGroupId));
 
     public string CharacterName { get; set; }

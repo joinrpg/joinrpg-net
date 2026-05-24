@@ -156,6 +156,43 @@ public record class ProjectInfo
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
             ProjectRolesLists, Groups);
     }
+
+    public CharacterGroupInfo GetGroupById(int id)
+    {
+        var groupId = new CharacterGroupIdentification(ProjectId, id);
+        return Groups[groupId];
+    }
+
+    public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
+    {
+        return Groups[groupId].AllChildGroupsIncludingThis;
+    }
+
+    public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
+    {
+        return [.. groupIds.SelectMany(x => GetChildGroupIdsIncludingThis(x)).Distinct()];
+    }
+
+    public IEnumerable<CharacterGroupIdentification> GetParentGroupIdsIncludingThis(CharacterGroupIdentification groupId)
+    {
+        if (!Groups.TryGetValue(groupId, out var groupInfo))
+        {
+            return [];
+        }
+
+        return [groupId, .. groupInfo.AllParentGroups];
+    }
+
+    public IEnumerable<CharacterGroupIdentification> GetParentGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
+    {
+        return [.. groupIds.SelectMany(x => GetParentGroupIdsIncludingThis(x)).Distinct()];
+    }
+
+    public IEnumerable<CharacterGroupInfo> GetParentGroupsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
+    {
+        var ids = GetParentGroupIdsIncludingThis(groupIds);
+        return ids.Select(id => Groups[id]);
+    }
 }
 
 public record ProjectProfileRequirementSettings(

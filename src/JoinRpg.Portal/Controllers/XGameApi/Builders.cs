@@ -20,6 +20,19 @@ public class ApiInfoBuilder
             .OrderBy(group => group.CharacterGroupId)];
     }
 
+    public static GroupHeader[] ToGroupHeaders(
+    IReadOnlyCollection<CharacterGroupInfo> characterDirectGroups)
+    {
+        return [.. characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)
+            .Select(
+                group => new GroupHeader
+                {
+                    CharacterGroupId = group.Id.CharacterGroupId,
+                    CharacterGroupName = group.Name,
+                })
+            .OrderBy(group => group.CharacterGroupId)];
+    }
+
     public static CharacterPlayerInfo? CreatePlayerInfo(Claim? claim, ProjectInfo projectInfo)
     {
         if (claim is null)

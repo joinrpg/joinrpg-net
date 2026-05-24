@@ -7,8 +7,12 @@ public record CharacterGroupInfo(
     bool IsActive,
     bool IsPublic,
     bool IsSpecial,
+    bool IsIntresting,
     IReadOnlyCollection<CharacterGroupIdentification> DirectChildGroupIds,
     IReadOnlyCollection<CharacterGroupIdentification> DirectParentGroupIds,
     IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups
-);
+)
+{
+    public IReadOnlyCollection<CharacterGroupIdentification> AllChildGroupsIncludingThis = [Id, .. AllChildGroups];
+}
