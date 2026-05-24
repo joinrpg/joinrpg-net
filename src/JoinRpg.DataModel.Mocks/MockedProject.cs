@@ -47,8 +47,9 @@ public class MockedProject
             ProjectRolesLists = [],
         };
 
-        var rootGroup = CreateCharacterGroup(skipReinit: true); // Инициализировать ProjectInfo надо после следующей строчки
+        var rootGroup = CreateCharacterGroup();
         rootGroup.IsRoot = true;
+        Group = CreateCharacterGroup();
 
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
 
@@ -57,7 +58,7 @@ public class MockedProject
         HideForUnApprovedClaimInfo = CreateField("Hide on unapproved", canPlayerEdit: true, showOnUnApprovedClaims: false);
         PublicFieldInfo = CreateField("Public", projectFieldVisibility: ProjectFieldVisibility.Public, canPlayerEdit: false, showOnUnApprovedClaims: true);
 
-        Group = CreateCharacterGroup();
+
 
         Character = CreateCharacter("Some Character");
     }
@@ -105,10 +106,6 @@ public class MockedProject
             IsActive = true,
         };
         Project.CharacterGroups.Add(characterGroup);
-        if (!skipReinit)
-        {
-            ReInitProjectInfo();
-        }
 
         return characterGroup;
     }
