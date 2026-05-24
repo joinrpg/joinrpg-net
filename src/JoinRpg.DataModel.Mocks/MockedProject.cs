@@ -47,7 +47,7 @@ public class MockedProject
             ProjectRolesLists = [],
         };
 
-        var rootGroup = CreateCharacterGroup();
+        var rootGroup = CreateCharacterGroup(skipReinit: true); // Инициализировать ProjectInfo надо после следующей строчки
         rootGroup.IsRoot = true;
 
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
@@ -92,7 +92,7 @@ public class MockedProject
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
     }
 
-    public CharacterGroup CreateCharacterGroup()
+    public CharacterGroup CreateCharacterGroup(bool skipReinit = false)
     {
         var id = Project.CharacterGroups.GetNextId();
         var characterGroup = new CharacterGroup
@@ -105,6 +105,10 @@ public class MockedProject
             IsActive = true,
         };
         Project.CharacterGroups.Add(characterGroup);
+        if (!skipReinit)
+        {
+            ReInitProjectInfo();
+        }
 
         return characterGroup;
     }

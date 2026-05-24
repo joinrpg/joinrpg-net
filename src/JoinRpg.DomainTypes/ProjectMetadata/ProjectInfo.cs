@@ -157,14 +157,15 @@ public record class ProjectInfo
             ProjectRolesLists, Groups);
     }
 
+    public CharacterGroupInfo GetGroupById(int id)
+    {
+        var groupId = new CharacterGroupIdentification(ProjectId, id);
+        return Groups[groupId];
+    }
+
     public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
     {
-        if (!Groups.TryGetValue(groupId, out var groupInfo))
-        {
-            return [];
-        }
-
-        return [groupId, .. groupInfo.AllChildGroups];
+        return Groups[groupId].AllChildGroupsIncludingThis;
     }
 
     public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)

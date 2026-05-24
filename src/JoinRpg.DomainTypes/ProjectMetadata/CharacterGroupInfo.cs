@@ -12,4 +12,7 @@ public record CharacterGroupInfo(
     IReadOnlyCollection<CharacterGroupIdentification> DirectParentGroupIds,
     IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups
-);
+)
+{
+    public IReadOnlyCollection<CharacterGroupIdentification> AllChildGroupsIncludingThis = [Id, .. AllChildGroups];
+}

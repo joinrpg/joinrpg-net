@@ -238,7 +238,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     {
         if (renderer.EnableHtmlForInline)
         {
-            renderer.Write($"<a href=\"/{group.Id.ProjectId}/roles/{group.Id.CharacterGroupId}/details\">");
+            renderer.Write($"<a href=\"/{group.Id.ProjectId.Id}/roles/{group.Id.CharacterGroupId}/details\">");
         }
         renderer.Write(extra == "" ? group.Name : extra);
         if (renderer.EnableHtmlForInline)
@@ -364,15 +364,14 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     {
         return (renderer, match, index, extra) =>
         {
-            var groupId = new CharacterGroupIdentification(Project.ProjectId, index);
-            var group = projectInfo.Groups[groupId];
+            CharacterGroupInfo group = projectInfo.GetGroupById(index);
             if (group == null)
             {
                 Fail(renderer, match, index, extra);
                 return;
             }
 
-            var groupsIds = projectInfo.GetChildGroupIdsIncludingThis(groupId).ToArray();
+            var groupsIds = group.AllChildGroupsIncludingThis;
 
             IReadOnlyCollection<Character> ch = [
                 ..Project.CharacterGroups.Where(g => groupsIds.Contains(g.GetId())).SelectMany(g =>  g.GetOrderedCharacters().Where(chr => chr.IsActive)).Distinct()
