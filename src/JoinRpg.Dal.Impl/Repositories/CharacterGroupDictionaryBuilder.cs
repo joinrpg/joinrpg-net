@@ -34,11 +34,14 @@ public static class CharacterGroupDictionaryBuilder
         // Отсортировать дочерние группы
         foreach (var group in project.CharacterGroups)
         {
-            if (string.IsNullOrEmpty(group.ChildCharactersOrdering))
+            if (string.IsNullOrEmpty(group.ChildGroupsOrdering))
             {
                 continue; // Не сохранено порядка, common case
             }
-            var unsorted = childGroupsMap[group.CharacterGroupId];
+            if (!childGroupsMap.TryGetValue(group.CharacterGroupId, out var unsorted))
+            {
+                continue; // Нет дочерних групп, возможно были безвозвратно удалены
+            }
             childGroupsMap[group.CharacterGroupId] = [.. unsorted.OrderByStoredOrder(k => k.Id, group.ChildGroupsOrdering)];
         }
 
