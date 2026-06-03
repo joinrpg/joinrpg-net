@@ -63,8 +63,8 @@ public class CharacterGroupDictionaryBuilderTest
         var rootInfo = result[rootGroupId];
         var childInfo = result[childGroupId];
         
-        rootInfo.ChildGroupIds.ShouldContain(childGroupId);
-        childInfo.ParentGroupIds.ShouldContain(rootGroupId);
+        rootInfo.DirectChildGroupIds.ShouldContain(childGroupId);
+        childInfo.DirectParentGroupIds.ShouldContain(rootGroupId);
     }
 
     [Fact]
@@ -90,14 +90,14 @@ public class CharacterGroupDictionaryBuilderTest
         var parent2Id = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), parent2.CharacterGroupId);
         
         var childInfo = result[childGroupId];
-        childInfo.ParentGroupIds.ShouldContain(parent1Id);
-        childInfo.ParentGroupIds.ShouldContain(parent2Id);
+        childInfo.DirectParentGroupIds.ShouldContain(parent1Id);
+        childInfo.DirectParentGroupIds.ShouldContain(parent2Id);
         
         var parent1Info = result[parent1Id];
-        parent1Info.ChildGroupIds.ShouldContain(childGroupId);
+        parent1Info.DirectChildGroupIds.ShouldContain(childGroupId);
         
         var parent2Info = result[parent2Id];
-        parent2Info.ChildGroupIds.ShouldContain(childGroupId);
+        parent2Info.DirectChildGroupIds.ShouldContain(childGroupId);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class CharacterGroupDictionaryBuilderTest
         var leafGroupId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), leafGroup.CharacterGroupId);
         var leafInfo = result[leafGroupId];
         
-        leafInfo.ChildGroupIds.ShouldBeEmpty();
+        leafInfo.DirectChildGroupIds.ShouldBeEmpty();
     }
 
     [Fact]
@@ -215,57 +215,80 @@ public class CharacterGroupDictionaryBuilderTest
         var parent2 = _mock.CreateCharacterGroup();
         var child = _mock.CreateCharacterGroup();
         var grandchild = _mock.CreateCharacterGroup();
-        
+
         parent1.ParentCharacterGroupIds = [rootGroup.CharacterGroupId];
         parent2.ParentCharacterGroupIds = [rootGroup.CharacterGroupId];
         child.ParentCharacterGroupIds = [parent1.CharacterGroupId, parent2.CharacterGroupId];
         grandchild.ParentCharacterGroupIds = [child.CharacterGroupId];
-        
+
         // Act
         var result = CharacterGroupDictionaryBuilder.Build(project, new ProjectIdentification(project.ProjectId));
-        
+
         // Assert
         var rootGroupId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), rootGroup.CharacterGroupId);
         var parent1Id = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), parent1.CharacterGroupId);
         var parent2Id = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), parent2.CharacterGroupId);
         var childId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), child.CharacterGroupId);
         var grandchildId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), grandchild.CharacterGroupId);
-        
+
         var rootInfo = result[rootGroupId];
         var parent1Info = result[parent1Id];
         var parent2Info = result[parent2Id];
         var childInfo = result[childId];
         var grandchildInfo = result[grandchildId];
-        
+
         // Grandchild should have all ancestors
         grandchildInfo.AllParentGroups.ShouldContain(childId);
         grandchildInfo.AllParentGroups.ShouldContain(parent1Id);
         grandchildInfo.AllParentGroups.ShouldContain(parent2Id);
         grandchildInfo.AllParentGroups.ShouldContain(rootGroupId);
         grandchildInfo.AllParentGroups.Count.ShouldBe(4);
-        
+
         // Child should have parents and root
         childInfo.AllParentGroups.ShouldContain(parent1Id);
         childInfo.AllParentGroups.ShouldContain(parent2Id);
         childInfo.AllParentGroups.ShouldContain(rootGroupId);
         childInfo.AllParentGroups.Count.ShouldBe(3);
-        
+
         // Parent1 should have root only
         parent1Info.AllParentGroups.ShouldContain(rootGroupId);
         parent1Info.AllParentGroups.Count.ShouldBe(1);
-        
+
         // Parent2 should have root only
         parent2Info.AllParentGroups.ShouldContain(rootGroupId);
         parent2Info.AllParentGroups.Count.ShouldBe(1);
-        
+
         // Root should have no parents
         rootInfo.AllParentGroups.ShouldBeEmpty();
-        
+
         // Groups should not include themselves in AllParentGroups
         grandchildInfo.AllParentGroups.ShouldNotContain(grandchildId);
         childInfo.AllParentGroups.ShouldNotContain(childId);
         parent1Info.AllParentGroups.ShouldNotContain(parent1Id);
         parent2Info.AllParentGroups.ShouldNotContain(parent2Id);
         rootInfo.AllParentGroups.ShouldNotContain(rootGroupId);
+    }
+
+    [Fact]
+    public void Build_ShouldSkipGroupsWithOrderingButNoChildGroups()
+    {
+        // Arrange
+        var project = _mock.Project;
+        var groupWithOrderingButNoChildren = _mock.CreateCharacterGroup();
+        groupWithOrderingButNoChildren.ParentCharacterGroupIds = [project.RootGroup.CharacterGroupId];
+        // Симулируем ситуацию, когда дочерние группы были безвозвратно удалены,
+        // но ordering остался непустым
+        groupWithOrderingButNoChildren.ChildGroupsOrdering = "1,2,3";
+
+        // Act
+        var result = CharacterGroupDictionaryBuilder.Build(project, new ProjectIdentification(project.ProjectId));
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Count.ShouldBe(project.CharacterGroups.Count);
+
+        var groupId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), groupWithOrderingButNoChildren.CharacterGroupId);
+        var groupInfo = result[groupId];
+        groupInfo.DirectChildGroupIds.ShouldBeEmpty();
     }
 }
