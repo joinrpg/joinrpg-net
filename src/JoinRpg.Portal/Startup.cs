@@ -164,7 +164,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = app.UseJoinRequestLogging();
 
         _ = app.MapOpenApi();
-        app.UseSwaggerUI(Swagger.ConfigureUI);
+        _ = app.MapSwaggerUI("swagger", Swagger.ConfigureUI);
 
         app.MapJoinHealthChecks();
 
