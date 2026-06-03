@@ -330,6 +330,14 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
 
         field.Project.Details.FieldsOrdering
             = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
+
+        if (field.CharacterGroup != null)
+        {
+            var rootGroup = field.Project.RootGroup;
+            rootGroup.ChildGroupsOrdering = rootGroup.GetCharacterGroupsContainer()
+                .Move(field.CharacterGroup, direction).GetStoredOrder();
+        }
+
         await UnitOfWork.SaveChangesAsync();
     }
 
@@ -338,10 +346,18 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         var field = await ProjectRepository.GetProjectField(projectid, projectFieldId);
         _ = field.RequestMasterAccess(CurrentUserId, Permission.CanChangeFields);
 
+        var variant = field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == projectFieldVariantId);
+
         field.ValuesOrdering =
           field.GetFieldValuesContainer()
-            .Move(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == projectFieldVariantId), direction)
+            .Move(variant, direction)
             .GetStoredOrder();
+
+        if (field.CharacterGroup != null && variant.CharacterGroup != null)
+        {
+            field.CharacterGroup.ChildGroupsOrdering = field.CharacterGroup.GetCharacterGroupsContainer()
+                .Move(variant.CharacterGroup, direction).GetStoredOrder();
+        }
 
         await UnitOfWork.SaveChangesAsync();
     }
@@ -383,6 +399,14 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         field.Project.Details.FieldsOrdering
             = field.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
 
+        if (field.CharacterGroup != null)
+        {
+            var rootGroup = field.Project.RootGroup;
+            var afterGroup = afterField?.CharacterGroup;
+            rootGroup.ChildGroupsOrdering = rootGroup.GetCharacterGroupsContainer()
+                .MoveAfter(field.CharacterGroup, afterGroup).GetStoredOrder();
+        }
+
         await UnitOfWork.SaveChangesAsync();
     }
 
@@ -406,6 +430,13 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         var container = field.GetFieldValuesContainer();
         container.SortBy(x => x.Label);
         field.ValuesOrdering = container.GetStoredOrder();
+
+        if (field.CharacterGroup != null)
+        {
+            var groupContainer = field.CharacterGroup.GetCharacterGroupsContainer();
+            groupContainer.SortBy(g => g.CharacterGroupName);
+            field.CharacterGroup.ChildGroupsOrdering = groupContainer.GetStoredOrder();
+        }
 
         await UnitOfWork.SaveChangesAsync();
     }
