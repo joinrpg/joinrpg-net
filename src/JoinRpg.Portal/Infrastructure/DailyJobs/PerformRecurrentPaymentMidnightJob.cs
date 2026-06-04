@@ -1,6 +1,5 @@
 using System.Collections.Frozen;
 using System.Data.Common;
-using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 

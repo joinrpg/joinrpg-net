@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Web.Helpers;
 
 public static class InviteStateExtensions
