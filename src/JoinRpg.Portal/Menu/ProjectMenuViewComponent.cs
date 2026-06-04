@@ -25,14 +25,14 @@ public class ProjectMenuViewComponent(
 
         if (currentUserAccessor.UserIdentificationOrDefault is not UserIdentification userId)
         {
-            return await GenerateAnonMenu(projectInfo);
+            return GenerateAnonMenu(projectInfo);
         }
 
         var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == userId);
 
         if (acl != null)
         {
-            return await GenerateMasterMenu(projectInfo, acl);
+            return GenerateMasterMenu(projectInfo, acl);
         }
         else
         {
@@ -40,11 +40,11 @@ public class ProjectMenuViewComponent(
         }
     }
 
-    private Task<IViewComponentResult> GenerateAnonMenu(ProjectInfo projectInfo)
+    private IViewComponentResult GenerateAnonMenu(ProjectInfo projectInfo)
     {
         var bigGroups = LoadBigGroups(projectInfo).Where(g => g.IsPublic).ToArray();
         var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, [], []);
-        return Task.FromResult<IViewComponentResult>(View("PlayerMenu", menuModel));
+        return View("PlayerMenu", menuModel);
     }
 
     private async Task<IViewComponentResult> GeneratePlayerMenu(ProjectInfo projectInfo, UserIdentification userId)
@@ -56,18 +56,16 @@ public class ProjectMenuViewComponent(
         return View("PlayerMenu", menuModel);
     }
 
-    private Task<IViewComponentResult> GenerateMasterMenu(ProjectInfo projectInfo, ProjectMasterInfo acl)
+    private IViewComponentResult GenerateMasterMenu(ProjectInfo projectInfo, ProjectMasterInfo acl)
     {
         var bigGroups = LoadBigGroups(projectInfo).ToArray();
         var menuModel = new MasterMenuViewModel(projectInfo, currentUserAccessor, bigGroups, acl.Permissions);
-        return Task.FromResult<IViewComponentResult>(View("MasterMenu", menuModel));
+        return View("MasterMenu", menuModel);
     }
 
     private IEnumerable<CharacterGroupLinkSlimViewModel> LoadBigGroups(ProjectInfo projectInfo)
     {
-        var rootGroup = projectInfo.Groups[projectInfo.RootCharacterGroupId];
-        return rootGroup.DirectChildGroupIds
-            .Select(id => projectInfo.Groups[id])
+        return projectInfo.GetDirectChildGroups(projectInfo.RootCharacterGroupId)
             .Select(dto => new CharacterGroupLinkSlimViewModel(dto.Id, dto.Name, dto.IsPublic, dto.IsActive));
     }
 }

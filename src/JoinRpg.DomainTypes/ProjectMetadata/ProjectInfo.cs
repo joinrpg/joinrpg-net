@@ -193,6 +193,11 @@ public record class ProjectInfo
         var ids = GetParentGroupIdsIncludingThis(groupIds);
         return ids.Select(id => Groups[id]);
     }
+
+    public IEnumerable<CharacterGroupInfo> GetDirectChildGroups(CharacterGroupIdentification groupId)
+    {
+        return Groups[groupId].DirectChildGroupIds.Select(id => Groups[id]);
+    }
 }
 
 public record ProjectProfileRequirementSettings(
