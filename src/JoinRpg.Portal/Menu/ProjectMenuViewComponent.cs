@@ -12,7 +12,6 @@ namespace JoinRpg.Portal.Menu;
 
 public class ProjectMenuViewComponent(
     ICurrentUserAccessor currentUserAccessor,
-    IProjectRepository projectRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentProjectAccessor currentProjectAccessor,
     IClaimsRepository claimsRepository,
@@ -28,14 +27,14 @@ public class ProjectMenuViewComponent(
 
             if (currentUserAccessor.UserIdentificationOrDefault is not UserIdentification userId)
             {
-                return await GenerateAnonMenu(projectInfo);
+                return GenerateAnonMenu(projectInfo);
             }
 
             var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == userId);
 
             if (acl != null)
             {
-                return await GenerateMasterMenu(projectInfo, acl);
+                return GenerateMasterMenu(projectInfo, acl);
             }
             else
             {
@@ -49,9 +48,9 @@ public class ProjectMenuViewComponent(
         }
     }
 
-    private async Task<IViewComponentResult> GenerateAnonMenu(ProjectInfo projectInfo)
+    private IViewComponentResult GenerateAnonMenu(ProjectInfo projectInfo)
     {
-        var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
+        var bigGroups = LoadBigGroups(projectInfo).Where(g => g.IsPublic).ToArray();
         var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, [], []);
         return View("PlayerMenu", menuModel);
     }
@@ -60,21 +59,21 @@ public class ProjectMenuViewComponent(
     {
         var claims = (await claimsRepository.GetClaimsHeadersForPlayer(projectInfo.ProjectId, ClaimStatusSpec.Active, userId)).ToClaimViewModels().ToList();
         var captainAccessRules = await captainRulesRepository.GetCaptainRules(projectInfo.ProjectId, userId);
-        var bigGroups = (await LoadBigGroups(projectInfo)).Where(g => g.IsPublic).ToArray();
+        var bigGroups = LoadBigGroups(projectInfo).Where(g => g.IsPublic).ToArray();
         var menuModel = new PlayerMenuViewModel(projectInfo, currentUserAccessor, bigGroups, claims, captainAccessRules);
         return View("PlayerMenu", menuModel);
     }
 
-    private async Task<IViewComponentResult> GenerateMasterMenu(ProjectInfo projectInfo, ProjectMasterInfo acl)
+    private IViewComponentResult GenerateMasterMenu(ProjectInfo projectInfo, ProjectMasterInfo acl)
     {
-        var bigGroups = (await LoadBigGroups(projectInfo)).ToArray();
+        var bigGroups = LoadBigGroups(projectInfo).ToArray();
         var menuModel = new MasterMenuViewModel(projectInfo, currentUserAccessor, bigGroups, acl.Permissions);
         return View("MasterMenu", menuModel);
     }
 
-    private async Task<IEnumerable<CharacterGroupLinkSlimViewModel>> LoadBigGroups(ProjectInfo projectInfo)
+    private IEnumerable<CharacterGroupLinkSlimViewModel> LoadBigGroups(ProjectInfo projectInfo)
     {
-        return (await projectRepository.LoadDirectChildGroupHeaders(projectInfo.RootCharacterGroupId))
-            .Select(dto => new CharacterGroupLinkSlimViewModel(dto.CharacterGroupId, dto.Name, dto.IsPublic, dto.IsActive));
+        return projectInfo.GetDirectChildGroups(projectInfo.RootCharacterGroupId)
+            .Select(dto => new CharacterGroupLinkSlimViewModel(dto.Id, dto.Name, dto.IsPublic, dto.IsActive));
     }
 }
