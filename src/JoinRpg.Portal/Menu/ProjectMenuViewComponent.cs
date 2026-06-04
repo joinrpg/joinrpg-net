@@ -15,28 +15,36 @@ public class ProjectMenuViewComponent(
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentProjectAccessor currentProjectAccessor,
     IClaimsRepository claimsRepository,
-    ICaptainRulesRepository captainRulesRepository
+    ICaptainRulesRepository captainRulesRepository,
+    ILogger<ProjectMenuViewComponent> logger
     ) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProjectAccessor.ProjectId);
-
-        if (currentUserAccessor.UserIdentificationOrDefault is not UserIdentification userId)
+        try
         {
-            return GenerateAnonMenu(projectInfo);
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProjectAccessor.ProjectId);
+
+            if (currentUserAccessor.UserIdentificationOrDefault is not UserIdentification userId)
+            {
+                return GenerateAnonMenu(projectInfo);
+            }
+
+            var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == userId);
+
+            if (acl != null)
+            {
+                return GenerateMasterMenu(projectInfo, acl);
+            }
+            else
+            {
+                return await GeneratePlayerMenu(projectInfo, userId);
+            }
         }
-
-        var acl = projectInfo.Masters.FirstOrDefault(a => a.UserId == userId);
-
-        if (acl != null)
+        catch (Exception ex)
         {
-            return GenerateMasterMenu(projectInfo, acl);
-        }
-        else
-        {
-            return await GeneratePlayerMenu(projectInfo, userId);
+            logger.LogError(ex, "Ошибка при загрузке меню проекта");
+            return Content("");
         }
     }
 
