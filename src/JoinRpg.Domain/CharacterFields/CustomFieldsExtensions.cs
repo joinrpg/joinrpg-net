@@ -22,35 +22,29 @@ public static class CustomFieldsExtensions
               .ToDictionary(pair => pair.Field.Id.ProjectFieldId, pair => pair.Value));
     }
 
-    private static Dictionary<int, string> DeserializeFieldValues(this IFieldContainter containter)
+    private static FieldLayerContainer DeserializeFieldValues(this IFieldContainter containter, ProjectInfo projectInfo)
     {
-        // System.Text.Json бросает на пустой/null строке, поэтому отдаём пустой словарь явно
-        // (Newtonsoft.Json на "" возвращал null -> []).
-        return string.IsNullOrEmpty(containter.JsonData)
-            ? []
-            : JsonSerializer.Deserialize<Dictionary<int, string>>(containter.JsonData) ?? [];
+        return FieldLayerContainer.DeserializeFieldLayer(projectInfo, containter.JsonData);
     }
 
-    private static ReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params Dictionary<int, string>?[] containers)
+    private static ReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params FieldLayerContainer?[] containers)
     {
         var fields = project.SortedFields.Select(pf => new FieldWithValue(pf, value: null)).ToList();
 
         foreach (var characterFieldValue in fields)
         {
-            foreach (var data in containers.WhereNotNull())
+            foreach (var container in containers.WhereNotNull())
             {
-                var value = data.GetValueOrDefault(characterFieldValue.Field.Id.ProjectFieldId);
-                if (value != null)
+                if (container.LayerData.TryGetValue(characterFieldValue.Field.Id, out var layerField))
                 {
                     try
                     {
-                        characterFieldValue.Value = value;
+                        characterFieldValue.Value = layerField.Value;
                     }
                     catch (Exception e)
                     {
-                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.Id}, Value = {value}", e);
+                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.Id}, Value = {layerField.Value}", e);
                     }
-
                 }
             }
         }
@@ -59,13 +53,17 @@ public static class CustomFieldsExtensions
     }
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character, ProjectInfo projectInfo)
-        => GetFieldsForContainers(projectInfo, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
+        => GetFieldsForContainers(projectInfo,
+            character.ApprovedClaim is { } claim ? claim.DeserializeFieldValues(projectInfo) : null,
+            character.DeserializeFieldValues(projectInfo));
 
     public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Character character, ProjectInfo projectInfo)
         => character.GetFields(projectInfo).ToDictionary(f => f.Field.Id);
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, ProjectInfo projectInfo)
-    => GetFieldsForContainers(projectInfo, character.ApprovedClaim?.DeserializeFieldValues(), character.DeserializeFieldValues());
+    => GetFieldsForContainers(projectInfo,
+        character.ApprovedClaim is { } claim ? claim.DeserializeFieldValues(projectInfo) : null,
+        character.DeserializeFieldValues(projectInfo));
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim, ProjectInfo projectInfo)
     {
@@ -73,9 +71,9 @@ public static class CustomFieldsExtensions
         {
             return claim.Character!.GetFields(projectInfo);
         }
-        var publicFields = projectInfo.UnsortedFields.Where(f => f.ProjectFieldVisibility == ProjectFieldVisibility.Public).Select(x => x.Id.ProjectFieldId).ToList();
-        return GetFieldsForContainers(projectInfo, claim.Character.DeserializeFieldValues().Where(kv => publicFields.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value),
-            claim.DeserializeFieldValues());
+        return GetFieldsForContainers(projectInfo,
+                claim.Character.DeserializeFieldValues(projectInfo).PublicOnly(),
+            claim.DeserializeFieldValues(projectInfo));
     }
 
     public static FieldWithValue? GetSingleField(this Claim claim, ProjectInfo projectInfo, ProjectFieldIdentification id)

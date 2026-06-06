@@ -1,3 +1,4 @@
+using System.Text.Json;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Characters;
@@ -6,10 +7,20 @@ namespace JoinRpg.DomainTypes.Characters;
 /// Контейнер, связывающий метаданные проекта с послойными данными полей персонажа.
 /// Слой — это срез значений полей, загруженный из внешнего источника (например, JSON).
 /// </summary>
-public class FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData)
+public class FieldLayerContainer
 {
-    public ProjectInfo ProjectInfo { get; } = projectInfo;
-    public Dictionary<ProjectFieldIdentification, FieldWithValue> LayerData { get; } = CreateLayerData(projectInfo, layerData);
+    public ProjectInfo ProjectInfo { get; }
+    public IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> LayerData { get; }
+
+    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData) : this(projectInfo, CreateLayerData(projectInfo, layerData))
+    {
+    }
+
+    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> layerData)
+    {
+        ProjectInfo = projectInfo;
+        LayerData = layerData;
+    }
 
     private static Dictionary<ProjectFieldIdentification, FieldWithValue> CreateLayerData(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData)
     {
@@ -22,5 +33,32 @@ public class FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<in
         }
 
         return result;
+    }
+
+    /// <summary>
+    ///   Возвращает копию контейнера только с публичными полями.
+    /// </summary>
+    public FieldLayerContainer PublicOnly()
+    {
+        var filtered = LayerData
+            .Where(kvp => kvp.Value.Field.IsPublic)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        if (filtered.Count == LayerData.Count)
+        {
+            return this;
+        }
+
+        return new FieldLayerContainer(ProjectInfo, filtered);
+    }
+
+    public static FieldLayerContainer DeserializeFieldLayer(ProjectInfo projectInfo, string jsonData)
+    {
+        // System.Text.Json бросает на пустой/null строке, поэтому отдаём пустой словарь явно
+        // (Newtonsoft.Json на "" возвращал null -> []).
+        var dict = string.IsNullOrEmpty(jsonData)
+            ? []
+            : JsonSerializer.Deserialize<Dictionary<int, string>>(jsonData) ?? [];
+        return new FieldLayerContainer(projectInfo, dict);
     }
 }
