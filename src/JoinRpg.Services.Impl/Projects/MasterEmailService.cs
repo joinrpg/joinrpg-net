@@ -5,7 +5,6 @@ using JoinRpg.Services.Interfaces.Notification;
 namespace JoinRpg.Services.Impl.Projects;
 
 internal class MasterEmailService(
-    IUriLocator<ProjectIdentification> projectUriLocator,
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
     IVirtualUsersService virtualUsersService
@@ -23,9 +22,7 @@ internal class MasterEmailService(
 
 Подробности в справке https://docs.joinrpg.ru/project/after.html#id3
 
-Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.
-
-Вы всегда можете найти его по ссылке {projectUriLocator.GetUri(email.ProjectId)}";
+Не переживайте, закрытый проект всегда можно будет посмотреть, он не пропадет. Если проект завершен или больше не нужен, вы можете закрыть его сами.";
         await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
     }
 
@@ -33,8 +30,7 @@ internal class MasterEmailService(
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
-        var body = $@"Проект {metadata.ProjectName.Value} был закрыт. Вы всегда можете найти его по ссылке {projectUriLocator.GetUri(email.ProjectId)}
-";
+        var body = $@"Проект {metadata.ProjectName.Value} был закрыт.";
         var subject = $"{metadata.ProjectName.Value}: проект закрыт";
         await SendToAllMasters(metadata, body, subject, email.Initiator);
     }
@@ -52,8 +48,7 @@ internal class MasterEmailService(
     {
         var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
 
-        var body = $@"Проект {metadata.ProjectName.Value} был закрыт, т.к. он не был активен с {email.LastActiveDate:yyyy-MM-dd}. Вы всегда можете найти его по ссылке {projectUriLocator.GetUri(email.ProjectId)}
-";
+        var body = $@"Проект {metadata.ProjectName.Value} был закрыт, т.к. он не был активен с {email.LastActiveDate:yyyy-MM-dd}.";
         var subject = $"{metadata.ProjectName.Value}: проект закрыт";
         await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
     }

@@ -170,9 +170,7 @@ internal class UriServiceImpl(
 
     RenderedEntityLink? INotificationEntityLinkRenderer.RenderEntityLink(IProjectEntityId? entityReference)
     {
-        // Поддерживаем типы сущностей, на которые ссылаются уведомления по заявкам и форуму.
-        // Остальные (в т.ч. ProjectIdentification — он используется как EntityReference в рассылках,
-        // где ссылка уже встроена в текст) → null, ссылка не добавляется.
+        // Поддерживаемые типы сущностей уведомлений. Остальные → null (ссылка не добавляется).
         (Uri? uri, string? name) = entityReference switch
         {
             ClaimCommentIdentification c => (GetUri(c), "комментарий"),
@@ -180,6 +178,7 @@ internal class UriServiceImpl(
             ForumCommentIdentification c => (GetUri(c), "сообщение на форуме"),
             ForumThreadIdentification t => (GetUri(t), "обсуждение"),
             FinanceOperationIdentification f => (GetUri(f), "финансовая операция"),
+            ProjectIdentification p => (GetUri(p), "проект"),
             _ => (null, null),
         };
 

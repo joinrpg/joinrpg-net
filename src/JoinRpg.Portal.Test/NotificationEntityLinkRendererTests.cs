@@ -28,6 +28,19 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
     }
 
     [Fact]
+    public void RendersLinkForProject()
+    {
+        using var scope = factory.Services.CreateScope();
+        var renderer = Resolve(scope);
+
+        var link = renderer.RenderEntityLink(new ProjectIdentification(1));
+
+        link.ShouldNotBeNull();
+        link.Markdown.Contents.ShouldStartWith("Подробнее: [проект](http");
+        link.PlainText.ShouldStartWith("Подробнее: проект: http");
+    }
+
+    [Fact]
     public void ReturnsNullForNullReference()
     {
         using var scope = factory.Services.CreateScope();
