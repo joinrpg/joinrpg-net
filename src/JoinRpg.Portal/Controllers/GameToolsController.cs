@@ -1,19 +1,19 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Interfaces;
+using JoinRpg.DomainTypes;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.ProjectMasterTools.Apis;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/tools/[action]")]
-public class GameToolsController(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : JoinControllerGameBase
+public class GameToolsController(IProjectMetadataRepository projectMetadataRepository) : JoinControllerGameBase
 {
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> Apis(int projectId)
+    public async Task<ActionResult> Apis(ProjectIdentification projectId)
     {
-        var project = await projectRepository.GetProjectAsync(projectId);
-        return View(new ApisIndexViewModel(project, currentUserAccessor.UserId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return View(new ApisIndexViewModel(projectInfo));
     }
 }
