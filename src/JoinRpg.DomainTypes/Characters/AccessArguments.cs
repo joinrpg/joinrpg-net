@@ -7,7 +7,7 @@ namespace JoinRpg.DomainTypes.Characters;
 /// <param name="PlayerAccesToClaim"> true if a user is logged in and he is the owner of the claim</param>
 /// <param name="EditAllowed"></param>
 /// <param name="Published"></param>
-/// <param name="CharacterPublic"></param>
+/// <param name="CharacterPublic">Персонаж сам по себе публичный</param>
 /// <param name="IsCapitan"></param>
 public record class AccessArguments(
     bool MasterAccess,
