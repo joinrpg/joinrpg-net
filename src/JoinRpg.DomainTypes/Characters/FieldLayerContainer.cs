@@ -52,7 +52,7 @@ public class FieldLayerContainer
         return new FieldLayerContainer(ProjectInfo, filtered);
     }
 
-    public static FieldLayerContainer DeserializeFieldLayer(ProjectInfo projectInfo, string jsonData)
+    public static FieldLayerContainer DeserializeFieldLayer(ProjectInfo projectInfo, string? jsonData)
     {
         // System.Text.Json бросает на пустой/null строке, поэтому отдаём пустой словарь явно
         // (Newtonsoft.Json на "" возвращал null -> []).
@@ -60,5 +60,17 @@ public class FieldLayerContainer
             ? []
             : JsonSerializer.Deserialize<Dictionary<int, string>>(jsonData) ?? [];
         return new FieldLayerContainer(projectInfo, dict);
+    }
+
+    public FieldWithValue? GetFromLayer(ProjectFieldIdentification fieldId, AccessArguments accessArguments)
+    {
+        if (ProjectInfo.GetFieldById(fieldId).HasViewAccess(accessArguments))
+        {
+            return LayerData.GetValueOrDefault(fieldId);
+        }
+        else
+        {
+            return null;
+        }
     }
 }

@@ -1,7 +1,9 @@
 using System.Text.Json;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
@@ -15,7 +17,8 @@ namespace JoinRpg.Portal.Controllers.XGameApi;
 public class CharacterApiController(
     ICharacterRepository characterRepository,
     ICharacterService characterService,
-    IProjectMetadataRepository projectMetadataRepository
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor
         ) : XGameApiController()
 {
 
@@ -52,6 +55,7 @@ public class CharacterApiController(
         var character = await characterRepository.GetCharacterViewAsync(projectId, characterId);
         ProjectIdentification projectId1 = new(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId1);
+        var fields = CharacterFieldLayersBuilder.FromCharacterView(projectInfo, character, currentUserAccessor);
         return
             new CharacterInfo
             {
@@ -62,13 +66,7 @@ public class CharacterApiController(
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
                 Groups = ApiInfoBuilder.ToGroupHeaders(character.DirectGroups),
                 AllGroups = ApiInfoBuilder.ToGroupHeaders([.. projectInfo.GetParentGroupsIncludingThis(CharacterGroupIdentification.FromList(character.DirectGroups.Select(x => x.CharacterGroupId), projectId1))]),
-                Fields = [..character.GetFields(projectInfo).Where(field => field.HasViewableValue)
-                    .Select(field => new FieldValue
-                    {
-                        ProjectFieldId = field.Field.Id.ProjectFieldId,
-                        Value = field.Value,
-                        DisplayString = field.DisplayString,
-                    })],
+                Fields = [.. fields.GetSortedFieldsForView().Select(ApiInfoBuilder.ToFieldValue)],
 #pragma warning disable CS0612 // Type or member is obsolete
                 PlayerUserId = character.ApprovedClaim?.PlayerUserId,
 #pragma warning restore CS0612 // Type or member is obsolete

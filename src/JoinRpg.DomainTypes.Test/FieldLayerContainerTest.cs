@@ -1,7 +1,7 @@
+using System.Text.Json;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using System.Text.Json;
 
 namespace JoinRpg.DomainTypes.Test;
 
@@ -139,7 +139,7 @@ public class FieldLayerContainerTest
         result.LayerData[new ProjectFieldIdentification(1, 1)].Value.ShouldBe("hello");
     }
 
-[Fact]
+    [Fact]
     public void ShouldReturnNewInstanceWhenFiltering()
     {
         var projectInfo = MakeProject(
@@ -152,7 +152,7 @@ public class FieldLayerContainerTest
         result.ShouldNotBeSameAs(original);
     }
 
-[Fact]
+    [Fact]
     public void ShouldKeepSameProjectInfo()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.Public));
@@ -293,7 +293,7 @@ public class FieldLayerContainerTest
         );
     }
 
-    private static ProjectFieldInfo MakeField(int fieldId, ProjectFieldType type = ProjectFieldType.String, ProjectFieldVisibility visibility = ProjectFieldVisibility.Public)
+    private static ProjectFieldInfo MakeField(int fieldId, ProjectFieldType type = ProjectFieldType.String, ProjectFieldVisibility visibility = ProjectFieldVisibility.Public, FieldBoundTo boundTo = FieldBoundTo.Character, string ordering = "")
     {
         var projectId = new ProjectIdentification(1);
         var id = new ProjectFieldIdentification(projectId, fieldId);
@@ -301,9 +301,9 @@ public class FieldLayerContainerTest
             id,
             $"Field{fieldId}",
             type,
-            FieldBoundTo.Character,
+            boundTo,
             [],
-            "",
+            ordering,
             0,
             true,
             true,
@@ -320,5 +320,154 @@ public class FieldLayerContainerTest
             null
         );
     }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldRespectCustomOrdering()
+    {
+        var projectInfo = MakeProject(
+            MakeField(1, ordering: "2"),
+            MakeField(2, ordering: "1"));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" }, { 2, "b" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result[0].Field.Id.ProjectFieldId.ShouldBe(2);
+        result[1].Field.Id.ProjectFieldId.ShouldBe(1);
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldReturnAllFieldsWithValuesForMaster()
+    {
+        var projectInfo = MakeProject(MakeField(1), MakeField(2));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" }, { 2, "b" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.Count.ShouldBe(2);
+        result[0].Value.ShouldBe("a");
+        result[1].Value.ShouldBe("b");
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldExcludeMasterOnlyForPlayer()
+    {
+        var projectInfo = MakeProject(
+            MakeField(1, visibility: ProjectFieldVisibility.Public),
+            MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "pub" }, { 2, "secret" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsPlayer);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Field.Id.ProjectFieldId.ShouldBe(1);
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldExcludeEmptyValueFields()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldIncludeHeaderFieldsWithValue()
+    {
+        var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldReturnFieldsSortedById()
+    {
+        var projectInfo = MakeProject(MakeField(2), MakeField(1));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "x" }, { 2, "y" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result[0].Field.Id.ProjectFieldId.ShouldBe(1);
+        result[1].Field.Id.ProjectFieldId.ShouldBe(2);
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldPreferClaimLayerValue()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-claim" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-character" } });
+        var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBe("from-claim");
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldReturnEmptyWhenNoViewableFields()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsPlayer);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldWorkWithNullClaimLayer()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "val" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldIncludeFieldBoundToClaimFromClaimLayer()
+    {
+        var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "claim-val" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBe("claim-val");
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldExcludeFieldBoundToClaimWhenClaimLayerNull()
+    {
+        var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldBeEmpty();
+    }
+
+    private static readonly AccessArguments AccessArgumentsNone = new(false, false, false, false, false, false, false);
+    private static readonly AccessArguments AccessArgumentsPlayer = new(false, true, false, false, false, false, false);
+    private static readonly AccessArguments AccessArgumentsMaster = new(true, false, false, false, false, false, false);
 }
 

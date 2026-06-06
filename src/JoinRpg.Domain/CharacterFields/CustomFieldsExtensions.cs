@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 
@@ -59,11 +58,6 @@ public static class CustomFieldsExtensions
 
     public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Character character, ProjectInfo projectInfo)
         => character.GetFields(projectInfo).ToDictionary(f => f.Field.Id);
-
-    public static IReadOnlyCollection<FieldWithValue> GetFields(this CharacterView character, ProjectInfo projectInfo)
-    => GetFieldsForContainers(projectInfo,
-        character.ApprovedClaim is { } claim ? claim.DeserializeFieldValues(projectInfo) : null,
-        character.DeserializeFieldValues(projectInfo));
 
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Claim claim, ProjectInfo projectInfo)
     {

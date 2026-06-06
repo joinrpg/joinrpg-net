@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.XGameApi.Contract;
 
@@ -59,5 +60,15 @@ public class ApiInfoBuilder
         return new PlayerContacts(player.Email, player.PhoneNumber,
                                                 player.Social.VkId,
                                                 player.Social.TelegramId?.UserName?.Value);
+    }
+
+    public static FieldValue ToFieldValue(FieldWithValue field)
+    {
+        return new FieldValue
+        {
+            ProjectFieldId = field.Field.Id.ProjectFieldId,
+            Value = field.Value,
+            DisplayString = field.DisplayString,
+        };
     }
 }
