@@ -1,4 +1,3 @@
-using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Impl.Claims;
@@ -10,8 +9,7 @@ internal class ForumNotificationService(
     SubscribeCalculator subscribeCalculator,
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
-    IForumRepository forumRepository,
-    IUriLocator<ForumThreadIdentification> uriLocator
+    IForumRepository forumRepository
     )
 
 {
@@ -25,11 +23,9 @@ internal class ForumNotificationService(
 
         var text1 =
 $@"Добрый день, %recepient.name%
-На форуме появилось новое сообщение: 
+На форуме появилось новое сообщение:
 
 {model.Text.Contents}
-
-Чтобы ответить на комментарий, перейдите на страницу обсуждения: {uriLocator.GetUri(model.ForumCommentId.ThreadId)}
 ";
 
         var args = new ForumCalculateArgs(

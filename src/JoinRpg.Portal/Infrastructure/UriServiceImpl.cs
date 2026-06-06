@@ -3,6 +3,7 @@ using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
+using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -34,7 +35,8 @@ internal class UriServiceImpl(
     IUriLocator<PaymentTypeIdentification>,
     IUriLocator<FinanceOperationIdentification>,
     IUriLocator<ForumCommentIdentification>,
-    IUriLocator<ProjectRolesListIdentification>
+    IUriLocator<ProjectRolesListIdentification>,
+    INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -164,6 +166,28 @@ internal class UriServiceImpl(
     public Uri GetUri(ProjectRolesListIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ProjectRoleListView",
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
+
+    RenderedEntityLink? INotificationEntityLinkRenderer.RenderEntityLink(IProjectEntityId? entityReference)
+    {
+        // Поддерживаем типы сущностей, на которые ссылаются уведомления по заявкам и форуму.
+        // Остальные (в т.ч. ProjectIdentification — он используется как EntityReference в рассылках,
+        // где ссылка уже встроена в текст) → null, ссылка не добавляется.
+        (Uri? uri, string? name) = entityReference switch
+        {
+            ClaimCommentIdentification c => (GetUri(c), "комментарий"),
+            ClaimIdentification c => (GetUri(c), "заявка"),
+            ForumCommentIdentification c => (GetUri(c), "сообщение на форуме"),
+            ForumThreadIdentification t => (GetUri(t), "обсуждение"),
+            FinanceOperationIdentification f => (GetUri(f), "финансовая операция"),
+            _ => (null, null),
+        };
+
+        return uri is not null && name is not null
+            ? new RenderedEntityLink(
+                Markdown: $"Подробнее: [{name}]({uri})",
+                PlainText: $"Подробнее: {name}: {uri}")
+            : null;
+    }
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

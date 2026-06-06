@@ -13,7 +13,8 @@ internal class PostboxSenderJobService(
     PostboxClientFactory postboxClientFactory,
     ILogger<PostboxSenderJobService> logger,
     IUserRepository userRepository,
-    IOptions<NotificationsOptions> notificationOptions
+    IOptions<NotificationsOptions> notificationOptions,
+    INotificationEntityLinkRenderer linkRenderer
     ) : ISenderJob
 {
     static NotificationChannel ISenderJob.Channel => NotificationChannel.Email;
@@ -24,7 +25,8 @@ internal class PostboxSenderJobService(
     {
         var client = postboxClientFactory.Get();
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
-        Body body = FormatBody(message.Message.Body, sender.DisplayName);
+        var entityLink = linkRenderer.RenderEntityLink(message.Message.EntityReference);
+        Body body = FormatBody(message.Message.Body, sender.DisplayName, entityLink);
 
         var request = new SendEmailRequest
         {
@@ -70,14 +72,20 @@ internal class PostboxSenderJobService(
         }
     }
 
-    internal static Body FormatBody(MarkdownString bodyString, UserDisplayName displayName)
+    internal static Body FormatBody(MarkdownString bodyString, UserDisplayName displayName, RenderedEntityLink? entityLink)
     {
         var signature = $"\n\n---\n\n{displayName.DisplayName}";
-        var emailBody = new MarkdownString(bodyString.Contents + signature);
+
+        // Ссылка между телом и подписью. В HTML — кликабельная markdown-ссылка, в plain text —
+        // с видимым URL (markdown-ссылка в plain text теряет адрес).
+        var markdownLink = entityLink is null ? "" : $"\n\n{entityLink.Markdown}";
+        var plainLink = entityLink is null ? "" : $"\n\n{entityLink.PlainText}";
+
+        var emailBody = new MarkdownString(bodyString.Contents + markdownLink + signature);
 
         var body = new Body
         {
-            Text = ToContent(bodyString.ToPlainTextWithoutHtmlEscape() + signature), // Экранировать HTML в plain text email не нужно
+            Text = ToContent(bodyString.ToPlainTextWithoutHtmlEscape() + plainLink + signature), // Экранировать HTML в plain text email не нужно
             Html = ToContent(emailBody.ToHtmlString().Value),
         };
         return body;

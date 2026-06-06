@@ -10,7 +10,8 @@ namespace JoinRpg.Services.Notifications.Senders;
 internal class TelegramSenderJobService(
     IOptions<TelegramLoginOptions> telegramLoginOptions,
     ITelegramNotificationService telegramNotificationService,
-    IUserRepository userRepository
+    IUserRepository userRepository,
+    INotificationEntityLinkRenderer linkRenderer
     ) : ISenderJob
 {
     public static NotificationChannel Channel => NotificationChannel.Telegram;
@@ -20,16 +21,18 @@ internal class TelegramSenderJobService(
     public async Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
     {
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
-        var html = FormatMessage(message.Message.Header, message.Message.Body, sender.DisplayName);
+        var entityLink = linkRenderer.RenderEntityLink(message.Message.EntityReference);
+        var html = FormatMessage(message.Message.Header, message.Message.Body, sender.DisplayName, entityLink);
         await telegramNotificationService.SendTelegramNotification(message.NotificationAddress.AsTelegram(), html);
         return SendingResult.Success();
     }
 
-    internal static TelegramHtmlString FormatMessage(string header, MarkdownString body, UserDisplayName displayName)
+    internal static TelegramHtmlString FormatMessage(string header, MarkdownString body, UserDisplayName displayName, RenderedEntityLink? entityLink)
     {
-        // Заголовок — жирным, тело, затем подпись курсивом. Теги <strong>/<em>
+        // Заголовок — жирным, тело, ссылка, затем подпись курсивом. Теги <strong>/<em>/<a>
         // переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer).
-        var markdown = new MarkdownString($"**{header}**\n\n{body.Contents}\n\n_{displayName.DisplayName}_");
+        var linkPart = entityLink is null ? "" : $"\n\n{entityLink.Markdown}";
+        var markdown = new MarkdownString($"**{header}**\n\n{body.Contents}{linkPart}\n\n_{displayName.DisplayName}_");
         return new TelegramHtmlString(markdown.ToHtmlString().Value);
     }
 }
