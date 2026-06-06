@@ -1,4 +1,4 @@
-namespace JoinRpg.WebComponents;
+namespace JoinRpg.Common.PrimitiveTypes;
 
 public interface IUriLocator<T>
 {

@@ -14,7 +14,7 @@ public partial class MassProjectEmailService(
     IProjectMetadataRepository projectMetadataRepository,
     INotificationService notificationService,
     ICurrentUserAccessor currentUserAccessor,
-    INotificationUriLocator<ClaimIdentification> uriLocator
+    IUriLocator<ClaimIdentification> uriLocator
     ) : IMassProjectEmailService
 {
     public async Task MassMail(
