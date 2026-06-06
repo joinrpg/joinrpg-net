@@ -1,8 +1,10 @@
+using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
+using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -34,7 +36,8 @@ internal class UriServiceImpl(
     IUriLocator<PaymentTypeIdentification>,
     IUriLocator<FinanceOperationIdentification>,
     IUriLocator<ForumCommentIdentification>,
-    IUriLocator<ProjectRolesListIdentification>
+    IUriLocator<ProjectRolesListIdentification>,
+    INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -117,7 +120,7 @@ internal class UriServiceImpl(
          GetUri(new Linkable(target.CharacterGroupId));
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
-    Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => GetUri(new Linkable(target));
+    public Uri GetUri(ProjectIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("MyClaim", "Claim", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForGroup", "Claim", new { ProjectId = projectId.Value }));
     public Uri GetDetailsUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Details", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
@@ -164,6 +167,27 @@ internal class UriServiceImpl(
     public Uri GetUri(ProjectRolesListIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ProjectRoleListView",
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
+
+    RenderedEntityLink? INotificationEntityLinkRenderer.RenderEntityLink(IProjectEntityId? entityReference)
+    {
+        // Поддерживаемые типы сущностей уведомлений. Остальные → null (ссылка не добавляется).
+        (Uri? uri, string? name) = entityReference switch
+        {
+            ClaimCommentIdentification c => (GetUri(c), "комментарий"),
+            ClaimIdentification c => (GetUri(c), "заявка"),
+            ForumCommentIdentification c => (GetUri(c), "сообщение на форуме"),
+            ForumThreadIdentification t => (GetUri(t), "обсуждение"),
+            FinanceOperationIdentification f => (GetUri(f), "финансовая операция"),
+            ProjectIdentification p => (GetUri(p), "проект"),
+            _ => (null, null),
+        };
+
+        return uri is not null && name is not null
+            ? new RenderedEntityLink(
+                Markdown: new MarkdownString($"Подробнее: [{name}]({uri})"),
+                PlainText: $"Подробнее: {name}: {uri}")
+            : null;
+    }
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

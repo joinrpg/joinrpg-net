@@ -1,0 +1,5 @@
+﻿<p><strong>Заголовок</strong></p>
+<p>Привет!</p>
+<p>Это <strong>тело</strong> сообщения.</p>
+<p>Подробнее: <a href="https://joinrpg.ru/1/claim/1/edit#comment42" target="_blank" rel="nofollow">комментарий</a></p>
+<p><em>Master</em></p>

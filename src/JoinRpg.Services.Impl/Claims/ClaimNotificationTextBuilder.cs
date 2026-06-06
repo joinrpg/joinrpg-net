@@ -2,7 +2,7 @@ using JoinRpg.DomainTypes.Claims;
 
 namespace JoinRpg.Services.Impl.Claims;
 
-internal class ClaimNotificationTextBuilder(IUriLocator<ClaimIdentification> uriService)
+internal class ClaimNotificationTextBuilder
 {
     internal string GetText(ClaimSimpleChangedNotification model, ClaimWithPlayer claim)
     {
@@ -32,8 +32,6 @@ $@"Добрый день, %recepient.name%
 Заявка {claim.CharacterName} игрока {claim.Player.DisplayName.DisplayName} {actionName} {GetInitiatorString(model.ClaimOperationType, model.Initiator)}
 
 {extraText}{model.Text.TemplateContents}
-
-Страница заявки: {uriService.GetUri(model.ClaimId)}
 ";
         return text1;
     }

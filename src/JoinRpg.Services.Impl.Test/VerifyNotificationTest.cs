@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Impl.Test;
 
 public class VerifyNotificationTest
 {
-    private readonly ClaimNotificationTextBuilder claimNotificationTextBuilder = new(new UriMock());
+    private readonly ClaimNotificationTextBuilder claimNotificationTextBuilder = new();
 
     private static readonly UserInfoHeader player = new(new UserIdentification(1), new UserDisplayName("PlayerName", null));
     private static readonly UserInfoHeader master = new(new UserIdentification(2), new UserDisplayName("Master", null));
@@ -86,10 +86,5 @@ public class VerifyNotificationTest
         var withComment = model.WithCommentId(42);
 
         withComment.CommentId.ShouldBe(new ClaimCommentIdentification(claimId, 42));
-    }
-
-    private class UriMock : IUriLocator<ClaimIdentification>
-    {
-        public Uri GetUri(ClaimIdentification target) => new($"https://joinrpg.ru/{target.ProjectId.Value}/claim/{target.ClaimId}/edit");
     }
 }
