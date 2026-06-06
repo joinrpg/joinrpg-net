@@ -45,4 +45,21 @@ public class DiscussionRedirectController(
 
         return CommentRedirectHelper.RedirectToDiscussion(Url, discussion, commentid);
     }
+
+    [HttpGet("finance-operation/{FinanceOperationId:int}")]
+    [Authorize]
+    public async Task<ActionResult> ToFinanceOperation(ProjectIdentification projectId, int financeOperationId)
+    {
+        // Первичный ключ FinanceOperation — это CommentId связанного комментария,
+        // поэтому financeOperationId совпадает с id комментария операции.
+        CommentDiscussion discussion = await forumRepository.GetDiscussionByComment(projectId, financeOperationId);
+
+        if (!discussion.HasAnyAccess(currentUserAccessor.UserId))
+        {
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+            return NoAccesToProjectView(projectInfo, currentUserAccessor);
+        }
+
+        return CommentRedirectHelper.RedirectToDiscussion(Url, discussion, financeOperationId);
+    }
 }

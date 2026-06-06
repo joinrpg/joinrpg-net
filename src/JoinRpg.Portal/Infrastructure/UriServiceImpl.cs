@@ -1,6 +1,7 @@
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
@@ -26,7 +27,18 @@ internal class UriServiceImpl(
     INotificationUriLocator<ClaimIdentification>,
     IUriLocator<ClaimCommentIdentification>,
     INotificationUriLocator<ClaimCommentIdentification>,
-    INotificationUriLocator<ForumThreadIdentification>
+    INotificationUriLocator<ForumThreadIdentification>,
+    IUriLocator<CharacterIdentification>,
+    IUriLocator<CharacterGroupIdentification>,
+    IUriLocator<ForumThreadIdentification>,
+    IUriLocator<PlotElementIdentification>,
+    IUriLocator<PlotVersionIdentification>,
+    IUriLocator<ProjectFieldIdentification>,
+    IUriLocator<ProjectFieldVariantIdentification>,
+    IUriLocator<PaymentTypeIdentification>,
+    IUriLocator<FinanceOperationIdentification>,
+    IUriLocator<ForumCommentIdentification>,
+    IUriLocator<ProjectRolesListIdentification>
 {
     public Uri GetUri(ILinkable linkable)
     {
@@ -124,6 +136,38 @@ internal class UriServiceImpl(
     public Uri GetUri(ClaimCommentIdentification target) =>
         new(GetUri(target.ClaimId).AbsoluteUri + $"#comment{target.CommentId}");
     Uri IProjectUriLocator.GetCaptainCabinetUri(ProjectIdentification projectId) => new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/CaptainCabinet", values: new { ProjectId = projectId.Value }));
+
+    public Uri GetUri(CharacterIdentification target) => GetUri(new Linkable(target));
+
+    public Uri GetUri(CharacterGroupIdentification target) => GetUri(new Linkable(target));
+
+    public Uri GetUri(PlotElementIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("EditElement", "Plot", new { ProjectId = target.ProjectId.Value, elementId = target }));
+
+    public Uri GetUri(PlotVersionIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ShowElementVersion", "Plot",
+            new { ProjectId = target.ProjectId.Value, target.PlotFolderId.PlotFolderId, target.PlotElementId.PlotElementId, Version = target.Version }));
+
+    public Uri GetUri(ProjectFieldIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "GameField", new { ProjectId = target.ProjectId.Value, target.ProjectFieldId }));
+
+    public Uri GetUri(ProjectFieldVariantIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("EditValue", "GameField",
+            new { ProjectId = target.ProjectId.Value, target.FieldId.ProjectFieldId, valueId = target.ProjectFieldVariantId }));
+
+    public Uri GetUri(PaymentTypeIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("EditPaymentType", "Finances", new { ProjectId = target.ProjectId.Value, target.PaymentTypeId }));
+
+    public Uri GetUri(FinanceOperationIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ToFinanceOperation", "DiscussionRedirect",
+            new { ProjectId = target.ProjectId.Value, target.FinanceOperationId }));
+
+    public Uri GetUri(ForumCommentIdentification target) =>
+        new(GetUri(target.ThreadId).AbsoluteUri + $"#comment{target.CommentId}");
+
+    public Uri GetUri(ProjectRolesListIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ProjectRoleListView",
+            values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {
