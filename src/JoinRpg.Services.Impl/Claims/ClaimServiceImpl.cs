@@ -903,6 +903,7 @@ internal class ClaimServiceImpl(
         var (claim, _) = await LoadClaimAsPlayer(claimId);
 
         claim.PlayerAllowedSenstiveData = true;
+        SetDiscussed(claim, isVisibleToPlayer: true);
         await UnitOfWork.SaveChangesAsync();
     }
 
