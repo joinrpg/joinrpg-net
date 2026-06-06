@@ -11,7 +11,7 @@ internal class ForumNotificationService(
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
     IForumRepository forumRepository,
-    INotificationUriLocator<ForumThreadIdentification> uriLocator
+    IUriLocator<ForumThreadIdentification> uriLocator
     )
 
 {

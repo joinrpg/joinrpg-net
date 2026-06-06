@@ -3,7 +3,6 @@ using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
-using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -24,13 +23,10 @@ internal class UriServiceImpl(
     ICharacterUriLocator,
     IUriLocator<PlotFolderIdentification>,
     IUriLocator<ClaimIdentification>,
-    INotificationUriLocator<ClaimIdentification>,
     IUriLocator<ClaimCommentIdentification>,
-    INotificationUriLocator<ClaimCommentIdentification>,
-    INotificationUriLocator<ForumThreadIdentification>,
+    IUriLocator<ForumThreadIdentification>,
     IUriLocator<CharacterIdentification>,
     IUriLocator<CharacterGroupIdentification>,
-    IUriLocator<ForumThreadIdentification>,
     IUriLocator<PlotElementIdentification>,
     IUriLocator<PlotVersionIdentification>,
     IUriLocator<ProjectFieldIdentification>,

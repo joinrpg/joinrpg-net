@@ -2,7 +2,6 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Notifications;
-using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl.Test;
@@ -70,7 +69,7 @@ public class VerifyNotificationTest
         return Verify(text);
     }
 
-    private class UriMock : INotificationUriLocator<ClaimIdentification>
+    private class UriMock : IUriLocator<ClaimIdentification>
     {
         public Uri GetUri(ClaimIdentification target) => new($"https://joinrpg.ru/{target.ProjectId.Value}/claim/{target.ClaimId}/edit");
     }

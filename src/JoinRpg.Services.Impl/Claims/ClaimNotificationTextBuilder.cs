@@ -1,9 +1,8 @@
 using JoinRpg.DomainTypes.Claims;
-using JoinRpg.Interfaces.Notifications;
 
 namespace JoinRpg.Services.Impl.Claims;
 
-internal class ClaimNotificationTextBuilder(INotificationUriLocator<ClaimIdentification> uriService)
+internal class ClaimNotificationTextBuilder(IUriLocator<ClaimIdentification> uriService)
 {
     internal string GetText(ClaimSimpleChangedNotification model, ClaimWithPlayer claim)
     {
