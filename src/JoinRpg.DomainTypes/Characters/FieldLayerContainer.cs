@@ -64,13 +64,12 @@ public class FieldLayerContainer
 
     public FieldWithValue? GetFromLayer(ProjectFieldIdentification fieldId, AccessArguments accessArguments)
     {
-        if (ProjectInfo.GetFieldById(fieldId).HasViewAccess(accessArguments))
-        {
-            return LayerData.GetValueOrDefault(fieldId);
-        }
-        else
+        var field = ProjectInfo.GetFieldById(fieldId);
+        if (!field.HasViewAccess(accessArguments))
         {
             return null;
         }
+
+        return LayerData.GetValueOrDefault(fieldId) ?? (!field.CanHaveValue ? new FieldWithValue(field, null) : null);
     }
 }

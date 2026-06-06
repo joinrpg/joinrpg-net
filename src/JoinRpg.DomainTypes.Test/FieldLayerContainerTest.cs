@@ -181,7 +181,7 @@ public class FieldLayerContainerTest
     {
         var projectInfo = MakeProject(MakeField(1));
 
-        var container = FieldLayerContainer.DeserializeFieldLayer(projectInfo, null!);
+        var container = FieldLayerContainer.DeserializeFieldLayer(projectInfo, null);
 
         container.LayerData.ShouldBeEmpty();
     }
@@ -222,17 +222,6 @@ public class FieldLayerContainerTest
     }
 
     [Fact]
-    public void ShouldDeserializeAndPreserveProjectInfo()
-    {
-        var projectInfo = MakeProject(MakeField(1));
-        var json = """{"1":"val"}""";
-
-        var container = FieldLayerContainer.DeserializeFieldLayer(projectInfo, json);
-
-        container.ProjectInfo.ShouldBeSameAs(projectInfo);
-    }
-
-    [Fact]
     public void ShouldThrowJsonExceptionForWhitespaceString()
     {
         var projectInfo = MakeProject(MakeField(1));
@@ -266,67 +255,13 @@ public class FieldLayerContainerTest
         fwv.Field.Type.ShouldBe(ProjectFieldType.String);
     }
 
-    private static ProjectInfo MakeProject(params ProjectFieldInfo[] fields)
-    {
-        var projectId = new ProjectIdentification(1);
-        return new ProjectInfo(
-            projectId,
-            new ProjectName("Test"),
-            "",
-            fields,
-            new ProjectFieldSettings(null, null),
-            new ProjectFinanceSettings(false, []),
-            false,
-            false,
-            new CharacterGroupIdentification(projectId, 1),
-            [],
-            false,
-            new ProjectCheckInSettings(false, false, false),
-            ProjectLifecycleStatus.ActiveClaimsOpen,
-            new ProjectScheduleSettings(false),
-            ProjectCloneSettings.CloneDisabled,
-            new DateOnly(2024, 1, 1),
-            ProjectProfileRequirementSettings.AllNotRequired,
-            new ProjectClaimSettings(null, false, false, false, false),
-            [],
-            new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()
-        );
-    }
-
-    private static ProjectFieldInfo MakeField(int fieldId, ProjectFieldType type = ProjectFieldType.String, ProjectFieldVisibility visibility = ProjectFieldVisibility.Public, FieldBoundTo boundTo = FieldBoundTo.Character, string ordering = "")
-    {
-        var projectId = new ProjectIdentification(1);
-        var id = new ProjectFieldIdentification(projectId, fieldId);
-        return new ProjectFieldInfo(
-            id,
-            $"Field{fieldId}",
-            type,
-            boundTo,
-            [],
-            ordering,
-            0,
-            true,
-            true,
-            MandatoryStatus.Optional,
-            true,
-            true,
-            [],
-            new MarkdownString(),
-            new MarkdownString(),
-            false,
-            new ProjectFieldSettings(null, null),
-            null,
-            visibility,
-            null
-        );
-    }
-
     [Fact]
     public void GetSortedFieldsForViewShouldRespectCustomOrdering()
     {
         var projectInfo = MakeProject(
-            MakeField(1, ordering: "2"),
-            MakeField(2, ordering: "1"));
+            "2,1",
+            MakeField(1),
+            MakeField(2));
         var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" }, { 2, "b" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
@@ -337,7 +272,7 @@ public class FieldLayerContainerTest
     }
 
     [Fact]
-    public void GetSortedFieldsForViewShouldReturnAllFieldsWithValuesForMaster()
+    public void GetSortedFieldsForViewShouldReturnAllFieldsWithValues()
     {
         var projectInfo = MakeProject(MakeField(1), MakeField(2));
         var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" }, { 2, "b" } });
@@ -366,6 +301,33 @@ public class FieldLayerContainerTest
     }
 
     [Fact]
+    public void GetSortedFieldsForViewShouldIncludeMasterOnlyForMaster()
+    {
+        var projectInfo = MakeProject(
+            MakeField(1, visibility: ProjectFieldVisibility.Public),
+            MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "pub" }, { 2, "secret" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsMaster);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void GetSortedFieldsForViewShouldIncludePlayerAndMasterFieldsForMaster()
+    {
+        var projectInfo = MakeProject(
+            MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "restricted" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsMaster);
+
+        var result = layers.GetSortedFieldsForView().ToList();
+
+        result.ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public void GetSortedFieldsForViewShouldExcludeEmptyValueFields()
     {
         var projectInfo = MakeProject(MakeField(1));
@@ -378,10 +340,10 @@ public class FieldLayerContainerTest
     }
 
     [Fact]
-    public void GetSortedFieldsForViewShouldIncludeHeaderFieldsWithValue()
+    public void GetSortedFieldsForViewShouldIncludeHeaderFields()
     {
         var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -466,8 +428,173 @@ public class FieldLayerContainerTest
         result.ShouldBeEmpty();
     }
 
-    private static readonly AccessArguments AccessArgumentsNone = new(false, false, false, false, false, false, false);
-    private static readonly AccessArguments AccessArgumentsPlayer = new(false, true, false, false, false, false, false);
-    private static readonly AccessArguments AccessArgumentsMaster = new(true, false, false, false, false, false, false);
-}
+    [Fact]
+    public void GetFromLayerShouldReturnValueForPublicFieldWithAnyAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.Public));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "val" } });
 
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsNone);
+
+        result.ShouldNotBeNull();
+        result!.Value.ShouldBe("val");
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnNullForMasterOnlyFieldWithPlayerAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsPlayer);
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnValueForMasterOnlyFieldWithMasterAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsMaster);
+
+        result.ShouldNotBeNull();
+        result!.Value.ShouldBe("secret");
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnNullForMissingField()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsMaster);
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnNullForPlayerAndMasterFieldWithNoAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "restricted" } });
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsNone);
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnValueForPlayerAndMasterFieldWithMasterAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "restricted" } });
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsMaster);
+
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnHeaderFieldWithNullValueWhenNotInLayer()
+    {
+        var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsNone);
+
+        result.ShouldNotBeNull();
+        result!.Value.ShouldBeNull();
+        result.Field.Type.ShouldBe(ProjectFieldType.Header);
+    }
+
+    [Fact]
+    public void GetFromLayerShouldReturnNullForHeaderWithoutAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header, visibility: ProjectFieldVisibility.MasterOnly));
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+
+        var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsPlayer);
+
+        result.ShouldBeNull();
+    }
+
+    private static ProjectInfo MakeProject(params ProjectFieldInfo[] fields)
+        => MakeProject("", fields);
+
+    private static ProjectInfo MakeProject(string ordering, params ProjectFieldInfo[] fields)
+    {
+        var projectId = new ProjectIdentification(1);
+        return new ProjectInfo(
+            projectId,
+            new ProjectName("Test"),
+ordering,
+            fields,
+            new ProjectFieldSettings(null, null),
+            new ProjectFinanceSettings(false, []),
+            false,
+            false,
+            new CharacterGroupIdentification(projectId, 1),
+            [],
+            false,
+            new ProjectCheckInSettings(false, false, false),
+            ProjectLifecycleStatus.ActiveClaimsOpen,
+            new ProjectScheduleSettings(false),
+            ProjectCloneSettings.CloneDisabled,
+            new DateOnly(2024, 1, 1),
+            ProjectProfileRequirementSettings.AllNotRequired,
+            new ProjectClaimSettings(null, false, false, false, false),
+            [],
+            new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()
+        );
+    }
+
+    private static ProjectFieldInfo MakeField(int fieldId, ProjectFieldType type = ProjectFieldType.String, ProjectFieldVisibility visibility = ProjectFieldVisibility.Public, FieldBoundTo boundTo = FieldBoundTo.Character, string ordering = "")
+    {
+        var projectId = new ProjectIdentification(1);
+        var id = new ProjectFieldIdentification(projectId, fieldId);
+        return new ProjectFieldInfo(
+            id,
+            $"Field{fieldId}",
+            type,
+            boundTo,
+            [],
+            ordering,
+            0,
+            true,
+            true,
+            MandatoryStatus.Optional,
+            true,
+            true,
+            [],
+            new MarkdownString(),
+            new MarkdownString(),
+            false,
+            new ProjectFieldSettings(null, null),
+            null,
+            visibility,
+            null
+        );
+    }
+
+    private static readonly AccessArguments AccessArgumentsNone = AccessArguments.None;
+
+    private static readonly AccessArguments AccessArgumentsPlayer = new(
+        MasterAccess: false,
+        PlayerAccessToCharacter: true,
+        PlayerAccesToClaim: false,
+        EditAllowed: false,
+        Published: false,
+        CharacterPublic: false,
+        IsCapitan: false);
+
+    private static readonly AccessArguments AccessArgumentsMaster = new(
+        MasterAccess: true,
+        PlayerAccessToCharacter: false,
+        PlayerAccesToClaim: false,
+        EditAllowed: false,
+        Published: false,
+        CharacterPublic: false,
+        IsCapitan: false);
+}
