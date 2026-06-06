@@ -36,9 +36,10 @@ internal class ClaimNotificationService(
             RespondingTo: [model.ParentCommentAuthor]
             );
 
+
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Claims,
-            model.ClaimId,
+            model.CommentId ?? (IProjectEntityId)model.ClaimId,
             claimNotificationTextBuilder.GetClaimEmailTitle(projectInfo.ProjectName, claim),
             new NotificationEventTemplate(text1),
             await subscribeCalculator.GetRecepients(args, projectInfo),
@@ -65,7 +66,7 @@ internal class ClaimNotificationService(
 
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Claims,
-            model.ClaimId,
+            model.FinanceOperationId,
             claimNotificationTextBuilder.GetClaimEmailTitle(projectInfo.ProjectName, claim),
             model.Text,
             await subscribeCalculator.GetRecepients(args, projectInfo),

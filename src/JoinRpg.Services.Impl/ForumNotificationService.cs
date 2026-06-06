@@ -41,7 +41,7 @@ $@"Добрый день, %recepient.name%
 
         await notificationService.QueueNotification(new NotificationEvent(
             NotificationClass.Forum,
-            model.ForumCommentId.ThreadId,
+            model.ForumCommentId,
             header,
             new NotificationEventTemplate(text1),
             await subscribeCalculator.GetRecepients(args, projectInfo),

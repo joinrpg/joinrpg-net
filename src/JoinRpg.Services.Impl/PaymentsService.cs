@@ -22,6 +22,12 @@ public static class FinanceOperationExtensions
     public static string GetOrderId(this FinanceOperation fo) => GetOrderId(fo.CommentId);
 
     /// <summary>
+    /// Типизированный идентификатор финансовой операции (FinanceOperationId соответствует CommentId)
+    /// </summary>
+    public static FinanceOperationIdentification GetId(this FinanceOperation fo)
+        => new(new ProjectIdentification(fo.ProjectId), fo.ClaimId, fo.CommentId);
+
+    /// <summary>
     /// Creates the order id that is used to identify our payments on the bank side
     /// </summary>
 
@@ -721,7 +727,7 @@ internal class PaymentsService(
         if (paymentNotification != PaymentNotification.None)
         {
             Debug.Assert(claim is not null);
-            await SendPaymentNotification(claim, fo.MoneyAmount, paymentNotification);
+            await SendPaymentNotification(claim, fo.MoneyAmount, fo.GetId(), paymentNotification);
         }
 
         return fo.State;
@@ -736,7 +742,7 @@ internal class PaymentsService(
         Refund,
     }
 
-    private async Task SendPaymentNotification(Claim claim, int sum, PaymentNotification notification)
+    private async Task SendPaymentNotification(Claim claim, int sum, FinanceOperationIdentification financeOperationId, PaymentNotification notification)
     {
         if (notification == PaymentNotification.None)
         {
@@ -776,7 +782,8 @@ internal class PaymentsService(
             var email = new ClaimOnlinePaymentNotification(
                 claim.GetId(),
                 Player: claim.Player.ToUserInfoHeader(),
-                new NotificationEventTemplate(sb.ToString())
+                new NotificationEventTemplate(sb.ToString()),
+                financeOperationId
             );
 
             await claimNotificationService.Value.SendNotification(email);
@@ -1093,7 +1100,7 @@ internal class PaymentsService(
 
         if (comment.Finance.Approved)
         {
-            await SendPaymentNotification(sourceFo.Claim, sourceFo.MoneyAmount, PaymentNotification.Refund);
+            await SendPaymentNotification(sourceFo.Claim, sourceFo.MoneyAmount, fo.GetId(), PaymentNotification.Refund);
         }
 
         return comment.Finance;

@@ -69,6 +69,25 @@ public class VerifyNotificationTest
         return Verify(text);
     }
 
+    [Fact]
+    public void WithCommentIdSetsClaimCommentIdentification()
+    {
+        var claimId = new ClaimIdentification(1, 1);
+        var model = new ClaimSimpleChangedNotification(
+            claimId,
+            CommentExtraAction: null,
+            Initiator: master,
+            new NotificationEventTemplate(""),
+            ClaimOperationType.MasterVisibleChange
+            );
+
+        model.CommentId.ShouldBeNull();
+
+        var withComment = model.WithCommentId(42);
+
+        withComment.CommentId.ShouldBe(new ClaimCommentIdentification(claimId, 42));
+    }
+
     private class UriMock : IUriLocator<ClaimIdentification>
     {
         public Uri GetUri(ClaimIdentification target) => new($"https://joinrpg.ru/{target.ProjectId.Value}/claim/{target.ClaimId}/edit");

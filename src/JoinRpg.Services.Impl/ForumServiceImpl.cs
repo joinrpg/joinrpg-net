@@ -74,6 +74,8 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
 
         comment.Parent = parentComment;
 
+        await UnitOfWork.SaveChangesAsync();
+
         var email = new ForumMessageNotification(
                 new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
                 currentUserAccessor.ToUserInfoHeader(),
@@ -81,8 +83,6 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                 forumThread.Header,
                 ParentCommentAuthor: parentComment?.Author.ToUserInfoHeader()
                 );
-
-        await UnitOfWork.SaveChangesAsync();
 
         await forumNotificationService.SendNotification(email);
 
