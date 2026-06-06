@@ -23,11 +23,22 @@ public record class ClaimSimpleChangedNotification(
     UserInfoHeader? PaymentOwner = null,
     UserInfoHeader? ParentCommentAuthor = null,
     IReadOnlyCollection<FieldWithPreviousAndNewValue>? UpdatedFields = null
-    );
+    )
+{
+    /// <summary>
+    /// Идентификатор комментария становится известен только после сохранения в базу,
+    /// поэтому заполняется уже после <c>SaveChangesAsync</c>.
+    /// </summary>
+    public ClaimCommentIdentification? CommentId { get; init; }
+
+    public ClaimSimpleChangedNotification WithCommentId(int commentId)
+        => this with { CommentId = new ClaimCommentIdentification(ClaimId, commentId) };
+}
 
 public record class ClaimOnlinePaymentNotification(
     ClaimIdentification ClaimId,
     UserInfoHeader Player,
-    NotificationEventTemplate Text
+    NotificationEventTemplate Text,
+    FinanceOperationIdentification FinanceOperationId
     );
 

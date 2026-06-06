@@ -25,7 +25,7 @@ internal class FinanceOperationsImpl(
         var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
 
 
-        var email = AcceptFeeImpl(request.Contents,
+        var (comment, email) = AcceptFeeImpl(request.Contents,
             request.OperationDate,
             request.Money,
             projectInfo.ProjectFinanceSettings.GetRequiredPayment(request.PaymentTypeId),
@@ -35,7 +35,7 @@ internal class FinanceOperationsImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        await claimNotificationService.SendNotification(email);
+        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
     }
 
     #region Payment type
@@ -223,13 +223,13 @@ internal class FinanceOperationsImpl(
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.CanManageMoney);
 
-        var (_, email) = CommentHelper.CreateClaimCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange, Now);
+        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange, Now);
 
         claim.CurrentFee = feeValue;
 
         await UnitOfWork.SaveChangesAsync();
 
-        await claimNotificationService.SendNotification(email);
+        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
     }
 
     #endregion
@@ -291,7 +291,7 @@ internal class FinanceOperationsImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        await claimNotificationService.SendNotification(email);
+        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
     }
 
     /// <inheritdoc />
@@ -362,8 +362,8 @@ internal class FinanceOperationsImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        await claimNotificationService.SendNotification(emailTo);
-        await claimNotificationService.SendNotification(emailFrom);
+        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId));
+        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId));
     }
 
     #endregion

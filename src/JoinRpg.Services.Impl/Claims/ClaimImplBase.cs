@@ -19,7 +19,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
 
     protected IEmailService EmailService { get; } = emailService;
 
-    protected ClaimSimpleChangedNotification AcceptFeeImpl(string contents,
+    protected (Comment comment, ClaimSimpleChangedNotification email) AcceptFeeImpl(string contents,
                                                            DateTime operationDate,
                                                            int money,
                                                            PaymentTypeInfo paymentType,
@@ -103,7 +103,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
 
         claim.UpdateClaimFeeIfRequired(operationDate, projectInfo);
 
-        return email;
+        return (comment, email);
     }
 
     protected void CheckOperationDate(DateTime operationDate)
