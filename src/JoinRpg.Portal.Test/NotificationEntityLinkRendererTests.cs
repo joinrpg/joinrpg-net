@@ -20,8 +20,9 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
         var link = renderer.RenderEntityLink(new ClaimCommentIdentification(new ClaimIdentification(1, 1), 42));
 
         link.ShouldNotBeNull();
-        link.Markdown.ShouldStartWith("Подробнее: [комментарий](http");
-        link.Markdown.ShouldContain("#comment42");
+        link.Markdown.Contents.ShouldNotBeNull();
+        link.Markdown.Contents.ShouldStartWith("Подробнее: [комментарий](http");
+        link.Markdown.Contents.ShouldContain("#comment42");
         link.PlainText.ShouldStartWith("Подробнее: комментарий: http");
         link.PlainText.ShouldContain("#comment42");
     }

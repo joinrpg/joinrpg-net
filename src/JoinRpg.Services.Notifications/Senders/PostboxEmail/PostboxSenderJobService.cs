@@ -78,7 +78,7 @@ internal class PostboxSenderJobService(
 
         // Ссылка между телом и подписью. В HTML — кликабельная markdown-ссылка, в plain text —
         // с видимым URL (markdown-ссылка в plain text теряет адрес).
-        var markdownLink = entityLink is null ? "" : $"\n\n{entityLink.Markdown}";
+        var markdownLink = entityLink is null ? "" : $"\n\n{entityLink.Markdown.Contents}";
         var plainLink = entityLink is null ? "" : $"\n\n{entityLink.PlainText}";
 
         var emailBody = new MarkdownString(bodyString.Contents + markdownLink + signature);

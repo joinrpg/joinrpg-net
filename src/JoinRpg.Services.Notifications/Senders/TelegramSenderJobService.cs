@@ -31,7 +31,7 @@ internal class TelegramSenderJobService(
     {
         // Заголовок — жирным, тело, ссылка, затем подпись курсивом. Теги <strong>/<em>/<a>
         // переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer).
-        var linkPart = entityLink is null ? "" : $"\n\n{entityLink.Markdown}";
+        var linkPart = entityLink is null ? "" : $"\n\n{entityLink.Markdown.Contents}";
         var markdown = new MarkdownString($"**{header}**\n\n{body.Contents}{linkPart}\n\n_{displayName.DisplayName}_");
         return new TelegramHtmlString(markdown.ToHtmlString().Value);
     }

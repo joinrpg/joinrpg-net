@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
@@ -184,7 +185,7 @@ internal class UriServiceImpl(
 
         return uri is not null && name is not null
             ? new RenderedEntityLink(
-                Markdown: $"Подробнее: [{name}]({uri})",
+                Markdown: new MarkdownString($"Подробнее: [{name}]({uri})"),
                 PlainText: $"Подробнее: {name}: {uri}")
             : null;
     }

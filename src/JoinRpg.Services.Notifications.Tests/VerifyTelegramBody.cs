@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Notifications.Tests;
 public class VerifyTelegramBody
 {
     private static RenderedEntityLink SampleLink => new(
-        Markdown: "Подробнее: [комментарий](https://joinrpg.ru/1/claim/1/edit#comment42)",
+        Markdown: new MarkdownString("Подробнее: [комментарий](https://joinrpg.ru/1/claim/1/edit#comment42)"),
         PlainText: "Подробнее: комментарий: https://joinrpg.ru/1/claim/1/edit#comment42");
 
     [Theory]

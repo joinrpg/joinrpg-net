@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 
 namespace JoinRpg.Interfaces.Notifications;
@@ -20,4 +21,4 @@ public interface INotificationEntityLinkRenderer
 /// превращается в кликабельную) и plain text (для plain-text писем, где важно
 /// сохранить видимый URL — markdown-ссылка в plain-text теряет адрес).
 /// </summary>
-public sealed record RenderedEntityLink(string Markdown, string PlainText);
+public sealed record RenderedEntityLink(MarkdownString Markdown, string PlainText);
