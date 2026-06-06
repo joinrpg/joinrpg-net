@@ -37,6 +37,8 @@ public class CharacterView : IFieldContainter
     public required int CharacterId { get; set; }
     public required DateTime UpdatedAt { get; set; }
     public required bool IsActive { get; set; }
+
+    public required bool IsPublic { get; set; }
     public required bool InGame { get; set; }
     public required CharacterTypeInfo CharacterTypeInfo { get; set; }
     public Claim? ApprovedClaim { get; set; }

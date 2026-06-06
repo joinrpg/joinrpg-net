@@ -89,6 +89,7 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
             Description = character.Description.Contents ?? "",
             UpdatedAt = character.UpdatedAt,
             IsActive = character.IsActive,
+            IsPublic = character.IsPublic,
             InGame = character.InGame,
             CharacterTypeInfo = character.ToCharacterTypeInfo(),
             JsonData = character.JsonData,
