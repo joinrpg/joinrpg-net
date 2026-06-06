@@ -1,6 +1,7 @@
 using JoinRpg.Portal.Controllers;
 using JoinRpg.Portal.Controllers.Money;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,6 +41,7 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
     [InlineData("{projectId}/massmail/forclaims", typeof(MassMailController), nameof(MassMailController.ForClaims))]
     [InlineData("{projectId}/print/character", typeof(PrintController), nameof(PrintController.Character))]
     [InlineData("{projectId}/money/transfer/create", typeof(TransferController), nameof(TransferController.Create))]
+    [InlineData("{ProjectId}/goto/finance-operation/{FinanceOperationId:int}", typeof(DiscussionRedirectController), nameof(DiscussionRedirectController.ToFinanceOperation))]
     public void CanonicalRouteResolvesToAction(
         string canonicalRoute, Type expectedController, string expectedAction)
     {
@@ -54,6 +56,32 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
 
         var expectedEndpoints = endpoints
             .Where(x => x.ControllerType == expectedController && x.ActionName == expectedAction)
+            .ToList();
+
+        var actualEndpoint = endpoints
+            .Where(x => x.RoutePattern.RawText?.Equals(
+                    canonicalRoute, StringComparison.OrdinalIgnoreCase) == true)
+            .ToList();
+
+        actualEndpoint.ShouldNotBeEmpty($"Маршрут '{canonicalRoute}' не зарегистрирован");
+        actualEndpoint.ShouldBeSubsetOf(expectedEndpoints);
+    }
+
+    [Theory]
+    [InlineData("{projectId:int}/roleslist/{id:int}", "/GamePages/ProjectRoleListView")]
+    public void CanonicalRouteResolvesToPage(string canonicalRoute, string expectedPage)
+    {
+        var endpointSource = _services.GetRequiredService<EndpointDataSource>();
+
+        var endpoints = endpointSource.Endpoints
+            .OfType<RouteEndpoint>()
+            .Select(ep => (ep, descriptor: ep.Metadata.GetMetadata<PageActionDescriptor>()))
+            .Where(x => x.descriptor is not null)
+            .Select(x => (x.ep.RoutePattern, Page: x.descriptor!.ViewEnginePath))
+            .ToList();
+
+        var expectedEndpoints = endpoints
+            .Where(x => x.Page == expectedPage)
             .ToList();
 
         var actualEndpoint = endpoints
