@@ -38,10 +38,10 @@ public static class UserLinkParser
             }
         }
 
-        // Remove /users/ prefix if present
-        if (trimmedLink.StartsWith("/users/".AsSpan(), StringComparison.OrdinalIgnoreCase))
+        // Remove /user/ prefix if present
+        if (trimmedLink.StartsWith("/user/".AsSpan(), StringComparison.OrdinalIgnoreCase))
         {
-            trimmedLink = trimmedLink.Slice(7); // Remove "/users/"
+            trimmedLink = trimmedLink.Slice(6); // Remove "/user/"
         }
 
         // Remove trailing slash if present
@@ -60,7 +60,7 @@ public static class UserLinkParser
     {
         if (!TryParseUserLink(link.AsSpan(), out var userId))
         {
-            throw new FormatException($"Неверный формат ссылки на пользователя: '{link}'. Ожидается число, '/users/123' или полный URL.");
+            throw new FormatException($"Неверный формат ссылки на пользователя: '{link}'. Ожидается число, '/user/123' или полный URL.");
         }
 
         return userId;
