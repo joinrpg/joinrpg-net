@@ -40,6 +40,22 @@ public static class AccessArgumentsFactory
             IsCapitan: false);
     }
 
+    public static AccessArguments Create(CharacterView character, UserIdentification? user, ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var playerIsApprovedClaim = SamePlayerId(user, UserIdentification.FromOptional(character.ApprovedClaim?.PlayerUserId));
+
+        return new AccessArguments(
+            MasterAccess: projectInfo.HasMasterAccess(user),
+            PlayerAccessToCharacter: playerIsApprovedClaim,
+            PlayerAccesToClaim: playerIsApprovedClaim,
+            EditAllowed: projectInfo.IsActive,
+            Published: projectInfo.PublishPlot,
+            CharacterPublic: character.IsPublic,
+            IsCapitan: false);
+    }
+
     private static bool SamePlayerId(UserIdentification? left, UserIdentification? right)
     {
         return left != null && right != null && left.Equals(right);
