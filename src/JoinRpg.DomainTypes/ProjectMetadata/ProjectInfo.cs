@@ -108,7 +108,7 @@ public record class ProjectInfo
         {
             throw new InvalidOperationException();
         }
-        return UnsortedFields.Single(f => f.Id.ProjectFieldId == id.ProjectFieldId);
+        return UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == id.ProjectFieldId) ?? throw new KeyNotFoundException("Не найдено поле с ID=" + id);
     }
 
     public bool HasMasterAccess(UserIdentification? userId, Permission permission = Permission.None)
