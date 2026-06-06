@@ -10,6 +10,5 @@
   <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>

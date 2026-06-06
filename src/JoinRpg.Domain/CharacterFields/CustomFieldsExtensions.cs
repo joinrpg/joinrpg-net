@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Domain;
 
@@ -16,7 +16,7 @@ public static class CustomFieldsExtensions
         }
 
         return
-          JsonConvert.SerializeObject(
+          JsonSerializer.Serialize(
             fieldWithValues
               .Where(v => v.HasEditableValue)
               .ToDictionary(pair => pair.Field.Id.ProjectFieldId, pair => pair.Value));
@@ -24,7 +24,11 @@ public static class CustomFieldsExtensions
 
     private static Dictionary<int, string> DeserializeFieldValues(this IFieldContainter containter)
     {
-        return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter.JsonData ?? "") ?? [];
+        // System.Text.Json бросает на пустой/null строке, поэтому отдаём пустой словарь явно
+        // (Newtonsoft.Json на "" возвращал null -> []).
+        return string.IsNullOrEmpty(containter.JsonData)
+            ? []
+            : JsonSerializer.Deserialize<Dictionary<int, string>>(containter.JsonData) ?? [];
     }
 
     private static ReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params Dictionary<int, string>?[] containers)
