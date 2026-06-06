@@ -6,14 +6,14 @@ public class UserLinkParserTests
 {
     [Theory]
     [InlineData("123", 123)]
-    [InlineData("/users/123", 123)]
-    [InlineData("https://joinrpg.ru/users/123", 123)]
-    [InlineData("https://dev.joinrpg.ru/users/123", 123)]
-    [InlineData("https://localhost:5001/users/123", 123)]
-    [InlineData("http://joinrpg.ru/users/123", 123)]
-    [InlineData("https://joinrpg.ru/users/123/", 123)]
+    [InlineData("/user/123", 123)]
+    [InlineData("https://joinrpg.ru/user/123", 123)]
+    [InlineData("https://dev.joinrpg.ru/user/123", 123)]
+    [InlineData("https://localhost:5001/user/123", 123)]
+    [InlineData("http://joinrpg.ru/user/123", 123)]
+    [InlineData("https://joinrpg.ru/user/123/", 123)]
     [InlineData(" 123 ", 123)]
-    [InlineData(" /users/123 ", 123)]
+    [InlineData(" /user/123 ", 123)]
     public void TryParseUserLink_ValidFormats_ReturnsTrue(string link, int expectedUserId)
     {
         var userId = UserLinkParser.ParseUserLink(link);
@@ -25,11 +25,13 @@ public class UserLinkParserTests
     [InlineData("")]
     [InlineData(" ")]
     [InlineData("abc")]
-    [InlineData("users/123")]
-    [InlineData("/users/abc")]
-    [InlineData("https://joinrpg.ru/users/abc")]
-    [InlineData("https://joinrpg.ru/users/123/extra")]
-    [InlineData("/users/123/extra")]
+    [InlineData("user/123")]
+    [InlineData("/user/abc")]
+    [InlineData("https://joinrpg.ru/user/abc")]
+    [InlineData("https://joinrpg.ru/user/123/extra")]
+    [InlineData("/user/123/extra")]
+    [InlineData("/users/123")]
+    [InlineData("https://joinrpg.ru/users/123")]
     [InlineData("123.456")]
     [InlineData("-123")]
     [InlineData("0")]
@@ -42,8 +44,8 @@ public class UserLinkParserTests
 
     [Theory]
     [InlineData("123", 123)]
-    [InlineData("/users/456", 456)]
-    [InlineData("https://joinrpg.ru/users/789", 789)]
+    [InlineData("/user/456", 456)]
+    [InlineData("https://joinrpg.ru/user/789", 789)]
     public void ParseUserLink_ValidFormats_ReturnsUserId(string link, int expectedUserId)
     {
         var userId = UserLinkParser.ParseUserLink(link);
@@ -53,7 +55,7 @@ public class UserLinkParserTests
 
     [Theory]
     [InlineData("invalid")]
-    [InlineData("/users/abc")]
+    [InlineData("/user/abc")]
     [InlineData("")]
     public void ParseUserLink_InvalidFormats_ThrowsFormatException(string link)
     {
