@@ -44,15 +44,6 @@ public static class MarkDownRendererFacade
         return new MarkupString(sanitizer.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText)));
     }
 
-    [Obsolete("Выберите ToPlainTextAndEscapeHtml/ToPlainTextWithoutHtmlEscape вместо этого")]
-    public static string ToPlainText(
-        this MarkdownString? markdownString,
-        ILinkRenderer? renderer = null)
-    {
-        using var sanitizer = HtmlSanitizers.GetRemoveAll();
-        return sanitizer.Sanitize(PerformRender(markdownString, renderer, Markdig.Markdown.ToPlainText));
-    }
-
     /// <summary>
     /// Превращает Markdown в строку, которую можно использовать только при гарантии, что ее не будут трактовать как HTML. При выводе в шаблон
     /// ее необходимо будет экранировать (escape), но как правило это автоматически происходит
