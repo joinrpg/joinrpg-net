@@ -9,6 +9,9 @@
 ### Разработка
 - [Добавление сущностей метаданных проекта](project-entities.md) — пошаговое руководство
 - [Миграции Entity Framework](ef-migrations.md) — работа с миграциями EF6
+- [Общие шаги для UI-страниц](ui-pages-common.md) — стартовые решения, слои, паттерн Builder
+- [Страницы редактирования](editing-pages-guide.md) — Blazor-острова с мутациями
+- [Страницы просмотра](view-pages-guide.md) — read-only Blazor-острова
 
 ### Конфигурация
 - [Добавление нового окружения](how-to-add-new-env.md) — настройка сред разработки
@@ -20,6 +23,8 @@
 - [ADR003: User blogs](adr003-user-blogs.md)
 - [ADR004: OAuth server](adr004-oauth-server.md)
 - [ADR006: Common split](adr006-common-split.md)
+- [ADR007: TypedStringValue](adr007-string-value.md)
+- [ADR008: Страница просмотра сетки ролей](adr008-roles-list-view-page.md)
 
 ## Быстрые ссылки
 
