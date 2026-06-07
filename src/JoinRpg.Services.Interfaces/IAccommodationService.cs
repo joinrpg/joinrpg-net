@@ -66,7 +66,7 @@ public class OccupyRequest
 {
     public int ProjectId { get; set; }
     public int RoomId { get; set; }
-    public IReadOnlyCollection<int> AccommodationRequestIds { get; set; }
+    public required IReadOnlyCollection<int> AccommodationRequestIds { get; set; }
 }
 
 public class UnOccupyRequest
