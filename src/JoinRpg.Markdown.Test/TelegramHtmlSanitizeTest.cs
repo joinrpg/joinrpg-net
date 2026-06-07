@@ -1,4 +1,4 @@
-using JoinRpg.Interfaces;
+using JoinRpg.Common.PrimitiveTypes;
 
 namespace JoinRpg.Markdown.Test;
 
