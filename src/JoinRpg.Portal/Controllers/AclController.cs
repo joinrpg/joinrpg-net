@@ -88,7 +88,11 @@ public class AclController(
     [MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Delete(ProjectIdentification projectId, int projectaclid)
     {
-        AclViewModel innerModel = await GetAclViewModel(projectId, projectaclid);
+        AclViewModel? innerModel = await GetAclViewModel(projectId, projectaclid);
+        if (innerModel is null)
+        {
+            return NotFound();
+        }
 
         var viewModel = new DeleteAclViewModel()
         {
@@ -114,6 +118,10 @@ public class AclController(
         catch
         {
             viewModel.InnerModel = await GetAclViewModel(new(viewModel.ProjectId), viewModel.ProjectAclId);
+            if (viewModel.InnerModel is null)
+            {
+                return NotFound();
+            }
             return View(viewModel);
         }
         if (viewModel.UserId == currentUserAccessor.UserId)
@@ -140,7 +148,11 @@ public class AclController(
     public async Task<ActionResult> Edit(ProjectIdentification projectId, int projectaclid)
     {
         var project = await projectRepository.GetProjectAsync(projectId);
-        var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+        var projectAcl = project.ProjectAcls.SingleOrDefault(acl => acl.ProjectAclId == projectaclid);
+        if (projectAcl is null)
+        {
+            return NotFound();
+        }
 
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(projectId, new(projectAcl.UserId));
 
@@ -190,14 +202,17 @@ public class AclController(
         return RedirectToAction("Details", "Game", new { projectId });
     }
 
-    private async Task<AclViewModel> GetAclViewModel(ProjectIdentification projectId, int projectaclid)
+    private async Task<AclViewModel?> GetAclViewModel(ProjectIdentification projectId, int projectaclid)
     {
         var project = await projectRepository.GetProjectAsync(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+        var projectAcl = project.ProjectAcls.SingleOrDefault(acl => acl.ProjectAclId == projectaclid);
+        if (projectAcl is null)
+        {
+            return null;
+        }
         var claims = await claimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);
         var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(projectAcl.UserId));
-        var innerModel = new AclViewModel(projectAcl, claims.Count, groups, uriService, projectInfo);
-        return innerModel;
+        return new AclViewModel(projectAcl, claims.Count, groups, uriService, projectInfo);
     }
 }
