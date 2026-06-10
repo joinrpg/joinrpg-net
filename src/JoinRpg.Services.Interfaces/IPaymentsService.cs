@@ -101,7 +101,7 @@ public class PaymentContext
     /// <summary>
     /// Payment request descriptor built by bank API
     /// </summary>
-    public PaymentRequestDescriptor RequestDescriptor { get; set; }
+    public required PaymentRequestDescriptor RequestDescriptor { get; set; }
 }
 
 /// <summary>
@@ -127,7 +127,7 @@ public class PaymentResultContext
     /// <summary>
     /// Bank response info
     /// </summary>
-    public BankResponseInfo BankResponse { get; set; }
+    public required BankResponseInfo BankResponse { get; set; }
 }
 
 public class FastPaymentsSystemBank : FpsBank
