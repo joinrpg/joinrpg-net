@@ -4,7 +4,6 @@ using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Notifications;
-using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Services.Impl.Claims;
 

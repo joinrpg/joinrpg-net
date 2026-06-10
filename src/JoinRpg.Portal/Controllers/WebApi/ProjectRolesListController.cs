@@ -13,6 +13,9 @@ public class ProjectRolesListController(IProjectRolesListClient client) : Contro
     public async Task<ProjectRolesListViewModel> GetList(ProjectIdentification projectId)
         => await client.GetList(projectId);
 
+    [HttpGet]
+    public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification targetId) => await client.GetById(targetId);
+
     [HttpPost]
     [RequireMaster(Permission.CanEditRoles)]
     public async Task<ActionResult> Remove([FromQuery] ProjectIdentification projectId, [FromBody] ProjectRolesListIdentification id)
@@ -34,7 +37,7 @@ public class ProjectRolesListController(IProjectRolesListClient client) : Contro
 
     [HttpPost]
     [RequireMaster(Permission.CanEditRoles)]
-    public async Task<ActionResult<ProjectRolesListViewModel>> Update([FromQuery] ProjectIdentification projectId, [FromBody] DomainTypes.ProjectMetadata.ProjectRolesList model)
+    public async Task<ActionResult<ProjectRolesListViewModel>> Update([FromQuery] ProjectIdentification projectId, [FromBody] ProjectRolesList model)
     {
         if (model.ProjectRolesListId.ProjectId != projectId)
         {

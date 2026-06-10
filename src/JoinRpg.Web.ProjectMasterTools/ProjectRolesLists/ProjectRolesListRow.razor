@@ -1,3 +1,4 @@
+@inject NavigationManager NavigationManager
 <div class="rule-list-row">
 
   <div>
@@ -6,17 +7,21 @@
     {
       <p>Группа: @Model.CharacterGroupName</p>
     }
-    <p>Колонок полей: @Model.RolesList.Fields.Count</p>
-    <p>Видимость: @(Model.RolesList.PublicMode ? "Публичная" : "Только для мастеров")</p>
   </div>
   <div class="filler">
 
   </div>
   <div>
+    <JoinButton Preset="ButtonPreset.Edit" 
+      OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesList.ProjectRolesListId.ProjectId.Value}/tools/roleslist/edit/{Model.RolesList.ProjectRolesListId.ProjectRolesListId}")'
+      Label="Редактировать"
+      DisabledTitle="Для управления сетками ролей нужны права редактировать ролевку"
+      Disabled="!HasEditAccess"
+      />
     <JoinButton Preset="ButtonPreset.Delete" 
       OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
       Label="Удалить сетку"
-      DisabledTitle="Для управления сетками ролей нужны права администратора заявок"
+      DisabledTitle="Для управления сетками ролей нужны права редактировать ролевку"
       Disabled="!HasEditAccess"
       />
   </div>

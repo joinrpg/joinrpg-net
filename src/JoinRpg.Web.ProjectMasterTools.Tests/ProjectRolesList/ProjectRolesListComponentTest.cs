@@ -105,6 +105,11 @@ public class ProjectRolesListComponentTest : TestContext
             return Task.FromResult(NextUpdateResult ?? new ProjectRolesListViewModel([], HasEditAccess: true));
         }
 
+        public Task<DomainTypes.ProjectMetadata.ProjectRolesList> GetById(JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesListIdentification id)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task Remove(JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesListIdentification projectRolesListId)
         {
             return Task.CompletedTask;
