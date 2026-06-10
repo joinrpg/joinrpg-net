@@ -1,5 +1,3 @@
-using JoinRpg.DataModel.Finances;
-
 namespace JoinRpg.Web.Models;
 
 public enum RecurrentPaymentStatusViewModel

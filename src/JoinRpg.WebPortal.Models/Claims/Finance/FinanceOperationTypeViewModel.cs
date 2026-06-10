@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Web.Models;
 
 /// <summary>

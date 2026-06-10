@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DomainTypes;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.Apis;
