@@ -13,10 +13,15 @@ namespace JoinRpg.Portal.Controllers;
 public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, YandexLogLink yandexLogLink,
     IProjectRepository projectRepository, IClaimsRepository claimsRepository) : Common.JoinMvcControllerBase()
 {
-    [HttpGet("user/{userId}")]
+    [HttpGet("user/{userId:int}")]
     [AllowAnonymous]
-    public async Task<ActionResult> Details(UserIdentification userId)
+    public async Task<ActionResult> Details(UserIdentification? userId)
     {
+        if (userId is null)
+        {
+            return NotFound();
+        }
+
         var user = await userRepository.GetUserInfo(userId);
         if (user is null)
         {
