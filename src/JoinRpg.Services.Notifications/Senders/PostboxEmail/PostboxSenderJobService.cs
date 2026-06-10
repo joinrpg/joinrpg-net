@@ -100,5 +100,14 @@ internal class PostboxSenderJobService(
         };
     }
 
-    private static string FormatAddress(string addressName, string email) => $"{addressName} <{email}>";
+    internal static string FormatAddress(string addressName, string email)
+    {
+        // RFC 5322 §3.2.3 specials — display-name must be quoted when it contains any of these
+        const string specials = "()<>[]:;@\\,.\"";
+        var needsQuoting = addressName.Any(specials.Contains);
+        var formattedName = needsQuoting
+            ? $"\"{addressName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\""
+            : addressName;
+        return $"{formattedName} <{email}>";
+    }
 }
