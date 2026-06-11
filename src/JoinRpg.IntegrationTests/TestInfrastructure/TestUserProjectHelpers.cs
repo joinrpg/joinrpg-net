@@ -2,7 +2,6 @@ using System.Net;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
-using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTests.TestInfrastructure;
@@ -60,37 +59,31 @@ public static class TestUserProjectHelpers
     /// <param name="projectName">Название проекта.</param>
     /// <param name="projectType">Тип проекта (по умолчанию LARP).</param>
     /// <returns>Идентификатор созданного проекта.</returns>
-    public static async Task<ProjectIdentification> CreateProjectAsync(
+    public static Task<ProjectIdentification> CreateProjectAsync(
         IServiceProvider serviceProvider,
         UserIdentification userId,
         string projectName = "Тестовый проект",
         ProjectTypeDto projectType = ProjectTypeDto.Larp)
-    {
-        var impersonator = serviceProvider.GetRequiredService<IImpersonateAccessor>();
-        impersonator.StartImpersonate(userId, new UserDisplayName("Тестовый Мастер", null), IsAdmin: false);
-
-        try
-        {
-            var createProjectService = serviceProvider.GetRequiredService<ICreateProjectService>();
-            var result = await createProjectService.CreateProject(
-                CreateProjectRequest.Create(
-                    new ProjectName(projectName),
-                    projectType,
-                    null,
-                    default));
-
-            return result switch
+        => serviceProvider.ImpersonateAsync(
+            userId,
+            async () =>
             {
-                SuccessCreateProjectResult r => r.ProjectId,
-                PartiallySuccessCreateProjectResult r => r.ProjectId,
-                _ => throw new InvalidOperationException($"Failed to create project: {result}")
-            };
-        }
-        finally
-        {
-            impersonator.StopImpersonate();
-        }
-    }
+                var createProjectService = serviceProvider.GetRequiredService<ICreateProjectService>();
+                var result = await createProjectService.CreateProject(
+                    CreateProjectRequest.Create(
+                        new ProjectName(projectName),
+                        projectType,
+                        null,
+                        default));
+
+                return result switch
+                {
+                    SuccessCreateProjectResult r => r.ProjectId,
+                    PartiallySuccessCreateProjectResult r => r.ProjectId,
+                    _ => throw new InvalidOperationException($"Failed to create project: {result}")
+                };
+            },
+            new UserDisplayName("Тестовый Мастер", null));
 
     /// <summary>
     /// Аутентифицирует HTTP-клиент под указанным пользователем.
