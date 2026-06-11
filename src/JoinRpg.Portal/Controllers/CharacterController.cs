@@ -70,7 +70,7 @@ public class CharacterController(
             ProjectName = field.Project.ProjectName,
             CharacterTypeInfo = view.CharacterTypeInfo,
             Name = field.CharacterName,
-            ParentCharacterGroupIds = [.. field.GetParentGroupsToTop(projectInfo).Where(gr => !gr.IsSpecial).Select(pg => pg.Id)],
+            ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
         }.Fill(field, CurrentUserId, projectInfo));
     }
 

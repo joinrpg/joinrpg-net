@@ -163,6 +163,11 @@ public record class ProjectInfo
         return Groups[groupId];
     }
 
+    public IEnumerable<CharacterGroupInfo> GetGroupsById(IReadOnlyCollection<CharacterGroupIdentification> ids)
+    {
+        return Groups.Where(g => ids.Contains(g.Key)).Select(g => g.Value);
+    }
+
     public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
     {
         return Groups[groupId].AllChildGroupsIncludingThis;

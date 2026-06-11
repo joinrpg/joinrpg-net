@@ -23,7 +23,7 @@ public class CharacterParentGroupsViewModel
 
         HasMasterAccess = hasMasterAccess;
         ParentGroups = character
-          .GetParentGroupsToTop(projectInfo)
+          .GetDirectGroups(projectInfo)
           .Where(group => !group.IsRoot && !group.IsSpecial)
           .Select(g => new CharacterGroupLinkViewModel(g)).ToList();
         HasAnyGroups = ParentGroups.Count > 0;
