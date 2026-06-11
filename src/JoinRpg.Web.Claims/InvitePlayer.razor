@@ -33,7 +33,7 @@
                 </FormRowFor>
 
                 <FormRowFor For="@(() => model.UserLink)" Required="true">
-                    <JoinTextInput @bind-Value="model.UserLink" Placeholder="123, /users/123, https://joinrpg.ru/users/123" />
+                    <JoinUserLinkEditor @bind-Value="model.UserLink" />
                 </FormRowFor>
 
                 <FormRowFor For="@(() => model.ClaimText)">

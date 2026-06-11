@@ -1,0 +1,19 @@
+@using System.Linq.Expressions
+
+<JoinTextInput Value="@Value"
+               ValueChanged="@ValueChanged"
+               ValueExpression="@ValueExpression"
+               Placeholder="@("123, /user/123, vk.com/id…, @username, email@example.com")"
+               autocomplete="off" />
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string Value { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string>> ValueExpression { get; set; } = default!;
+}

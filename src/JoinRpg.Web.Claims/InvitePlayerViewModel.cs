@@ -13,7 +13,7 @@ public class InvitePlayerViewModel
 
     [Required(ErrorMessage = "Введите ссылку на пользователя")]
     [DisplayName("Ссылка на пользователя")]
-    [Description("ID пользователя, относительный или полный URL (например: 123, /users/123, https://joinrpg.ru/users/123)")]
+    [Description("ID пользователя, ссылка на профиль (например: 123, /user/123, https://joinrpg.ru/user/123), ссылка VK (vk.com/id…), Telegram (@username или t.me/username) или email")]
     public string UserLink { get; set; } = "";
 
     [Display(Name = "Сообщение игроку",
