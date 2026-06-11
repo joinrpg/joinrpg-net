@@ -1,0 +1,40 @@
+@using System.Linq.Expressions
+<textarea name="@FieldIdentifier.FieldName" rows="@Rows" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder">@internalValue</textarea>
+
+@code {
+    [CascadingParameter]
+    private EditContext? EditContext {get;set;}
+
+    [Parameter]
+    [EditorRequired]
+    public string Value { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string>> ValueExpression { get; set; } = default!;
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public int Rows { get; set; } = 4;
+
+    private FieldIdentifier FieldIdentifier { get; set; }
+
+    private string internalValue = "";
+
+    protected override void OnInitialized()
+    {
+        internalValue = Value;
+        FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+    }
+
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
+    {
+        internalValue = (string?) eventArgs.Value ?? "";
+        await ValueChanged.InvokeAsync(internalValue);
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
+    }
+}
