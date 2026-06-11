@@ -12,12 +12,19 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 public class InvitePlayerController(IInvitePlayerClient client) : ControllerBase
 {
     [HttpPost]
-    public async Task<Results<Ok<ClaimIdentification>, BadRequest>> Invite(ProjectIdentification projectId, CharacterIdentification targetId, string userLink, string claimText)
+    public async Task<Results<Ok<ClaimIdentification>, BadRequest<string>>> Invite(ProjectIdentification projectId, CharacterIdentification targetId, string userLink, string claimText)
     {
         if (targetId.ProjectId != projectId)
         {
-            return TypedResults.BadRequest();
+            return TypedResults.BadRequest("Персонаж не принадлежит проекту");
         }
-        return TypedResults.Ok(await client.InvitePlayer(targetId, userLink, claimText));
+        try
+        {
+            return TypedResults.Ok(await client.InvitePlayer(targetId, userLink, claimText));
+        }
+        catch (FormatException ex)
+        {
+            return TypedResults.BadRequest(ex.Message);
+        }
     }
 }

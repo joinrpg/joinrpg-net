@@ -135,6 +135,31 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
     }
 
     public async Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => await GetUserInfoHeadersByPredicate(user => user.Auth.IsAdmin);
+
+    public Task<UserIdentification?> FindByVk(string vkId)
+        => FindFirstUserId(u => u.Extra.Vk == vkId);
+
+    public Task<UserIdentification?> FindByTelegram(string telegramUsername)
+        => FindFirstUserId(u => u.Extra.Telegram == telegramUsername);
+
+    public async Task<UserIdentification?> FindByEmail(string email)
+    {
+        var normalizedEmail = email.ToUpperInvariant();
+        // EF6 не поддерживает StringComparison в LINQ; .ToUpper() транслируется в SQL UPPER() и даёт нужное case-insensitive сравнение
+#pragma warning disable CA1862
+        return await FindFirstUserId(u => u.Email.ToUpper() == normalizedEmail);
+#pragma warning restore CA1862
+    }
+
+    private async Task<UserIdentification?> FindFirstUserId(Expression<Func<User, bool>> predicate)
+    {
+        var userId = await ctx.Set<User>()
+            .AsNoTracking()
+            .Where(predicate)
+            .Select(u => (int?)u.UserId)
+            .FirstOrDefaultAsync();
+        return userId.HasValue ? new UserIdentification(userId.Value) : null;
+    }
     public async Task<IReadOnlyCollection<UserSubscribe>> GetDirect(IReadOnlyCollection<ClaimIdentification> claimIds)
     {
         var builder = UserInfoHeaderDtoBuilder();

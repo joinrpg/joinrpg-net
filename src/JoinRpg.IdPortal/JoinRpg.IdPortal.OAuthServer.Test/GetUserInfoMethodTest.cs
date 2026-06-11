@@ -62,6 +62,9 @@ public class GetUserInfoMethodTest
         Task<IReadOnlyCollection<UserInfo>> IUserRepository.GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         Task<IReadOnlyCollection<UserInfoHeader>> IUserRepository.GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         Task<IReadOnlyCollection<UserInfoHeader>> IUserRepository.GetAdminUserInfoHeaders() => throw new NotImplementedException();
+        Task<UserIdentification?> IUserRepository.FindByVk(string vkId) => throw new NotImplementedException();
+        Task<UserIdentification?> IUserRepository.FindByTelegram(string telegramUsername) => throw new NotImplementedException();
+        Task<UserIdentification?> IUserRepository.FindByEmail(string email) => throw new NotImplementedException();
     }
 
     private class FakeAvatarLoader(string uri) : IAvatarLoader

@@ -50,6 +50,7 @@ public static class Registration
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
+        .AddScoped<IUserLinkResolver, UserLinkResolver>()
 
         ;
     }

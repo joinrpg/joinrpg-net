@@ -45,4 +45,8 @@ public interface IUserRepository
     }
 
     Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders();
+
+    Task<UserIdentification?> FindByVk(string vkId);
+    Task<UserIdentification?> FindByTelegram(string telegramUsername);
+    Task<UserIdentification?> FindByEmail(string email);
 }
