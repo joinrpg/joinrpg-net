@@ -6,7 +6,7 @@ public record ProjectRolesListItemViewModel(ProjectRolesList RolesList, string? 
 
 public record ProjectRolesListViewModel(List<ProjectRolesListItemViewModel> Items, bool HasEditAccess);
 
-public class AddProjectRolesListViewModel
+public class AddProjectRolesListViewModel : IValidatableObject
 {
     [Required(ErrorMessage = "Укажите название сетки ролей")]
     [Display(Name = "Название")]
@@ -26,6 +26,16 @@ public class AddProjectRolesListViewModel
 
     // Поля (колонки) пока не настраиваем
     public IReadOnlyList<ProjectFieldIdentification> Fields => [];
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (PublicMode && ContactsColumn == ProjectRolesListVisibilityModeView.All)
+        {
+            yield return new ValidationResult(
+                "В публичной сетке ролей нельзя показывать все контакты",
+                [nameof(ContactsColumn)]);
+        }
+    }
 
     public ProjectRolesList ToDomain(ProjectIdentification projectId, int temporaryId = -1)
     {
