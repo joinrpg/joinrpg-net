@@ -60,7 +60,7 @@
 - `JoinRpg.Web.Plots` — UI для вводных (сюжетные элементы/квесты для игроков)
 - `JoinRpg.Web.CharacterGroups` — UI для групп персонажей
 - `JoinRpg.Web.CheckIn` — UI для регистрации игроков на игре
-- `JoinRpg.Web.ProjectMasterTools` — инструменты мастера игры
+- `JoinRpg.Web.ProjectMasterTools` — инструменты мастера игры, разнообразные инструменты, не видные игроку. 
 - `JoinRpg.Web.AdminTools` — инструменты администратора платформы
 - `JoinRpg.XGameApi.Contract` — DTO-контракты API для интеграции с внешними игровыми системами
 - `JoinRpg.Blazor.Client` — Blazor WebAssembly клиент (в процессе миграции страниц)
