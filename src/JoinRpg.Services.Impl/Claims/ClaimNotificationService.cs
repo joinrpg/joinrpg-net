@@ -89,7 +89,7 @@ internal class ClaimNotificationService(
             CommentExtraAction.ApproveByMaster or CommentExtraAction.DeclineByMaster or CommentExtraAction.RestoreByMaster
             or CommentExtraAction.MoveByMaster or CommentExtraAction.DeclineByPlayer or CommentExtraAction.ChangeResponsible
             or CommentExtraAction.OnHoldByMaster or CommentExtraAction.CheckedIn or CommentExtraAction.SecondRole or CommentExtraAction.OutOfGame
-            or CommentExtraAction.NewClaim
+            or CommentExtraAction.NewClaim or CommentExtraAction.InvitationAcceptedByPlayer
                 => s => s.ClaimStatusChange,
             null => s => s.Comments,
             _ => throw new ArgumentOutOfRangeException(nameof(commentExtraAction), commentExtraAction, "Неожиданное значение")

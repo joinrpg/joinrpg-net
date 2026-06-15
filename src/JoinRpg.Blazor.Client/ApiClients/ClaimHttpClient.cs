@@ -16,6 +16,14 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
 
     }
 
+    public async Task AcceptInvitation(ClaimIdentification claimId, string commentText)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsJsonAsync($"webapi/ClaimOperations/AcceptInvitation?claimId={claimId}", commentText);
+
+        response.EnsureSuccessStatusCode();
+    }
+
     async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimListClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
         => await httpClient.GetFromJsonAsync<IReadOnlyCollection<ClaimLinkViewModel>>(
             $"webapi/claim-list/GetClaims?projectId={projectId.Value}&claimStatusSpec={claimStatusSpec}")

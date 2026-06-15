@@ -12,4 +12,11 @@ public class ClaimOperationsController(IClaimOperationClient claimClient) : Cont
         await claimClient.AllowSensitiveData(projectId);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task<ActionResult> AcceptInvitation([FromQuery] ClaimIdentification claimId, [FromBody] string commentText)
+    {
+        await claimClient.AcceptInvitation(claimId, commentText);
+        return Ok();
+    }
 }

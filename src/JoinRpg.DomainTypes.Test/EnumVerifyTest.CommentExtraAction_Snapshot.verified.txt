@@ -1,4 +1,4 @@
-{
+﻿{
   ApproveByMaster: 2,
   ApproveFinance: 0,
   ChangeResponsible: 7,
@@ -6,6 +6,7 @@
   DeclineByMaster: 3,
   DeclineByPlayer: 6,
   FeeChanged: 10,
+  InvitationAcceptedByPlayer: 19,
   MoveByMaster: 5,
   NewClaim: 8,
   OnHoldByMaster: 9,

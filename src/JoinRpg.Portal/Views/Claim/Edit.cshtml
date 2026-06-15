@@ -175,6 +175,13 @@
                 </button>
 
             }
+            @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.ClaimStatus == ClaimStatusView.AddedByMaster)
+            {
+                <button class="btn btn-success" type="button" data-toggle="collapse" data-target="#acceptInvitationActionPanel"
+                aria-expanded="false">
+                    Принять приглашение
+                </button>
+            }
             @if (Model.Status.IsAlreadyApproved())
             {
                 <a href="@Url.Action("Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
@@ -224,6 +231,12 @@
             }
 
         </div>
+
+        @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.ClaimStatus == ClaimStatusView.AddedByMaster)
+        {
+            <component type="typeof(AcceptInvitationForm)" render-mode="WebAssemblyPrerendered"
+                       param-ClaimId="Model.ClaimIdentification" />
+        }
 
         <div class="panel panel-default collapse" id="approveClaimActionPanel">
 

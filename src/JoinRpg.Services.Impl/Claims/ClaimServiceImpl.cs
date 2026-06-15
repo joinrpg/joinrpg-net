@@ -219,15 +219,7 @@ internal class ClaimServiceImpl(
 
         var claimId = claim.GetId();
 
-        if (claim.Project.Details.AutoAcceptClaims &&
-            (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
-        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
-        {
-            impersonateAccessor.StartImpersonate(responsibleMaster.GetId(), responsibleMaster.ExtractDisplayName(), responsibleMaster.Auth.IsAdmin);
-            //TODO[Localize]
-            await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
-            impersonateAccessor.StopImpersonate();
-        }
+        await AutoApproveClaimIfNeeded(claim, projectInfo);
 
         logger.LogInformation("Claim ({claimId}) was successfully send to character {characterId}", claimId, characterId);
         return claimId;
@@ -904,6 +896,47 @@ internal class ClaimServiceImpl(
         claim.PlayerAllowedSenstiveData = true;
         SetDiscussed(claim, isVisibleToPlayer: true);
         await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task AcceptInvitation(ClaimIdentification claimId, string commentText)
+    {
+        var (claim, projectInfo) = await LoadClaimAsPlayer(claimId);
+
+        // Принять можно только приглашение от мастера
+        if (claim.ClaimStatus != ClaimStatus.AddedByMaster)
+        {
+            throw new ClaimWrongStatusException(claim);
+        }
+
+        SetDiscussed(claim, isVisibleToPlayer: true);
+
+        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(
+            commentText ?? "",
+            claim,
+            projectInfo,
+            CommentExtraAction.InvitationAcceptedByPlayer,
+            ClaimOperationType.PlayerChange,
+            Now);
+
+        await UnitOfWork.SaveChangesAsync();
+
+        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
+
+        await AutoApproveClaimIfNeeded(claim, projectInfo);
+    }
+
+    private async Task AutoApproveClaimIfNeeded(Claim claim, ProjectInfo projectInfo)
+    {
+        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
+        if (claim.Project.Details.AutoAcceptClaims &&
+            (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
+        {
+            var responsibleMaster = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.ResponsibleMasterUserId));
+            impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.IsAdmin);
+            //TODO[Localize]
+            await ApproveByMaster(claim.GetId(), "Ваша заявка была принята автоматически");
+            impersonateAccessor.StopImpersonate();
+        }
     }
 
     public async Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId)
