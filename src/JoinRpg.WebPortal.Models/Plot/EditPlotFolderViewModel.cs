@@ -7,7 +7,6 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
 
@@ -78,31 +77,6 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     public bool HasMasterAccess { get; private set; }
 }
 
-public class EditPlotElementViewModel(PlotElement e, bool hasManageAccess, int? version) : IProjectIdAware
-{
-    [ReadOnly(true)]
-    public int ProjectId { get; } = e.PlotFolder.ProjectId;
-    [ReadOnly(true)]
-    public int PlotFolderId { get; } = e.PlotFolderId;
-    [ReadOnly(true)]
-    public int PlotElementId { get; } = e.PlotElementId;
-
-    [Display(Name = "Для кого")]
-    public IEnumerable<string> Targets { get; set; } = e.GetElementBindingsForEdit();
-    [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
-    public string Content { get; set; } = (version is null ? e.LastVersion() : e.SpecificVersion(version.Value))?.Content.Contents ?? "";
-
-    [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
-    public string TodoField { get; set; } = e.LastVersion().TodoField;
-
-    [ReadOnly(true), Display(Name = "Статус")]
-    public PlotStatus Status { get; } = e.GetStatus();
-
-    public PlotElementTypeView ElementType { get; } = (PlotElementTypeView)e.ElementType;
-    public bool HasManageAccess { get; } = hasManageAccess;
-    public bool HasPublishedVersion { get; } = e.Published != null;
-    public TargetsInfo Target { get; } = e.ToTarget();
-}
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {

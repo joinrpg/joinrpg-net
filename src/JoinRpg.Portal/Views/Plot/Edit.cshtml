@@ -74,7 +74,6 @@
     @if (Model.HasEditAccess)
     {
         <a href="@Url.Action("CreateElement", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить вводную...</a>
-        <a href="@Url.Action("CreateHandout", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить элемент раздатки...</a>
     }
 </h3>
 
