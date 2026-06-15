@@ -14,10 +14,7 @@ public static class DisplayAttributeHelper
     /// </summary>
     public static string GetDisplayName(this MemberInfo propertyInfo)
     {
-        if (propertyInfo == null)
-        {
-            throw new ArgumentNullException(nameof(propertyInfo));
-        }
+        ArgumentNullException.ThrowIfNull(propertyInfo);
 
         return propertyInfo.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName
             ?? propertyInfo.GetCustomAttribute<DisplayAttribute>()?.GetName()
@@ -29,10 +26,7 @@ public static class DisplayAttributeHelper
     /// </summary>
     public static string GetDisplayName<TEnum>(this TEnum enumValue) where TEnum : notnull, Enum
     {
-        if (enumValue is null)
-        {
-            throw new ArgumentNullException(nameof(enumValue));
-        }
+        ArgumentNullException.ThrowIfNull(enumValue);
 
         return enumValue.GetAttribute<DisplayNameAttribute>()?.DisplayName
             ?? enumValue.GetAttribute<DisplayAttribute>()?.GetName()
@@ -42,12 +36,9 @@ public static class DisplayAttributeHelper
     /// <summary>
     /// Returns short name specified by <see cref="DisplayAttribute"/>
     /// </summary>
-    public static string? GetShortName(this Enum enumValue)
+    public static string? GetShortName<TEnum>(this TEnum enumValue) where TEnum : notnull, Enum
     {
-        if (enumValue == null)
-        {
-            throw new ArgumentNullException(nameof(enumValue));
-        }
+        ArgumentNullException.ThrowIfNull(enumValue);
 
         return enumValue.GetAttribute<DisplayAttribute>()?.GetShortName();
     }
@@ -55,12 +46,9 @@ public static class DisplayAttributeHelper
     /// <summary>
     /// Returns description specified by <see cref="DescriptionAttribute"/> or <see cref="DisplayAttribute"/>
     /// </summary>
-    public static string? GetDescription(this Enum enumValue)
+    public static string? GetDescription<TEnum>(this TEnum enumValue) where TEnum : notnull, Enum
     {
-        if (enumValue is null)
-        {
-            throw new ArgumentNullException(nameof(enumValue));
-        }
+        ArgumentNullException.ThrowIfNull(enumValue);
 
         return enumValue.GetAttribute<DescriptionAttribute>()?.Description
             ?? enumValue.GetAttribute<DisplayAttribute>()?.GetDescription();

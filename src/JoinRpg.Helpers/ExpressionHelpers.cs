@@ -8,9 +8,6 @@ public static class ExpressionHelpers
     public static string? AsPropertyName<T1, T2>(this Expression<Func<T1, T2>> expression)
         => expression.AsPropertyAccess()?.Name;
 
-    public static string? AsPropertyName<T1>(this Expression<Func<T1>> expression)
-        => expression.AsPropertyAccess()?.Name;
-
     public static PropertyInfo? AsPropertyAccess<T1, T2>(this Expression<Func<T1, T2>> expression)
         => AsPropetyAccessImpl(expression.Body);
 
