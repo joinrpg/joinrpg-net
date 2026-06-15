@@ -26,7 +26,7 @@ public class AdminHotRolesListModel(IHotCharactersRepository hotCharactersReposi
         return new AdminHotRoleViewModel(
                     new CharacterLinkSlimViewModel(dto.CharacterId, dto.CharacterName, dto.IsActive, ViewModeSelector.Create(dto.IsPublic, canViewPrivate: true)),
                     new ProjectLinkViewModel(dto.CharacterId.ProjectId, dto.ProjectName),
-                    dto.CharacterDesc.TakeWords(50).ToHtmlString(), dto.ProjectDesc.TakeWords(50).ToHtmlString(),
+                    ((MarkdownString?)dto.CharacterDesc).TakeWords(50).ToHtmlString(), ((MarkdownString?)dto.ProjectDesc).TakeWords(50).ToHtmlString(),
                     SelectKogdaIgraCard(dto, kogdaIgraCards));
     }
 

@@ -75,7 +75,7 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
 
         IsPlayerSelectable = entity.IsPlayerSelectable;
         IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-        DescriptionView = entity.Description.ToHtmlString();
+        DescriptionView = ((MarkdownString?)entity.Description).ToHtmlString();
         ProjectId = project.ProjectId;
         CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
         CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);

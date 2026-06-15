@@ -96,7 +96,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             ProjectName = project.ProjectName,
             Recipients = recipients.GetInviteSubscriptions(),
             RecipientClaims = recipients,
-            Text = new MarkdownString(),
+            Text = new MarkdownDbValue(),
         };
     }
 

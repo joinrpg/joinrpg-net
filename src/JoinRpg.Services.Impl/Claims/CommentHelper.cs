@@ -88,7 +88,7 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
             CommentText = new CommentText()
             {
                 CommentId = -1,
-                Text = new MarkdownString(commentCommand.CommentText),
+                Text = new MarkdownDbValue(commentCommand.CommentText),
             },
             IsCommentByPlayer = !commentCommand.ProjectInfo.HasMasterAccess(currentUserAccessor),
             IsVisibleToPlayer = commentCommand.IsVisibleToPlayer,

@@ -244,7 +244,7 @@ internal class FinanceOperationsImpl(
         project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
         project.Details.PreferentialFeeEnabled = request.PreferentialFeeEnabled;
         project.Details.PreferentialFeeConditions =
-            new MarkdownString(request.PreferentialFeeConditions);
+            new MarkdownDbValue(request.PreferentialFeeConditions);
 
         await UnitOfWork.SaveChangesAsync();
     }
@@ -408,7 +408,7 @@ internal class FinanceOperationsImpl(
             ReceiverId = request.Receiver,
             TransferText = new TransferText()
             {
-                Text = new MarkdownString(Required(request.Comment)),
+                Text = new MarkdownDbValue(Required(request.Comment)),
             },
         };
 

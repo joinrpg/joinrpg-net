@@ -31,7 +31,7 @@
             </span>
           </div>
             <div class="help-block">
-                @Html.Raw(Model.AccommodationRequest.AccommodationType.Description.ToHtmlString())
+                @Html.Raw(((JoinRpg.Common.PrimitiveTypes.MarkdownString?)Model.AccommodationRequest.AccommodationType.Description).ToHtmlString())
             </div>
             if (Model.AccommodationRequest.Accommodation != null)
             {

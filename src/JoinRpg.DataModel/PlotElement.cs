@@ -46,7 +46,7 @@ public class PlotElementTexts : IOrderableEntity
     public int PlotElementId { get; set; }
 
 
-    public MarkdownString Content { get; set; } = new MarkdownString();
+    public MarkdownDbValue Content { get; set; } = new MarkdownDbValue();
 
     public string TodoField { get; set; }
 

@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Helpers;

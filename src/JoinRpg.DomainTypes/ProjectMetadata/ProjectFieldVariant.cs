@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.ProjectMetadata;
@@ -10,8 +9,8 @@ public record class ProjectFieldVariant(
     bool IsPlayerSelectable,
     bool IsActive,
     CharacterGroupIdentification? CharacterGroupId,
-    MarkdownString Description,
-    MarkdownString MasterDescription,
+    MarkdownString? Description,
+    MarkdownString? MasterDescription,
     string? ProgrammaticValue
     ) : IOrderableEntity
 {

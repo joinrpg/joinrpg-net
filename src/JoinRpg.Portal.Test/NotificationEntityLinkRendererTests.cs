@@ -20,9 +20,9 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
         var link = renderer.RenderEntityLink(new ClaimCommentIdentification(new ClaimIdentification(1, 1), 42));
 
         link.ShouldNotBeNull();
-        link.Markdown.Contents.ShouldNotBeNull();
-        link.Markdown.Contents.ShouldStartWith("Подробнее: [комментарий](http");
-        link.Markdown.Contents.ShouldContain("#comment42");
+        link.Markdown.Value.ShouldNotBeNull();
+        link.Markdown.Value.ShouldStartWith("Подробнее: [комментарий](http");
+        link.Markdown.Value.ShouldContain("#comment42");
         link.PlainText.ShouldStartWith("Подробнее: комментарий: http");
         link.PlainText.ShouldContain("#comment42");
     }
@@ -36,7 +36,7 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
         var link = renderer.RenderEntityLink(new ProjectIdentification(1));
 
         link.ShouldNotBeNull();
-        link.Markdown.Contents.ShouldStartWith("Подробнее: [проект](http");
+        link.Markdown.Value.ShouldStartWith("Подробнее: [проект](http");
         link.PlainText.ShouldStartWith("Подробнее: проект: http");
     }
 

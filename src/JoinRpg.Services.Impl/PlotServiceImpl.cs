@@ -102,7 +102,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         plotElement.Texts.Add(new PlotElementTexts()
         {
-            Content = new MarkdownString(Required(content.Trim())),
+            Content = new MarkdownDbValue(Required(content.Trim())),
             TodoField = todoField,
             Version = 0,
             ModifiedDateTime = now,
@@ -197,7 +197,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         var text = new PlotElementTexts()
         {
-            Content = new MarkdownString(contents),
+            Content = new MarkdownDbValue(contents),
             TodoField = todoField,
             Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
             PlotElementId = plotElement.PlotElementId,
@@ -283,7 +283,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
                             .WhereNotNull());
 
 
-            await massProjectEmailService.PlotEmail([.. claims.Select(c => c.GetId())], new MarkdownString(commentText), plotElement.GetId());
+            await massProjectEmailService.PlotEmail([.. claims.Select(c => c.GetId())], new MarkdownDbValue(commentText), plotElement.GetId());
         }
     }
 

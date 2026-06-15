@@ -51,7 +51,7 @@ public class CharacterGroup : IWorldObject, IDeletableSubEntity, IValidatableObj
 
     public bool IsActive { get; set; }
 
-    public MarkdownString Description { get; set; } = new MarkdownString();
+    public MarkdownDbValue Description { get; set; } = new MarkdownDbValue();
 
     // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual User? ResponsibleMasterUser { get; set; }

@@ -7,15 +7,15 @@ namespace JoinRpg.DataModel;
 public class ProjectDetails : IValidatableObject
 {
     [Key] public int ProjectId { get; set; }
-    public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
-    public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
+    public MarkdownDbValue ClaimApplyRules { get; set; } = new MarkdownDbValue();
+    public MarkdownDbValue ProjectAnnounce { get; set; } = new MarkdownDbValue();
 
     public bool EnableManyCharacters { get; set; }
     public bool PublishPlot { get; set; }
 
     public bool FinanceWarnOnOverPayment { get; set; } = true;
     public bool PreferentialFeeEnabled { get; set; } = false;
-    public MarkdownString PreferentialFeeConditions { get; set; } = new MarkdownString();
+    public MarkdownDbValue PreferentialFeeConditions { get; set; } = new MarkdownDbValue();
 
     public bool EnableCheckInModule { get; set; } = false;
     public bool CheckInProgress { get; set; } = false;

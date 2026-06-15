@@ -25,7 +25,7 @@ internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
     {
         if (ProjectInfo.CharacterDescriptionField is ProjectFieldInfo descField)
         {
-            Character.Description = new MarkdownString(
+            Character.Description = new MarkdownDbValue(
                 GetFieldValue(descField));
         }
 

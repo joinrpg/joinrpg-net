@@ -35,7 +35,7 @@ public class HandoutReportViewModel
 public class HandoutListItemViewModel(PlotTextDto plotTextDto)
 {
     [Display(Name = "Что раздавать")]
-    public string Text { get; } = plotTextDto.Content.ToPlainTextWithoutHtmlEscape();
+    public string Text { get; } = ((MarkdownString?)plotTextDto.Content).ToPlainTextWithoutHtmlEscape();
 }
 
 public class HandoutReportItemViewModel(PlotTextDto element, int count)

@@ -24,9 +24,9 @@ public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObj
 
     public bool CanPlayerEdit { get; set; }
 
-    public MarkdownString Description { get; set; }
+    public MarkdownDbValue Description { get; set; }
 
-    public MarkdownString MasterDescription { get; set; }
+    public MarkdownDbValue MasterDescription { get; set; }
 
     public virtual Project Project { get; set; }
 

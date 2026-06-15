@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
@@ -19,8 +18,8 @@ public record class ProjectFieldInfo(
     bool ValidForNpc,
     bool IsActive,
     IReadOnlyCollection<CharacterGroupIdentification> GroupsAvailableForIds,
-    MarkdownString Description,
-    MarkdownString MasterDescription,
+    MarkdownString? Description,
+    MarkdownString? MasterDescription,
     bool IncludeInPrint,
     ProjectFieldSettings FieldSettings,
     string? ProgrammaticValue,

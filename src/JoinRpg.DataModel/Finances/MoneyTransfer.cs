@@ -45,5 +45,5 @@ public class TransferText
 {
     public int MoneyTransferId { get; set; }
 
-    public MarkdownString Text { get; set; } = new MarkdownString();
+    public MarkdownDbValue Text { get; set; } = new MarkdownDbValue();
 }

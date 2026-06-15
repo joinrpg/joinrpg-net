@@ -2,7 +2,6 @@
   <PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
     <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
   </ItemGroup>
   <ItemGroup>

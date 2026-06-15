@@ -137,13 +137,13 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotElementId = e.PlotElementId;
         PlotElementIdentification = e.GetId();
         Target = e.ToTarget();
-        Content = currentVersionText.Content.ToHtmlString(renderer);
+        Content = ((MarkdownString?)currentVersionText.Content).ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
         ProjectId = e.PlotFolder.ProjectId;
         PlotFolderId = e.PlotFolderId;
         Status = e.GetStatus();
         ElementType = (PlotElementTypeView)e.ElementType;
-        ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
+        ShortContent = ((MarkdownString?)currentVersionText.Content).TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
         HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanManagePlots) && e.Project.Active;
         HasMasterAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId));

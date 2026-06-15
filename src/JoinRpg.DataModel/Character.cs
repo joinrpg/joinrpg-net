@@ -50,7 +50,7 @@ public class Character : IWorldObject, IFieldContainter, ICreatedUpdatedTrackedF
     /// <summary>
     /// This field used only in roles tree
     /// </summary>
-    public MarkdownString Description { get; set; } = new MarkdownString();
+    public MarkdownDbValue Description { get; set; } = new MarkdownDbValue();
 
     public virtual HashSet<Claim> Claims { get; set; } = [];
 

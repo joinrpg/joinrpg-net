@@ -20,9 +20,9 @@ public interface IForumThreadListItem : ICommentDiscussionHeader, IForumThread
 {
     string Header { get; }
     User Topicstarter { get; }
-    MarkdownString LastMessageText { get; }
+    MarkdownDbValue LastMessageText { get; }
     User LastMessageAuthor { get; }
     DateTime UpdatedAt { get; }
     User LastMessageAuthorForPlayer { get; set; }
-    MarkdownString LastMessageTextForPlayer { get; set; }
+    MarkdownDbValue LastMessageTextForPlayer { get; set; }
 }

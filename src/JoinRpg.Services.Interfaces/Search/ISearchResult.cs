@@ -4,7 +4,7 @@ public record class SearchResult : ILinkable
 {
     public required LinkType LinkType { get; set; }
     public required string Name { get; set; }
-    public required MarkdownString Description { get; set; }
+    public required MarkdownDbValue Description { get; set; }
 
     public required bool IsPublic { get; set; }
 

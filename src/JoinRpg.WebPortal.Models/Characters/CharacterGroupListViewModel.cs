@@ -41,7 +41,7 @@ public static class CharacterGroupListViewModel
                 prevCopy?.ActiveCharacters ??
                 GenerateCharacters(characterGroup)
                   .ToList(),
-                Description = characterGroup.Description.ToHtmlString(),
+                Description = ((MarkdownString?)characterGroup.Description).ToHtmlString(),
                 Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
                 IsPublic = characterGroup.IsPublic,
                 IsSpecial = characterGroup.IsSpecial,
@@ -106,7 +106,7 @@ public static class CharacterGroupListViewModel
                 IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
                 IsAvailable = acceptingClaims,
                 SlotLimit = arg.CharacterSlotLimit,
-                Description = arg.Description.ToHtmlString(),
+                Description = ((MarkdownString?)arg.Description).ToHtmlString(),
                 IsPublic = arg.IsPublic,
                 IsActive = arg.IsActive,
                 ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),

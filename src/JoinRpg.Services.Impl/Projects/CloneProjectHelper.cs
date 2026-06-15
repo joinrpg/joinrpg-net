@@ -147,7 +147,7 @@ internal class CloneProjectHelper(
                             projectId,
                             field.Type,
                             field.Name,
-                            field.Description?.Contents ?? "",
+                            field.Description?.Value ?? "",
                             field.CanPlayerEdit,
                             field.CanPlayerView,
                             field.IsPublic,
@@ -158,7 +158,7 @@ internal class CloneProjectHelper(
                             field.IncludeInPrint,
                             field.ShowOnUnApprovedClaims,
                             field.Price,
-                            field.MasterDescription?.Contents ?? "",
+                            field.MasterDescription?.Value ?? "",
                             field.ProgrammaticValue)
                         );
 
@@ -167,7 +167,7 @@ internal class CloneProjectHelper(
             {
                 foreach (var variant in field.Variants.Where(v => v.IsActive))
                 {
-                    var newVariantId = await fieldSetupService.CreateFieldValueVariant(new CreateFieldValueVariantRequest(newId, variant.Label, variant.Description?.Contents, variant.MasterDescription?.Contents, variant.ProgrammaticValue, variant.Price, variant.IsPlayerSelectable, (variant as TimeSlotFieldVariant)?.TimeSlotOptions));
+                    var newVariantId = await fieldSetupService.CreateFieldValueVariant(new CreateFieldValueVariantRequest(newId, variant.Label, variant.Description?.Value, variant.MasterDescription?.Value, variant.ProgrammaticValue, variant.Price, variant.IsPlayerSelectable, (variant as TimeSlotFieldVariant)?.TimeSlotOptions));
                     VariantMapping.Add(variant.Id, newVariantId);
                 }
             }
@@ -233,7 +233,7 @@ internal class CloneProjectHelper(
             var request = new UpdateFieldRequest(
                 newField.Id,
                 newField.Name,
-                newField.Description.Contents ?? "",
+                newField.Description?.Value ?? "",
                 newField.CanPlayerEdit,
                 newField.CanPlayerView,
                 newField.IsPublic,
@@ -243,7 +243,7 @@ internal class CloneProjectHelper(
                 newField.IncludeInPrint,
                 newField.ShowOnUnApprovedClaims,
                 newField.Price,
-                newField.MasterDescription.Contents ?? "",
+                newField.MasterDescription?.Value ?? "",
                 newField.ProgrammaticValue ?? ""
                 );
             await fieldSetupService.UpdateFieldParams(request);

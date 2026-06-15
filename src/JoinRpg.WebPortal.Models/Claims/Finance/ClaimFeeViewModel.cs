@@ -46,7 +46,7 @@ public class ClaimFeeViewModel
         PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
         PreferentialFeeUser = claim.PreferentialFeeUser;
         PreferentialFeeConditions =
-            claim.Project.Details.PreferentialFeeConditions.ToHtmlString();
+            ((MarkdownString?)claim.Project.Details.PreferentialFeeConditions).ToHtmlString();
         PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && Status.IsActive();
 
         ClaimId = claim.ClaimId;

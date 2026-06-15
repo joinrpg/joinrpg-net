@@ -97,7 +97,7 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
             ProjectName = room.Project.ProjectName,
             Recipients = room.GetSubscriptions().ToList(),
             Room = room,
-            Text = new MarkdownString(),
+            Text = new MarkdownDbValue(),
         };
     }
 

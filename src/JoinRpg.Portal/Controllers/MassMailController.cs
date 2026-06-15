@@ -51,7 +51,7 @@ public class MassMailController(
 
             await massMailManager.MassMail(
                 [.. viewModel.ClaimIds.ToClaimIds(projectId)],
-                new MarkdownString(viewModel.Body),
+                new MarkdownDbValue(viewModel.Body),
                 viewModel.Subject,
                 viewModel.AlsoMailToMasters
                 );

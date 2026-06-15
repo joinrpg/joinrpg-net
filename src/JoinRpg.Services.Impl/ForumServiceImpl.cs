@@ -49,7 +49,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
             var email = new ForumMessageNotification(
                 new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
                 currentUserAccessor.ToUserInfoHeader(),
-                new MarkdownString(commentText),
+                new MarkdownDbValue(commentText),
                 header
                 );
 
@@ -79,7 +79,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         var email = new ForumMessageNotification(
                 new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
                 currentUserAccessor.ToUserInfoHeader(),
-                new MarkdownString(commentText),
+                new MarkdownDbValue(commentText),
                 forumThread.Header,
                 ParentCommentAuthor: parentComment?.Author.ToUserInfoHeader()
                 );

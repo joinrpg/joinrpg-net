@@ -92,7 +92,7 @@ public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
         Claim = claim ?? targetChar.ApprovedClaim;
 
         Initiator = initiator;
-        Text = new MarkdownString();
+        Text = new MarkdownDbValue();
         Recipients = recipients;
         UpdatedFields = updatedFields ?? throw new ArgumentNullException(nameof(updatedFields));
         OtherChangedAttributes = otherChangedAttributes ?? new Dictionary<string, PreviousAndNewValue>();

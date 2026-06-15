@@ -1,5 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes;
-
 namespace JoinRpg.Markdown.Test;
 
 public class TelegramHtmlSanitizeTest

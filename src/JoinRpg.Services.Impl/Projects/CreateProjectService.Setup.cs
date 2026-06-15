@@ -42,7 +42,7 @@ internal partial class CreateProjectService
         {
             Capacity = 1,
             Cost = 0,
-            Description = new MarkdownString("Измените свойства поселения в настройках"),
+            Description = new MarkdownDbValue("Измените свойства поселения в настройках"),
             IsInfinite = false,
             IsPlayerSelectable = true,
             Name = "Вид поселения для примера",

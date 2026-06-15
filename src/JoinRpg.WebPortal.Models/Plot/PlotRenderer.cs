@@ -14,7 +14,7 @@ public static class PlotRenderer
         var masterAccess = projectInfo.HasMasterAccess(currentUser);
         var masterOrPublishAccess = masterAccess || projectInfo.PublishPlot;
         return new PlotRenderedTextViewModel(
-            self.Content.ToHtmlString(linkRenderer),
+            ((MarkdownString?)self.Content).ToHtmlString(linkRenderer),
             masterAccess ? new MarkupString(self.TodoField) : null,
             self.Id,
             masterOrPublishAccess ? self.GetStatus() : null,

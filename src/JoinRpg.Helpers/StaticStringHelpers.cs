@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Helpers;
 
 public static class StaticStringHelpers
@@ -104,24 +102,6 @@ public static class StaticStringHelpers
     }
 
     public static List<int> ParseToIntList(this string intList) => intList.AsSpan().ParseToIntList();
-
-    public static string WithDefaultStringValue(
-        this string? value,
-        string defaultValue)
-    {
-        ArgumentNullException.ThrowIfNull(defaultValue);
-
-        return string.IsNullOrEmpty(value) ? defaultValue : value;
-    }
-
-    public static MarkdownString WithDefaultStringValue(
-    this MarkdownString? value,
-    string defaultValue)
-    {
-        ArgumentNullException.ThrowIfNull(defaultValue);
-
-        return (value is null || string.IsNullOrEmpty(value.Contents)) ? new MarkdownString(defaultValue) : value;
-    }
 
     public static string ToHexString(this Guid guid) => Convert.ToHexString(guid.ToByteArray());
 }

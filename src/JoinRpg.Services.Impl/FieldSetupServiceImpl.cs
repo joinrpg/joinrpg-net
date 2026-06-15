@@ -69,8 +69,8 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         field.IsActive = true;
 
         field.FieldName = Required(request.Name);
-        field.Description = new MarkdownString(request.FieldHint);
-        field.MasterDescription = new MarkdownString(request.MasterFieldHint);
+        field.Description = new MarkdownDbValue(request.FieldHint);
+        field.MasterDescription = new MarkdownDbValue(request.MasterFieldHint);
         field.CanPlayerEdit = request.CanPlayerEdit;
         field.CanPlayerView = request.CanPlayerView;
         field.ValidForNpc = request.ValidForNpc;
@@ -157,10 +157,10 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     private void SetFieldVariantPropsFromRequest(FieldValueVariantRequestBase request,
         ProjectFieldDropdownValue variant)
     {
-        variant.Description = new MarkdownString(request.Description);
+        variant.Description = new MarkdownDbValue(request.Description);
         variant.Label = request.Label;
         variant.IsActive = true;
-        variant.MasterDescription = new MarkdownString(request.MasterDescription);
+        variant.MasterDescription = new MarkdownDbValue(request.MasterDescription);
 
         variant.Price = request.Price;
         variant.PlayerSelectable = request.PlayerSelectable;

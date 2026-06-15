@@ -12,7 +12,7 @@ internal static class SearchUtils
         {
             LinkType = LinkType.ResultUser,
             Name = user.GetDisplayName(),
-            Description = new MarkdownString(),
+            Description = new MarkdownDbValue(),
             Identification = user.UserId.ToString(),
             ProjectId = null, //Users not associated with any project
             IsPublic = true,
@@ -21,5 +21,5 @@ internal static class SearchUtils
         };
     }
 
-    public static MarkdownString GetFoundByIdDescription(int idToFind) => new($"ID: {idToFind}");
+    public static MarkdownDbValue GetFoundByIdDescription(int idToFind) => new($"ID: {idToFind}");
 }

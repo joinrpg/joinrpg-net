@@ -100,7 +100,7 @@ public class ForumThreadListItemViewModel
         Header = thread.Header;
         Topicstarter = thread.Topicstarter;
 
-        LastMessageText = (masterAccess ? thread.LastMessageText : thread.LastMessageTextForPlayer).ToHtmlString();
+        LastMessageText = ((MarkdownString?)(masterAccess ? thread.LastMessageText : thread.LastMessageTextForPlayer)).ToHtmlString();
         LastMessageAuthor = masterAccess ? thread.LastMessageAuthor : thread.LastMessageAuthorForPlayer;
         UpdatedAt = thread.UpdatedAt;
         UnreadCount = thread.GetUnreadCount(currentUserId);

@@ -32,7 +32,7 @@ public class CharacterListViewService(
     private static CharacterDto CreateDto(Character c) => new(
         new CharacterIdentification(c.ProjectId, c.CharacterId),
         c.CharacterName,
-        LimitDescription(c.Description.ToPlainTextAndEscapeHtml().ToString()),
+        LimitDescription(((MarkdownString?)c.Description).ToPlainTextAndEscapeHtml().ToString()),
         c.IsPublic);
 
     private static string LimitDescription(string v)
