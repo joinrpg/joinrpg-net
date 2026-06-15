@@ -1,0 +1,6 @@
+﻿Добрый день, %recepient.name%
+Заявка CharacterName игрока PlayerName принята мастером Master
+
+**Приглашение принято игроком**
+
+

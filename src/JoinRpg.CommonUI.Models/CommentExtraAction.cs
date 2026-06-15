@@ -60,4 +60,7 @@ public enum CommentExtraAction
 
     [Display(Name = "Отправлен перевод", ShortName = "отмечен перевод денег")]
     TransferFrom,
+
+    [Display(Name = "Приглашение принято игроком", ShortName = "принята")]
+    InvitationAcceptedByPlayer,
 }

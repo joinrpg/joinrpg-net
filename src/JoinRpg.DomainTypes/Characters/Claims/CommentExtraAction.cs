@@ -21,4 +21,5 @@ public enum CommentExtraAction
     RefundFee = 16,
     TransferTo = 17,
     TransferFrom = 18,
+    InvitationAcceptedByPlayer = 19,
 }

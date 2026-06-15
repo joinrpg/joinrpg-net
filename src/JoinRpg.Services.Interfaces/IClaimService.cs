@@ -50,6 +50,7 @@ public interface IClaimService
 
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId);
     Task AllowSensitiveData(ClaimIdentification projectId);
+    Task AcceptInvitation(ClaimIdentification claimId, string commentText);
     Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId);
 }
 

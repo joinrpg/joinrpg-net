@@ -1,0 +1,73 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject IClaimOperationClient ClaimClient
+@inject NavigationManager NavigationManager
+
+@* Обёртка .collapse раскрывается кнопкой через Bootstrap (data-target="#acceptInvitationActionPanel"). *@
+@* margin-top повторяет отступ, который Bootstrap даёт соседним панелям через .panel-group .panel + .panel. *@
+<div class="collapse" id="acceptInvitationActionPanel" style="margin-top: 5px">
+    <JoinPanel>
+        <Header>Принятие приглашения</Header>
+        <Body>
+            @if (loading)
+            {
+                <JoinLoadingMessage Message="Принимаем приглашение..." />
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+                }
+
+                <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+                    <FormHorizontal>
+                        <FormRowFor For="@(() => model.CommentText)">
+                            <JoinTextArea @bind-Value="model.CommentText" Placeholder="Комментарий (необязательно)" />
+                        </FormRowFor>
+
+                        <FormRow>
+                            <JoinButton Submit="true" Preset="ButtonPreset.Save" Label="Принять приглашение"
+                                        ProgressLabel="Принимаем..." InProgress="@loading" AutoProgress="false" />
+                        </FormRow>
+                    </FormHorizontal>
+                </EditForm>
+            }
+        </Body>
+    </JoinPanel>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    private sealed class FormModel
+    {
+        [Display(Name = "Комментарий")]
+        public string CommentText { get; set; } = "";
+    }
+
+    private readonly FormModel model = new();
+    private bool loading;
+    private string? errorMessage;
+
+    private async Task HandleSubmit()
+    {
+        loading = true;
+        errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            await ClaimClient.AcceptInvitation(ClaimId, model.CommentText);
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}
