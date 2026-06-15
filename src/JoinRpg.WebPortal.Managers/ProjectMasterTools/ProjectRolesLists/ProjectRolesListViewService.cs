@@ -9,7 +9,6 @@ namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
 internal class ProjectRolesListViewService(
     IProjectRolesListRepository repository,
     IProjectRolesListService service,
-    IProjectRepository projectRepository,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository)
     : IProjectRolesListClient
@@ -17,6 +16,7 @@ internal class ProjectRolesListViewService(
     public async Task<ProjectRolesListViewModel> GetList(ProjectIdentification projectId)
     {
         var domainItems = await repository.GetForProjectAsync(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var groupIdentifications = domainItems
             .Where(item => item.CharacterGroupId != null)
@@ -27,13 +27,9 @@ internal class ProjectRolesListViewService(
         IReadOnlyDictionary<CharacterGroupIdentification, string>? groupNames = null;
         if (groupIdentifications.Count > 0)
         {
-            var groupHeaders = await projectRepository.GetGroupHeaders(groupIdentifications);
-            groupNames = groupHeaders.ToDictionary(
-                gh => gh.CharacterGroupId,
-                gh => gh.Name);
+            groupNames = projectInfo.GetGroupsById(groupIdentifications)
+                .ToDictionary(g => g.Id, g => g.Name);
         }
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         return ProjectRolesListViewModelBuilder.Build(
             domainItems,

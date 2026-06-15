@@ -58,10 +58,6 @@ public interface IProjectRepository : IDisposable
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>
     Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
-
-    Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId);
-
-    Task<CharacterGroupHeaderDto[]> GetGroupHeaders(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds);
 }
 
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)
@@ -101,14 +97,3 @@ public record PersonalizedProjectListSpecification(ProjectListCriteria Criteria,
 }
 
 public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, All, Public };
-
-public record CharacterGroupHeaderDto(CharacterGroupIdentification CharacterGroupId, string Name, bool IsActive, bool IsPublic) : ILinkableWithName
-{
-    string ILinkableWithName.Name => Name;
-
-    LinkType ILinkable.LinkType => LinkType.ResultCharacterGroup;
-
-    string? ILinkable.Identification => CharacterGroupId.CharacterGroupId.ToString();
-
-    int? ILinkable.ProjectId => CharacterGroupId.ProjectId;
-}
