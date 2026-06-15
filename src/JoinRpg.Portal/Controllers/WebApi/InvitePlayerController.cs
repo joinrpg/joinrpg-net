@@ -1,3 +1,4 @@
+using JoinRpg.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -23,6 +24,10 @@ public class InvitePlayerController(IInvitePlayerClient client) : ControllerBase
             return TypedResults.Ok(await client.InvitePlayer(targetId, userLink, claimText));
         }
         catch (FormatException ex)
+        {
+            return TypedResults.BadRequest(ex.Message);
+        }
+        catch (JoinRpgBaseException ex)
         {
             return TypedResults.BadRequest(ex.Message);
         }
