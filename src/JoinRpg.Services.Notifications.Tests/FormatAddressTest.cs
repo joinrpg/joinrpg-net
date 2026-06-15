@@ -1,5 +1,4 @@
 using JoinRpg.Services.Notifications.Senders.PostboxEmail;
-using Shouldly;
 
 namespace JoinRpg.Services.Notifications.Tests;
 

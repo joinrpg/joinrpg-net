@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Html;
 
 namespace JoinRpg.Web.Helpers;
 
+[Obsolete]
 public enum ShowImplicitGroups
 {
     None,
@@ -10,6 +11,7 @@ public enum ShowImplicitGroups
     Parents,
 }
 
+[Obsolete]
 public enum MagicControlStrategy
 {
     Changer,
@@ -17,6 +19,7 @@ public enum MagicControlStrategy
 }
 
 
+[Obsolete]
 public static class MagicControlHelper
 {
     private static string GetImplicitGroupString(ShowImplicitGroups showGroups)
@@ -30,6 +33,7 @@ public static class MagicControlHelper
         };
     }
 
+    [Obsolete]
     public static HtmlString GetMagicSelect(int projectId, bool showCharacters, ShowImplicitGroups showGroups,
         MagicControlStrategy strategy, string propertyName, IEnumerable<string> elements, bool showSpecial)
     {
