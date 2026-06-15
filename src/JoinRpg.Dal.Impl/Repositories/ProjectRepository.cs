@@ -52,19 +52,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         }
     }
 
-    public async Task<CharacterGroupHeaderDto[]> LoadDirectChildGroupHeaders(CharacterGroupIdentification characterGroupId)
-    {
-        var query =
-            from characterGroup in Ctx.Set<CharacterGroup>()
-            where characterGroup.ProjectId == characterGroupId.ProjectId && characterGroup.ParentGroupsImpl.ListIds.Contains(characterGroupId.CharacterGroupId.ToString())
-            where !characterGroup.IsSpecial && characterGroup.IsActive
-            select characterGroup;
-
-        var list = await query.ToListAsync();
-        return [.. list.Where(g => g.ParentCharacterGroupIds.Contains(characterGroupId.CharacterGroupId))
-            .Select(g => new CharacterGroupHeaderDto(new CharacterGroupIdentification(new ProjectIdentification(g.ProjectId), g.CharacterGroupId), g.CharacterGroupName, g.IsActive, g.IsPublic))];
-    }
-
     public async Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
     {
         await LoadProjectCharactersAndGroups(projectId);
@@ -73,8 +60,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
     }
 
-    public async Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds) => await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
-
     public async Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds)
     {
         if (groupIds.Count == 0)
@@ -82,7 +67,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             return [];
         }
         (var projectId, var ids) = EnsureSingleProject(groupIds);
-        return await LoadGroups(projectId, ids);
+        return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && ids.Contains(cg.CharacterGroupId)).ToListAsync();
     }
 
     public Task<ProjectField> GetProjectField(ProjectFieldIdentification id) => GetProjectField(id.ProjectId, id.ProjectFieldId);
@@ -347,32 +332,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             x.IAmMaster,
             KogdaIgraIdentification.FromOptional(x.LastKogdaIgraId)
             ))];
-    }
-
-    async Task<CharacterGroupHeaderDto[]> IProjectRepository.GetGroupHeaders(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds)
-    {
-        if (characterGroupIds.Count == 0)
-        {
-            return [];
-        }
-        (var projectId, var ids) = EnsureSingleProject(characterGroupIds);
-        var list =
-            await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && ids.Contains(cg.CharacterGroupId))
-            .Select(
-                x => new
-                {
-                    x.CharacterGroupId,
-                    x.CharacterGroupName,
-                    x.IsPublic,
-                    x.IsActive,
-                }
-                )
-            .ToListAsync();
-
-        return [..
-            list.Select(x => new CharacterGroupHeaderDto(new CharacterGroupIdentification(projectId, x.CharacterGroupId), x.CharacterGroupName, x.IsActive, x.IsPublic))
-            ];
-
     }
 
     private static (ProjectIdentification, IReadOnlyCollection<int>) EnsureSingleProject(IReadOnlyCollection<CharacterGroupIdentification> groupIds)

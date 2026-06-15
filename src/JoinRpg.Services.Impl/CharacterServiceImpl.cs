@@ -31,7 +31,7 @@ internal class CharacterServiceImpl(
 
         var character = new Character
         {
-            ParentCharacterGroupIds = await ValidateGroupListForCharacter(projectInfo, addCharacterRequest.ParentCharacterGroupIds),
+            ParentCharacterGroupIds = ValidateGroupListForCharacter(projectInfo, addCharacterRequest.ParentCharacterGroupIds),
             ProjectId = addCharacterRequest.ProjectId,
             Project = project,
         };
@@ -85,7 +85,7 @@ internal class CharacterServiceImpl(
 
         SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo, projectInfo);
 
-        character.ParentCharacterGroupIds = await ValidateGroupListForCharacter(projectInfo, editCharacterRequest.ParentCharacterGroupIds);
+        character.ParentCharacterGroupIds = ValidateGroupListForCharacter(projectInfo, editCharacterRequest.ParentCharacterGroupIds);
 
         var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
@@ -196,10 +196,10 @@ internal class CharacterServiceImpl(
         //}
     }
 
-    private async Task<int[]> ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    private int[] ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<CharacterGroupIdentification> groupIds)
     {
         return projectInfo.AllowToSetGroups ?
-                        await ValidateCharacterGroupList(projectInfo.ProjectId, Required(groupIds), ensureNotSpecial: true)
+                        ValidateCharacterGroupList(projectInfo, Required(groupIds), ensureNotSpecial: true)
                         : [projectInfo.RootCharacterGroupId.CharacterGroupId];
     }
 }

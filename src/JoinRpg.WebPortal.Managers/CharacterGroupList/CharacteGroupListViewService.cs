@@ -4,14 +4,12 @@ using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroupList;
 
-internal class CharacteGroupListViewService(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : ICharacterGroupsClient
+internal class CharacteGroupListViewService(IProjectMetadataRepository projectMetadataRepository, ICurrentUserAccessor currentUserAccessor) : ICharacterGroupsClient
 {
     private async Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId, Func<CharacterGroupDto, bool> predicate)
     {
-
-        var rootGroup = (await projectRepository.LoadGroupWithTreeSlimAsync(projectId)) ?? throw new JoinRpgEntityNotFoundException(projectId, "project");
-
-        var results = new CharacterGroupListGenerator(rootGroup, currentUserAccessor.UserId).Generate();
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        var results = new CharacterGroupListGenerator(projectInfo, currentUserAccessor.UserIdentification).Generate();
         return results.Where(predicate).ToList();
     }
 

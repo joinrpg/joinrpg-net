@@ -10,7 +10,6 @@ namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.CaptainRules;
 internal class CaptainRuleViewService(
     ICaptainRulesRepository repository,
     ICaptainRuleService service,
-    IProjectRepository projectRepository,
     IUserRepository userRepository,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository
@@ -20,17 +19,14 @@ internal class CaptainRuleViewService(
     {
         var rules = await repository.GetCaptainRules(projectId);
 
-        var groupIds = rules.Select(x => x.CharacterGroup).Distinct().ToList();
         var userIds = rules.Select(x => x.Player).Distinct().ToList();
-
-        var groups = (await projectRepository.GetGroupHeaders(groupIds)).ToDictionary(x => x.CharacterGroupId);
         var users = (await userRepository.GetRequiredUserInfoHeaders(userIds)).ToDictionary(x => x.UserId);
 
-        var ruleViewModels = rules.Select(rule =>
-                new CaptainRuleViewModel(rule, groups[rule.CharacterGroup].Name, UserLinks.Create(users[rule.Player])))
-            .ToList();
-
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        var ruleViewModels = rules.Select(rule =>
+                new CaptainRuleViewModel(rule, projectInfo.Groups[rule.CharacterGroup].Name, UserLinks.Create(users[rule.Player])))
+            .ToList();
 
         return new CaptainRuleListViewModel(
                 Items: ruleViewModels,

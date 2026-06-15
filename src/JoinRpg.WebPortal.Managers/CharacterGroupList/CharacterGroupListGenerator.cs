@@ -1,36 +1,38 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroupList;
 
-internal class CharacterGroupListGenerator(CharacterGroup root, int? currentUserId)
+internal class CharacterGroupListGenerator(ProjectInfo projectInfo, UserIdentification? currentUserId)
 {
-    private IList<int> AlreadyOutputedGroups { get; } = [];
+    private HashSet<CharacterGroupIdentification> AlreadyOutputedGroups { get; } = [];
 
     private List<CharacterGroupDto> Results { get; } = [];
 
     public List<CharacterGroupDto> Generate()
     {
-        GenerateFrom(root, []);
+        GenerateFrom(projectInfo.RootCharacterGroupId, []);
         return Results;
     }
 
-    private void GenerateFrom(CharacterGroup characterGroup, IList<CharacterGroup> pathToTop)
+    private void GenerateFrom(CharacterGroupIdentification groupId, IList<string> pathToTop)
     {
-        if (AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId))
+        if (!AlreadyOutputedGroups.Add(groupId))
         {
             return;
         }
-        var vm = new CharacterGroupDto(characterGroup.GetId(), characterGroup.CharacterGroupName, pathToTop.Skip(1).Select(cg => cg.CharacterGroupName).ToArray(), characterGroup.IsPublic, characterGroup.IsSpecial);
+
+        var group = projectInfo.Groups[groupId];
+        var vm = new CharacterGroupDto(groupId, group.Name, pathToTop.Skip(1).ToArray(), group.IsPublic, group.IsSpecial);
 
         Results.Add(vm);
 
-        AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
-
-        foreach (var childGroup in characterGroup.GetOrderedChildGroups().Where(c => c.IsActive && c.IsVisible(currentUserId)))
+        foreach (var childId in group.DirectChildGroupIds)
         {
-            GenerateFrom(childGroup, pathToTop.Append(characterGroup).ToList());
+            var child = projectInfo.Groups[childId];
+            if (child.IsActive && (child.IsPublic || projectInfo.PublishPlot || projectInfo.HasMasterAccess(currentUserId)))
+            {
+                GenerateFrom(childId, pathToTop.Append(group.Name).ToList());
+            }
         }
     }
 }
