@@ -105,15 +105,6 @@ public static class StaticStringHelpers
 
     public static List<int> ParseToIntList(this string intList) => intList.AsSpan().ParseToIntList();
 
-    public static string WithDefaultStringValue(
-        this string? value,
-        string defaultValue)
-    {
-        ArgumentNullException.ThrowIfNull(defaultValue);
-
-        return string.IsNullOrEmpty(value) ? defaultValue : value;
-    }
-
     public static MarkdownString WithDefaultStringValue(
     this MarkdownString? value,
     string defaultValue)
