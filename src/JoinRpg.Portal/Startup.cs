@@ -165,6 +165,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         _ = app.MapOpenApi();
         _ = app.MapSwaggerUI("swagger", Swagger.ConfigureUI);
+        _ = app.MapGet("/swagger/ui/index", () => Results.Redirect("/swagger/")); // Cтарая ссылка на сваггер
 
         app.MapJoinHealthChecks();
 
