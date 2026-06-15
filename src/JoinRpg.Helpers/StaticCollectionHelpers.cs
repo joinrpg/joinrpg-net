@@ -34,11 +34,6 @@ public static class StaticCollectionHelpers
         }
     }
 
-    public static IEnumerable<T> UnionIf<T>(this IEnumerable<T> source,
-        IEnumerable<T> enumerable,
-        bool add)
-        => source.Union(add ? enumerable : Enumerable.Empty<T>());
-
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
         where T : class
     {
@@ -51,31 +46,7 @@ public static class StaticCollectionHelpers
         }
     }
 
-    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
-        where T : struct
-    {
-        foreach (var i in source)
-        {
-            if (i is T v)
-            {
-                yield return v;
-            }
-        }
-    }
-
+    [Obsolete]
     public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T>? collection) => collection ?? Enumerable.Empty<T>();
 
-    public static IEnumerable<T> UnionUntilTotalCount<T>(
-        this IReadOnlyCollection<T> alreadyTaken,
-        IEnumerable<T> toAdd,
-        int totalLimit)
-    {
-        ArgumentNullException.ThrowIfNull(alreadyTaken);
-        ArgumentNullException.ThrowIfNull(toAdd);
-
-        return alreadyTaken.Union(
-            toAdd
-                .Except(alreadyTaken)
-                .Take(Math.Max(0, totalLimit - alreadyTaken.Count)));
-    }
 }

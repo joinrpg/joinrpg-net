@@ -1,0 +1,99 @@
+@using JoinRpg.Web.Plots
+@using JoinRpg.Web.ProjectCommon
+@using Microsoft.AspNetCore.Components.Forms
+@using JoinRpg.WebComponents
+
+<JoinPanel>
+    @if (Model is PlotElementCreateViewModel createModel)
+    {
+        <FormRowFor For="@(() => createModel.ElementType)">
+            <EnumRadioButtonGroup @bind-SelectedValue="createModel.ElementType"
+                                  Name="ElementType" />
+        </FormRowFor>
+
+        <FormRowFor For="@(() => createModel.PlotFolderId)">
+            <PlotFolderSelector
+                Name="PlotFolderId"
+                ProjectId="@(new ProjectIdentification(createModel.ProjectId))"
+                SelectedId="@createModel.PlotFolderId"
+                />
+        </FormRowFor>
+    }
+    else if (Model is PlotElementEditViewModel editModel)
+    {
+        <FormRowFor For="@(() => editModel.ElementType)">
+            <PlotElementTypeDisplay ElementType="@editModel.ElementType" />
+        </FormRowFor>
+
+        <FormRow Label="Сюжет">
+            <input type="hidden" name="PlotFolderId" value="@editModel.PlotFolderId" />
+            <input type="hidden" name="plotelementid" value="@editModel.PlotElementId" />
+            <span>@editModel.PlotFolderName</span>
+        </FormRow>
+    }
+
+    <input type="hidden" name="ProjectId" value="@Model.ProjectId" />
+
+    @if (CurrentElementType == PlotElementTypeView.Handout)
+    {
+        <FormRow Label="Что выдать" Description="Что выдать игроку">
+            <StringInput Name="Content" Value="@Model.Content" />
+        </FormRow>
+    }
+    else
+    {
+        <FormRow Label="Текст вводной" Description="Поддерживается Markdown">
+            <JoinTextArea Value="@Model.Content" ValueExpression="@(() => Model.Content)" Rows="20" />
+        </FormRow>
+    }
+
+    <FormRowFor For="@(() => Model.TodoField)">
+        <JoinTextArea Value="@Model.TodoField" ValueExpression="@(() => Model.TodoField)" />
+    </FormRowFor>
+
+    @if (Model is PlotElementEditViewModel editModel2 && editModel2.HasPublishedVersion && !editModel2.HasManageAccess)
+    {
+        <FormRow Label="Для кого" Description="Только редакторы сюжетов могут изменять привязку вводных, которые уже опубликованы.">
+            <PlotTargetDisplay Target="@editModel2.Target" />
+        </FormRow>
+    }
+    else
+    {
+        <FormRow Label="Привязка к персонажам" Description="Тех, кому предназначена эта вводная, можно добавить сейчас или позже.">
+            <CharacterSelector
+                Name="TargetCharacters"
+                ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+                SelectedCharacterIds="@Model.TargetCharacters"
+                />
+        </FormRow>
+        <FormRow Label="Привязка к группам">
+            <CharacterGroupSelector
+                Name="TargetGroups"
+                ProjectId="@Model.ProjectId"
+                SelectedGroupIds="@Model.TargetGroups"
+                />
+        </FormRow>
+    }
+
+    @if (Model is PlotElementCreateViewModel createModel2
+        && createModel2.ElementType == PlotElementTypeView.RegularPlot
+        && createModel2.HasPlotEditAccess)
+    {
+        <FormRowFor For="@(() => createModel2.PublishNow)">
+            <CheckboxInput Value="@createModel2.PublishNow"
+                           ValueExpression="@(() => createModel2.PublishNow)" />
+        </FormRowFor>
+    }
+</JoinPanel>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public PlotElementViewModelBase Model { get; set; } = null!;
+
+    private PlotElementTypeView CurrentElementType => Model switch
+    {
+        PlotElementCreateViewModel c => c.ElementType,
+        _ => Model.ElementType,
+    };
+}

@@ -2,12 +2,10 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Plots;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Plots;
@@ -91,7 +89,7 @@ public class PlotController(
         }
     }
 
-    #region Create elements & handouts
+    #region Create elements
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
     {
@@ -112,70 +110,38 @@ public class PlotController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        return View(new AddPlotElementViewModel()
+        var selectedPlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId;
+
+        return View(new PlotElementCreateViewModel()
         {
             ProjectId = projectId,
-            PlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId,
+            PlotFolderId = selectedPlotFolderId,
+            ElementType = PlotElementTypeView.RegularPlot,
             HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
-            Content = originalElement?.LastVersion().Content.Contents ?? AddPlotElementViewModel.GetDefaultContent(),
+            Content = originalElement?.LastVersion().Content.Contents ?? PlotElementCreateViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersion().TodoField ?? "",
-            Targets = originalElement?.GetElementBindingsForEdit() ?? [],
+            TargetCharacters = [.. originalElement?.TargetCharacters?.Select(c => c.GetId()) ?? []],
+            TargetGroups = [.. originalElement?.TargetGroups?.Select(g => g.GetId()) ?? []],
         });
-    }
-
-    [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
-    {
-        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
-        if (folder == null)
-        {
-            return NotFound();
-        }
-        return View(new AddPlotHandoutViewModel()
-        {
-            ProjectId = projectId,
-            PlotFolderId = plotFolderId,
-            PlotFolderName = folder.MasterTitle,
-        });
-    }
-
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateHandout(ProjectIdentification projectId, int plotFolderId, string content,
-      string todoField, ICollection<string>? targets, PlotElementTypeView elementType)
-    {
-        PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
-        try
-        {
-
-            return await CreateElementImpl(plotFolderId1, content, todoField, targets ?? [], elementType, publishNow: false);
-        }
-        catch (Exception exception)
-        {
-            AddModelException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(plotFolderId1);
-            if (folder == null)
-            {
-                return NotFound();
-            }
-            return View(new AddPlotHandoutViewModel()
-            {
-                ProjectId = projectId,
-                PlotFolderId = plotFolderId,
-                PlotFolderName = folder.MasterTitle,
-                Content = content,
-                TodoField = todoField,
-            });
-        }
     }
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int plotFolderId, string content,
-      string todoField, ICollection<string>? targets, PlotElementTypeView elementType, bool publishNow)
+      string todoField, ICollection<int>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow)
     {
         PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
+        var targetCharIds = CharacterIdentification.FromList(targetCharacters ?? [], projectId).ToList();
+        var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
         try
         {
-            return await CreateElementImpl(plotFolderId1, content, todoField, targets ?? [], elementType, publishNow);
+            var versionId =
+                await plotService.CreatePlotElement(plotFolderId1, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType);
+
+            if (publishNow && string.IsNullOrWhiteSpace(todoField) && (targetGroupIds.Count != 0 || targetCharIds.Count != 0))
+            {
+                await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
+            }
+            return ReturnToPlot(plotFolderId1);
         }
         catch (Exception exception)
         {
@@ -185,31 +151,19 @@ public class PlotController(
             {
                 return NotFound();
             }
-            return View(new AddPlotElementViewModel()
+            return View(new PlotElementCreateViewModel()
             {
                 ProjectId = projectId,
                 PlotFolderId = plotFolderId,
+                ElementType = elementType,
                 Content = content,
                 TodoField = todoField,
+                TargetCharacters = [.. targetCharIds],
+                TargetGroups = [.. targetGroupIds],
                 HasPlotEditAccess = folder.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
+                PublishNow = publishNow,
             });
         }
-    }
-
-    private async Task<ActionResult> CreateElementImpl(PlotFolderIdentification plotFolderId, string content, string todoField, ICollection<string> targets,
-      PlotElementTypeView elementType, bool publishNow)
-    {
-        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups(plotFolderId.ProjectId);
-        var targetChars = targets.OrEmptyList().GetUnprefixedChars(plotFolderId.ProjectId);
-        var versionId = await
-          plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroups, targetChars,
-            (PlotElementType)elementType);
-
-        if (publishNow && string.IsNullOrWhiteSpace(todoField) && targets.Count != 0)
-        {
-            await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
-        }
-        return ReturnToPlot(plotFolderId);
     }
     #endregion
 
@@ -254,17 +208,32 @@ public class PlotController(
         {
             return NotFound();
         }
-        var viewModel = new EditPlotElementViewModel(
-            folder.Elements.Single(e => e.PlotElementId == elementId.PlotElementId),
-            folder.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
-            version
-            );
+        var element = folder.Elements.Single(e => e.PlotElementId == elementId.PlotElementId);
+        var hasManageAccess = folder.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots);
+        var specificVersion = version is null ? element.LastVersion() : element.SpecificVersion(version.Value);
+
+        var viewModel = new PlotElementEditViewModel()
+        {
+            ProjectId = element.PlotFolder.ProjectId,
+            PlotFolderId = element.PlotFolderId,
+            PlotElementId = element.PlotElementId,
+            PlotFolderName = folder.MasterTitle,
+            ElementType = (PlotElementTypeView)element.ElementType,
+            Status = element.GetStatus(),
+            HasManageAccess = hasManageAccess,
+            HasPublishedVersion = element.Published != null,
+            Target = element.ToTarget(),
+            Content = specificVersion?.Content.Contents ?? "",
+            TodoField = element.LastVersion().TodoField,
+            TargetCharacters = [.. element.TargetCharacters.Select(c => new CharacterIdentification(new(element.ProjectId), c.CharacterId))],
+            TargetGroups = [.. element.TargetGroups.Select(g => new CharacterGroupIdentification(new(element.ProjectId), g.CharacterGroupId))],
+        };
         return View(viewModel);
     }
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
-      ICollection<string>? targets)
+      ICollection<int>? targetCharacters, ICollection<int>? targetGroups)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
         try
@@ -272,16 +241,14 @@ public class PlotController(
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
-                var targetGroups = targets.OrEmptyList().GetUnprefixedGroups(projectId);
-                var targetChars = targets.OrEmptyList().GetUnprefixedChars(projectId);
+                var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
+                var targetCharIds = CharacterIdentification.FromList(targetCharacters ?? [], projectId).ToList();
 
-                await
-                  plotService.EditPlotElement(id, content, todoField, targetGroups, targetChars);
+                await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds);
             }
             else
             {
-                await
-                  plotService.EditPlotElementText(id, content, todoField);
+                await plotService.EditPlotElementText(id, content, todoField);
             }
             return ReturnToPlot(id.PlotFolderId);
         }

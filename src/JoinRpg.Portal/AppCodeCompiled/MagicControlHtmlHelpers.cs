@@ -10,20 +10,6 @@ namespace JoinRpg.Portal;
 public static class MagicControlHtmlHelpers
 {
     [Obsolete]
-    public static IHtmlContent MagicSelectParent<TModel>(this IHtmlHelper<TModel> self,
-        Expression<Func<TModel, IEnumerable<string>>> expression)
-        where TModel : IProjectIdAware
-    {
-        var container = (IProjectIdAware)self.GetModel();
-
-        var value = self.GetValue(expression).ToList();
-        var metadata = self.GetMetadataFor(expression);
-
-        return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
-            ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value, false);
-    }
-
-    [Obsolete]
     public static IHtmlContent MagicSelectGroupParent<TModel>(this IHtmlHelper<TModel> self,
         Expression<Func<TModel, IEnumerable<string>>> expression)
         where TModel : EditCharacterGroupViewModel
@@ -35,20 +21,5 @@ public static class MagicControlHtmlHelpers
         return MagicControlHelper.GetMagicSelect(container.ProjectId, false, ShowImplicitGroups.Parents,
             MagicControlStrategy.Changer, metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups(),
             false);
-    }
-
-    [Obsolete]
-    public static IHtmlContent MagicSelectBind<TModel>(this IHtmlHelper<TModel> self,
-        Expression<Func<TModel, IEnumerable<string>>> expression)
-        where TModel : IProjectIdAware
-    {
-        var container = self.GetModel();
-
-        var metadata = self.GetMetadataFor(expression);
-
-        var value = self.GetValue(expression);
-
-        return MagicControlHelper.GetMagicSelect(container.ProjectId, true, ShowImplicitGroups.Children,
-            MagicControlStrategy.NonChanger, metadata.PropertyName, value, true);
     }
 }

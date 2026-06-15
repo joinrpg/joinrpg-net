@@ -8,15 +8,17 @@ public static class CharacterAndGroupPrefixer
     public const string GroupFieldPrefix = "group^";
     public const string CharFieldPrefix = "character^";
 
-    public static IEnumerable<string> PrefixAsGroups(this IEnumerable<int> groupIds)
+    private static IEnumerable<string> PrefixAsGroups(this IEnumerable<int> groupIds)
       => groupIds.Select(id => $"'{GroupFieldPrefix}{id}'");
 
+    [Obsolete]
     public static IEnumerable<string> PrefixAsGroups(this int groupId)
       => new[] { groupId }.PrefixAsGroups();
 
     private static IEnumerable<string> PrefixAsCharacters(this IEnumerable<int> characterId)
       => characterId.Select(id => $"'{CharFieldPrefix}{id}'");
 
+    [Obsolete]
     public static List<CharacterIdentification> GetUnprefixedChars(this IEnumerable<string> targets, ProjectIdentification projectIdentification)
     {
         ArgumentNullException.ThrowIfNull(targets);
@@ -24,6 +26,7 @@ public static class CharacterAndGroupPrefixer
         return [.. CharacterIdentification.FromList(targets.UnprefixNumbers(CharFieldPrefix), projectIdentification)];
     }
 
+    [Obsolete]
     public static List<CharacterGroupIdentification> GetUnprefixedGroups(this IEnumerable<string> targets, ProjectIdentification projectIdentification)
     {
         ArgumentNullException.ThrowIfNull(targets);
@@ -31,9 +34,12 @@ public static class CharacterAndGroupPrefixer
         return [.. CharacterGroupIdentification.FromList(targets.UnprefixNumbers(GroupFieldPrefix), projectIdentification)];
     }
 
+    [Obsolete]
     public static List<string> GetParentGroupsForEdit(this CharacterGroup field) => field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();
 
+    [Obsolete]
     public static List<string> AsPossibleParentForEdit(this CharacterGroup field) => new List<int> { field.CharacterGroupId }.PrefixAsGroups().ToList();
 
+    [Obsolete]
     public static IEnumerable<string> GetElementBindingsForEdit(this PlotElement e) => e.TargetGroups.Select(g => g.CharacterGroupId).PrefixAsGroups().Union(e.TargetCharacters.Select(c => c.CharacterId).PrefixAsCharacters());
 }
