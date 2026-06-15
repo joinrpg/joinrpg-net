@@ -36,19 +36,4 @@ public static class MagicControlHtmlHelpers
             MagicControlStrategy.Changer, metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups(),
             false);
     }
-
-    [Obsolete]
-    public static IHtmlContent MagicSelectBind<TModel>(this IHtmlHelper<TModel> self,
-        Expression<Func<TModel, IEnumerable<string>>> expression)
-        where TModel : IProjectIdAware
-    {
-        var container = self.GetModel();
-
-        var metadata = self.GetMetadataFor(expression);
-
-        var value = self.GetValue(expression);
-
-        return MagicControlHelper.GetMagicSelect(container.ProjectId, true, ShowImplicitGroups.Children,
-            MagicControlStrategy.NonChanger, metadata.PropertyName, value, true);
-    }
 }

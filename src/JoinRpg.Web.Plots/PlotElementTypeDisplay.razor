@@ -1,0 +1,15 @@
+<span>@DisplayName</span>
+<input type="hidden" name="ElementType" value="@ElementType" />
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public PlotElementTypeView ElementType { get; set; }
+
+    private string DisplayName => ElementType switch
+    {
+        PlotElementTypeView.RegularPlot => "Вводная",
+        PlotElementTypeView.Handout => "Элемент раздатки",
+        _ => throw new ArgumentOutOfRangeException(nameof(ElementType)),
+    };
+}
