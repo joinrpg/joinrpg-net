@@ -11,7 +11,8 @@ internal class ProjectService(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     MasterEmailService masterEmailService,
-    ILogger<ProjectService> logger
+    ILogger<ProjectService> logger,
+    IProjectMetadataRepository projectMetadataRepository
     ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
     public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom)
@@ -57,11 +58,13 @@ internal class ProjectService(
         _ = project.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles);
         _ = project.EnsureProjectActive();
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
         var group = Create(new CharacterGroup()
         {
             CharacterGroupName = Required(name),
             ParentCharacterGroupIds =
-                await ValidateCharacterGroupList(projectId,
+                ValidateCharacterGroupList(projectInfo,
                     Required(parentCharacterGroupIds)),
             ProjectId = projectId,
             IsRoot = false,
@@ -187,10 +190,12 @@ internal class ProjectService(
             throw new InvalidOperationException();
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
+
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
         characterGroup.ParentCharacterGroupIds =
-            await ValidateCharacterGroupList(characterGroupId.ProjectId,
+            ValidateCharacterGroupList(projectInfo,
                 Required(parentCharacterGroupIds),
                 ensureNotSpecial: true);
         characterGroup.Description = new MarkdownString(description);

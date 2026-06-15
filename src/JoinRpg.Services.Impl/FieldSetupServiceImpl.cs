@@ -76,8 +76,9 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         field.ValidForNpc = request.ValidForNpc;
         field.IsPublic = request.IsPublic;
         field.MandatoryStatus = request.MandatoryStatus;
+        var projectInfo = await _projectMetadataRepository.GetProjectMetadata(request.ProjectId);
         field.AvailableForCharacterGroupIds =
-            await ValidateCharacterGroupList(request.ProjectId, request.ShowForGroups);
+            ValidateCharacterGroupList(projectInfo, request.ShowForGroups);
         field.IncludeInPrint = request.IncludeInPrint;
         field.ShowOnUnApprovedClaims = request.ShowForUnapprovedClaims;
         field.Price = request.Price;
@@ -123,9 +124,12 @@ public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public FieldSetupServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
+    public FieldSetupServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IProjectMetadataRepository projectMetadataRepository) : base(unitOfWork, currentUserAccessor)
     {
+        _projectMetadataRepository = projectMetadataRepository;
     }
+
+    private readonly IProjectMetadataRepository _projectMetadataRepository;
 
     public async Task<ProjectFieldVariantIdentification> CreateFieldValueVariant(CreateFieldValueVariantRequest request)
     {

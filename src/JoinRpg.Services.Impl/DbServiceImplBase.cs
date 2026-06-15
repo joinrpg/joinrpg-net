@@ -132,39 +132,35 @@ public class DbServiceImplBase
         }
     }
 
-    protected async Task<int[]> ValidateCharacterGroupList(ProjectIdentification projectId,
-       IReadOnlyCollection<CharacterGroupIdentification> groupIds,
-       bool ensureNotSpecial = false)
+    protected static int[] ValidateCharacterGroupList(
+        ProjectInfo projectInfo,
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+        bool ensureNotSpecial = false)
     {
         foreach (var g in groupIds)
         {
-            if (g.ProjectId != projectId)
+            if (g.ProjectId != projectInfo.ProjectId)
             {
                 throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
             }
         }
-        return await ValidateCharacterGroupList(projectId.Value, [.. groupIds.Select(g => g.CharacterGroupId)], ensureNotSpecial);
-    }
 
-    protected async Task<int[]> ValidateCharacterGroupList(int projectId,
-        IReadOnlyCollection<int> groupIds,
-        bool ensureNotSpecial = false)
-    {
-        var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
+        var missing = groupIds
+            .Where(id => !projectInfo.Groups.ContainsKey(id))
+            .ToArray();
 
-        if (characterGroups.Count != groupIds.Distinct().Count())
+        if (missing.Length != 0)
         {
-            var missing = string.Join(", ",
-                groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
-            throw new Exception($"Groups {missing} doesn't belong to project");
+            var missingIds = string.Join(", ", missing.Select(m => m.CharacterGroupId));
+            throw new Exception($"Groups {missingIds} doesn't belong to project");
         }
 
-        if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
+        if (ensureNotSpecial && groupIds.Any(id => projectInfo.Groups[id].IsSpecial))
         {
             throw new DbEntityValidationException();
         }
 
-        return groupIds.ToArray();
+        return [.. groupIds.Select(g => g.CharacterGroupId)];
     }
 
     protected async Task<ICollection<Character>> ValidateCharactersList(IReadOnlyCollection<CharacterIdentification> characterIds)

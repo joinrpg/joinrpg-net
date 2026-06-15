@@ -73,8 +73,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
     }
 
-    public async Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds) => await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
-
     public async Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds)
     {
         if (groupIds.Count == 0)
@@ -82,7 +80,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             return [];
         }
         (var projectId, var ids) = EnsureSingleProject(groupIds);
-        return await LoadGroups(projectId, ids);
+        return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && ids.Contains(cg.CharacterGroupId)).ToListAsync();
     }
 
     public Task<ProjectField> GetProjectField(ProjectFieldIdentification id) => GetProjectField(id.ProjectId, id.ProjectFieldId);
