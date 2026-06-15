@@ -11,9 +11,6 @@ public class EditCharacterGroupViewModel : CharacterGroupViewModelBase, ICreated
     [CannotBeEmpty, DisplayName("Является частью групп")]
     public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
 
-    [ReadOnly(true)]
-    public bool IsRoot { get; set; }
-
     public DateTime CreatedAt { get; set; }
     public User CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
