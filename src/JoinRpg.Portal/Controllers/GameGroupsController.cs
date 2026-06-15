@@ -401,7 +401,6 @@ public class GameGroupsController(
         EditCharacterGroupViewModel viewModel,
         CharacterGroup group)
     {
-        viewModel.IsRoot = group.IsRoot;
         viewModel.CreatedAt = group.CreatedAt;
         viewModel.UpdatedAt = group.UpdatedAt;
         viewModel.CreatedBy = group.CreatedBy;
