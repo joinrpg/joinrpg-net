@@ -94,7 +94,11 @@ public static class UserLinkParser
         if (span.StartsWith("@".AsSpan(), StringComparison.Ordinal))
         {
             var name = span[1..].Trim();
-            if (name.IsEmpty) return false;
+            if (name.IsEmpty)
+            {
+                return false;
+            }
+
             username = name.ToString();
             return true;
         }

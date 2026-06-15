@@ -349,7 +349,7 @@ public class GameGroupsController(
 
         return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
         {
-            ParentCharacterGroupIds = field.AsPossibleParentForEdit(),
+            ParentCharacterGroupIdInts = [field.CharacterGroupId],
         }, field));
     }
 
@@ -371,7 +371,7 @@ public class GameGroupsController(
 
         try
         {
-            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(new(viewModel.ProjectId))];
+            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new(viewModel.ProjectId))];
             await projectService.AddCharacterGroup(
               new(viewModel.ProjectId),
               viewModel.Name, viewModel.IsPublic,
