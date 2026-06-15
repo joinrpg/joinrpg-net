@@ -54,6 +54,6 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
             || (currentUserId.UserIdOrDefault == Sender.UserId && isPendingSender)
             || (currentUserId.UserIdOrDefault == Receiver.UserId && isPendingReceiver);
 
-        Comment = fo.TransferText.Text.ToHtmlString();
+        Comment = ((MarkdownString?)fo.TransferText.Text).ToHtmlString();
     }
 }

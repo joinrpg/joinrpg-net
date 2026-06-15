@@ -30,7 +30,7 @@ public class GameFieldDropdownValueListItemViewModel : IMovableListItem
     public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
     {
         Label = value.Label;
-        Description = value.Description.ToPlainTextWithoutHtmlEscape();
+        Description = ((MarkdownString?)value.Description).ToPlainTextWithoutHtmlEscape();
         IsActive = value.IsActive;
         Price = value.Price;
         ProjectId = value.ProjectId;

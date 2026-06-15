@@ -26,7 +26,7 @@ internal class PlotSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
         {
             LinkType = LinkType.Plot,
             Name = plot.MasterTitle,
-            Description = new MarkdownString(""),
+            Description = new MarkdownDbValue(""),
             Identification = plot.PlotFolderId.ToString(),
             ProjectId = plot.ProjectId,
             IsPublic = false,

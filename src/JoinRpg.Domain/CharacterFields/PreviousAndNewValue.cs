@@ -2,16 +2,16 @@ namespace JoinRpg.Domain.CharacterFields;
 
 public class PreviousAndNewValue
 {
-    public MarkdownString DisplayString { get; }
-    public MarkdownString PreviousDisplayString { get; }
+    public MarkdownDbValue DisplayString { get; }
+    public MarkdownDbValue PreviousDisplayString { get; }
 
     public PreviousAndNewValue(string newValue, string? previousValue)
     {
-        DisplayString = new MarkdownString(newValue);
-        PreviousDisplayString = new MarkdownString(previousValue);
+        DisplayString = new MarkdownDbValue(newValue);
+        PreviousDisplayString = new MarkdownDbValue(previousValue);
     }
 
-    public PreviousAndNewValue(MarkdownString newValue, MarkdownString previousValue)
+    public PreviousAndNewValue(MarkdownDbValue newValue, MarkdownDbValue previousValue)
     {
         DisplayString = newValue;
         PreviousDisplayString = previousValue;

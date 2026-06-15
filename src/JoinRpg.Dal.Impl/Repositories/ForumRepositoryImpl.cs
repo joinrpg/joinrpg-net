@@ -117,7 +117,7 @@ internal class ForumThreadListImpl : IForumThreadListItem
     public required int ProjectId { get; set; }
     public required string Header { get; set; }
     public required User Topicstarter { get; set; }
-    public required MarkdownString LastMessageText { get; set; }
+    public required MarkdownDbValue LastMessageText { get; set; }
     public required User LastMessageAuthor { get; set; }
     public DateTime UpdatedAt { get; set; }
     public required int Id { get; set; }
@@ -131,5 +131,5 @@ internal class ForumThreadListImpl : IForumThreadListItem
     public required bool IsVisibleToPlayer { get; set; }
     public required int CharacterGroupId { get; set; }
     public required User LastMessageAuthorForPlayer { get; set; }
-    public required MarkdownString LastMessageTextForPlayer { get; set; }
+    public required MarkdownDbValue LastMessageTextForPlayer { get; set; }
 }

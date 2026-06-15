@@ -12,7 +12,7 @@ public class ProjectAccommodationType : IProjectEntity
     public virtual Project Project { get; set; }
     [Required]
     public string Name { get; set; }
-    public MarkdownString Description { get; set; }
+    public MarkdownDbValue Description { get; set; }
     [Required]
     public int Cost { get; set; }
     [Range(1, int.MaxValue)]

@@ -8,7 +8,7 @@ public class ProgramItem(Character character)
 {
     public int Id { get; } = character.CharacterId;
     public string Name { get; } = character.CharacterName;
-    public MarkdownString Description { get; } = character.Description;
+    public MarkdownDbValue Description { get; } = character.Description;
     public User[] Authors { get; } = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
     public int ProjectId { get; } = character.ProjectId;
 
@@ -42,7 +42,7 @@ public class ProgramItemPlaced
 
 public record class ScheduleItemAttribute
 {
-    public MarkdownString Description { get; }
+    public MarkdownDbValue Description { get; }
     public string Name { get; }
     public ProjectFieldVariantIdentification Id { get; }
     public int SeqId { get; }

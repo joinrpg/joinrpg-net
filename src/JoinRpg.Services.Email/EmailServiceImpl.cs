@@ -54,7 +54,7 @@ internal partial class EmailServiceImpl : IEmailService
         //                : $"{model.ProjectName}: {Target(false)}";
 
         //            await messageService.SendEmails(subject,
-        //                new MarkdownString(text),
+        //                new MarkdownDbValue(text),
         //                model.Initiator.ToRecepientData(),
         //                recipients);
         //        }
@@ -151,7 +151,7 @@ internal partial class EmailServiceImpl : IEmailService
         //        {
         //            Claim? claim = email.GetClaimByPerson(emailRecipient);
         //            return messageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-        //                                new MarkdownString(string.Format(messageTemplate, claim == null ? "" : uriService.Get(claim))),
+        //                                new MarkdownDbValue(string.Format(messageTemplate, claim == null ? "" : uriService.Get(claim))),
         //                                email.Initiator.ToRecepientData(),
         //                                emailRecipient.ToRecepientData());
         //        })
@@ -172,18 +172,18 @@ internal partial class EmailServiceImpl : IEmailService
     //        //Add project fields that user has right to view
     //        var accessArguments = mailWithFields.FieldsContainer.GetAccessArguments(user.UserId);
 
-    //        IEnumerable<MarkdownString> fieldString = mailWithFields
+    //        IEnumerable<MarkdownDbValue> fieldString = mailWithFields
     //          .UpdatedFields
     //          .Where(f => f.Field.HasViewAccess(accessArguments))
     //          .Select(updatedField =>
-    //            new MarkdownString(
+    //            new MarkdownDbValue(
     //              $@"__**{updatedField.Field.Name}:**__
     //{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.New.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
     //        //Add info about other changed atttributes (no access rights validation)
-    //        IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
+    //        IEnumerable<MarkdownDbValue> otherAttributesStrings = mailWithFields
     //          .OtherChangedAttributes
-    //          .Select(changedAttribute => new MarkdownString(
+    //          .Select(changedAttribute => new MarkdownDbValue(
     //            $@"__**{changedAttribute.Key}:**__
     //{MarkdownTransformations.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
 

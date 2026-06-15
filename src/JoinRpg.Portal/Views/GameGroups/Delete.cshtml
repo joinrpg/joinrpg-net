@@ -44,7 +44,7 @@
             </dt>
 
             <dd>
-                @Model.Description.ToHtmlString()
+                @(((JoinRpg.Common.PrimitiveTypes.MarkdownString?)Model.Description).ToHtmlString())
         </dd>
         }
     </dl>

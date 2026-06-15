@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 /// <summary>
 /// Сюда добавляем те свойства проекта, которые большие и нет смысла грузить на каждой странице, например анонс, связи с КогдаИгрой etc

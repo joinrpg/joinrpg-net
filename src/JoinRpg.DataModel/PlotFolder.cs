@@ -15,7 +15,7 @@ public class PlotFolder : IProjectEntity, IDeletableSubEntity
     //TODO: Decide if title should be for players or for masters or we need two titles
     public string MasterTitle { get; set; }
 
-    public MarkdownString MasterSummary { get; set; } = new MarkdownString();
+    public MarkdownDbValue MasterSummary { get; set; } = new MarkdownDbValue();
 
     public virtual ICollection<PlotElement> Elements { get; set; }
 

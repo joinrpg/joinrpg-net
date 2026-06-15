@@ -68,7 +68,7 @@ internal class ProjectService(
             IsSpecial = false,
             IsPublic = isPublic,
             IsActive = true,
-            Description = new MarkdownString(description),
+            Description = new MarkdownDbValue(description),
         });
 
         MarkTreeModified(project);
@@ -193,7 +193,7 @@ internal class ProjectService(
             await ValidateCharacterGroupList(characterGroupId.ProjectId,
                 Required(parentCharacterGroupIds),
                 ensureNotSpecial: true);
-        characterGroup.Description = new MarkdownString(description);
+        characterGroup.Description = new MarkdownDbValue(description);
 
         MarkTreeModified(characterGroup.Project); // Can be smarted than this
         MarkChanged(characterGroup);
@@ -246,8 +246,8 @@ internal class ProjectService(
     {
         await ChangeProjectProperties(request.ProjectId, project =>
         {
-            project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
-            project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
+            project.Details.ClaimApplyRules = new MarkdownDbValue(request.ClaimApplyRules);
+            project.Details.ProjectAnnounce = new MarkdownDbValue(request.ProjectAnnounce);
             project.ProjectName = Required(request.ProjectName);
         });
     }

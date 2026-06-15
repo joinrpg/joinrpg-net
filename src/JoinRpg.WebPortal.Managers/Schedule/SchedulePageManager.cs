@@ -95,7 +95,7 @@ public class SchedulePageManager(
             End = new CalDateTime(evt.EndTime.LocalDateTime, timeZone.Id),
             Summary = evt.ProgramItem.Name,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
-            Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
+            Description = ((MarkdownString?)evt.ProgramItem.Description).ToPlainTextWithoutHtmlEscape(),
         };
     }
 

@@ -37,8 +37,8 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         CanPlayerEdit = field.CanPlayerEdit;
         DescriptionEditable = field.Description?.Contents ?? "";
         MasterDescriptionEditable = field.MasterDescription?.Contents ?? "";
-        DescriptionDisplay = field.Description.ToHtmlString();
-        MasterDescriptionDisplay = field.MasterDescription.ToHtmlString();
+        DescriptionDisplay = ((MarkdownString?)field.Description).ToHtmlString();
+        MasterDescriptionDisplay = ((MarkdownString?)field.MasterDescription).ToHtmlString();
         ProjectFieldId = field.ProjectFieldId;
         IsPublic = field.IsPublic;
         Name = field.FieldName;

@@ -28,9 +28,9 @@ public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity, IV
     [Required]
     public string Label { get; set; }
 
-    public MarkdownString Description { get; set; }
+    public MarkdownDbValue Description { get; set; }
 
-    public MarkdownString MasterDescription { get; set; }
+    public MarkdownDbValue MasterDescription { get; set; }
 
     /// <summary>
     /// Price associated with this value.

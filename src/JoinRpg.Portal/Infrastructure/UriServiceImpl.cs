@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;

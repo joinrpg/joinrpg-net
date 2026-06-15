@@ -20,7 +20,7 @@ public class CommentViewModel
         AuthorEmail = comment.Author.Email;
         CreatedTime = comment.CreatedAt;
         Finance = comment.Finance;
-        CommentText = comment.CommentText.Text.ToHtmlString();
+        CommentText = ((MarkdownString?)comment.CommentText.Text).ToHtmlString();
         CommentId = comment.CommentId;
         ProjectId = comment.ProjectId;
         CommentDiscussionId = comment.CommentDiscussionId;

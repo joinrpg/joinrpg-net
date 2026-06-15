@@ -1,11 +1,14 @@
-using JoinRpg.DataModel;
+using JoinRpg.Common.PrimitiveTypes;
 using Markdig;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Markdown;
 
 /// <summary>
-/// Helper that allows to easily render markdown
+/// Helper that allows to easily render markdown.
+/// Работает с бизнес-значением <see cref="MarkdownString"/>. Хранимый
+/// <c>MarkdownDbValue</c> приводится к нему неявной конверсией на границе
+/// (view-model / read-model), сюда попадает уже record.
 /// </summary>
 public static class MarkDownRendererFacade
 {
@@ -63,7 +66,7 @@ public static class MarkDownRendererFacade
     private static string PerformRender(MarkdownString? markdownString, ILinkRenderer? linkRenderer,
         Func<string, MarkdownPipeline, MarkdownParserContext, string> renderMethod)
     {
-        if (markdownString?.Contents == null)
+        if (markdownString?.Value is not { } contents)
         {
             return "";
         }
@@ -72,8 +75,7 @@ public static class MarkDownRendererFacade
 
         context.Properties.Add(nameof(ILinkRenderer), linkRenderer ?? DoNothingLinkRenderer.Instance);
 
-        return renderMethod(markdownString.Contents, markdownPipeline, context);
+        return renderMethod(contents, markdownPipeline, context);
 
     }
 }
-

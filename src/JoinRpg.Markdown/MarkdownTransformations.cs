@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using JoinRpg.DataModel;
+using JoinRpg.Common.PrimitiveTypes;
 
 namespace JoinRpg.Markdown;
 
@@ -15,12 +15,12 @@ public static class MarkdownTransformations
     [return: NotNullIfNotNull(nameof(markdownString))]
     public static MarkdownString? TakeWords(this MarkdownString? markdownString, int words)
     {
-        if (markdownString?.Contents == null)
+        if (markdownString?.Value == null)
         {
             return null;
         }
         var w = words;
-        var str = markdownString.Contents;
+        var str = markdownString.Value;
         var idx = 0;
         while (w > 0 && idx < str.Length)
         {
@@ -38,7 +38,7 @@ public static class MarkdownTransformations
         {
             return markdownString;
         }
-        var mdContents = markdownString.Contents[..idx] + "...";
+        var mdContents = str[..idx] + "...";
 
         return new MarkdownString(mdContents);
     }
@@ -61,4 +61,16 @@ public static class MarkdownTransformations
         MarkdownString oldString) =>
         //TODO: look for diff algorithms
         newString;
+
+    /// <summary>
+    /// Возвращает значение по умолчанию, если markdown пуст.
+    /// </summary>
+    public static MarkdownString WithDefaultStringValue(
+        this MarkdownString? value,
+        string defaultValue)
+    {
+        ArgumentNullException.ThrowIfNull(defaultValue);
+
+        return (value is null || string.IsNullOrEmpty(value.Value)) ? new MarkdownString(defaultValue) : value;
+    }
 }

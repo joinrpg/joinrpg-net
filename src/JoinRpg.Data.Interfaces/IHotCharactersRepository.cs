@@ -13,6 +13,6 @@ public record class CharacterWithProject(
     bool IsPublic,
     bool IsActive,
     ProjectName ProjectName,
-    MarkdownString CharacterDesc,
-    MarkdownString ProjectDesc,
+    MarkdownDbValue CharacterDesc,
+    MarkdownDbValue ProjectDesc,
     KogdaIgraIdentification[] KogdaIgraLinkedIds);

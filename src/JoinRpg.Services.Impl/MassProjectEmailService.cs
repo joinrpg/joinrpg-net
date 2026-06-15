@@ -19,7 +19,7 @@ public partial class MassProjectEmailService(
 {
     public async Task MassMail(
         ClaimIdentification[] claimIds,
-        MarkdownString body,
+        MarkdownDbValue body,
         string subject,
         bool alsoMailToMasters)
     {
@@ -63,7 +63,7 @@ public partial class MassProjectEmailService(
         }
     }
 
-    public async Task PlotEmail(ClaimIdentification[] claimIds, MarkdownString body, PlotElementIdentification plotElementId)
+    public async Task PlotEmail(ClaimIdentification[] claimIds, MarkdownDbValue body, PlotElementIdentification plotElementId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(plotElementId.ProjectId);
 

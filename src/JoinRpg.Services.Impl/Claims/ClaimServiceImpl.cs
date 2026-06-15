@@ -136,7 +136,7 @@ internal class ClaimServiceImpl(
         {
             CommentDiscussionId = -1,
             AuthorUserId = CurrentUserId,
-            CommentText = new CommentText { Text = new MarkdownString(secondRoleCommentText) },
+            CommentText = new CommentText { Text = new MarkdownDbValue(secondRoleCommentText) },
             CreatedAt = Now,
             IsCommentByPlayer = false,
             IsVisibleToPlayer = true,
@@ -516,7 +516,7 @@ internal class ClaimServiceImpl(
                     ProjectName = claim.Project.ProjectName,
                     Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
                     Room = claim.AccommodationRequest.Accommodation,
-                    Text = new MarkdownString(),
+                    Text = new MarkdownDbValue(),
                 };
             }
 

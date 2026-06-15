@@ -335,8 +335,8 @@ public class FieldSaveHelperTest
                     Label = "Вариант 1",
                     IsActive = true,
                     PlayerSelectable = false,
-                    Description = new MarkdownString(),
-                    MasterDescription = new MarkdownString(),
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
                 },
             ];
         });
@@ -372,8 +372,8 @@ public class FieldSaveHelperTest
                     Label = "Вариант 1",
                     IsActive = true,
                     PlayerSelectable = false,
-                    Description = new MarkdownString(),
-                    MasterDescription = new MarkdownString(),
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
                 },
             ];
         });
@@ -408,8 +408,8 @@ public class FieldSaveHelperTest
                     Label = "Вариант A",
                     IsActive = true,
                     PlayerSelectable = false,
-                    Description = new MarkdownString(),
-                    MasterDescription = new MarkdownString(),
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
                 },
             ];
         });
@@ -443,8 +443,8 @@ public class FieldSaveHelperTest
                     Label = "Неактивный вариант",
                     IsActive = false,
                     PlayerSelectable = false,
-                    Description = new MarkdownString(),
-                    MasterDescription = new MarkdownString(),
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
                 },
             ];
         });
@@ -480,8 +480,8 @@ public class FieldSaveHelperTest
                     Label = "Неактивный вариант",
                     IsActive = false,
                     PlayerSelectable = false,
-                    Description = new MarkdownString(),
-                    MasterDescription = new MarkdownString(),
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
                 },
             ];
         });

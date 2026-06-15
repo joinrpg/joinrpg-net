@@ -48,7 +48,7 @@ internal class NotificationsRepository(
             var x = notification.Message;
             var message = new NotificationMessage()
             {
-                Body = x.Body.Contents!,
+                Body = x.Body.Value,
                 Header = x.Header,
                 InitiatorUserId = x.Initiator.Value,
                 RecipientUserId = x.Recipient.Value,
@@ -139,7 +139,7 @@ internal class NotificationsRepository(
 
     private static NotificationMessageForRecipient CreateNotificationMessageDto(NotificationMessage message)
     {
-        return new NotificationMessageForRecipient(new DataModel.MarkdownString(message.Body),
+        return new NotificationMessageForRecipient(new MarkdownString(message.Body),
                                                new(message.InitiatorUserId),
                                                message.Header,
                                                new(message.RecipientUserId),

@@ -170,7 +170,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
             Initiator = initiator,
             InitiatorType = initiator.UserId == claim.PlayerUserId ? ParcipantType.Player : ParcipantType.Master,
             Recipients = subscriptions,
-            Text = new MarkdownString(commentText),
+            Text = new MarkdownDbValue(commentText),
             CommentExtraAction = commentExtraAction,
         };
     }

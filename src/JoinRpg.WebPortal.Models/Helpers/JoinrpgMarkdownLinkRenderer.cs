@@ -220,7 +220,7 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         }
     }
 
-    private static void RenderInnerMarkdown(HtmlRenderer renderer, MarkdownString markdownString)
+    private static void RenderInnerMarkdown(HtmlRenderer renderer, MarkdownString? markdownString)
     {
         if (renderer.EnableHtmlForBlock)
         {

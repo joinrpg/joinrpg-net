@@ -8,5 +8,5 @@ public class CharacterGroupWithDescViewModel : CharacterGroupLinkViewModel
     public JoinHtmlString Description { get; }
 
 
-    public CharacterGroupWithDescViewModel(CharacterGroup group) : base(group) => Description = group.Description.ToHtmlString();
+    public CharacterGroupWithDescViewModel(CharacterGroup group) : base(group) => Description = ((MarkdownString?)group.Description).ToHtmlString();
 }

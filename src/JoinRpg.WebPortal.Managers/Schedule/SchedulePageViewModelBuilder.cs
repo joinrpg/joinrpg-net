@@ -53,7 +53,7 @@ internal static class SchedulePageViewModelBuilder
                 Id = slot.Id.ProjectFieldVariantId,
                 Name = slot.Name,
                 Description =
-                    new MarkupString($"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br /> {scheduleItem.Description.ToHtmlString().Value}"),
+                    new MarkupString($"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br /> {((MarkdownString?)scheduleItem.Description).ToHtmlString().Value}"),
             };
         }
         if (scheduleItem is ScheduleRoom room)
@@ -62,7 +62,7 @@ internal static class SchedulePageViewModelBuilder
             {
                 Id = room.Id.ProjectFieldVariantId,
                 Name = room.Name,
-                Description = room.Description.ToHtmlString()
+                Description = ((MarkdownString?)room.Description).ToHtmlString()
             };
         }
         throw new NotImplementedException();

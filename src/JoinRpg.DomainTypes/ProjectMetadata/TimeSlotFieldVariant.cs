@@ -1,5 +1,4 @@
 using System.Text.Json;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 
@@ -13,8 +12,8 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     bool IsPlayerSelectable,
     bool IsActive,
     CharacterGroupIdentification? CharacterGroupId,
-    MarkdownString Description,
-    MarkdownString MasterDescription,
+    MarkdownString? Description,
+    MarkdownString? MasterDescription,
     string? ProgrammaticValue)
         : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue)
     {

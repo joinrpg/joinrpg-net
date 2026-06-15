@@ -25,7 +25,7 @@ internal class ProjectSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
         {
             LinkType = LinkType.Project,
             Name = proj.ProjectName,
-            Description = new MarkdownString(""),
+            Description = new MarkdownDbValue(""),
             Identification = proj.ProjectId.ToString(),
             ProjectId = proj.ProjectId,
             IsPublic = true,

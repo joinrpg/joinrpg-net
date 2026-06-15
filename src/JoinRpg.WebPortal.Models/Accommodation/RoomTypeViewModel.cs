@@ -85,7 +85,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         IsPlayerSelectable = entity.IsPlayerSelectable;
         IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
         DescriptionEditable = entity.Description.Contents ?? "";
-        DescriptionView = entity.Description.ToHtmlString();
+        DescriptionView = ((MarkdownString?)entity.Description).ToHtmlString();
 
         // Creating a list of requests associated with this room type
         Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar, projectInfo)).ToList();
@@ -157,7 +157,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
             Cost = Cost,
             Name = Name,
             Capacity = Capacity,
-            Description = new MarkdownString(DescriptionEditable),
+            Description = new MarkdownDbValue(DescriptionEditable),
             IsInfinite = IsInfinite,
             IsPlayerSelectable = IsPlayerSelectable,
             IsAutoFilledAccommodation = IsAutoFilledAccommodation,

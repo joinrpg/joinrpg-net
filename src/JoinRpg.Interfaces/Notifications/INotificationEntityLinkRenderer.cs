@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 
 namespace JoinRpg.Interfaces.Notifications;

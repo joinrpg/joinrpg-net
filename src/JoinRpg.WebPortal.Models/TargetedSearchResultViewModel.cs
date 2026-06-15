@@ -25,7 +25,7 @@ public class TargetedSearchResultViewModel(SearchResult searchResult,
     public JoinHtmlString GetFormattedDescription(int maxLengthToShow)
     {
         var descriptionToShow = TruncateString(
-            SearchResult.Description.ToPlainTextAndEscapeHtml().Value,
+            ((MarkdownString?)SearchResult.Description).ToPlainTextAndEscapeHtml().Value,
             SearchTarget,
             maxLengthToShow);
 

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
@@ -568,8 +567,8 @@ ordering,
             true,
             true,
             [],
-            new MarkdownString(),
-            new MarkdownString(),
+            null,
+            null,
             false,
             new ProjectFieldSettings(null, null),
             null,

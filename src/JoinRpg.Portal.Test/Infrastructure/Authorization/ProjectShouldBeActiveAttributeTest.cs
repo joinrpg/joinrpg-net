@@ -1,5 +1,5 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
@@ -109,6 +109,6 @@ public class ProjectShouldBeActiveAttributeTest
             => Task.FromResult(projectInfo);
 
         public Task<JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => Task.FromResult(new JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails(new MarkdownString(), [], false));
+            => Task.FromResult(new JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails(new MarkdownString(""), [], false));
     }
 }

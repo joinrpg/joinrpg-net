@@ -80,5 +80,5 @@ public class CommentText
 {
     public int CommentId { get; set; }
 
-    public MarkdownString Text { get; set; } = new MarkdownString();
+    public MarkdownDbValue Text { get; set; } = new MarkdownDbValue();
 }

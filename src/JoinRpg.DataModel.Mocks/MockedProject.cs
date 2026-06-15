@@ -75,8 +75,8 @@ public class MockedProject
         }
         var id = new ProjectFieldIdentification(ProjectInfo.ProjectId, ProjectInfo.UnsortedFields.GetNextId());
         var field = new ProjectFieldInfo(id, name, fieldType, FieldBoundTo.Character, [], "", 0, CanPlayerEdit: canPlayerEdit, ShowOnUnApprovedClaims: showOnUnApprovedClaims,
-            MandatoryStatus: mandatoryStatus, ValidForNpc: true, IsActive: true, GroupsAvailableForIds: availForIds, Description: new MarkdownString(),
-            MasterDescription: new MarkdownString(),
+            MandatoryStatus: mandatoryStatus, ValidForNpc: true, IsActive: true, GroupsAvailableForIds: availForIds, Description: new MarkdownDbValue(),
+            MasterDescription: new MarkdownDbValue(),
             IncludeInPrint: true, FieldSettings: ProjectInfo.ProjectFieldSettings,
             ProgrammaticValue: null,
             ProjectFieldVisibility: projectFieldVisibility,

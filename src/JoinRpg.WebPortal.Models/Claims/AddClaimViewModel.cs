@@ -74,7 +74,7 @@ public class AddClaimViewModel : IProjectIdAware
         ProjectName = claimSource.Project.ProjectName;
         TargetName = claimSource.CharacterName;
         IsSlot = claimSource.CharacterType == CharacterType.Slot;
-        ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
+        ClaimApplyRules = ((MarkdownString?)claimSource.Project.Details.ClaimApplyRules).ToHtmlString();
         var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, userInfo.UserId);
         HasMasterAccess = accessArguments.MasterAccess;
 

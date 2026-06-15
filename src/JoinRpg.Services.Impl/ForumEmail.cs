@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Impl;
 public record class ForumMessageNotification(
     ForumCommentIdentification ForumCommentId,
     UserInfoHeader Initiator,
-    MarkdownString Text,
+    MarkdownDbValue Text,
     string Header,
     UserInfoHeader? ParentCommentAuthor = null
     );

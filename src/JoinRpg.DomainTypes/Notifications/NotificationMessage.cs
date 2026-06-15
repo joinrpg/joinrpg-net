@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.DomainTypes.Notifications;
 
 /// Конкретный экземпляр уведомления для конкретного пользователя
