@@ -52,5 +52,12 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
         {
             yield return new ValidationResult("Name is required", [nameof(Name)]);
         }
+
+        if (PublicMode && ContactsColumn == ProjectRolesListVisibilityMode.All)
+        {
+            yield return new ValidationResult(
+                "В публичной сетке ролей нельзя показывать все контакты",
+                [nameof(ContactsColumn)]);
+        }
     }
 }
