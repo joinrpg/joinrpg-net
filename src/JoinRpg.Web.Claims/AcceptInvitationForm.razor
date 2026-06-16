@@ -26,6 +26,13 @@
                             <JoinTextArea @bind-Value="model.CommentText" Placeholder="Комментарий (необязательно)" />
                         </FormRowFor>
 
+                        @if (SensitiveDataRequired)
+                        {
+                            <FormRowFor For="@(() => model.SensitiveDataAllowed)">
+                                <CheckboxInput @bind-Value="model.SensitiveDataAllowed" />
+                            </FormRowFor>
+                        }
+
                         <FormRow>
                             <JoinButton Submit="true" Preset="ButtonPreset.Save" Label="Принять приглашение"
                                         ProgressLabel="Принимаем..." InProgress="@loading" AutoProgress="false" />
@@ -42,10 +49,18 @@
     [EditorRequired]
     public ClaimIdentification ClaimId { get; set; } = null!;
 
+    [Parameter]
+    [EditorRequired]
+    public bool SensitiveDataRequired { get; set; }
+
     private sealed class FormModel
     {
         [Display(Name = "Комментарий")]
         public string CommentText { get; set; } = "";
+
+        [Display(Name = "Предоставить доступ к паспортным данным",
+         Description = "Мастера игры просят вас предоставить доступ к паспортным данным. Вероятно, это нужно для поселения. Вы все равно сможете отправить заявку, даже если не предоставите доступ, но возможно, мастера отклонят вашу заявку. ")]
+        public bool SensitiveDataAllowed { get; set; }
     }
 
     private readonly FormModel model = new();
@@ -60,7 +75,7 @@
 
         try
         {
-            await ClaimClient.AcceptInvitation(ClaimId, model.CommentText);
+            await ClaimClient.AcceptInvitation(ClaimId, new AcceptInvitationRequest(model.CommentText, model.SensitiveDataAllowed));
             NavigationManager.Refresh(forceReload: true);
         }
         catch (Exception ex)

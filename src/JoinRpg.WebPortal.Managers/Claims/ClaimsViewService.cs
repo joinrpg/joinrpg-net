@@ -23,8 +23,8 @@ internal class ClaimsViewService(
         }
     }
 
-    public async Task AcceptInvitation(ClaimIdentification claimId, string commentText)
-        => await claimService.AcceptInvitation(claimId, commentText);
+    public async Task AcceptInvitation(ClaimIdentification claimId, AcceptInvitationRequest request)
+        => await claimService.AcceptInvitation(claimId, request.CommentText, request.SensitiveDataAllowed);
 
     async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimListClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
     => (await claimsRepository.GetClaimHeadersWithPlayer(projectId, claimStatusSpec)).ToClaimViewModels();

@@ -898,7 +898,7 @@ internal class ClaimServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AcceptInvitation(ClaimIdentification claimId, string commentText)
+    public async Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed)
     {
         var (claim, projectInfo) = await LoadClaimAsPlayer(claimId);
 
@@ -907,6 +907,8 @@ internal class ClaimServiceImpl(
         {
             throw new ClaimWrongStatusException(claim);
         }
+
+        claim.PlayerAllowedSenstiveData = sensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
 
         SetDiscussed(claim, isVisibleToPlayer: true);
 

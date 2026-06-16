@@ -16,10 +16,10 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
 
     }
 
-    public async Task AcceptInvitation(ClaimIdentification claimId, string commentText)
+    public async Task AcceptInvitation(ClaimIdentification claimId, AcceptInvitationRequest request)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsJsonAsync($"webapi/ClaimOperations/AcceptInvitation?claimId={claimId}", commentText);
+        var response = await httpClient.PostAsJsonAsync($"webapi/ClaimOperations/AcceptInvitation?claimId={claimId}", request);
 
         response.EnsureSuccessStatusCode();
     }

@@ -14,9 +14,9 @@ public class ClaimOperationsController(IClaimOperationClient claimClient) : Cont
     }
 
     [HttpPost]
-    public async Task<ActionResult> AcceptInvitation([FromQuery] ClaimIdentification claimId, [FromBody] string commentText)
+    public async Task<ActionResult> AcceptInvitation([FromQuery] ClaimIdentification claimId, [FromBody] AcceptInvitationRequest request)
     {
-        await claimClient.AcceptInvitation(claimId, commentText);
+        await claimClient.AcceptInvitation(claimId, request);
         return Ok();
     }
 }

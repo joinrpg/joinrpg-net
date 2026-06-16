@@ -91,6 +91,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public bool AllowToSetGroups { get; }
 
     public bool HasSensitiveDataAccess { get; }
+    public bool SensitiveDataRequired { get; }
     public string? PassportData { get; }
     public string? RegistrationAddress { get; }
 
@@ -176,7 +177,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             projectInfo);
         AccommodationModel = accommodationModel;
 
-        HasSensitiveDataAccess = claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+        SensitiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+        HasSensitiveDataAccess = claim.PlayerAllowedSenstiveData && SensitiveDataRequired;
         if (HasSensitiveDataAccess)
         {
             PassportData = claim.Player.Extra?.PassportData;
