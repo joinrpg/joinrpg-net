@@ -25,6 +25,7 @@
 - [ADR006: Common split](adr006-common-split.md)
 - [ADR007: TypedStringValue](adr007-string-value.md)
 - [ADR008: Страница просмотра сетки ролей](adr008-roles-list-view-page.md)
+- [ADR009: Переход основной БД с EF6 на EF Core](adr009-efcore-migration.md)
 
 ## Быстрые ссылки
 
