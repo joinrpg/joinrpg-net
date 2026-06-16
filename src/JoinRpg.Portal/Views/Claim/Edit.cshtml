@@ -235,7 +235,8 @@
         @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.ClaimStatus == ClaimStatusView.AddedByMaster)
         {
             <component type="typeof(AcceptInvitationForm)" render-mode="WebAssemblyPrerendered"
-                       param-ClaimId="Model.ClaimIdentification" />
+                       param-ClaimId="Model.ClaimIdentification"
+                       param-SensitiveDataRequired="Model.SensitiveDataRequired" />
         }
 
         <div class="panel panel-default collapse" id="approveClaimActionPanel">

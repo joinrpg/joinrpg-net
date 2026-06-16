@@ -59,7 +59,7 @@ public class AcceptInvitationScenario(JoinApplicationFactory factory) : IClassFi
         await factory.Services.RunAsAsync(playerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            await claimService.AcceptInvitation(claimId, "Согласен!");
+            await claimService.AcceptInvitation(claimId, "Согласен!", sensitiveDataAllowed: false);
         });
 
         // 4. Из-за включённого автопринятия заявка должна быть принята
