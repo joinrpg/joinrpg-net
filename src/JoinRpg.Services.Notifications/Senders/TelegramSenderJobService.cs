@@ -22,8 +22,7 @@ internal class TelegramSenderJobService(
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
         var entityLink = linkRenderer.RenderEntityLink(message.Message.EntityReference);
         var html = FormatMessage(message.Message.Header, message.Message.Body, sender.DisplayName, entityLink);
-        await telegramNotificationService.SendTelegramNotification(message.NotificationAddress.AsTelegram(), html);
-        return SendingResult.Success();
+        return await telegramNotificationService.SendTelegramNotification(message.NotificationAddress.AsTelegram(), html);
     }
 
     internal static TelegramHtmlString FormatMessage(string header, MarkdownString body, UserDisplayName displayName, RenderedEntityLink? entityLink)

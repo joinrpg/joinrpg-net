@@ -1,5 +1,6 @@
 
 using Amazon.SimpleEmailV2.Model;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
