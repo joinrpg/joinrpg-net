@@ -147,7 +147,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
 
                 numberOfSuccessCounter.Add(1);
                 SuccessCounter++;
-                logger.LogInformation("Сообщение {messageId} отправлено", nextMessage.MessageId);
+                logger.LogInformation("Сообщение {messageId} отправлено через {senderJobName}", nextMessage.MessageId, JobName);
 
                 if (SuccessCounter >= WorkerOptions.MinSubsequentSuccessesToStopFailureCounting)
                 {
