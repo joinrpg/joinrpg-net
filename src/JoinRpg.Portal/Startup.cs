@@ -26,6 +26,7 @@ using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Notifications;
+using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
@@ -90,7 +91,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             environment,
             "JoinRpg",
             dataProtectionConnectionStringName: "DataProtection",
-            telemetryServiceNames: [BackgroundServiceActivity.ActivitySourceName]);
+            telemetryServiceNames: [BackgroundServiceActivity.ActivitySourceName, SenderServiceActivityHolder.ActivitySourceName]);
 
         services.AddJoinDailyJob(Configuration, environment);
         services.AddNotificationsDal(Configuration, environment);

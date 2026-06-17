@@ -213,8 +213,10 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
         => GetDelay(WorkerOptions.BaseCooldownPause, cooldownCounter, WorkerOptions.HysteresisFactor);
 }
 
-internal static class SenderServiceActivityHolder
+public static class SenderServiceActivityHolder
 {
+    public const string ActivitySourceName = "SenderService";
+
     // Нужен отдельный маленький классик, так как SenderJobService — generic, и там было бы Х экземпляров
-    public static readonly ActivitySource ActivitySource = new("SenderService");
+    public static readonly ActivitySource ActivitySource = new(ActivitySourceName);
 }
