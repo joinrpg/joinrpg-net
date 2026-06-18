@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;

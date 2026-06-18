@@ -1,5 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes;
-
 namespace JoinRpg.Services.Interfaces.Notification;
 
 public interface ITelegramNotificationService
