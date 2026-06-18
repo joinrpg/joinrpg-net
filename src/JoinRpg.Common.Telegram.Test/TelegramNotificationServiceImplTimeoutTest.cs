@@ -9,7 +9,7 @@ namespace JoinRpg.Common.Telegram.Test;
 public class TelegramNotificationServiceImplTimeoutTest
 {
     [Fact]
-    public async Task SendTelegramNotification_WithTimeoutException_ReturnsRepeatableFailure()
+    public async Task SendTelegramNotification_WithTimeoutException_ReturnsCommonFailure()
     {
         var handler = new ThrowingHttpMessageHandler(new TimeoutException("Request timed out"));
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.telegram.org") };
@@ -18,11 +18,11 @@ public class TelegramNotificationServiceImplTimeoutTest
 
         var result = await service.SendTelegramNotification(new TelegramId(1, null), new TelegramHtmlString("test"));
 
-        result.ShouldBe(SendingResult.RepeatableFailure());
+        result.ShouldBe(SendingResult.CommonFailure());
     }
 
     [Fact]
-    public async Task SendTelegramNotification_WithInnerTimeoutException_ReturnsRepeatableFailure()
+    public async Task SendTelegramNotification_WithInnerTimeoutException_ReturnsCommonFailure()
     {
         var inner = new TimeoutException("Request timed out");
         var outer = new HttpRequestException("Connection failed", inner);
@@ -33,7 +33,7 @@ public class TelegramNotificationServiceImplTimeoutTest
 
         var result = await service.SendTelegramNotification(new TelegramId(1, null), new TelegramHtmlString("test"));
 
-        result.ShouldBe(SendingResult.RepeatableFailure());
+        result.ShouldBe(SendingResult.CommonFailure());
     }
 
     private sealed class ThrowingHttpMessageHandler(Exception exception) : HttpMessageHandler

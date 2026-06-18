@@ -15,8 +15,4 @@
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="JoinRpg.Common.Telegram.Test" />
-  </ItemGroup>
-
 </Project>

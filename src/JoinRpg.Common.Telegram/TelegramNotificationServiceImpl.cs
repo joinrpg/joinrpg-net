@@ -46,7 +46,7 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
         {
             CountError("timeout");
             logger.LogWarning(exception, "Таймаут при отправке сообщения в телеграм {telegramId}", telegramId);
-            return SendingResult.RepeatableFailure();
+            return SendingResult.CommonFailure();
         }
         catch (Exception exception)
         {
