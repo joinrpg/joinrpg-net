@@ -1,5 +1,6 @@
 ﻿@{ Layout = null; }
 @using PscbApi
+@using System.Text.Encodings.Web
 @model JoinRpg.Services.Interfaces.FastPaymentsSystemMobilePaymentContext
 <!DOCTYPE html>
 <html>
@@ -285,7 +286,7 @@ const banks =
   @Html.Raw("[\n")
   foreach (var bank in Model.AllBanks)
   {
-    @Html.Raw($"[document.getElementById('{bank.Id}'), '{bank.First1}', '{bank.First2}', '{bank.First3}', '{bank.First4}', '{bank.ClearName}'],\n")
+    @Html.Raw($"[document.getElementById('{bank.Id}'), '{JavaScriptEncoder.Default.Encode(bank.First1)}', '{JavaScriptEncoder.Default.Encode(bank.First2)}', '{JavaScriptEncoder.Default.Encode(bank.First3)}', '{JavaScriptEncoder.Default.Encode(bank.First4)}', '{JavaScriptEncoder.Default.Encode(bank.ClearName)}'],\n")
   }
   @Html.Raw("]")
 }
