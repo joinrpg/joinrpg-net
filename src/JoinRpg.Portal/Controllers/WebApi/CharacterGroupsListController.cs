@@ -16,4 +16,7 @@ public class CharacterGroupsListController(ICharacterGroupsClient viewService) :
     //TODO add caching here
     [HttpGet]
     public async Task<List<CharacterGroupDto>> GetCharacterGroupsWithSpecial(int projectId) => await viewService.GetCharacterGroupsWithSpecial(projectId);
+
+    [HttpGet]
+    public async Task<List<CharacterGroupDto>> GetValidParentGroups(CharacterGroupIdentification groupId) => await viewService.GetValidParentGroups(groupId);
 }

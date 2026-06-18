@@ -192,6 +192,14 @@ internal class ProjectService(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
 
+        var currentGroupInfo = projectInfo.Groups[characterGroupId];
+        var forbiddenParents = currentGroupInfo.AllChildGroupsIncludingThis;
+        var cycleViolation = Required(parentCharacterGroupIds).FirstOrDefault(p => forbiddenParents.Contains(p));
+        if (cycleViolation is not null)
+        {
+            throw new ArgumentException($"Группа {cycleViolation.CharacterGroupId} является потомком редактируемой группы и не может быть её родителем.");
+        }
+
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
         characterGroup.ParentCharacterGroupIds =

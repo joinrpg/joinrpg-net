@@ -18,4 +18,10 @@ public class CharacterGroupsClient(HttpClient httpClient) : ICharacterGroupsClie
             ?? throw new Exception("Couldn't get result from server");
     }
 
+    public async Task<List<CharacterGroupDto>> GetValidParentGroups(CharacterGroupIdentification groupId)
+    {
+        return await httpClient.GetFromJsonAsync<List<CharacterGroupDto>>(
+            $"/webapi/character-groups/GetValidParentGroups?groupId={groupId}")
+            ?? throw new Exception("Couldn't get result from server");
+    }
 }

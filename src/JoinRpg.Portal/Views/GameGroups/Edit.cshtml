@@ -1,4 +1,5 @@
 ﻿
+@using JoinRpg.DomainTypes
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.CharacterGroups
 @model JoinRpg.Web.Models.CharacterGroups.EditCharacterGroupViewModel
@@ -30,10 +31,16 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.ParentCharacterGroupIdInts, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-8">
-                @Html.MagicSelectGroupParent(model => model.ParentCharacterGroupIds)
-                @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
+                <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
+                           param-ProjectId="Model.ProjectId"
+                           param-Name="@("ParentCharacterGroupIdInts")"
+                           param-IncludeSpecial="false"
+                           param-ExcludeGroupId="@(new CharacterGroupIdentification(Model.ProjectId, Model.CharacterGroupId))"
+                           param-SelectedGroupIds="@(CharacterGroupIdentification.FromList(Model.ParentCharacterGroupIdInts, new(Model.ProjectId)).ToArray())"
+                           render-mode="WebAssembly" />
+                @Html.ValidationMessageFor(model => model.ParentCharacterGroupIdInts, "", new {@class = "text-danger"})
             </div>
         </div>
 
