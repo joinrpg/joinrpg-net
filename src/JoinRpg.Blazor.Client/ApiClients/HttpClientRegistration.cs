@@ -1,5 +1,6 @@
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
@@ -51,6 +52,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IUnifiedGridClient, ClaimHttpClient>()
                 .AddHttpClient<ICaptainRuleClient, CaptainRuleClientImpl>()
                 .AddHttpClient<IProjectRolesListClient, ProjectRolesListClientImpl>()
+                .AddHttpClient<IProjectRoleGridClient, ProjectRoleGridClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
                 .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>();
     }

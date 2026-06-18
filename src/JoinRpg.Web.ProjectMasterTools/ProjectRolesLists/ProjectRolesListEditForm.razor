@@ -75,12 +75,14 @@
             {
                 var domainModel = _model.ToDomain();
                 await Client.Update(domainModel);
+                // После сохранения настроек открываем саму сетку ролей на просмотр.
+                NavigationManager.NavigateTo($"/{ProjectId.Value}/roleslist/{_model.ProjectRolesListId.ProjectRolesListId}");
             }
             else
             {
                 await Client.Create(ProjectId, _model);
+                NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist");
             }
-            NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist");
         }
         catch (Exception ex)
         {

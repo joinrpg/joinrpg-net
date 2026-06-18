@@ -1,10 +1,10 @@
-using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.GamePages;
 
-[RequireMaster]
+// Без [RequireMaster]: публичная сетка (PublicMode) доступна игроку/анониму.
+// Доступ enforce'ится в сервисе ProjectRoleGridViewService по PublicMode.
 public class ProjectRoleListViewModel : PageModel
 {
     public void OnGet()

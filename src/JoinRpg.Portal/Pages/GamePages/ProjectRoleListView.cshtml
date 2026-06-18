@@ -1,8 +1,9 @@
 @page "/{projectId:int}/roleslist/{id:int}"
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
 @model JoinRpg.Portal.Pages.GamePages.ProjectRoleListViewModel
 
 @{
     ViewData["Title"] = "Сетка ролей";
 }
 
-TODO
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.RolesListId }))

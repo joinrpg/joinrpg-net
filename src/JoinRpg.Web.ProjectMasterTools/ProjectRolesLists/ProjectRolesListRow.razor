@@ -12,7 +12,11 @@
 
   </div>
   <div>
-    <JoinButton Preset="ButtonPreset.Edit" 
+    <JoinButton Preset="ButtonPreset.None"
+      OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesList.ProjectRolesListId.ProjectId.Value}/roleslist/{Model.RolesList.ProjectRolesListId.ProjectRolesListId}")'
+      Label="Открыть сетку"
+      />
+    <JoinButton Preset="ButtonPreset.Edit"
       OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesList.ProjectRolesListId.ProjectId.Value}/tools/roleslist/edit/{Model.RolesList.ProjectRolesListId.ProjectRolesListId}")'
       Label="Редактировать"
       DisabledTitle="Для управления сетками ролей нужны права редактировать ролевку"

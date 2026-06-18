@@ -163,17 +163,23 @@ public record class ProjectInfo
         return Groups[groupId];
     }
 
+    public ProjectRolesList GetRolesListById(ProjectRolesListIdentification id)
+    {
+        return ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id)
+            ?? throw new KeyNotFoundException("Не найдена сетка ролей с ID=" + id);
+    }
+
     public IEnumerable<CharacterGroupInfo> GetGroupsById(IReadOnlyCollection<CharacterGroupIdentification> ids)
     {
         return Groups.Where(g => ids.Contains(g.Key)).Select(g => g.Value);
     }
 
-    public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
+    public IReadOnlyList<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
     {
         return Groups[groupId].AllChildGroupsIncludingThis;
     }
 
-    public IEnumerable<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
+    public IReadOnlyList<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
     {
         return [.. groupIds.SelectMany(x => GetChildGroupIdsIncludingThis(x)).Distinct()];
     }
@@ -202,6 +208,22 @@ public record class ProjectInfo
     public IEnumerable<CharacterGroupInfo> GetDirectChildGroups(CharacterGroupIdentification groupId)
     {
         return Groups[groupId].DirectChildGroupIds.Select(id => Groups[id]);
+    }
+
+    /// <summary>
+    /// Группы поддерева <paramref name="groupId"/> (включая саму группу) в порядке упорядоченного DFS.
+    /// Порядок уже зашит в <see cref="CharacterGroupInfo.AllChildGroupsIncludingThis"/>: дочерние группы
+    /// идут в порядке <c>ChildGroupsOrdering</c>, каждая группа — по первому вхождению. Персонажей здесь нет:
+    /// чтобы получить детерминированный порядок персонажей, пройдите по этим группам и отсортируйте прямых
+    /// персонажей каждой группы по её <see cref="CharacterGroupInfo.ChildCharactersOrdering"/>.
+    /// </summary>
+    public IReadOnlyList<CharacterGroupInfo> GetChildGroupsIncludingThis(CharacterGroupIdentification groupId)
+    {
+        if (!Groups.TryGetValue(groupId, out var group))
+        {
+            return [];
+        }
+        return [.. group.AllChildGroupsIncludingThis.Select(id => Groups[id])];
     }
 }
 
