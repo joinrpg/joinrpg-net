@@ -165,7 +165,12 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = app.UseJoinRequestLogging();
 
         _ = app.MapOpenApi();
-        _ = app.MapSwaggerUI("swagger", Swagger.ConfigureUI);
+        // UseSwaggerUI вместо MapSwaggerUI: обход бага https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/4007
+        _ = app.UseSwaggerUI(c =>
+        {
+            Swagger.ConfigureUI(c);
+            c.RoutePrefix = "swagger";
+        });
         _ = app.MapGet("/swagger/ui/index", () => Results.Redirect("/swagger/")); // Cтарая ссылка на сваггер
 
         app.MapJoinHealthChecks();
