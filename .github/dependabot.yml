@@ -30,8 +30,11 @@ updates:
       openiddict:
         patterns:
           - "OpenIddict.*"
+      autofac:
+        patterns:
+          - "Autofac.*"
 
-  - package-ecosystem: "github-actions" 
+  - package-ecosystem: "github-actions"
     directory: "/" 
     schedule:
       interval: "daily"
