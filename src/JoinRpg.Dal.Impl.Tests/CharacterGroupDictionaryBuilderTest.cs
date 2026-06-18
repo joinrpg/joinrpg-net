@@ -291,4 +291,21 @@ public class CharacterGroupDictionaryBuilderTest
         var groupInfo = result[groupId];
         groupInfo.DirectChildGroupIds.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void Build_ShouldExposeChildCharactersOrdering()
+    {
+        // Arrange
+        var project = _mock.Project;
+        var group = _mock.CreateCharacterGroup();
+        group.ParentCharacterGroupIds = [project.RootGroup.CharacterGroupId];
+        group.ChildCharactersOrdering = "3,1,2";
+
+        // Act
+        var result = CharacterGroupDictionaryBuilder.Build(project, new ProjectIdentification(project.ProjectId));
+
+        // Assert — порядок персонажей хранится в снепшоте как строка, персонажи сюда не грузятся
+        var groupId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), group.CharacterGroupId);
+        result[groupId].ChildCharactersOrdering.ShouldBe("3,1,2");
+    }
 }

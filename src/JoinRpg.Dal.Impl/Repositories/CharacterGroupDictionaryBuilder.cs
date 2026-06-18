@@ -120,6 +120,7 @@ public static class CharacterGroupDictionaryBuilder
                 IsSpecial: group.IsSpecial,
                 IsIntresting: !group.IsRoot && group.IsActive && (!group.IsSpecial || group.ParentCharacterGroupIds.Any(parentId => parentId != rootGroupId.Id)),
                 DirectChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
+                ChildCharactersOrdering: group.ChildCharactersOrdering ?? "",
                 DirectParentGroupIds: parentGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
                 AllChildGroups: allChildGroups,
                 AllParentGroups: allParentGroups

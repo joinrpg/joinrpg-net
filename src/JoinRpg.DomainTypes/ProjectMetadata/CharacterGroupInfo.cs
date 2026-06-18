@@ -9,6 +9,7 @@ public record CharacterGroupInfo(
     bool IsSpecial,
     bool IsIntresting,
     IReadOnlyCollection<CharacterGroupIdentification> DirectChildGroupIds,
+    string ChildCharactersOrdering,
     IReadOnlyCollection<CharacterGroupIdentification> DirectParentGroupIds,
     IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups
