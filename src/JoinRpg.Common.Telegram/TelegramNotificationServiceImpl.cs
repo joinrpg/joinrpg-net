@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
@@ -23,13 +24,14 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
 
     public async Task<string?> GetMyUserName(CancellationToken cancellationToken) => (await client.GetMe(cancellationToken)).Username;
 
-    public async Task SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
+    public async Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
     {
         var sw = Stopwatch.StartNew();
         try
         {
             _ = await client.SendMessage(new ChatId(telegramId.Id), contents.SanitizeHtml(TelegramMaxMessageLength), ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
             logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}", telegramId);
+            return SendingResult.Success();
         }
         catch (ApiRequestException exception)
         {
@@ -44,7 +46,7 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
         {
             CountError("timeout");
             logger.LogWarning(exception, "Таймаут при отправке сообщения в телеграм {telegramId}", telegramId);
-            throw;
+            return SendingResult.CommonFailure();
         }
         catch (Exception exception)
         {
@@ -76,9 +78,9 @@ internal class StubTelegramNotificationService(ILogger<StubTelegramNotificationS
 {
     public Task<string?> GetMyUserName(CancellationToken cancellationToken) => Task.FromResult<string?>(null);
 
-    public Task SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
+    public Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
     {
         logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}: {message}", telegramId, contents);
-        return Task.CompletedTask;
+        return Task.FromResult(SendingResult.Success());
     }
 }

@@ -1,3 +1,5 @@
+using JoinRpg.Common.PrimitiveTypes;
+
 namespace JoinRpg.Services.Notifications.Senders;
 
 internal class UiSenderJobService : ISenderJob
