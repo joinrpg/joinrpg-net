@@ -17,6 +17,10 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 
     private void FillErrorData()
     {
+        // При перезапуске UseStatusCodePagesWithReExecute привязка маршрута не работает,
+        // потому что endpoint routing уже отработал до него. Берём статус из ответа.
+        HttpStatusCode ??= HttpContext.Response.StatusCode is var sc and > 0 ? sc : null;
+
         if (HttpContext.Features.Get<IExceptionHandlerPathFeature>() is IExceptionHandlerPathFeature exceptionHandlerPathFeature)
         {
             logger.LogError(exceptionHandlerPathFeature.Error,
