@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;

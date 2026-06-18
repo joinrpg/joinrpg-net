@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using Microsoft.Extensions.DependencyInjection;
