@@ -1,4 +1,6 @@
-using System.Text.RegularExpressions;
+using System.Net;
+using System.Text;
+using System.Text.Encodings.Web;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
@@ -24,18 +26,47 @@ public class TargetedSearchResultViewModel(SearchResult searchResult,
 
     public JoinHtmlString GetFormattedDescription(int maxLengthToShow)
     {
-        var descriptionToShow = TruncateString(
-            ((MarkdownString?)SearchResult.Description).ToPlainTextAndEscapeHtml().Value,
-            SearchTarget,
-            maxLengthToShow);
+        // Work on decoded plain text so that search terms with '&', '<' etc. are found correctly.
+        // ToPlainTextWithoutHtmlEscape returns Markdig output which may contain HTML entities;
+        // HtmlDecode converts them to raw characters before searching.
+        var plainText = WebUtility.HtmlDecode(
+            ((MarkdownString?)SearchResult.Description).ToPlainTextWithoutHtmlEscape());
 
-        descriptionToShow = Regex.Replace(
-            descriptionToShow,
-            Regex.Escape(SearchTarget),
-            match => "<b><u>" + match.Value + "</u></b>",
-            RegexOptions.IgnoreCase);
+        var truncated = TruncateString(plainText, SearchTarget, maxLengthToShow);
 
-        return new MarkupString(descriptionToShow);
+        // Sanitization (HTML encoding) happens here, per segment, not up front.
+        return BuildHighlightedHtml(truncated, SearchTarget);
+    }
+
+    private static MarkupString BuildHighlightedHtml(string plainText, string searchTarget)
+    {
+        if (string.IsNullOrEmpty(searchTarget))
+        {
+            return new MarkupString(HtmlEncoder.Default.Encode(plainText));
+        }
+
+        var sb = new StringBuilder();
+        var sw = new StringWriter(sb);
+        var pos = 0;
+
+        while (pos < plainText.Length)
+        {
+            var matchIndex = plainText.IndexOf(searchTarget, pos, StringComparison.InvariantCultureIgnoreCase);
+            if (matchIndex < 0)
+            {
+                HtmlEncoder.Default.Encode(sw, plainText, pos, plainText.Length - pos);
+                break;
+            }
+
+            HtmlEncoder.Default.Encode(sw, plainText, pos, matchIndex - pos);
+            _ = sb.Append("<b><u>");
+            HtmlEncoder.Default.Encode(sw, plainText, matchIndex, searchTarget.Length);
+            _ = sb.Append("</u></b>");
+
+            pos = matchIndex + searchTarget.Length;
+        }
+
+        return new MarkupString(sb.ToString());
     }
 
     private static string TruncateString(
