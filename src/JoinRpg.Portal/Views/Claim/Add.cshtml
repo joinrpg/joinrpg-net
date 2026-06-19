@@ -1,6 +1,7 @@
 @using JoinRpg.CommonUI.Models
 @using JoinRpg.Domain
 @using JoinRpg.Web.Claims
+@using JoinRpg.Web.ProjectCommon.Projects
 @model JoinRpg.Web.Models.AddClaimViewModel
 
 <script src="~/Scripts/claim.js">
@@ -39,13 +40,19 @@
             if (Model.ProjectAllowsMultipleCharacters)
             {
                 <div class="alert alert-info">
-                    У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
+                    У вас уже есть <component type="typeof(MyClaimLink)"
+                                              render-mode="Static"
+                                              param-ProjectId="Model.ProjectIdentification"
+                                              param-LinkText="@("заявка")" /> на проект. На этот проект может быть утверждено несколько заявок.
                 </div>
             }
             else
             {
                 <div class="alert alert-warning">
-                    У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
+                    У вас уже есть <component type="typeof(MyClaimLink)"
+                                              render-mode="Static"
+                                              param-ProjectId="Model.ProjectIdentification"
+                                              param-LinkText="@("заявка")" /> на проект. Утверждена может быть только одна заявка.
                 </div>
             }
         }
