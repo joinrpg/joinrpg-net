@@ -28,6 +28,17 @@
                         {
                             <li><a asp-page="/GamePages/CaptainCabinet" asp-route-ProjectId="@Model.ProjectId">Кабинет капитана</a></li>
                         }
+                        @if (Model.ProjectRolesLists.Any(x => x.PublicMode))
+                        {
+                            <li role="separator" class="dropdown-header">Таблицей:</li>
+                            @foreach (var rl in Model.ProjectRolesLists.Where(x => x.PublicMode))
+                            {
+                                <li><a asp-page="/GamePages/ProjectRoleListView"
+                                       asp-route-projectId="@Model.ProjectId"
+                                       asp-route-id="@rl.ProjectRolesListId.ProjectRolesListId">@rl.Name</a></li>
+                            }
+                        }
+
                         @if (Model.BigGroups.Any())
                         {
                             <li role="separator" class="dropdown-header">По группам:</li>
