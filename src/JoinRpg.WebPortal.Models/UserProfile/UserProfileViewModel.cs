@@ -40,18 +40,16 @@ public record class UserAdminOperationsViewModel(Uri LogLink, bool IsAdmin);
 
 public class UserProfileDetailsViewModel
 {
-    [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber), UIHint("PhoneNumber")]
-    public string? PhoneNumber { get; }
+    [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber)]
+    public PhoneNumber? PhoneNumber { get; }
     [Display(Name = "Skype"), UIHint("Skype")]
     public string? Skype { get; }
-    [Display(Name = "Telegram"), UIHint("Telegram")]
-    public string? Telegram { get; }
-    [Display(Name = "ЖЖ"), UIHint("Livejournal")]
-    public string? Livejournal { get; }
-    [Display(Name = "VK"), UIHint("Vkontakte")]
-    public string? Vk { get; }
-    [UIHint("Email")]
-    public string? Email { get; }
+    public TelegramId? Telegram { get; }
+    [Display(Name = "ЖЖ")]
+    public LiveJournalId? Livejournal { get; }
+    [Display(Name = "VK")]
+    public VkId? Vk { get; }
+    public Email? Email { get; }
     public bool EmailConfirmed { get; }
     [DisplayName("ФИО")]
     public string? FullName { get; }
@@ -94,15 +92,15 @@ public class UserProfileDetailsViewModel
             Email = user.Email;
             EmailConfirmed = user.EmailConfirmed;
             FullName = user.UserFullName.FullName;
-            PhoneNumber = user.PhoneNumber;
+            PhoneNumber = PhoneNumber.FromOptional(user.PhoneNumber);
             IsVerifiedUser = user.VerifiedProfileFlag;
         }
         if (Reason != AccessReasonView.NoAccess || user.Social.SocialNetworksAccess == ContactsAccessType.Public)
         {
-            Vk = user.Social.VkId;
+            Vk = VkId.FromOptional(user.Social.VkId);
             AllrpgId = user.Social.AllrpgInfoId;
-            Telegram = user.Social.TelegramId?.UserName?.Value;
-            Livejournal = user.Social.LiveJournal;
+            Telegram = user.Social.TelegramId;
+            Livejournal = LiveJournalId.FromOptional(user.Social.LiveJournal);
             HasSocialAccess = true;
         }
 

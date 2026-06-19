@@ -1,0 +1,9 @@
+@if (Contact is not null)
+{
+    <text>ВК:&nbsp;<a href="https://vk.com/@Contact.Value">@Contact.Value</a></text>
+}
+
+@code {
+    [Parameter]
+    public VkId? Contact { get; set; }
+}

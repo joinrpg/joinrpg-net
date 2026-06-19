@@ -1,0 +1,9 @@
+@if (Contact is not null)
+{
+    <text><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;<a href="mailto:@Contact.Value">@Contact.Value.Trim()</a></text>
+}
+
+@code {
+    [Parameter]
+    public Email? Contact { get; set; }
+}

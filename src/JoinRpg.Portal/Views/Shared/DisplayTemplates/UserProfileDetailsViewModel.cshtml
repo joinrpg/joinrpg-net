@@ -14,29 +14,29 @@
             {
                 <br /> @Model.FullName
             }
-            @if (!string.IsNullOrWhiteSpace(Model.Email))
+            @if (Model.Email is not null)
             {
-                <br /> @Html.DisplayFor(model => model.Email)
+                <br /><component type="typeof(EmailLink)" render-mode="Static" param-Contact="@Model.Email" />
                 @if (!Model.EmailConfirmed && Model.ViewAsAdmin)
                 {
                     <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Email не подтвержден")" />
                 }
             }
-            @if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
+            @if (Model.PhoneNumber is not null)
             {
-                <br /> @Html.DisplayFor(model => model.PhoneNumber) 
+                <br /><component type="typeof(PhoneLink)" render-mode="Static" param-Contact="@Model.PhoneNumber" />
             }
-            @if (!string.IsNullOrWhiteSpace(Model.Telegram))
+            @if (Model.Telegram?.UserName is not null)
             {
-                <br />@Html.DisplayFor(model => model.Telegram) 
+                <br /><component type="typeof(TelegramLink)" render-mode="Static" param-Contact="@Model.Telegram" />
             }
-            @if (!string.IsNullOrWhiteSpace(Model.Livejournal))
+            @if (Model.Livejournal is not null)
             {
-                <br /> @Html.DisplayFor(model => model.Livejournal) 
+                <br /><component type="typeof(LiveJournalLink)" render-mode="Static" param-Contact="@Model.Livejournal" />
             }
-            @if (!string.IsNullOrWhiteSpace(Model.Vk))
+            @if (Model.Vk is not null)
             {
-                <br /> @Html.DisplayFor(model => model.Vk) 
+                <br /><component type="typeof(VkLink)" render-mode="Static" param-Contact="@Model.Vk" />
             }
             @if (Model.AllrpgId != null && Model.AllrpgId != 0)
             {
@@ -48,5 +48,5 @@
               <p>Игрок предпочитает сохранять анонимность.</p>
             }
         </td>
-    </tr>    
+    </tr>
 </table>
