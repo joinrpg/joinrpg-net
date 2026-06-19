@@ -25,6 +25,7 @@ public static class Registraton
             .AddTransient<IUnifiedGridRepository, UnifiedGridRepository>()
             .AddTransient<IKogdaIgraRepository, KogdaIgraRepository>()
             .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>()
+            .AddTransient<ICharacterGroupRepository, CharacterGroupRepository>()
             .AddTransient<IProjectRepository, ProjectRepository>()
             .AddTransient<ICharacterRepository, CharacterRepositoryImpl>()
             .AddTransient<IPlotRepository, PlotRepositoryImpl>()

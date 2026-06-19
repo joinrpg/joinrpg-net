@@ -10,6 +10,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -24,7 +25,8 @@ public class GameGroupsController(
     IUriService uriService,
     IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUserAccessor
+    ICurrentUserAccessor currentUserAccessor,
+    ICharacterGroupRepository charGroupRepository
     ) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
@@ -186,75 +188,69 @@ public class GameGroupsController(
     [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
-        var group = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+        CharacterGroupIdentification charGroupId = new(new(projectId), characterGroupId);
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(charGroupId);
 
-        if (group == null)
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
 
-        if (group.IsSpecial)
+        if (charGroupFullInfo.IsSpecial)
         {
             return Content("Can't edit special group");
         }
 
-        if (group.IsRoot)
+        if (charGroupFullInfo.IsRoot)
         {
             return RedirectToActionPermanent("Index");
         }
 
-        return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
-        {
-            ParentCharacterGroupIdInts = [.. group.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId)],
-            Description = group.Description.Contents,
-            IsPublic = group.IsPublic,
-            Name = group.CharacterGroupName,
-            CharacterGroupId = group.CharacterGroupId,
-        }, group));
+        return View(await BuildEditViewModel(charGroupFullInfo, charGroupId));
     }
 
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
-        var group = await projectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
-        if (group == null)
+        ProjectIdentification projectId = new(viewModel.ProjectId);
+        CharacterGroupIdentification charGroupId = new(projectId, viewModel.CharacterGroupId);
+
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(charGroupId);
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
 
-        if (group.IsRoot)
+        if (charGroupFullInfo.IsRoot)
         {
             return RedirectToActionPermanent("Index");
         }
 
-        if (!ModelState.IsValid)
-        {
-            return View(FillFromCharacterGroup(viewModel, group));
-        }
-
-        if (group.IsSpecial)
+        if (charGroupFullInfo.IsSpecial)
         {
             return Content("Can't edit special group");
         }
 
+        if (!ModelState.IsValid)
+        {
+            return View(await BuildEditViewModel(viewModel, charGroupFullInfo, charGroupId));
+        }
+
         try
         {
-            ProjectIdentification projectId = new(viewModel.ProjectId);
-            await projectService.EditCharacterGroup(new CharacterGroupIdentification(projectId, viewModel.CharacterGroupId),
-              viewModel.Name, viewModel.IsPublic,
-              [.. viewModel.ParentCharacterGroupIdInts.Select(id => new CharacterGroupIdentification(projectId, id))],
-              viewModel.Description);
+            await projectService.EditCharacterGroup(charGroupId,
+                viewModel.Name, viewModel.IsPublic,
+                [.. viewModel.ParentCharacterGroupIdInts.Select(id => new CharacterGroupIdentification(projectId, id))],
+                viewModel.Description);
 
-            return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
+            return RedirectToIndex(viewModel.ProjectId, viewModel.CharacterGroupId, "Details");
         }
         catch (Exception e)
         {
             AddModelException(e);
-            return View(FillFromCharacterGroup(viewModel, group));
-
+            return View(await BuildEditViewModel(viewModel, charGroupFullInfo, charGroupId));
         }
-
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
@@ -355,15 +351,33 @@ public class GameGroupsController(
         return viewModel;
     }
 
-    private static EditCharacterGroupViewModel FillFromCharacterGroup(
-        EditCharacterGroupViewModel viewModel,
-        CharacterGroup group)
+    private async Task<EditCharacterGroupViewModel> BuildEditViewModel(
+        CharacterGroupFullInfo charGroupFullInfo,
+        CharacterGroupIdentification charGroupId)
     {
-        viewModel.CreatedAt = group.CreatedAt;
-        viewModel.UpdatedAt = group.UpdatedAt;
-        viewModel.CreatedBy = group.CreatedBy;
-        viewModel.UpdatedBy = group.UpdatedBy;
-        _ = FillFromCharacterGroup((CharacterGroupViewModelBase)viewModel, group);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(charGroupId.ProjectId);
+        return new EditCharacterGroupViewModel
+        {
+            CharacterGroupId = charGroupId.CharacterGroupId,
+            ParentCharacterGroupIdInts = [.. charGroupFullInfo.DirectParentGroupIds.Select(x => x.Id)],
+            Description = charGroupFullInfo.Description?.Value ?? "",
+            IsPublic = charGroupFullInfo.IsPublic,
+            Name = charGroupFullInfo.Name,
+            ProjectId = charGroupId.ProjectId,
+            ProjectName = projectInfo.ProjectName.Value,
+            Marks = charGroupFullInfo.Marks.ToViewModel(),
+        };
+    }
+
+    private async Task<EditCharacterGroupViewModel> BuildEditViewModel(
+        EditCharacterGroupViewModel viewModel,
+        CharacterGroupFullInfo charGroupFullInfo,
+        CharacterGroupIdentification charGroupId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(charGroupId.ProjectId);
+        viewModel.ProjectId = charGroupId.ProjectId;
+        viewModel.ProjectName = projectInfo.ProjectName.Value;
+        viewModel.Marks = charGroupFullInfo.Marks.ToViewModel();
         return viewModel;
     }
 

@@ -1,0 +1,23 @@
+@if (Model is not null)
+{
+    <span>
+        Создано: <EventTime Model="(DateTimeOffset)Model.CreatedAt" />
+        @if (Model.CreatedBy is { } createdBy)
+        {
+            <text>&nbsp;</text><UserLink Model="createdBy" />
+        }
+        @if (Model.UpdatedAt != Model.CreatedAt)
+        {
+            <span> Изменено: </span>
+            <EventTime Model="(DateTimeOffset)Model.UpdatedAt" />
+            @if (Model.UpdatedBy is { } updatedBy && Model.CreatedBy?.UserId != updatedBy.UserId)
+            {
+                <text>&nbsp;</text><UserLink Model="updatedBy" />
+            }
+        }
+    </span>
+}
+
+@code {
+    [Parameter] public CreateUpdateMarksViewModel? Model { get; set; }
+}
