@@ -3,7 +3,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Plots;
-using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models.Plot;
 
@@ -15,7 +14,7 @@ public static class PlotRenderer
         var masterOrPublishAccess = masterAccess || projectInfo.PublishPlot;
         return new PlotRenderedTextViewModel(
             ((MarkdownString?)self.Content).ToHtmlString(linkRenderer),
-            masterAccess ? new MarkupString(self.TodoField) : null,
+            masterAccess ? self.TodoField : null,
             self.Id,
             masterOrPublishAccess ? self.GetStatus() : null,
             masterOrPublishAccess ? self.Target : null);
