@@ -18,5 +18,5 @@ public class CharacterGroupsListController(ICharacterGroupsClient viewService) :
     public async Task<List<CharacterGroupDto>> GetCharacterGroupsWithSpecial(int projectId) => await viewService.GetCharacterGroupsWithSpecial(projectId);
 
     [HttpGet]
-    public async Task<List<CharacterGroupDto>> GetValidParentGroups(CharacterGroupIdentification groupId) => await viewService.GetValidParentGroups(groupId);
+    public async Task<List<CharacterGroupDto>> GetValidParentGroups(ProjectIdentification projectId, CharacterGroupIdentification groupId) => await viewService.GetValidParentGroups(groupId);
 }
