@@ -10,9 +10,16 @@ public class ClaimsApiController(IClaimsRepository claimsRepository) : XGameApiC
 {
     [HttpGet]
     [Route("{claimId}")]
-    public async Task<ClaimInfo> GetOne(int projectId, int claimId)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult<ClaimInfo>> GetOne(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId);
+        var claim = await claimsRepository.GetClaimWithDetails(new ClaimIdentification(projectId, claimId));
+        if (claim is null)
+        {
+            return NotFound();
+        }
         return new ClaimInfo(claim.ClaimId, claim.CharacterId, ApiInfoBuilder.ToPlayerContacts(claim.Player), (ClaimStatusEnum)claim.ClaimStatus);
     }
 }

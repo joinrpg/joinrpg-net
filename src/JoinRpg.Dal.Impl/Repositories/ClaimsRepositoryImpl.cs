@@ -49,9 +49,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
     public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, ClaimPredicates.GetResponsible(userId));
 
-    public Task<Claim?> GetClaim(int projectId, int? claimId) => GetClaimImpl(e => e.ClaimId == claimId && e.ProjectId == projectId);
-
-    public Task<Claim?> GetClaim(ClaimIdentification claimId) => GetClaim(projectId: claimId.ProjectId, claimId: claimId.ClaimId);
+    public Task<Claim?> GetClaim(ClaimIdentification claimId) => GetClaimImpl(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
 
     public async Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec)
     {
@@ -59,11 +57,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec)).GroupBy(claim => claim.ResponsibleMasterUserId)
           .Select(grouping => new ClaimCountByMaster() { ClaimCount = grouping.Count(), MasterId = grouping.Key })
           .ToListAsync();
-    }
-
-    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec claimStatusSpec)
-    {
-        return await GetHeadersByPredicate(new(projectId), ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec));
     }
 
     public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
@@ -111,12 +104,12 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     }
 
 
-    public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
+    public async Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId)
     {
-        await LoadProjectFields(projectId);
-        await LoadMasters(projectId);
-        await LoadProjectGroups(projectId);
-        await LoadProjectClaims(projectId);
+        await LoadProjectFields(claimId.ProjectId);
+        await LoadMasters(claimId.ProjectId);
+        await LoadProjectGroups(claimId.ProjectId);
+        await LoadProjectClaims(claimId.ProjectId);
 
         return
           await
@@ -125,7 +118,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
               .Include(c => c.AccommodationRequest)
               .Include(c => c.Character)
-              .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+              .SingleOrDefaultAsync(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
     }
 
     public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds)

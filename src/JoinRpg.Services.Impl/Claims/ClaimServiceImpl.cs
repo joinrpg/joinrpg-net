@@ -28,7 +28,7 @@ internal class ClaimServiceImpl(
     public async Task SubscribeClaimToUser(int projectId, int claimId)
     {
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-        _ = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+        _ = (await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId))).RequestAccess(CurrentUserId);
         _ = user.Subscriptions.Add(
             new UserSubscription() { ClaimId = claimId, ProjectId = projectId }.AssignFrom(
                 SubscriptionOptions.CreateAllSet()));
@@ -39,7 +39,7 @@ internal class ClaimServiceImpl(
     public async Task UnsubscribeClaimToUser(int projectId, int claimId)
     {
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-        _ = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+        _ = (await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId))).RequestAccess(CurrentUserId);
         var subscription = user.Subscriptions.FirstOrDefault(s =>
             s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
         if (subscription != null)
@@ -525,7 +525,7 @@ internal class ClaimServiceImpl(
     /// <inheritdoc />
     public async Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId)
     {
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+        var claim = await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
 
         claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
             Permission.CanSetPlayersAccommodations,
@@ -583,7 +583,7 @@ internal class ClaimServiceImpl(
         int roomTypeId)
     {
         //todo set first state to Unanswered
-        var claim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
+        var claim = await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId)).ConfigureAwait(false);
 
         claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
             Permission.CanSetPlayersAccommodations,
