@@ -25,6 +25,7 @@
 - [ADR006: Common split](adr006-common-split.md)
 - [ADR007: TypedStringValue](adr007-string-value.md)
 - [ADR008: Страница просмотра сетки ролей](adr008-roles-list-view-page.md)
+- [ADR009: ProjectPropsService — единая точка изменения метаданных проекта](adr009-project-props-service.md)
 
 ## Быстрые ссылки
 

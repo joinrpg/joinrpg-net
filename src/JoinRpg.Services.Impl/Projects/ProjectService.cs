@@ -12,7 +12,8 @@ internal class ProjectService(
     ICurrentUserAccessor currentUserAccessor,
     MasterEmailService masterEmailService,
     ILogger<ProjectService> logger,
-    IProjectMetadataRepository projectMetadataRepository
+    IProjectMetadataRepository projectMetadataRepository,
+    IProjectPropsService projectPropsService
     ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
 {
     public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom)
@@ -44,8 +45,6 @@ internal class ProjectService(
         await UnitOfWork.SaveChangesAsync();
         return project;
     }
-
-
 
     public async Task<CharacterGroupIdentification> AddCharacterGroup(ProjectIdentification projectId,
         string name,
@@ -81,8 +80,6 @@ internal class ProjectService(
         return new CharacterGroupIdentification(projectId, group.CharacterGroupId);
     }
 
-
-
     public async Task MoveCharacterGroup(int currentUserId,
         int projectId,
         int charactergroupId,
@@ -103,14 +100,19 @@ internal class ProjectService(
         await UnitOfWork.SaveChangesAsync();
     }
 
-
-
     public async Task CloseProject(ProjectIdentification projectId, bool publishPlot)
     {
-        var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            publishPlot,
+            (project, _, publish) =>
+            {
+                project.Active = false;
+                project.IsAcceptingClaims = false;
+                project.Details.PublishPlot = publish;
+            });
 
-        await CloseProjectImpl(project, publishPlot);
-
+        // Нотификация — ответственность вызывающего, после успешного сохранения (см. adr009).
         await masterEmailService.EmailProjectClosed(new ProjectClosedMail()
         {
             ProjectId = projectId,
@@ -120,11 +122,16 @@ internal class ProjectService(
 
     public async Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-
-        await CloseProjectImpl(project, false);
-
-        await UnitOfWork.SaveChangesAsync();
+        // Вызывается из фоновой джобы под роботом-админом — проверка прав проходит по admin-bypass.
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            lastActiveDate,
+            (project, _, _) =>
+            {
+                project.Active = false;
+                project.IsAcceptingClaims = false;
+                project.Details.PublishPlot = false;
+            });
 
         await masterEmailService.EmailProjectClosedStale(new ProjectClosedStaleMail()
         {
@@ -133,15 +140,6 @@ internal class ProjectService(
         });
 
         logger.LogInformation("Project {project} is closed as stale project.", projectId);
-    }
-
-    private async Task CloseProjectImpl(Project project, bool publishPlot)
-    {
-        project.Active = false;
-        project.IsAcceptingClaims = false;
-        project.Details.PublishPlot = publishPlot;
-
-        await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task GrantAccessAsAdmin(int projectId)
@@ -160,18 +158,6 @@ internal class ProjectService(
         }
 
         await UnitOfWork.SaveChangesAsync();
-    }
-
-    private Project RequestProjectAdminAccess(Project project)
-    {
-        ArgumentNullException.ThrowIfNull(project);
-
-        if (IsCurrentUserAdmin)
-        {
-            return project;
-        }
-
-        return project.RequestMasterAccess(CurrentUserId, Permission.CanChangeProjectProperties);
     }
 
     public async Task EditCharacterGroup(CharacterGroupIdentification characterGroupId,
@@ -257,26 +243,35 @@ internal class ProjectService(
 
     public async Task EditProject(EditProjectRequest request)
     {
-        await ChangeProjectProperties(request.ProjectId, project =>
-        {
-            project.Details.ClaimApplyRules = new MarkdownDbValue(request.ClaimApplyRules);
-            project.Details.ProjectAnnounce = new MarkdownDbValue(request.ProjectAnnounce);
-            project.ProjectName = Required(request.ProjectName);
-        });
+        await projectPropsService.ChangeProjectProperties(request.ProjectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            request,
+            (project, _, req) =>
+            {
+                project.Details.ClaimApplyRules = new MarkdownDbValue(req.ClaimApplyRules);
+                project.Details.ProjectAnnounce = new MarkdownDbValue(req.ProjectAnnounce);
+                project.ProjectName = Required(req.ProjectName);
+            });
     }
 
     public async Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation)
     {
-        await ChangeProjectProperties(projectId, project => project.Details.EnableAccommodation = enableAccommodation);
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            enableAccommodation,
+            (project, _, enabled) => project.Details.EnableAccommodation = enabled);
     }
 
     async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
     {
-        await ChangeProjectProperties(projectId, project =>
-        {
-            project.Details.PublishPlot = publishEnabled && !project.Active;
-            project.Details.ProjectCloneSettings = cloneSettings;
-        });
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowInactive,
+            (cloneSettings, publishEnabled),
+            (project, _, args) =>
+            {
+                project.Details.PublishPlot = args.publishEnabled && !project.Active;
+                project.Details.ProjectCloneSettings = args.cloneSettings;
+            });
     }
 
     public async Task SetCheckInSettings(ProjectIdentification projectId,
@@ -284,48 +279,46 @@ internal class ProjectService(
        bool enableCheckInModule,
        bool modelAllowSecondRoles)
     {
-        await ChangeProjectProperties(projectId, project =>
-        {
-            project.Details.CheckInProgress = checkInProgress && enableCheckInModule;
-            project.Details.EnableCheckInModule = enableCheckInModule;
-            project.Details.AllowSecondRoles = modelAllowSecondRoles && enableCheckInModule;
-        });
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            (checkInProgress, enableCheckInModule, modelAllowSecondRoles),
+            (project, _, args) =>
+            {
+                project.Details.CheckInProgress = args.checkInProgress && args.enableCheckInModule;
+                project.Details.EnableCheckInModule = args.enableCheckInModule;
+                project.Details.AllowSecondRoles = args.modelAllowSecondRoles && args.enableCheckInModule;
+            });
     }
 
     public async Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings)
     {
-        await ChangeProjectProperties(projectId, project =>
-        {
-            project.Details.RequireRealName = settings.RequireRealName;
-            project.Details.RequirePhone = settings.RequirePhone;
-            project.Details.RequireVkontakte = settings.RequireVkontakte;
-            project.Details.RequireTelegram = settings.RequireTelegram;
-            project.Details.RequirePassport = settings.RequirePassport;
-            project.Details.RequireRegistrationAddress = settings.RequireRegistrationAddress;
-        });
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            settings,
+            (project, _, s) =>
+            {
+                project.Details.RequireRealName = s.RequireRealName;
+                project.Details.RequirePhone = s.RequirePhone;
+                project.Details.RequireVkontakte = s.RequireVkontakte;
+                project.Details.RequireTelegram = s.RequireTelegram;
+                project.Details.RequirePassport = s.RequirePassport;
+                project.Details.RequireRegistrationAddress = s.RequireRegistrationAddress;
+            });
     }
 
     public async Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings)
     {
-        await ChangeProjectProperties(projectId, project =>
-        {
-            project.Details.EnableManyCharacters = !settings.StrictlyOneCharacter;
-            project.Details.IsPublicProject = settings.IsPublicProject;
-            project.IsAcceptingClaims = settings.IsAcceptingClaims && project.Active;
-            project.Details.AutoAcceptClaims = settings.AutoAcceptClaims;
-            project.Details.DefaultTemplateCharacterId = settings.DefaultTemplate?.CharacterId;
-        });
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            settings,
+            (project, _, s) =>
+            {
+                project.Details.EnableManyCharacters = !s.StrictlyOneCharacter;
+                project.Details.IsPublicProject = s.IsPublicProject;
+                project.IsAcceptingClaims = s.IsAcceptingClaims && project.Active;
+                project.Details.AutoAcceptClaims = s.AutoAcceptClaims;
+                project.Details.DefaultTemplateCharacterId = s.DefaultTemplate?.CharacterId;
+            });
     }
-
-    private async Task ChangeProjectProperties(ProjectIdentification projectId, Action<Project> operation)
-    {
-        var project = RequestProjectAdminAccess(await ProjectRepository.GetProjectAsync(projectId));
-
-        operation(project);
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-
 }
 

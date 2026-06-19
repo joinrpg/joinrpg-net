@@ -110,5 +110,7 @@ public class ProjectShouldBeActiveAttributeTest
 
         public Task<JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
             => Task.FromResult(new JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails(new MarkdownString(""), [], false));
+
+        public void PrimeCache(ProjectInfo projectInfo) { }
     }
 }

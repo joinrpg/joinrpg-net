@@ -3,6 +3,7 @@
     <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
   </ItemGroup>

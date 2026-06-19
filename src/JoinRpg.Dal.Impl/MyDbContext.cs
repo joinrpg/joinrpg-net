@@ -42,6 +42,7 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     public IUserRepository GetUsersRepository() => new UserInfoRepository(this);
     public IProjectRepository GetProjectRepository() => new ProjectRepository(this);
+    public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository() => new ProjectMetadataWriteRepository(this);
 
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);

@@ -13,6 +13,9 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         return CreateInfoFromProject(project, projectId);
     }
 
+    // Кэша на этом уровне нет — кэширование добавляет декоратор в web-слое.
+    public void PrimeCache(ProjectInfo projectInfo) { }
+
     // This is internal to allow usage in tests
     internal static ProjectInfo CreateInfoFromProject(Project project, ProjectIdentification projectId)
     {
