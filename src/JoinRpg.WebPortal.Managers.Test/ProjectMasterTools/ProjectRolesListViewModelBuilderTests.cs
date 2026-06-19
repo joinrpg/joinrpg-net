@@ -80,6 +80,23 @@ public class ProjectRolesListViewModelBuilderTests
     }
 
     [Fact]
+    public void Build_ProjectInactive_ReturnsFalse()
+    {
+        _currentUserAccessor.UserIdentification = new UserIdentification(2);
+        var mock = new MockedProject();
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        var result = ProjectRolesListViewModelBuilder.Build(
+            Array.Empty<ProjectRolesList>(),
+            mock.ProjectInfo,
+            _currentUserAccessor);
+
+        result.HasEditAccess.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Build_WithCharacterGroupNames_MapsGroupName()
     {
         var groupId = new CharacterGroupIdentification(new ProjectIdentification(1), 10);

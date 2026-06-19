@@ -13,9 +13,7 @@ internal static class ProjectRolesListViewModelBuilder
     {
         var items = domainItems.Select(item => BuildListItem(item, characterGroupNames)).ToList();
 
-        var hasEditAccess = projectInfo.HasMasterAccess(
-            currentUserAccessor.UserIdentification,
-            Permission.CanManageClaims);
+        var hasEditAccess = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentification);
 
         return new ProjectRolesListViewModel(items, hasEditAccess);
     }
