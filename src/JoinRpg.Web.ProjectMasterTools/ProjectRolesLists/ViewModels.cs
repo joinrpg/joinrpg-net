@@ -24,8 +24,8 @@ public class AddProjectRolesListViewModel : IValidatableObject
     [Display(Name = "Колонка групп")]
     public ProjectRolesListVisibilityModeView GroupsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
 
-    // Поля (колонки) пока не настраиваем
-    public IReadOnlyList<ProjectFieldIdentification> Fields => [];
+    [Display(Name = "Колонки полей")]
+    public IReadOnlyList<ProjectFieldIdentification> Fields { get; set; } = [];
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -60,7 +60,6 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
 {
     public ProjectRolesListIdentification ProjectRolesListId { get; set; } = null!;
 
-    public new IReadOnlyList<ProjectFieldIdentification> Fields { get; set; } = [];
 
     public static EditProjectRolesListViewModel FromDomain(ProjectRolesList domain)
     {
