@@ -1,0 +1,45 @@
+@using JoinRpg.Web.ProjectCommon.Fields
+@inject IProjectFieldsClient fieldsClient
+
+@if (_items is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    int[] initial = [.. SelectedFieldIds.Select(x => x.ProjectFieldId)];
+    <IntSelector
+        SelectedValues="@initial"
+        SelectedValuesChanged="SelectedValuesChanged"
+        PossibleValues="_items"
+        Multiple="true" />
+}
+
+@code {
+    [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    [Parameter] public ProjectFieldIdentification[] SelectedFieldIds { get; set; } = [];
+    [Parameter] public EventCallback<ProjectFieldIdentification[]> SelectedFieldIdsChanged { get; set; }
+
+    private IntSelectListItem[]? _items;
+    private List<ProjectFieldDto> _fields = [];
+
+    private async Task SelectedValuesChanged(int[] values)
+    {
+        var selected = _fields
+            .Where(f => values.Contains(f.FieldId.ProjectFieldId))
+            .Select(f => f.FieldId)
+            .ToArray();
+        await SelectedFieldIdsChanged.InvokeAsync(selected);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        _fields = await fieldsClient.GetProjectFields(ProjectId);
+        _items = [.. _fields.Select(f => new IntSelectListItem(
+            Value: f.FieldId.ProjectFieldId,
+            Text: f.Name,
+            Subtext: f.BoundTo == FieldBoundTo.Character ? "Персонаж" : "Заявка",
+            ExtraSearch: ""))];
+    }
+}

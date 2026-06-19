@@ -8,6 +8,7 @@ using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
+using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
@@ -41,6 +42,7 @@ public static class Registration
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IProjectRolesListClient, ProjectRolesListViewService>()
         .AddScoped<IProjectRoleGridClient, CharacterGroups.ProjectRoleGridViewService>()
+        .AddScoped<IProjectFieldsClient, Fields.ProjectFieldsViewService>()
         .AddScoped<IMasterClient, ProjectMasterViewService>()
         .AddTransient<IProjectListClient, ProjectListViewService>()
         .AddTransient<IProjectListForAdminClient, ProjectListViewService>()

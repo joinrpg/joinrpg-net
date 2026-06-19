@@ -1,4 +1,5 @@
 @using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.ProjectCommon.Fields
 @using JoinRpg.WebComponents
 @using Microsoft.AspNetCore.Components.Forms
 @inject ILogger<ProjectRolesListEditForm> Logger
@@ -23,6 +24,11 @@
         </FormRowFor>
         <FormRowFor For="@(() => _model.GroupsColumn)">
             <EnumRadioButtonGroup @bind-SelectedValue="_model.GroupsColumn" />
+        </FormRowFor>
+        <FormRowFor For="@(() => _model.Fields)">
+            <FieldSelector ProjectId="@ProjectId"
+                           SelectedFieldIds="@([.. _model.Fields])"
+                           SelectedFieldIdsChanged="@(ids => _model.Fields = ids)" />
         </FormRowFor>
         <br />
         <JoinButton Preset="ButtonPreset.Save" Submit="true" Label="@SaveButtonLabel" Disabled="@_saving" /> |
