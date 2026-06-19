@@ -9,7 +9,7 @@ public class EditCharacterGroupViewModel : CharacterGroupViewModelBase, ICreated
     public int CharacterGroupId { get; set; }
 
     [CannotBeEmpty, DisplayName("Является частью групп")]
-    public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
+    public int[] ParentCharacterGroupIdInts { get; set; } = [];
 
     public DateTime CreatedAt { get; set; }
     public User CreatedBy { get; set; }

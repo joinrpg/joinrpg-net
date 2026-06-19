@@ -34,6 +34,7 @@ else
     [Parameter] public EventCallback<CharacterGroupDto[]> SelectedGroupsChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;
     [Parameter] public bool IncludeSpecial { get; set; } = true;
+    [Parameter] public CharacterGroupIdentification? ExcludeGroupId { get; set; }
 
     public string[] SelectedGroupNames { get; private set; } = [];
 
@@ -56,8 +57,16 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        base.OnParametersSet();
-        groups = IncludeSpecial ? await groupsClient.GetCharacterGroupsWithSpecial(ProjectId) : await groupsClient.GetRealCharacterGroups(ProjectId);
+        await base.OnParametersSetAsync();
+        if (ExcludeGroupId is not null && IncludeSpecial)
+        {
+            throw new InvalidOperationException($"{nameof(ExcludeGroupId)} requires {nameof(IncludeSpecial)}=false");
+        }
+        groups = ExcludeGroupId is not null
+            ? await groupsClient.GetValidParentGroups(ExcludeGroupId)
+            : IncludeSpecial
+                ? await groupsClient.GetCharacterGroupsWithSpecial(ProjectId)
+                : await groupsClient.GetRealCharacterGroups(ProjectId);
 
         items = groups
           .Select(group =>

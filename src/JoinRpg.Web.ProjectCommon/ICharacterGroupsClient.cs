@@ -4,4 +4,5 @@ public interface ICharacterGroupsClient
 {
     Task<List<CharacterGroupDto>> GetRealCharacterGroups(int projectId);
     Task<List<CharacterGroupDto>> GetCharacterGroupsWithSpecial(int projectId);
+    Task<List<CharacterGroupDto>> GetValidParentGroups(CharacterGroupIdentification groupId);
 }

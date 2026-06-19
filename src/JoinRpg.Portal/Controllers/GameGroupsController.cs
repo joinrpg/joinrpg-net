@@ -7,7 +7,6 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
@@ -249,7 +248,7 @@ public class GameGroupsController(
 
         return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
         {
-            ParentCharacterGroupIds = group.GetParentGroupsForEdit(),
+            ParentCharacterGroupIdInts = [.. group.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId)],
             Description = group.Description.Contents,
             IsPublic = group.IsPublic,
             Name = group.CharacterGroupName,
@@ -286,7 +285,9 @@ public class GameGroupsController(
         {
             ProjectIdentification projectId = new(viewModel.ProjectId);
             await projectService.EditCharacterGroup(new CharacterGroupIdentification(projectId, viewModel.CharacterGroupId),
-              viewModel.Name, viewModel.IsPublic, [.. viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(projectId)], viewModel.Description);
+              viewModel.Name, viewModel.IsPublic,
+              [.. viewModel.ParentCharacterGroupIdInts.Select(id => new CharacterGroupIdentification(projectId, id))],
+              viewModel.Description);
 
             return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
         }
