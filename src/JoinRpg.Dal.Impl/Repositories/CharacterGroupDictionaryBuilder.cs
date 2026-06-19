@@ -56,23 +56,31 @@ public static class CharacterGroupDictionaryBuilder
                 return cached;
             }
 
-            var result = new HashSet<CharacterGroupIdentification>();
+            // Упорядоченный DFS (preorder): дочерние группы берём в порядке ChildGroupsOrdering
+            // (childGroupsMap уже отсортирован выше), каждую группу — по первому вхождению.
+            var result = new List<CharacterGroupIdentification>();
+            var seen = new HashSet<CharacterGroupIdentification>();
             if (childGroupsMap.TryGetValue(groupId, out var directChildren))
             {
                 foreach (var child in directChildren)
                 {
-                    result.Add(child);
-                    // Рекурсивно добавляем всех детей детей
+                    if (seen.Add(child))
+                    {
+                        result.Add(child);
+                    }
+                    // Рекурсивно добавляем всех детей детей, сохраняя порядок обхода
                     foreach (var grandChild in GetAllChildGroups(child.CharacterGroupId))
                     {
-                        result.Add(grandChild);
+                        if (seen.Add(grandChild))
+                        {
+                            result.Add(grandChild);
+                        }
                     }
                 }
             }
 
-            var list = result.ToList();
-            allChildrenCache[groupId] = list;
-            return list;
+            allChildrenCache[groupId] = result;
+            return result;
         }
 
         List<CharacterGroupIdentification> GetAllParentGroups(int groupId)

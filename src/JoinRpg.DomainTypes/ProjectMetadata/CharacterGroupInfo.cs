@@ -15,5 +15,5 @@ public record CharacterGroupInfo(
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups
 )
 {
-    public IReadOnlyCollection<CharacterGroupIdentification> AllChildGroupsIncludingThis = [Id, .. AllChildGroups];
+    public IReadOnlyList<CharacterGroupIdentification> AllChildGroupsIncludingThis = [Id, .. AllChildGroups];
 }

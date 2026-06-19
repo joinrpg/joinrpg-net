@@ -293,6 +293,37 @@ public class CharacterGroupDictionaryBuilderTest
     }
 
     [Fact]
+    public void Build_ShouldOrderAllChildGroupsByChildGroupsOrderingInPreorderDfs()
+    {
+        // Arrange
+        var project = _mock.Project;
+        var rootGroup = project.RootGroup;
+        var parentA = _mock.CreateCharacterGroup();
+        var parentB = _mock.CreateCharacterGroup();
+        var grandchildOfB = _mock.CreateCharacterGroup();
+
+        parentA.ParentCharacterGroupIds = [rootGroup.CharacterGroupId];
+        parentB.ParentCharacterGroupIds = [rootGroup.CharacterGroupId];
+        grandchildOfB.ParentCharacterGroupIds = [parentB.CharacterGroupId];
+
+        // Порядок дочерних групп корня: сначала B, потом A
+        rootGroup.ChildGroupsOrdering = $"{parentB.CharacterGroupId},{parentA.CharacterGroupId}";
+
+        // Act
+        var result = CharacterGroupDictionaryBuilder.Build(project, new ProjectIdentification(project.ProjectId));
+
+        // Assert — preorder DFS: B, потомок B, затем A
+        var rootGroupId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), rootGroup.CharacterGroupId);
+        var parentAId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), parentA.CharacterGroupId);
+        var parentBId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), parentB.CharacterGroupId);
+        var grandchildOfBId = new CharacterGroupIdentification(new ProjectIdentification(project.ProjectId), grandchildOfB.CharacterGroupId);
+
+        var rootInfo = result[rootGroupId];
+        rootInfo.AllChildGroups.ToList().ShouldBe([parentBId, grandchildOfBId, parentAId]);
+        rootInfo.AllChildGroupsIncludingThis.ToList().ShouldBe([rootGroupId, parentBId, grandchildOfBId, parentAId]);
+    }
+
+    [Fact]
     public void Build_ShouldExposeChildCharactersOrdering()
     {
         // Arrange

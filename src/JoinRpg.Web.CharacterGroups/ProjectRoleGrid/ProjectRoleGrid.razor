@@ -1,0 +1,89 @@
+@using JoinRpg.DomainTypes.ProjectMetadata
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.WebComponents
+@inject IProjectRoleGridClient Client
+@inject NavigationManager NavigationManager
+
+@if (_model is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    <div class="d-flex align-items-center">
+        <h4>@_model.GroupName</h4>
+        @if (_model.CanEditSettings)
+        {
+            <span class="ms-3">
+                <JoinButton Preset="ButtonPreset.Edit"
+                    OnClick='() => NavigationManager.NavigateTo($"/{_model.RolesListId.ProjectId.Value}/tools/roleslist/edit/{_model.RolesListId.ProjectRolesListId}")'
+                    Label="Настройки сетки" />
+            </span>
+        }
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Персонаж</th>
+                @if (_model.HasPlayerColumn)
+                {
+                    <th>Игрок</th>
+                }
+                @if (_model.HasGroupsColumn)
+                {
+                    <th>Группы</th>
+                }
+                @foreach (var fieldName in _model.FieldColumnNames)
+                {
+                    <th>@fieldName</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _model.Rows)
+            {
+                <tr>
+                    <td><CharacterLink Model="row.Character" /></td>
+                    @if (row.Player is { } player)
+                    {
+                        <td>
+                            @player.Name
+                            @if (player.Contacts is not null)
+                            {
+                                <text> (</text><UserContactsView Contacts="player.Contacts" /><text>)</text>
+                            }
+                        </td>
+                    }
+                    @if (row.Groups is { } groups)
+                    {
+                        <td>
+                            @for (var i = 0; i < groups.Groups.Count; i++)
+                            {
+                                if (i > 0)
+                                {
+                                    <text>, </text>
+                                }
+                                <CharacterGroupLink Model="groups.Groups[i]" />
+                            }
+                        </td>
+                    }
+                    @foreach (var fieldValue in row.FieldValues)
+                    {
+                        <td>@fieldValue</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter, EditorRequired] public ProjectRolesListIdentification RolesListId { get; set; }
+
+    private ProjectRoleGridViewModel? _model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _model = await Client.GetRoleGrid(RolesListId);
+    }
+}

@@ -22,12 +22,9 @@ public static class UriLocatorExtensions
             return new($"/user/{target.UserId}", UriKind.Relative);
         }
 
-        // TODO implement for Blazor. Added so we will have nice exception instead of bla-bla not resolved.
         Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target)
-            => throw new NotImplementedException();
+            => new($"/{target.CharacterGroupId.ProjectId.Value}/roles/{target.CharacterGroupId.CharacterGroupId}", UriKind.Relative);
         Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => GetUri(target.CharacterId);
-
-        //end of TODO
 
         Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 

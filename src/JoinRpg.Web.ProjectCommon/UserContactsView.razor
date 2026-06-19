@@ -1,0 +1,34 @@
+@using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.WebComponents
+
+@if (Contacts is not null)
+{
+    var rendered = false;
+    @if (Contacts.Email is not null)
+    {
+        rendered = true;
+        <EmailLink Contact="Contacts.Email" />
+    }
+    @if (Contacts.Vk is not null)
+    {
+        @if (rendered) { <text>,&nbsp;</text> }
+        rendered = true;
+        <VkLink Contact="Contacts.Vk" />
+    }
+    @if (Contacts.Telegram is not null)
+    {
+        @if (rendered) { <text>,&nbsp;</text> }
+        rendered = true;
+        <TelegramLink Contact="Contacts.Telegram" />
+    }
+    @if (Contacts.LiveJournal is not null)
+    {
+        @if (rendered) { <text>,&nbsp;</text> }
+        rendered = true;
+        <LiveJournalLink Contact="Contacts.LiveJournal" />
+    }
+}
+
+@code {
+    [Parameter] public UserContacts? Contacts { get; set; }
+}
