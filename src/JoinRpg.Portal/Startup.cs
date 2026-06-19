@@ -109,9 +109,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddSqlServer(
                 Configuration["ConnectionStrings:DefaultConnection"],
                 name: "main-sqldb",
-                tags: ["ready"])
+                tags: ["ready"],
+                timeout: TimeSpan.FromSeconds(5))
 
-            .AddCheck<HealthCheckLoadProjects>("Project load", tags: ["ready"]);
+            .AddCheck<HealthCheckLoadProjects>("Project load", tags: ["ready"], timeout: TimeSpan.FromSeconds(5));
 
         _ = services.AddTransient<YandexLogLink>();
 
