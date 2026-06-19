@@ -49,6 +49,16 @@
                         </li>
                         <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
 
+                        @if (Model.ProjectRolesLists.Any(x => x.PublicMode))
+                        {
+                            <li role="separator" class="dropdown-header">Таблицей:</li>
+                            @foreach (var rl in Model.ProjectRolesLists.Where(x => x.PublicMode))
+                            {
+                                <li><a asp-page="/GamePages/ProjectRoleListView"
+                                       asp-route-projectId="@Model.ProjectId"
+                                       asp-route-id="@rl.ProjectRolesListId.ProjectRolesListId">@rl.Name</a></li>
+                            }
+                        }
                         @if (Model.BigGroups.Any())
                         {
                             <li role="separator" class="dropdown-header">По группам:</li>
@@ -56,6 +66,11 @@
                         @foreach (var cg in Model.BigGroups)
                         {
                             <li>@(await Html.RenderComponentAsync<CharacterGroupLink>(RenderMode.Static, new {Model = cg})) </li>
+                        }
+                        @if (Model.ProjectRolesLists.Any())
+                        {
+                            <li><a asp-page="/GamePages/ProjectRolesList"
+                                   asp-route-projectId="@Model.ProjectId">Настроить сетку ролей</a></li>
                         }
                     </ul>
                 </li>
@@ -177,13 +192,6 @@
                                 Настройки капитанов команд
                             </a>
                         </li>
-                        @* (Пока не будет готово целиком, не раскомментировать!)
-                        <li>
-                            <a asp-page="/GamePages/ProjectRolesList" asp-route-projectId="@Model.ProjectId">
-                                Настройки сетки ролей
-                            </a>
-                        </li>
-                        *@
                         @if (Model.CheckInModuleEnabled)
                         {
                             <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
