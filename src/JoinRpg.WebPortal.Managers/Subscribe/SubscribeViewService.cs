@@ -27,7 +27,7 @@ internal class SubscribeViewService(IUriService uriService,
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
 
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
 
 
         return GetFullSubscriptionTooltip(claim.Character.GetParentGroupsToTop(projectInfo), currentUser.Subscriptions, claimId);

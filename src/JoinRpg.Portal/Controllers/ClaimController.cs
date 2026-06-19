@@ -98,7 +98,7 @@ public class ClaimController(
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId);
+        var claim = await claimsRepository.GetClaimWithDetails(new ClaimIdentification(projectId, claimId));
         return await ShowClaim(claim);
     }
 
@@ -211,7 +211,7 @@ public class ClaimController(
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> ApproveByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -234,7 +234,7 @@ public class ClaimController(
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> OnHoldByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -259,7 +259,7 @@ public class ClaimController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByMaster(int projectId, int claimId, MasterDenialOperationViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -293,7 +293,7 @@ public class ClaimController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -322,7 +322,7 @@ public class ClaimController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(int projectId, int claimId, ClaimOperationViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -355,7 +355,7 @@ public class ClaimController(
     [MasterAuthorize()]
     public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, UserIdentification responsibleMasterId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -377,7 +377,7 @@ public class ClaimController(
     [HttpPost]
     public async Task<ActionResult> Move(int projectId, int claimId, MoveClaimOperationViewModel viewModel, int characterId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -425,7 +425,7 @@ public class ClaimController(
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(int projectId, int claimId, SubmitPaymentViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -526,7 +526,7 @@ public class ClaimController(
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> Subscribe(int projectid, int claimid)
     {
-        var claim = await claimsRepository.GetClaim(projectid, claimid);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectid, claimid));
         if (claim == null)
         {
             return NotFound();
@@ -543,7 +543,7 @@ public class ClaimController(
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
     {
-        var claim = await claimsRepository.GetClaim(projectid, claimid);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectid, claimid));
 
         if (claim == null)
         {
@@ -605,7 +605,7 @@ public class ClaimController(
     public async Task<ActionResult> RequestPreferentialFee(int projectId, int claimId,
         MarkMeAsPreferentialViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -646,7 +646,7 @@ public class ClaimController(
     [HttpPost]
     public async Task<ActionResult> SetAccommodationType(AccommodationRequestViewModel viewModel)
     {
-        var claim = await claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(viewModel.ProjectId, viewModel.ClaimId)).ConfigureAwait(false);
         if (claim == null)
         {
             return NotFound();
@@ -681,7 +681,7 @@ public class ClaimController(
     [HttpPost]
     public async Task<IActionResult> LeaveGroupAsync(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim is null)
         {
             return NotFound();
@@ -736,7 +736,7 @@ public class ClaimController(
         int inviteId,
         InviteState inviteState)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim is null)
         {
             return NotFound();
@@ -783,7 +783,7 @@ public class ClaimController(
     [Authorize]
     public async Task<ActionResult> TransferClaimPayment(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();

@@ -26,7 +26,7 @@ public class CheckInController(
     [HttpGet]
     public async Task<IEnumerable<ClaimHeaderInfo>> GetClaimsForCheckIn(int projectId)
     {
-        return (await claimsRepository.GetClaimHeadersWithPlayer(projectId,
+        return (await claimsRepository.GetClaimHeadersWithPlayer(new ProjectIdentification(projectId),
                 ClaimStatusSpec.ReadyForCheckIn))
             .Select(claim =>
 
@@ -51,9 +51,9 @@ public class CheckInController(
     {
         return new CheckInStats()
         {
-            CheckIn = (await claimsRepository.GetClaimHeadersWithPlayer(projectId,
+            CheckIn = (await claimsRepository.GetClaimHeadersWithPlayer(new ProjectIdentification(projectId),
                 ClaimStatusSpec.CheckedIn)).Count,
-            Ready = (await claimsRepository.GetClaimHeadersWithPlayer(projectId,
+            Ready = (await claimsRepository.GetClaimHeadersWithPlayer(new ProjectIdentification(projectId),
                 ClaimStatusSpec.ReadyForCheckIn)).Count,
 
         };
@@ -72,7 +72,7 @@ public class CheckInController(
         [FromRoute]
         int claimId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -111,7 +111,7 @@ public class CheckInController(
         [FromBody]
         CheckInCommand command)
     {
-        var claim = await claimsRepository.GetClaim(projectId, command.ClaimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, command.ClaimId));
         if (claim == null)
         {
             return NotFound();

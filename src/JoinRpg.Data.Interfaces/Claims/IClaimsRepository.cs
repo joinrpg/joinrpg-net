@@ -13,12 +13,9 @@ public interface IClaimsRepository : IDisposable
 
     Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds);
     Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status);
-    [Obsolete]
-    Task<Claim?> GetClaim(int projectId, int? claimId);
 
     Task<Claim?> GetClaim(ClaimIdentification claimId);
-    [Obsolete]
-    Task<Claim> GetClaimWithDetails(int projectId, int claimId);
+    Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId);
 
     Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds);
 
@@ -29,8 +26,6 @@ public interface IClaimsRepository : IDisposable
 
     Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec);
 
-    [Obsolete]
-    Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec approved);
     Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec approved);
     Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId);
 

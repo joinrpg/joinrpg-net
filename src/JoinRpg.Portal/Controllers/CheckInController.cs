@@ -73,7 +73,7 @@ public class CheckInController(
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(projectId, claimId);
+        var claim = await claimsRepository.GetClaimWithDetails(new ClaimIdentification(projectId, claimId));
         if (claim == null)
         {
             return NotFound();
@@ -129,7 +129,7 @@ public class CheckInController(
 
     private async Task<ActionResult> ShowSecondRole(ProjectIdentification projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaim(projectId, claimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (claim == null)
         {
@@ -149,7 +149,7 @@ public class CheckInController(
     [HttpPost("~/{ProjectId}/claim/{ClaimId}/secondrole")]
     public async Task<ActionResult> SecondRole(SecondRoleViewModel model)
     {
-        var claim = await claimsRepository.GetClaim(model.ProjectId, model.ClaimId);
+        var claim = await claimsRepository.GetClaim(new ClaimIdentification(model.ProjectId, model.ClaimId));
         if (claim == null)
         {
             return NotFound();
