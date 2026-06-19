@@ -12,7 +12,9 @@
   <span class="h2">@ViewBag.Title</span>
   
 </div>
-@await Html.PartialAsync("CreateUpdated", Model)
+<component type="typeof(JoinRpg.Web.ProjectCommon.CreateUpdatedMarks)"
+           render-mode="Static"
+           param-Model="Model.Marks" />
 @await Html.PartialAsync("_GroupHelpTextPartial")
 @using (Html.BeginForm())
 {
