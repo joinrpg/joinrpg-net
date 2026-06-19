@@ -6,11 +6,16 @@ namespace JoinRpg.WebPortal.Managers.CharacterGroupList;
 
 internal class CharacteGroupListViewService(IProjectMetadataRepository projectMetadataRepository, ICurrentUserAccessor currentUserAccessor) : ICharacterGroupsClient
 {
+    private List<CharacterGroupDto> GenerateGroups(ProjectInfo projectInfo, Func<CharacterGroupDto, bool> predicate)
+    {
+        var results = new CharacterGroupListGenerator(projectInfo, currentUserAccessor.UserIdentification).Generate();
+        return results.Where(predicate).ToList();
+    }
+
     private async Task<List<CharacterGroupDto>> GetCharacterGroups(int projectId, Func<CharacterGroupDto, bool> predicate)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
-        var results = new CharacterGroupListGenerator(projectInfo, currentUserAccessor.UserIdentification).Generate();
-        return results.Where(predicate).ToList();
+        return GenerateGroups(projectInfo, predicate);
     }
 
     Task<List<CharacterGroupDto>> ICharacterGroupsClient.GetCharacterGroupsWithSpecial(int projectId) => GetCharacterGroups(projectId, x => true);
@@ -21,7 +26,6 @@ internal class CharacteGroupListViewService(IProjectMetadataRepository projectMe
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
         var groupInfo = projectInfo.Groups[groupId];
         var excludedIds = groupInfo.AllChildGroupsIncludingThis.ToHashSet();
-        var allGroups = await GetCharacterGroups(groupId.ProjectId.Value, x => !x.IsSpecial);
-        return allGroups.Where(g => !excludedIds.Contains(g.CharacterGroupId)).ToList();
+        return GenerateGroups(projectInfo, x => !x.IsSpecial && !excludedIds.Contains(x.CharacterGroupId));
     }
 }
