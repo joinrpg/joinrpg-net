@@ -186,6 +186,7 @@ public class GameGroupsController(
 
     [HttpGet, Authorize]
     [MasterAuthorize(Permission.CanEditRoles)]
+    [ProjectShouldBeActive]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
         CharacterGroupIdentification charGroupId = new(new(projectId), characterGroupId);
@@ -210,7 +211,7 @@ public class GameGroupsController(
     }
 
 
-    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles)]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles), ProjectShouldBeActive]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
@@ -253,7 +254,7 @@ public class GameGroupsController(
         }
     }
 
-    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
+    [HttpGet, MasterAuthorize(Permission.CanEditRoles), ProjectShouldBeActive]
     public async Task<ActionResult> Delete(int projectId, int characterGroupId)
     {
         var field = await projectRepository.GetGroupAsync(projectId, characterGroupId);
@@ -267,7 +268,7 @@ public class GameGroupsController(
     }
 
 
-    [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken, ProjectShouldBeActive]
     public async Task<ActionResult> Delete(int projectId, int characterGroupId, IFormCollection collection)
     {
         var field = await projectRepository.GetGroupAsync(projectId, characterGroupId);
@@ -292,6 +293,7 @@ public class GameGroupsController(
 
     [HttpGet]
     [MasterAuthorize(Permission.CanEditRoles)]
+    [ProjectShouldBeActive]
     public async Task<ActionResult> AddGroup(int projectid, int charactergroupid)
     {
         var field = await projectRepository.GetGroupAsync(projectid, charactergroupid);
@@ -310,6 +312,7 @@ public class GameGroupsController(
     [HttpPost]
     [MasterAuthorize(Permission.CanEditRoles)]
     [ValidateAntiForgeryToken]
+    [ProjectShouldBeActive]
     public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
         var field = await projectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
