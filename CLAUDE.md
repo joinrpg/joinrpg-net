@@ -7,6 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Joinrpg.ru — сайт для организации живых ролевых игр (LARP): связывает организаторов с игроками.
 Основное приложение: ASP.NET Core 10 + Blazor WebAssembly (острова/islands).
 
+## Документация
+
+Индекс всей документации разработчика — [docs/README.md](docs/README.md). **Перед нетривиальной задачей сначала загляни туда**: это оглавление по архитектуре, гайдам и ADR, оттуда есть ссылки на нужный документ (например [docs/structure.md](docs/structure.md) — куда класть код и соглашения по `.csproj`).
+
 ## Команды
 
 ### Локальный запуск
