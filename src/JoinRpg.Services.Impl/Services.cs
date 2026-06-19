@@ -15,7 +15,9 @@ public static class Services
 {
     public static IEnumerable<Type> GetTypes()
     {
-        //TODO переместить все отсюда в AddJoinDomainServices
+        // Здесь — устаревший способ регистрации (Autofac AsImplementedInterfaces().AsSelf()).
+        // НИЧЕГО НОВОГО СЮДА НЕ ДОБАВЛЯТЬ — регистрировать сервисы явно в AddJoinDomainServices
+        // (TODO: постепенно перенести и существующие регистрации отсюда туда).
         yield return typeof(ProjectService);
         yield return typeof(CreateProjectService);
         yield return typeof(ClaimServiceImpl);
@@ -47,6 +49,7 @@ public static class Services
             services
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
+            .AddTransient<IProjectPropsService, ProjectPropsService>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
             .AddTransient<IPaymentsService, PaymentsService>()

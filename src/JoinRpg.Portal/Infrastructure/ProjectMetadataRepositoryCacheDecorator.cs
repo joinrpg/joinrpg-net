@@ -20,4 +20,6 @@ public class ProjectMetadataRepositoryCacheDecorator(
     }
 
     Task<ProjectDetails> IProjectMetadataRepository.GetProjectDetails(ProjectIdentification projectId) => repository.GetProjectDetails(projectId);
+
+    public void PrimeCache(ProjectInfo projectInfo) => projectMetadataCache.Set(projectInfo.ProjectId, projectInfo);
 }

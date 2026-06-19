@@ -18,6 +18,7 @@ public interface IUnitOfWork : IDisposable
 
     IUserRepository GetUsersRepository();
     IProjectRepository GetProjectRepository();
+    IProjectMetadataWriteRepository GetProjectMetadataWriteRepository();
     IClaimsRepository GetClaimsRepository();
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();
