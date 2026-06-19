@@ -1,0 +1,14 @@
+@inject IProjectUriLocator projectUriLocator
+<a href="@TargetUri">@LinkText</a>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public string LinkText { get; set; } = null!;
+
+    public Uri TargetUri => projectUriLocator.GetMyClaimUri(ProjectId);
+}
