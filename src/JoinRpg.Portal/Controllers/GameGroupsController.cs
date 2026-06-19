@@ -151,49 +151,6 @@ public class GameGroupsController(
         });
     }
 
-    [HttpGet("~/{projectId}/roles/json_full")]
-    public Task<ActionResult> Json_Full(ProjectIdentification projectId) => AllGroupsJson(projectId, includeSpecial: true);
-
-    [HttpGet("~/{projectId}/roles/json_real")]
-    public Task<ActionResult> Json_Real(ProjectIdentification projectId) => AllGroupsJson(projectId, includeSpecial: false);
-
-    private async Task<ActionResult> AllGroupsJson(ProjectIdentification projectId, bool includeSpecial)
-    {
-        var project = await projectRepository.GetProjectAsync(projectId);
-        var cached = CheckCache(project.CharacterTreeModifiedAt);
-        if (cached)
-        {
-            return NotModified();
-        }
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-
-        var field = await projectRepository.LoadGroupWithTreeSlimAsync(projectId);
-        if (field == null)
-        {
-            return NotFound();
-        }
-        return ReturnJson(new
-        {
-            field.Project.ProjectId,
-            Groups =
-            new CharacterTreeBuilder(field, currentUserAccessor.UserId, projectInfo).Generate()
-              .Where(g => includeSpecial || !g.IsSpecial)
-              .Select(
-                g =>
-                  new
-                  {
-                      g.CharacterGroupId,
-                      g.Name,
-                      g.DeepLevel,
-                      g.FirstCopy,
-                      Path = g.Path.Select(gr => gr.Name),
-                      PathIds = g.Path.Select(gr => gr.CharacterGroupId),
-                      g.Characters,
-                  }),
-        });
-    }
-
     private JsonResult ReturnJson(object data)
     {
         Response.Headers.Append("Access-Control-Allow-Origin", "*");
@@ -460,30 +417,6 @@ public class GameGroupsController(
         return url.Scheme + "://" + url.Host +
                (url.IsDefaultPort ? "" : $":{url.Port}") +
                Url.Action(actionName, controllerName, routeValues);
-    }
-
-    private bool IsClientCached(DateTime contentModified)
-    {
-        string? header = Request.Headers.IfModifiedSince;
-
-        if (header == null)
-        {
-            return false;
-        }
-
-        return DateTime.TryParse(header, out var isModifiedSince) &&
-               isModifiedSince.ToUniversalTime() > contentModified;
-    }
-
-    protected bool CheckCache(DateTime characterTreeModifiedAt)
-    {
-        if (IsClientCached(characterTreeModifiedAt))
-        {
-            return true;
-        }
-
-        Response.Headers.Append("Last-Modified", characterTreeModifiedAt.ToString("R"));
-        return false;
     }
 
 }
