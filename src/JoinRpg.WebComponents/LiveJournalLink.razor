@@ -1,0 +1,9 @@
+@if (Contact is not null)
+{
+    <text>ЖЖ:&nbsp;<a href="https://@(Contact.Value).lj.ru">@Contact.Value</a></text>
+}
+
+@code {
+    [Parameter]
+    public LiveJournalId? Contact { get; set; }
+}
