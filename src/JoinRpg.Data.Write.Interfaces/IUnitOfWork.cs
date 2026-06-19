@@ -2,14 +2,13 @@ using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.Data.Interfaces.Finances;
 
 namespace JoinRpg.Data.Write.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// We must <see cref="DbSet{Entity}"/>, not <see cref="IDbSet{TEntity}"/> because of .Add/RemoveRange() methods</remarks>
@@ -25,6 +24,4 @@ public interface IUnitOfWork : IDisposable
     IAccommodationRepository GetAccomodationRepository();
 
     IKogdaIgraRepository GetKogdaIgraRepository();
-
-    IFinanceOperationsRepository GetFinanceOperationsRepositoryRepository();
 }

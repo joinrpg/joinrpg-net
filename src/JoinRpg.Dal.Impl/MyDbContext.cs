@@ -4,7 +4,6 @@ using System.Data.Entity.ModelConfiguration;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.DataModel.Projects;
@@ -334,7 +333,6 @@ public class MyDbContext : DbContext, IUnitOfWork
     }
 
     IKogdaIgraRepository IUnitOfWork.GetKogdaIgraRepository() => new KogdaIgraRepository(this);
-    IFinanceOperationsRepository IUnitOfWork.GetFinanceOperationsRepositoryRepository() => new FinanceOperationsRepository(this);
 }
 
 public class UserExternalLoginConfiguration : EntityTypeConfiguration<UserExternalLogin>
