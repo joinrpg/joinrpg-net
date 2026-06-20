@@ -73,11 +73,17 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     }
 
     public async Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
-      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType)
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly)
     {
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
 
         _ = folder.RequestMasterAccess(CurrentUserId).EnsureProjectActive();
+
+        if (isMasterOnly)
+        {
+            targetGroups = [];
+            targetChars = [];
+        }
 
         var now = DateTime.UtcNow;
         var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
@@ -98,6 +104,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
             TargetGroups = characterGroups,
             TargetCharacters = await ValidateCharactersList(targetChars),
             ElementType = elementType,
+            IsMasterOnly = isMasterOnly,
         };
 
         plotElement.Texts.Add(new PlotElementTexts()
@@ -155,10 +162,17 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     }
 
     public async Task EditPlotElement(PlotElementIdentification plotelementid, string contents,
-      string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars)
+      string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly)
     {
         var plotElement = await LoadElement(plotelementid);
 
+        if (isMasterOnly)
+        {
+            targetGroups = [];
+            targetChars = [];
+        }
+
+        plotElement.IsMasterOnly = isMasterOnly;
         UpdateElementText(contents, todoField, plotElement);
 
         await UpdateElementTarget(targetGroups, targetChars, plotElement);

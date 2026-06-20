@@ -25,20 +25,19 @@
         @if (Model.HasMasterAccess)
         {
             <component type="typeof(PlotStatusBadge)"
-            render-mode="Static"
-            param-Status="@Model.Status" />
+                render-mode="Static"
+                param-Status="@Model.Status" />
         }
-
-        <component type="typeof(PlotElementTypeBadge)"
-        render-mode="Static"
-        param-ElementType="@Model.ElementType" />
+            <component type="typeof(PlotElementTypeBadge)"
+                render-mode="Static"
+                param-ElementType="@Model.ElementType"
+                param-IsMasterOnly="@Model.IsMasterOnly" />
 
         @if (Model.HasMasterAccess)
         {
-
             <component type="typeof(PlotTodoBadge)"
-            render-mode="Static"
-            param-Todo="@Model.TodoField" />
+                render-mode="Static"
+                param-Todo="@Model.TodoField" />
 
         }
         <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">

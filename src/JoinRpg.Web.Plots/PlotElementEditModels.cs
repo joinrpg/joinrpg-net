@@ -29,6 +29,9 @@ public abstract class PlotElementViewModelBase
 
     [Display(Name = "Тип")]
     public PlotElementTypeView ElementType { get; set; }
+
+    [Display(Name = "Мастерский текст", Description = "Ни к чему не привязывать.")]
+    public bool IsMasterOnly { get; set; }
 }
 
 public class PlotElementCreateViewModel : PlotElementViewModelBase

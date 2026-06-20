@@ -127,7 +127,7 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int plotFolderId, string content,
-      string todoField, ICollection<int>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow)
+      string todoField, ICollection<int>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
         PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
         var targetCharIds = CharacterIdentification.FromList(targetCharacters ?? [], projectId).ToList();
@@ -135,7 +135,7 @@ public class PlotController(
         try
         {
             var versionId =
-                await plotService.CreatePlotElement(plotFolderId1, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType);
+                await plotService.CreatePlotElement(plotFolderId1, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType, isMasterOnly);
 
             if (publishNow && string.IsNullOrWhiteSpace(todoField) && (targetGroupIds.Count != 0 || targetCharIds.Count != 0))
             {
@@ -219,6 +219,7 @@ public class PlotController(
             PlotElementId = element.PlotElementId,
             PlotFolderName = folder.MasterTitle,
             ElementType = (PlotElementTypeView)element.ElementType,
+            IsMasterOnly = element.IsMasterOnly,
             Status = element.GetStatus(),
             HasManageAccess = hasManageAccess,
             HasPublishedVersion = element.Published != null,
@@ -233,7 +234,7 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
-      ICollection<int>? targetCharacters, ICollection<int>? targetGroups)
+      ICollection<int>? targetCharacters, ICollection<int>? targetGroups, bool isMasterOnly)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
         try
@@ -244,7 +245,7 @@ public class PlotController(
                 var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
                 var targetCharIds = CharacterIdentification.FromList(targetCharacters ?? [], projectId).ToList();
 
-                await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds);
+                await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds, isMasterOnly);
             }
             else
             {

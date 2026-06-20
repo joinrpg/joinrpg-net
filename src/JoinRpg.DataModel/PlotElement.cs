@@ -37,6 +37,8 @@ public class PlotElement : IProjectEntity, IDeletableSubEntity
 
     public PlotElementType ElementType { get; set; }
 
+    public bool IsMasterOnly { get; set; }
+
     public int? Published { get; set; }
 }
 

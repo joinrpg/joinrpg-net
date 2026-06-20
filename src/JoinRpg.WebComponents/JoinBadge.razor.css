@@ -2,3 +2,8 @@ label {
   font-size: 14px;
   display: inline-block;
 }
+
+span {
+    margin-left: 2px;
+    margin-right: 2px;
+}
