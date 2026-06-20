@@ -6,7 +6,6 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.ProjectAccess;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +17,6 @@ namespace JoinRpg.Portal.Controllers;
 public class AclController(
     IProjectRepository projectRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    IProjectService projectService,
     IClaimsRepository claimRepository,
     IUriService uriService,
     IUserRepository userRepository,
@@ -198,7 +196,7 @@ public class AclController(
     [HttpPost("force-admin-access")]
     public async Task<ActionResult> ForceSet(int projectId, IFormCollection unused)
     {
-        await projectService.GrantAccessAsAdmin(projectId);
+        await projectAccessService.GrantAccessAsAdmin(new(projectId));
         return RedirectToAction("Details", "Game", new { projectId });
     }
 

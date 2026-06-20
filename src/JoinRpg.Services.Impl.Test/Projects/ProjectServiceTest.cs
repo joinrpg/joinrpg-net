@@ -49,7 +49,6 @@ public class ProjectServiceTest
             currentUser,
             masterEmailService,
             NullLogger<ProjectService>.Instance,
-            metadataRepository,
             propsService);
     }
 

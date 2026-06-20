@@ -5,7 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Services.Impl.Projects;
 
 internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IResponsibleMasterRulesRepository responsibleMasterRulesRepository)
     : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectAccessService
@@ -113,6 +113,23 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
         if (project.ProjectAcls.All(a => !a.CanGrantRights))
         {
             acl.CanGrantRights = true; // Чтобы нельзя было снять с себя галочку, если оставался последний.
+        }
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task GrantAccessAsAdmin(ProjectIdentification projectId)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectId.Value);
+        if (!IsCurrentUserAdmin)
+        {
+            throw new NoAccessToProjectException(project, CurrentUserId);
+        }
+
+        var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId);
+        if (acl == null)
+        {
+            project.ProjectAcls.Add(ProjectAcl.CreateRootAcl(CurrentUserId));
         }
 
         await UnitOfWork.SaveChangesAsync();
