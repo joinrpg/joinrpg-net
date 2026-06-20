@@ -11,7 +11,9 @@ public record class SubscriptionOptions
     public required bool AccommodationChange { get; set; }
     public required bool AccommodationInvitesChange { get; set; }
 
-    public bool AnySet => ClaimStatusChange || Comments || FieldChange || MoneyOperation || AccommodationChange;
+    public bool AnySet => ClaimStatusChange || Comments || FieldChange || MoneyOperation || AccommodationChange || AccommodationInvitesChange;
+
+    public bool AllSet => ClaimStatusChange && Comments && FieldChange && MoneyOperation && AccommodationChange && AccommodationInvitesChange;
 
     public static SubscriptionOptions CreateAllSet()
         => new()
@@ -34,6 +36,26 @@ public record class SubscriptionOptions
             Comments = false,
             AccommodationInvitesChange = false,
         };
+
+    public SubscriptionOptions Union(SubscriptionOptions other) => new()
+    {
+        ClaimStatusChange = ClaimStatusChange || other.ClaimStatusChange,
+        Comments = Comments || other.Comments,
+        FieldChange = FieldChange || other.FieldChange,
+        MoneyOperation = MoneyOperation || other.MoneyOperation,
+        AccommodationChange = AccommodationChange || other.AccommodationChange,
+        AccommodationInvitesChange = AccommodationInvitesChange || other.AccommodationInvitesChange,
+    };
+
+    public SubscriptionOptions Except(SubscriptionOptions other) => new()
+    {
+        ClaimStatusChange = ClaimStatusChange && !other.ClaimStatusChange,
+        Comments = Comments && !other.Comments,
+        FieldChange = FieldChange && !other.FieldChange,
+        MoneyOperation = MoneyOperation && !other.MoneyOperation,
+        AccommodationChange = AccommodationChange && !other.AccommodationChange,
+        AccommodationInvitesChange = AccommodationInvitesChange && !other.AccommodationInvitesChange,
+    };
 }
 
 public record class UserSubscribe(UserInfoHeader User, SubscriptionOptions Options)
