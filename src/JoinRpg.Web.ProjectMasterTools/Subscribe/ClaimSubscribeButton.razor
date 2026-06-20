@@ -1,0 +1,65 @@
+@using JoinRpg.DomainTypes
+@using JoinRpg.DomainTypes.Users
+@inject IGameSubscribeClient Client
+
+@if (model is null)
+{
+    <JoinLoadingMessage />
+}
+else if (model.IsDirect)
+{
+    <JoinButton Icon="glyphicon-pushpin" Label="Отписаться" Title="Вы подписаны на эту заявку" OnClick="OnUnsubscribeClicked" />
+}
+else if (model.ParentSubscribe.AllSet)
+{
+    <JoinButton Icon="glyphicon-pushpin" Label="Вы подписаны" Title="Вы подписаны на эту заявку" Disabled="true" />
+}
+else if (!model.ParentSubscribe.AnySet)
+{
+    <JoinButton Icon="glyphicon-pushpin" Label="Подписаться" Title="Вы не подписаны на эту заявку" OnClick="OnSubscribeClicked" />
+}
+else
+{
+    <JoinButton Icon="glyphicon-pushpin" Label="Подписаться" OnClick="OnSubscribeClicked">
+        <TitleContent>
+            Вы не подписаны на эту заявку, но будете получать уведомления в случаях:
+            <ul>
+                @if (model.SubscribeReason.TryGetValue(nameof(SubscriptionOptions.ClaimStatusChange), out var g))
+                { <li>Изменение статуса (группа "@g")</li> }
+                @if (model.SubscribeReason.TryGetValue(nameof(SubscriptionOptions.Comments), out g))
+                { <li>Комментарии (группа "@g")</li> }
+                @if (model.SubscribeReason.TryGetValue(nameof(SubscriptionOptions.FieldChange), out g))
+                { <li>Изменение полей заявки (группа "@g")</li> }
+                @if (model.SubscribeReason.TryGetValue(nameof(SubscriptionOptions.MoneyOperation), out g))
+                { <li>Финансовые операции (группа "@g")</li> }
+                @if (model.SubscribeReason.TryGetValue(nameof(SubscriptionOptions.AccommodationChange), out g))
+                { <li>Операции с поселением (группа "@g")</li> }
+            </ul>
+        </TitleContent>
+    </JoinButton>
+}
+
+@code {
+    [PersistentState]
+    public ClaimSubscribeViewModel? model { get; set; }
+
+    [Parameter, EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        model ??= await Client.GetSubscribeForClaim(ClaimId);
+    }
+
+    private async Task OnSubscribeClicked(ButtonClickEventArgs args)
+    {
+        model = await Client.SubscribeClaimToUser(ClaimId);
+        args.ExitProgressState = true;
+    }
+
+    private async Task OnUnsubscribeClicked(ButtonClickEventArgs args)
+    {
+        model = await Client.UnsubscribeClaimToUser(ClaimId);
+        args.ExitProgressState = true;
+    }
+}

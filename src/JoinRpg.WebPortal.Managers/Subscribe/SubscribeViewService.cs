@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Subscribe;
@@ -21,17 +22,35 @@ internal class SubscribeViewService(IUriService uriService,
     IProjectMetadataRepository projectMetadataRepository
         ) : IGameSubscribeClient
 {
-    public async Task<ClaimSubscribeViewModel> GetSubscribeForClaim(int projectId, int claimId)
+    public async Task<ClaimSubscribeViewModel> GetSubscribeForClaim(ClaimIdentification claimId)
     {
         var currentUser = await userRepository.GetWithSubscribe(currentUserAccessor.UserId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+        var claim = await claimsRepository.GetClaim(claimId);
+        var parents = claim!.Character.GetParentGroupsToTop(projectInfo).ToList();
+        var isDirect = currentUser.Subscriptions.Any(s => s.ClaimId == claimId.ClaimId);
+        if (isDirect)
+        {
+            return new ClaimSubscribeViewModel() { IsDirect = true, ParentSubscribe = SubscriptionOptions.CreateNoneSet(), SubscribeReason = [] };
+        }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
-
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
-
-
-        return GetFullSubscriptionTooltip(claim.Character.GetParentGroupsToTop(projectInfo), currentUser.Subscriptions, claimId);
+        var groupSubscriptions = parents
+            .SelectMany(par => currentUser.Subscriptions
+                .Where(s => s.CharacterGroupId == par.Id.Id)
+                .Select(s => (Group: par, Options: ToSubscriptionOptions(s))))
+            .ToList();
+        return CalculateParentSubscriptions(groupSubscriptions);
     }
+
+    private static SubscriptionOptions ToSubscriptionOptions(UserSubscription s) => new()
+    {
+        ClaimStatusChange = s.ClaimStatusChange,
+        Comments = s.Comments,
+        FieldChange = s.FieldChange,
+        MoneyOperation = s.MoneyOperation,
+        AccommodationChange = s.AccommodationChange,
+        AccommodationInvitesChange = s.AccommodationChange,
+    };
 
     public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
     {
@@ -46,6 +65,18 @@ internal class SubscribeViewService(IUriService uriService,
     public async Task RemoveSubscription(int projectId, int userSubscriptionsId)
         => await gameSubscribeService.RemoveSubscribe(new RemoveSubscribeRequest(projectId, userSubscriptionsId));
 
+    public async Task<ClaimSubscribeViewModel> SubscribeClaimToUser(ClaimIdentification claimId)
+    {
+        await gameSubscribeService.SubscribeClaimToUser(claimId);
+        return await GetSubscribeForClaim(claimId);
+    }
+
+    public async Task<ClaimSubscribeViewModel> UnsubscribeClaimToUser(ClaimIdentification claimId)
+    {
+        await gameSubscribeService.UnsubscribeClaimToUser(claimId);
+        return await GetSubscribeForClaim(claimId);
+    }
+
     public async Task SaveGroupSubscription(int projectId, EditSubscribeViewModel model)
     {
         await gameSubscribeService.UpdateSubscribeForGroup(new SubscribeForGroupRequest()
@@ -56,113 +87,53 @@ internal class SubscribeViewService(IUriService uriService,
         });
     }
 
-    private static ClaimSubscribeViewModel GetFullSubscriptionTooltip(IEnumerable<CharacterGroupInfo> parents,
-    IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
+    private static ClaimSubscribeViewModel CalculateParentSubscriptions(
+        IEnumerable<(CharacterGroupInfo Group, SubscriptionOptions Options)> groupSubscriptions)
     {
-        var claimStatusChangeGroup = "";
-        var commentsGroup = "";
-        var fieldChangeGroup = "";
-        var moneyOperationGroup = "";
+        var options = SubscriptionOptions.CreateNoneSet();
+        var subscribeReason = new Dictionary<string, string>();
 
-        var subscrTooltip = new ClaimSubscribeViewModel()
+        foreach (var (group, subscr) in groupSubscriptions)
         {
-            HasFullParentSubscription = false,
-            Tooltip = "",
+            var newFlags = subscr.Except(options);
+            if (newFlags.ClaimStatusChange)
+            {
+                subscribeReason[nameof(SubscriptionOptions.ClaimStatusChange)] = group.Name;
+            }
+
+            if (newFlags.Comments)
+            {
+                subscribeReason[nameof(SubscriptionOptions.Comments)] = group.Name;
+            }
+
+            if (newFlags.FieldChange)
+            {
+                subscribeReason[nameof(SubscriptionOptions.FieldChange)] = group.Name;
+            }
+
+            if (newFlags.MoneyOperation)
+            {
+                subscribeReason[nameof(SubscriptionOptions.MoneyOperation)] = group.Name;
+            }
+
+            if (newFlags.AccommodationChange || newFlags.AccommodationInvitesChange)
+            {
+                subscribeReason[nameof(SubscriptionOptions.AccommodationChange)] = group.Name;
+            }
+
+            options = options.Union(subscr);
+
+            if (options.AllSet)
+            {
+                break;
+            }
+        }
+
+        return new ClaimSubscribeViewModel
+        {
             IsDirect = false,
-            ClaimStatusChange = false,
-            Comments = false,
-            FieldChange = false,
-            MoneyOperation = false,
+            ParentSubscribe = options,
+            SubscribeReason = subscribeReason,
         };
-
-        subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == claimId) != null;
-
-        foreach (var par in parents)
-        {
-            foreach (var subscr in subscriptions)
-            {
-                if (par.Id.Id == subscr.CharacterGroupId &&
-                    !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
-                      subscrTooltip.FieldChange && subscrTooltip.MoneyOperation))
-                {
-                    if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
-                        subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
-                    {
-                        break;
-                    }
-                    if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
-                    {
-                        subscrTooltip.ClaimStatusChange = true;
-                        claimStatusChangeGroup = par.Name;
-                    }
-                    if (subscr.Comments && !subscrTooltip.Comments)
-                    {
-                        subscrTooltip.Comments = true;
-                        commentsGroup = par.Name;
-                    }
-                    if (subscr.FieldChange && !subscrTooltip.FieldChange)
-                    {
-                        subscrTooltip.FieldChange = true;
-                        fieldChangeGroup = par.Name;
-                    }
-                    if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
-                    {
-                        subscrTooltip.MoneyOperation = true;
-                        moneyOperationGroup = par.Name;
-                    }
-                }
-            }
-        }
-
-        if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange &&
-            subscrTooltip.MoneyOperation)
-        {
-            subscrTooltip.HasFullParentSubscription = true;
-        }
-
-        subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, claimStatusChangeGroup,
-          commentsGroup, fieldChangeGroup, moneyOperationGroup);
-        return subscrTooltip;
-    }
-
-    private static string GetFullSubscriptionText(ClaimSubscribeViewModel subscrTooltip,
-      string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
-      string moneyOperationGroup)
-    {
-        // TODO: Это текст должен формироваться на уровне View
-        string res;
-        if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
-        {
-            res = "Вы подписаны на эту заявку";
-        }
-        else if (!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments ||
-                   subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
-        {
-            res = "Вы не подписаны на эту заявку";
-        }
-        else
-        {
-            res = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br><ul>";
-
-            if (subscrTooltip.ClaimStatusChange)
-            {
-                res += "<li>Изменение статуса (группа \"" + claimStatusChangeGroup + "\")</li>";
-            }
-            if (subscrTooltip.Comments)
-            {
-                res += "<li>Комментарии (группа \"" + commentsGroup + "\")</li>";
-            }
-            if (subscrTooltip.FieldChange)
-            {
-                res += "<li>Изменение полей заявки (группа \"" + fieldChangeGroup + "\")</li>";
-            }
-            if (subscrTooltip.MoneyOperation)
-            {
-                res += "<li>Финансовые операции (группа \"" + moneyOperationGroup + "\")</li>";
-            }
-
-            res += "</ul>";
-        }
-        return res;
     }
 }

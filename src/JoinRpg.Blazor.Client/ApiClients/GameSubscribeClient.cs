@@ -51,5 +51,30 @@ public class GameSubscribeClient : IGameSubscribeClient
         }
     }
 
-    public Task<ClaimSubscribeViewModel> GetSubscribeForClaim(int projectId, int claimId) => throw new NotImplementedException();
+    public async Task<ClaimSubscribeViewModel> GetSubscribeForClaim(ClaimIdentification claimId)
+    {
+        return await httpClient.GetFromJsonAsync<ClaimSubscribeViewModel>(
+            $"webapi/gamesubscribe/getforclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}")
+            ?? throw new Exception("Couldn't get result from server");
+    }
+
+    public async Task<ClaimSubscribeViewModel> SubscribeClaimToUser(ClaimIdentification claimId)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = (await httpClient.PostAsync(
+            $"webapi/gamesubscribe/subscribeclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}", null))
+            .EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<ClaimSubscribeViewModel>()
+            ?? throw new Exception("Couldn't get result from server");
+    }
+
+    public async Task<ClaimSubscribeViewModel> UnsubscribeClaimToUser(ClaimIdentification claimId)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = (await httpClient.PostAsync(
+            $"webapi/gamesubscribe/unsubscribeclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}", null))
+            .EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<ClaimSubscribeViewModel>()
+            ?? throw new Exception("Couldn't get result from server");
+    }
 }

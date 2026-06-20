@@ -24,31 +24,6 @@ internal class ClaimServiceImpl(
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
-    // TODO в GameSubscribeService
-    public async Task SubscribeClaimToUser(int projectId, int claimId)
-    {
-        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-        _ = (await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId))).RequestAccess(CurrentUserId);
-        _ = user.Subscriptions.Add(
-            new UserSubscription() { ClaimId = claimId, ProjectId = projectId }.AssignFrom(
-                SubscriptionOptions.CreateAllSet()));
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    // TODO в GameSubscribeService
-    public async Task UnsubscribeClaimToUser(int projectId, int claimId)
-    {
-        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-        _ = (await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId))).RequestAccess(CurrentUserId);
-        var subscription = user.Subscriptions.FirstOrDefault(s =>
-            s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
-        if (subscription != null)
-        {
-            _ = UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
-            await UnitOfWork.SaveChangesAsync();
-        }
-    }
-
     public async Task CheckInClaim(ClaimIdentification claimId, int money)
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(claimId); //TODO Specific right
