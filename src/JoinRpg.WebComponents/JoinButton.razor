@@ -4,13 +4,13 @@
 
 @if (Link is not null)
 {
-  <Tooltip Title="@Title">
+  <Tooltip Title="@Title" TooltipContent="@TitleContent">
         <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled">@LabelContent</a>
   </Tooltip>
 }
 else
 {
-  <Tooltip Title="@ActualTitle">
+  <Tooltip Title="@ActualTitle" TooltipContent="@TitleContent">
     <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @onclick="OnClickHappened">@LabelContent</button>
   </Tooltip>
 }
@@ -73,6 +73,12 @@ else
     /// </summary>
     [Parameter]
     public string? Title { get; set; }
+
+    /// <summary>
+    /// Rich HTML content for the pop-up hint. Takes precedence over <see cref="Title"/> when set.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
     /// When <see cref="Disabled"/> is true, a value from this property will be used instead of <see cref="Title"/> for the pop-up hint.
