@@ -1,0 +1,25 @@
+<span style="white-space: nowrap">
+    @if (IconClass is not null)
+    {
+        <span class="glyphicon @IconClass" style="margin-right: 2px" aria-hidden="true"></span>
+    }
+    @if (Prefix is not null)
+    {
+        @Prefix<text>&nbsp;</text>
+    }
+    @if (Href is not null)
+    {
+        <a href="@Href">@ChildContent</a>
+    }
+    else
+    {
+        @ChildContent
+    }
+</span>
+
+@code {
+    [Parameter] public string? IconClass { get; set; }
+    [Parameter] public string? Prefix { get; set; }
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

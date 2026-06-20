@@ -1,6 +1,6 @@
 @if (Contact is not null)
 {
-    <text><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;<a href="mailto:@Contact.Value">@Contact.Value.Trim()</a></text>
+    <ContactLink IconClass="glyphicon-envelope" Href="@($"mailto:{Contact.Value}")">@Contact.Value.Trim()</ContactLink>
 }
 
 @code {

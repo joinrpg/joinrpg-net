@@ -1,6 +1,6 @@
 @if (Contact is not null)
 {
-    <text>ЖЖ:&nbsp;<a href="https://@(Contact.Value).lj.ru">@Contact.Value</a></text>
+    <ContactLink Prefix="ЖЖ:" Href="@($"https://{Contact.Value}.lj.ru")">@Contact.Value</ContactLink>
 }
 
 @code {

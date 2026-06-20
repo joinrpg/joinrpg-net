@@ -20,6 +20,7 @@ public class ContactComponentsTest
         cut.Markup.ShouldContain("href=\"mailto:test@example.com\"");
         cut.Markup.ShouldContain("test@example.com");
         cut.Markup.ShouldContain("glyphicon-envelope");
+        cut.Markup.ShouldContain("white-space: nowrap");
     }
 
     [Fact]
@@ -37,6 +38,7 @@ public class ContactComponentsTest
         var cut = ctx.Render<PhoneLink>(p => p.Add(x => x.Contact, new PhoneNumber("+79161234567")));
         cut.Markup.ShouldContain("+79161234567");
         cut.Markup.ShouldContain("glyphicon-phone");
+        cut.Markup.ShouldContain("white-space: nowrap");
     }
 
     [Fact]
@@ -64,6 +66,7 @@ public class ContactComponentsTest
         var cut = ctx.Render<TelegramLink>(p => p.Add(x => x.Contact, contact));
         cut.Markup.ShouldContain("https://t.me/joinrpg");
         cut.Markup.ShouldContain("glyphicon-send");
+        cut.Markup.ShouldContain("white-space: nowrap");
     }
 
     [Fact]
@@ -81,6 +84,7 @@ public class ContactComponentsTest
         var cut = ctx.Render<LiveJournalLink>(p => p.Add(x => x.Contact, new LiveJournalId("someuser")));
         cut.Markup.ShouldContain("https://someuser.lj.ru");
         cut.Markup.ShouldContain("ЖЖ:");
+        cut.Markup.ShouldContain("white-space: nowrap");
     }
 
     [Fact]
@@ -98,5 +102,6 @@ public class ContactComponentsTest
         var cut = ctx.Render<VkLink>(p => p.Add(x => x.Contact, new VkId("id123")));
         cut.Markup.ShouldContain("https://vk.com/id123");
         cut.Markup.ShouldContain("ВК:");
+        cut.Markup.ShouldContain("white-space: nowrap");
     }
 }
