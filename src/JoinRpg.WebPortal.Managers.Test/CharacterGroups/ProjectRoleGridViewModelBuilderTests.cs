@@ -132,6 +132,34 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
+    public void Build_PublicOnly_HidesEmail()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        _mock.Player.Extra = new UserExtra
+        {
+            Vk = "vasya",
+            Telegram = "vasya_tg",
+            Livejournal = "vasya_lj",
+            SocialNetworksAccess = ContactsAccessType.Public,
+        };
+        _mock.Player.ExternalLogins.Add(new UserExternalLogin
+        {
+            Provider = UserExternalLogin.TelegramProvider,
+            Key = "12345",
+        });
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = ProjectRoleGridViewModelBuilder.Build(
+            Config(contacts: ProjectRolesListVisibilityMode.PublicOnly), null, canEditSettings: false, [character], _mock.ProjectInfo);
+
+        var contacts = result.Rows.ShouldHaveSingleItem().Player!.Contacts.ShouldNotBeNull();
+        contacts.Email.ShouldBeNull();
+        contacts.Vk.ShouldNotBeNull();
+        contacts.Telegram.ShouldNotBeNull();
+        contacts.LiveJournal.ShouldNotBeNull();
+    }
+
+    [Fact]
     public void Build_ArchivedProject_NeverShowsContacts()
     {
         var character = _mock.CreateCharacter("Вася");

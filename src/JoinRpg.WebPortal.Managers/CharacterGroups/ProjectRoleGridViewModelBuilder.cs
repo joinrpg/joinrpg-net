@@ -117,9 +117,10 @@ internal static class ProjectRoleGridViewModelBuilder
             player.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key,
             PrefferedName.FromOptional(player.Extra?.Telegram));
 
+        // Email — непубличный контакт, показывается только в режиме All.
         // VkVerified не проверяем (как в markdown-рендерере).
         return new UserContacts(
-            Email.FromOptional(player.Email),
+            contactsColumn == ProjectRolesListVisibilityMode.All ? Email.FromOptional(player.Email) : null,
             VkId.FromOptional(player.Extra?.Vk),
             telegram,
             LiveJournalId.FromOptional(player.Extra?.Livejournal));
