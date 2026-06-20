@@ -12,7 +12,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
-using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +22,6 @@ namespace JoinRpg.Portal.Controllers;
 public class ClaimController(
     IProjectRepository ProjectRepository,
     IClaimService claimService,
-    IGameSubscribeClient gameSubscribeClient,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterRepository characterRepository,
@@ -126,10 +124,7 @@ public class ClaimController(
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
             accommodationModel,
-            userInfo)
-        {
-            SubscriptionTooltip = await gameSubscribeClient.GetSubscribeForClaim(claim.ProjectId, claim.ClaimId),
-        };
+            userInfo);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {
@@ -520,41 +515,6 @@ public class ClaimController(
         {
             return await Edit(projectid, claimid);
         }
-    }
-
-    //TODO перенести эти операции в WebApi контроллер
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> Subscribe(int projectid, int claimid)
-    {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectid, claimid));
-        if (claim == null)
-        {
-            return NotFound();
-        }
-
-        await claimService.SubscribeClaimToUser(projectid, claimid);
-
-        var tooltip = await gameSubscribeClient.GetSubscribeForClaim(projectid, claimid);
-
-        return Json(tooltip);
-    }
-
-    //TODO перенести эти операции в WebApi контроллер
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
-    {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectid, claimid));
-
-        if (claim == null)
-        {
-            return NotFound();
-        }
-
-        await claimService.UnsubscribeClaimToUser(projectid, claimid);
-
-        var tooltip = await gameSubscribeClient.GetSubscribeForClaim(projectid, claimid);
-
-        return Json(tooltip);
     }
 
     private ActionResult? WithClaim(Claim claim)

@@ -4,8 +4,9 @@ public interface IGameSubscribeClient
 {
     Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId);
     Task RemoveSubscription(int projectId, int userSubscriptionsId);
-
     Task SaveGroupSubscription(int projectId, EditSubscribeViewModel model);
 
-    Task<ClaimSubscribeViewModel> GetSubscribeForClaim(int projectId, int claimId);
+    Task<ClaimSubscribeViewModel> GetSubscribeForClaim(ClaimIdentification claimId);
+    Task<ClaimSubscribeViewModel> SubscribeClaimToUser(ClaimIdentification claimId);
+    Task<ClaimSubscribeViewModel> UnsubscribeClaimToUser(ClaimIdentification claimId);
 }

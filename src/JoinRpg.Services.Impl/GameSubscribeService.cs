@@ -29,6 +29,29 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
         await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task SubscribeClaimToUser(ClaimIdentification claimId)
+    {
+        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+        _ = (await ClaimsRepository.GetClaim(claimId)).RequestAccess(CurrentUserId);
+        _ = user.Subscriptions.Add(
+            new UserSubscription() { ClaimId = claimId.ClaimId, ProjectId = claimId.ProjectId }.AssignFrom(
+                SubscriptionOptions.CreateAllSet()));
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UnsubscribeClaimToUser(ClaimIdentification claimId)
+    {
+        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+        _ = (await ClaimsRepository.GetClaim(claimId)).RequestAccess(CurrentUserId);
+        var subscription = user.Subscriptions.FirstOrDefault(s =>
+            s.ProjectId == claimId.ProjectId && s.UserId == CurrentUserId && s.ClaimId == claimId.ClaimId);
+        if (subscription != null)
+        {
+            _ = UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
+            await UnitOfWork.SaveChangesAsync();
+        }
+    }
+
     public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
     {
         _ = (await ProjectRepository.GetGroupAsync(request.CharacterGroupId))

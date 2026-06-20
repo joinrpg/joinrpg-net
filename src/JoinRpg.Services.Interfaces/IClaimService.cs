@@ -29,8 +29,6 @@ public interface IClaimService
 
     Task SaveFieldsFromClaim(ClaimIdentification claimId, IReadOnlyDictionary<int, string?> newFieldValue);
 
-    Task SubscribeClaimToUser(int projectId, int claimId);
-    Task UnsubscribeClaimToUser(int projectId, int claimId);
     Task CheckInClaim(ClaimIdentification claimId, int money);
     Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText);
 

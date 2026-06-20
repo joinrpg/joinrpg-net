@@ -11,7 +11,6 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Claims;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.UserProfile;
-using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
@@ -94,8 +93,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public bool SensitiveDataRequired { get; }
     public string? PassportData { get; }
     public string? RegistrationAddress { get; }
-
-    public required ClaimSubscribeViewModel SubscriptionTooltip { get; set; }
 
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
