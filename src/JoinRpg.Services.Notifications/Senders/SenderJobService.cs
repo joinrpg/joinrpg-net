@@ -169,7 +169,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 if (sendingResult.Common)
                 {
                     numberOfCommonFailuresCounter.Add(1);
-                    logger.LogError("Произошла общая ошибка отправки при отправке сообщения {messageId}", nextMessage.MessageId);
+                    logger.LogWarning("Произошла общая ошибка отправки при отправке сообщения {messageId}", nextMessage.MessageId);
                     FailureCounter = WorkerOptions.MaxSubsequentFailures; // Сразу выходим в кулдаун, не ждем пока накопятся ошибки.
                 }
                 else if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
