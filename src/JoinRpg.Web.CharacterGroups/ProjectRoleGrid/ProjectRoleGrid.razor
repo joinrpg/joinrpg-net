@@ -1,3 +1,4 @@
+@using JoinRpg.DomainTypes.Characters
 @using JoinRpg.DomainTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon
 @using JoinRpg.WebComponents
@@ -25,10 +26,7 @@ else
         <thead>
             <tr>
                 <th>Персонаж</th>
-                @if (_model.HasPlayerColumn)
-                {
-                    <th>Игрок</th>
-                }
+                <th>Игрок</th>
                 @if (_model.HasGroupsColumn)
                 {
                     <th>Группы</th>
@@ -44,16 +42,31 @@ else
             {
                 <tr>
                     <td><CharacterLink Model="row.Character" /></td>
-                    @if (row.Player is { } player)
-                    {
-                        <td>
-                            @player.Name
-                            @if (player.Contacts is not null)
-                            {
-                                <text> (</text><UserContactsView Contacts="player.Contacts" /><text>)</text>
-                            }
-                        </td>
-                    }
+                    <td>
+                        @switch (row.Player.CharacterType)
+                        {
+                            case CharacterType.NonPlayer:
+                                <text>NPC</text>
+                                break;
+                            case CharacterType.Slot:
+                                <text>шаблон</text>
+                                break;
+                            default:
+                                @if (row.Player.Link is { } link)
+                                {
+                                    <UserLink Model="link" />
+                                }
+                                else
+                                {
+                                    <text>нет игрока</text>
+                                }
+                                break;
+                        }
+                        @if (row.Player.Contacts is not null)
+                        {
+                            <text> (</text><UserContactsView Contacts="row.Player.Contacts" /><text>)</text>
+                        }
+                    </td>
                     @if (row.Groups is { } groups)
                     {
                         <td>

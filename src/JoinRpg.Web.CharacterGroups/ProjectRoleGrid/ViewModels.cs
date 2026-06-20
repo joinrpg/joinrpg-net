@@ -1,6 +1,8 @@
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 
@@ -13,18 +15,16 @@ public record ProjectRoleGridViewModel(
     string Name,
     string? GroupName,
     bool CanEditSettings,
-    bool HasPlayerColumn,
     bool HasGroupsColumn,
     IReadOnlyList<string> FieldColumnNames,
     IReadOnlyList<ProjectRoleGridRowViewModel> Rows);
 
 public record ProjectRoleGridRowViewModel(
     CharacterLinkSlimViewModel Character,
-    PlayerCellViewModel? Player,
+    PlayerCellViewModel Player,
     GroupsCellViewModel? Groups,
     IReadOnlyList<string> FieldValues);
 
-/// <summary>Имя/статус игрока («NPC», «нет игрока», имя) + контакты (или null).</summary>
-public record PlayerCellViewModel(string Name, UserContacts? Contacts);
+public record PlayerCellViewModel(CharacterType CharacterType, UserContacts? Contacts, UserLinkViewModel? Link = null);
 
 public record GroupsCellViewModel(IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups);
