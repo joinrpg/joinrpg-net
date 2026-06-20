@@ -352,7 +352,8 @@ internal class CloneProjectHelper(
                         lastVersion.TodoField,
                         TryMapOriginalGroupIds(originalElement.TargetGroups.Select(g => g.CharacterGroupId)),
                         TryMapOriginalCharacterIds(originalElement.TargetCharacters.Select(c => c.CharacterId)),
-                        originalElement.ElementType);
+                        originalElement.ElementType,
+                        originalElement.IsMasterOnly);
                 }
             }
             catch (DbEntityValidationException ex)

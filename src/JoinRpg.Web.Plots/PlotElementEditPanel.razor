@@ -51,28 +51,40 @@
         <JoinTextArea Value="@Model.TodoField" ValueExpression="@(() => Model.TodoField)" />
     </FormRowFor>
 
-    @if (Model is PlotElementEditViewModel editModel2 && editModel2.HasPublishedVersion && !editModel2.HasManageAccess)
+    @if (CurrentElementType == PlotElementTypeView.RegularPlot)
     {
-        <FormRow Label="Для кого" Description="Только редакторы сюжетов могут изменять привязку вводных, которые уже опубликованы.">
-            <PlotTargetDisplay Target="@editModel2.Target" />
-        </FormRow>
+        <FormRowFor For="@(() => Model.IsMasterOnly)">
+            <CheckboxInput Value="@Model.IsMasterOnly"
+                           ValueExpression="@(() => Model.IsMasterOnly)"
+                           ValueChanged="@(value => Model.IsMasterOnly = value)" />
+        </FormRowFor>
     }
-    else
+
+    @if (!Model.IsMasterOnly)
     {
-        <FormRow Label="Привязка к персонажам" Description="Тех, кому предназначена эта вводная, можно добавить сейчас или позже.">
-            <CharacterSelector
-                Name="TargetCharacters"
-                ProjectId="@(new ProjectIdentification(Model.ProjectId))"
-                SelectedCharacterIds="@Model.TargetCharacters"
-                />
-        </FormRow>
-        <FormRow Label="Привязка к группам">
-            <CharacterGroupSelector
-                Name="TargetGroups"
-                ProjectId="@Model.ProjectId"
-                SelectedGroupIds="@Model.TargetGroups"
-                />
-        </FormRow>
+        @if (Model is PlotElementEditViewModel editModel2 && editModel2.HasPublishedVersion && !editModel2.HasManageAccess)
+        {
+            <FormRow Label="Для кого" Description="Только редакторы сюжетов могут изменять привязку вводных, которые уже опубликованы.">
+                <PlotTargetDisplay Target="@editModel2.Target" />
+            </FormRow>
+        }
+        else
+        {
+            <FormRow Label="Привязка к персонажам" Description="Тех, кому предназначена эта вводная, можно добавить сейчас или позже.">
+                <CharacterSelector
+                    Name="TargetCharacters"
+                    ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+                    SelectedCharacterIds="@Model.TargetCharacters"
+                    />
+            </FormRow>
+            <FormRow Label="Привязка к группам">
+                <CharacterGroupSelector
+                    Name="TargetGroups"
+                    ProjectId="@Model.ProjectId"
+                    SelectedGroupIds="@Model.TargetGroups"
+                    />
+            </FormRow>
+        }
     }
 
     @if (Model is PlotElementCreateViewModel createModel2

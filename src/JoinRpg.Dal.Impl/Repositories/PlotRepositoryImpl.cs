@@ -84,7 +84,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 
         var query = from text in dataset.AsExpandable()
                     let element = text.PlotElement
-                    where element.IsActive && element.ElementType == plotSpecification.PlotElementType
+                    where element.IsActive && element.ElementType == plotSpecification.PlotElementType && !element.IsMasterOnly
                     where
                       targetPredicate.Invoke(element)
                     let maxVersion = element.Texts.Max(t => t.Version)

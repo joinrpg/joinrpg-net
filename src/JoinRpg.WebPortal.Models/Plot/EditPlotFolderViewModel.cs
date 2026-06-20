@@ -117,6 +117,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotFolderId = e.PlotFolderId;
         Status = e.GetStatus();
         ElementType = (PlotElementTypeView)e.ElementType;
+        IsMasterOnly = e.IsMasterOnly;
         ShortContent = ((MarkdownString?)currentVersionText.Content).TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
         HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanManagePlots) && e.Project.Active;
@@ -172,6 +173,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public TargetsInfo Target { get; }
 
     public PlotElementTypeView ElementType { get; }
+    public bool IsMasterOnly { get; }
     public bool HasPlotEditorAccess { get; }
 
     public bool HasMasterAccess { get; }

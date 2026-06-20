@@ -8,9 +8,16 @@
     default:
         throw new ArgumentOutOfRangeException();
 }
+@if (IsMasterOnly)
+{
+    <JoinBadge Variation="VariationStyleEnum.Warning"> Мастерский </JoinBadge>
+}
 @code
 {
     [Parameter]
     [EditorRequired]
     public PlotElementTypeView ElementType { get; set; }
+
+    [Parameter]
+    public bool IsMasterOnly { get; set; }
 }
