@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.ProjectCommon;
@@ -18,14 +17,13 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyCollection<Character> characters,
         ProjectInfo projectInfo)
     {
-        var hasPlayerColumn = config.ContactsColumn != ProjectRolesListVisibilityMode.None;
         var hasGroupsColumn = config.GroupsColumn != ProjectRolesListVisibilityMode.None;
 
         var fields = config.Fields.Select(projectInfo.GetFieldById).ToList();
         var fieldColumnNames = fields.Select(f => f.Name).ToList();
 
         var rows = characters
-            .Select(character => BuildRow(character, config, projectInfo, hasPlayerColumn, hasGroupsColumn, fields))
+            .Select(character => BuildRow(character, config, projectInfo, hasGroupsColumn, fields))
             .ToList();
 
         return new ProjectRoleGridViewModel(
@@ -33,7 +31,6 @@ internal static class ProjectRoleGridViewModelBuilder
             Name: config.Name,
             GroupName: groupName,
             CanEditSettings: canEditSettings,
-            HasPlayerColumn: hasPlayerColumn,
             HasGroupsColumn: hasGroupsColumn,
             FieldColumnNames: fieldColumnNames,
             Rows: rows);
@@ -43,7 +40,6 @@ internal static class ProjectRoleGridViewModelBuilder
         Character character,
         ProjectRolesList config,
         ProjectInfo projectInfo,
-        bool hasPlayerColumn,
         bool hasGroupsColumn,
         IReadOnlyList<ProjectFieldInfo> fields)
     {
@@ -53,9 +49,7 @@ internal static class ProjectRoleGridViewModelBuilder
             character.IsActive,
             ViewModeSelector.Create(character.IsPublic, canViewPrivate: true));
 
-        PlayerCellViewModel? player = hasPlayerColumn
-            ? BuildPlayerCell(character, config.ContactsColumn, projectInfo)
-            : null;
+        var player = BuildPlayerCell(character, config.ContactsColumn, projectInfo);
 
         GroupsCellViewModel? groups = hasGroupsColumn
             ? BuildGroupsCell(character, config.GroupsColumn, projectInfo)
@@ -72,19 +66,10 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectRolesListVisibilityMode contactsColumn,
         ProjectInfo projectInfo)
     {
-        // TODO[Unify]: статус игрока дублирует приватный GetPlayerString в JoinrpgMarkdownLinkRenderer.
         var player = character.ApprovedClaim?.Player;
-        var name = (character.CharacterType, player) switch
-        {
-            (CharacterType.NonPlayer, _) => "NPC",
-            (CharacterType.Slot, _) => "шаблон",
-            (CharacterType.Player, null) => "нет игрока",
-            (CharacterType.Player, User p) => p.GetDisplayName(),
-            _ => throw new NotImplementedException(),
-        };
-
         var contacts = player is null ? null : BuildContacts(player, contactsColumn, projectInfo);
-        return new PlayerCellViewModel(name, contacts);
+        var link = player is null ? null : new UserLinkViewModel(player.UserId, player.GetDisplayName(), ViewMode.Show);
+        return new PlayerCellViewModel(character.CharacterType, contacts, link);
     }
 
     private static UserContacts? BuildContacts(

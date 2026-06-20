@@ -33,13 +33,12 @@ public class ProjectRoleGridViewModelBuilderTests
 
         var result = ProjectRoleGridViewModelBuilder.Build(Config(), null, canEditSettings: false, [character], _mock.ProjectInfo);
 
-        result.HasPlayerColumn.ShouldBeFalse();
         result.HasGroupsColumn.ShouldBeFalse();
         result.FieldColumnNames.ShouldBeEmpty();
         var row = result.Rows.ShouldHaveSingleItem();
         row.Character.CharacterId.ShouldBe(character.GetId());
         row.Character.Name.ShouldBe("Вася");
-        row.Player.ShouldBeNull();
+        row.Player.ShouldNotBeNull();
         row.Groups.ShouldBeNull();
     }
 
@@ -51,10 +50,10 @@ public class ProjectRoleGridViewModelBuilderTests
         var result = ProjectRoleGridViewModelBuilder.Build(
             Config(contacts: ProjectRolesListVisibilityMode.All), null, canEditSettings: false, [character], _mock.ProjectInfo);
 
-        result.HasPlayerColumn.ShouldBeTrue();
         var row = result.Rows.ShouldHaveSingleItem();
         row.Player.ShouldNotBeNull();
-        row.Player.Name.ShouldBe("нет игрока");
+        row.Player.CharacterType.ShouldBe(CharacterType.Player);
+        row.Player.Link.ShouldBeNull();
         row.Player.Contacts.ShouldBeNull();
     }
 
@@ -67,7 +66,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var result = ProjectRoleGridViewModelBuilder.Build(
             Config(contacts: ProjectRolesListVisibilityMode.All), null, canEditSettings: false, [character], _mock.ProjectInfo);
 
-        result.Rows.ShouldHaveSingleItem().Player!.Name.ShouldBe("NPC");
+        result.Rows.ShouldHaveSingleItem().Player!.CharacterType.ShouldBe(CharacterType.NonPlayer);
     }
 
     [Fact]
@@ -93,7 +92,7 @@ public class ProjectRoleGridViewModelBuilderTests
             Config(contacts: ProjectRolesListVisibilityMode.All), null, canEditSettings: false, [character], _mock.ProjectInfo);
 
         var player = result.Rows.ShouldHaveSingleItem().Player.ShouldNotBeNull();
-        player.Name.ShouldBe("Player");
+        player.Link.ShouldNotBeNull().DisplayName.ShouldBe("Player");
         var contacts = player.Contacts.ShouldNotBeNull();
         contacts.Email!.Value.ShouldBe("player@example.com");
         contacts.Vk!.Value.ShouldBe("vasya");
@@ -114,7 +113,7 @@ public class ProjectRoleGridViewModelBuilderTests
             Config(contacts: ProjectRolesListVisibilityMode.PublicOnly), null, canEditSettings: false, [character], _mock.ProjectInfo);
 
         var player = result.Rows.ShouldHaveSingleItem().Player.ShouldNotBeNull();
-        player.Name.ShouldBe("Player");
+        player.Link.ShouldNotBeNull().DisplayName.ShouldBe("Player");
         player.Contacts.ShouldBeNull();
     }
 

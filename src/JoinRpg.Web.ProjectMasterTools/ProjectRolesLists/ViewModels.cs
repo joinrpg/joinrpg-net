@@ -19,7 +19,7 @@ public class AddProjectRolesListViewModel : IValidatableObject
     public bool PublicMode { get; set; } = false;
 
     [Display(Name = "Колонка контактов")]
-    public ProjectRolesListVisibilityModeView ContactsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
+    public ContactsColumnVisibilityModeView ContactsColumn { get; set; } = ContactsColumnVisibilityModeView.None;
 
     [Display(Name = "Колонка групп")]
     public ProjectRolesListVisibilityModeView GroupsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
@@ -29,7 +29,7 @@ public class AddProjectRolesListViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (PublicMode && ContactsColumn == ProjectRolesListVisibilityModeView.All)
+        if (PublicMode && ContactsColumn == ContactsColumnVisibilityModeView.All)
         {
             yield return new ValidationResult(
                 "В публичной сетке ролей нельзя показывать все контакты",
@@ -45,7 +45,7 @@ public class AddProjectRolesListViewModel : IValidatableObject
             CharacterGroupId: CharacterGroupId,
             PublicMode: PublicMode,
             Fields: Fields,
-            ContactsColumn: ToDomainVisibilityMode(ContactsColumn),
+            ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn));
     }
 
@@ -69,7 +69,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             Name = domain.Name,
             CharacterGroupId = domain.CharacterGroupId,
             PublicMode = domain.PublicMode,
-            ContactsColumn = ToViewVisibilityMode(domain.ContactsColumn),
+            ContactsColumn = (ContactsColumnVisibilityModeView)domain.ContactsColumn,
             GroupsColumn = ToViewVisibilityMode(domain.GroupsColumn),
             Fields = domain.Fields,
         };
@@ -83,7 +83,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             CharacterGroupId: CharacterGroupId,
             PublicMode: PublicMode,
             Fields: Fields,
-            ContactsColumn: ToDomainVisibilityMode(ContactsColumn),
+            ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn));
     }
 }
@@ -97,5 +97,17 @@ public enum ProjectRolesListVisibilityModeView
     PublicOnly,
 
     [Display(Name = "Все", Description = "Показывать все (просмотр от имени мастера)")]
+    All
+}
+
+public enum ContactsColumnVisibilityModeView
+{
+    [Display(Name = "Только имя игрока", Description = "Показывать колонку с именем игрока (ссылкой на профиль), без контактов")]
+    None,
+
+    [Display(Name = "Только публичные контакты", Description = "Показывать имя игрока и публично доступные контакты")]
+    PublicOnly,
+
+    [Display(Name = "Все контакты", Description = "Показывать имя игрока и все контакты (просмотр от имени мастера)")]
     All
 }
