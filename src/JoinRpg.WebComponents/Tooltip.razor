@@ -1,4 +1,4 @@
-@if(string.IsNullOrWhiteSpace(Title))
+@if(string.IsNullOrWhiteSpace(Title) && TooltipContent is null)
 {
     @ChildContent
     return;
@@ -9,13 +9,23 @@
         @ChildContent
     </span>
     <span class="join-tooltip">
-        @Title
+        @if (TooltipContent is not null)
+        {
+            @TooltipContent
+        }
+        else
+        {
+            @Title
+        }
     </span>
 </span>
 
 @code {
     [Parameter]
     public string? Title { get; set; }
+
+    [Parameter]
+    public RenderFragment? TooltipContent { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
