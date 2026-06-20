@@ -21,7 +21,7 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/roles/{characterGroupId}/[action]")]
 public class GameGroupsController(
     IProjectRepository projectRepository,
-    IProjectService projectService,
+    ICharacterGroupService characterGroupService,
     IUriService uriService,
     IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository,
@@ -239,7 +239,7 @@ public class GameGroupsController(
 
         try
         {
-            await projectService.EditCharacterGroup(charGroupId,
+            await characterGroupService.EditCharacterGroup(charGroupId,
                 viewModel.Name, viewModel.IsPublic,
                 [.. viewModel.ParentCharacterGroupIdInts.Select(id => new CharacterGroupIdentification(projectId, id))],
                 viewModel.Description);
@@ -280,7 +280,7 @@ public class GameGroupsController(
         var project = field.Project;
         try
         {
-            await projectService.DeleteCharacterGroup(projectId, characterGroupId);
+            await characterGroupService.DeleteCharacterGroup(new(new(projectId), characterGroupId));
 
             return RedirectToIndex(project);
         }
@@ -326,7 +326,7 @@ public class GameGroupsController(
         try
         {
             List<CharacterGroupIdentification> parentCharacterGroupIds = [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new(viewModel.ProjectId))];
-            await projectService.AddCharacterGroup(
+            await characterGroupService.AddCharacterGroup(
               new(viewModel.ProjectId),
               viewModel.Name, viewModel.IsPublic,
               parentCharacterGroupIds, viewModel.Description);
@@ -390,7 +390,7 @@ public class GameGroupsController(
 
         try
         {
-            await projectService.MoveCharacterGroup(currentUserAccessor.UserId, projectId, charactergroupId, parentCharacterGroupId, direction);
+            await characterGroupService.MoveCharacterGroup(new(new(projectId), charactergroupId), new(new(projectId), parentCharacterGroupId), direction);
 
 
             return RedirectToIndex(projectId, currentRootGroupId);

@@ -7,4 +7,6 @@ public interface IProjectAccessService
     Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId);
 
     Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
+
+    Task GrantAccessAsAdmin(ProjectIdentification projectId);
 }

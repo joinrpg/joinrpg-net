@@ -7,6 +7,7 @@ using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
+using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Services.Impl;
@@ -49,6 +50,7 @@ public static class Services
             services
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
+            .AddTransient<ICharacterGroupService, CharacterGroupService>()
             .AddTransient<IProjectPropsService, ProjectPropsService>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()

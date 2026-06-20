@@ -17,6 +17,7 @@ internal class CloneProjectHelper(
     ProjectInfo original,
     Project originalEntity,
     IProjectService projectService,
+    ICharacterGroupService characterGroupService,
     IFieldSetupService fieldSetupService,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterService characterService,
@@ -105,7 +106,7 @@ internal class CloneProjectHelper(
         foreach ((var originalGroup, var originalId) in originalList)
         {
             var groupId =
-                await projectService.AddCharacterGroup(
+                await characterGroupService.AddCharacterGroup(
                     projectId,
                     originalGroup.CharacterGroupName,
                     originalGroup.IsPublic,
@@ -121,7 +122,7 @@ internal class CloneProjectHelper(
             List<CharacterGroupIdentification> parentGroupIds = TryMapOriginalGroupIds(originalGroup.ParentCharacterGroupIds);
             if (parentGroupIds.Count > 0)
             {
-                await projectService.EditCharacterGroup(
+                await characterGroupService.EditCharacterGroup(
                 targetId,
                 originalGroup.CharacterGroupName,
                 originalGroup.IsPublic,
