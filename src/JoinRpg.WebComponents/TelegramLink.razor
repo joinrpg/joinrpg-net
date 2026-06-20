@@ -1,6 +1,30 @@
-<TelegramIcon Link="@(Contact?.UserName?.Value)" />
+@{
+    var effectiveLink = Link ?? Contact?.UserName?.Value;
+}
+@if (!string.IsNullOrWhiteSpace(effectiveLink))
+{
+    if (Collapse)
+    {
+        <a href="@($"https://t.me/{effectiveLink}")"><span class="glyphicon glyphicon-send" aria-hidden="true"></span></a>
+    }
+    else
+    {
+        <ContactLink IconClass="glyphicon-send" Href="@($"https://t.me/{effectiveLink}")">
+            @if (ChildContent is null)
+            {
+                @effectiveLink
+            }
+            else
+            {
+                @ChildContent
+            }
+        </ContactLink>
+    }
+}
 
 @code {
-    [Parameter]
-    public TelegramId? Contact { get; set; }
+    [Parameter] public TelegramId? Contact { get; set; }
+    [Parameter] public string? Link { get; set; }
+    [Parameter] public bool Collapse { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 }
