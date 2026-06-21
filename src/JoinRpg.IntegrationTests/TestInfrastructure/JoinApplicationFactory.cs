@@ -13,7 +13,7 @@ namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
 public class JoinApplicationFactory : WebApplicationFactory<Startup>, IAsyncLifetime
 {
-    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder().Build();
+    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
 
     async Task IAsyncLifetime.InitializeAsync()
     {
