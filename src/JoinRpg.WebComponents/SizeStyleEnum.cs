@@ -5,4 +5,5 @@ public enum SizeStyleEnum
     Large,
     Medium,
     Small,
+    ExtraSmall,
 }

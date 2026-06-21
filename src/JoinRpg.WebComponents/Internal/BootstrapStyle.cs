@@ -22,6 +22,7 @@ internal static class BootstrapStyle
             SizeStyleEnum.Medium => $"",
             null => "",
             SizeStyleEnum.Small => $" {componentPrefix}-sm",
+            SizeStyleEnum.ExtraSmall => $" {componentPrefix}-xs",
             _ => throw new ArgumentException("Incorrect style", nameof(size)),
         };
 
