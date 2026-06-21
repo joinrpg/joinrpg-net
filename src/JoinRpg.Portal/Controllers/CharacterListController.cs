@@ -69,11 +69,11 @@ public class CharacterListController(
         return Export(list, exportType.Value, projectInfo);
     }
 
-    [HttpGet("~/{ProjectId}/characters/bygroup/{characterGroupIdInt}")]
-    public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupIdInt, string export)
+    [HttpGet("~/{ProjectId}/characters/bygroup/{characterGroupId}")]
+    public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
-        var characterGroupId = new CharacterGroupIdentification(projectId, characterGroupIdInt);
-        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId);
+        var characterGroupIdentification = new CharacterGroupIdentification(projectId, characterGroupId);
+        var characterGroup = await projectRepository.GetGroupAsync(characterGroupIdentification);
 
         if (characterGroup == null)
         {
@@ -81,7 +81,7 @@ public class CharacterListController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId).ToList();
+        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupIdentification).ToList();
         var characters = (await projectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
 
         var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,
