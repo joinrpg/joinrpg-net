@@ -22,6 +22,12 @@ internal static class SerilogWebRequestHelper
             diagnosticContext.Set("QueryString", request.QueryString.Value);
         }
 
+        var referer = request.Headers.Referer.ToString();
+        if (!string.IsNullOrEmpty(referer))
+        {
+            diagnosticContext.Set("Referer", referer);
+        }
+
         // Set the content-type of the Response at this point
         diagnosticContext.Set("ResponseContentType", httpContext.Response.ContentType);
 
