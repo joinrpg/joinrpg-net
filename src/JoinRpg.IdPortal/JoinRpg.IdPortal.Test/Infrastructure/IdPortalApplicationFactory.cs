@@ -23,11 +23,10 @@ namespace JoinRpg.IdPortal.Test.Infrastructure;
 
 public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
+    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder("postgres:16-alpine")
         .Build();
 
-    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder().Build();
+    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
 
     public CaptureEmailService CaptureEmail { get; } = new();
 
