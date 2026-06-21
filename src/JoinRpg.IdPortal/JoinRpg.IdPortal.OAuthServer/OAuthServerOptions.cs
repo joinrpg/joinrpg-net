@@ -6,7 +6,7 @@ public class OAuthServerOptions
     {
         public required string ClientId { get; set; }
         public required string ClientSecret { get; set; }
-
+        public string? DisplayName { get; set; }
         public required Uri[] RedirectUris { get; set; }
     }
 

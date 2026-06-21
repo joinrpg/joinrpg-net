@@ -6,6 +6,7 @@
 
 <JoinAdminAuthorizeView Roles="@Security.AdminRoleName">
     <h3>OAuth-клиенты</h3>
+    <JoinButton Link="/admin/oauthclients/create" Preset="ButtonPreset.Create" />
 
     @if (clients is null)
     {
