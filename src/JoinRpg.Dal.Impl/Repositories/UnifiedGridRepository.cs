@@ -8,12 +8,9 @@ internal class UnifiedGridRepository(MyDbContext Ctx) : IUnifiedGridRepository
 {
     public async Task<IReadOnlyCollection<UgDto>> GetByGroups(ProjectIdentification projectId, UgStatusSpec spec, IReadOnlyCollection<CharacterGroupIdentification> groups)
     {
-        var groupPredicate = CharacterPredicates.ByGroupImprecise(groups);
-        var groupPrecise = CharacterPredicates.ByGroupPrecise(groups);
+        var groupPredicate = CharacterPredicates.ByGroup(groups);
         var result = await GetCoreAsync(projectId, spec, groupPredicate);
-        return [.. result
-            .Where(x => groupPrecise(x.character))
-            .Select(r => ToUgDto(r))];
+        return [.. result.Select(r => ToUgDto(r))];
     }
 
     public async Task<IReadOnlyCollection<UgDto>> GetAll(ProjectIdentification projectId, UgStatusSpec spec)
