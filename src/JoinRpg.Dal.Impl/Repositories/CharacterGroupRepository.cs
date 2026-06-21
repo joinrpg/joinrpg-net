@@ -42,6 +42,10 @@ internal class CharacterGroupRepository(
             return null;
         }
 
+        var charactersCount = await ctx.Set<Character>()
+            .Where(CharacterPredicates.ByGroup([id]))
+            .CountAsync();
+
         MarkdownString? description = data.Contents is null ? null : new MarkdownString(data.Contents);
 
         var marks = new CreateUpdateMarksInfo(
@@ -55,7 +59,7 @@ internal class CharacterGroupRepository(
             groupInfo.IsPublic, groupInfo.IsSpecial, groupInfo.IsIntresting,
             groupInfo.DirectChildGroupIds, groupInfo.ChildCharactersOrdering,
             groupInfo.DirectParentGroupIds, groupInfo.AllChildGroups, groupInfo.AllParentGroups,
-            description, marks);
+            charactersCount, description, marks);
     }
 
     private static UserInfoHeader? BuildUserInfo(int? userId, string? preffered, string? born, string? sur, string? father, string? email)

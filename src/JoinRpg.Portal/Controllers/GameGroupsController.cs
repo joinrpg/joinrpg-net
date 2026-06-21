@@ -255,58 +255,56 @@ public class GameGroupsController(
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles), ProjectShouldBeActive]
-    public async Task<ActionResult> Delete(int projectId, int characterGroupId)
+    public async Task<ActionResult> Delete(ProjectIdentification projectId, int characterGroupId)
     {
-        var field = await projectRepository.GetGroupAsync(projectId, characterGroupId);
-
-        if (field == null)
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(new(projectId, characterGroupId));
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
 
-        return View(field);
+        return View(new DeleteCharacterGroupViewModel(charGroupFullInfo));
     }
 
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken, ProjectShouldBeActive]
-    public async Task<ActionResult> Delete(int projectId, int characterGroupId, IFormCollection collection)
+    public async Task<ActionResult> Delete(ProjectIdentification projectId, int characterGroupId, IFormCollection collection)
     {
-        var field = await projectRepository.GetGroupAsync(projectId, characterGroupId);
-
-        if (field == null)
+        CharacterGroupIdentification charGroupId = new(projectId, characterGroupId);
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(charGroupId);
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
 
-        var project = field.Project;
         try
         {
-            await characterGroupService.DeleteCharacterGroup(new(new(projectId), characterGroupId));
-
-            return RedirectToIndex(project);
+            await characterGroupService.DeleteCharacterGroup(charGroupId);
+            return RedirectToAction("Index", "GameGroups", new { projectId = projectId.Value, area = "" });
         }
         catch
         {
-            return View(field);
+            return View(new DeleteCharacterGroupViewModel(charGroupFullInfo));
         }
     }
 
     [HttpGet]
     [MasterAuthorize(Permission.CanEditRoles)]
     [ProjectShouldBeActive]
-    public async Task<ActionResult> AddGroup(int projectid, int charactergroupid)
+    public async Task<ActionResult> AddGroup(ProjectIdentification projectid, int charactergroupid)
     {
-        var field = await projectRepository.GetGroupAsync(projectid, charactergroupid);
-
-        if (field == null)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
+        if (!projectInfo.Groups.ContainsKey(new(projectid, charactergroupid)))
         {
             return NotFound();
         }
 
-        return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
+        return View(new AddCharacterGroupViewModel
         {
-            ParentCharacterGroupIdInts = [field.CharacterGroupId],
-        }, field));
+            ParentCharacterGroupIdInts = [charactergroupid],
+            ProjectId = projectid.Value,
+            ProjectName = projectInfo.ProjectName.Value,
+        });
     }
 
     [HttpPost]
@@ -315,22 +313,24 @@ public class GameGroupsController(
     [ProjectShouldBeActive]
     public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
-        var field = await projectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
-        if (field == null)
+        ProjectIdentification projectId = new(viewModel.ProjectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (!projectInfo.Groups.ContainsKey(new(projectId, charactergroupid)))
         {
             return NotFound();
         }
 
+        viewModel.ProjectName = projectInfo.ProjectName.Value;
         if (!ModelState.IsValid)
         {
-            return View(FillFromCharacterGroup(viewModel, field));
+            return View(viewModel);
         }
 
         try
         {
-            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new(viewModel.ProjectId))];
+            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, projectId)];
             await characterGroupService.AddCharacterGroup(
-              new(viewModel.ProjectId),
+              projectId,
               viewModel.Name, viewModel.IsPublic,
               parentCharacterGroupIds, viewModel.Description);
 
@@ -339,20 +339,12 @@ public class GameGroupsController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            return View(FillFromCharacterGroup(viewModel, field));
+            return View(viewModel);
         }
     }
 
     private ActionResult RedirectToRoles(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToIndex(characterGroupId.ProjectId, characterGroupId.CharacterGroupId, action);
 
-
-    private static T FillFromCharacterGroup<T>(T viewModel, CharacterGroup field)
-      where T : CharacterGroupViewModelBase
-    {
-        viewModel.ProjectName = field.Project.ProjectName;
-        viewModel.ProjectId = field.Project.ProjectId;
-        return viewModel;
-    }
 
     private async Task<EditCharacterGroupViewModel> BuildEditViewModel(
         CharacterGroupFullInfo charGroupFullInfo,
