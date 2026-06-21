@@ -193,9 +193,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         await LoadMasters(projectId); //TODO Remove
         await LoadProjectClaims(projectId);
 
-        var result =
-          await Ctx.Set<Character>().Where(CharacterPredicates.ByGroupImprecise(characterGroupIdentifications)).ToListAsync();
-        return result.Where(CharacterPredicates.ByGroupPrecise(characterGroupIdentifications)).ToList();
+        return await Ctx.Set<Character>().Where(CharacterPredicates.ByGroup(characterGroupIdentifications)).ToListAsync();
     }
 
     async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification)

@@ -1,12 +1,11 @@
-﻿@using JoinRpg.Markdown
-@using JoinRpg.DataModel
-@using JoinRpg.Domain
+@using JoinRpg.Markdown
 @using JoinRpg.Web.Helpers
-@model CharacterGroup
+@using JoinRpg.Web.Models.CharacterGroups
+@model DeleteCharacterGroupViewModel
 
 
 @{
-    ViewBag.Title = "Удаление группы персонажей «" + Model.CharacterGroupName + "»";
+    ViewBag.Title = "Удаление группы персонажей «" + Model.Name + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -16,7 +15,7 @@
 <div>
     <dl class="dl-horizontal">
 
-        @if (Model.Characters.Any() || Model.ChildGroups.Any())
+        @if (Model.CharactersCount > 0 || Model.ChildGroupsCount > 0)
         {
             <dt>
                 Персонажи в группе
@@ -24,27 +23,27 @@
             <dd>
                 В группе есть:
                 <ul>
-                    @if (Model.Characters.Any())
+                    @if (Model.CharactersCount > 0)
                     {
-                        <li>Персонажи: @Model.Characters.Count() </li>
+                        <li>Персонажи: @Model.CharactersCount </li>
                     }
-                    @if (Model.ChildGroups.Any())
+                    @if (Model.ChildGroupsCount > 0)
                     {
-                        <li>Группы: @Model.ChildGroups.Count() </li>
+                        <li>Группы: @Model.ChildGroupsCount </li>
                     }
                 </ul>
                 Подробнее в @Html.ActionLink("сетке ролей", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null) этой группы. При удалении дочерние персонажи и группы будут автоматически
                 привязаны к группам выше.
             </dd>
         }
-        @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
+        @if (!string.IsNullOrWhiteSpace(Model.Description?.Value))
         {
             <dt>
                 Описание группы
             </dt>
 
             <dd>
-                @(((JoinRpg.Common.PrimitiveTypes.MarkdownString?)Model.Description).ToHtmlString())
+                @Html.Raw(Model.Description!.Value.Value)
         </dd>
         }
     </dl>
@@ -56,7 +55,7 @@
         @Html.HiddenFor(model => model.ProjectId)
         <div class="form-actions no-color">
             <input type="submit" value="Удалить" class="btn btn-danger"/>
-            | 
+            |
             @Html.ActionLink("Назад к сетке ролей", "Index", new {@Model.ProjectId}, null)
         </div>
     }

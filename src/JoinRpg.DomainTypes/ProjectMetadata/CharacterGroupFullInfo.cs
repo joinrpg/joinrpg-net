@@ -13,6 +13,7 @@ public record CharacterGroupFullInfo(
     IReadOnlyCollection<CharacterGroupIdentification> DirectParentGroupIds,
     IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups,
+    int DirectChildCharactersCount,
     MarkdownString? Description,
     CreateUpdateMarksInfo Marks
 ) : CharacterGroupInfo(Id, Name, IsRoot, IsActive, IsPublic, IsSpecial, IsIntresting,

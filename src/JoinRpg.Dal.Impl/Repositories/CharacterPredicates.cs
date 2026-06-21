@@ -1,4 +1,3 @@
-using System.Data.Entity.SqlServer;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Claims;
 using LinqKit;
@@ -17,7 +16,7 @@ internal static class CharacterPredicates
                 (claim.ClaimStatus == ClaimStatus.Approved || claim.ClaimStatus == ClaimStatus.CheckedIn)
                 && claim.CharacterId == character.CharacterId);
 
-    internal static Expression<Func<Character, bool>> ByGroupImprecise(IReadOnlyCollection<CharacterGroupIdentification> groups)
+    internal static Expression<Func<Character, bool>> ByGroup(IReadOnlyCollection<CharacterGroupIdentification> groups)
     {
         if (groups.Count == 0)
         {
@@ -28,20 +27,7 @@ internal static class CharacterPredicates
         var groupIntIds = groups.Select(x => x.CharacterGroupId).ToArray();
 
         return character => character.ProjectId == projectId
-            && groupIntIds.Any(id => SqlFunctions.CharIndex(id.ToString(), character.ParentGroupsImpl.ListIds) > 0);
-    }
-
-    internal static Func<Character, bool> ByGroupPrecise(IReadOnlyCollection<CharacterGroupIdentification> groups)
-    {
-        if (groups.Count == 0)
-        {
-            return character => false;
-        }
-
-        var projectId = groups.EnsureSameProject().First().ProjectId;
-        var groupIntIds = groups.Select(x => x.CharacterGroupId).ToArray();
-
-        return character => character.ProjectId == projectId && groupIntIds.Intersect(character.ParentCharacterGroupIds).Any();
+            && groupIntIds.Any(id => ("," + character.ParentGroupsImpl.ListIds + ",").Contains("," + id.ToString() + ","));
     }
 
     internal static Expression<Func<Character, bool>> ByUgStatus(UgStatusSpec spec)
