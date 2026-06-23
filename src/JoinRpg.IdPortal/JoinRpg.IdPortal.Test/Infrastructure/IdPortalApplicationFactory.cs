@@ -1,6 +1,7 @@
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations;
 using Joinrpg.Web.Identity;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Migrations;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DomainTypes.Notifications;
@@ -35,6 +36,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
     public const string TestRedirectUri = "http://localhost/callback";
     public const string TestUserEmail = "test@joinrpg.ru";
     public const string TestUserPassword = "TestPassword123!";
+    // First registered user automatically gets the admin role (see MyUserStore.CreateImpl)
+    public const string TestAdminEmail = TestUserEmail;
+    public const string TestAdminPassword = TestUserPassword;
     public const string TestDisplayName = "Тестовый Пользователь";
     public const string TestResetUserEmail = "reset@joinrpg.ru";
     public const string TestResetUserPassword = "ResetPassword123!";
@@ -86,6 +90,15 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         await userManager.CreateAsync(unconfirmedUser, TestUserPassword);
 
         Log("Test users created.");
+
+        // MyUserStore.CreateImpl only sets IsAdmin=true when there are no users at all,
+        // but EF6 seed creates virtual system users first. Promote the test admin explicitly.
+        Log("Promoting test admin...");
+        var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        var dbAdmin = myDb.Set<JoinRpg.DataModel.User>().Include("Auth").First(u => u.Email == TestAdminEmail);
+        dbAdmin.Auth.IsAdmin = true;
+        myDb.SaveChanges();
+        Log("Test admin promoted.");
 
         Log("Registering OAuth client...");
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();

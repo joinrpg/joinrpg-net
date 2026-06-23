@@ -1,0 +1,102 @@
+@page "/admin/oauthclients/create"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using System.ComponentModel.DataAnnotations
+@using JoinRpg.IdPortal.OAuthServer
+@inject IOAuthClientService OAuthClientService
+
+<PageTitle>Создать OAuth-клиент — id.joinrpg.ru</PageTitle>
+
+<JoinAdminAuthorizeView Roles="@Security.AdminRoleName">
+    <h3>Создать OAuth-клиент</h3>
+
+    @if (createdSecret is not null)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Сохраните секрет — после закрытия страницы он недоступен.
+        </JoinAlert>
+        <FormHorizontal>
+            <FormRow Label="Client ID">
+                <JoinTextInput Value="@(createdClientId ?? "")" readonly />
+            </FormRow>
+            <FormRow Label="Client Secret">
+                <JoinTextArea Value="@createdSecret" ReadOnly="true" HasCopyButton="true" Rows="2" />
+            </FormRow>
+        </FormHorizontal>
+        <JoinButton Link="/admin/oauthclients" Label="К списку клиентов" />
+    }
+    else
+    {
+        <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync">
+            <DataAnnotationsValidator />
+
+            @if (errorMessage is not null)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+            }
+
+            <FormHorizontal>
+                <FormRowFor For="() => Input.ClientId">
+                    <JoinTextInput @bind-Value="Input.ClientId" />
+                </FormRowFor>
+                <FormRowFor For="() => Input.DisplayName">
+                    <JoinTextInput @bind-Value="Input.DisplayName" />
+                </FormRowFor>
+                <FormRowFor For="() => Input.RedirectUris">
+                    <JoinTextArea @bind-Value="Input.RedirectUris" Placeholder="https://example.com/callback" />
+                </FormRowFor>
+            </FormHorizontal>
+
+            <JoinButton Submit="true" Preset="ButtonPreset.Create" />
+            <JoinButton Link="/admin/oauthclients" Preset="ButtonPreset.Cancel" />
+        </EditForm>
+    }
+</JoinAdminAuthorizeView>
+
+@code {
+    private string? createdSecret;
+    private string? createdClientId;
+    private string? errorMessage;
+
+    private InputModel Input { get; set; } = new();
+
+    private async Task OnValidSubmitAsync()
+    {
+        var parsedUris = new List<Uri>();
+        foreach (var line in Input.RedirectUris.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (!Uri.TryCreate(line, UriKind.Absolute, out var uri))
+            {
+                errorMessage = $"Некорректный URI: {line}";
+                return;
+            }
+            parsedUris.Add(uri);
+        }
+
+        if (parsedUris.Count == 0)
+        {
+            errorMessage = "Необходимо указать хотя бы один Redirect URI.";
+            return;
+        }
+
+        var displayName = string.IsNullOrWhiteSpace(Input.DisplayName) ? null : Input.DisplayName;
+        createdSecret = await OAuthClientService.CreateClientAsync(Input.ClientId, displayName, parsedUris);
+        createdClientId = Input.ClientId;
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Укажите Client ID")]
+        [MaxLength(100, ErrorMessage = "Client ID не должен превышать 100 символов")]
+        [Display(Name = "Client ID")]
+        public string ClientId { get; set; } = "";
+
+        [MaxLength(200)]
+        [Display(Name = "Название")]
+        public string DisplayName { get; set; } = "";
+
+        [Required(ErrorMessage = "Укажите хотя бы один Redirect URI")]
+        [Display(Name = "Redirect URIs (по одному на строку)")]
+        public string RedirectUris { get; set; } = "";
+    }
+}
