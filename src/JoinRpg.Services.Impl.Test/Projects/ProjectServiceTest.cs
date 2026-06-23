@@ -1,4 +1,3 @@
-using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects;
@@ -13,43 +12,24 @@ namespace JoinRpg.Services.Impl.Test.Projects;
 /// Собирается реальный <see cref="ProjectService"/> поверх реального <c>ProjectPropsService</c> и
 /// фейков репозиториев — результат проверяется через пересобранный <see cref="ProjectInfo"/>.
 /// </summary>
-public class ProjectServiceTest
+public class ProjectServiceTest : ProjectMetadataServiceTestBase
 {
-    private readonly MockedProject mock = new();
-    private readonly FakeUnitOfWork unitOfWork;
-    private readonly FakeProjectMetadataRepository metadataRepository;
     private readonly FakeNotificationService notifications = new();
-
-    public ProjectServiceTest()
-    {
-        unitOfWork = new FakeUnitOfWork(mock);
-        metadataRepository = new FakeProjectMetadataRepository(mock);
-    }
-
-    private ProjectIdentification ProjectId => mock.ProjectInfo.ProjectId;
-
-    /// <summary>Пересобранный после операции снимок метаданных (то, что положили в кэш).</summary>
-    private ProjectInfo Result => metadataRepository.LastPrimed.ShouldNotBeNull();
 
     // Возвращаем интерфейс намеренно: SetPublishSettings — явная реализация IProjectService.
 #pragma warning disable CA1859
     private IProjectService CreateService(int? currentUserId = null, bool isAdmin = false)
 #pragma warning restore CA1859
     {
-        var currentUser = new FakeCurrentUserAccessor(currentUserId ?? mock.Master.UserId, isAdmin);
+        var currentUser = CreateCurrentUser(currentUserId, isAdmin);
         var masterEmailService = new MasterEmailService(notifications, metadataRepository, new FakeVirtualUsersService());
-        var propsService = new ProjectPropsService(
-            unitOfWork,
-            currentUser,
-            metadataRepository,
-            NullLogger<ProjectPropsService>.Instance);
 
         return new ProjectService(
             unitOfWork,
             currentUser,
             masterEmailService,
             NullLogger<ProjectService>.Instance,
-            propsService);
+            CreatePropsService(currentUser));
     }
 
     [Fact]
