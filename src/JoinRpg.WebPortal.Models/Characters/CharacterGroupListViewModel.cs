@@ -1,7 +1,9 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -98,14 +100,17 @@ public static class CharacterGroupListViewModel
 
         private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, Character[] siblings)
         {
-            var acceptingClaims = arg.IsAcceptingClaims(projectInfo);
             var vm = new CharacterViewModel
             {
                 CharacterId = arg.CharacterId,
                 CharacterName = arg.CharacterName,
                 IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-                IsAvailable = acceptingClaims,
-                SlotLimit = arg.CharacterSlotLimit,
+                ApplyStatus = new CharacterApplyViewModel(
+                    arg.GetId(),
+                    arg.GetBusyStatus(),
+                    arg.CharacterSlotLimit,
+                    arg.IsHot,
+                    arg.CharacterType == CharacterType.Slot),
                 Description = ((MarkdownString?)arg.Description).ToHtmlString(),
                 IsPublic = arg.IsPublic,
                 IsActive = arg.IsActive,
@@ -117,7 +122,6 @@ public static class CharacterGroupListViewModel
                 LastInGroup = siblings[^1] == arg,
                 ParentCharacterGroupId = group.CharacterGroupId,
                 RootGroupId = root.CharacterGroupId,
-                IsHot = arg.IsHot && acceptingClaims,
             };
             if (vm.IsFirstCopy)
             {

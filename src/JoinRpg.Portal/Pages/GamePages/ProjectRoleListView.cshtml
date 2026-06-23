@@ -6,4 +6,4 @@
     ViewData["Title"] = "Сетка ролей";
 }
 
-@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.RolesListId }))
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssemblyPrerendered, new { Model.RolesListId }))

@@ -1,7 +1,9 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
@@ -69,7 +71,13 @@ internal static class ProjectRoleGridViewModelBuilder
         var player = character.ApprovedClaim?.Player;
         var contacts = player is null ? null : BuildContacts(player, contactsColumn, projectInfo);
         var link = player is null ? null : new UserLinkViewModel(player.UserId, player.GetDisplayName(), ViewMode.Show);
-        return new PlayerCellViewModel(character.CharacterType, contacts, link);
+        var applyStatus = new CharacterApplyViewModel(
+            character.GetId(),
+            character.GetBusyStatus(),
+            character.CharacterSlotLimit,
+            character.IsHot,
+            character.CharacterType == CharacterType.Slot);
+        return new PlayerCellViewModel(applyStatus, contacts, link);
     }
 
     private static UserContacts? BuildContacts(

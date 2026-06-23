@@ -1,23 +1,25 @@
-@using JoinRpg.DomainTypes.Characters
 @using JoinRpg.DomainTypes.ProjectMetadata
 @using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.ProjectCommon.Characters
 @using JoinRpg.WebComponents
 @inject IProjectRoleGridClient Client
 @inject NavigationManager NavigationManager
+@inject PersistentComponentState ApplicationState
+@implements IDisposable
 
-@if (_model is null)
+@if (Model is null)
 {
     <JoinLoadingMessage />
 }
 else
 {
     <div class="d-flex align-items-center">
-        <h4>@_model.Name</h4>
-        @if (_model.CanEditSettings)
+        <h4>@Model.Name</h4>
+        @if (Model.CanEditSettings)
         {
             <span class="ms-3">
                 <JoinButton Preset="ButtonPreset.Edit"
-                    OnClick='() => NavigationManager.NavigateTo($"/{_model.RolesListId.ProjectId.Value}/tools/roleslist/edit/{_model.RolesListId.ProjectRolesListId}")'
+                            OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesListId.ProjectId.Value}/tools/roleslist/edit/{Model.RolesListId.ProjectRolesListId}")'
                     Label="Настройки сетки" />
             </span>
         }
@@ -27,45 +29,44 @@ else
             <tr>
                 <th>Персонаж</th>
                 <th>Игрок</th>
-                @if (_model.HasGroupsColumn)
+                @if (Model.HasGroupsColumn)
                 {
                     <th>Группы</th>
                 }
-                @foreach (var fieldName in _model.FieldColumnNames)
+                @foreach (var fieldName in Model.FieldColumnNames)
                 {
                     <th>@fieldName</th>
                 }
             </tr>
         </thead>
         <tbody>
-            @foreach (var row in _model.Rows)
+            @foreach (var row in Model.Rows)
             {
                 <tr>
                     <td><CharacterLink Model="row.Character" /></td>
                     <td>
-                        @switch (row.Player.CharacterType)
+                        @if (row.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
                         {
-                            case CharacterType.NonPlayer:
-                                <text>NPC</text>
-                                break;
-                            case CharacterType.Slot:
-                                <text>шаблон</text>
-                                break;
-                            default:
-                                @if (row.Player.Link is { } link)
-                                {
-                                    <UserLink Model="link" />
-                                }
-                                else
-                                {
-                                    <text>нет игрока</text>
-                                }
-                                break;
+                            <text>NPC</text>
+                        }
+                        else if (row.Player.ApplyStatus.IsSlot)
+                        {
+                            <text>шаблон</text>
+                        }
+                        else if (row.Player.Link is { } link)
+                        {
+                            <UserLink Model="link" />
+                        }
+                        else
+                        {
+                            <text>нет&nbsp;игрока</text>
                         }
                         @if (row.Player.Contacts is not null)
                         {
                             <text> (</text><UserContactsView Contacts="row.Player.Contacts" /><text>)</text>
                         }
+                        <text> </text>
+                        <ApplyForCharacterButton Model="row.Player.ApplyStatus" />
                     </td>
                     @if (row.Groups is { } groups)
                     {
@@ -93,10 +94,25 @@ else
 @code {
     [Parameter, EditorRequired] public ProjectRolesListIdentification RolesListId { get; set; }
 
-    private ProjectRoleGridViewModel? _model;
+    private ProjectRoleGridViewModel? Model { get; set; }
+    private PersistingComponentStateSubscription _persistingSubscription;
 
     protected override async Task OnInitializedAsync()
     {
-        _model = await Client.GetRoleGrid(RolesListId);
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
+
+        if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewModel>(nameof(ProjectRoleGrid), out var model))
+        {
+            model = await Client.GetRoleGrid(RolesListId);
+        }
+        Model = model;
     }
+
+    private Task PersistData()
+    {
+        ApplicationState.PersistAsJson(nameof(ProjectRoleGrid), Model);
+        return Task.CompletedTask;
+    }
+
+    public void Dispose() => _persistingSubscription.Dispose();
 }

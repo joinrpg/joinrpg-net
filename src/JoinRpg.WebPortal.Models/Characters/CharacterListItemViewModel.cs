@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
 
