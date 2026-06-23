@@ -28,8 +28,9 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 scope.ServiceProvider, masterId, "Проект с сеткой ролей");
         }
 
-        // 2. Пара персонажей в корневой группе + 3. сетка ролей «от верха»
-        var (rolesListId, characterNames) = await factory.Services.RunAsAsync(masterId, async sp =>
+        // 2. Публичные персонажи + приватный персонаж в корневой группе + 3. сетка ролей «от верха»
+        const string privateName = "Скрытный";
+        var (rolesListId, publicNames) = await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
             var characterService = sp.GetRequiredService<ICharacterService>();
@@ -51,6 +52,13 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                     FieldValues: new Dictionary<int, string?> { [nameFieldId] = name }));
             }
 
+            // Приватный персонаж: на публичной сетке виден только мастеру.
+            await characterService.AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [rootGroupId],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Private),
+                FieldValues: new Dictionary<int, string?> { [nameFieldId] = privateName }));
+
             var created = await rolesListService.CreateAsync(new ProjectRolesList(
                 new ProjectRolesListIdentification(projectId, -1),
                 "Все роли",
@@ -63,22 +71,36 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
             return (created.ProjectRolesListId, names);
         });
 
-        var client = factory.CreateClient();
-        client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(client, email, password);
+        var apiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}";
+
+        var masterClient = factory.CreateClient();
+        masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(masterClient, email, password);
 
         // 4. Страница сетки ролей открывается
-        var pageResponse = await client.GetAsync($"{projectId.Value}/roleslist/{rolesListId.ProjectRolesListId}");
+        var pageResponse = await masterClient.GetAsync($"{projectId.Value}/roleslist/{rolesListId.ProjectRolesListId}");
         pageResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        // 5. WebAPI острова возвращает сетку с обоими персонажами
-        var apiResponse = await client.GetAsync(
-            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}");
-        apiResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        // 5. Мастер видит публичных и приватного персонажа
+        var masterResponse = await masterClient.GetAsync(apiUrl);
+        masterResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var json = await apiResponse.Content.ReadAsStringAsync();
-        foreach (var name in characterNames)
+        var masterJson = await masterResponse.Content.ReadAsStringAsync();
+        foreach (var name in publicNames)
         {
-            json.ShouldContain(name);
+            masterJson.ShouldContain(name);
         }
+        masterJson.ShouldContain(privateName);
+
+        // 6. Аноним (публичная сетка) видит публичных, но НЕ приватного персонажа
+        var anonClient = factory.CreateClient();
+        var anonResponse = await anonClient.GetAsync(apiUrl);
+        anonResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var anonJson = await anonResponse.Content.ReadAsStringAsync();
+        foreach (var name in publicNames)
+        {
+            anonJson.ShouldContain(name);
+        }
+        anonJson.ShouldNotContain(privateName);
     }
 }

@@ -38,7 +38,11 @@ internal class ProjectRoleGridViewService(
             currentUserAccessor.UserIdentificationOrDefault,
             Permission.CanEditRoles);
 
-        return ProjectRoleGridViewModelBuilder.Build(config, groupName, canEditSettings, orderedCharacters, projectInfo);
+        // Скрытое (приватные персонажи и скрытые игроки) видит только мастер.
+        // На публичной сетке не-мастер/аноним их не увидит.
+        var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
+
+        return ProjectRoleGridViewModelBuilder.Build(config, groupName, canEditSettings, canViewPrivate, orderedCharacters, projectInfo);
     }
 
     /// <summary>
