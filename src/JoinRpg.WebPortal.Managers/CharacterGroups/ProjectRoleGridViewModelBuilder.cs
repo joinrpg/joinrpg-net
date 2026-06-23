@@ -16,6 +16,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectRolesList config,
         string? groupName,
         bool canEditSettings,
+        bool canViewPrivate,
         IReadOnlyCollection<Character> characters,
         ProjectInfo projectInfo)
     {
@@ -24,8 +25,12 @@ internal static class ProjectRoleGridViewModelBuilder
         var fields = config.Fields.Select(projectInfo.GetFieldById).ToList();
         var fieldColumnNames = fields.Select(f => f.Name).ToList();
 
-        var rows = characters
-            .Select(character => BuildRow(character, config, projectInfo, hasGroupsColumn, fields))
+        // Приватные персонажи (CharacterVisibility.Private) видны только мастеру —
+        // не-мастеру строки нет вообще (как в CharacterListViewService).
+        var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic);
+
+        var rows = visibleCharacters
+            .Select(character => BuildRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, fields))
             .ToList();
 
         return new ProjectRoleGridViewModel(
@@ -43,15 +48,16 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectRolesList config,
         ProjectInfo projectInfo,
         bool hasGroupsColumn,
+        bool canViewPrivate,
         IReadOnlyList<ProjectFieldInfo> fields)
     {
         var characterLink = new CharacterLinkSlimViewModel(
             character.GetId(),
             character.CharacterName,
             character.IsActive,
-            ViewModeSelector.Create(character.IsPublic, canViewPrivate: true));
+            ViewModeSelector.Create(character.IsPublic, canViewPrivate));
 
-        var player = BuildPlayerCell(character, config.ContactsColumn, projectInfo);
+        var player = BuildPlayerCell(character, config.ContactsColumn, canViewPrivate, projectInfo);
 
         GroupsCellViewModel? groups = hasGroupsColumn
             ? BuildGroupsCell(character, config.GroupsColumn, projectInfo)
@@ -66,17 +72,34 @@ internal static class ProjectRoleGridViewModelBuilder
     private static PlayerCellViewModel BuildPlayerCell(
         Character character,
         ProjectRolesListVisibilityMode contactsColumn,
+        bool canViewPrivate,
         ProjectInfo projectInfo)
     {
-        var player = character.ApprovedClaim?.Player;
-        var contacts = player is null ? null : BuildContacts(player, contactsColumn, projectInfo);
-        var link = player is null ? null : new UserLinkViewModel(player.UserId, player.GetDisplayName(), ViewMode.Show);
         var applyStatus = new CharacterApplyViewModel(
             character.GetId(),
             character.GetBusyStatus(),
             character.CharacterSlotLimit,
             character.IsHot,
             character.CharacterType == CharacterType.Slot);
+
+        var player = character.ApprovedClaim?.Player;
+        if (player is null)
+        {
+            // Нет одобренной заявки — «нет игрока» (Link == null).
+            return new PlayerCellViewModel(applyStatus, Contacts: null, Link: null);
+        }
+
+        // CharacterVisibility.PlayerHidden: игрок публичен только при HidePlayerForCharacter == false.
+        // ViewMode.Hide → компонент покажет «занято» (роль занята, игрок скрыт), а не «нет игрока».
+        var playerViewMode = ViewModeSelector.Create(!character.HidePlayerForCharacter, canViewPrivate);
+        if (playerViewMode == ViewMode.Hide)
+        {
+            // Реальные данные игрока на клиент не сериализуем — отдаём sentinel «скрыто».
+            return new PlayerCellViewModel(applyStatus, Contacts: null, UserLinkViewModel.Hidden);
+        }
+
+        var contacts = BuildContacts(player, contactsColumn, projectInfo);
+        var link = new UserLinkViewModel(player.UserId, player.GetDisplayName(), playerViewMode);
         return new PlayerCellViewModel(applyStatus, contacts, link);
     }
 
