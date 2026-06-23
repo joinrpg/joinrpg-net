@@ -32,7 +32,7 @@ public class ProjectShouldBeActiveAttributeTest
         var mock = new MockedProject();
         var httpContext = CreateHttpContext(mock.ProjectInfo);
         var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-        var context = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), new object());
+        var context = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object?>(), new object());
 
         var filter = new ProjectShouldBeActiveAttribute();
 
@@ -49,7 +49,7 @@ public class ProjectShouldBeActiveAttributeTest
         mock.ReInitProjectInfo();
         var httpContext = CreateHttpContext(mock.ProjectInfo);
         var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-        var context = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), new object());
+        var context = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object?>(), new object());
 
         var filter = new ProjectShouldBeActiveAttribute();
 

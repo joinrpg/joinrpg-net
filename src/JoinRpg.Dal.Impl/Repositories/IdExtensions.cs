@@ -8,5 +8,7 @@ public static class IdExtensions
 
     public static CharacterGroupIdentification GetId(this CharacterGroup group) => new CharacterGroupIdentification(group.ProjectId, group.CharacterGroupId);
 
+    public static ProjectFieldIdentification GetId(this ProjectField pf) => new ProjectFieldIdentification(pf.ProjectId, pf.ProjectFieldId);
+
     public static PlotElementIdentification GetId(this PlotElementIdentification id) => new PlotElementIdentification(id.ProjectId, id.PlotFolderId, id.PlotElementId);
 }
