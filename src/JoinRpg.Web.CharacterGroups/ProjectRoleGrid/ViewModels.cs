@@ -1,5 +1,4 @@
 using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
@@ -25,6 +24,9 @@ public record ProjectRoleGridRowViewModel(
     GroupsCellViewModel? Groups,
     IReadOnlyList<string> FieldValues);
 
-public record PlayerCellViewModel(CharacterType CharacterType, UserContacts? Contacts, UserLinkViewModel? Link = null);
+public record PlayerCellViewModel(
+    CharacterApplyViewModel ApplyStatus,
+    UserContacts? Contacts,
+    UserLinkViewModel? Link = null);
 
 public record GroupsCellViewModel(IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups);

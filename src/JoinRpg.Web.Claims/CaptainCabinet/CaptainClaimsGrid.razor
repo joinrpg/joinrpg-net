@@ -39,7 +39,7 @@
                     &nbsp;
                 </td>
                 <td>
-                    <CharacterBusyStatusBadge CharacterBusyStatus="item.Character.BusyStatus" SlotCount="item.Character.SlotCount" />
+                    <CharacterBusyStatusBadge CharacterBusyStatus="item.Character.ApplyStatus.BusyStatus" SlotCount="item.Character.ApplyStatus.SlotCount" />
                 </td>
                 <td>
                     &nbsp;
@@ -59,7 +59,7 @@
                     @if (first)
                     {
                         first = false;
-                            var rowspan = item.Claims.Length + (item.Character.IsSlot ? 1 : 0);
+                            var rowspan = item.Claims.Length + (item.Character.ApplyStatus.IsSlot ? 1 : 0);
                             <td rowspan="@rowspan">
                                 <CharacterLink Model="item.Character.Name" />
                         </td>
@@ -87,7 +87,7 @@
                     </td>
                 </tr>
             }
-            @if (item.Character.IsSlot)
+            @if (item.Character.ApplyStatus.IsSlot)
                 {
                     <tr>
 
@@ -95,7 +95,7 @@
                           &nbsp;
                       </td>
                       <td>
-                          <CharacterBusyStatusBadge CharacterBusyStatus="item.Character.BusyStatus" SlotCount="item.Character.SlotCount" />
+                          <CharacterBusyStatusBadge CharacterBusyStatus="item.Character.ApplyStatus.BusyStatus" SlotCount="item.Character.ApplyStatus.SlotCount" />
                       </td>
                       <td>
                           &nbsp;
@@ -123,7 +123,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.BusyStatus).ToList();
+        claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.ApplyStatus.BusyStatus).ToList();
         await base.OnInitializedAsync();
     }
 
@@ -134,7 +134,7 @@
             StatusFilter = args;
             claimListItems = null;
             StateHasChanged();
-            claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.BusyStatus).ToList();
+            claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.ApplyStatus.BusyStatus).ToList();
         }
     }
 }

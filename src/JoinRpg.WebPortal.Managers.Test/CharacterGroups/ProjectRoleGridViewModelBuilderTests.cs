@@ -4,6 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.CharacterGroups;
 using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 
@@ -52,7 +53,7 @@ public class ProjectRoleGridViewModelBuilderTests
 
         var row = result.Rows.ShouldHaveSingleItem();
         row.Player.ShouldNotBeNull();
-        row.Player.CharacterType.ShouldBe(CharacterType.Player);
+        row.Player.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Vacancy);
         row.Player.Link.ShouldBeNull();
         row.Player.Contacts.ShouldBeNull();
     }
@@ -66,7 +67,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var result = ProjectRoleGridViewModelBuilder.Build(
             Config(contacts: ProjectRolesListVisibilityMode.All), null, canEditSettings: false, [character], _mock.ProjectInfo);
 
-        result.Rows.ShouldHaveSingleItem().Player!.CharacterType.ShouldBe(CharacterType.NonPlayer);
+        result.Rows.ShouldHaveSingleItem().Player!.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Npc);
     }
 
     [Fact]
@@ -199,6 +200,66 @@ public class ProjectRoleGridViewModelBuilderTests
 
         result.CanEditSettings.ShouldBeTrue();
         result.RolesListId.ShouldBe(Config().ProjectRolesListId);
+    }
+
+    [Fact]
+    public void Build_PlayerCharacter_IsAvailable()
+    {
+        var character = _mock.CreateCharacter("Вася");
+
+        var result = ProjectRoleGridViewModelBuilder.Build(Config(), null, canEditSettings: false, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Player!.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Vacancy);
+    }
+
+    [Fact]
+    public void Build_Npc_IsNotAvailable()
+    {
+        var character = _mock.CreateCharacter("Страж");
+        character.CharacterType = CharacterType.NonPlayer;
+
+        var result = ProjectRoleGridViewModelBuilder.Build(Config(), null, canEditSettings: false, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Player!.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Npc);
+    }
+
+    [Fact]
+    public void Build_HotCharacter_IsHotInApplyStatus()
+    {
+        var character = _mock.CreateCharacter("Горячий");
+        character.IsHot = true;
+
+        var result = ProjectRoleGridViewModelBuilder.Build(Config(), null, canEditSettings: false, [character], _mock.ProjectInfo);
+
+        var row = result.Rows.ShouldHaveSingleItem();
+        row.Player!.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.HotVacancy);
+        row.Player.ApplyStatus.IsHot.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_SlotCharacter_SlotCountInApplyStatus()
+    {
+        var character = _mock.CreateCharacter("Шаблон");
+        character.CharacterType = CharacterType.Slot;
+        character.CharacterSlotLimit = 5;
+
+        var result = ProjectRoleGridViewModelBuilder.Build(Config(), null, canEditSettings: false, [character], _mock.ProjectInfo);
+
+        var row = result.Rows.ShouldHaveSingleItem();
+        row.Player!.ApplyStatus.SlotCount.ShouldBe(5);
+        row.Player.ApplyStatus.IsSlot.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_ExhaustedSlot_SlotCountIsZero()
+    {
+        var character = _mock.CreateCharacter("Шаблон");
+        character.CharacterType = CharacterType.Slot;
+        character.CharacterSlotLimit = 0;
+
+        var result = ProjectRoleGridViewModelBuilder.Build(Config(), null, canEditSettings: false, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Player!.ApplyStatus.SlotCount.ShouldBe(0);
     }
 
     [Fact]

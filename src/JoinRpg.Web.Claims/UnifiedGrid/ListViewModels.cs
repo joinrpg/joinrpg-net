@@ -43,11 +43,8 @@ public record class UgItemForCaptainViewModel(
 
 public record class UgCharacterForCaptainViewModel(
     [property: Display(Name = "Персонаж")] CharacterLinkSlimViewModel Name,
-    CharacterBusyStatusView BusyStatus,
-    int? SlotCount,
-    IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups,
-    bool IsHot,
-    bool IsSlot);
+    CharacterApplyViewModel ApplyStatus,
+    IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups);
 
 public record class UgClaimForCaptainViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,
