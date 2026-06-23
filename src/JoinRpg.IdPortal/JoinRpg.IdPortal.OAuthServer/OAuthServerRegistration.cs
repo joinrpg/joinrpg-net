@@ -106,6 +106,7 @@ public static class OAuthServerRegistration
                 });
 
         builder.Services.AddHostedService<OAuthRegistrator>();
+        builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 
         builder.Services.AddAuthorization(options =>
         {

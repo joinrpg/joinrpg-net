@@ -1,3 +1,4 @@
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -8,15 +9,16 @@ public class CharacterViewModel :
 {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
-    public string CharacterName { get; set; }
+    public required string CharacterName { get; set; }
 
     public bool IsFirstCopy { get; set; }
 
-    public bool IsAvailable { get; set; }
+    public required CharacterApplyViewModel ApplyStatus { get; init; }
 
-    public int? SlotLimit { get; set; }
+    public bool IsAvailable => ApplyStatus.BusyStatus is CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy
+        || (ApplyStatus.IsSlot && ApplyStatus.SlotCount is > 0);
 
-    public JoinHtmlString Description { get; set; }
+    public required JoinHtmlString Description { get; set; }
 
     public bool IsPublic { get; set; }
 
@@ -30,8 +32,6 @@ public class CharacterViewModel :
 
     public int ParentCharacterGroupId { get; set; }
     public int RootGroupId { get; set; }
-
-    public bool IsHot { get; set; }
 
     public bool HasEditRolesAccess { get; set; }
 

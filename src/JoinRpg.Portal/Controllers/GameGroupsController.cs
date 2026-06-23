@@ -112,7 +112,7 @@ public class GameGroupsController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(field.GetId().ProjectId);
         return CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo)
           .SelectMany(
-            g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
+            g => g.PublicCharacters.Where(ch => ch.ApplyStatus.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
     [HttpGet("~/{projectId}/roles/{characterGroupId}/indexjson")]

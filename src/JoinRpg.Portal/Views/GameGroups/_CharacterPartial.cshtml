@@ -17,34 +17,10 @@
         @CountHelper.DisplayCount(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
     }
 
-    @if (Model.IsAvailable)
-    {
-        <text>&nbsp;</text>
-        <a asp-controller="Claim" asp-action="AddForCharacter" asp-route-projectid="@Model.ProjectId" asp-route-characterId="@Model.CharacterId" class="btn btn-default btn-xs">
-          заявиться
-          @if (Model.SlotLimit is not null && Model.SlotLimit > 1)
-          {
-                <text>&nbsp; (@CountHelper.DisplayCount(Model.SlotLimit.Value, "место", "места", "мест"))</text>
-          }
-        </a>
-        if (Model.IsHot)
-        {
-            <span class="label label-warning">Горячая роль</span>
-        }
-    }
-    else
-    {
-        if (Model.SlotLimit is not null && Model.SlotLimit > 1)
-          {
-            if (Model.SlotLimit == 0)
-            {
-              <text>мест нет</text>
-            }
-            else {
-                <text>&nbsp; (@CountHelper.DisplayCount(Model.SlotLimit.Value, "место", "места", "мест"))</text>
-            }
-          }
-    }
+    <text>&nbsp;</text>
+    <component type="typeof(JoinRpg.Web.ProjectCommon.Characters.ApplyForCharacterButton)"
+               render-mode="Static"
+               param-Model="@Model.ApplyStatus" />
 
     @if (Model.HasEditRolesAccess)
     {

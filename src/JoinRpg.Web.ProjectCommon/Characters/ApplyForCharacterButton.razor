@@ -1,0 +1,38 @@
+@inject ICharacterUriLocator UriLocator
+@using JoinRpg.Helpers
+@using JoinRpg.WebComponents
+
+@if (IsAvailable)
+{
+    <JoinButton Link="@UriLocator.GetAddClaimUri(Model.CharacterId).ToString()"
+                Preset="ButtonPreset.Claim"
+                Label="@ButtonLabel"
+                Size="SizeStyleEnum.ExtraSmall" />
+    @if (Model.IsHot)
+    {
+        <HotRoleBadge />
+    }
+}
+else if (Model.IsSlot)
+{
+    @if (Model.SlotCount == 0)
+    {
+        <text>мест нет</text>
+    }
+    else if (Model.SlotCount > 0)
+    {
+        <text>(@CountHelper.DisplayCount(Model.SlotCount.Value, "место", "места", "мест"))</text>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public CharacterApplyViewModel Model { get; set; } = default!;
+
+    private bool IsAvailable => Model.BusyStatus is CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy
+        || (Model.IsSlot && Model.SlotCount is > 0);
+
+    private string ButtonLabel => Model.SlotCount is > 1
+        ? $"заявиться ({CountHelper.DisplayCount(Model.SlotCount.Value, "место", "места", "мест")})"
+        : "заявиться";
+}

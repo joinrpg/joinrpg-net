@@ -2,7 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.Web.Claims;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
 

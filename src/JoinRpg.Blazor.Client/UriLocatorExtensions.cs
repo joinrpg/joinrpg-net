@@ -7,11 +7,15 @@ public static class UriLocatorExtensions
 {
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
-        IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>
+        IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
+        ICharacterUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
         public Uri GetUri(CharacterIdentification target) => new Uri($"/{target.ProjectId.Value}/character/{target.CharacterId}/details", UriKind.Relative);
+
+        Uri ICharacterUriLocator.GetDetailsUri(CharacterIdentification characterId) => GetUri(characterId);
+        Uri ICharacterUriLocator.GetAddClaimUri(CharacterIdentification characterId) => new Uri($"/{characterId.ProjectId.Value}/character/{characterId.CharacterId}/apply", UriKind.Relative);
 
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
         {
@@ -40,6 +44,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IUriLocator<CharacterGroupLinkSlimViewModel>>(locator)
             .AddSingleton<IUriLocator<ClaimIdentification>>(locator)
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
+            .AddSingleton<ICharacterUriLocator>(locator)
             ;
     }
 }

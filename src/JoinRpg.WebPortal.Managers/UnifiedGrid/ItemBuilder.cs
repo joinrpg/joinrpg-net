@@ -27,11 +27,13 @@ public static class ItemBuilder
         var character = new UgCharacterForCaptainViewModel(
            new CharacterLinkSlimViewModel(
                ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.CharacterTypeInfo.IsPublic, accessArguments.CanViewCharacterName)),
-           ugItem.GetBusyStatus(),
-           ugItem.CharacterTypeInfo.SlotLimit,
-           [], // TODO,
-           ugItem.CharacterTypeInfo.IsHot,
-           ugItem.CharacterTypeInfo.CharacterType == CharacterType.Slot
+           new CharacterApplyViewModel(
+               ugItem.CharacterId,
+               ugItem.GetBusyStatus(),
+               ugItem.CharacterTypeInfo.SlotLimit,
+               ugItem.CharacterTypeInfo.IsHot,
+               ugItem.CharacterTypeInfo.CharacterType == CharacterType.Slot),
+           [] // TODO
            );
 
         return new UgItemForCaptainViewModel(
