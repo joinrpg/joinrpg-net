@@ -2,6 +2,9 @@
   <PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="JoinRpg.Common.KogdaIgraClient.Test" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>

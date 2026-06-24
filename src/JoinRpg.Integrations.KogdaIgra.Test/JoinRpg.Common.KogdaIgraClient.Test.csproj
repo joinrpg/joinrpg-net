@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
+    <ProjectReference Include="..\JoinRpg.Integrations.KogdaIgra\JoinRpg.Integrations.KogdaIgra.csproj" />
   </ItemGroup>
 </Project>
