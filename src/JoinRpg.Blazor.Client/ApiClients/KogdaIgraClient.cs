@@ -57,6 +57,33 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         }
     }
 
+    public async Task<ResyncOperationResultsViewModel> ForceResyncGames(KogdaIgraIdentification[] gameIds)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync("webapi/kogdaigra/ForceResync", gameIds);
+            return await response
+                .EnsureSuccessStatusCode()
+                .Content
+                .ReadFromJsonAsync<ResyncOperationResultsViewModel>()
+                ?? throw new Exception("Empty");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during force resync");
+            try
+            {
+                var status = await GetSyncStatus();
+                return new ResyncOperationResultsViewModel(false, e.Message, status);
+            }
+            catch
+            {
+                return new ResyncOperationResultsViewModel(false, e.Message, new SyncStatusViewModel(0, DateTimeOffset.UnixEpoch, 0));
+            }
+        }
+    }
+
     public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
 
     {

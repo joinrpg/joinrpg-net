@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -65,6 +66,7 @@ public class SyncKogdaIgraJobTests
 
         public int PerformSyncCallCount { get; private set; }
 
+        public Task<SyncStatus> ForceResyncGames(KogdaIgraIdentification[] gameIds) => throw new NotImplementedException();
         public Task<SyncStatus> GetSyncStatus() => Task.FromResult(InitialStatus);
 
         public Task<SyncStatus> PerformSync()

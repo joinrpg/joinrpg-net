@@ -4,6 +4,7 @@ public interface IKogdaIgraSyncService
 {
     Task<SyncStatus> PerformSync();
     Task<SyncStatus> GetSyncStatus();
+    Task<SyncStatus> ForceResyncGames(KogdaIgraIdentification[] gameIds);
 }
 
 public interface IKogdaIgraBindService
