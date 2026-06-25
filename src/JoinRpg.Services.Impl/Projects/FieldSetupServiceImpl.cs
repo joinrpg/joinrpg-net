@@ -19,31 +19,31 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             request,
-            (project, projectInfo, req) =>
+            ctx =>
             {
-                if (project.GetTimeSlotFieldOrDefault() != null && req.FieldType == ProjectFieldType.ScheduleTimeSlotField)
+                if (ctx.Project.GetTimeSlotFieldOrDefault() != null && ctx.Request.FieldType == ProjectFieldType.ScheduleTimeSlotField)
                 {
-                    throw new JoinFieldScheduleShouldBeUniqueException(project);
+                    throw new JoinFieldScheduleShouldBeUniqueException(ctx.Project);
                 }
 
-                if (project.GetRoomFieldOrDefault() != null && req.FieldType == ProjectFieldType.ScheduleRoomField)
+                if (ctx.Project.GetRoomFieldOrDefault() != null && ctx.Request.FieldType == ProjectFieldType.ScheduleRoomField)
                 {
-                    throw new JoinFieldScheduleShouldBeUniqueException(project);
+                    throw new JoinFieldScheduleShouldBeUniqueException(ctx.Project);
                 }
 
                 var field = new ProjectField
                 {
-                    ProjectId = req.ProjectId,
-                    Project = project,
-                    FieldType = req.FieldType,
-                    FieldBoundTo = req.FieldBoundTo,
+                    ProjectId = ctx.Request.ProjectId,
+                    Project = ctx.Project,
+                    FieldType = ctx.Request.FieldType,
+                    FieldBoundTo = ctx.Request.FieldBoundTo,
                 };
 
-                SetFieldPropertiesFromRequest(req, field, projectInfo);
+                SetFieldPropertiesFromRequest(ctx.Request, field, ctx.ProjectInfo);
 
-                project.ProjectFields.Add(field);
+                ctx.Project.ProjectFields.Add(field);
 
-                SetScheduleStatusBasedOnFields(project);
+                SetScheduleStatusBasedOnFields(ctx.Project);
 
                 return field;
             });
@@ -59,20 +59,20 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             request,
-            (project, projectInfo, req) =>
+            ctx =>
             {
-                var field = GetField(project, req.ProjectFieldId.ProjectFieldId);
+                var field = GetField(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId);
 
                 // If we are changing field.CanPlayerEdit, we should update variants to match
-                if (field.CanPlayerEdit != req.CanPlayerEdit)
+                if (field.CanPlayerEdit != ctx.Request.CanPlayerEdit)
                 {
                     foreach (var variant in field.DropdownValues)
                     {
-                        variant.PlayerSelectable = req.CanPlayerEdit;
+                        variant.PlayerSelectable = ctx.Request.CanPlayerEdit;
                     }
                 }
 
-                SetFieldPropertiesFromRequest(req, field, projectInfo);
+                SetFieldPropertiesFromRequest(ctx.Request, field, ctx.ProjectInfo);
             });
     }
 
@@ -83,9 +83,9 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             projectFieldId,
-            (project, projectInfo, fieldId) =>
+            ctx =>
             {
-                var field = GetField(project, fieldId);
+                var field = GetField(ctx.Project, ctx.Request);
 
                 if (field.IsName())
                 {
@@ -94,7 +94,7 @@ internal class FieldSetupServiceImpl(
 
                 if (field.IsDescription())
                 {
-                    project.Details.CharacterDescription = null;
+                    ctx.Project.Details.CharacterDescription = null;
                 }
 
                 foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
@@ -112,7 +112,7 @@ internal class FieldSetupServiceImpl(
                     characterGroup.IsActive = false;
                 }
 
-                SetScheduleStatusBasedOnFields(project);
+                SetScheduleStatusBasedOnFields(ctx.Project);
             });
     }
 
@@ -123,10 +123,10 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             request,
-            (project, _, req) =>
+            ctx =>
             {
-                var field = GetField(project, req.ProjectFieldId.ProjectFieldId);
-                return CreateFieldValueVariantImpl(req, field);
+                var field = GetField(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId);
+                return CreateFieldValueVariantImpl(ctx.Request, field);
             });
 
         return new ProjectFieldVariantIdentification(request.ProjectFieldId, variant.ProjectFieldDropdownValueId);
@@ -139,10 +139,10 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             request,
-            (project, _, req) =>
+            ctx =>
             {
-                var variant = GetFieldValue(project, req.ProjectFieldId.ProjectFieldId, req.ProjectFieldDropdownValueId);
-                SetFieldVariantPropsFromRequest(req, variant);
+                var variant = GetFieldValue(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId, ctx.Request.ProjectFieldDropdownValueId);
+                SetFieldVariantPropsFromRequest(ctx.Request, variant);
             });
     }
 
@@ -153,9 +153,9 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             (projectFieldId, valueId),
-            (project, _, args) =>
+            ctx =>
             {
-                var value = GetFieldValue(project, args.projectFieldId, args.valueId);
+                var value = GetFieldValue(ctx.Project, ctx.Request.projectFieldId, ctx.Request.valueId);
                 DeleteFieldVariantValueImpl(value);
                 return value;
             });
@@ -168,11 +168,11 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             (projectcharacterfieldid, direction),
-            (project, _, args) =>
+            ctx =>
             {
-                var field = GetField(project, args.projectcharacterfieldid);
-                project.Details.FieldsOrdering
-                    = project.GetFieldsContainer().Move(field, args.direction).GetStoredOrder();
+                var field = GetField(ctx.Project, ctx.Request.projectcharacterfieldid);
+                ctx.Project.Details.FieldsOrdering
+                    = ctx.Project.GetFieldsContainer().Move(field, ctx.Request.direction).GetStoredOrder();
             });
     }
 
@@ -183,12 +183,12 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             (projectFieldId, projectFieldVariantId, direction),
-            (project, _, args) =>
+            ctx =>
             {
-                var field = GetField(project, args.projectFieldId);
+                var field = GetField(ctx.Project, ctx.Request.projectFieldId);
                 field.ValuesOrdering =
                     field.GetFieldValuesContainer()
-                        .Move(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == args.projectFieldVariantId), args.direction)
+                        .Move(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == ctx.Request.projectFieldVariantId), ctx.Request.direction)
                         .GetStoredOrder();
             });
     }
@@ -200,14 +200,14 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             (projectFieldId, valuesToAdd),
-            (project, _, args) =>
+            ctx =>
             {
-                var field = GetField(project, args.projectFieldId.ProjectFieldId);
+                var field = GetField(ctx.Project, ctx.Request.projectFieldId.ProjectFieldId);
 
-                foreach (var label in args.valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
+                foreach (var label in ctx.Request.valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
                 {
                     CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(
-                            args.projectFieldId,
+                            ctx.Request.projectFieldId,
                             label,
                             null,
                             null,
@@ -227,15 +227,15 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             (projectFieldId, afterFieldId),
-            (project, _, args) =>
+            ctx =>
             {
-                var field = GetField(project, args.projectFieldId);
-                var afterField = args.afterFieldId == null
+                var field = GetField(ctx.Project, ctx.Request.projectFieldId);
+                var afterField = ctx.Request.afterFieldId == null
                     ? null
-                    : GetField(project, (int)args.afterFieldId);
+                    : GetField(ctx.Project, (int)ctx.Request.afterFieldId);
 
-                project.Details.FieldsOrdering
-                    = project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
+                ctx.Project.Details.FieldsOrdering
+                    = ctx.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
             });
     }
 
@@ -246,10 +246,10 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             request,
-            (project, _, req) =>
+            ctx =>
             {
-                project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == req.NameField?.ProjectFieldId);
-                project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == req.DescriptionField?.ProjectFieldId);
+                ctx.Project.Details.CharacterNameField = ctx.Project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == ctx.Request.NameField?.ProjectFieldId);
+                ctx.Project.Details.CharacterDescription = ctx.Project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == ctx.Request.DescriptionField?.ProjectFieldId);
             });
     }
 
@@ -260,9 +260,9 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             projectFieldId,
-            (project, _, fieldId) =>
+            ctx =>
             {
-                var field = GetField(project, fieldId);
+                var field = GetField(ctx.Project, ctx.Request);
                 var container = field.GetFieldValuesContainer();
                 container.SortBy(x => x.Label);
                 field.ValuesOrdering = container.GetStoredOrder();

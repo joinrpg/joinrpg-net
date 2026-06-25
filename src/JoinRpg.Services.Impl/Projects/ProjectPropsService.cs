@@ -17,7 +17,7 @@ internal class ProjectPropsService(
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Action<Project, ProjectInfo, TArgs> action,
+        Action<ProjectOperationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
         => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
             AsFunc(action), operationName);
@@ -27,15 +27,15 @@ internal class ProjectPropsService(
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<Project, ProjectInfo, TArgs, TResult> action,
+        Func<ProjectOperationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "")
         => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
             action, operationName);
 
-    private static Func<Project, ProjectInfo, TArgs, bool> AsFunc<TArgs>(Action<Project, ProjectInfo, TArgs> action)
-        => (project, projectInfo, args) =>
+    private static Func<ProjectOperationContext<TArgs>, bool> AsFunc<TArgs>(Action<ProjectOperationContext<TArgs>> action)
+        => ctx =>
         {
-            action(project, projectInfo, args);
+            action(ctx);
             return true;
         };
 
@@ -44,7 +44,7 @@ internal class ProjectPropsService(
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<Project, ProjectInfo, TArgs, TResult> action,
+        Func<ProjectOperationContext<TArgs>, TResult> action,
         string operationName)
     {
         try
@@ -65,7 +65,8 @@ internal class ProjectPropsService(
                 _ = handle.ProjectInfo.EnsureProjectActive();
             }
 
-            var result = action(handle.Project, handle.ProjectInfo, arguments);
+            var ctx = new ProjectOperationContext<TArgs>(handle.Project, handle.ProjectInfo, Now, currentUserAccessor, arguments);
+            var result = action(ctx);
 
             await UnitOfWork.SaveChangesAsync();
 

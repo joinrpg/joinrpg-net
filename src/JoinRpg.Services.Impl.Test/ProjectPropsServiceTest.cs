@@ -38,7 +38,7 @@ public class ProjectPropsServiceTest
             Permission.CanChangeProjectProperties,
             ProjectActiveRequirement.AllowInactive,
             true,
-            (project, _, enabled) => project.Details.EnableAccommodation = enabled);
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 
         // Мутация применена к EF-сущности
         mock.Project.Details.EnableAccommodation.ShouldBeTrue();
@@ -59,9 +59,9 @@ public class ProjectPropsServiceTest
             Permission.CanChangeProjectProperties,
             ProjectActiveRequirement.AllowInactive,
             true,
-            (project, _, enabled) =>
+            ctx =>
             {
-                project.Details.EnableAccommodation = enabled;
+                ctx.Project.Details.EnableAccommodation = ctx.Request;
                 return 42;
             });
 
@@ -79,7 +79,7 @@ public class ProjectPropsServiceTest
             Permission.CanChangeProjectProperties,
             ProjectActiveRequirement.AllowInactive,
             true,
-            (project, _, enabled) => project.Details.EnableAccommodation = enabled));
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
@@ -95,7 +95,7 @@ public class ProjectPropsServiceTest
             Permission.CanChangeProjectProperties,
             ProjectActiveRequirement.AllowInactive,
             true,
-            (project, _, enabled) => project.Details.EnableAccommodation = enabled);
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 
         mock.Project.Details.EnableAccommodation.ShouldBeTrue();
     }
@@ -112,7 +112,7 @@ public class ProjectPropsServiceTest
             Permission.CanChangeProjectProperties,
             ProjectActiveRequirement.MustBeActive,
             true,
-            (project, _, enabled) => project.Details.EnableAccommodation = enabled));
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
@@ -129,7 +129,7 @@ public class ProjectPropsServiceTest
             Permission.CanChangeProjectProperties,
             ProjectActiveRequirement.AllowInactive,
             true,
-            (project, _, enabled) => project.Details.EnableAccommodation = enabled);
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 
         mock.Project.Details.EnableAccommodation.ShouldBeTrue();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
