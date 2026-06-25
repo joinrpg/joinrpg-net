@@ -16,11 +16,18 @@ public static class CharacterExtensions
                 (true, false) => CharacterVisibility.Public,
                 (true, true) => CharacterVisibility.PlayerHidden,
             };
-        return new(
-            character.CharacterType,
-            character.IsHot,
-            character.CharacterSlotLimit,
-            slotName,
-            charVisibility);
+        try
+        {
+            return new(
+                character.CharacterType,
+                character.IsHot,
+                character.CharacterSlotLimit,
+                slotName,
+                charVisibility);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException($"{ex.Message}, CharacterId={character.CharacterId}", ex.ParamName, ex);
+        }
     }
 }
