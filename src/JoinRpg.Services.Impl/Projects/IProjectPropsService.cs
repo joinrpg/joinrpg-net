@@ -39,7 +39,7 @@ internal interface IProjectPropsService
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Action<Project, ProjectInfo, TArgs> action,
+        Action<ProjectOperationContext<TArgs>> action,
         [CallerMemberName] string operationName = "");
 
     /// <summary>
@@ -58,6 +58,8 @@ internal interface IProjectPropsService
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<Project, ProjectInfo, TArgs, TResult> action,
+        Func<ProjectOperationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "");
 }
+
+record ProjectOperationContext<TArgs>(Project Project, ProjectInfo ProjectInfo, DateTimeOffset Now, ICurrentUserAccessor CurrentUser, TArgs Request);

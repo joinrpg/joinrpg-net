@@ -48,11 +48,11 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             publishPlot,
-            (project, _, publish) =>
+            ctx =>
             {
-                project.Active = false;
-                project.IsAcceptingClaims = false;
-                project.Details.PublishPlot = publish;
+                ctx.Project.Active = false;
+                ctx.Project.IsAcceptingClaims = false;
+                ctx.Project.Details.PublishPlot = ctx.Request;
             });
 
         // Нотификация — ответственность вызывающего, после успешного сохранения (см. adr009).
@@ -69,11 +69,11 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             lastActiveDate,
-            (project, _, _) =>
+            ctx =>
             {
-                project.Active = false;
-                project.IsAcceptingClaims = false;
-                project.Details.PublishPlot = false;
+                ctx.Project.Active = false;
+                ctx.Project.IsAcceptingClaims = false;
+                ctx.Project.Details.PublishPlot = false;
             });
 
         await masterEmailService.EmailProjectClosedStale(new ProjectClosedStaleMail()
@@ -90,11 +90,11 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(request.ProjectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             request,
-            (project, _, req) =>
+            ctx =>
             {
-                project.Details.ClaimApplyRules = new MarkdownDbValue(req.ClaimApplyRules);
-                project.Details.ProjectAnnounce = new MarkdownDbValue(req.ProjectAnnounce);
-                project.ProjectName = Required(req.ProjectName);
+                ctx.Project.Details.ClaimApplyRules = new MarkdownDbValue(ctx.Request.ClaimApplyRules);
+                ctx.Project.Details.ProjectAnnounce = new MarkdownDbValue(ctx.Request.ProjectAnnounce);
+                ctx.Project.ProjectName = Required(ctx.Request.ProjectName);
             });
     }
 
@@ -103,7 +103,7 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             enableAccommodation,
-            (project, _, enabled) => project.Details.EnableAccommodation = enabled);
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
     }
 
     async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
@@ -111,10 +111,10 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowInactive,
             (cloneSettings, publishEnabled),
-            (project, _, args) =>
+            ctx =>
             {
-                project.Details.PublishPlot = args.publishEnabled && !project.Active;
-                project.Details.ProjectCloneSettings = args.cloneSettings;
+                ctx.Project.Details.PublishPlot = ctx.Request.publishEnabled && !ctx.Project.Active;
+                ctx.Project.Details.ProjectCloneSettings = ctx.Request.cloneSettings;
             });
     }
 
@@ -126,11 +126,11 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             (checkInProgress, enableCheckInModule, modelAllowSecondRoles),
-            (project, _, args) =>
+            ctx =>
             {
-                project.Details.CheckInProgress = args.checkInProgress && args.enableCheckInModule;
-                project.Details.EnableCheckInModule = args.enableCheckInModule;
-                project.Details.AllowSecondRoles = args.modelAllowSecondRoles && args.enableCheckInModule;
+                ctx.Project.Details.CheckInProgress = ctx.Request.checkInProgress && ctx.Request.enableCheckInModule;
+                ctx.Project.Details.EnableCheckInModule = ctx.Request.enableCheckInModule;
+                ctx.Project.Details.AllowSecondRoles = ctx.Request.modelAllowSecondRoles && ctx.Request.enableCheckInModule;
             });
     }
 
@@ -139,14 +139,14 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             settings,
-            (project, _, s) =>
+            ctx =>
             {
-                project.Details.RequireRealName = s.RequireRealName;
-                project.Details.RequirePhone = s.RequirePhone;
-                project.Details.RequireVkontakte = s.RequireVkontakte;
-                project.Details.RequireTelegram = s.RequireTelegram;
-                project.Details.RequirePassport = s.RequirePassport;
-                project.Details.RequireRegistrationAddress = s.RequireRegistrationAddress;
+                ctx.Project.Details.RequireRealName = ctx.Request.RequireRealName;
+                ctx.Project.Details.RequirePhone = ctx.Request.RequirePhone;
+                ctx.Project.Details.RequireVkontakte = ctx.Request.RequireVkontakte;
+                ctx.Project.Details.RequireTelegram = ctx.Request.RequireTelegram;
+                ctx.Project.Details.RequirePassport = ctx.Request.RequirePassport;
+                ctx.Project.Details.RequireRegistrationAddress = ctx.Request.RequireRegistrationAddress;
             });
     }
 
@@ -155,13 +155,13 @@ internal class ProjectService(
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
             settings,
-            (project, _, s) =>
+            ctx =>
             {
-                project.Details.EnableManyCharacters = !s.StrictlyOneCharacter;
-                project.Details.IsPublicProject = s.IsPublicProject;
-                project.IsAcceptingClaims = s.IsAcceptingClaims && project.Active;
-                project.Details.AutoAcceptClaims = s.AutoAcceptClaims;
-                project.Details.DefaultTemplateCharacterId = s.DefaultTemplate?.CharacterId;
+                ctx.Project.Details.EnableManyCharacters = !ctx.Request.StrictlyOneCharacter;
+                ctx.Project.Details.IsPublicProject = ctx.Request.IsPublicProject;
+                ctx.Project.IsAcceptingClaims = ctx.Request.IsAcceptingClaims && ctx.Project.Active;
+                ctx.Project.Details.AutoAcceptClaims = ctx.Request.AutoAcceptClaims;
+                ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.DefaultTemplate?.CharacterId;
             });
     }
 }
