@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using System.Diagnostics;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
@@ -16,6 +17,8 @@ internal class KogdaIgraSyncService(
     ICurrentUserAccessor currentUserAccessor)
     : IKogdaIgraSyncService, IKogdaIgraBindService
 {
+    private readonly ActivitySource activitySource = new(nameof(KogdaIgraSyncService));
+
     public async Task<SyncStatus> GetSyncStatus()
     {
         if (!currentUserAccessor.IsAdmin)
@@ -42,6 +45,9 @@ internal class KogdaIgraSyncService(
         var elementsToUpdate = await unitOfWork.GetKogdaIgraRepository().GetNotUpdatedObjects();
         foreach (var item in elementsToUpdate)
         {
+            using var activity = activitySource.StartActivity($"sync game {item.KogdaIgraGameId}");
+            activity?.AddTag("kogdaIgraGameId", item.KogdaIgraGameId);
+            using var scope = logger.BeginScope(new { KogdaIgraGameId = item.KogdaIgraGameId });
             try
             {
                 var kiData = await apiClient.GetGameInfo(item.KogdaIgraGameId);
