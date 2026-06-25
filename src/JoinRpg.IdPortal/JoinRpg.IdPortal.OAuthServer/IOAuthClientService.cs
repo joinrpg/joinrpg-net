@@ -25,4 +25,12 @@ public interface IOAuthClientService
     /// <param name="redirectUris">Allowed redirect URIs.</param>
     /// <param name="ct">Cancellation token.</param>
     Task CreateOrUpdateClientAsync(string clientId, string clientSecret, string? displayName, IReadOnlyList<Uri> redirectUris, CancellationToken ct = default);
+
+    /// <summary>
+    /// Deletes an OAuth client by its unique client identifier.
+    /// </summary>
+    /// <param name="clientId">Unique client identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the client is not found.</exception>
+    Task DeleteClientAsync(string clientId, CancellationToken ct = default);
 }

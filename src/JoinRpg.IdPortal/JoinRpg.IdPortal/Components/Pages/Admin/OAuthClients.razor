@@ -1,6 +1,10 @@
 @page "/admin/oauthclients"
 @using OpenIddict.Abstractions
+@using JoinRpg.IdPortal.OAuthServer
 @inject IOpenIddictApplicationManager OpenIddictApplicationManager
+@inject IOAuthClientService OAuthClientService
+
+@rendermode InteractiveServer
 
 <PageTitle>OAuth-клиенты — id.joinrpg.ru</PageTitle>
 
@@ -26,6 +30,7 @@
                     <th>Тип</th>
                     <th>Разрешения</th>
                     <th>Redirect URIs</th>
+                    <th>Действия</th>
                 </tr>
             </HeadContent>
             <ItemTemplate>
@@ -41,6 +46,12 @@
                                 <li><a href="@redirectUri">@redirectUri</a></li>
                             }
                         </ul>
+                    </td>
+                    <td>
+                        <JoinButton Preset="ButtonPreset.Delete"
+                                   AutoConfirm="true"
+                                   AutoConfirmMessage="@($"Вы уверены, что хотите удалить OAuth-клиента «{client.DisplayName}»?")"
+                                   OnClick="() => DeleteClient(client)" />
                     </td>
                 </tr>
             </ItemTemplate>
@@ -75,6 +86,12 @@
         }
 
         clients = list;
+    }
+
+    private async Task DeleteClient(OAuthClientInfo client)
+    {
+        await OAuthClientService.DeleteClientAsync(client.ClientId);
+        clients?.Remove(client);
     }
 
     private sealed class OAuthClientInfo
