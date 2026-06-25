@@ -17,6 +17,8 @@ public interface IKogdaIgraSyncClient
     Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated();
 
     Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds);
+
+    Task<ResyncOperationResultsViewModel> ForceResyncGames(KogdaIgraIdentification[] gameIds);
 }
 
 public interface IKogdaIgraBindClient

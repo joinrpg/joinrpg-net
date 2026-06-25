@@ -1,0 +1,45 @@
+@inject IKogdaIgraSyncClient Client
+
+<JoinPanel>
+    <Header>Принудительное обновление игры</Header>
+    <Body>
+        <KogdaIgraGameSelector KogdaIgraIds="selectedIds" KogdaIgraIdsChanged="HandleSelectionChanged" />
+
+        @if (result is not null)
+        {
+            @if (result.OperationSuccessful)
+            {
+                <p>Успешно обновлено.</p>
+            }
+            else
+            {
+                <p>Ошибка обновления: @result.OperationStatusMessage</p>
+            }
+        }
+
+        <JoinButton Label="Принудительно обновить" OnClick="OnForceResyncClicked" Preset="ButtonPreset.Download" />
+    </Body>
+</JoinPanel>
+
+@code {
+    private KogdaIgraIdentification[] selectedIds = [];
+    private ResyncOperationResultsViewModel? result;
+
+    private void HandleSelectionChanged(KogdaIgraIdentification[] ids)
+    {
+        selectedIds = ids;
+        result = null;
+    }
+
+    private async Task OnForceResyncClicked(ButtonClickEventArgs args)
+    {
+        try
+        {
+            result = await Client.ForceResyncGames(selectedIds);
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+}

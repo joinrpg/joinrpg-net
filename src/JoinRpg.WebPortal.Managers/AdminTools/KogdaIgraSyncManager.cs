@@ -62,6 +62,21 @@ internal class KogdaIgraSyncManager(
         }
     }
 
+    public async Task<ResyncOperationResultsViewModel> ForceResyncGames(KogdaIgraIdentification[] gameIds)
+    {
+        try
+        {
+            var status = await kogdaIgraSyncService.ForceResyncGames(gameIds);
+            return new ResyncOperationResultsViewModel(true, "", status.ToViewModel());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error during force resync with kogda-igra");
+            var status = await kogdaIgraSyncService.GetSyncStatus();
+            return new ResyncOperationResultsViewModel(false, $"Error during sync: {ex.Message}", status.ToViewModel());
+        }
+    }
+
     public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
     {
         await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications, command.DisableKogdaIgraMapping);

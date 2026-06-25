@@ -45,36 +45,41 @@ internal class KogdaIgraSyncService(
         var elementsToUpdate = await unitOfWork.GetKogdaIgraRepository().GetNotUpdatedObjects();
         foreach (var item in elementsToUpdate)
         {
-            using var activity = activitySource.StartActivity($"sync game {item.KogdaIgraGameId}");
-            activity?.AddTag("kogdaIgraGameId", item.KogdaIgraGameId);
-            using var scope = logger.BeginScope(new { KogdaIgraGameId = item.KogdaIgraGameId });
-            try
-            {
-                var kiData = await apiClient.GetGameInfo(item.KogdaIgraGameId);
-                logger.LogInformation("Received game record from kogda-igra {kogdaIgraGameRecord}", kiData);
-
-                if (kiData is null)
-                {
-                    await DeleteItem(item.KogdaIgraGameId);
-                }
-                else
-                {
-                    await UpsertItem(kiData);
-                }
-            }
-            catch (KogdaIgraParseException e)
-            {
-                logger.LogError(e, "Ошибка при разборе ответа КогдаИгры, игра {kogdaIgraGameId}", item.KogdaIgraGameId);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Неожиданная ошибка при обновлении с КогдаИгры, игра {kogdaIgraGameId}", item.KogdaIgraGameId);
-            }
+            await SyncOneGame(new(item.KogdaIgraGameId));
         }
 
         status = await GetSyncStatus();
         logger.LogInformation("Sync status is {syncStatus}", status);
         return status;
+    }
+
+    private async Task SyncOneGame(KogdaIgraIdentification kogdaIgraGameId)
+    {
+        using var activity = activitySource.StartActivity($"sync game {kogdaIgraGameId}");
+        activity?.AddTag("kogdaIgraGameId", kogdaIgraGameId);
+        using var scope = logger.BeginScope(new { KogdaIgraGameId = kogdaIgraGameId });
+        try
+        {
+            var kiData = await apiClient.GetGameInfo(kogdaIgraGameId);
+            logger.LogInformation("Received game record from kogda-igra {kogdaIgraGameRecord}", kiData);
+
+            if (kiData is null)
+            {
+                await DeleteItem(kogdaIgraGameId);
+            }
+            else
+            {
+                await UpsertItem(kiData);
+            }
+        }
+        catch (KogdaIgraParseException e)
+        {
+            logger.LogError(e, "Ошибка при разборе ответа КогдаИгры, игра {kogdaIgraGameId}", kogdaIgraGameId);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Неожиданная ошибка при обновлении с КогдаИгры, игра {kogdaIgraGameId}", kogdaIgraGameId);
+        }
     }
 
     private async Task MarkUpdateRequested(KogdaIgraGameUpdateMarker[] updated)
@@ -132,6 +137,19 @@ internal class KogdaIgraSyncService(
 
         await unitOfWork.SaveChangesAsync();
         logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);
+    }
+
+    public async Task<SyncStatus> ForceResyncGames(KogdaIgraIdentification[] gameIds)
+    {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
+        foreach (var gameId in gameIds)
+        {
+            await SyncOneGame(gameId);
+        }
+        return await GetSyncStatus();
     }
 
     public async Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications, bool DisableKogdaIgraMapping)
