@@ -1,6 +1,8 @@
 @page "/admin/oauthclients"
 @using OpenIddict.Abstractions
+@using JoinRpg.IdPortal.OAuthServer
 @inject IOpenIddictApplicationManager OpenIddictApplicationManager
+@inject IOAuthClientService OAuthClientService
 
 @rendermode InteractiveServer
 
@@ -75,7 +77,6 @@
 
             list.Add(new OAuthClientInfo
             {
-                Application = client,
                 ClientId = clientId ?? "—",
                 DisplayName = displayName ?? "—",
                 ClientType = clientType ?? "—",
@@ -89,13 +90,12 @@
 
     private async Task DeleteClient(OAuthClientInfo client)
     {
-        await OpenIddictApplicationManager.DeleteAsync(client.Application);
+        await OAuthClientService.DeleteClientAsync(client.ClientId);
         clients?.Remove(client);
     }
 
     private sealed class OAuthClientInfo
     {
-        public required object Application { get; init; }
         public required string ClientId { get; init; }
         public required string DisplayName { get; init; }
         public required string ClientType { get; init; }

@@ -31,6 +31,13 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
         }
     }
 
+    public async Task DeleteClientAsync(string clientId, CancellationToken ct = default)
+    {
+        var application = await manager.FindByClientIdAsync(clientId, ct)
+            ?? throw new InvalidOperationException($"OAuth client with ClientId={clientId} not found.");
+        await manager.DeleteAsync(application, ct);
+    }
+
     private static OpenIddictApplicationDescriptor BuildDescriptor(string clientId, string clientSecret, string? displayName, IReadOnlyList<Uri> redirectUris)
     {
         var descriptor = new OpenIddictApplicationDescriptor
