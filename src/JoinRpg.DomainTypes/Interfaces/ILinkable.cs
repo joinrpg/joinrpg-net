@@ -1,4 +1,4 @@
-namespace JoinRpg.DomainTypes;
+namespace JoinRpg.DomainTypes.Interfaces;
 
 public interface ILinkable
 {

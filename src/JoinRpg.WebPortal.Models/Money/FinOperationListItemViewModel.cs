@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Services.Interfaces;

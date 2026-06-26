@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.Web.Models.Accommodation;
 
 public class AccomodationReportListItemViewModel : ILinkable

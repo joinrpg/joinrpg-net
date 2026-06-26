@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+
 namespace JoinRpg.Web.Helpers;
 
 public static class InviteStateExtensions

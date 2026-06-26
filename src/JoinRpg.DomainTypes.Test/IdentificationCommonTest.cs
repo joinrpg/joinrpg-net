@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.DomainTypes.Test;
 

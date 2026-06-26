@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.Services.Impl;
 
 internal static class DomainMoveHelper

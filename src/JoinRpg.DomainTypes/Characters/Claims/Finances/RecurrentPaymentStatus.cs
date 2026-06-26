@@ -1,4 +1,4 @@
-namespace JoinRpg.DomainTypes.Claims.Finances;
+namespace JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 public enum RecurrentPaymentStatus
 {

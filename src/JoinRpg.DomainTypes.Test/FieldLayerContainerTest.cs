@@ -1,6 +1,7 @@
 using System.Text.Json;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DomainTypes.Test;
 

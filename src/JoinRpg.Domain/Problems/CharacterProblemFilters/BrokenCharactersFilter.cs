@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Domain.Problems.CharacterProblemFilters;
 
 internal class BrokenCharactersFilter : IProblemFilter<Character>

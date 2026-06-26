@@ -1,6 +1,6 @@
 using JoinRpg.Helpers;
 
-namespace JoinRpg.Domain;
+namespace JoinRpg.DomainTypes;
 
 public class JoinRpgInvalidUserException(string message = "Cannot perform this operation for current user.") : JoinRpgBaseException(message)
 {

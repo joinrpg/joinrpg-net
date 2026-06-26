@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using PscbApi;
 using PscbApi.Models;
 

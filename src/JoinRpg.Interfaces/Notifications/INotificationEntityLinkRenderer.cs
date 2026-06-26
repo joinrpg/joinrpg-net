@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.Interfaces.Notifications;
 

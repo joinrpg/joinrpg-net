@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 
 namespace JoinRpg.Blazor.Client.ApiClients;

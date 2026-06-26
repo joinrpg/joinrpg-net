@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+
 namespace JoinRpg.Web.Models;
 
 /// <summary>

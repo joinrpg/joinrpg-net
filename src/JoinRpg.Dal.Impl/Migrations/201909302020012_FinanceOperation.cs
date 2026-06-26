@@ -1,6 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations;
 
 using System.Data.Entity.Migrations;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 public partial class FinanceOperation : DbMigration
 {

@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;

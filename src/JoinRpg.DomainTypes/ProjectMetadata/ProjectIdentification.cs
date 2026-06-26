@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.DomainTypes;
 

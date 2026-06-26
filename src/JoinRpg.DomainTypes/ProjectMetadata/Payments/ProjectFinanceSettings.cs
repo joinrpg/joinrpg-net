@@ -1,7 +1,4 @@
-using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
-
-namespace JoinRpg.DomainTypes.ProjectMetadata;
+namespace JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 public record ProjectFinanceSettings(bool PreferentialFeeEnabled, IReadOnlyCollection<PaymentTypeInfo> PaymentTypes)
 {

@@ -1,7 +1,4 @@
-@using JoinRpg.Portal
-@using JoinRpg.DomainTypes.Claims
-@using JoinRpg.Web.Claims
-@using JoinRpg.Web.Models.CommonTypes
+@using JoinRpg.DomainTypes.Characters.Claims
 @using JoinRpg.Web.ProjectCommon.Claims
 @model JoinRpg.Web.Models.CheckIn.CheckInIndexViewModel
 
@@ -16,7 +13,11 @@
   @Html.HiddenFor(model => model.ProjectId)
   @Html.AntiForgeryToken()
 
-  <component type="typeof(ClaimSelector)" render-mode="Static" param-Name="@("ClaimId")" param-ProjectId="@Model.ProjectId" param-Spec="@(ClaimStatusSpec.ReadyForCheckIn)" />
+  <component type="typeof(ClaimSelector)"
+             render-mode="Static"
+             param-Name="@("ClaimId")"
+             param-ProjectId="@Model.ProjectId"
+             param-Spec="@(ClaimStatusSpec.ReadyForCheckIn)" />
   
   <input type="submit" class="btn btn-success" value="Зарегистрировать"/>
 }

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain;

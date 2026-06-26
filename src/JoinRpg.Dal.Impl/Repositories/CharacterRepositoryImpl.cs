@@ -1,6 +1,7 @@
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Interfaces;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;

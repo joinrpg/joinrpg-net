@@ -1,4 +1,4 @@
-namespace JoinRpg.DomainTypes.Claims;
+namespace JoinRpg.DomainTypes.Characters.Claims;
 
 public enum ClaimStatus
 {

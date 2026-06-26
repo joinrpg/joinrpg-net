@@ -3,7 +3,7 @@ using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Users;
 

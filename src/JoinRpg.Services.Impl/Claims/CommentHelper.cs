@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Notifications;
 
 namespace JoinRpg.Services.Impl.Claims;

@@ -2,7 +2,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.Domain;
+namespace JoinRpg.DomainTypes.ProjectMetadata;
 
 public abstract class JoinRpgProjectException(ProjectIdentification projectId, string message) : JoinRpgBaseException(message)
 {

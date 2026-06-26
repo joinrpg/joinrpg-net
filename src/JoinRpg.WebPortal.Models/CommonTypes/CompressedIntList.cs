@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.Web.Models.CommonTypes;
 /// <summary>

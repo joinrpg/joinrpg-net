@@ -1,5 +1,6 @@
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;

@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.TestHelpers;
 using JoinRpg.Web.Models;
 using Xunit;
@@ -9,12 +10,12 @@ public class EnumTests
     [Fact]
     public void CommentExtraActionEnum()
     {
-        EnumerationTestComparer.EnsureSame<DomainTypes.Claims.CommentExtraAction, CommentExtraAction>();
+        EnumerationTestComparer.EnsureSame<DomainTypes.Characters.Claims.CommentExtraAction, CommentExtraAction>();
     }
 
     [Fact]
     public void PaymentEnum()
     {
-        EnumerationTestComparer.EnsureSame<DataModel.PaymentTypeKind, PaymentTypeKindViewModel>();
+        EnumerationTestComparer.EnsureSame<PaymentTypeKind, PaymentTypeKindViewModel>();
     }
 }

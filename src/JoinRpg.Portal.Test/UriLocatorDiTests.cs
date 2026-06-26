@@ -1,6 +1,6 @@
 using System.Collections;
 using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Portal.Test;

@@ -1,7 +1,7 @@
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.Services.Impl.Claims;
 

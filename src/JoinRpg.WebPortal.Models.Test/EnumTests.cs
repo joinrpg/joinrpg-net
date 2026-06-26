@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Helpers;

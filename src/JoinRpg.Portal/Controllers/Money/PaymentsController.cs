@@ -1,5 +1,6 @@
 using System.Net;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;

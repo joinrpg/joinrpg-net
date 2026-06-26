@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Domain.Problems;
 
 public interface IProblemFilter<in TObject> where TObject : IFieldContainter

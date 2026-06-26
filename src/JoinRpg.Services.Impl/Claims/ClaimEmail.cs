@@ -1,4 +1,5 @@
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Notifications;
 
