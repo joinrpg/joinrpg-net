@@ -16,6 +16,7 @@ public static class UriLocatorExtensions
 
         Uri ICharacterUriLocator.GetDetailsUri(CharacterIdentification characterId) => GetUri(characterId);
         Uri ICharacterUriLocator.GetAddClaimUri(CharacterIdentification characterId) => new Uri($"/{characterId.ProjectId.Value}/character/{characterId.CharacterId}/apply", UriKind.Relative);
+        Uri ICharacterUriLocator.GetEditUri(CharacterIdentification characterId) => new Uri($"/{characterId.ProjectId.Value}/character/{characterId.CharacterId}/edit", UriKind.Relative);
 
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
         {

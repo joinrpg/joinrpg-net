@@ -43,7 +43,7 @@ else
             @foreach (var row in Model.Rows)
             {
                 <tr>
-                    <td><CharacterLink Model="row.Character" /></td>
+                    <td><CharacterLinkWithEdit Model="row.Character" /></td>
                     <td>
                         @if (row.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
                         {
