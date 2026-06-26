@@ -1,4 +1,3 @@
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
@@ -6,42 +5,42 @@ using JoinRpg.Services.Interfaces.Projects;
 namespace JoinRpg.Services.Impl.Projects;
 
 internal class ProjectService(
-    IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     MasterEmailService masterEmailService,
     ILogger<ProjectService> logger,
     IProjectPropsService projectPropsService
-    ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectService
+    ) : IProjectService
 {
-    public async Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom)
-    {
-        var rootGroup = new CharacterGroup()
-        {
-            IsPublic = true,
-            IsRoot = true,
-            CharacterGroupName = rootCharacterGroupName,
-            IsActive = true,
-            ResponsibleMasterUserId = CurrentUserId,
-        };
-        MarkCreatedNow(rootGroup);
+    public Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom)
+        => projectPropsService.CreateProject(
+            (projectName, rootCharacterGroupName, cloneFrom),
+            ctx =>
+            {
+                var rootGroup = new CharacterGroup()
+                {
+                    IsPublic = true,
+                    IsRoot = true,
+                    CharacterGroupName = ctx.Request.rootCharacterGroupName,
+                    IsActive = true,
+                    ResponsibleMasterUserId = ctx.CurrentUser.UserId,
+                };
+                ctx.MarkCreatedNow(rootGroup);
 
-        var project = new Project()
-        {
-            Active = true,
-            IsAcceptingClaims = false,
-            CreatedDate = Now,
-            ProjectName = projectName,
-            CharacterGroups = [rootGroup,],
-            ProjectAcls = [ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),],
-            Details = new DataModel.ProjectDetails() { ClonedFromProjectId = cloneFrom?.Value, },
-            ProjectFields = [],
-        };
-        MarkTreeModified(project);
+                var project = new Project()
+                {
+                    Active = true,
+                    IsAcceptingClaims = false,
+                    CreatedDate = ctx.Now.UtcDateTime,
+                    ProjectName = ctx.Request.projectName,
+                    CharacterGroups = [rootGroup,],
+                    ProjectAcls = [ProjectAcl.CreateRootAcl(ctx.CurrentUser.UserId, isOwner: true),],
+                    Details = new DataModel.ProjectDetails() { ClonedFromProjectId = ctx.Request.cloneFrom?.Value, },
+                    ProjectFields = [],
+                };
+                ctx.MarkTreeModified(project);
 
-        _ = UnitOfWork.GetDbSet<Project>().Add(project);
-        await UnitOfWork.SaveChangesAsync();
-        return project;
-    }
+                return project;
+            });
 
     public async Task CloseProject(ProjectIdentification projectId, bool publishPlot)
     {
@@ -59,7 +58,7 @@ internal class ProjectService(
         await masterEmailService.EmailProjectClosed(new ProjectClosedMail()
         {
             ProjectId = projectId,
-            Initiator = new UserIdentification(CurrentUserId),
+            Initiator = new UserIdentification(currentUserAccessor.UserId),
         });
     }
 
@@ -94,7 +93,7 @@ internal class ProjectService(
             {
                 ctx.Project.Details.ClaimApplyRules = new MarkdownDbValue(ctx.Request.ClaimApplyRules);
                 ctx.Project.Details.ProjectAnnounce = new MarkdownDbValue(ctx.Request.ProjectAnnounce);
-                ctx.Project.ProjectName = Required(ctx.Request.ProjectName);
+                ctx.Project.ProjectName = ServiceValidation.Required(ctx.Request.ProjectName);
             });
     }
 

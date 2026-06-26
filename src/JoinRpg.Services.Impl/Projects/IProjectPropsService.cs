@@ -39,7 +39,7 @@ internal interface IProjectPropsService
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Action<ProjectOperationContext<TArgs>> action,
+        Action<ProjectMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "");
 
     /// <summary>
@@ -58,8 +58,16 @@ internal interface IProjectPropsService
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<ProjectOperationContext<TArgs>, TResult> action,
+        Func<ProjectMutationContext<TArgs>, TResult> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
+    /// Создаёт новый проект: <paramref name="factory"/> строит EF-сущность <see cref="Project"/>
+    /// (используя <see cref="ProjectCreationContext{TArgs}"/> для аудита), сервис добавляет её в БД
+    /// и сохраняет. Единственная точка создания <see cref="Project"/>.
+    /// </summary>
+    Task<Project> CreateProject<TArgs>(
+        TArgs arguments,
+        Func<ProjectCreationContext<TArgs>, Project> factory,
         [CallerMemberName] string operationName = "");
 }
-
-internal record ProjectOperationContext<TArgs>(Project Project, ProjectInfo ProjectInfo, DateTimeOffset Now, ICurrentUserAccessor CurrentUser, TArgs Request);

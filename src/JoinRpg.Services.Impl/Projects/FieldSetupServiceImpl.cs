@@ -1,5 +1,4 @@
 using System.Text.Json;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
@@ -7,10 +6,8 @@ using JoinRpg.Domain.Schedules;
 namespace JoinRpg.Services.Impl.Projects;
 
 internal class FieldSetupServiceImpl(
-    IUnitOfWork unitOfWork,
-    ICurrentUserAccessor currentUserAccessor,
     IProjectPropsService projectPropsService)
-    : DbServiceImplBase(unitOfWork, currentUserAccessor), IFieldSetupService
+    : IFieldSetupService
 {
     public async Task<ProjectFieldIdentification> AddField(CreateFieldRequest request)
     {
@@ -39,7 +36,7 @@ internal class FieldSetupServiceImpl(
                     FieldBoundTo = ctx.Request.FieldBoundTo,
                 };
 
-                SetFieldPropertiesFromRequest(ctx.Request, field, ctx.ProjectInfo);
+                SetFieldPropertiesFromRequest(ctx, ctx.Request, field);
 
                 ctx.Project.ProjectFields.Add(field);
 
@@ -72,7 +69,7 @@ internal class FieldSetupServiceImpl(
                     }
                 }
 
-                SetFieldPropertiesFromRequest(ctx.Request, field, ctx.ProjectInfo);
+                SetFieldPropertiesFromRequest(ctx, ctx.Request, field);
             });
     }
 
@@ -99,13 +96,13 @@ internal class FieldSetupServiceImpl(
 
                 foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
                 {
-                    DeleteFieldVariantValueImpl(fieldValueVariant);
+                    DeleteFieldVariantValueImpl(ctx, fieldValueVariant);
                 }
 
                 var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
-                if (SmartDelete(field))
+                if (ctx.SmartDelete(field))
                 {
-                    _ = SmartDelete(characterGroup);
+                    _ = ctx.SmartDelete(characterGroup);
                 }
                 else if (characterGroup != null)
                 {
@@ -126,7 +123,7 @@ internal class FieldSetupServiceImpl(
             ctx =>
             {
                 var field = GetField(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId);
-                return CreateFieldValueVariantImpl(ctx.Request, field);
+                return CreateFieldValueVariantImpl(ctx, ctx.Request, field);
             });
 
         return new ProjectFieldVariantIdentification(request.ProjectFieldId, variant.ProjectFieldDropdownValueId);
@@ -142,7 +139,7 @@ internal class FieldSetupServiceImpl(
             ctx =>
             {
                 var variant = GetFieldValue(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId, ctx.Request.ProjectFieldDropdownValueId);
-                SetFieldVariantPropsFromRequest(ctx.Request, variant);
+                SetFieldVariantPropsFromRequest(ctx, ctx.Request, variant);
             });
     }
 
@@ -156,7 +153,7 @@ internal class FieldSetupServiceImpl(
             ctx =>
             {
                 var value = GetFieldValue(ctx.Project, ctx.Request.projectFieldId, ctx.Request.valueId);
-                DeleteFieldVariantValueImpl(value);
+                DeleteFieldVariantValueImpl(ctx, value);
                 return value;
             });
     }
@@ -206,7 +203,7 @@ internal class FieldSetupServiceImpl(
 
                 foreach (var label in ctx.Request.valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
                 {
-                    CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(
+                    CreateFieldValueVariantImpl(ctx, new CreateFieldValueVariantRequest(
                             ctx.Request.projectFieldId,
                             label,
                             null,
@@ -275,12 +272,12 @@ internal class FieldSetupServiceImpl(
     private static ProjectFieldDropdownValue GetFieldValue(Project project, int projectFieldId, int valueId)
         => GetField(project, projectFieldId).DropdownValues.Single(v => v.ProjectFieldDropdownValueId == valueId);
 
-    private void DeleteFieldVariantValueImpl(ProjectFieldDropdownValue value)
+    private static void DeleteFieldVariantValueImpl(ProjectMutationContext ctx, ProjectFieldDropdownValue value)
     {
         var characterGroup = value.CharacterGroup; // SmartDelete will nullify all depend properties
-        if (SmartDelete(value))
+        if (ctx.SmartDelete(value))
         {
-            _ = SmartDelete(characterGroup);
+            _ = ctx.SmartDelete(characterGroup);
         }
         else
         {
@@ -298,11 +295,11 @@ internal class FieldSetupServiceImpl(
             project.GetTimeSlotFieldOrDefault() is not null && project.GetRoomFieldOrDefault() is not null;
     }
 
-    private void SetFieldPropertiesFromRequest(FieldRequestBase request, ProjectField field, ProjectInfo projectInfo)
+    private static void SetFieldPropertiesFromRequest(ProjectMutationContext ctx, FieldRequestBase request, ProjectField field)
     {
         field.IsActive = true;
 
-        field.FieldName = Required(request.Name);
+        field.FieldName = ServiceValidation.Required(request.Name);
         field.Description = new MarkdownDbValue(request.FieldHint);
         field.MasterDescription = new MarkdownDbValue(request.MasterFieldHint);
         field.CanPlayerEdit = request.CanPlayerEdit;
@@ -311,16 +308,16 @@ internal class FieldSetupServiceImpl(
         field.IsPublic = request.IsPublic;
         field.MandatoryStatus = request.MandatoryStatus;
         field.AvailableForCharacterGroupIds =
-            ValidateCharacterGroupList(projectInfo, request.ShowForGroups);
+            ctx.ProjectInfo.ValidateCharacterGroupList(request.ShowForGroups);
         field.IncludeInPrint = request.IncludeInPrint;
         field.ShowOnUnApprovedClaims = request.ShowForUnapprovedClaims;
         field.Price = request.Price;
         field.ProgrammaticValue = request.ProgrammaticValue;
 
-        CreateOrUpdateSpecialGroup(field);
+        CreateOrUpdateSpecialGroup(ctx, field);
     }
 
-    private void SetFieldVariantPropsFromRequest(FieldValueVariantRequestBase request,
+    private static void SetFieldVariantPropsFromRequest(ProjectMutationContext ctx, FieldValueVariantRequestBase request,
     ProjectFieldDropdownValue variant)
     {
         variant.Description = new MarkdownDbValue(request.Description);
@@ -341,7 +338,7 @@ internal class FieldSetupServiceImpl(
         }
 
 
-        CreateOrUpdateSpecialGroup(variant);
+        CreateOrUpdateSpecialGroup(ctx, variant);
     }
 
     private static void SetTimeSlotOptions(ProjectFieldDropdownValue self, TimeSlotOptions? timeSlotOptions)
@@ -354,7 +351,7 @@ internal class FieldSetupServiceImpl(
         self.ProgrammaticValue = JsonSerializer.Serialize(timeSlotOptions);
     }
 
-    private ProjectFieldDropdownValue CreateFieldValueVariantImpl(CreateFieldValueVariantRequest request, ProjectField field)
+    private static ProjectFieldDropdownValue CreateFieldValueVariantImpl(ProjectMutationContext ctx, CreateFieldValueVariantRequest request, ProjectField field)
     {
         var fieldVariant = new ProjectFieldDropdownValue()
         {
@@ -365,21 +362,21 @@ internal class FieldSetupServiceImpl(
             ProjectField = field,
         };
 
-        SetFieldVariantPropsFromRequest(request, fieldVariant);
+        SetFieldVariantPropsFromRequest(ctx, request, fieldVariant);
 
         field.DropdownValues.Add(fieldVariant);
         return fieldVariant;
     }
 
 
-    private void CreateOrUpdateSpecialGroup(ProjectFieldDropdownValue fieldValue)
+    private static void CreateOrUpdateSpecialGroup(ProjectMutationContext ctx, ProjectFieldDropdownValue fieldValue)
     {
         var field = fieldValue.ProjectField;
         if (!field.HasSpecialGroup())
         {
             return;
         }
-        CreateOrUpdateSpecialGroup(field);
+        CreateOrUpdateSpecialGroup(ctx, field);
 
         if (fieldValue.CharacterGroup == null)
         {
@@ -391,13 +388,13 @@ internal class FieldSetupServiceImpl(
                 IsSpecial = true,
                 ResponsibleMasterUserId = null,
             };
-            MarkCreatedNow(fieldValue.CharacterGroup);
+            ctx.MarkCreatedNow(fieldValue.CharacterGroup);
         }
-        UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
+        UpdateSpecialGroupProperties(ctx, fieldValue, fieldValue.CharacterGroup);
     }
 
     // Character group i bound into fieldValue here, but it passed implicitly for removing null warning
-    private void UpdateSpecialGroupProperties(ProjectFieldDropdownValue fieldValue, CharacterGroup characterGroup)
+    private static void UpdateSpecialGroupProperties(ProjectMutationContext ctx, ProjectFieldDropdownValue fieldValue, CharacterGroup characterGroup)
     {
         var field = fieldValue.ProjectField;
         var specialGroupName = fieldValue.GetSpecialGroupName();
@@ -411,11 +408,11 @@ internal class FieldSetupServiceImpl(
             characterGroup.IsActive = fieldValue.IsActive;
             characterGroup.Description = fieldValue.Description;
             characterGroup.CharacterGroupName = specialGroupName;
-            MarkChanged(characterGroup);
+            ctx.MarkChanged(characterGroup);
         }
     }
 
-    private void CreateOrUpdateSpecialGroup(ProjectField field)
+    private static void CreateOrUpdateSpecialGroup(ProjectMutationContext ctx, ProjectField field)
     {
         if (!field.HasSpecialGroup())
         {
@@ -433,7 +430,7 @@ internal class FieldSetupServiceImpl(
                 IsSpecial = true,
                 ResponsibleMasterUserId = null,
             };
-            MarkCreatedNow(field.CharacterGroup);
+            ctx.MarkCreatedNow(field.CharacterGroup);
         }
 
         foreach (var fieldValue in field.DropdownValues)
@@ -443,13 +440,13 @@ internal class FieldSetupServiceImpl(
                 continue; //We can't convert to LINQ because of RSRP-457084
             }
 
-            UpdateSpecialGroupProperties(fieldValue, fieldValue.CharacterGroup);
+            UpdateSpecialGroupProperties(ctx, fieldValue, fieldValue.CharacterGroup);
         }
 
-        UpdateSpecialGroupProperties(field, field.CharacterGroup);
+        UpdateSpecialGroupProperties(ctx, field, field.CharacterGroup);
     }
 
-    private void UpdateSpecialGroupProperties(ProjectField field, CharacterGroup characterGroup)
+    private static void UpdateSpecialGroupProperties(ProjectMutationContext ctx, ProjectField field, CharacterGroup characterGroup)
     {
         var specialGroupName = field.GetSpecialGroupName();
 
@@ -461,7 +458,7 @@ internal class FieldSetupServiceImpl(
             characterGroup.IsActive = field.IsActive;
             characterGroup.Description = field.Description;
             characterGroup.CharacterGroupName = specialGroupName;
-            MarkChanged(characterGroup);
+            ctx.MarkChanged(characterGroup);
         }
     }
 }

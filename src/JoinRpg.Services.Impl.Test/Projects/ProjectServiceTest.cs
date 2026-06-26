@@ -25,7 +25,6 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         var masterEmailService = new MasterEmailService(notifications, metadataRepository, new FakeVirtualUsersService());
 
         return new ProjectService(
-            unitOfWork,
             currentUser,
             masterEmailService,
             NullLogger<ProjectService>.Instance,
