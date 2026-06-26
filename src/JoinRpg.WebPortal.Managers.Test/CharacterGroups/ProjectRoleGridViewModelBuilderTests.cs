@@ -38,8 +38,8 @@ public class ProjectRoleGridViewModelBuilderTests
         result.HasGroupsColumn.ShouldBeFalse();
         result.FieldColumnNames.ShouldBeEmpty();
         var row = result.Rows.ShouldHaveSingleItem();
-        row.Character.CharacterId.ShouldBe(character.GetId());
-        row.Character.Name.ShouldBe("Вася");
+        row.Character.Character.CharacterId.ShouldBe(character.GetId());
+        row.Character.Character.Name.ShouldBe("Вася");
         row.Player.ShouldNotBeNull();
         row.Groups.ShouldBeNull();
     }
@@ -301,8 +301,8 @@ public class ProjectRoleGridViewModelBuilderTests
             Config(), null, canEditSettings: false, canViewPrivate: true, [character], _mock.ProjectInfo);
 
         var row = result.Rows.ShouldHaveSingleItem();
-        row.Character.Name.ShouldBe("Тайный");
-        row.Character.ViewMode.ShouldBe(ViewMode.ShowAsPrivate);
+        row.Character.Character.Name.ShouldBe("Тайный");
+        row.Character.Character.ViewMode.ShouldBe(ViewMode.ShowAsPrivate);
     }
 
     [Fact]
@@ -319,8 +319,8 @@ public class ProjectRoleGridViewModelBuilderTests
             canEditSettings: false, canViewPrivate: false, [character], _mock.ProjectInfo);
 
         var row = result.Rows.ShouldHaveSingleItem();
-        row.Character.Name.ShouldBe("Вася");
-        row.Character.ViewMode.ShouldBe(ViewMode.Show);
+        row.Character.Character.Name.ShouldBe("Вася");
+        row.Character.Character.ViewMode.ShouldBe(ViewMode.Show);
         var player = row.Player.ShouldNotBeNull();
         // Статус роли остаётся («занята»), несмотря на скрытие игрока.
         player.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.HasPlayer);
@@ -360,7 +360,66 @@ public class ProjectRoleGridViewModelBuilderTests
             Config(), null, canEditSettings: false, canViewPrivate: false, [character], _mock.ProjectInfo);
 
         var row = result.Rows.ShouldHaveSingleItem();
-        row.Character.ViewMode.ShouldBe(ViewMode.Show);
+        row.Character.Character.ViewMode.ShouldBe(ViewMode.Show);
         row.Player.ShouldNotBeNull().Link.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Build_CanEditRoles_CharacterLinkCanEdit()
+    {
+        var character = _mock.CreateCharacter("Вася");
+
+        var result = ProjectRoleGridViewModelBuilder.Build(
+            Config(), null, canEditSettings: true, canViewPrivate: true, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Character.CanEdit.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_NoEditRights_CharacterLinkCannotEdit()
+    {
+        var character = _mock.CreateCharacter("Вася");
+
+        var result = ProjectRoleGridViewModelBuilder.Build(
+            Config(), null, canEditSettings: false, canViewPrivate: true, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Character.CanEdit.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Build_ApprovedClaim_Master_ApprovedClaimIdSet()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        var claim = _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = ProjectRoleGridViewModelBuilder.Build(
+            Config(), null, canEditSettings: false, canViewPrivate: true, [character], _mock.ProjectInfo);
+
+        var approvedClaimId = result.Rows.ShouldHaveSingleItem().Character.ApprovedClaimId.ShouldNotBeNull();
+        approvedClaimId.ClaimId.ShouldBe(claim.ClaimId);
+    }
+
+    [Fact]
+    public void Build_NoApprovedClaim_ApprovedClaimIdNull()
+    {
+        var character = _mock.CreateCharacter("Вася");
+
+        var result = ProjectRoleGridViewModelBuilder.Build(
+            Config(), null, canEditSettings: false, canViewPrivate: true, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Character.ApprovedClaimId.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Build_ApprovedClaim_NonMaster_ApprovedClaimIdNull()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        character.IsPublic = true;
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = ProjectRoleGridViewModelBuilder.Build(
+            Config(), null, canEditSettings: false, canViewPrivate: false, [character], _mock.ProjectInfo);
+
+        result.Rows.ShouldHaveSingleItem().Character.ApprovedClaimId.ShouldBeNull();
     }
 }

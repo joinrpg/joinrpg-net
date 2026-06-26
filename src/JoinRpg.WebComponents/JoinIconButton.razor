@@ -1,0 +1,29 @@
+@*
+    Маленькая иконка-ссылка (без btn-обёртки) с подсказкой. Иконка берётся из пресета
+    (как в JoinButton) либо из явного Icon. Используется для компактных действий рядом с текстом.
+*@
+<Tooltip Title="@ActualTitle">
+    <a href="@Link" class="join-icon-button"><span class="glyphicon @ResolvedIcon" aria-hidden="true"></span></a>
+</Tooltip>
+
+@code {
+    /// <summary>Пресет, из которого берутся иконка и подсказка по умолчанию.</summary>
+    [Parameter]
+    public ButtonPreset Preset { get; set; } = ButtonPreset.None;
+
+    /// <summary>Явная иконка (glyphicon-...). Переопределяет иконку пресета.</summary>
+    [Parameter]
+    public string? Icon { get; set; }
+
+    /// <summary>Ссылка перехода.</summary>
+    [Parameter]
+    [EditorRequired]
+    public string Link { get; set; } = null!;
+
+    /// <summary>Подсказка. По умолчанию — label пресета.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    private string? ResolvedIcon => Icon ?? ButtonPresets.All[Preset].Normal.Icon;
+    private string? ActualTitle => Title ?? ButtonPresets.All[Preset].Normal.Label;
+}

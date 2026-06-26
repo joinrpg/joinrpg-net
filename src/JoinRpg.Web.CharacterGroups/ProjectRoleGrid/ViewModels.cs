@@ -19,7 +19,7 @@ public record ProjectRoleGridViewModel(
     IReadOnlyList<ProjectRoleGridRowViewModel> Rows);
 
 public record ProjectRoleGridRowViewModel(
-    CharacterLinkSlimViewModel Character,
+    CharacterLinkWithEditViewModel Character,
     PlayerCellViewModel Player,
     GroupsCellViewModel? Groups,
     IReadOnlyList<string> FieldValues);

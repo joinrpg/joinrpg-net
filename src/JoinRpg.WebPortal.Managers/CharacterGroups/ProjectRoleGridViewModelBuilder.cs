@@ -30,7 +30,7 @@ internal static class ProjectRoleGridViewModelBuilder
         var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic);
 
         var rows = visibleCharacters
-            .Select(character => BuildRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, fields))
+            .Select(character => BuildRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields))
             .ToList();
 
         return new ProjectRoleGridViewModel(
@@ -49,13 +49,19 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectInfo projectInfo,
         bool hasGroupsColumn,
         bool canViewPrivate,
+        bool canEditRoles,
         IReadOnlyList<ProjectFieldInfo> fields)
     {
-        var characterLink = new CharacterLinkSlimViewModel(
+        var characterSlim = new CharacterLinkSlimViewModel(
             character.GetId(),
             character.CharacterName,
             character.IsActive,
             ViewModeSelector.Create(character.IsPublic, canViewPrivate));
+
+        // Ссылку на принятую заявку показываем только мастеру (canViewPrivate).
+        var approvedClaimId = canViewPrivate ? character.GetApprovedClaimIdOrDefault() : null;
+
+        var characterLink = new CharacterLinkWithEditViewModel(characterSlim, canEditRoles, approvedClaimId);
 
         var player = BuildPlayerCell(character, config.ContactsColumn, canViewPrivate, projectInfo);
 
