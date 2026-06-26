@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using JoinRpg.Data.Write.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Impl.Projects;
