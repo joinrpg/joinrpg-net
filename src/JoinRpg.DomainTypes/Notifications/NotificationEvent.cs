@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Notifications;

@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.DataModel;
 
 public interface IWorldObject : IProjectEntity, ILinkable

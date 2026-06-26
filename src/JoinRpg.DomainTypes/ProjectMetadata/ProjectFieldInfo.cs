@@ -1,5 +1,5 @@
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.ProjectMetadata;

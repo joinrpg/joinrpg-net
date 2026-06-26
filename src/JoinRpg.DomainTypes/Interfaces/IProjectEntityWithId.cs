@@ -1,6 +1,6 @@
 using JoinRpg.Helpers;
 
-namespace JoinRpg.DomainTypes;
+namespace JoinRpg.DomainTypes.Interfaces;
 
 public interface IProjectEntityWithId : IOrderableEntity
 {

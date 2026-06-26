@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Web.ProjectCommon.Claims;
 

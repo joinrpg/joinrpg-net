@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DomainTypes.Claims.Finances;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
 

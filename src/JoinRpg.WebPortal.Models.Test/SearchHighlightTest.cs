@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 

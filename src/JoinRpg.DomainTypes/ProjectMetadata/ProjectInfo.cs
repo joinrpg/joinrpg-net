@@ -1,4 +1,4 @@
-using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.ProjectMetadata;

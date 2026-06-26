@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;

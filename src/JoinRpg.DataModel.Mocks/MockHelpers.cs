@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Interfaces;
 
 static internal class MockHelpers
 {

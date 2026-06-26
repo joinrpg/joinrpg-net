@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.Services.Impl;
 

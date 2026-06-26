@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Impl.Claims;
 

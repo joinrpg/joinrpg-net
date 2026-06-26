@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.DomainTypes.Notifications;
 
 /// Конкретный экземпляр уведомления для конкретного пользователя

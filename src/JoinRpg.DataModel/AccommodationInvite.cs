@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JoinRpg.DomainTypes.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.DataModel;
 

@@ -1,4 +1,4 @@
-namespace JoinRpg.DataModel;
+namespace JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 /// <summary>
 /// Payment type kinds

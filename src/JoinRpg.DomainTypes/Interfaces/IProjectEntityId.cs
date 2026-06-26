@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace JoinRpg.DomainTypes;
+namespace JoinRpg.DomainTypes.Interfaces;
 
 public interface IProjectEntityId
 {

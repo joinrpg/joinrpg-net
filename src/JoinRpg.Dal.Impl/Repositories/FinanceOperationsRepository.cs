@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces.Finances;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Interfaces;
 using LinqKit;
 

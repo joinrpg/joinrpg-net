@@ -1,5 +1,6 @@
 using JoinRpg.Domain.Problems;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain;
 

@@ -1,6 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations;
 
 using System.Data.Entity.Migrations;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 public partial class PaymentTypes : DbMigration
 {
@@ -9,7 +10,7 @@ public partial class PaymentTypes : DbMigration
         AddColumn("dbo.PaymentTypes", "TypeKind", c => c.Int(nullable: false));
         Sql($@"
 UPDATE [dbo].[PaymentTypes]
-SET TypeKind = {(int)DataModel.PaymentTypeKind.Cash}
+SET TypeKind = {(int)PaymentTypeKind.Cash}
 WHERE IsCash = 1");
         DropColumn("dbo.PaymentTypes", "IsCash");
     }
@@ -20,7 +21,7 @@ WHERE IsCash = 1");
         Sql($@"
 UPDATE [dbo].[PaymentTypes]
 SET IsCash = 1
-WHERE TypeKind = {(int)DataModel.PaymentTypeKind.Cash}");
+WHERE TypeKind = {(int)PaymentTypeKind.Cash}");
         DropColumn("dbo.PaymentTypes", "TypeKind");
     }
 }

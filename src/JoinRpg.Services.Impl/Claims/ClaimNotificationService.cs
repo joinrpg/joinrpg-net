@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces.Notifications;
 

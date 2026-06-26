@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes.Claims.Finances;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel.Finances;

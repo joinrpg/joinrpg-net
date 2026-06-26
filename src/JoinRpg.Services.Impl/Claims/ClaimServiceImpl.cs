@@ -4,7 +4,9 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;

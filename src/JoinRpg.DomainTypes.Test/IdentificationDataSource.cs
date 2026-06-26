@@ -1,4 +1,5 @@
 using System.Collections;
+using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.DomainTypes.Test;
 

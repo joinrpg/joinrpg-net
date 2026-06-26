@@ -1,7 +1,8 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.DataModel.Users;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Users;
 using LinqKit;
 

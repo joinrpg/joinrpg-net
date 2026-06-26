@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;

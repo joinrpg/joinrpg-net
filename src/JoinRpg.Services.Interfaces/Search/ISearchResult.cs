@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.Services.Interfaces.Search;
 
 public record class SearchResult : ILinkable

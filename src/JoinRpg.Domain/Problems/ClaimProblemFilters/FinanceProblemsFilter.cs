@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 public class FinanceProblemsFilter : IProblemFilter<Claim>

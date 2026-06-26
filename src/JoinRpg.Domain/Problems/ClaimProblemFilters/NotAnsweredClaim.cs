@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class NotAnsweredClaim : IProblemFilter<Claim>

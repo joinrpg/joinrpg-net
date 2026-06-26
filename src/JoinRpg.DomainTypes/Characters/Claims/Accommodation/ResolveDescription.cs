@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace JoinRpg.DomainTypes.Claims.Accommodation;
+namespace JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 //TODO[Localize]
 public enum ResolveDescription

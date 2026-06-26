@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.Web.Models.Subscribe;
 
 public interface ISubscribeTarget : ILinkable

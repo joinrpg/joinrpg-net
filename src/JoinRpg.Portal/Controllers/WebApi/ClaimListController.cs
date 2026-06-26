@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.ProjectCommon.Claims;

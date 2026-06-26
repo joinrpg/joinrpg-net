@@ -1,5 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;

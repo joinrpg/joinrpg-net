@@ -1,4 +1,4 @@
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 using Microsoft.AspNetCore.Mvc;

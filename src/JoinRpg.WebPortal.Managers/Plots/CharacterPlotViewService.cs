@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 

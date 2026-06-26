@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using JoinRpg.DataModel.Projects;
-using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using LinqKit;
 

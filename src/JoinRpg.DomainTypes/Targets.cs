@@ -1,4 +1,6 @@
 
+using JoinRpg.DomainTypes.Interfaces;
+
 namespace JoinRpg.DomainTypes;
 
 public record GroupTarget(CharacterGroupIdentification CharacterGroupId, string Name) : ILinkableWithName

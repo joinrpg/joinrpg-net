@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
