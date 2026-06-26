@@ -1,15 +1,15 @@
 @inject ICharacterUriLocator characterUriLocator
 @inject IUriLocator<ClaimIdentification> claimUriLocator
 <span class="character-link-with-edit">
-    <CharacterLink Model="Model.Character" />
-    @if (Model.CanEdit)
+    @* Нет пробела между CharacterLink и span — иначе Blazor создаст текстовый узел, который даст точку переноса перед иконками *@
+    <CharacterLink Model="Model.Character" /><span class="character-link-icons">@if (Model.CanEdit)
     {
         <JoinIconButton Preset="ButtonPreset.Edit" Link="@characterUriLocator.GetEditUri(Model.Character.CharacterId).ToString()" Title="Редактировать персонажа" />
     }
     @if (Model.ApprovedClaimId is { } claimId)
     {
         <JoinIconButton Preset="ButtonPreset.Claim" Link="@claimUriLocator.GetUri(claimId).ToString()" Title="Принятая заявка" />
-    }
+    }</span>
 </span>
 
 @code {

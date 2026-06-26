@@ -1,3 +1,7 @@
 .character-link-with-edit {
+    white-space: normal;
+}
+
+.character-link-icons {
     white-space: nowrap;
 }
