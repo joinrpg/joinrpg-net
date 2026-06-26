@@ -39,6 +39,10 @@ public enum ButtonPreset
     /// Заявка
     /// </summary>
     Claim,
+    /// <summary>
+    /// Горячая заявка
+    /// </summary>
+    HotClaim,
     Profile,
     Donate,
 }
