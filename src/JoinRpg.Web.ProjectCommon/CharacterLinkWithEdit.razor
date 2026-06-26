@@ -1,14 +1,16 @@
 @inject ICharacterUriLocator characterUriLocator
 @inject IUriLocator<ClaimIdentification> claimUriLocator
-<CharacterLink Model="Model.Character" />
-@if (Model.CanEdit)
-{
-    <a href="@characterUriLocator.GetEditUri(Model.Character.CharacterId)" title="Редактировать персонажа" class="ms-1"><span class="glyphicon glyphicon-pencil"></span></a>
-}
-@if (Model.ApprovedClaimId is { } claimId)
-{
-    <a href="@claimUriLocator.GetUri(claimId)" title="Принятая заявка" class="ms-1"><span class="glyphicon glyphicon-file"></span></a>
-}
+<span class="character-link-with-edit">
+    <CharacterLink Model="Model.Character" />
+    @if (Model.CanEdit)
+    {
+        <JoinIconButton Preset="ButtonPreset.Edit" Link="@characterUriLocator.GetEditUri(Model.Character.CharacterId).ToString()" Title="Редактировать персонажа" />
+    }
+    @if (Model.ApprovedClaimId is { } claimId)
+    {
+        <JoinIconButton Preset="ButtonPreset.Claim" Link="@claimUriLocator.GetUri(claimId).ToString()" Title="Принятая заявка" />
+    }
+</span>
 
 @code {
     [Parameter]

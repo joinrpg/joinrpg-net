@@ -8,14 +8,14 @@ public class JoinButtonPresetsTest
     [ClassData(typeof(EnumTheoryDataGenerator<ButtonPreset>))]
     public void PresetShouldBeConfigured(ButtonPreset preset)
     {
-        JoinButton.Presets.ContainsKey(preset).ShouldBeTrue("Each preset must be configured");
+        ButtonPresets.All.ContainsKey(preset).ShouldBeTrue("Each preset must be configured");
     }
 
     [Theory]
     [ClassData(typeof(EnumTheoryDataGenerator<ButtonPreset>))]
     public void PresetsShouldBeRecognized(ButtonPreset buttonPreset)
     {
-        var preset = JoinButton.Presets[buttonPreset];
+        var preset = ButtonPresets.All[buttonPreset];
         if (buttonPreset == ButtonPreset.None)
         {
             preset.Normal.Label.ShouldBeNull();
