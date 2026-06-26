@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.FieldSetup;
 
@@ -58,9 +56,9 @@ public abstract class GameFieldDropdownValueViewModelBase
 
     public GameFieldDropdownValueViewModelBase() { }
 
-    public TimeSlotOptions? GetTimeSlotRequest(ProjectField field, string? value)
+    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value)
     {
-        return value is not null && field.IsTimeSlot()
+        return value is not null && isTimeSlot
             ? new TimeSlotOptions
             {
                 StartTime = DateTimeOffset.ParseExact(

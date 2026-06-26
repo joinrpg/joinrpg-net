@@ -14,8 +14,9 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     CharacterGroupIdentification? CharacterGroupId,
     MarkdownString? Description,
     MarkdownString? MasterDescription,
-    string? ProgrammaticValue)
-        : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue)
+    string? ProgrammaticValue,
+    bool wasEverUsed)
+        : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue, wasEverUsed)
     {
         if (ProgrammaticValue is not null)
         {

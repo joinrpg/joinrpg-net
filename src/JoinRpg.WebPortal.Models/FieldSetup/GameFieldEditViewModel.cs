@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Markdown;
 using JoinRpg.Web.ProjectCommon.Fields;
 
@@ -31,49 +29,43 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
 
     public string[] GroupNames { get; set; }
 
-    public GameFieldEditViewModel(ProjectField field, int currentUserId)
+    public GameFieldEditViewModel(ProjectFieldInfo field, ProjectInfo projectInfo, UserIdentification userId)
     {
         CanPlayerView = field.CanPlayerView;
         CanPlayerEdit = field.CanPlayerEdit;
-        DescriptionEditable = field.Description?.Contents ?? "";
-        MasterDescriptionEditable = field.MasterDescription?.Contents ?? "";
-        DescriptionDisplay = ((MarkdownString?)field.Description).ToHtmlString();
-        MasterDescriptionDisplay = ((MarkdownString?)field.MasterDescription).ToHtmlString();
-        ProjectFieldId = field.ProjectFieldId;
+        DescriptionEditable = field.Description?.Value ?? "";
+        MasterDescriptionEditable = field.MasterDescription?.Value ?? "";
+        DescriptionDisplay = field.Description.ToHtmlString();
+        MasterDescriptionDisplay = field.MasterDescription.ToHtmlString();
+        ProjectFieldId = field.Id.ProjectFieldId;
         IsPublic = field.IsPublic;
-        Name = field.FieldName;
-        ProjectId = field.ProjectId;
+        Name = field.Name;
+        ProjectId = field.Id.ProjectId;
         MandatoryStatus = (MandatoryStatusViewType)field.MandatoryStatus;
-        ShowForGroups = field
-            .GroupsAvailableFor
-            .Select(c => c.GetId())
-            .ToArray();
-        GroupNames = field.GroupsAvailableFor.Select(c => c.CharacterGroupName).ToArray();
+        ShowForGroups = [.. field.GroupsAvailableForIds];
+        GroupNames = [.. projectInfo.GetGroupsById(field.GroupsAvailableForIds).Select(g => g.Name)];
         IncludeInPrint = field.IncludeInPrint;
         ValidForNpc = field.ValidForNpc;
         ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
         Price = field.Price;
         ProgrammaticValue = field.ProgrammaticValue ?? "";
-
-        FillNotEditable(field, currentUserId);
+        FillNotEditable(field, projectInfo, userId);
     }
 
-    public void FillNotEditable(ProjectField field, int currentUserId)
+    public void FillNotEditable(ProjectFieldInfo field, ProjectInfo projectInfo, UserIdentification userId)
     {
-        DropdownValues = field.GetOrderedValues()
-            .Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
+        DropdownValues = field.SortedVariants
+            .Select(v => new GameFieldDropdownValueListItemViewModel(v, field.CanPlayerEdit))
             .MarkFirstAndLast();
-        FieldViewType = (ProjectFieldViewType)field.FieldType;
-        FieldBoundTo = (FieldBoundToViewModel)field.FieldBoundTo;
+        FieldViewType = (ProjectFieldViewType)field.Type;
+        FieldBoundTo = (FieldBoundToViewModel)field.BoundTo;
         IsActive = field.IsActive;
-        HasValueList = field.HasValueList();
+        HasValueList = field.HasValueList;
         WasEverUsed = field.WasEverUsed;
-        CanEditFields = field.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanChangeFields);
-        CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
-        SupportsMassAdding = field.SupportsMassAdding();
-
+        CanEditFields = projectInfo.HasMasterAccess(userId, Permission.CanChangeFields);
+        CanDeleteField = CanEditFields && !field.IsName && !field.IsRoomSlot && !field.IsTimeSlot;
+        SupportsMassAdding = field.SupportsMassAdding;
     }
-
     public GameFieldEditViewModel()
     { }
 

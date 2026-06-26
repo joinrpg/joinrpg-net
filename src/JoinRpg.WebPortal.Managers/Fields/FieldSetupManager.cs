@@ -1,6 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CommonTypes;
@@ -15,7 +13,7 @@ namespace JoinRpg.WebPortal.Managers;
 public class FieldSetupManager
 {
     private ICurrentUserAccessor CurrentUser { get; }
-    private IProjectRepository ProjectRepository { get; }
+    private IProjectMetadataRepository ProjectMetadataRepository { get; }
     private ICurrentProjectAccessor CurrentProject { get; }
     private IFieldSetupService Service { get; }
 
@@ -24,13 +22,13 @@ public class FieldSetupManager
     /// </summary>
     public FieldSetupManager(
         ICurrentUserAccessor currentUser,
-        IProjectRepository project,
+        IProjectMetadataRepository projectMetadataRepository,
         ICurrentProjectAccessor currentProject,
         IFieldSetupService service
         )
     {
         CurrentUser = currentUser;
-        ProjectRepository = project;
+        ProjectMetadataRepository = projectMetadataRepository;
         CurrentProject = currentProject;
         Service = service;
     }
@@ -50,32 +48,20 @@ public class FieldSetupManager
     /// </summary>
     public async Task<GameFieldCreateViewModel?> CreatePageAsync()
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
-        if (project == null)
-        {
-            return null;
-        }
-        return FillFromProject(project, new GameFieldCreateViewModel());
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        return FillFromProject(projectInfo, new GameFieldCreateViewModel());
     }
 
     public async Task<T?> FillFailedModel<T>(T model) where T : class, IFieldNavigationAware
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
-        if (project == null)
-        {
-            return null;
-        }
-        return FillFromProject(project, model);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        return FillFromProject(projectInfo, model);
     }
 
     public async Task<FieldSettingsViewModel?> FillFailedSettingsModel(FieldSettingsViewModel model)
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
-        if (project == null)
-        {
-            return null;
-        }
-        return FillSettingsModel(project, model);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        return FillSettingsModel(projectInfo, model);
     }
 
     /// <summary>
@@ -83,14 +69,15 @@ public class FieldSetupManager
     /// </summary>
     public async Task<GameFieldEditViewModel?> EditPageAsync(int projectFieldId)
     {
-        var field = await ProjectRepository.GetProjectField(CurrentProject.ProjectId, projectFieldId);
-        if (field == null)
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        var field = projectInfo.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == projectFieldId);
+        if (field is null)
         {
             return null;
         }
 
-        var model = new GameFieldEditViewModel(field, CurrentUser.UserId);
-        return FillFromProject(field.Project, model);
+        var model = new GameFieldEditViewModel(field, projectInfo, CurrentUser.UserIdentification);
+        return FillFromProject(projectInfo, model);
     }
 
     /// <summary>
@@ -98,36 +85,32 @@ public class FieldSetupManager
     /// </summary>
     public async Task<FieldSettingsViewModel?> SettingsPagesAsync()
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
-        if (project == null)
-        {
-            return null;
-        }
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
 
         var viewModel = new FieldSettingsViewModel
         {
-            NameField = project.Details.CharacterNameField?.ProjectFieldId ?? -1,
-            DescriptionField = project.Details.CharacterDescription?.ProjectFieldId ?? -1,
+            NameField = projectInfo.CharacterNameField?.Id.ProjectFieldId ?? -1,
+            DescriptionField = projectInfo.CharacterDescriptionField?.Id.ProjectFieldId ?? -1,
         };
-        return FillSettingsModel(project, viewModel);
+        return FillSettingsModel(projectInfo, viewModel);
     }
 
-    private FieldSettingsViewModel FillSettingsModel(Project project, FieldSettingsViewModel viewModel)
+    private FieldSettingsViewModel FillSettingsModel(ProjectInfo projectInfo, FieldSettingsViewModel viewModel)
     {
-        var fields = project.GetOrderedFields();
+        var fields = projectInfo.SortedFields;
         viewModel.PossibleDescriptionFields =
                 ToSelectListItems(
-                    fields.Where(f => f.FieldType == ProjectFieldType.Text && f.FieldBoundTo == FieldBoundTo.Character),
+                    fields.Where(f => f.Type == ProjectFieldType.Text && f.BoundTo == FieldBoundTo.Character),
                     "Нет поля с описанием персонажа"
-                    ).SetSelected(project.Details.CharacterDescription?.ProjectFieldId);
+                    ).SetSelected(projectInfo.CharacterDescriptionField?.Id.ProjectFieldId);
         viewModel.PossibleNameFields =
                 ToSelectListItems(
-                    fields.Where(f => f.FieldType == ProjectFieldType.String && f.FieldBoundTo == FieldBoundTo.Character),
+                    fields.Where(f => f.Type == ProjectFieldType.String && f.BoundTo == FieldBoundTo.Character),
                     "Имя персонажа берется из имени игрока"
-                    ).SetSelected(project.Details.CharacterNameField?.ProjectFieldId);
+                    ).SetSelected(projectInfo.CharacterNameField?.Id.ProjectFieldId);
 
         // cast needed to call correct method
-        var _ = FillFromProject(project, viewModel);
+        var _ = FillFromProject(projectInfo, viewModel);
         return viewModel;
     }
 
@@ -145,14 +128,14 @@ public class FieldSetupManager
     }
 
     private List<JoinSelectListItem> ToSelectListItems(
-        IEnumerable<ProjectField> enumerable,
+        IEnumerable<ProjectFieldInfo> enumerable,
         string? notSelectedName = null
         )
     {
         var list = enumerable.Select(field => new JoinSelectListItem()
         {
-            Value = field.ProjectFieldId,
-            Text = field.FieldName,
+            Value = field.Id.ProjectFieldId,
+            Text = field.Name,
 
         }).ToList();
 
@@ -171,35 +154,31 @@ public class FieldSetupManager
 
     private async Task<GameFieldListViewModel?> GetFieldsImpl(
         FieldNavigationPage page,
-        Func<ProjectField, bool> predicate)
+        Func<ProjectFieldInfo, bool> predicate)
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
-        if (project == null)
-        {
-            return null;
-        }
-        var fields = project.GetOrderedFields().Where(predicate).ToViewModels(CurrentUser.UserId);
-        FieldNavigationModel navigation = GetNavigation(page, project);
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
+        var fields = projectInfo.SortedFields.Where(predicate).ToViewModels(projectInfo, CurrentUser.UserIdentification);
+        FieldNavigationModel navigation = GetNavigation(page, projectInfo);
         return new GameFieldListViewModel(navigation, fields);
     }
 
-    private FieldNavigationModel GetNavigation(FieldNavigationPage page, Project project)
+    private FieldNavigationModel GetNavigation(FieldNavigationPage page, ProjectInfo projectInfo)
     {
         return new FieldNavigationModel
         {
             Page = page,
-            ProjectId = project.ProjectId,
-            CanEditFields = project.HasMasterAccess(CurrentUser, Permission.CanChangeFields)
-                && project.Active,
+            ProjectId = projectInfo.ProjectId,
+            CanEditFields = projectInfo.HasMasterAccess(CurrentUser.UserIdentification, Permission.CanChangeFields)
+                && projectInfo.IsActive,
         };
     }
 
     private T FillFromProject<T>(
-        Project project,
+        ProjectInfo projectInfo,
         T viewModel) where T : IFieldNavigationAware
     {
-        viewModel.SetNavigation(GetNavigation(FieldNavigationPage.Unknown, project));
-        viewModel.ProjectId = project.ProjectId;
+        viewModel.SetNavigation(GetNavigation(FieldNavigationPage.Unknown, projectInfo));
+        viewModel.ProjectId = projectInfo.ProjectId;
         return viewModel;
     }
 }

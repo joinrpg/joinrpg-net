@@ -15,21 +15,12 @@ public interface IProjectRepository : IDisposable
     Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
     Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
-    Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
 
     Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds);
 
+    [Obsolete]
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
-
-    Task<ProjectField> GetProjectField(ProjectFieldIdentification projectFieldId);
-
-    Task<ProjectFieldDropdownValue> GetFieldValue(int projectId,
-        int projectFieldId,
-        int projectCharacterFieldDropdownValueId);
-
-    Task<ProjectFieldDropdownValue> GetFieldValue(ProjectFieldIdentification projectFieldId,
-    int projectCharacterFieldDropdownValueId);
 
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);

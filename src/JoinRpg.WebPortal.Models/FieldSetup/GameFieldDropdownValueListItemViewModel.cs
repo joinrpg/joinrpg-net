@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models.FieldSetup;
@@ -27,17 +26,17 @@ public class GameFieldDropdownValueListItemViewModel : IMovableListItem
 
     public int ValueId { get; }
 
-    public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
+    public GameFieldDropdownValueListItemViewModel(ProjectFieldVariant variant, bool canPlayerEdit)
     {
-        Label = value.Label;
-        Description = ((MarkdownString?)value.Description).ToPlainTextWithoutHtmlEscape();
-        IsActive = value.IsActive;
-        Price = value.Price;
-        ProjectId = value.ProjectId;
-        ProjectFieldId = value.ProjectFieldId;
-        ValueId = value.ProjectFieldDropdownValueId;
-        CharacterGroupId = value.CharacterGroupId;
-        MasterRestricted = !value.PlayerSelectable && value.ProjectField.CanPlayerEdit;
+        Label = variant.Label;
+        Description = variant.Description.ToPlainTextWithoutHtmlEscape();
+        IsActive = variant.IsActive;
+        Price = variant.Price;
+        ProjectId = variant.Id.FieldId.ProjectId;
+        ProjectFieldId = variant.Id.FieldId.ProjectFieldId;
+        ValueId = variant.Id.ProjectFieldVariantId;
+        CharacterGroupId = variant.CharacterGroupId?.CharacterGroupId;
+        MasterRestricted = !variant.IsPlayerSelectable && canPlayerEdit;
     }
 
     #region Implementation of IMovableListItem
