@@ -1,3 +1,4 @@
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.ProjectMetadata;
@@ -225,6 +226,8 @@ public record class ProjectInfo
         }
         return [.. group.AllChildGroupsIncludingThis.Select(id => Groups[id])];
     }
+
+    public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
 }
 
 public record ProjectProfileRequirementSettings(

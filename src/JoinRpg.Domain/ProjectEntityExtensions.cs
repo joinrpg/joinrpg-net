@@ -122,10 +122,6 @@ public static class ProjectEntityExtensions
     public static T EnsureProjectActive<T>(this T entity)
   where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException(entity.ProjectIdentification) : entity;
 
-    // Перенести непосредственно внутрь ProjectInfo
-    public static ProjectInfo EnsureProjectActive(this ProjectInfo entity)
-            => !entity.IsActive ? throw new ProjectDeactivatedException(entity.ProjectId) : entity;
-
     [Obsolete]
     public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
     {
