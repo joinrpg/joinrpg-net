@@ -19,6 +19,8 @@ public class JobsModel(IEnumerable<IJobRunner> dailyJobs) : PageModel
     {
         using var scope = serviceProvider.CreateScope();
         var jobRunner = dailyJobs.Single(j => j.Name == name);
+        using var activity = BackgroundServiceActivity.ActivitySource.StartActivity($"Run of {jobRunner.FullName}");
+        activity?.AddTag("jobName", jobRunner.FullName);
         await jobRunner.RunJob(scope, cancellationToken);
         return RedirectToPage();
     }
