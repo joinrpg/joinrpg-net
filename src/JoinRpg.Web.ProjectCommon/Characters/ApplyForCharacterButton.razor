@@ -5,13 +5,10 @@
 @if (IsAvailable)
 {
     <JoinButton Link="@UriLocator.GetAddClaimUri(Model.CharacterId).ToString()"
-                Preset="ButtonPreset.Claim"
+                Preset="@(Model.IsHot ? ButtonPreset.HotClaim : ButtonPreset.Claim)"
                 Label="@ButtonLabel"
-                Size="SizeStyleEnum.ExtraSmall" />
-    @if (Model.IsHot)
-    {
-        <HotRoleBadge />
-    }
+                Size="SizeStyleEnum.ExtraSmall"
+                Title="@(Model.IsHot ? "Мастера отметили эту роль как горячую" : null)" />
 }
 else if (Model.IsSlot)
 {
@@ -33,6 +30,6 @@ else if (Model.IsSlot)
         || (Model.IsSlot && Model.SlotCount is > 0);
 
     private string ButtonLabel => Model.SlotCount is > 1
-        ? $"заявиться ({CountHelper.DisplayCount(Model.SlotCount.Value, "место", "места", "мест")})"
-        : "заявиться";
+        ? $"Заявиться ({CountHelper.DisplayCount(Model.SlotCount.Value, "место", "места", "мест")})"
+        : "Заявиться";
 }
