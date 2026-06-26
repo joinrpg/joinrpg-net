@@ -97,6 +97,8 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
     public IFinanceOperationsRepository GetFinanceOperationsRepositoryRepository() => throw new NotSupportedException();
 
     public void Dispose() { }
+
+    public Task<int> ExecuteSqlCommandAsync(string sql) => throw new NotImplementedException();
 }
 
 /// <summary>Записывает поставленные в очередь уведомления для проверки в тестах.</summary>

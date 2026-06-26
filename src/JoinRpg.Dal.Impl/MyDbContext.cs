@@ -39,6 +39,8 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
 
+    Task<int> IUnitOfWork.ExecuteSqlCommandAsync(string sql) => Database.ExecuteSqlCommandAsync(sql);
+
     public IUserRepository GetUsersRepository() => new UserInfoRepository(this);
     public IProjectRepository GetProjectRepository() => new ProjectRepository(this);
     public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository() => new ProjectMetadataWriteRepository(this);

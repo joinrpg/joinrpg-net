@@ -25,4 +25,7 @@ public interface IUnitOfWork : IDisposable
     IAccommodationRepository GetAccomodationRepository();
 
     IKogdaIgraRepository GetKogdaIgraRepository();
+
+    [Obsolete("Временный хак")]
+    Task<int> ExecuteSqlCommandAsync(string sql);
 }
