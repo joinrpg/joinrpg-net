@@ -71,26 +71,13 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && ids.Contains(cg.CharacterGroupId)).ToListAsync();
     }
 
-    public Task<ProjectField> GetProjectField(ProjectFieldIdentification id) => GetProjectField(id.ProjectId, id.ProjectFieldId);
+    [Obsolete]
     public Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId)
     {
         return Ctx.Set<ProjectField>()
           .Include(f => f.Project)
           .Include(f => f.DropdownValues)
           .SingleOrDefaultAsync(f => f.ProjectFieldId == projectCharacterFieldId && f.ProjectId == projectId);
-    }
-
-    public Task<ProjectFieldDropdownValue> GetFieldValue(ProjectFieldIdentification id, int variantId) => GetFieldValue(id.ProjectId, id.ProjectFieldId, variantId);
-    public async Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId)
-    {
-        return await Ctx.Set<ProjectFieldDropdownValue>()
-          .Include(f => f.Project)
-          .Include(f => f.ProjectField)
-          .SingleOrDefaultAsync(
-            f =>
-              f.ProjectId == projectId &&
-              f.ProjectFieldId == projectFieldId &&
-              f.ProjectFieldDropdownValueId == projectCharacterFieldDropdownValueId);
     }
 
     public Task<Project> GetProjectWithFinances(int projectid)
@@ -106,18 +93,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Include(p => p.ProjectFeeSettings)
         .Include(p => p.FinanceOperations)
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
-
-    public async Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId)
-    {
-        var project1 = await Ctx.ProjectsSet
-          .Include(p => p.CharacterGroups)
-          .Include(p => p.Characters)
-          .Include(p => p.Details)
-          .Where(p => p.ProjectId == projectId)
-          .SingleOrDefaultAsync(p => p.ProjectId == projectId);
-
-        return project1.RootGroup;
-    }
 
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
         DateTime inActiveSince)

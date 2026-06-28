@@ -574,7 +574,8 @@ ordering,
             new ProjectFieldSettings(null, null),
             null,
             visibility,
-            null
+            null,
+            WasEverUsed: false
         );
     }
 

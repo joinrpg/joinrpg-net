@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -30,13 +29,13 @@ public class GameFieldController(
     private RedirectToActionResult ReturnToIndex()
         => RedirectToAction("Index", new { ProjectId = currentProjectAccessor.ProjectId.Value });
 
-    private RedirectToActionResult ReturnToField(ProjectField value)
-        => RedirectToAction("Edit", new { ProjectId = currentProjectAccessor.ProjectId.Value, projectFieldId = value.ProjectFieldId });
+    private RedirectToActionResult ReturnToField(ProjectFieldIdentification projectFieldId)
+        => RedirectToAction("Edit", new { ProjectId = projectFieldId.ProjectId.Value, projectFieldId.ProjectFieldId });
 
 
     [HttpGet("/{ProjectId}/fields/")]
     [MasterAuthorize]
-    public async Task<ActionResult> Index(int projectId)
+    public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
         var model = await Manager.GetActiveAsync();
         return ViewIfFound(model);
@@ -44,7 +43,7 @@ public class GameFieldController(
 
     [HttpGet("/{ProjectId}/fields/archive")]
     [MasterAuthorize]
-    public async Task<ActionResult> DeletedList(int projectId)
+    public async Task<ActionResult> DeletedList(ProjectIdentification projectId)
     {
         var model = await Manager.GetInActiveAsync();
         return ViewIfFound("Index", model);
@@ -52,7 +51,7 @@ public class GameFieldController(
 
     [HttpGet]
     [MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> Create(int projectId)
+    public async Task<ActionResult> Create(ProjectIdentification projectId)
     {
         var model = await Manager.CreatePageAsync();
         return ViewIfFound(model);
@@ -138,21 +137,21 @@ public class GameFieldController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
     {
-        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
-        var field = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == viewModel.ProjectFieldId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
+        var field = projectInfo.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == viewModel.ProjectFieldId);
 
-        if (field == null)
+        if (field is null)
         {
             return NotFound();
         }
         if (!ModelState.IsValid)
         {
-            viewModel.FillNotEditable(field, currentUserAccessor.UserIdentification);
+            viewModel.FillNotEditable(field, projectInfo, currentUserAccessor.UserIdentification);
             return View(viewModel);
         }
         try
         {
-            var request = new UpdateFieldRequest(new ProjectFieldIdentification(new ProjectIdentification(project.ProjectId), field.ProjectFieldId),
+            var request = new UpdateFieldRequest(new ProjectFieldIdentification(new ProjectIdentification(projectInfo.ProjectId), field.Id.ProjectFieldId),
                 viewModel.Name,
                 viewModel.DescriptionEditable,
                 viewModel.CanPlayerEdit,
@@ -174,7 +173,7 @@ public class GameFieldController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            viewModel.FillNotEditable(field, currentUserAccessor.UserIdentification);
+            viewModel.FillNotEditable(field, projectInfo, currentUserAccessor.UserIdentification);
             return View(viewModel);
         }
     }
@@ -182,7 +181,6 @@ public class GameFieldController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanChangeFields)]
-    // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Delete(int projectId, int projectFieldId, IFormCollection collection)
     {
         var field = await projectRepository.GetProjectField(projectId, projectFieldId);
@@ -216,14 +214,16 @@ public class GameFieldController(
     {
         try
         {
-            var field = await projectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
+            var id = new ProjectFieldIdentification(new(viewModel.ProjectId), viewModel.ProjectFieldId);
+            var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
+            var field = metadata.GetFieldById(id);
 
-            var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault());
+            var timeSlotOptions = viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault());
 
             await
                 fieldSetupService.CreateFieldValueVariant(
                     new CreateFieldValueVariantRequest(
-                        new(new ProjectIdentification(viewModel.ProjectId), viewModel.ProjectFieldId),
+                        id,
                         viewModel.Label,
                         viewModel.Description,
                         viewModel.MasterDescription,
@@ -263,9 +263,12 @@ public class GameFieldController(
     {
         try
         {
-            var field = await projectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
+            var id = new ProjectFieldIdentification(new(viewModel.ProjectId), viewModel.ProjectFieldId);
+            var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
+            var field = metadata.GetFieldById(id);
+
             await fieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
-                new(new ProjectIdentification(viewModel.ProjectId), viewModel.ProjectFieldId),
+                id,
                 viewModel.ProjectFieldDropdownValueId,
                 viewModel.Label,
                 viewModel.Description,
@@ -273,7 +276,7 @@ public class GameFieldController(
                 viewModel.ProgrammaticValue,
                 viewModel.Price,
                 viewModel.PlayerSelectable,
-                viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault())
+                viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault())
                 ));
 
             return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
@@ -305,15 +308,20 @@ public class GameFieldController(
     {
         try
         {
-            var value = await projectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-
-            if (value == null)
+            var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+            var field = metadata.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == projectFieldId);
+            if (field is null)
+            {
+                return NotFound();
+            }
+            var variant = field.Variants.SingleOrDefault(v => v.Id.ProjectFieldVariantId == valueId);
+            if (variant is null)
             {
                 return NotFound();
             }
 
-            _ = await fieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
-            return value.IsActive
+            _ = await fieldSetupService.DeleteFieldValueVariant(projectId, projectFieldId, valueId);
+            return variant.IsActive
                 ? Ok()
                 : StatusCode(250);
         }
@@ -330,9 +338,8 @@ public class GameFieldController(
     [HttpGet("~/{projectId:int}/fields/{listItemId:int}/move/{direction:int}")]
     public async Task<ActionResult> Move(int projectId, int listItemId, int direction)
     {
-        var value = await projectRepository.GetProjectField(projectId, listItemId);
-
-        if (value == null)
+        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != listItemId))
         {
             return NotFound();
         }
@@ -352,11 +359,10 @@ public class GameFieldController(
     [MasterAuthorize(Permission.CanChangeFields)]
     // TODO: Refactor to HEAD request (require UI fixes)
     [HttpGet("~/{projectId:int}/fields/{parentObjectId:int}/values/{listItemId:int}/move/{direction:int}")]
-    public async Task<ActionResult> MoveValue(int projectId, int listItemId, int parentObjectId, int direction)
+    public async Task<ActionResult> MoveValue(ProjectIdentification projectId, int listItemId, int parentObjectId, int direction)
     {
-        var value = await projectRepository.GetProjectField(projectId, parentObjectId);
-
-        if (value == null)
+        var metadata = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != parentObjectId))
         {
             return NotFound();
         }
@@ -365,12 +371,11 @@ public class GameFieldController(
         {
             await fieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
 
-
-            return ReturnToField(value);
+            return ReturnToField(new ProjectFieldIdentification(projectId, parentObjectId));
         }
         catch
         {
-            return ReturnToField(value);
+            return ReturnToField(new ProjectFieldIdentification(projectId, parentObjectId));
         }
     }
 
@@ -378,9 +383,8 @@ public class GameFieldController(
     public async Task<ActionResult> MassCreateValueVariants(int projectId, int projectFieldId, string valuesToAdd)
     {
         var id = new ProjectFieldIdentification(new(projectId), projectFieldId);
-        var value = await projectRepository.GetProjectField(id);
-
-        if (value == null)
+        var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
+        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != id.ProjectFieldId))
         {
             return NotFound();
         }
@@ -389,21 +393,19 @@ public class GameFieldController(
         {
             await fieldSetupService.CreateFieldValueVariants(id, valuesToAdd);
 
-
-            return ReturnToField(value);
+            return ReturnToField(id);
         }
         catch
         {
-            return ReturnToField(value);
+            return ReturnToField(id);
         }
     }
 
     [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
     {
-        var value = await projectRepository.GetProjectField(projectId, projectFieldId);
-
-        if (value == null)
+        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != projectFieldId))
         {
             return NotFound();
         }
@@ -417,7 +419,6 @@ public class GameFieldController(
         {
             await fieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
 
-
             return ReturnToIndex();
         }
         catch
@@ -430,9 +431,8 @@ public class GameFieldController(
     [HttpPost("~/{projectId:int}/fields/{projectFieldId:int}/sortvariants")]
     public async Task<ActionResult> SortVariants(int projectId, int projectFieldId)
     {
-        var value = await projectRepository.GetProjectField(projectId, projectFieldId);
-
-        if (value == null)
+        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != projectFieldId))
         {
             return NotFound();
         }
@@ -440,7 +440,6 @@ public class GameFieldController(
         try
         {
             await fieldSetupService.SortFieldVariants(projectId, projectFieldId);
-
 
             return ReturnToIndex();
         }

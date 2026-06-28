@@ -11,7 +11,8 @@ public record class ProjectFieldVariant(
     CharacterGroupIdentification? CharacterGroupId,
     MarkdownString? Description,
     MarkdownString? MasterDescription,
-    string? ProgrammaticValue
+    string? ProgrammaticValue,
+    bool WasEverUsed
     ) : IOrderableEntity
 {
     int IOrderableEntity.Id => Id.ProjectFieldVariantId;

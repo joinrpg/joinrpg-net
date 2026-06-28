@@ -12,7 +12,7 @@ internal class SyncKogdaIgraJob(
         logger.LogInformation("Starting KogdaIgra synchronization job");
 
         var status = await kogdaIgraSyncService.GetSyncStatus();
-        var beforePending = int.MaxValue;
+        int beforePending;
         do
         {
             beforePending = status.PendingGamesCount;

@@ -80,7 +80,8 @@ public class MockedProject
             IncludeInPrint: true, FieldSettings: ProjectInfo.ProjectFieldSettings,
             ProgrammaticValue: null,
             ProjectFieldVisibility: projectFieldVisibility,
-            SpecialGroupId: null
+            SpecialGroupId: null,
+            WasEverUsed: false
             );
 
         ProjectInfo = ProjectInfo.WithAddedField(field);

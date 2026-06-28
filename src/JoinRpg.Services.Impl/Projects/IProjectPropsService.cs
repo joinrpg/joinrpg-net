@@ -62,4 +62,4 @@ internal interface IProjectPropsService
         [CallerMemberName] string operationName = "");
 }
 
-record ProjectOperationContext<TArgs>(Project Project, ProjectInfo ProjectInfo, DateTimeOffset Now, ICurrentUserAccessor CurrentUser, TArgs Request);
+internal record ProjectOperationContext<TArgs>(Project Project, ProjectInfo ProjectInfo, DateTimeOffset Now, ICurrentUserAccessor CurrentUser, TArgs Request);

@@ -106,7 +106,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                     fieldSettings,
                         field.ProgrammaticValue,
                         CreateProjectFieldVisibility(field),
-                    CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroupId));
+                    CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroupId),
+                    WasEverUsed: field.WasEverUsed);
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)
@@ -136,7 +137,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                             CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
-                            variant.ProgrammaticValue
+                            variant.ProgrammaticValue,
+                            wasEverUsed: variant.WasEverUsed
                         );
                 }
             }
@@ -153,7 +155,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                             CharacterGroupIdentification.FromOptional(projectId, variant.CharacterGroupId),
                             variant.Description,
                             variant.MasterDescription,
-                            variant.ProgrammaticValue
+                            variant.ProgrammaticValue,
+                            WasEverUsed: variant.WasEverUsed
                         );
                 }
             }
