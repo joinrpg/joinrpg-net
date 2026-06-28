@@ -44,6 +44,10 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             mock.ReInitProjectInfo();
             return mock.ProjectInfo;
         }
+
+        public List<object> Removed { get; } = [];
+
+        public void Remove(object entity) => Removed.Add(entity);
     }
 }
 

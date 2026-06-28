@@ -7,10 +7,10 @@ internal class ProjectMetadataWriteRepository(MyDbContext ctx) : IProjectMetadat
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false)
             ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
-        return new ProjectMetadataUpdateHandle(project, projectId);
+        return new ProjectMetadataUpdateHandle(ctx, project, projectId);
     }
 
-    private sealed class ProjectMetadataUpdateHandle(Project project, ProjectIdentification projectId)
+    private sealed class ProjectMetadataUpdateHandle(MyDbContext ctx, Project project, ProjectIdentification projectId)
         : IProjectMetadataUpdateHandle
     {
         public Project Project { get; } = project;
@@ -20,5 +20,7 @@ internal class ProjectMetadataWriteRepository(MyDbContext ctx) : IProjectMetadat
 
         public ProjectInfo Refresh()
             => ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, projectId);
+
+        public void Remove(object entity) => ctx.Set(entity.GetType()).Remove(entity);
     }
 }

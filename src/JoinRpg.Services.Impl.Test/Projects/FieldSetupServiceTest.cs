@@ -10,7 +10,7 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
     private FieldSetupServiceImpl CreateService(int? currentUserId = null, bool isAdmin = false)
     {
         var currentUser = CreateCurrentUser(currentUserId, isAdmin);
-        return new FieldSetupServiceImpl(unitOfWork, currentUser, CreatePropsService(currentUser));
+        return new FieldSetupServiceImpl(CreatePropsService(currentUser));
     }
 
     private CreateFieldRequest CreateFieldRequest(

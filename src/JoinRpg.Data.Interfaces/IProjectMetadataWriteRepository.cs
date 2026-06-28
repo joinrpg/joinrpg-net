@@ -35,4 +35,10 @@ public interface IProjectMetadataUpdateHandle
     /// и возвращает его.
     /// </summary>
     ProjectInfo Refresh();
+
+    /// <summary>
+    /// Окончательно удаляет под-сущность проекта из того же <c>DbContext</c>, через который потом
+    /// вызывается <c>SaveChanges</c>. Используется для permanent-delete (см. SmartDelete).
+    /// </summary>
+    void Remove(object entity);
 }

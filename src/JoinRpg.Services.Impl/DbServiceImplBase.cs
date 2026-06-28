@@ -95,74 +95,19 @@ public class DbServiceImplBase
 
     protected static string Required([NotNull] string? stringValue,
         [CallerArgumentExpression(nameof(stringValue))] string? fieldName = null)
-    {
-        if (string.IsNullOrWhiteSpace(stringValue))
-        {
-            throw new FieldRequiredException(fieldName ?? "??unknown field");
-        }
-
-        return stringValue.Trim();
-    }
+        => ServiceValidation.Required(stringValue, fieldName);
 
     protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
-    {
-        if (items.Count == 0)
-        {
-            throw new DbEntityValidationException();
-        }
-
-        return items;
-    }
+        => ServiceValidation.Required(items);
 
     protected bool SmartDelete<T>(T? field) where T : class, IDeletableSubEntity
-    {
-        if (field == null)
-        {
-            return false;
-        }
-
-        if (field.CanBePermanentlyDeleted)
-        {
-            _ = UnitOfWork.GetDbSet<T>().Remove(field);
-            return true;
-        }
-        else
-        {
-            field.IsActive = false;
-            return false;
-        }
-    }
+        => EntityDeletion.SmartDelete(field, f => UnitOfWork.GetDbSet<T>().Remove(f));
 
     protected static int[] ValidateCharacterGroupList(
         ProjectInfo projectInfo,
         IReadOnlyCollection<CharacterGroupIdentification> groupIds,
         bool ensureNotSpecial = false)
-    {
-        foreach (var g in groupIds)
-        {
-            if (g.ProjectId != projectInfo.ProjectId)
-            {
-                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
-            }
-        }
-
-        var missing = groupIds
-            .Where(id => !projectInfo.Groups.ContainsKey(id))
-            .ToArray();
-
-        if (missing.Length != 0)
-        {
-            var missingIds = string.Join(", ", missing.Select(m => m.CharacterGroupId));
-            throw new Exception($"Groups {missingIds} doesn't belong to project");
-        }
-
-        if (ensureNotSpecial && groupIds.Any(id => projectInfo.Groups[id].IsSpecial))
-        {
-            throw new DbEntityValidationException();
-        }
-
-        return [.. groupIds.Select(g => g.CharacterGroupId)];
-    }
+        => projectInfo.ValidateCharacterGroupList(groupIds, ensureNotSpecial);
 
     protected async Task<ICollection<Character>> ValidateCharactersList(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
@@ -186,10 +131,7 @@ public class DbServiceImplBase
     }
 
     protected void MarkCreatedNow(ICreatedUpdatedTrackedForEntity entity)
-    {
-        entity.UpdatedAt = entity.CreatedAt = Now;
-        entity.UpdatedById = entity.CreatedById = CurrentUserId;
-    }
+        => EntityAudit.MarkCreated(entity, Now, CurrentUserId);
 
     protected T Create<T>(T entity)
         where T : class, ICreatedUpdatedTrackedForEntity
@@ -201,10 +143,7 @@ public class DbServiceImplBase
     }
 
     protected void MarkChanged(ICreatedUpdatedTrackedForEntity entity)
-    {
-        entity.UpdatedAt = Now;
-        entity.UpdatedById = CurrentUserId;
-    }
+        => EntityAudit.MarkChanged(entity, Now, CurrentUserId);
 
     protected void MarkTreeModified(Project project) => project.CharacterTreeModifiedAt = Now;
 
