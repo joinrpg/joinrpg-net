@@ -178,7 +178,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                     entity.PublicMode,
                     fields,
                     entity.ContactsColumn,
-                    entity.GroupsColumn
+                    entity.GroupsColumn,
+                    entity.ShowCharacterGroups
                 ));
             }
             return result;

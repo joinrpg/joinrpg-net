@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 
@@ -28,11 +30,20 @@ public record ProjectRoleGridViewModel(
     IReadOnlyList<string> FieldColumnNames,
     IReadOnlyList<ProjectRoleGridRowViewModel> Rows);
 
-public record ProjectRoleGridRowViewModel(
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(ProjectRoleGridCharacterRowViewModel), "character")]
+[JsonDerivedType(typeof(ProjectRoleGridGroupHeaderRowViewModel), "group")]
+public abstract record ProjectRoleGridRowViewModel;
+
+public record ProjectRoleGridCharacterRowViewModel(
     CharacterLinkWithEditViewModel Character,
     PlayerCellViewModel Player,
     GroupsCellViewModel? Groups,
-    IReadOnlyList<string> FieldValues);
+    IReadOnlyList<string> FieldValues) : ProjectRoleGridRowViewModel;
+
+public record ProjectRoleGridGroupHeaderRowViewModel(
+    CharacterGroupLinkSlimViewModel Group,
+    MarkupString? DescriptionHtml) : ProjectRoleGridRowViewModel;
 
 public record PlayerCellViewModel(
     CharacterApplyViewModel ApplyStatus,

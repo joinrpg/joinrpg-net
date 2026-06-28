@@ -24,6 +24,10 @@ public class AddProjectRolesListViewModel : IValidatableObject
     [Display(Name = "Колонка групп")]
     public ProjectRolesListVisibilityModeView GroupsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
 
+    [Display(Name = "Показывать дочерние группы в сетке ролей",
+        Description = "Группирует персонажей по дочерним группам.")]
+    public bool ShowCharacterGroups { get; set; }
+
     [Display(Name = "Колонки полей")]
     public IReadOnlyList<ProjectFieldIdentification> Fields { get; set; } = [];
 
@@ -46,7 +50,8 @@ public class AddProjectRolesListViewModel : IValidatableObject
             PublicMode: PublicMode,
             Fields: Fields,
             ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
-            GroupsColumn: ToDomainVisibilityMode(GroupsColumn));
+            GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
+            ShowCharacterGroups: ShowCharacterGroups);
     }
 
     protected static ProjectRolesListVisibilityMode ToDomainVisibilityMode(ProjectRolesListVisibilityModeView view)
@@ -72,6 +77,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             ContactsColumn = (ContactsColumnVisibilityModeView)domain.ContactsColumn,
             GroupsColumn = ToViewVisibilityMode(domain.GroupsColumn),
             Fields = domain.Fields,
+            ShowCharacterGroups = domain.ShowCharacterGroups,
         };
     }
 
@@ -84,7 +90,8 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             PublicMode: PublicMode,
             Fields: Fields,
             ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
-            GroupsColumn: ToDomainVisibilityMode(GroupsColumn));
+            GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
+            ShowCharacterGroups: ShowCharacterGroups);
     }
 }
 

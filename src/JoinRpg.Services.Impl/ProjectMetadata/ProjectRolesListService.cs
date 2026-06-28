@@ -17,6 +17,10 @@ internal class ProjectRolesListService(
     {
         logger.LogInformation("Создаём сетку ролей {Name} для проекта {ProjectId}", model.Name, model.ProjectRolesListId.ProjectId);
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(model.ProjectRolesListId.ProjectId);
+        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+        ValidateShowCharacterGroups(model, projectInfo);
+
         // Для создания игнорируем переданный ID, база данных сгенерирует новый
         var entity = CreateEntity(model);
         UpdateEntity(entity, model);
@@ -33,7 +37,8 @@ internal class ProjectRolesListService(
     {
         logger.LogInformation("Обновляем сетку ролей {ProjectRolesListId} (проект {ProjectId})", model.ProjectRolesListId.ProjectRolesListId, model.ProjectRolesListId.ProjectId);
 
-        var entity = await GetEntityOrThrow(model.ProjectRolesListId);
+        var (entity, projectInfo) = await GetEntityOrThrow(model.ProjectRolesListId);
+        ValidateShowCharacterGroups(model, projectInfo);
         UpdateEntity(entity, model);
 
         await UnitOfWork.SaveChangesAsync();
@@ -45,7 +50,7 @@ internal class ProjectRolesListService(
 
     public async Task RemoveAsync(ProjectRolesListIdentification id)
     {
-        var entity = await GetEntityOrThrow(id);
+        var (entity, _) = await GetEntityOrThrow(id);
 
         logger.LogInformation("Удаляем сетку ролей {ProjectRolesListId} (проект {ProjectId}) с именем {Name}",
             entity.ProjectRolesListId, entity.ProjectId, entity.Name);
@@ -58,11 +63,11 @@ internal class ProjectRolesListService(
 
     public async Task<ProjectRolesList> GetByIdAsync(ProjectRolesListIdentification id)
     {
-        var entity = await GetEntityOrThrow(id);
+        var (entity, _) = await GetEntityOrThrow(id);
         return ToDomain(entity);
     }
 
-    private async Task<DataModel.ProjectRolesList> GetEntityOrThrow(ProjectRolesListIdentification id)
+    private async Task<(DataModel.ProjectRolesList entity, ProjectInfo projectInfo)> GetEntityOrThrow(ProjectRolesListIdentification id)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
         projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
@@ -77,7 +82,7 @@ internal class ProjectRolesListService(
             throw new JoinRpgEntityNotFoundException(id.ProjectRolesListId, "ProjectRolesList");
         }
 
-        return entity;
+        return (entity, projectInfo);
     }
 
     private static DataModel.ProjectRolesList CreateEntity(ProjectRolesList model)
@@ -97,6 +102,7 @@ internal class ProjectRolesListService(
         entity.FieldIds = model.Fields.Select(f => f.ProjectFieldId).ToArray();
         entity.ContactsColumn = model.ContactsColumn;
         entity.GroupsColumn = model.GroupsColumn;
+        entity.ShowCharacterGroups = model.ShowCharacterGroups;
     }
 
     private static ProjectRolesList ToDomain(DataModel.ProjectRolesList entity)
@@ -115,7 +121,23 @@ internal class ProjectRolesListService(
             PublicMode: entity.PublicMode,
             Fields: fields,
             ContactsColumn: entity.ContactsColumn,
-            GroupsColumn: entity.GroupsColumn
+            GroupsColumn: entity.GroupsColumn,
+            ShowCharacterGroups: entity.ShowCharacterGroups
         );
+    }
+
+    private static void ValidateShowCharacterGroups(ProjectRolesList model, ProjectInfo projectInfo)
+    {
+        if (!model.ShowCharacterGroups || model.CharacterGroupId is not { } groupId)
+        {
+            return;
+        }
+
+        var group = projectInfo.GetGroupById(groupId.CharacterGroupId);
+        if (group.GroupType == CharacterGroupType.SpecialToValue)
+        {
+            throw new InvalidOperationException(
+                "Нельзя показывать группы для спец-группы-значения. Выберите обычную или корневую группу.");
+        }
     }
 }

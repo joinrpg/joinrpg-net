@@ -1,4 +1,7 @@
+using System.Data.Entity.SqlServer;
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Interfaces;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -9,16 +12,29 @@ internal class CharacterGroupRepository(
 {
     public async Task<CharacterGroupFullInfo?> GetCharacterGroupFullInfo(CharacterGroupIdentification id)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
-        if (!projectInfo.Groups.TryGetValue(id, out var groupInfo))
+        var results = await GetCharacterGroupsFullInfo([id]);
+        return results.Count == 0 ? null : results[0];
+    }
+
+    public async Task<IReadOnlyList<CharacterGroupFullInfo>> GetCharacterGroupsFullInfo(
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    {
+        if (groupIds.Count == 0)
         {
-            return null;
+            return [];
         }
 
-        var data = await ctx.Set<CharacterGroup>()
-            .Where(cg => cg.CharacterGroupId == id.CharacterGroupId && cg.ProjectId == id.ProjectId)
+        var projectId = groupIds.EnsureSameProject().First().ProjectId;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        var intIds = groupIds.Select(g => g.CharacterGroupId).ToList();
+
+        var rows = await ctx.Set<CharacterGroup>()
+            .AsExpandable()
+            .Where(cg => cg.ProjectId == projectId.Value && intIds.Contains(cg.CharacterGroupId))
             .Select(cg => new
             {
+                cg.CharacterGroupId,
                 cg.Description.Contents,
                 cg.CreatedAt,
                 cg.UpdatedAt,
@@ -34,27 +50,33 @@ internal class CharacterGroupRepository(
                 UpdatedSur = cg.UpdatedBy.SurName,
                 UpdatedFather = cg.UpdatedBy.FatherName,
                 UpdatedEmail = cg.UpdatedBy.Email,
+                CharacterCount = ctx.Set<Character>().Count(c =>
+                    c.ProjectId == projectId.Value &&
+                    SqlFunctions.CharIndex(
+                        "," + SqlFunctions.StringConvert((double?)cg.CharacterGroupId).Trim() + ",",
+                        "," + c.ParentGroupsImpl.ListIds + ",") > 0),
             })
-            .SingleOrDefaultAsync();
+            .ToListAsync();
 
-        if (data is null)
+        var result = new List<CharacterGroupFullInfo>(rows.Count);
+        foreach (var row in rows)
         {
-            return null;
+            var id = new CharacterGroupIdentification(projectId, row.CharacterGroupId);
+            if (!projectInfo.Groups.TryGetValue(id, out var groupInfo))
+            {
+                continue;
+            }
+
+            MarkdownString? description = row.Contents is null ? null : new MarkdownString(row.Contents);
+            var marks = new CreateUpdateMarksInfo(
+                row.CreatedAt,
+                BuildUserInfo(row.CreatedById, row.CreatedPreffered, row.CreatedBorn, row.CreatedSur, row.CreatedFather, row.CreatedEmail),
+                row.UpdatedAt,
+                BuildUserInfo(row.UpdatedById, row.UpdatedPreffered, row.UpdatedBorn, row.UpdatedSur, row.UpdatedFather, row.UpdatedEmail));
+
+            result.Add(new CharacterGroupFullInfo(groupInfo, row.CharacterCount, description, marks));
         }
-
-        var charactersCount = await ctx.Set<Character>()
-            .Where(CharacterPredicates.ByGroup([id]))
-            .CountAsync();
-
-        MarkdownString? description = data.Contents is null ? null : new MarkdownString(data.Contents);
-
-        var marks = new CreateUpdateMarksInfo(
-            data.CreatedAt,
-            BuildUserInfo(data.CreatedById, data.CreatedPreffered, data.CreatedBorn, data.CreatedSur, data.CreatedFather, data.CreatedEmail),
-            data.UpdatedAt,
-            BuildUserInfo(data.UpdatedById, data.UpdatedPreffered, data.UpdatedBorn, data.UpdatedSur, data.UpdatedFather, data.UpdatedEmail));
-
-        return new CharacterGroupFullInfo(groupInfo, charactersCount, description, marks);
+        return result;
     }
 
     private static UserInfoHeader? BuildUserInfo(int? userId, string? preffered, string? born, string? sur, string? father, string? email)
