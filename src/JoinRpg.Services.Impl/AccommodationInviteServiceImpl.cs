@@ -3,7 +3,6 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;

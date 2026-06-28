@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
 

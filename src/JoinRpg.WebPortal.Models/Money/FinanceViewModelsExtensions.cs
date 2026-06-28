@@ -1,5 +1,3 @@
-using JoinRpg.DomainTypes.Characters.Claims.Finances;
-
 namespace JoinRpg.Web.Models;
 
 public static class FinanceViewModelsExtensions
