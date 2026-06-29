@@ -49,6 +49,22 @@ public static class StaticStringHelpers
             : null;
     }
 
+    /// <summary>
+    /// Removes from the provided string all characters those not are letters, decimal digits, numbers, whitespaces
+    /// and characters explicitly provided in <paramref name="legalCharacters"/> set.
+    /// </summary>
+    /// <param name="str">String to transform.</param>
+    /// <param name="legalCharacters">Additional characters to keep.</param>
+    public static string KeepOnlyLettersNumbersAndLegalSymbols(this string str, HashSet<char> legalCharacters)
+    {
+        ArgumentNullException.ThrowIfNull(str);
+        ArgumentNullException.ThrowIfNull(legalCharacters);
+
+        return new string(
+            str.Where(ch => char.IsLetterOrDigit(ch) || char.IsNumber(ch) || char.IsWhiteSpace(ch) || legalCharacters.Contains(ch))
+                .ToArray());
+    }
+
     public static string RemoveFromString(
         this string str,
         IEnumerable<string> tokensToRemove,
