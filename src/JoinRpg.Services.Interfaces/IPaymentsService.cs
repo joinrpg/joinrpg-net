@@ -135,16 +135,34 @@ public class FastPaymentsSystemBank : FpsBank
 {
     private static readonly string[] ParasitePrefixes = ["Банк ", "АК ", "АБ ", "АКБ ", "ПНКО ", "КБ ", "НКО ", "СКБ ", "УКБ ", "РНКО ", "ИКБР "];
 
+    /// <summary>
+    /// Unique id of bank record.
+    /// </summary>
     public string Id { get; }
 
+    /// <summary>
+    /// Bank name as received from the FPS API, but cleaned from prefixes and illegal symbols.
+    /// </summary>
     public string ClearName { get; }
 
+    /// <summary>
+    /// Used to optimize search-while-typing. The first character of <see cref="ClearName"/> value.
+    /// </summary>
     public string First1 { get; }
 
+    /// <summary>
+    /// Used to optimize search-while-typing. The first two characters of <see cref="ClearName"/> value.
+    /// </summary>
     public string First2 { get; }
 
+    /// <summary>
+    /// Used to optimize search-while-typing. The first three characters of <see cref="ClearName"/> value.
+    /// </summary>
     public string First3 { get; }
 
+    /// <summary>
+    /// Used to optimize search-while-typing. The first four characters of <see cref="ClearName"/> value.
+    /// </summary>
     public string First4 { get; }
 
     public FastPaymentsSystemBank(FpsBank source, int index)
@@ -154,7 +172,12 @@ public class FastPaymentsSystemBank : FpsBank
         LogoUrl = source.LogoUrl;
         PaymentUrl = source.PaymentUrl;
 
-        ClearName = Name.RemoveFromString(ParasitePrefixes, StringComparison.InvariantCultureIgnoreCase).Trim().ToLowerInvariant();
+        // TODO : Refactor this sanitation to a single function
+        ClearName = Name
+            .Trim()
+            .RemoveFromString(ParasitePrefixes, StringComparison.InvariantCultureIgnoreCase)
+            .KeepOnlyLettersNumbersAndLegalSymbols(['-', '_', '.', '"', '«', '»'])
+            .ToLowerInvariant();
         First1 = ClearName.Substring(0, 1);
         First2 = ClearName.Substring(0, 2);
         First3 = ClearName.Substring(0, 3);
