@@ -134,6 +134,7 @@ public static class ProjectEntityExtensions
     [Obsolete]
     public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId);
 
+    [Obsolete]
     public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
     {
         var forumThread =
@@ -163,6 +164,7 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
+    [Obsolete]
     public static bool HasAnyAccess(this IForumThread forumThread, int? currentUserId)
     {
         ArgumentNullException.ThrowIfNull(forumThread);

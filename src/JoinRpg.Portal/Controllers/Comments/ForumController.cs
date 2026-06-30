@@ -18,34 +18,37 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/forums/{forumThreadId}/[action]")]
 public class ForumController(
     IProjectRepository projectRepository,
+    IProjectMetadataRepository projectMetadataRepository,
     IForumService forumService,
     IForumRepository forumRepository,
     IClaimsRepository claimsRepository,
     ICurrentUserAccessor currentUserAccessor,
     IClaimService claimService) : JoinControllerGameBase
 {
-    private int CurrentUserId => currentUserAccessor.UserId;
-
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
+    [ProjectShouldBeActive]
     [MasterAuthorize]
-    public async Task<ActionResult> CreateThread(int projectId, int charactergroupid)
+    public async Task<ActionResult> CreateThread(ProjectIdentification projectId, int charactergroupid)
     {
-        var characterGroup = await projectRepository.GetGroupAsync(projectId, charactergroupid);
-        if (characterGroup == null)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var group = projectInfo.GetGroupById(charactergroupid);
+        if (group is null)
         {
             return NotFound();
         }
-        return View(new CreateForumThreadViewModel(characterGroup.EnsureActive()));
+        return View(new CreateForumThreadViewModel(projectInfo, group));
     }
 
     [HttpPost("~/{projectId}/roles/{charactergroupid}/create-thread")]
+    [ProjectShouldBeActive]
     [MasterAuthorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateThread(CreateForumThreadViewModel viewModel)
     {
-        var group = (await projectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId)).EnsureActive();
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+        var group = projectInfo.GetGroupById(viewModel.CharacterGroupId);
 
-        viewModel.CharacterGroupName = group.CharacterGroupName;
-        viewModel.ProjectName = group.Project.ProjectName;
+        viewModel.CharacterGroupName = group.Name;
+        viewModel.ProjectName = projectInfo.ProjectName.Value;
 
         if (!ModelState.IsValid)
         {
@@ -68,9 +71,8 @@ public class ForumController(
         }
     }
 
-    [Authorize]
     [HttpGet]
-    public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
+    public async Task<ActionResult> ViewThread(ProjectIdentification projectid, int forumThreadId)
     {
         var forumThread = await GetForumThread(projectid, forumThreadId);
         if (forumThread == null)
@@ -78,21 +80,22 @@ public class ForumController(
             return NotFound();
         }
 
-        var viewModel = new ForumThreadViewModel(forumThread, CurrentUserId);
+        var viewModel = new ForumThreadViewModel(forumThread, currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
 
-    private async Task<ForumThread> GetForumThread(int projectid, int forumThreadId)
+    private async Task<ForumThread> GetForumThread(ProjectIdentification projectid, int forumThreadId)
     {
         var forumThread = await forumRepository.GetThread(new(projectid, forumThreadId));
-        var isMaster = forumThread.HasMasterAccess(currentUserAccessor);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
+        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var isPlayer = forumThread.IsVisibleToPlayer &&
-                       (await claimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
+                       (await claimsRepository.GetClaimsForPlayer(projectid, currentUserAccessor.UserIdentification, ClaimStatusSpec.Approved)).Any(
                          claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
 
         if (!isMaster && !isPlayer)
         {
-            throw new NoAccessToProjectException(forumThread, CurrentUserId);
+            throw new NoAccessToProjectException(projectInfo, currentUserAccessor.UserIdentification);
         }
         return forumThread;
     }
@@ -101,7 +104,7 @@ public class ForumController(
     public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
     {
         CommentDiscussion discussion = await forumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
-        discussion.RequestAnyAccess(CurrentUserId);
+        discussion.RequestAnyAccess(currentUserAccessor.UserIdentification);
 
         if (discussion == null)
         {
@@ -113,7 +116,7 @@ public class ForumController(
         {
             if (viewModel.HideFromUser)
             {
-                _ = discussion.RequestMasterAccess(CurrentUserId);
+                _ = discussion.RequestMasterAccess(currentUserAccessor.UserIdentification);
             }
 
             var claim = discussion.GetClaim();
@@ -148,13 +151,9 @@ public class ForumController(
     }
 
     [HttpGet("~/{projectId}/forums")]
-    public async Task<ActionResult> ListThreads(int projectid)
+    public async Task<ActionResult> ListThreads(ProjectIdentification projectid)
     {
-        var project = await projectRepository.GetProjectAsync(projectid);
-        if (project == null)
-        {
-            return NotFound();
-        }
+        var project = await projectMetadataRepository.GetProjectMetadata(projectid);
         var isMaster = project.HasMasterAccess(currentUserAccessor);
         IEnumerable<int>? groupIds;
         if (isMaster)
@@ -163,31 +162,32 @@ public class ForumController(
         }
         else
         {
-            var claims = await claimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
+            var claims = await claimsRepository.GetClaimsForPlayer(projectid, currentUserAccessor.UserIdentification, ClaimStatusSpec.Approved);
 
-            groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupIdsToTop().Select(g => g.CharacterGroupId));
+            groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupIdsToTop(project).Select(g => g.CharacterGroupId));
         }
-        var threads = await forumRepository.GetThreads(projectid, isMaster, groupIds);
-        var viewModel = new ForumThreadListViewModel(project, threads, CurrentUserId);
+        var threads = await forumRepository.GetThreads(projectid.Value, isMaster, groupIds);
+        var viewModel = new ForumThreadListViewModel(project, threads, currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
 
     [HttpGet("~/{projectId}/roles/{characterGroupId}/forums")]
-    public async Task<ActionResult> ListThreadsByGroup(int projectid, int characterGroupId)
+    public async Task<ActionResult> ListThreadsByGroup(ProjectIdentification projectid, int characterGroupId)
     {
-        var group = await projectRepository.GetGroupAsync(projectid, characterGroupId);
+        var group = await projectRepository.GetGroupAsync(new CharacterGroupIdentification(projectid, characterGroupId));
         if (group == null)
         {
             return NotFound();
         }
-        var isMaster = group.HasMasterAccess(currentUserAccessor);
-        var threads = await forumRepository.GetThreads(projectid, isMaster, new[] { characterGroupId });
-        var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentificationOrDefault)), CurrentUserId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
+        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
+        var threads = await forumRepository.GetThreads(projectid.Value, isMaster, new[] { characterGroupId });
+        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, group, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentification)), currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
 
     [HttpPost("~/{projectId}/forums/concealcomment")]
-    public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
+    public async Task<ActionResult> ConcealComment(ProjectIdentification projectid, int commentid, int commentDiscussionId)
     {
         await claimService.ConcealComment(projectid, commentid, commentDiscussionId);
         var discussion =

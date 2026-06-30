@@ -7,40 +7,31 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models;
 
-public class ForumThreadViewModel : IEntityWithCommentsViewModel
+public class ForumThreadViewModel(ForumThread forumThread, UserIdentification currentUserId) : IEntityWithCommentsViewModel
 {
-    public ForumThreadViewModel(ForumThread forumThread, int currentUserId)
-    {
-        RootComments = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
-        ProjectId = forumThread.ProjectId;
-        HasMasterAccess = forumThread.HasMasterAccess(new UserIdentification(currentUserId));
-        Header = forumThread.Header;
-        ProjectName = forumThread.Project.ProjectName;
-        CommentDiscussionId = forumThread.CommentDiscussionId;
-        GroupDetails = new CharacterGroupDetailsViewModel(forumThread.CharacterGroup, currentUserId, GroupNavigationPage.None);
-    }
+    public CharacterGroupDetailsViewModel GroupDetails { get; } = new CharacterGroupDetailsViewModel(forumThread.CharacterGroup, currentUserId, GroupNavigationPage.None);
 
-    public CharacterGroupDetailsViewModel GroupDetails { get; }
+    public IReadOnlyCollection<CommentViewModel> RootComments { get; } = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
 
-    public IReadOnlyCollection<CommentViewModel> RootComments { get; }
+    public int ProjectId { get; } = forumThread.ProjectId;
+    public bool HasMasterAccess { get; } = forumThread.HasMasterAccess(currentUserId);
 
-    public int ProjectId { get; }
-    public bool HasMasterAccess { get; }
+    public string ProjectName { get; } = forumThread.Project.ProjectName;
+    public string Header { get; } = forumThread.Header;
 
-    public string ProjectName { get; }
-    public string Header { get; }
-
-    public int CommentDiscussionId { get; }
+    public int CommentDiscussionId { get; } = forumThread.CommentDiscussionId;
 }
 
 public class CreateForumThreadViewModel
 {
-    public CreateForumThreadViewModel(CharacterGroup group)
+    public CreateForumThreadViewModel(ProjectInfo project, CharacterGroupInfo group)
     {
-        CharacterGroupId = group.CharacterGroupId;
-        CharacterGroupName = group.CharacterGroupName;
-        ProjectId = group.ProjectId;
-        ProjectName = group.Project.ProjectName;
+        CharacterGroupId = group.Id.CharacterGroupId;
+        CharacterGroupName = group.Name;
+        ProjectId = project.ProjectId.Value;
+        ProjectName = project.ProjectName.Value;
+        Header = "";
+        CommentText = "";
     }
 
     public CreateForumThreadViewModel() { }
@@ -65,30 +56,19 @@ public class CreateForumThreadViewModel
     public bool EmailEverybody { get; set; }
 }
 
-public class ForumThreadListViewModel
+public class ForumThreadListViewModel(ProjectInfo project, IEnumerable<IForumThreadListItem> threads, UserIdentification currentUserId)
 {
-    public ForumThreadListViewModel(Project project, IEnumerable<IForumThreadListItem> threads, int currentUserId)
-    {
-        ProjectName = project.ProjectName;
-        ProjectId = project.ProjectId;
-        RootGroupId = project.RootGroup.CharacterGroupId;
-        Items = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
-        HasMasterAccess = project.HasMasterAccess(new UserIdentification(currentUserId));
-    }
-
-    public IEnumerable<ForumThreadListItemViewModel> Items { get; }
-    public string ProjectName { get; }
-    public int ProjectId { get; }
-    public int RootGroupId { get; }
-    public bool HasMasterAccess { get; }
+    public IEnumerable<ForumThreadListItemViewModel> Items { get; } = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
+    public string ProjectName { get; } = project.ProjectName;
+    public int ProjectId { get; } = project.ProjectId;
+    public int RootGroupId { get; } = project.RootCharacterGroupId.CharacterGroupId;
+    public bool HasMasterAccess { get; } = project.HasMasterAccess(currentUserId);
 }
 
-public class ForumThreadListForGroupViewModel : ForumThreadListViewModel
+public class ForumThreadListForGroupViewModel(ProjectInfo projectInfo, CharacterGroup group, IEnumerable<IForumThreadListItem> threads,
+  UserIdentification currentUserId) : ForumThreadListViewModel(projectInfo, threads, currentUserId)
 {
-    public ForumThreadListForGroupViewModel(CharacterGroup group, IEnumerable<IForumThreadListItem> threads,
-      int currentUserId) : base(group.Project, threads, currentUserId) => GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Forums);
-
-    public CharacterGroupDetailsViewModel GroupModel { get; }
+    public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Forums);
 }
 
 public class ForumThreadListItemViewModel

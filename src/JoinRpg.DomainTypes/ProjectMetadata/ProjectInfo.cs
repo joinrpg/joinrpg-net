@@ -164,6 +164,8 @@ public record class ProjectInfo
         return Groups[groupId];
     }
 
+    public CharacterGroupInfo GetGroupById(CharacterGroupIdentification id) => Groups[id];
+
     public ProjectRolesList GetRolesListById(ProjectRolesListIdentification id)
     {
         return ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id)
