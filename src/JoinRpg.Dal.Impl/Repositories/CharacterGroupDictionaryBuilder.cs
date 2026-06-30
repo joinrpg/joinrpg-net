@@ -110,6 +110,7 @@ public static class CharacterGroupDictionaryBuilder
         }
 
         var rootGroupId = project.RootGroup.GetId();
+        var isSpecialById = project.CharacterGroups.ToDictionary(g => g.CharacterGroupId, g => g.IsSpecial);
 
         var dict = new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>();
         foreach (var group in project.CharacterGroups)
@@ -119,19 +120,35 @@ public static class CharacterGroupDictionaryBuilder
             var allChildGroups = GetAllChildGroups(group.CharacterGroupId);
             var allParentGroups = GetAllParentGroups(group.CharacterGroupId);
 
+            CharacterGroupType groupType;
+            if (group.IsRoot)
+            {
+                groupType = CharacterGroupType.Root;
+            }
+            else if (!group.IsSpecial)
+            {
+                groupType = CharacterGroupType.Regular;
+            }
+            else if (group.ParentCharacterGroupIds.Any(pid => isSpecialById.GetValueOrDefault(pid)))
+            {
+                groupType = CharacterGroupType.SpecialToValue;
+            }
+            else
+            {
+                groupType = CharacterGroupType.SpecialToField;
+            }
+
             var groupInfo = new CharacterGroupInfo(
                 Id: groupId,
                 Name: group.CharacterGroupName,
-                IsRoot: group.IsRoot,
                 IsActive: group.IsActive,
                 IsPublic: group.IsPublic,
-                IsSpecial: group.IsSpecial,
-                IsIntresting: !group.IsRoot && group.IsActive && (!group.IsSpecial || group.ParentCharacterGroupIds.Any(parentId => parentId != rootGroupId.Id)),
                 DirectChildGroupIds: childGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
                 ChildCharactersOrdering: group.ChildCharactersOrdering ?? "",
                 DirectParentGroupIds: parentGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
                 AllChildGroups: allChildGroups,
-                AllParentGroups: allParentGroups
+                AllParentGroups: allParentGroups,
+                GroupType: groupType
             );
             dict[groupId] = groupInfo;
         }

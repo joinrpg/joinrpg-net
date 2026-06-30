@@ -54,12 +54,7 @@ internal class CharacterGroupRepository(
             data.UpdatedAt,
             BuildUserInfo(data.UpdatedById, data.UpdatedPreffered, data.UpdatedBorn, data.UpdatedSur, data.UpdatedFather, data.UpdatedEmail));
 
-        return new CharacterGroupFullInfo(
-            groupInfo.Id, groupInfo.Name, groupInfo.IsRoot, groupInfo.IsActive,
-            groupInfo.IsPublic, groupInfo.IsSpecial, groupInfo.IsIntresting,
-            groupInfo.DirectChildGroupIds, groupInfo.ChildCharactersOrdering,
-            groupInfo.DirectParentGroupIds, groupInfo.AllChildGroups, groupInfo.AllParentGroups,
-            charactersCount, description, marks);
+        return new CharacterGroupFullInfo(groupInfo, charactersCount, description, marks);
     }
 
     private static UserInfoHeader? BuildUserInfo(int? userId, string? preffered, string? born, string? sur, string? father, string? email)

@@ -3,18 +3,29 @@ namespace JoinRpg.DomainTypes.ProjectMetadata;
 public record CharacterGroupFullInfo(
     CharacterGroupIdentification Id,
     string Name,
-    bool IsRoot,
     bool IsActive,
     bool IsPublic,
-    bool IsSpecial,
-    bool IsIntresting,
     IReadOnlyCollection<CharacterGroupIdentification> DirectChildGroupIds,
     string ChildCharactersOrdering,
     IReadOnlyCollection<CharacterGroupIdentification> DirectParentGroupIds,
     IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups,
+    CharacterGroupType GroupType,
     int DirectChildCharactersCount,
     MarkdownString? Description,
     CreateUpdateMarksInfo Marks
-) : CharacterGroupInfo(Id, Name, IsRoot, IsActive, IsPublic, IsSpecial, IsIntresting,
-    DirectChildGroupIds, ChildCharactersOrdering, DirectParentGroupIds, AllChildGroups, AllParentGroups);
+) : CharacterGroupInfo(Id, Name, IsActive, IsPublic, DirectChildGroupIds, ChildCharactersOrdering, DirectParentGroupIds, AllChildGroups, AllParentGroups, GroupType)
+
+{
+    public CharacterGroupFullInfo(CharacterGroupInfo groupInfo, int directChildCharactersCount,
+    MarkdownString? description,
+    CreateUpdateMarksInfo marks) : this(
+            groupInfo.Id, groupInfo.Name, groupInfo.IsActive, groupInfo.IsPublic,
+            groupInfo.DirectChildGroupIds, groupInfo.ChildCharactersOrdering, groupInfo.DirectParentGroupIds,
+            groupInfo.AllChildGroups, groupInfo.AllParentGroups,
+            groupInfo.GroupType,
+            directChildCharactersCount, description, marks)
+    {
+
+    }
+}
