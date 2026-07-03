@@ -137,7 +137,7 @@ public class PlotController(
             var versionId =
                 await plotService.CreatePlotElement(plotFolderId1, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType, isMasterOnly);
 
-            if (publishNow && string.IsNullOrWhiteSpace(todoField) && (targetGroupIds.Count != 0 || targetCharIds.Count != 0))
+            if (publishNow && string.IsNullOrWhiteSpace(todoField) && (isMasterOnly || targetGroupIds.Count != 0 || targetCharIds.Count != 0))
             {
                 await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
             }
