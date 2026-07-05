@@ -64,11 +64,14 @@
                 param-ItemIds="@Model.ItemsIds" />
             }
         }
-        <div>
-            <component type="typeof(PlotTargetDisplay)"
-            render-mode="Static"
-            param-Target="@Model.Target" />
-        </div>
+        @if (!Model.IsMasterOnly)
+        {
+            <div>
+                <component type="typeof(PlotTargetDisplay)"
+                render-mode="Static"
+                param-Target="@Model.Target" />
+            </div>
+        }
         @if (Model.HasMasterAccess)
         {
             if (Model.ThisPublished && Model.Status != PlotStatus.Completed)
