@@ -15,6 +15,8 @@ internal abstract record ProjectOperationContext(DateTimeOffset Now, ICurrentUse
 /// </summary>
 /// <param name="Project">Трекаемая EF-сущность проекта; её и нужно мутировать.</param>
 /// <param name="ProjectInfo">Снимок метаданных ДО изменения.</param>
+/// <param name="Now">Время выполнения операции</param>
+/// <param name="CurrentUser">Текущий пользователь</param>
 /// <param name="RemovePermanently">Окончательное удаление под-сущности из того же DbContext (см. <see cref="ProjectOperationContextExtensions.SmartDelete"/>).</param>
 internal abstract record ProjectMutationContext(
     Project Project,
@@ -51,6 +53,24 @@ internal static class ProjectOperationContextExtensions
 
     public static void MarkChanged(this ProjectOperationContext ctx, ICreatedUpdatedTrackedForEntity entity)
         => EntityAudit.MarkChanged(entity, ctx.Now.UtcDateTime, ctx.CurrentUser.UserId);
+
+    /// <summary>
+    /// Резолвит группу для изменения: возвращает трекаемую сущность и её метаданные, проверяет, что
+    /// группа обычная (<see cref="CharacterGroupType.Regular"/>) — root и специальные группы менять
+    /// нельзя — и помечает сущность изменённой.
+    /// </summary>
+    public static (CharacterGroup Group, CharacterGroupInfo GroupInfo) GetCharacterGroupForChange(
+        this ProjectMutationContext ctx, CharacterGroupIdentification id)
+    {
+        var group = ctx.Project.CharacterGroups.Single(g => g.CharacterGroupId == id.CharacterGroupId);
+        var groupInfo = ctx.ProjectInfo.Groups[id];
+        if (groupInfo.GroupType != CharacterGroupType.Regular)
+        {
+            throw new InvalidOperationException();
+        }
+        ctx.MarkChanged(group);
+        return (group, groupInfo);
+    }
 
     /// <summary>
     /// «Умное» удаление под-сущности существующего проекта: permanent — через DbContext контекста,
