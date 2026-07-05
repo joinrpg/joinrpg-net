@@ -160,7 +160,7 @@ internal static class ProjectRoleGridViewModelBuilder
         }
 
         var links = groups
-            .Select(g => new CharacterGroupLinkSlimViewModel(g.Id, g.Name, g.IsPublic, g.IsActive))
+            .Select(g => new CharacterGroupLinkSlimViewModel(g))
             .ToList();
         return new GroupsCellViewModel(links);
     }

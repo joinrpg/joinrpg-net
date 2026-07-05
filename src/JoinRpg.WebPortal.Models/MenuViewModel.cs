@@ -17,8 +17,7 @@ public class MenuViewModelBase(ProjectInfo projectInfo, ICurrentUserAccessor cur
 
     protected static IEnumerable<CharacterGroupLinkSlimViewModel> LoadBigGroups(ProjectInfo projectInfo)
     {
-        return projectInfo.GetDirectChildGroups(projectInfo.RootCharacterGroupId)
-            .Select(dto => new CharacterGroupLinkSlimViewModel(dto.Id, dto.Name, dto.IsPublic, dto.IsActive));
+        return projectInfo.GetDirectChildGroups(projectInfo.RootCharacterGroupId).Select(dto => new CharacterGroupLinkSlimViewModel(dto));
     }
 }
 
