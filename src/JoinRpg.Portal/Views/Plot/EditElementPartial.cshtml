@@ -57,7 +57,7 @@
             @if (Model.ItemsIds is not null)
             {
                 var orderElementsEndpoint = Url.Action("ReorderElements", "Plot", new { Model.ProjectId });
-                <component type="typeof(JoinMoveControl)"
+                <component type="typeof(JoinMoveControlNonInteractive)"
                 render-mode="Static"
                 param-Endpoint="@orderElementsEndpoint"
                 param-SelfId="@Model.PlotElementIdentification.ToString()"
