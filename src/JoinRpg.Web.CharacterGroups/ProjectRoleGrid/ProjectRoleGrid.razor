@@ -47,50 +47,66 @@ else
         <tbody>
             @foreach (var row in Model.Rows)
             {
-                <tr>
-                    <td><CharacterLinkWithEdit Model="row.Character" /></td>
-                    <td>
-                        @if (row.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
-                        {
-                            <text>NPC</text>
-                        }
-                        else if (row.Player.ApplyStatus.IsSlot)
-                        {
-                            <text>шаблон</text>
-                        }
-                        else if (row.Player.Link is { } link)
-                        {
-                            <UserLink Model="link" />
-                        }
-                        else
-                        {
-                            <text>нет&nbsp;игрока</text>
-                        }
-                        @if (row.Player.Contacts is not null)
-                        {
-                            <text> (</text><UserContactsView Contacts="row.Player.Contacts" /><text>)</text>
-                        }
-                        <text> </text>
-                        <ApplyForCharacterButton Model="row.Player.ApplyStatus" />
-                    </td>
-                    @if (row.Groups is { } groups)
-                    {
-                        <td>
-                            @for (var i = 0; i < groups.Groups.Count; i++)
+                @if (row is ProjectRoleGridGroupHeaderRowViewModel groupHeader)
+                {
+                    var colspan = 2 + (Model.HasGroupsColumn ? 1 : 0) + Model.FieldColumnNames.Count;
+                    <tr class="table-secondary">
+                        <td colspan="@colspan">
+                            <strong><CharacterGroupLink Model="groupHeader.Group" /></strong>
+                            @if (groupHeader.DescriptionHtml is { } description)
                             {
-                                if (i > 0)
-                                {
-                                    <text>, </text>
-                                }
-                                <CharacterGroupLink Model="groups.Groups[i]" />
+                                <br />@description
                             }
                         </td>
-                    }
-                    @foreach (var fieldValue in row.FieldValues)
-                    {
-                        <td>@fieldValue</td>
-                    }
-                </tr>
+                    </tr>
+                }
+                else if (row is ProjectRoleGridCharacterRowViewModel charRow)
+                {
+                    <tr>
+                        <td><CharacterLinkWithEdit Model="charRow.Character" /></td>
+                        <td>
+                            @if (charRow.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
+                            {
+                                <text>NPC</text>
+                            }
+                            else if (charRow.Player.ApplyStatus.IsSlot)
+                            {
+                                <text>шаблон</text>
+                            }
+                            else if (charRow.Player.Link is { } link)
+                            {
+                                <UserLink Model="link" />
+                            }
+                            else
+                            {
+                                <text>нет&nbsp;игрока</text>
+                            }
+                            @if (charRow.Player.Contacts is not null)
+                            {
+                                <text> (</text><UserContactsView Contacts="charRow.Player.Contacts" /><text>)</text>
+                            }
+                            <text> </text>
+                            <ApplyForCharacterButton Model="charRow.Player.ApplyStatus" />
+                        </td>
+                        @if (charRow.Groups is { } groups)
+                        {
+                            <td>
+                                @for (var i = 0; i < groups.Groups.Count; i++)
+                                {
+                                    if (i > 0)
+                                    {
+                                        <text>, </text>
+                                    }
+                                    <CharacterGroupLink Model="groups.Groups[i]" />
+                                }
+                            </td>
+                        }
+                        @foreach (var fieldValue in charRow.FieldValues)
+                        {
+                            <td>@fieldValue</td>
+                        }
+                    </tr>
+                }
             }
         </tbody>
     </table>

@@ -67,7 +67,8 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 PublicMode: true,
                 Fields: [],
                 ContactsColumn: ProjectRolesListVisibilityMode.None,
-                GroupsColumn: ProjectRolesListVisibilityMode.None));
+                GroupsColumn: ProjectRolesListVisibilityMode.None,
+                ShowCharacterGroups: true));
 
             return (created.ProjectRolesListId, names);
         });
@@ -115,7 +116,8 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 PublicMode: false,
                 Fields: [],
                 ContactsColumn: ProjectRolesListVisibilityMode.None,
-                GroupsColumn: ProjectRolesListVisibilityMode.None));
+                GroupsColumn: ProjectRolesListVisibilityMode.None,
+                ShowCharacterGroups: true));
             return created.ProjectRolesListId;
         });
 

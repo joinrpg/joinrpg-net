@@ -43,7 +43,8 @@ public class ProjectRolesListViewModelBuilderTests
                 PublicMode: true,
                 [],
                 ProjectRolesListVisibilityMode.All,
-                ProjectRolesListVisibilityMode.All),
+                ProjectRolesListVisibilityMode.All,
+                ShowCharacterGroups: false),
         };
 
         var result = ProjectRolesListViewModelBuilder.Build(
@@ -68,7 +69,8 @@ public class ProjectRolesListViewModelBuilderTests
                 PublicMode: true,
                 [],
                 ProjectRolesListVisibilityMode.All,
-                ProjectRolesListVisibilityMode.All),
+                ProjectRolesListVisibilityMode.All,
+                ShowCharacterGroups: false),
         };
 
         var result = ProjectRolesListViewModelBuilder.Build(
@@ -107,7 +109,8 @@ public class ProjectRolesListViewModelBuilderTests
             PublicMode: true,
             [],
             ProjectRolesListVisibilityMode.All,
-            ProjectRolesListVisibilityMode.All);
+            ProjectRolesListVisibilityMode.All,
+            ShowCharacterGroups: false);
 
         var characterGroupNames = new Dictionary<CharacterGroupIdentification, string>
         {
@@ -135,7 +138,8 @@ public class ProjectRolesListViewModelBuilderTests
             PublicMode: true,
             [],
             ProjectRolesListVisibilityMode.All,
-            ProjectRolesListVisibilityMode.All);
+            ProjectRolesListVisibilityMode.All,
+            ShowCharacterGroups: false);
 
         var result = ProjectRolesListViewModelBuilder.Build(
             [domainItem],

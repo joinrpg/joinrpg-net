@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Markdown;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.ProjectCommon;
@@ -17,7 +18,9 @@ internal static class ProjectRoleGridViewModelBuilder
         string? groupName,
         bool canEditSettings,
         bool canViewPrivate,
-        IReadOnlyCollection<Character> characters,
+        IReadOnlyList<CharacterGroupInfo> orderedGroups,
+        ILookup<CharacterGroupIdentification, Character> charactersByGroup,
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         ProjectInfo projectInfo)
     {
         var hasGroupsColumn = config.GroupsColumn != ProjectRolesListVisibilityMode.None;
@@ -25,13 +28,7 @@ internal static class ProjectRoleGridViewModelBuilder
         var fields = config.Fields.Select(projectInfo.GetFieldById).ToList();
         var fieldColumnNames = fields.Select(f => f.Name).ToList();
 
-        // Приватные персонажи (CharacterVisibility.Private) видны только мастеру —
-        // не-мастеру строки нет вообще (как в CharacterListViewService).
-        var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic);
-
-        var rows = visibleCharacters
-            .Select(character => BuildRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields))
-            .ToList();
+        var rows = BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
@@ -43,7 +40,44 @@ internal static class ProjectRoleGridViewModelBuilder
             Rows: rows);
     }
 
-    private static ProjectRoleGridRowViewModel BuildRow(
+    private static List<ProjectRoleGridRowViewModel> BuildRows(
+        ProjectRolesList config,
+        IReadOnlyList<CharacterGroupInfo> orderedGroups,
+        ILookup<CharacterGroupIdentification, Character> charactersByGroup,
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        bool hasGroupsColumn,
+        bool canViewPrivate,
+        bool canEditSettings,
+        IReadOnlyList<ProjectFieldInfo> fields,
+        ProjectInfo projectInfo)
+    {
+        var result = new List<ProjectRoleGridRowViewModel>();
+        var seen = new HashSet<int>();
+
+        foreach (var group in orderedGroups)
+        {
+            if (config.ShowCharacterGroups)
+            {
+                var description = groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString();
+                var groupLink = new CharacterGroupLinkSlimViewModel(group);
+                result.Add(new ProjectRoleGridGroupHeaderRowViewModel(groupLink, description));
+            }
+
+            var ordered = charactersByGroup[group.Id]
+                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering);
+            foreach (var character in ordered)
+            {
+                if (config.ShowCharacterGroups || seen.Add(character.CharacterId))
+                {
+                    result.Add(BuildCharacterRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static ProjectRoleGridCharacterRowViewModel BuildCharacterRow(
         Character character,
         ProjectRolesList config,
         ProjectInfo projectInfo,
@@ -72,7 +106,7 @@ internal static class ProjectRoleGridViewModelBuilder
         var fieldsDict = character.GetFieldsDict(projectInfo);
         var fieldValues = fields.Select(f => fieldsDict[f.Id].DisplayString).ToList();
 
-        return new ProjectRoleGridRowViewModel(characterLink, player, groups, fieldValues);
+        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues);
     }
 
     private static PlayerCellViewModel BuildPlayerCell(
@@ -159,9 +193,7 @@ internal static class ProjectRoleGridViewModelBuilder
             groups = groups.Where(g => g.IsPublic);
         }
 
-        var links = groups
-            .Select(g => new CharacterGroupLinkSlimViewModel(g))
-            .ToList();
+        var links = groups.Select(g => new CharacterGroupLinkSlimViewModel(g)).ToList();
         return new GroupsCellViewModel(links);
     }
 }

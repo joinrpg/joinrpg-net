@@ -19,6 +19,7 @@ public enum ProjectRolesListVisibilityMode { None, PublicOnly, All }
 /// <param name="Fields">Список полей, для которых в этой сетке ролей есть колонки</param>
 /// <param name="ContactsColumn">Показывать ли специальную колонку с контактами (нет, только публичные контакты, все контакты)</param>
 /// <param name="GroupsColumn">Показывать ли специальную колонку «интересные группы» (нет, только публичные группы, все группы)</param>
+/// <param name="ShowCharacterGroups">Показывать ли дочерние группы как секции в сетке ролей</param>
 public record class ProjectRolesList(
     ProjectRolesListIdentification ProjectRolesListId,
     string Name,
@@ -26,7 +27,8 @@ public record class ProjectRolesList(
     bool PublicMode,
     IReadOnlyList<ProjectFieldIdentification> Fields,
     ProjectRolesListVisibilityMode ContactsColumn,
-    ProjectRolesListVisibilityMode GroupsColumn
+    ProjectRolesListVisibilityMode GroupsColumn,
+    bool ShowCharacterGroups
     )
 {
     //TODO проверять на валидность, например, что в публичной сетке ролей не может быть колонки со всеми контактами

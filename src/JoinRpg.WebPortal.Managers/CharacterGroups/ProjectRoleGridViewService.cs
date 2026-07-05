@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
@@ -10,6 +9,7 @@ namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 internal class ProjectRoleGridViewService(
     IProjectRepository projectRepository,
     IProjectMetadataRepository projectMetadataRepository,
+    ICharacterGroupRepository characterGroupRepository,
     ICurrentUserAccessor currentUserAccessor)
     : IProjectRoleGridClient
 {
@@ -32,7 +32,21 @@ internal class ProjectRoleGridViewService(
             .Where(c => c.IsActive)
             .ToList();
 
-        var orderedCharacters = OrderCharacters(characters, projectInfo, groupId);
+        var orderedGroups = projectInfo.GetChildGroupsIncludingThis(groupId).ToList();
+
+        // Скрытое (приватные персонажи и скрытые игроки) видит только мастер.
+        var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
+        var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic).ToList();
+
+        var charactersByGroup = visibleCharacters
+            .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
+            .ToLookup(x => x.group, x => x.character);
+
+        var groupFullInfos =
+            config.ShowCharacterGroups
+                ? (await characterGroupRepository.GetCharacterGroupsFullInfo([.. orderedGroups.Select(g => g.Id)]))
+                    .ToDictionary(g => g.Id)
+                : [];
 
         var groupName = projectInfo.GetGroupById(groupId.CharacterGroupId).Name;
 
@@ -40,43 +54,11 @@ internal class ProjectRoleGridViewService(
             currentUserAccessor.UserIdentificationOrDefault,
             Permission.CanEditRoles);
 
-        // Скрытое (приватные персонажи и скрытые игроки) видит только мастер.
-        // На публичной сетке не-мастер/аноним их не увидит.
-        var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
-
-        var grid = ProjectRoleGridViewModelBuilder.Build(config, groupName, canEditSettings, canViewPrivate, orderedCharacters, projectInfo);
-        return new ProjectRoleGridViewResult(HasAccess: true, Grid: grid, NoAccess: null);
-    }
-
-    /// <summary>
-    /// Детерминированный порядок: упорядоченный DFS по группам (ChildGroupsOrdering уже зашит в снепшоте),
-    /// внутри каждой группы — прямые персонажи в порядке ChildCharactersOrdering. Персонаж, входящий
-    /// в несколько групп, берётся по первому вхождению.
-    /// </summary>
-    private static List<Character> OrderCharacters(
-        IReadOnlyCollection<Character> characters,
-        ProjectInfo projectInfo,
-        CharacterGroupIdentification groupId)
-    {
-        var charactersByGroup = characters
-            .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
-            .ToLookup(x => x.group, x => x.character);
-
-        var result = new List<Character>();
-        var seen = new HashSet<int>();
-        foreach (var group in projectInfo.GetChildGroupsIncludingThis(groupId))
-        {
-            var ordered = charactersByGroup[group.Id]
-                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering);
-            foreach (var character in ordered)
-            {
-                if (seen.Add(character.CharacterId))
-                {
-                    result.Add(character);
-                }
-            }
-        }
-
-        return result;
+        return new ProjectRoleGridViewResult(
+            HasAccess: true,
+            Grid: ProjectRoleGridViewModelBuilder.Build(
+                config, groupName, canEditSettings, canViewPrivate,
+                orderedGroups, charactersByGroup, groupFullInfos, projectInfo),
+            NoAccess: null);
     }
 }

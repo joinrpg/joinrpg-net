@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.CharacterGroups\JoinRpg.Web.CharacterGroups.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
