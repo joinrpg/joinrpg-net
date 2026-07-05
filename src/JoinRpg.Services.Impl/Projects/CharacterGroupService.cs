@@ -39,8 +39,6 @@ internal class CharacterGroupService(
             Description = new MarkdownDbValue(description),
         });
 
-        MarkTreeModified(project);
-
         await UnitOfWork.SaveChangesAsync();
 
         return new CharacterGroupIdentification(projectId, group.CharacterGroupId);
@@ -80,7 +78,6 @@ internal class CharacterGroupService(
                 ensureNotSpecial: true);
         characterGroup.Description = new MarkdownDbValue(description);
 
-        MarkTreeModified(characterGroup.Project);
         MarkChanged(characterGroup);
         await UnitOfWork.SaveChangesAsync();
     }
@@ -114,7 +111,6 @@ internal class CharacterGroupService(
                 .Union(characterGroup.ParentCharacterGroupIds).ToArray();
         }
 
-        MarkTreeModified(characterGroup.Project);
         MarkChanged(characterGroup);
 
         if (characterGroup.CanBePermanentlyDeleted)
