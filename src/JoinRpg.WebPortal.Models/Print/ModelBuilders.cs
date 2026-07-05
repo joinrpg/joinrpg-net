@@ -22,11 +22,9 @@ public static class ModelBuilders
             ResponsibleMaster: projectInfo.Masters.First(m => m.UserId == respMasterId).ToUserLinkViewModel(),
             Groups: [.. character.GetIntrestingGroupsForDisplayToTop(projectInfo)
             .Where(g => g.IsPublic)
-            .Select(g => g.ToCharacterGroupLinkSlimViewModel())],
+            .Select(g => new CharacterGroupLinkSlimViewModel(g))],
             PlayerPhoneNumber: approvedClaim?.Player.Extra?.PhoneNumber,
             ProjectName: projectInfo.ProjectName
             );
     }
-
-    public static CharacterGroupLinkSlimViewModel ToCharacterGroupLinkSlimViewModel(this CharacterGroupInfo g) => new(g.Id, g.Name, g.IsPublic, g.IsActive);
 }
