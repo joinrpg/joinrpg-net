@@ -2,13 +2,13 @@
   <Folder Name="/Common/">
     <Project Path="src/JoinRpg.Common.BastiliaRatingClient/JoinRpg.Common.BastiliaRatingClient.csproj" Id="6a466ef2-b96b-473f-95df-04c08b04cae8" />
     <Project Path="src/JoinRpg.Common.KogdaIgraClient/JoinRpg.Common.KogdaIgraClient.csproj" Id="881e9784-9199-4f85-b173-9e91a15403e2" />
+    <Project Path="src/JoinRpg.Common.PrimitiveTypes.SourceGenerator/JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" />
     <Project Path="src/JoinRpg.Common.PrimitiveTypes.Test/JoinRpg.Common.PrimitiveTypes.Test.csproj" />
     <Project Path="src/JoinRpg.Common.PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.csproj" />
     <Project Path="src/JoinRpg.Common.Telegram/JoinRpg.Common.Telegram.csproj" />
     <Project Path="src/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
     <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
     <Project Path="src/JoinRpg.Markdown/JoinRpg.Markdown.csproj" />
-    <Project Path="src/JoinRpg.Common.PrimitiveTypes.SourceGenerator/JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj" />
   </Folder>
   <Folder Name="/Dal/">
     <Project Path="src/JoinRpg.Dal.Impl/JoinRpg.Dal.Impl.csproj" />
@@ -20,10 +20,10 @@
   </Folder>
   <Folder Name="/IdPortal/">
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Client/JoinRpg.IdPortal.Client.csproj" />
+    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer.Test/JoinRpg.IdPortal.OAuthServer.Test.csproj" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer/JoinRpg.IdPortal.OAuthServer.csproj" Id="cbd70223-978c-4afe-b74d-72a41aaddbe7" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Test/JoinRpg.IdPortal.Test.csproj" Id="8fb2fca5-89b5-4c67-9738-bf0ff06aad27" />
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj" />
-    <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.OAuthServer.Test/JoinRpg.IdPortal.OAuthServer.Test.csproj" />
   </Folder>
   <Folder Name="/Services/">
     <Project Path="src/JoinRpg.DomainTypes/JoinRpg.DomainTypes.csproj" />
@@ -66,10 +66,11 @@
     <Project Path="src/JoinRpg.Services.Impl.Test/JoinRpg.Services.Impl.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Notifications.Tests/JoinRpg.Services.Notifications.Tests.csproj" />
     <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
+    <Project Path="src/JoinRpg.Web.CharacterGroups.Test/JoinRpg.Web.CharacterGroups.Test.csproj" Id="b5cb2aae-df4c-4a0c-9a0c-30be2c4840f6" />
+    <Project Path="src/JoinRpg.Web.ProjectMasterTools.Tests/JoinRpg.Web.ProjectMasterTools.Tests.csproj" />
     <Project Path="src/JoinRpg.WebComponents.Test/JoinRpg.WebComponents.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
-    <Project Path="src/JoinRpg.Web.ProjectMasterTools.Tests/JoinRpg.Web.ProjectMasterTools.Tests.csproj" />
   </Folder>
   <Folder Name="/WebPortalShared/">
     <Project Path="src/JoinRpg.Blazor.Client/JoinRpg.Blazor.Client.csproj" />
