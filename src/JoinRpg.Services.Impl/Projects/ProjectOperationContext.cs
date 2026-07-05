@@ -52,9 +52,6 @@ internal static class ProjectOperationContextExtensions
     public static void MarkChanged(this ProjectOperationContext ctx, ICreatedUpdatedTrackedForEntity entity)
         => EntityAudit.MarkChanged(entity, ctx.Now.UtcDateTime, ctx.CurrentUser.UserId);
 
-    public static void MarkTreeModified(this ProjectOperationContext ctx, Project project)
-        => project.CharacterTreeModifiedAt = ctx.Now.UtcDateTime;
-
     /// <summary>
     /// «Умное» удаление под-сущности существующего проекта: permanent — через DbContext контекста,
     /// иначе soft-delete (<c>IsActive = false</c>).

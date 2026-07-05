@@ -37,7 +37,6 @@ internal class ProjectService(
                     Details = new DataModel.ProjectDetails() { ClonedFromProjectId = ctx.Request.cloneFrom?.Value, },
                     ProjectFields = [],
                 };
-                ctx.MarkTreeModified(project);
 
                 return project;
             });

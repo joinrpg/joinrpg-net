@@ -447,7 +447,6 @@ internal class ClaimServiceImpl(
     {
 
         _ = projectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification, Permission.CanEditRoles);
-        MarkTreeModified(character.Project);
 
         character.DirectlyRelatedPlotElements.CleanLinksList();
 

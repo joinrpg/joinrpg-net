@@ -39,7 +39,6 @@ internal class CharacterServiceImpl(
         SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
 
         Create(character);
-        MarkTreeModified(project);
 
         //TODO we do not send message for creating character
         _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
@@ -93,7 +92,6 @@ internal class CharacterServiceImpl(
             projectInfo);
 
         MarkChanged(character);
-        MarkTreeModified(character.Project); //TODO: Can be smarter
 
         FieldsChangedEmail? email = null;
 
@@ -124,8 +122,6 @@ internal class CharacterServiceImpl(
         {
             throw new DbEntityValidationException();
         }
-
-        MarkTreeModified(character.Project);
 
         if (character.CanBePermanentlyDeleted)
         {

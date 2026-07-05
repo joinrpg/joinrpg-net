@@ -144,7 +144,5 @@ public class DbServiceImplBase
     protected void MarkChanged(ICreatedUpdatedTrackedForEntity entity)
         => EntityAudit.MarkChanged(entity, Now, CurrentUserId);
 
-    protected void MarkTreeModified(Project project) => project.CharacterTreeModifiedAt = Now;
-
     protected async Task<User> GetCurrentUser() => await UserRepository.GetById(CurrentUserId);
 }

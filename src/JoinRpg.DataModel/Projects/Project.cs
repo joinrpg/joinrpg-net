@@ -41,7 +41,8 @@ public class Project : IProjectEntity
     public virtual ICollection<ProjectFeeSetting> ProjectFeeSettings { get; set; }
     public virtual ICollection<PaymentType> PaymentTypes { get; set; }
 
-    public DateTime CharacterTreeModifiedAt { get; set; }
+    [Obsolete("Будет заменено на версию метаданных")]
+    public DateTime CharacterTreeModifiedAt { get; set; } = DateTime.Now; // Чтобы не падало создание проекта.
 
     #region helper properties
 
