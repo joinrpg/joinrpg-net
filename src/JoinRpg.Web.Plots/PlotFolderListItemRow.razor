@@ -43,7 +43,7 @@
                                       Label="Удалить" />
 
                           @*Здесь нужна кнопка восстановить *@
-                          <JoinMoveControl SkipGroup="true"
+                          <JoinMoveControlNonInteractive SkipGroup="true"
                                            Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
                       }
                   </JoinButtonGroup>

@@ -36,7 +36,7 @@
                     @if (ShowEditControls)
                     {
                         <EditPlotElementButton Id="plotText.PlotVersionId.PlotElementId" />
-                        <JoinMoveControl Endpoint="@endpoint" SelfId="@plotText.PlotVersionId.PlotElementId.ToString()" ItemIds="@itemIds" />
+                        <JoinMoveControlNonInteractive Endpoint="@endpoint" SelfId="@plotText.PlotVersionId.PlotElementId.ToString()" ItemIds="@itemIds" />
                     }
                 </div>
 
