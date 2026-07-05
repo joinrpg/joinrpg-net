@@ -53,7 +53,7 @@ else
                     <tr class="table-secondary">
                         <td colspan="@colspan">
                             <strong><CharacterGroupLink Model="groupHeader.Group" /></strong>
-                            @if (groupHeader.DescriptionHtml is { } description)
+                            @if (groupHeader.Description is { } description)
                             {
                                 <br />@description
                             }
@@ -131,7 +131,7 @@ else
 
     private Task PersistData()
     {
-        ApplicationState.PersistAsJson(nameof(ProjectRoleGrid), Result);
+        // Почему-то Description отваливается. ApplicationState.PersistAsJson(nameof(ProjectRoleGrid), Result);
         return Task.CompletedTask;
     }
 

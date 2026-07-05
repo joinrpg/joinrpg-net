@@ -43,7 +43,11 @@ public record ProjectRoleGridCharacterRowViewModel(
 
 public record ProjectRoleGridGroupHeaderRowViewModel(
     CharacterGroupLinkSlimViewModel Group,
-    MarkupString? DescriptionHtml) : ProjectRoleGridRowViewModel;
+    string? DescriptionHtml) : ProjectRoleGridRowViewModel
+{
+    // Это нужно, потому что MarkupString не умеет нормально десереиализоваться из JSON
+    public MarkupString? Description { get; } = DescriptionHtml is null ? null : new MarkupString(DescriptionHtml);
+}
 
 public record PlayerCellViewModel(
     CharacterApplyViewModel ApplyStatus,

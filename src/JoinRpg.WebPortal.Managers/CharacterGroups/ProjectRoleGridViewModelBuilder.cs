@@ -58,7 +58,7 @@ internal static class ProjectRoleGridViewModelBuilder
         {
             if (config.ShowCharacterGroups)
             {
-                var description = groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString();
+                var description = groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString().Value;
                 var groupLink = new CharacterGroupLinkSlimViewModel(group);
                 result.Add(new ProjectRoleGridGroupHeaderRowViewModel(groupLink, description));
             }
