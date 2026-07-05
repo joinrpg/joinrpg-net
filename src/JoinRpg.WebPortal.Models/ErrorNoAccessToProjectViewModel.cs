@@ -1,22 +1,20 @@
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
+using JoinRpg.Web.ProjectCommon.Masters;
 
 namespace JoinRpg.Web.Models;
 
-public class ErrorNoAccessToProjectViewModel
+public static class NoAccessToProjectViewModelBuilder
 {
-    public string ProjectName { get; }
-    public int ProjectId { get; }
-    public IEnumerable<UserLinkViewModel> CanGrantAccess { get; }
-    public Permission Permission { get; }
-
-    public ErrorNoAccessToProjectViewModel(ProjectInfo project, Permission permission = Permission.None)
+    public static NoAccessToProjectViewModel Build(ProjectInfo project, Permission permission = Permission.None)
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        CanGrantAccess = project.Masters.Where(master => master.Permissions.Contains(Permission.CanGrantRights)).Select(master => master.ToUserLinkViewModel());
-        ProjectId = project.ProjectId;
-        ProjectName = project.ProjectName;
-        Permission = permission;
+        return new NoAccessToProjectViewModel(
+            new ProjectIdentification(project.ProjectId),
+            project.ProjectName,
+            permission == Permission.None ? null : new PermissionBadgeViewModel(permission, Value: false),
+            [.. project.Masters
+                .Where(master => master.Permissions.Contains(Permission.CanGrantRights))
+                .Select(master => master.ToUserLinkViewModel())]);
     }
 }

@@ -7,6 +7,7 @@ using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
+using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
@@ -102,5 +103,34 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
             anonJson.ShouldContain(name);
         }
         anonJson.ShouldNotContain(privateName);
+
+        // 7. Непубличная сетка: мастер видит данные, аноним получает «нет доступа» (200, а не ошибка)
+        var privateRolesListId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var rolesListService = sp.GetRequiredService<IProjectRolesListService>();
+            var created = await rolesListService.CreateAsync(new ProjectRolesList(
+                new ProjectRolesListIdentification(projectId, -1),
+                "Мастерская сетка",
+                CharacterGroupId: null,
+                PublicMode: false,
+                Fields: [],
+                ContactsColumn: ProjectRolesListVisibilityMode.None,
+                GroupsColumn: ProjectRolesListVisibilityMode.None));
+            return created.ProjectRolesListId;
+        });
+
+        var privateApiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={privateRolesListId.ProjectRolesListId}";
+
+        var masterPrivateResult = await masterClient.GetFromJsonAsync<ProjectRoleGridViewResult>(privateApiUrl);
+        masterPrivateResult!.HasAccess.ShouldBeTrue();
+        masterPrivateResult.Grid.ShouldNotBeNull();
+        masterPrivateResult.NoAccess.ShouldBeNull();
+
+        var anonPrivateResponse = await anonClient.GetAsync(privateApiUrl);
+        anonPrivateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var anonPrivateResult = await anonPrivateResponse.Content.ReadFromJsonAsync<ProjectRoleGridViewResult>();
+        anonPrivateResult!.HasAccess.ShouldBeFalse();
+        anonPrivateResult.Grid.ShouldBeNull();
+        anonPrivateResult.NoAccess.ShouldNotBeNull();
     }
 }

@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Models.Masters;
+namespace JoinRpg.Web.ProjectCommon.Masters;
 
 using static JoinRpg.DomainTypes.ProjectMetadata.Permission;
 

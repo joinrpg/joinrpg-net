@@ -1,5 +1,5 @@
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.Web.Models.Masters;
+using JoinRpg.Web.ProjectCommon.Masters;
 
 namespace JoinRpg.WebPortal.Models.Test;
 

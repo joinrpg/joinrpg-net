@@ -8,5 +8,5 @@ namespace JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 /// </summary>
 public interface IProjectRoleGridClient
 {
-    Task<ProjectRoleGridViewModel> GetRoleGrid(ProjectRolesListIdentification id);
+    Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id);
 }

@@ -7,12 +7,17 @@
 @inject PersistentComponentState ApplicationState
 @implements IDisposable
 
-@if (Model is null)
+@if (Result is null)
 {
     <JoinLoadingMessage />
 }
+else if (!Result.HasAccess)
+{
+    <JoinNoAccessToProjectPanel Model="Result.NoAccess!" />
+}
 else
 {
+    var Model = Result.Grid!;
     <div class="d-flex align-items-center">
         <h4>@Model.Name</h4>
         @if (Model.CanEditSettings)
@@ -94,23 +99,23 @@ else
 @code {
     [Parameter, EditorRequired] public ProjectRolesListIdentification RolesListId { get; set; }
 
-    private ProjectRoleGridViewModel? Model { get; set; }
+    private ProjectRoleGridViewResult? Result { get; set; }
     private PersistingComponentStateSubscription _persistingSubscription;
 
     protected override async Task OnInitializedAsync()
     {
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
 
-        if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewModel>(nameof(ProjectRoleGrid), out var model))
+        if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewResult>(nameof(ProjectRoleGrid), out var result))
         {
-            model = await Client.GetRoleGrid(RolesListId);
+            result = await Client.GetRoleGrid(RolesListId);
         }
-        Model = model;
+        Result = result;
     }
 
     private Task PersistData()
     {
-        ApplicationState.PersistAsJson(nameof(ProjectRoleGrid), Model);
+        ApplicationState.PersistAsJson(nameof(ProjectRoleGrid), Result);
         return Task.CompletedTask;
     }
 
