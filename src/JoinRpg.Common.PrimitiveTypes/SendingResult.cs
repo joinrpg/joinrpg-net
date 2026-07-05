@@ -15,5 +15,6 @@ public record struct SendingResult(bool Succeeded, bool Repeatable, bool Common)
     public static SendingResult Success() => new(true, false, false);
 
     public static SendingResult RepeatableFailure() => new(false, true, false);
+    public static SendingResult UserRelatedFailure() => new(false, true, false);
     public static SendingResult CommonFailure() => new(false, true, true);
 }

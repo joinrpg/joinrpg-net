@@ -32,6 +32,12 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
             logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}", telegramId);
             return SendingResult.Success();
         }
+        catch (ApiRequestException exception) when (exception.Message.Contains("bot was blocked by the user", StringComparison.OrdinalIgnoreCase))
+        {
+            CountError("blocked");
+            logger.LogWarning("Пользователь {telegramId} заблокировал бота", telegramId);
+            return SendingResult.UserRelatedFailure();
+        }
         catch (ApiRequestException exception)
         {
             CountError("api");
