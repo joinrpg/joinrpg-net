@@ -28,7 +28,7 @@ public interface IFieldSetupService
     Task CreateFieldValueVariants(ProjectFieldIdentification projectFieldId,
         string valuesToAdd);
 
-    Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
+    Task<IReadOnlyList<ProjectFieldIdentification>> MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
 
     Task SetFieldSettingsAsync(FieldSettingsRequest request);
     Task SortFieldVariants(int projectId, int projectFieldId);

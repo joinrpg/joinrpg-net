@@ -8,6 +8,7 @@ using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
+using JoinRpg.Web.ProjectCommon.ElementMoving;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
@@ -56,6 +57,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectRolesListClient, ProjectRolesListClientImpl>()
                 .AddHttpClient<IProjectRoleGridClient, ProjectRoleGridClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
-                .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>();
+                .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
+                .AddHttpClient<IMoveClient, MoveClientImpl>();
     }
 }

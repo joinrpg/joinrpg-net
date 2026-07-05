@@ -41,6 +41,7 @@ internal static class ButtonPresets
         { ButtonPreset.HotClaim, new("Заявиться",null, "glyphicon-fire", VariationStyleEnum.Warning)},
         { ButtonPreset.Profile, new("Профиль",null, "glyphicon-user", VariationStyleEnum.Info)},
         { ButtonPreset.Donate, new("Отослать донат",null, "glyphicon-usd", VariationStyleEnum.Success)},
+        { ButtonPreset.Sort, new("Переместить", "Перемещаем...", "glyphicon-sort") },
     }.ToFrozenDictionary();
 }
 

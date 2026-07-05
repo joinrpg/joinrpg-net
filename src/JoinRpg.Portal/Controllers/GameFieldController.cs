@@ -401,31 +401,7 @@ public class GameFieldController(
         }
     }
 
-    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
-    {
-        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != projectFieldId))
-        {
-            return NotFound();
-        }
 
-        if (afterFieldId == -1)
-        {
-            afterFieldId = null;
-        }
-
-        try
-        {
-            await fieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
-
-            return ReturnToIndex();
-        }
-        catch
-        {
-            return ReturnToIndex();
-        }
-    }
 
     [MasterAuthorize(Permission.CanChangeFields)]
     [HttpPost("~/{projectId:int}/fields/{projectFieldId:int}/sortvariants")]

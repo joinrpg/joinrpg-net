@@ -1,0 +1,141 @@
+@using JoinRpg.DomainTypes.Interfaces
+@using JoinRpg.Web.ProjectCommon.ElementMoving
+@using JoinRpg.WebComponents
+@using JoinRpg.WebComponents.Dialog
+@typeparam TItem where TItem : class, IMoveableListItem
+@inject IMoveClient MoveClient
+@inject NavigationManager NavigationManager
+
+<JoinButtonGroup SkipGroup="SkipGroup">
+    @if (showUp)
+    {
+        <JoinButton Preset="ButtonPreset.Up"
+                    Size="SizeStyleEnum.Small"
+                    Title="Переместить вверх"
+                    OnClick="MoveUpAsync" />
+    }
+    @if (showDown)
+    {
+        <JoinButton Preset="ButtonPreset.Down"
+                    Size="SizeStyleEnum.Small"
+                    Title="Переместить вниз"
+                    OnClick="MoveDownAsync" />
+    }
+    <JoinButton Preset="ButtonPreset.Sort"
+                Size="SizeStyleEnum.Small"
+                Title="Переместить в любую позицию"
+                OnClick="OpenSortDialogAsync" />
+</JoinButtonGroup>
+
+<JoinDialog @ref="_sortDialog"
+            Caption="Переместить"
+            Buttons="SortDialogButtons">
+    <ChildContent>
+        <TypedSelector TKey="string"
+                       PossibleValues="selectorItems"
+                       SelectedValues="@(_selectedTarget is null ? [] : [_selectedTarget])"
+                       SelectedValuesChanged="v => _selectedTarget = v.FirstOrDefault()"
+                       AllowEmpty="true"
+                       EmptyText="Поставить в начало" />
+    </ChildContent>
+</JoinDialog>
+
+@code {
+    [Parameter, EditorRequired]
+    public IList<TItem> Items { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public TItem Self { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnMoveCompleted { get; set; }
+
+    [Parameter]
+    public bool SkipGroup { get; set; } = false;
+
+    private bool showUp, showDown;
+    private TItem? targetIfUp, targetIfDown;
+    private TypedSelectListItem<string>[] selectorItems = [];
+    private string? _selectedTarget;
+    private JoinDialog? _sortDialog;
+
+    private static readonly IReadOnlyCollection<DialogButton> SortDialogButtons =
+    [
+        new DialogButton(ButtonPreset.Sort),
+        new DialogButton(ButtonPreset.Cancel, cancel: true),
+    ];
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var selfIdStr = Self.Id.ToString()!;
+        var idx = -1;
+        for (var i = 0; i < Items.Count; i++)
+        {
+            if (Items[i].Id.ToString() == selfIdStr) { idx = i; break; }
+        }
+
+        if (idx == -1)
+            throw new InvalidOperationException("Self не найден в Items");
+
+        showUp = idx > 0;
+        showDown = idx < Items.Count - 1;
+        targetIfUp = idx > 1 ? Items[idx - 2] : null;
+        targetIfDown = idx < Items.Count - 1 ? Items[idx + 1] : null;
+        _selectedTarget = null;
+
+        selectorItems = Items
+            .Where(i => i.Id.ToString() != selfIdStr)
+            .Select(i => new TypedSelectListItem<string>(i.Id.ToString()!, i.DisplayText, i.Subtext))
+            .ToArray();
+    }
+
+    private async Task MoveUpAsync(ButtonClickEventArgs args)
+    {
+        try { await ExecuteMoveAsync(targetIfUp?.Id); }
+        finally { args.ExitProgressState = true; }
+    }
+
+    private async Task MoveDownAsync(ButtonClickEventArgs args)
+    {
+        try { await ExecuteMoveAsync(targetIfDown?.Id); }
+        finally { args.ExitProgressState = true; }
+    }
+
+    private async Task OpenSortDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            var result = await _sortDialog!.ShowModalAsync();
+            if (result == nameof(ButtonPreset.Sort))
+            {
+                var moveAfterId = _selectedTarget is not null
+                    ? Items.FirstOrDefault(i => i.Id.ToString() == _selectedTarget)?.Id
+                    : null;
+                await ExecuteMoveAsync(moveAfterId);
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task ExecuteMoveAsync(IProjectEntityId? moveAfterId)
+    {
+        var newOrder = await MoveClient.MoveAfterAsync(new MoveRequest(Self.Id, Self.ParentId, moveAfterId));
+        ReorderItems(newOrder);
+        if (OnMoveCompleted.HasDelegate)
+            await OnMoveCompleted.InvokeAsync();
+        else
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+
+    private void ReorderItems(string[] newOrder)
+    {
+        var lookup = Items.ToDictionary(i => i.Id.ToString()!);
+        var pos = 0;
+        foreach (var idStr in newOrder.Where(lookup.ContainsKey))
+            Items[pos++] = lookup[idStr];
+    }
+}

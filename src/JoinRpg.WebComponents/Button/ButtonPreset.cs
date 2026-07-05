@@ -45,4 +45,5 @@ public enum ButtonPreset
     HotClaim,
     Profile,
     Donate,
+    Sort,
 }

@@ -1,8 +1,9 @@
 @using JoinRpg.Web.ProjectCommon.Fields
-@model JoinRpg.Web.Games.FieldSetup.GameFieldListItemViewModel
+@using JoinRpg.Portal.Controllers.Fields
+@model FieldRowModel
 
 @{
-    var item = Model;
+    var item = Model.Field;
 }
 <tr>
     <td>
@@ -163,12 +164,11 @@
         <td>
             @if (item.CanEditFields)
             {
-            <div class="btn-group btn-group-sm" style="display: inline-block">
-                <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.Id.ProjectFieldId"
-                   class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
-
-            @await Html.MoveControlAsync(model => item, "Move")
-            </div>
+            <component type="typeof(JoinRpg.Web.ProjectCommon.ElementMoving.JoinMoveControl<JoinRpg.Web.Games.FieldSetup.GameFieldListItemViewModel>)"
+                       render-mode="WebAssemblyPrerendered"
+                       Param-Items="Model.AllItems"
+                       Param-Self="item"
+                       Param-SkipGroup="true" />
             }
         </td>
     </tr>
