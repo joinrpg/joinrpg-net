@@ -11,10 +11,11 @@ public record CharacterGroupFullInfo(
     IReadOnlyCollection<CharacterGroupIdentification> AllChildGroups,
     IReadOnlyCollection<CharacterGroupIdentification> AllParentGroups,
     CharacterGroupType GroupType,
+    UserIdentification? ResponsibleMasterId,
     int DirectChildCharactersCount,
     MarkdownString? Description,
     CreateUpdateMarksInfo Marks
-) : CharacterGroupInfo(Id, Name, IsActive, IsPublic, DirectChildGroupIds, ChildCharactersOrdering, DirectParentGroupIds, AllChildGroups, AllParentGroups, GroupType)
+) : CharacterGroupInfo(Id, Name, IsActive, IsPublic, DirectChildGroupIds, ChildCharactersOrdering, DirectParentGroupIds, AllChildGroups, AllParentGroups, GroupType, ResponsibleMasterId)
 
 {
     public CharacterGroupFullInfo(CharacterGroupInfo groupInfo, int directChildCharactersCount,
@@ -24,6 +25,7 @@ public record CharacterGroupFullInfo(
             groupInfo.DirectChildGroupIds, groupInfo.ChildCharactersOrdering, groupInfo.DirectParentGroupIds,
             groupInfo.AllChildGroups, groupInfo.AllParentGroups,
             groupInfo.GroupType,
+            groupInfo.ResponsibleMasterId,
             directChildCharactersCount, description, marks)
     {
 

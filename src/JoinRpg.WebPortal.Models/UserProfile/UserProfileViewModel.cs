@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
@@ -79,6 +80,12 @@ public class UserProfileDetailsViewModel
     [Obsolete("Передайте сюда ICurrentUserAccessor или UserInfo")]
     public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject)
     : this(user, user.GetAccess(currentProject), false) { }
+
+    public UserProfileDetailsViewModel(UserInfoHeader user)
+    {
+        User = UserLinks.Create(user);
+        Reason = AccessReasonView.CoMaster;
+    }
 
     private UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason, bool viewAsAdmin)
     {

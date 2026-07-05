@@ -22,7 +22,6 @@
     {
         @Html.AntiForgeryToken()
         @Html.HiddenFor(model => model.ProjectId)
-        @Html.HiddenFor(model => model.ProjectAclId)
         @Html.HiddenFor(model => model.UserId)
 
         if (Model.InnerModel.ClaimsCount > 0 || Model.InnerModel.ResponsibleFor.Count > 0)

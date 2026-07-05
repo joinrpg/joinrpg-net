@@ -1,43 +1,53 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
+using JoinRpg.Interfaces;
+using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Masters;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Masters;
 
-namespace JoinRpg.Web.Models.Masters;
+namespace JoinRpg.WebPortal.Models.Masters;
 
-public class AclViewModel(ProjectInfo project, User targetUser, PermissionBadgeViewModel[] bagdes)
+public class AclViewModel
 {
     [Display(Name = "Мастер")]
-    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(targetUser.GetUserInfo(), project);
+    public UserProfileDetailsViewModel UserDetails { get; }
 
-    public IReadOnlyCollection<GameObjectLinkViewModel> ResponsibleFor { get; } = [];
-
-    public int? ProjectAclId { get; }
+    public IReadOnlyCollection<CharacterGroupLinkSlimViewModel> ResponsibleFor { get; } = [];
 
     [Display(Name = "Проект")]
-    public int ProjectId { get; } = project.ProjectId;
+    public int ProjectId { get; }
 
     [Display(Name = "Игра")]
-    public string ProjectName { get; } = project.ProjectName;
+    public string ProjectName { get; }
 
     [Display(Name = "Заявок")]
-    public int ClaimsCount { get; } = 0;
+    public int ClaimsCount { get; }
 
-    public int UserId { get; } = targetUser.UserId;
-    public PermissionBadgeViewModel[] Badges { get; set; } = bagdes;
+    public int UserId { get; }
+    public PermissionBadgeViewModel[] Badges { get; set; }
 
     public bool CanGrantRights => Badges.Single(b => b.Permission == Permission.CanGrantRights).Value;
 
-    public AclViewModel(ProjectAcl acl,
-        int claimsCount,
-        IEnumerable<CharacterGroup> groups,
-        IUriService uriService,
-        ProjectInfo projectInfo)
-        : this(projectInfo, acl.User, acl.GetPermissionViewModels())
+    // For Add/Edit pages: needs full User entity for detailed profile display
+    public AclViewModel(ProjectInfo projectInfo, UserInfo targetUser, ICurrentUserAccessor currentUserAccessor)
     {
-        ProjectAclId = acl.ProjectAclId;
+        UserDetails = new UserProfileDetailsViewModel(targetUser, projectInfo, currentUserAccessor);
+        ProjectId = projectInfo.ProjectId;
+        ProjectName = projectInfo.ProjectName;
+        UserId = targetUser.UserId;
+        Badges = projectInfo.GetPermissionViewModels(targetUser.UserId);
+    }
+
+    // For master list and manage pages
+    public AclViewModel(ProjectMasterInfo master, int claimsCount, ProjectInfo projectInfo)
+    {
+        UserDetails = new UserProfileDetailsViewModel(master.UserInfo);
+        UserId = master.UserId.Value;
+        ProjectId = projectInfo.ProjectId;
+        ProjectName = projectInfo.ProjectName;
+        Badges = projectInfo.GetPermissionViewModels(master.UserId);
         ClaimsCount = claimsCount;
-        ResponsibleFor = groups?.AsObjectLinks(uriService).ToArray() ?? [];
+        ResponsibleFor = [.. projectInfo.ResponsibleMasterRules
+            .Where(g => g.ResponsibleMasterId == master.UserId && g.IsActive)
+            .Select(g => new CharacterGroupLinkSlimViewModel(g))];
     }
 }

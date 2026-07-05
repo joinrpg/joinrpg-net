@@ -7,7 +7,7 @@ using JoinRpg.Services.Interfaces.ProjectAccess;
 
 namespace JoinRpg.Services.Impl.Projects;
 
-internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IResponsibleMasterRulesRepository responsibleMasterRulesRepository)
+internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor)
     : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectAccessService
 {
     public async Task GrantAccess(GrantAccessRequest grantAccessRequest)
@@ -52,7 +52,7 @@ internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor
 
         var acl = project.ProjectAcls.Single(a => a.UserId == userId);
 
-        var respFor = await responsibleMasterRulesRepository.GetResponsibleMasterRulesForMaster(new(projectId), new(CurrentUserId));
+        var respFor = project.CharacterGroups.Where(g => g.ResponsibleMasterUserId == userId).ToList();
 
         var claims =
             await ClaimsRepository.GetClaimsForMaster(projectId,

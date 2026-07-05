@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.WebPortal.Models.Masters;
 
 namespace JoinRpg.Web.Models.Masters;
 
@@ -16,21 +15,14 @@ public class MastersListViewModel
     public int CurrentUserId { get; }
 
     public MastersListViewModel(
-        Project project,
         IReadOnlyCollection<ClaimCountByMaster> claims,
-        IReadOnlyCollection<CharacterGroup> groups,
         ICurrentUserAccessor currentUser,
-        IUriService uriService,
         ProjectInfo projectInfo)
     {
-        Masters = project.ProjectAcls.Select(acl =>
-        {
-            return new AclViewModel(acl,
-                claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
-                groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId && gr.IsActive),
-                uriService,
-                projectInfo);
-        }).ToList();
+        Masters = [.. projectInfo.Masters.Select(master => new AclViewModel(
+            master,
+            claims.SingleOrDefault(c => c.MasterId == master.UserId.Value)?.ClaimCount ?? 0,
+            projectInfo))];
 
         CanCurrentUserGrantRights = Masters.Single(acl => acl.UserId == currentUser.UserId).CanGrantRights;
 

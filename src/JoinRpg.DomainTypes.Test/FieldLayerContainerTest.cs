@@ -546,7 +546,8 @@ ordering,
             ProjectProfileRequirementSettings.AllNotRequired,
             new ProjectClaimSettings(null, false, false, false, false),
             [],
-            new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()
+            new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>(),
+            []
         );
     }
 

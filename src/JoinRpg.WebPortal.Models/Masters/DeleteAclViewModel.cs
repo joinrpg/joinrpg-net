@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using JoinRpg.Web.Models.Masters;
+using JoinRpg.WebPortal.Models.Masters;
 
 namespace JoinRpg.Web.Models;
 
@@ -20,8 +20,4 @@ public class DeleteAclViewModel
 
     [ReadOnly(true)]
     public AclViewModel InnerModel { get; set; } = null!;
-
-
-    public int ProjectAclId { get; set; }
-
 }

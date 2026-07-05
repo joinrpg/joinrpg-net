@@ -28,6 +28,7 @@ public static class UserExtensions
             );
     }
 
+    [Obsolete]
     public static UserInfo GetUserInfo(this Claim claim) => claim.Player.GetUserInfo();
 
     public static UserFullName ExtractFullName(this User user)

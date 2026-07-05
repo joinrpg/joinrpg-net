@@ -14,6 +14,8 @@ public abstract class JoinControllerGameBase : JoinMvcControllerBase
 {
     protected ActionResult RedirectToIndex(Project project) => RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
 
+    protected ActionResult RedirectToIndex(ProjectIdentification projectId) => RedirectToAction("Details", "Game", new { ProjectId = projectId.Value, area = "" });
+
     protected ActionResult RedirectToIndex(int projectId, int characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
 
     protected ActionResult RedirectToIndex(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { characterGroupId.ProjectId, characterGroupId.CharacterGroupId, area = "" });
