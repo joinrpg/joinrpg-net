@@ -1,16 +1,10 @@
-using System.Data.Entity.Validation;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl.Projects;
 
-internal class CharacterGroupService(
-    IUnitOfWork unitOfWork,
-    ICurrentUserAccessor currentUserAccessor,
-    IProjectMetadataRepository projectMetadataRepository
-    ) : DbServiceImplBase(unitOfWork, currentUserAccessor), ICharacterGroupService
+internal class CharacterGroupService(IProjectPropsService projectPropsService) : ICharacterGroupService
 {
     public async Task<CharacterGroupIdentification> AddCharacterGroup(ProjectIdentification projectId,
         string name,
@@ -18,29 +12,32 @@ internal class CharacterGroupService(
         IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description)
     {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
+        var group = await projectPropsService.ChangeProjectProperties(
+            projectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            (name, isPublic, parentCharacterGroupIds, description),
+            ctx =>
+            {
+                var group = new CharacterGroup()
+                {
+                    CharacterGroupName = ServiceValidation.Required(ctx.Request.name),
+                    ParentCharacterGroupIds =
+                        ctx.ProjectInfo.ValidateCharacterGroupList(
+                            ServiceValidation.Required(ctx.Request.parentCharacterGroupIds)),
+                    ProjectId = projectId,
+                    IsRoot = false,
+                    IsSpecial = false,
+                    IsPublic = ctx.Request.isPublic,
+                    IsActive = true,
+                    Description = new MarkdownDbValue(ctx.Request.description),
+                };
+                ctx.MarkCreatedNow(group);
+                ctx.Project.CharacterGroups.Add(group);
+                return group;
+            });
 
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles);
-        _ = project.EnsureProjectActive();
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-
-        var group = Create(new CharacterGroup()
-        {
-            CharacterGroupName = Required(name),
-            ParentCharacterGroupIds =
-                ValidateCharacterGroupList(projectInfo,
-                    Required(parentCharacterGroupIds)),
-            ProjectId = projectId,
-            IsRoot = false,
-            IsSpecial = false,
-            IsPublic = isPublic,
-            IsActive = true,
-            Description = new MarkdownDbValue(description),
-        });
-
-        await UnitOfWork.SaveChangesAsync();
-
+        // CharacterGroupId генерируется БД при SaveChanges — читаем уже после возврата из сервиса.
         return new CharacterGroupIdentification(projectId, group.CharacterGroupId);
     }
 
@@ -50,94 +47,94 @@ internal class CharacterGroupService(
         IReadOnlyCollection<CharacterGroupIdentification> parentCharacterGroupIds,
         string description)
     {
-        var characterGroup =
-            (await ProjectRepository.GetGroupAsync(characterGroupId))
-            .RequestMasterAccess(CurrentUserId, Permission.CanEditRoles)
-            .EnsureProjectActive();
+        await projectPropsService.ChangeProjectProperties(
+            characterGroupId.ProjectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            (characterGroupId, name, isPublic, parentCharacterGroupIds, description),
+            ctx =>
+            {
+                var (characterGroup, currentGroupInfo) = ctx.GetCharacterGroupForChange(ctx.Request.characterGroupId);
 
-        if (characterGroup.IsRoot || characterGroup.IsSpecial)
-        {
-            throw new InvalidOperationException();
-        }
+                var forbiddenParents = currentGroupInfo.AllChildGroupsIncludingThis;
+                var cycleViolation = ServiceValidation.Required(ctx.Request.parentCharacterGroupIds)
+                    .FirstOrDefault(p => forbiddenParents.Contains(p));
+                if (cycleViolation is not null)
+                {
+                    throw new ArgumentException($"Группа {cycleViolation.CharacterGroupId} является потомком редактируемой группы и не может быть её родителем.");
+                }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
-
-        var currentGroupInfo = projectInfo.Groups[characterGroupId];
-        var forbiddenParents = currentGroupInfo.AllChildGroupsIncludingThis;
-        var cycleViolation = Required(parentCharacterGroupIds).FirstOrDefault(p => forbiddenParents.Contains(p));
-        if (cycleViolation is not null)
-        {
-            throw new ArgumentException($"Группа {cycleViolation.CharacterGroupId} является потомком редактируемой группы и не может быть её родителем.");
-        }
-
-        characterGroup.CharacterGroupName = Required(name);
-        characterGroup.IsPublic = isPublic;
-        characterGroup.ParentCharacterGroupIds =
-            ValidateCharacterGroupList(projectInfo,
-                Required(parentCharacterGroupIds),
-                ensureNotSpecial: true);
-        characterGroup.Description = new MarkdownDbValue(description);
-
-        MarkChanged(characterGroup);
-        await UnitOfWork.SaveChangesAsync();
+                characterGroup.CharacterGroupName = ServiceValidation.Required(ctx.Request.name);
+                characterGroup.IsPublic = ctx.Request.isPublic;
+                characterGroup.ParentCharacterGroupIds =
+                    ctx.ProjectInfo.ValidateCharacterGroupList(
+                        ServiceValidation.Required(ctx.Request.parentCharacterGroupIds),
+                        ensureNotSpecial: true);
+                characterGroup.Description = new MarkdownDbValue(ctx.Request.description);
+            });
     }
 
     public async Task DeleteCharacterGroup(CharacterGroupIdentification characterGroupId)
     {
-        var characterGroup = await ProjectRepository.GetGroupAsync(characterGroupId) ?? throw new DbEntityValidationException();
-
-        _ = characterGroup.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles);
-        _ = characterGroup.EnsureProjectActive();
-
-        foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
-        {
-            if (character.ParentCharacterGroupIds.Except([characterGroupId.CharacterGroupId]).Any())
+        await projectPropsService.ChangeProjectProperties(
+            characterGroupId.ProjectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            characterGroupId,
+            ctx =>
             {
-                continue;
-            }
+                var (characterGroup, _) = ctx.GetCharacterGroupForChange(ctx.Request);
 
-            character.ParentCharacterGroupIds = character.ParentCharacterGroupIds
-                .Union(characterGroup.ParentCharacterGroupIds).ToArray();
-        }
+                foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
+                {
+                    if (character.ParentCharacterGroupIds.Except([ctx.Request.CharacterGroupId]).Any())
+                    {
+                        continue;
+                    }
 
-        foreach (var character in characterGroup.ChildGroups.Where(ch => ch.IsActive))
-        {
-            if (character.ParentCharacterGroupIds.Except([characterGroupId.CharacterGroupId]).Any())
-            {
-                continue;
-            }
+                    character.ParentCharacterGroupIds = character.ParentCharacterGroupIds
+                        .Union(characterGroup.ParentCharacterGroupIds).ToArray();
+                }
 
-            character.ParentCharacterGroupIds = character.ParentCharacterGroupIds
-                .Union(characterGroup.ParentCharacterGroupIds).ToArray();
-        }
+                foreach (var childGroup in characterGroup.ChildGroups.Where(ch => ch.IsActive))
+                {
+                    if (childGroup.ParentCharacterGroupIds.Except([ctx.Request.CharacterGroupId]).Any())
+                    {
+                        continue;
+                    }
 
-        MarkChanged(characterGroup);
+                    childGroup.ParentCharacterGroupIds = childGroup.ParentCharacterGroupIds
+                        .Union(characterGroup.ParentCharacterGroupIds).ToArray();
+                }
 
-        if (characterGroup.CanBePermanentlyDeleted)
-        {
-            characterGroup.DirectlyRelatedPlotElements.CleanLinksList();
-        }
+                if (characterGroup.CanBePermanentlyDeleted)
+                {
+                    characterGroup.DirectlyRelatedPlotElements.CleanLinksList();
+                }
 
-        _ = SmartDelete(characterGroup);
-
-        await UnitOfWork.SaveChangesAsync();
+                _ = ctx.SmartDelete(characterGroup);
+            });
     }
 
     public async Task MoveCharacterGroup(CharacterGroupIdentification characterGroupId,
         CharacterGroupIdentification parentCharacterGroupId,
         short direction)
     {
-        var parentCharacterGroup =
-            await ProjectRepository.LoadGroupWithChildsAsync(parentCharacterGroupId.ProjectId.Value, parentCharacterGroupId.CharacterGroupId);
-        _ = parentCharacterGroup.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles);
-        _ = parentCharacterGroup.EnsureProjectActive();
+        await projectPropsService.ChangeProjectProperties(
+            parentCharacterGroupId.ProjectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            (characterGroupId, parentCharacterGroupId, direction),
+            ctx =>
+            {
+                var (parentCharacterGroup, parentGroupInfo) = ctx.GetCharacterGroupForChange(ctx.Request.parentCharacterGroupId);
 
-        var thisCharacterGroup =
-            parentCharacterGroup.ChildGroups.Single(i =>
-                i.CharacterGroupId == characterGroupId.CharacterGroupId);
+                var thisCharacterGroup =
+                    parentCharacterGroup.ChildGroups.Single(i =>
+                        i.CharacterGroupId == ctx.Request.characterGroupId.CharacterGroupId);
 
-        parentCharacterGroup.ChildGroupsOrdering = parentCharacterGroup
-            .GetCharacterGroupsContainer().Move(thisCharacterGroup, direction).GetStoredOrder();
-        await UnitOfWork.SaveChangesAsync();
+                parentCharacterGroup.ChildGroupsOrdering = parentCharacterGroup
+                    .GetCharacterGroupsContainer().Move(thisCharacterGroup, ctx.Request.direction).GetStoredOrder();
+            });
     }
 }
