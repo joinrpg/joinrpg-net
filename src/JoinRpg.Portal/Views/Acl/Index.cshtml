@@ -1,6 +1,6 @@
 @using JoinRpg.Helpers
+@using JoinRpg.Web.ProjectCommon.Masters
 @model JoinRpg.Web.Models.Masters.MastersListViewModel
-@addTagHelper *, PermissionBadge
 @{
     ViewBag.Title = "Мастера";
 }
@@ -34,13 +34,13 @@
             <td class="hidden-xs">
                 @foreach (var badge in item.Badges.Take(item.Badges.Length / 2))
                 {
-                    <partial name="PermissionBadge" model="@badge" />
+                    <component type="typeof(PermissionBadge)" param-Model="badge" render-mode="Static" />
                 }
             </td>
             <td class="hidden-xs">
                 @foreach (var badge in item.Badges.Skip(item.Badges.Length / 2))
                 {
-                    <partial name="PermissionBadge" model="@badge" />
+                    <component type="typeof(PermissionBadge)" param-Model="badge" render-mode="Static" />
                 }
             </td>
             <td>

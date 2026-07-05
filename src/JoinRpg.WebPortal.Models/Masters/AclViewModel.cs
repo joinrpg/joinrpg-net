@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.ProjectCommon.Masters;
 
 namespace JoinRpg.Web.Models.Masters;
 

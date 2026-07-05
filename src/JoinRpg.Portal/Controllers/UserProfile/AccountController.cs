@@ -516,7 +516,7 @@ public class AccountController(
         if (projectId is int projectIdValue)
         {
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectIdValue));
-            return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(projectInfo));
+            return View("ErrorNoAccessToProject", NoAccessToProjectViewModelBuilder.Build(projectInfo));
         }
         return View("AccessDenied", returnUrl);
     }

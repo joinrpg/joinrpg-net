@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
+using JoinRpg.Web.ProjectCommon.Masters;
 
 namespace JoinRpg.Web.Models.Masters;
 

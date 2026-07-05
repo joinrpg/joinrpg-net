@@ -6,6 +6,16 @@ using JoinRpg.WebComponents;
 namespace JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 
 /// <summary>
+/// Результат запроса сетки ролей. При отсутствии доступа (непубличный список без
+/// мастер-доступа) <see cref="HasAccess"/> == false и заполнен <see cref="NoAccess"/> —
+/// показываем панель, а не ошибку.
+/// </summary>
+public record ProjectRoleGridViewResult(
+    bool HasAccess,
+    ProjectRoleGridViewModel? Grid,
+    NoAccessToProjectViewModel? NoAccess);
+
+/// <summary>
 /// Сетка ролей для отображения. Колонки в фиксированном порядке:
 /// Персонаж → Игрок (если есть) → Группы (если есть) → Поля.
 /// </summary>

@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
+using JoinRpg.Web.Models;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 
@@ -12,15 +13,16 @@ internal class ProjectRoleGridViewService(
     ICurrentUserAccessor currentUserAccessor)
     : IProjectRoleGridClient
 {
-    public async Task<ProjectRoleGridViewModel> GetRoleGrid(ProjectRolesListIdentification id)
+    public async Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
         var config = projectInfo.GetRolesListById(id);
 
         // Доступ зависит от данных (PublicMode), поэтому проверяется здесь, а не атрибутом.
+        // Возвращаем результат «нет доступа» (а не исключение), чтобы остров показал панель.
         if (!config.PublicMode && !projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
         {
-            throw new NoAccessToProjectException(projectInfo, currentUserAccessor.UserIdOrDefault);
+            return new ProjectRoleGridViewResult(HasAccess: false, Grid: null, NoAccess: NoAccessToProjectViewModelBuilder.Build(projectInfo));
         }
 
         var groupId = config.CharacterGroupId ?? projectInfo.RootCharacterGroupId;
@@ -42,7 +44,8 @@ internal class ProjectRoleGridViewService(
         // На публичной сетке не-мастер/аноним их не увидит.
         var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
 
-        return ProjectRoleGridViewModelBuilder.Build(config, groupName, canEditSettings, canViewPrivate, orderedCharacters, projectInfo);
+        var grid = ProjectRoleGridViewModelBuilder.Build(config, groupName, canEditSettings, canViewPrivate, orderedCharacters, projectInfo);
+        return new ProjectRoleGridViewResult(HasAccess: true, Grid: grid, NoAccess: null);
     }
 
     /// <summary>
@@ -50,7 +53,7 @@ internal class ProjectRoleGridViewService(
     /// внутри каждой группы — прямые персонажи в порядке ChildCharactersOrdering. Персонаж, входящий
     /// в несколько групп, берётся по первому вхождению.
     /// </summary>
-    private static IReadOnlyList<Character> OrderCharacters(
+    private static List<Character> OrderCharacters(
         IReadOnlyCollection<Character> characters,
         ProjectInfo projectInfo,
         CharacterGroupIdentification groupId)

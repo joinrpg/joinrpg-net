@@ -1,0 +1,35 @@
+@using JoinRpg.WebComponents
+@using JoinRpg.Web.ProjectCommon.Masters
+@using JoinRpg.Web.ProjectCommon.Projects
+
+<JoinAlert Variation="VariationStyleEnum.Warning">
+    <h4>Нет доступа к проекту @Model.ProjectName</h4>
+    <p>
+        @if (Model.RequiredPermission is null)
+        {
+            <text>У вас нет доступа к проекту <ProjectLink Model="Model" />.</text>
+        }
+        else
+        {
+            <text>Для выполнения этого действия нужно право: </text>
+            <PermissionBadge Model="Model.RequiredPermission" />
+        }
+        @if (Model.CanGrantAccess.Count > 0)
+        {
+            <text> Следующие мастера могут проставить вам доступ:</text>
+        }
+    </p>
+    @if (Model.CanGrantAccess.Count > 0)
+    {
+        <ul>
+            @foreach (var user in Model.CanGrantAccess)
+            {
+                <li><UserLink Model="user" /></li>
+            }
+        </ul>
+    }
+</JoinAlert>
+
+@code {
+    [Parameter, EditorRequired] public NoAccessToProjectViewModel Model { get; set; } = null!;
+}
