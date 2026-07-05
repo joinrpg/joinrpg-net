@@ -9,6 +9,19 @@ namespace JoinRpg.Common.Telegram.Test;
 public class TelegramNotificationServiceImplTimeoutTest
 {
     [Fact]
+    public async Task SendTelegramNotification_WithBotBlockedException_ReturnsUserRelatedFailure()
+    {
+        var handler = new ThrowingHttpMessageHandler(new ApiRequestException("Forbidden: bot was blocked by the user", 403));
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.telegram.org") };
+        var botClient = new TelegramBotClient("123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11", httpClient);
+        var service = new TelegramNotificationServiceImpl(botClient, NullLogger<TelegramNotificationServiceImpl>.Instance);
+
+        var result = await service.SendTelegramNotification(new TelegramId(1, null), new TelegramHtmlString("test"));
+
+        result.ShouldBe(SendingResult.UserRelatedFailure());
+    }
+
+    [Fact]
     public async Task SendTelegramNotification_WithTimeoutException_ReturnsCommonFailure()
     {
         var handler = new ThrowingHttpMessageHandler(new TimeoutException("Request timed out"));
