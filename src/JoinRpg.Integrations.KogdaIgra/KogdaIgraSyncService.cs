@@ -3,7 +3,6 @@ using System.Diagnostics;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Projects;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.Interfaces;
 using Microsoft.Extensions.Logging;

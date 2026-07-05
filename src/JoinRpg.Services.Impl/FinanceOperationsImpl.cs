@@ -6,7 +6,6 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;

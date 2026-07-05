@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.Domain;
 
