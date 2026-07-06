@@ -86,7 +86,7 @@ public partial class MassProjectEmailService(
 
         var notification = new NotificationEvent(NotificationClass.MassProjectEmails,
                                                  plotElementId,
-                                                 Header: $@"{project.ProjectName}: опубликована вводная",
+                                                 Header: $@"{project.ProjectName.Value}: опубликована вводная",
                                                  template,
                                                  recipients,
                                                  currentUserAccessor.UserIdentification);
