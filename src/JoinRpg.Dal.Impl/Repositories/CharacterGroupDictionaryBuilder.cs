@@ -148,7 +148,8 @@ public static class CharacterGroupDictionaryBuilder
                 DirectParentGroupIds: parentGroupsMap.GetValueOrDefault(group.CharacterGroupId, []),
                 AllChildGroups: allChildGroups,
                 AllParentGroups: allParentGroups,
-                GroupType: groupType
+                GroupType: groupType,
+                ResponsibleMasterId: UserIdentification.FromOptional(group.ResponsibleMasterUserId)
             );
             dict[groupId] = groupInfo;
         }

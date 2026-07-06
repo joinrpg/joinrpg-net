@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -26,8 +27,8 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
 
     public bool IsActive { get; } = character.IsActive;
 
-    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => claim.IsInDiscussion);
-    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => !claim.ClaimStatus.IsActive());
+    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => claim.IsInDiscussion, projectInfo);
+    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => !claim.ClaimStatus.IsActive(), projectInfo);
 
     public static CharacterNavigationViewModel FromCharacter(Character character,
         CharacterNavigationPage page,
@@ -57,10 +58,10 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
     }
 
     private static IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, int? currentUserId,
-        Func<Claim, bool> predicate)
+        Func<Claim, bool> predicate, ProjectInfo projectInfo)
     {
-        return field.HasMasterAccess(UserIdentification.FromOptional(currentUserId))
-            ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim))
+        return projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId))
+            ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim.Character.CharacterName, claim.GetId(), UserLinks.Create(claim.Player.ToUserInfoHeader())))
             : [];
     }
 

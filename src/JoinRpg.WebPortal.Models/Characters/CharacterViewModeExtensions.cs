@@ -23,6 +23,6 @@ public static class CharacterViewModeExtensions
 
     public static UserLinkViewModel? GetCharacterPlayerLinkViewModel(this Character character, int? currentUserIdOrDefault)
     {
-        return UserLinks.Create(character.ApprovedClaim?.Player, character.GetViewModeForCharacter(currentUserIdOrDefault));
+        return UserLinks.Create(character.ApprovedClaim?.Player.ToUserInfoHeader(), character.GetViewModeForCharacter(currentUserIdOrDefault));
     }
 }

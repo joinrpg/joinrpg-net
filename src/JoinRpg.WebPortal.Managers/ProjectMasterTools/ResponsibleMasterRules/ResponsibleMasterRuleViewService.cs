@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -9,28 +8,22 @@ using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
 
 internal class ResponsibleMasterRuleViewService(
-    IResponsibleMasterRulesRepository responsibleMasterRulesRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IRespMasterRuleService service,
-    IProjectRepository projectRepository,
     ICurrentUserAccessor currentUserAccessor) : IResponsibleMasterRuleClient
 {
     public async Task<ResponsibleMasterRuleListViewModel> GetResponsibleMasterRuleList(ProjectIdentification projectId)
     {
-        var groups = await responsibleMasterRulesRepository.GetResponsibleMasterRules(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var sortedGroups = groups
-            .OrderByDescending(g => g, new Sorter())
-            .Select(g => g.ToRespRuleViewModel())
+        var sortedGroups = projectInfo.ResponsibleMasterRules
+            .Select(g => g.ToRespRuleViewModel(projectInfo.GetMasterById(g.ResponsibleMasterId!)))
             .ToList();
 
-        var project = await projectRepository.GetProjectAsync(projectId);
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var defaultUser = project.GetDefaultResponsibleMaster();
+        var defaultMaster = projectInfo.GetDefaultResponsibleMaster();
         sortedGroups.Add(
             ResponsibleMasterRuleViewModel.CreateSpecial(
-                UserLinks.Create(defaultUser)
+                UserLinks.Create(defaultMaster.UserInfo)
             ));
 
         return new ResponsibleMasterRuleListViewModel(
@@ -41,6 +34,7 @@ internal class ResponsibleMasterRuleViewService(
                     )
             );
     }
+
     public async Task<ResponsibleMasterRuleListViewModel> AddResponsibleMasterRule(ProjectIdentification projectIdentification, int groupId, int masterId)
     {
         await service.AddRule(projectIdentification, groupId, masterId);
@@ -49,42 +43,4 @@ internal class ResponsibleMasterRuleViewService(
 
     public async Task RemoveResponsibleMasterRule(ProjectIdentification projectId, int ruleId)
         => await service.RemoveRule(projectId, ruleId);
-
-    private class Sorter : IComparer<CharacterGroup>
-    {
-        private readonly Dictionary<int, List<CharacterGroup>> parentGroupCache = new();
-        public int Compare(CharacterGroup? x, CharacterGroup? y)
-        {
-            ArgumentNullException.ThrowIfNull(x);
-            ArgumentNullException.ThrowIfNull(y);
-
-            if (ReferenceEquals(x, y))
-            {
-                return 0;
-            }
-
-            if (GetParents(x).Contains(y))
-            {
-                return 1; // If Y is parent of X, X should be after Y
-            }
-
-            if (GetParents(y).Contains(x))
-            {
-                return -1; // If X is parent of Y, Y should be after X
-            }
-
-            return Comparer<int>.Default.Compare(x.CharacterGroupId, y.CharacterGroupId);
-        }
-
-        private List<CharacterGroup> GetParents(CharacterGroup x)
-        {
-            if (parentGroupCache.TryGetValue(x.CharacterGroupId, out var groups))
-            {
-                return groups;
-            }
-            var parents = x.GetParentGroupsToTop().ToList();
-            parentGroupCache.Add(x.CharacterGroupId, parents);
-            return parents;
-        }
-    }
 }

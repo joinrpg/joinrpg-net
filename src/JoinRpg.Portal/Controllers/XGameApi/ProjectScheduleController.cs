@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
@@ -53,7 +52,7 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
                             new AuthorInfoApi
                             {
                                 UserId = author.UserId,
-                                Name = author.GetDisplayName(),
+                                Name = author.DisplayName.DisplayName,
                             }),
             StartTime = slot.StartTime,
             EndTime = slot.EndTime,

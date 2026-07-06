@@ -40,6 +40,24 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         var groups = CharacterGroupDictionaryBuilder.Build(project, projectId);
 
+        var responsibleMasterRules = groups.Values
+            .Where(g => g.ResponsibleMasterId != null)
+            .OrderByDescending(g => g, Comparer<CharacterGroupInfo>.Create((x, y) =>
+            {
+                if (x.AllParentGroups.Contains(y.Id))
+                {
+                    return 1;
+                }
+
+                if (y.AllParentGroups.Contains(x.Id))
+                {
+                    return -1;
+                }
+
+                return x.Id.CharacterGroupId.CompareTo(y.Id.CharacterGroupId);
+            }))
+            .ToList();
+
         return new ProjectInfo(
             projectId,
             new(project.ProjectName),
@@ -68,7 +86,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 IsPublicProject: project.Details.IsPublicProject
                 ),
             projectRolesLists: CreateRolesLists(project),
-            groups: groups);
+            groups: groups,
+            responsibleMasterRules: responsibleMasterRules);
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {
@@ -76,7 +95,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 new UserIdentification(acl.User.UserId),
                 acl.User.ExtractDisplayName(),
                 new Email(acl.User.Email),
-                acl.GetPermissions())
+                acl.GetPermissions(),
+                acl.IsOwner)
                 )
                 ];
         }

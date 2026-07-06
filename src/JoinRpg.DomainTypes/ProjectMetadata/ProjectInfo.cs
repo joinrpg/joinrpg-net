@@ -50,6 +50,8 @@ public record class ProjectInfo
 
     public IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> Groups { get; }
 
+    public IReadOnlyList<CharacterGroupInfo> ResponsibleMasterRules { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         ProjectName projectName,
@@ -70,7 +72,8 @@ public record class ProjectInfo
         ProjectProfileRequirementSettings profileRequirementSettings,
         ProjectClaimSettings projectClaimSettings,
         IReadOnlyCollection<ProjectRolesList> projectRolesLists,
-        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> groups)
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> groups,
+        IReadOnlyList<CharacterGroupInfo> responsibleMasterRules)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -101,6 +104,7 @@ public record class ProjectInfo
         ClaimSettings = projectClaimSettings;
         ProjectRolesLists = projectRolesLists;
         Groups = groups;
+        ResponsibleMasterRules = responsibleMasterRules;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -119,6 +123,12 @@ public record class ProjectInfo
 
     public Permission[] GetMasterAccess(UserIdentification currentUser) => Masters.FirstOrDefault(m => m.UserId == currentUser)?.Permissions ?? [];
 
+    public ProjectMasterInfo GetMasterById(UserIdentification currentUser) => Masters.First(m => m.UserId == currentUser);
+
+    public ProjectMasterInfo GetDefaultResponsibleMaster()
+        => Masters.FirstOrDefault(m => m.IsOwner)
+            ?? Masters.OrderBy(m => m.UserId.Value).First();
+
     public bool HasEditRolesAccess(UserIdentification userId)
     {
         return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
@@ -133,7 +143,7 @@ public record class ProjectInfo
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, AllowToSetGroups,
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, Groups);
+            ProjectRolesLists, Groups, ResponsibleMasterRules);
     }
 
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
@@ -144,7 +154,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, Groups);
+            ProjectRolesLists, Groups, ResponsibleMasterRules);
     }
 
     internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
@@ -155,7 +165,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
-            ProjectRolesLists, Groups);
+            ProjectRolesLists, Groups, ResponsibleMasterRules);
     }
 
     public CharacterGroupInfo GetGroupById(int id)
@@ -230,6 +240,19 @@ public record class ProjectInfo
     }
 
     public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
+
+    public ProjectMasterInfo SelectResponsibleMaster(IEnumerable<CharacterGroupIdentification> allCharacterGroups)
+    {
+        foreach (var rule in ResponsibleMasterRules)
+        {
+            if (allCharacterGroups.Contains(rule.Id))
+            {
+                return GetMasterById(rule.ResponsibleMasterId!);
+            }
+        }
+
+        return GetDefaultResponsibleMaster();
+    }
 }
 
 public record ProjectProfileRequirementSettings(

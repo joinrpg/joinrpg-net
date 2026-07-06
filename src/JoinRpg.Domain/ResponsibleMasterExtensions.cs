@@ -7,6 +7,7 @@ public static class ResponsibleMasterExtensions
     //TODO модифицировать этот алгоритм на такой:
     // - грузим список всех групп с отв. мастерами отсортированные в правильном порядке
     // - берем первую группу персонажа, которая есть у персонажа
+    [Obsolete]
     private static User? SelectResponsibleMaster(this Character character)
     {
         ArgumentNullException.ThrowIfNull(character);
@@ -44,6 +45,7 @@ public static class ResponsibleMasterExtensions
             .FirstOrDefault();
     }
 
+    [Obsolete("Передавай сюда ProjectInfo")]
     public static User GetResponsibleMaster(this Character character)
     {
         return
@@ -52,7 +54,24 @@ public static class ResponsibleMasterExtensions
             ?? character.Project.GetDefaultResponsibleMaster();
     }
 
-    public static User GetDefaultResponsibleMaster(this Project project)
+    public static ProjectMasterInfo GetResponsibleMaster(this Character character, ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+        ArgumentNullException.ThrowIfNull(projectInfo);
+
+        if (character.ApprovedClaim is { } claim &&
+            projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)) is { } claimMaster)
+        {
+            return claimMaster;
+        }
+
+        var allCharacterGroups = character.GetParentGroupIdsToTop(projectInfo);
+
+        return projectInfo.SelectResponsibleMaster(allCharacterGroups);
+    }
+
+    [Obsolete]
+    private static User GetDefaultResponsibleMaster(this Project project)
     {
 
         return

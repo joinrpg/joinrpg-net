@@ -35,7 +35,6 @@ public static class Registraton
             .AddTransient<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>()
             .AddTransient<IAccommodationRepository, AccommodationRepositoryImpl>()
             .AddTransient<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>()
-            .AddTransient<IResponsibleMasterRulesRepository, ResponsibleMasterRulesRepository>()
             .AddTransient<IProjectRolesListRepository, ProjectRolesListRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();

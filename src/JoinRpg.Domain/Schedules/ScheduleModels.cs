@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Helpers;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -9,7 +10,7 @@ public class ProgramItem(Character character)
     public int Id { get; } = character.CharacterId;
     public string Name { get; } = character.CharacterName;
     public MarkdownDbValue Description { get; } = character.Description;
-    public User[] Authors { get; } = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
+    public UserInfoHeader[] Authors { get; } = new[] { character.ApprovedClaim?.Player.ToUserInfoHeader() }.WhereNotNull().ToArray();
     public int ProjectId { get; } = character.ProjectId;
 
     public bool ShowAuthors { get; } = !character.HidePlayerForCharacter;

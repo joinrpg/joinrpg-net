@@ -50,7 +50,7 @@ public static class ItemBuilder
         var respMaster = projectInfo.Masters.Single(x => x.UserId == claim.ResponsibleMasterUserId).UserInfo;
 
         return new UgClaimForCaptainViewModel(
-            UserLinks.Create(claim.Player, ViewMode.Show),
+            UserLinks.Create(claim.Player.ToUserInfoHeader(), ViewMode.Show),
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
             claim.CreateDate,
