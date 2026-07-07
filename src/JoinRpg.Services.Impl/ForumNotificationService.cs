@@ -19,7 +19,7 @@ internal class ForumNotificationService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(model.ForumCommentId.ProjectId);
         var forumThread = await forumRepository.GetThreadHeader(model.ForumCommentId.ThreadId);
 
-        var header = $"{projectInfo.ProjectName}: тема на форуме {forumThread.Header}";
+        var header = $"{projectInfo.ProjectName.Value}: тема на форуме {forumThread.Header}";
 
         var text1 =
 $@"Добрый день, %recepient.name%
