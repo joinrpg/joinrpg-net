@@ -23,6 +23,7 @@ internal class UriServiceImpl(
     IUriLocator<ProjectIdentification>,
     IProjectUriLocator,
     ICharacterUriLocator,
+    ICharacterGroupUriLocator,
     IUriLocator<PlotFolderIdentification>,
     IUriLocator<ClaimIdentification>,
     IUriLocator<ClaimCommentIdentification>,
@@ -189,6 +190,34 @@ internal class UriServiceImpl(
                 PlainText: $"Подробнее: {name}: {uri}")
             : null;
     }
+
+    Uri ICharacterGroupUriLocator.GetClaimListUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ListForGroup", "ClaimList",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
+    Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ByGroup", "CharacterList",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
+    Uri ICharacterGroupUriLocator.GetSubscribeUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("EditForGroup", "GameSubscribe",
+            new { projectId = id.ProjectId.Value, characterGroupId = id.CharacterGroupId }));
+
+    Uri ICharacterGroupUriLocator.GetEditUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "GameGroups",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
+    Uri ICharacterGroupUriLocator.GetDeleteUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Delete", "GameGroups",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
+    Uri ICharacterGroupUriLocator.GetCreateCharacterUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Character",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
+    Uri ICharacterGroupUriLocator.GetAddGroupUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("AddGroup", "GameGroups",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

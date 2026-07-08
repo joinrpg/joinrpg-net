@@ -60,7 +60,7 @@ internal static class ProjectRoleGridViewModelBuilder
             {
                 var description = groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString().Value;
                 var groupLink = new CharacterGroupLinkSlimViewModel(group);
-                result.Add(new ProjectRoleGridGroupHeaderRowViewModel(groupLink, description));
+                result.Add(new ProjectRoleGridGroupHeaderRowViewModel(groupLink, description, group.GroupType));
             }
 
             var ordered = charactersByGroup[group.Id]

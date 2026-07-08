@@ -1,0 +1,19 @@
+<span class="dropdown">
+    <button class="btn btn-default dropdown-toggle btn-sm"
+            type="button"
+            id="@_menuId"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="true">
+        <span title="действия" class="glyphicon glyphicon-option-vertical"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="@_menuId">
+        @ChildContent
+    </ul>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
+
+    private readonly string _menuId = $"dots-menu-{Guid.NewGuid():N}";
+}
