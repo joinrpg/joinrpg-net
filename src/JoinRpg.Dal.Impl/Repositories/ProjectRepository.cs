@@ -190,29 +190,17 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     private async Task<ProjectShortInfo[]> GetKogdaIgraMissingGames()
     {
-        var kogdaIgraStaleExpression60 = ProjectPredicates.KogdaIgraIsStaleFor(TimeSpan.FromDays(60));
-        Expression<Func<Project, bool>> hasNonStaleKogdaIgra = project => project.KogdaIgraGames.Count(e => kogdaIgraStaleExpression60.Invoke(e)) > 0;
-        var filterPredicate = PredicateBuilder.New<Project>()
-                .And(project => project.Active)
-                .And(project => !hasNonStaleKogdaIgra.Invoke(project))
-                .And(project => !project.Details.DisableKogdaIgraMapping);
         var projection = GetProjectListProjection();
-
-        var lastUpdateMax = DateTime.Now.AddDays(-60);
+        var predicate = KogdaIgraMissingGamesPredicate.GetPredicate(DateTime.Now);
 
         var query = from project in AllProjects
                     join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
-                    where filterPredicate.Invoke(project)
-                    let item = projection.Invoke(project, update)
-                    where item.KogdaIgraGames.Count() == 0 || item.LastUpdated > lastUpdateMax
-                    select item;
-
-
+                    where predicate.Invoke(project, update.LastUpdated)
+                    select projection.Invoke(project, update);
 
         var result = await query.ToListAsync();
 
         return [.. result.Select(BuildProjectShortInfo)];
-
     }
 
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
