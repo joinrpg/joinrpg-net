@@ -1,0 +1,75 @@
+@using System.Globalization
+@typeparam TKey where TKey : notnull, ISpanParsable<TKey>
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<select class="selectpicker"
+        data-live-search="@(PossibleValues.Length > 10 ? "true" : "false")"
+        data-live-search-normalize="true"
+        data-size="10"
+        data-none-selected-text="@EmptyText"
+        name="@Name"
+        multiple="@Multiple"
+        @ref="selectRef"
+        @onchange="OnSelectionChangedAsync"
+        >
+  @if (AllowEmpty)
+  {
+    <option value="" selected="@(SelectedValues.Length == 0)">@EmptyText</option>
+  }
+  @foreach (var val in PossibleValues)
+  {
+    var selected = SelectedValues.Contains(val.Value);
+    <option
+            data-tokens="@($"{val.Text} {val.ExtraSearch}")"
+            data-subtext="@(val.Subtext)"
+            value="@val.Value"
+            selected="@selected">@val.Text</option>
+  }
+</select>
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] public TKey[] SelectedValues { get; set; } = [];
+    [Parameter] public EventCallback<TKey[]> SelectedValuesChanged { get; set; }
+    [Parameter] public TypedSelectListItem<TKey>[] PossibleValues { get; set; } = null!;
+    [Parameter] public bool Multiple { get; set; } = false;
+    [Parameter] public bool AllowEmpty { get; set; } = false;
+    [Parameter] public string EmptyText { get; set; } = "(нет)";
+
+    private ElementReference selectRef;
+    private IJSObjectReference module = null!;
+
+    private async Task OnSelectionChangedAsync(ChangeEventArgs eventArgs)
+    {
+      var values = await module.InvokeAsync<List<string>>("getSelectedValues", selectRef);
+      var selected = values
+          .Where(v => !string.IsNullOrEmpty(v))
+          .Select(v => TKey.Parse(v, CultureInfo.InvariantCulture))
+          .ToArray();
+      await SelectedValuesChanged.InvokeAsync(selected);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+      if (firstRender)
+      {
+        module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
+        await module.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues.Select(v => v.ToString()).ToArray());
+      }
+      else
+      {
+        await module.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
+      }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+      if (module is not null)
+      {
+        await module.DisposeAsync();
+      }
+    }
+
+}
