@@ -1,0 +1,7 @@
+span {
+    white-space: nowrap;
+}
+
+span::after {
+    content: ' ₽';
+}
