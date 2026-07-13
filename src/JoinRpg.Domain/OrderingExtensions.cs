@@ -18,15 +18,9 @@ public static class OrderingExtensions
     public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
       IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots.OrderBy(pe => pe.PlotFolderId), character.PlotElementOrderData, preserveOrder: true);
 
-    public static IReadOnlyList<ProjectFieldDropdownValue> GetOrderedValues(this ProjectField field)
-      => field.GetFieldValuesContainer().OrderedItems;
-
     public static VirtualOrderContainer<ProjectFieldDropdownValue> GetFieldValuesContainer(
       this ProjectField field)
       => VirtualOrderContainerFacade.Create(field.DropdownValues, field.ValuesOrdering);
-
-    public static IReadOnlyList<ProjectField> GetOrderedFields(this Project field)
-      => field.GetFieldsContainer().OrderedItems;
 
     public static VirtualOrderContainer<ProjectField> GetFieldsContainer(
       this Project field)
