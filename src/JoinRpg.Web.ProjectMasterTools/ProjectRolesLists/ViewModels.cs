@@ -28,6 +28,9 @@ public class AddProjectRolesListViewModel : IValidatableObject
         Description = "Группирует персонажей по дочерним группам.")]
     public bool ShowCharacterGroups { get; set; }
 
+    [Display(Name = "Показывать роли")]
+    public ShowRolesFilterView ShowRolesFilter { get; set; } = ShowRolesFilterView.All;
+
     [Display(Name = "Колонки полей")]
     public IReadOnlyList<ProjectFieldIdentification> Fields { get; set; } = [];
 
@@ -51,7 +54,8 @@ public class AddProjectRolesListViewModel : IValidatableObject
             Fields: Fields,
             ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
-            ShowCharacterGroups: ShowCharacterGroups);
+            ShowCharacterGroups: ShowCharacterGroups,
+            ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
     }
 
     protected static ProjectRolesListVisibilityMode ToDomainVisibilityMode(ProjectRolesListVisibilityModeView view)
@@ -78,6 +82,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             GroupsColumn = ToViewVisibilityMode(domain.GroupsColumn),
             Fields = domain.Fields,
             ShowCharacterGroups = domain.ShowCharacterGroups,
+            ShowRolesFilter = (ShowRolesFilterView)domain.ShowRolesFilter,
         };
     }
 
@@ -91,7 +96,8 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             Fields: Fields,
             ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
-            ShowCharacterGroups: ShowCharacterGroups);
+            ShowCharacterGroups: ShowCharacterGroups,
+            ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
     }
 }
 
@@ -117,4 +123,16 @@ public enum ContactsColumnVisibilityModeView
 
     [Display(Name = "Все контакты", Description = "Показывать имя игрока и все контакты (просмотр от имени мастера)")]
     All
+}
+
+public enum ShowRolesFilterView
+{
+    [Display(Name = "Все роли", Description = "Показывать все роли")]
+    All,
+
+    [Display(Name = "Только вакантные", Description = "Роли без одобренного игрока (включая роли в обсуждении)")]
+    VacantOnly,
+
+    [Display(Name = "Только горячие", Description = "Роли, помеченные мастером как горячие")]
+    HotOnly,
 }

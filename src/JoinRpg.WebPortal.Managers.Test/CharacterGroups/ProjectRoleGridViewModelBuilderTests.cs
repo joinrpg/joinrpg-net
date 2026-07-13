@@ -29,7 +29,8 @@ public class ProjectRoleGridViewModelBuilderTests
             fields ?? [],
             contacts,
             groups,
-            ShowCharacterGroups: showCharacterGroups);
+            ShowCharacterGroups: showCharacterGroups,
+            ShowRolesFilter: ShowRolesFilter.All);
 
     private ProjectRoleGridViewModel BuildGrid(
         ProjectRolesList config,

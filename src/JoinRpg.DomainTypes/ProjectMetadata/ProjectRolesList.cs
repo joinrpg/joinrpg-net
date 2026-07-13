@@ -9,6 +9,8 @@ public partial record ProjectRolesListIdentification(ProjectIdentification Proje
 
 public enum ProjectRolesListVisibilityMode { None, PublicOnly, All }
 
+public enum ShowRolesFilter { All, VacantOnly, HotOnly }
+
 /// <summary>
 /// Это класс соответствует настройке страницы «сетки ролей»
 /// </summary>
@@ -20,6 +22,7 @@ public enum ProjectRolesListVisibilityMode { None, PublicOnly, All }
 /// <param name="ContactsColumn">Показывать ли специальную колонку с контактами (нет, только публичные контакты, все контакты)</param>
 /// <param name="GroupsColumn">Показывать ли специальную колонку «интересные группы» (нет, только публичные группы, все группы)</param>
 /// <param name="ShowCharacterGroups">Показывать ли дочерние группы как секции в сетке ролей</param>
+/// <param name="ShowRolesFilter">Какие роли показывать: все, только вакантные, только горячие</param>
 public record class ProjectRolesList(
     ProjectRolesListIdentification ProjectRolesListId,
     string Name,
@@ -28,7 +31,8 @@ public record class ProjectRolesList(
     IReadOnlyList<ProjectFieldIdentification> Fields,
     ProjectRolesListVisibilityMode ContactsColumn,
     ProjectRolesListVisibilityMode GroupsColumn,
-    bool ShowCharacterGroups
+    bool ShowCharacterGroups,
+    ShowRolesFilter ShowRolesFilter
     )
 {
     //TODO проверять на валидность, например, что в публичной сетке ролей не может быть колонки со всеми контактами
