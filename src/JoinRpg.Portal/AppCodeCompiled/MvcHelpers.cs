@@ -1,9 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Net;
-using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -66,29 +64,14 @@ public static class MvcHtmlHelpers
     }
 
     /// <summary>
-    /// Converts payment status to CSS display property value
-    /// </summary>
-    public static string PaymentStatusToDisplayStyle(this ClaimFeeViewModel self, ClaimPaymentStatus status) => self.PaymentStatus == status ? "inline" : "none";
-
-    /// <summary>
     /// Renders specified number as a price to html tag
     /// </summary>
-    public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string? id = null) => self.RenderPriceElement(price.ToString(), id);
-
-    /// <summary>
-    /// Renders specified value as a price to html tag
-    /// </summary>
-    public static IHtmlContent RenderPriceElement(this IHtmlHelper self, string price, string? id = null)
+    [Obsolete("Используй Blazor-компонент PriceElement из JoinRpg.WebComponents")]
+    public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string id)
     {
-        //TODO[Localize]
-        if (!string.IsNullOrWhiteSpace(id))
-        {
-            id = id.Trim();
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
-        return new HtmlString("<span "
-                              + (string.IsNullOrWhiteSpace(id) ? "" : @"id=" + id)
-                              + @" class=""price-value price-RUR"">" + price + "</span>");
+        return new HtmlString("<span id=" + id.Trim() + @" class=""price-value price-RUR"">" + price + "</span>");
     }
 
     public readonly static string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;

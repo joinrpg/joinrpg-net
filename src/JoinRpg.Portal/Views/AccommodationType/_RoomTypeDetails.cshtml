@@ -13,7 +13,7 @@
     <tr>
         <td>@Model.Name</td>
         <td class="visible-lg">@Model.DescriptionView</td>
-        <td class="price-value">@Html.RenderPriceElement(Model.Cost)</td>
+        <td class="price-value">@(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = Model.Cost }))</td>
         @if (Model.IsInfinite)
         {
             <td class="price-value">@Model.Capacity &#x2715; ∞ = ∞</td>

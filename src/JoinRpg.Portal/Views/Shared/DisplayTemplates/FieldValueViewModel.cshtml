@@ -65,7 +65,7 @@
                     </div>
                     @if (Model.ShowPrice)
         {
-                        <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
+                        <div class="form-control-4-4 price-table"><strong>Цена:</strong> @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = value.Price }))</div>
                     }                    
                     </div>
                 }

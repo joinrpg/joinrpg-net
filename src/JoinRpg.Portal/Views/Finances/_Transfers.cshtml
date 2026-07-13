@@ -36,7 +36,7 @@
                 @Html.DisplayFor(modelItem => item.State)
             </td>
             <td>
-                @Html.RenderPriceElement(item.Money)
+                @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Money }))
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Sender)

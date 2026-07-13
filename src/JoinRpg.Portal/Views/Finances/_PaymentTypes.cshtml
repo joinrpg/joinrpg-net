@@ -24,10 +24,10 @@
         </td>
         <td>@Html.DisplayFor(modelItem => item.Master)</td>
         <td>
-            @Html.RenderPriceElement(item.Total)
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Total }))
         </td>
         <td>
-            @Html.RenderPriceElement(item.Moderation)
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Moderation }))
         </td>
     </tr>
 }
