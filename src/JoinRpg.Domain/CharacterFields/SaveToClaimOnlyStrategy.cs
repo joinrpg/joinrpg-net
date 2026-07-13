@@ -5,7 +5,7 @@ using JoinRpg.DomainTypes.Characters;
 namespace JoinRpg.Domain.CharacterFields;
 
 internal class SaveToClaimOnlyStrategy(Claim claim,
-    int currentUserId,
+    UserIdentification currentUserId,
     IFieldDefaultValueGenerator generator,
     ProjectInfo projectInfo) : FieldSaveStrategyBase(claim,
     character: null,

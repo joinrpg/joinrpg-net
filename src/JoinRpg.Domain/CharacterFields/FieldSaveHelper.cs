@@ -23,7 +23,7 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         ArgumentNullException.ThrowIfNull(newFieldValue);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
-        return SaveCharacterFieldsImpl(currentUserId,
+        return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
             claim.Character,
             claim,
             newFieldValue,
@@ -44,7 +44,7 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         ArgumentNullException.ThrowIfNull(newFieldValue);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
-        return SaveCharacterFieldsImpl(currentUserId,
+        return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
             character,
             character.ApprovedClaim,
             newFieldValue,
@@ -52,7 +52,7 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     }
 
     private IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(
-        int currentUserId,
+        UserIdentification currentUserId,
         Character character,
         Claim? claim,
         IReadOnlyDictionary<int, string?> newFieldValue,
@@ -91,7 +91,7 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         }
     }
 
-    private FieldSaveStrategyBase CreateStrategy(int currentUserId, Character character, Claim? claim, ProjectInfo projectInfo)
+    private FieldSaveStrategyBase CreateStrategy(UserIdentification currentUserId, Character character, Claim? claim, ProjectInfo projectInfo)
     {
         return claim switch
         {

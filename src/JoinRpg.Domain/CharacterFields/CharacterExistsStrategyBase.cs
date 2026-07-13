@@ -4,21 +4,17 @@ using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.CharacterFields;
 
-internal abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
+internal abstract class CharacterExistsStrategyBase(Claim? claim, Character character, UserIdentification currentUserId, IFieldDefaultValueGenerator generator, ProjectInfo projectInfo)
+    : FieldSaveStrategyBase(claim, character, currentUserId, generator, projectInfo, AccessArgumentsFactory.Create(character, currentUserId, projectInfo))
 {
     protected new Character Character => base.Character!; //Character should always exists
 
-    protected CharacterExistsStrategyBase(Claim? claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator, ProjectInfo projectInfo)
-        : base(claim, character, currentUserId, generator, projectInfo, AccessArgumentsFactory.Create(character, new UserIdentification(currentUserId), projectInfo))
-    {
-    }
-
     protected void UpdateSpecialGroups(Dictionary<int, FieldWithValue> fields)
     {
-        var ids = fields.Values.SelectMany(v => v.GetSpecialGroupsToApply()).ToArray();
-        var groupsToKeep = Character.Groups.Where(g => !g.IsSpecial)
-            .Select(g => g.CharacterGroupId);
-        Character.ParentCharacterGroupIds = [.. groupsToKeep.Union(ids.Select(i => i.CharacterGroupId))];
+        var specialGroupIds = fields.Values.SelectMany(v => v.GetSpecialGroupsToApply());
+        var regularGroupIds = Character.GetDirectGroups(ProjectInfo).Where(g => !g.IsSpecial).Select(g => g.Id);
+
+        Character.ParentCharacterGroupIds = [.. regularGroupIds.Union(specialGroupIds).Select(x => x.Id)];
     }
 
     protected void SetCharacterDescription(Dictionary<int, FieldWithValue> fields)
