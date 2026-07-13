@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl.Projects;
@@ -22,6 +23,7 @@ internal class CloneProjectHelper(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterService characterService,
     IPlotService plotService,
+    IProjectRolesListService projectRolesListService,
     ILogger logger)
 {
     private readonly Dictionary<CharacterIdentification, CharacterIdentification> CharacterMapping = [];
@@ -44,6 +46,7 @@ internal class CloneProjectHelper(
         if (cloneRequest.CopySettings >= ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates)
         {
             await CopyGroups();
+            await CopyRolesLists();
         }
 
         await FixupConditionalFields(); // Это надо делать даже если группы не копируются, чтобы поправить спецгруппы
@@ -332,6 +335,43 @@ internal class CloneProjectHelper(
         }
 
         return string.Join(",", values.Select(x => x.ProjectFieldVariantId.ToString()));
+    }
+
+    private async Task CopyRolesLists()
+    {
+        foreach (var originalList in original.ProjectRolesLists)
+        {
+            try
+            {
+                CharacterGroupIdentification? newCharacterGroupId = originalList.CharacterGroupId is { } cgId
+                    ? GroupMapping.GetValueOrDefault(cgId)
+                    : null;
+
+                var newFields = originalList.Fields
+                    .Select(f => FieldMapping.GetValueOrDefault(f))
+                    .WhereNotNull()
+                    .ToList();
+
+                var newModel = originalList with
+                {
+                    ProjectRolesListId = new ProjectRolesListIdentification(projectId, 0),
+                    CharacterGroupId = newCharacterGroupId,
+                    Fields = newFields,
+                };
+
+                await projectRolesListService.CreateAsync(newModel);
+            }
+            catch (DbEntityValidationException ex)
+            {
+                logger.LogWarning(ex, "Не удалось скопировать сетку ролей {Name} в проект {projectId}. Копирование проекта будет продолжено.", originalList.Name, projectId);
+                everythingFine = false;
+            }
+            catch (JoinRpgBaseException ex)
+            {
+                logger.LogWarning(ex, "Не удалось скопировать сетку ролей {Name} в проект {projectId}. Копирование проекта будет продолжено.", originalList.Name, projectId);
+                everythingFine = false;
+            }
+        }
     }
 
     private async Task CopyPlot()
