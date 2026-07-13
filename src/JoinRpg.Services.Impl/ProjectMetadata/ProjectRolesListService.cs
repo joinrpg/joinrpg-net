@@ -103,6 +103,7 @@ internal class ProjectRolesListService(
         entity.ContactsColumn = model.ContactsColumn;
         entity.GroupsColumn = model.GroupsColumn;
         entity.ShowCharacterGroups = model.ShowCharacterGroups;
+        entity.ShowRolesFilter = model.ShowRolesFilter;
     }
 
     private static ProjectRolesList ToDomain(DataModel.ProjectRolesList entity)
@@ -122,7 +123,8 @@ internal class ProjectRolesListService(
             Fields: fields,
             ContactsColumn: entity.ContactsColumn,
             GroupsColumn: entity.GroupsColumn,
-            ShowCharacterGroups: entity.ShowCharacterGroups
+            ShowCharacterGroups: entity.ShowCharacterGroups,
+            ShowRolesFilter: entity.ShowRolesFilter
         );
     }
 

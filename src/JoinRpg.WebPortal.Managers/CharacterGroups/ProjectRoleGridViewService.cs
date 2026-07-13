@@ -1,8 +1,12 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 
@@ -38,7 +42,7 @@ internal class ProjectRoleGridViewService(
         var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
         var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic).ToList();
 
-        var charactersByGroup = visibleCharacters
+        var charactersByGroup = ApplyRolesFilter(visibleCharacters, config.ShowRolesFilter)
             .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
             .ToLookup(x => x.group, x => x.character);
 
@@ -61,4 +65,17 @@ internal class ProjectRoleGridViewService(
                 orderedGroups, charactersByGroup, groupFullInfos, projectInfo),
             NoAccess: null);
     }
+
+    private static List<Character> ApplyRolesFilter(List<Character> characters, ShowRolesFilter filter)
+        => filter switch
+        {
+            ShowRolesFilter.VacantOnly => characters
+                .Where(c => c.GetBusyStatus() is
+                    CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy or
+                    CharacterBusyStatusView.Slot or CharacterBusyStatusView.HotSlot or
+                    CharacterBusyStatusView.Discussed)
+                .ToList(),
+            ShowRolesFilter.HotOnly => characters.Where(c => c.IsHot).ToList(),
+            _ => characters,
+        };
 }

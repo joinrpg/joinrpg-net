@@ -199,7 +199,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                     fields,
                     entity.ContactsColumn,
                     entity.GroupsColumn,
-                    entity.ShowCharacterGroups
+                    entity.ShowCharacterGroups,
+                    entity.ShowRolesFilter
                 ));
             }
             return result;

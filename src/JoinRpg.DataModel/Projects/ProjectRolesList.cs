@@ -40,6 +40,8 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
 
     public bool ShowCharacterGroups { get; set; }
 
+    public ShowRolesFilter ShowRolesFilter { get; set; }
+
     #region interface implementations
 
     int IOrderableEntity.Id => ProjectId;

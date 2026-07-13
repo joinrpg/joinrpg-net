@@ -28,6 +28,9 @@
         <FormRowFor For="@(() => _model.ShowCharacterGroups)">
             <CheckboxInput @bind-Value="_model.ShowCharacterGroups" />
         </FormRowFor>
+        <FormRowFor For="@(() => _model.ShowRolesFilter)">
+            <EnumRadioButtonGroup @bind-SelectedValue="_model.ShowRolesFilter" />
+        </FormRowFor>
         <FormRowFor For="@(() => _model.Fields)">
             <FieldSelector ProjectId="@ProjectId"
                            SelectedFieldIds="@([.. _model.Fields])"

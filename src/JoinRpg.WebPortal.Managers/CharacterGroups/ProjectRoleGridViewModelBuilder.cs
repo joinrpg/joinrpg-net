@@ -53,18 +53,21 @@ internal static class ProjectRoleGridViewModelBuilder
     {
         var result = new List<ProjectRoleGridRowViewModel>();
         var seen = new HashSet<int>();
+        var topGroupId = orderedGroups.Count > 0 ? orderedGroups[0].Id : (CharacterGroupIdentification?)null;
 
         foreach (var group in orderedGroups)
         {
-            if (config.ShowCharacterGroups)
+            var ordered = charactersByGroup[group.Id]
+                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering)
+                .ToList();
+
+            if (config.ShowCharacterGroups && (group.Id == topGroupId || ordered.Count > 0))
             {
                 var description = groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString().Value;
                 var groupLink = new CharacterGroupLinkSlimViewModel(group);
                 result.Add(new ProjectRoleGridGroupHeaderRowViewModel(groupLink, description));
             }
 
-            var ordered = charactersByGroup[group.Id]
-                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering);
             foreach (var character in ordered)
             {
                 if (config.ShowCharacterGroups || seen.Add(character.CharacterId))
