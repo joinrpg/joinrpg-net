@@ -4,7 +4,7 @@ namespace JoinRpg.Domain.CharacterFields;
 
 internal class SaveToCharacterOnlyStrategy(
     Character character,
-    int currentUserId,
+    UserIdentification currentUserId,
     IFieldDefaultValueGenerator generator,
     ProjectInfo projectInfo) : CharacterExistsStrategyBase(claim: null,
     character,

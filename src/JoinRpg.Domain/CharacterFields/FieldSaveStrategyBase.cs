@@ -5,7 +5,7 @@ namespace JoinRpg.Domain.CharacterFields;
 
 internal abstract class FieldSaveStrategyBase(Claim? claim,
     Character? character,
-    int currentUserId,
+    UserIdentification currentUserId,
     IFieldDefaultValueGenerator generator,
     ProjectInfo projectInfo,
     AccessArguments accessArguments)
