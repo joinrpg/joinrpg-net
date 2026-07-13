@@ -1,6 +1,5 @@
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Masters;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Masters;
 
