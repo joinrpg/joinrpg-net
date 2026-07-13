@@ -1,18 +1,4 @@
-using JoinRpg.DomainTypes.Interfaces;
-using JoinRpg.Services.Interfaces;
-
 namespace JoinRpg.Web.Models;
-
-public class GameObjectLinkViewModel(IUriService uriService, ILinkableWithName worldObject)
-{
-    public GameObjectLinkType Type { get; } = worldObject.LinkType.AsViewModel();
-
-    public string DisplayName { get; } = worldObject.Name;
-
-    public bool IsActive { get; } = worldObject.IsActive;
-
-    public Uri Uri { get; } = uriService.GetUri(worldObject);
-}
 
 public static class LinkTypeViewModelExtensions
 {
