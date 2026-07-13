@@ -46,8 +46,7 @@ public static class CharacterGroupListViewModel
                 Description = ((MarkdownString?)characterGroup.Description).ToHtmlString(),
                 Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
                 IsPublic = characterGroup.IsPublic,
-                IsSpecial = characterGroup.IsSpecial,
-                IsRootGroup = characterGroup.IsRoot,
+                GroupType = ProjectInfo.GetGroupById(characterGroup.GetId()).GroupType,
                 ProjectId = characterGroup.ProjectId,
                 RootGroupId = root.CharacterGroupId,
             };
@@ -131,5 +130,6 @@ public static class CharacterGroupListViewModel
         }
 
         private bool HasEditRolesAccess { get; } = root.HasEditRolesAccess(currentUserId);
+        public ProjectInfo ProjectInfo { get; } = projectInfo;
     }
 }

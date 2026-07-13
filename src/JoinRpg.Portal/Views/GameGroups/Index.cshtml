@@ -1,4 +1,5 @@
 @using JoinRpg.Web.Models
+@using JoinRpg.Web.CharacterGroups.GroupEditMenu
 @model GameRolesViewModel
 
 @if (!Model.Data.Any())
@@ -36,7 +37,10 @@
                  }
             @if (item.DeepLevel != 0 && Model.HasMasterAccess)
             {
-                <partial name="_GroupEditControls" model="item" />
+                <component type="typeof(GroupEditMenu)" render-mode="Static"
+                           param-GroupId="@(new CharacterGroupIdentification(new ProjectIdentification(item.ProjectId), item.CharacterGroupId))"
+                           param-GroupType="@item.GroupType"
+                           param-ShowEditControls="@Model.ShowEditControls" />
             }
             @if (item.IsSpecial)
             {

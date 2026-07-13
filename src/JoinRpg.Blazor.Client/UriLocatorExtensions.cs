@@ -8,7 +8,7 @@ public static class UriLocatorExtensions
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
-        ICharacterUriLocator
+        ICharacterUriLocator, ICharacterGroupUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -33,8 +33,26 @@ public static class UriLocatorExtensions
 
         Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 
+        Uri ICharacterGroupUriLocator.GetClaimListUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/claims/roles/{id.CharacterGroupId}", UriKind.Relative);
 
+        Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/characters/bygroup/{id.CharacterGroupId}", UriKind.Relative);
 
+        Uri ICharacterGroupUriLocator.GetSubscribeUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/subscribe/forgroup/{id.CharacterGroupId}", UriKind.Relative);
+
+        Uri ICharacterGroupUriLocator.GetEditUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/edit", UriKind.Relative);
+
+        Uri ICharacterGroupUriLocator.GetDeleteUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/delete", UriKind.Relative);
+
+        Uri ICharacterGroupUriLocator.GetCreateCharacterUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/character/create/{id.CharacterGroupId}", UriKind.Relative);
+
+        Uri ICharacterGroupUriLocator.GetAddGroupUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/addgroup", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
@@ -46,6 +64,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IUriLocator<ClaimIdentification>>(locator)
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
             .AddSingleton<ICharacterUriLocator>(locator)
+            .AddSingleton<ICharacterGroupUriLocator>(locator)
             ;
     }
 }

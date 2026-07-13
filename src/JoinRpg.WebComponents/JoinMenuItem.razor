@@ -1,0 +1,24 @@
+<li>
+    <a href="@Href">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            @if (Icon is not null)
+            {
+                <span class="glyphicon @Icon"></span>
+                <text> </text>
+            }
+            @Label
+        }
+    </a>
+</li>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Icon { get; set; }
+}

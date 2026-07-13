@@ -27,11 +27,11 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
 
     public bool IsRoot => DeepLevel == 0;
 
-    public bool IsRootGroup { get; set; }
+    public CharacterGroupType GroupType { get; set; }
 
     public bool IsPublic { get; set; }
 
-    public bool IsSpecial { get; set; }
+    public bool IsSpecial => GroupType is CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue;
 
     public string BoundExpression { get; set; } = "";
 

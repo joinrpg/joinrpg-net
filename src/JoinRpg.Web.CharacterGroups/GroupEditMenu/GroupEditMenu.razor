@@ -1,0 +1,33 @@
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.DomainTypes.ProjectMetadata
+@inject ICharacterGroupUriLocator UriLocator
+
+<JoinDotsMenu>
+    <JoinMenuItem Href="@UriLocator.GetClaimListUri(GroupId).ToString()">список заявок</JoinMenuItem>
+    <JoinMenuItem Href="@UriLocator.GetCharacterListUri(GroupId).ToString()">список персонажей</JoinMenuItem>
+
+    @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
+    {
+        <JoinMenuItem Href="@UriLocator.GetEditUri(GroupId).ToString()" Icon="glyphicon-pencil" Label="настроить" />
+    }
+
+    <JoinMenuItem Href="@UriLocator.GetSubscribeUri(GroupId).ToString()" Icon="glyphicon-pushpin" Label="подписка" />
+
+    @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
+    {
+        <JoinMenuItem Href="@UriLocator.GetDeleteUri(GroupId).ToString()" Icon="glyphicon-trash" Label="удалить" />
+    }
+
+    @if (GroupType is not (CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue) && ShowEditControls)
+    {
+        <JoinMenuHeader Label="Добавить" />
+        <JoinMenuItem Href="@UriLocator.GetCreateCharacterUri(GroupId).ToString()">..персонажа</JoinMenuItem>
+        <JoinMenuItem Href="@UriLocator.GetAddGroupUri(GroupId).ToString()">..подгруппу</JoinMenuItem>
+    }
+</JoinDotsMenu>
+
+@code {
+    [Parameter, EditorRequired] public CharacterGroupIdentification GroupId { get; set; } = null!;
+    [Parameter, EditorRequired] public CharacterGroupType GroupType { get; set; }
+    [Parameter] public bool ShowEditControls { get; set; }
+}
