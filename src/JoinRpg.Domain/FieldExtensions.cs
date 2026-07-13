@@ -4,19 +4,27 @@ namespace JoinRpg.Domain;
 
 public static class FieldExtensions
 {
-    public static bool HasValueList(this ProjectField field) => field.FieldType.HasValuesList();
-
-    public static bool SupportsMassAdding(this ProjectField field) => field.FieldType.SupportsMassAdding();
-
+    [Obsolete("Pass ProjectInfo")]
     public static bool IsAvailableForTarget(this ProjectFieldInfo field, Character? target)
     {
         ArgumentNullException.ThrowIfNull(field);
 
         var isNpc = target?.CharacterType == CharacterType.NonPlayer;
 
-        return field.IsActive
-          && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
-          && (field.GroupsAvailableForIds.Count == 0 || (target?.IsPartOfAnyOfGroups(field.GroupsAvailableForIds) ?? false));
+        var targetGroups = target?.GetParentGroupIdsToTop().ToList();
+
+        return IsAvailableForTargetCore(field, isNpc, targetGroups);
+    }
+
+    public static bool IsAvailableForTarget(this ProjectFieldInfo field, Character? target, ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+
+        var isNpc = target?.CharacterType == CharacterType.NonPlayer;
+
+        var targetGroups = target?.GetParentGroupIdsToTop(projectInfo).ToList();
+
+        return IsAvailableForTargetCore(field, isNpc, targetGroups);
     }
 
     public static bool IsAvailableForTarget(this ProjectFieldInfo field, CharacterItem target)
@@ -25,28 +33,14 @@ public static class FieldExtensions
 
         var isNpc = target.Character.CharacterType == CharacterType.NonPlayer;
 
-        return field.IsActive
-          && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
-          && (field.GroupsAvailableForIds.Count == 0 || target.ParentGroups.Intersect(field.GroupsAvailableForIds).Any());
+        return IsAvailableForTargetCore(field, isNpc, target.ParentGroups);
     }
 
-    public static ProjectFieldDropdownValue? GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)
+    private static bool IsAvailableForTargetCore(ProjectFieldInfo field, bool isNpc, IEnumerable<CharacterGroupIdentification>? targetGroups)
     {
-        return group.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
-                .SingleOrDefault(pfv => pfv.CharacterGroupId == group.CharacterGroupId);
+        return field.IsActive
+                  && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
+                  && (field.GroupsAvailableForIds.Count == 0 || (targetGroups?.Intersect(field.GroupsAvailableForIds).Any() ?? false));
     }
 
-    /// <summary>
-    /// Special field - character name
-    /// </summary>
-    public static bool IsName(this ProjectField field) => field.Project.Details.CharacterNameField == field;
-
-    /// <summary>
-    /// Special field - schedule time slot
-    /// </summary>
-    public static bool IsTimeSlot(this ProjectField field) => field.FieldType == ProjectFieldType.ScheduleTimeSlotField;
-    /// <summary>
-    /// Special field - schedule room slot
-    /// </summary>
-    public static bool IsRoomSlot(this ProjectField field) => field.FieldType == ProjectFieldType.ScheduleRoomField;
 }

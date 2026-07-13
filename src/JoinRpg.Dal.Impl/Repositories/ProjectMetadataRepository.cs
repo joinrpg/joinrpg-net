@@ -137,7 +137,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                     { IsPublic: true, CanPlayerView: true } => ProjectFieldVisibility.Public,
                     { IsPublic: false, CanPlayerView: true } => ProjectFieldVisibility.PlayerAndMaster,
                     { IsPublic: false, CanPlayerView: false } => ProjectFieldVisibility.MasterOnly,
-                    { IsPublic: true, CanPlayerView: false } => throw new InvalidOperationException("Invalid combination of flagss"),
+                    { IsPublic: true, CanPlayerView: false } => throw new InvalidOperationException("Invalid combination of flags"),
                 };
             }
         }
@@ -158,7 +158,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue,
-                            wasEverUsed: variant.WasEverUsed
+                            wasEverUsed: variant.WasEverUsed,
+                            field.FieldName
                         );
                 }
             }
@@ -176,7 +177,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                             variant.Description,
                             variant.MasterDescription,
                             variant.ProgrammaticValue,
-                            WasEverUsed: variant.WasEverUsed
+                            WasEverUsed: variant.WasEverUsed,
+                            field.FieldName
                         );
                 }
             }

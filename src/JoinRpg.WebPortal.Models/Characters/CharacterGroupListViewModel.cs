@@ -59,11 +59,11 @@ public static class CharacterGroupListViewModel
 
             if (vm.IsSpecial)
             {
-                var variant = characterGroup.GetBoundFieldDropdownValueOrDefault();
+                var variant = ProjectInfo.GetVariantByGroupIdOrDefault(characterGroup.GetId());
 
                 if (variant != null)
                 {
-                    vm.BoundExpression = $"{variant.ProjectField.FieldName} = {variant.Label}";
+                    vm.BoundExpression = $"{variant.ParentFieldName} = {variant.Label}";
                 }
             }
 

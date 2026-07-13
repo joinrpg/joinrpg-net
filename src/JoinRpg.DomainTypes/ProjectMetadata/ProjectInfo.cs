@@ -116,6 +116,11 @@ public record class ProjectInfo
         return UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == id.ProjectFieldId) ?? throw new KeyNotFoundException("Не найдено поле с ID=" + id);
     }
 
+    public ProjectFieldVariant? GetVariantByGroupIdOrDefault(CharacterGroupIdentification characterGroupIdentification)
+    {
+        return UnsortedFields.SelectMany(pf => pf.Variants).SingleOrDefault(pfv => pfv.CharacterGroupId == characterGroupIdentification);
+    }
+
     public bool HasMasterAccess(UserIdentification? userId, Permission permission = Permission.None)
     {
         return Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(permission));
