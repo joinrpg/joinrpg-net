@@ -26,12 +26,7 @@ public static class ClaimExtensions
         return claim.Character.Claims.Any(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive());
     }
 
-    public static bool IsPartOfAnyOfGroups(this Character character, IReadOnlyCollection<CharacterGroupIdentification> groups)
-    {
-        //TODO we can do faster than this
-        return character.GetParentGroupIdsToTop().Intersect(groups).Any();
-    }
-
+    [Obsolete]
     public static bool IsPartOfGroup(this Character character, int characterGroupId)
     {
         //TODO we can do faster than this

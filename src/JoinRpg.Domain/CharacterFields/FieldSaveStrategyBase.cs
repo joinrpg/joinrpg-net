@@ -67,7 +67,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     {
         foreach (var field in fields.Values.Where(
             f => !f.HasEditableValue && f.Field.CanHaveValue &&
-                 f.Field.IsAvailableForTarget(Character)))
+                 f.Field.IsAvailableForTarget(Character, ProjectInfo)))
         {
             var newValue = GenerateDefaultValue(field);
 

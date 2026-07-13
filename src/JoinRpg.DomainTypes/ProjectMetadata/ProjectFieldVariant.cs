@@ -12,7 +12,8 @@ public record class ProjectFieldVariant(
     MarkdownString? Description,
     MarkdownString? MasterDescription,
     string? ProgrammaticValue,
-    bool WasEverUsed
+    bool WasEverUsed,
+    string ParentFieldName
     ) : IOrderableEntity
 {
     int IOrderableEntity.Id => Id.ProjectFieldVariantId;

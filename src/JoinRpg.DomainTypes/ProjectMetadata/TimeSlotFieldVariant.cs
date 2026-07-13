@@ -15,8 +15,9 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     MarkdownString? Description,
     MarkdownString? MasterDescription,
     string? ProgrammaticValue,
-    bool wasEverUsed)
-        : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue, wasEverUsed)
+    bool wasEverUsed,
+    string parentFieldName)
+        : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue, wasEverUsed, parentFieldName)
     {
         if (ProgrammaticValue is not null)
         {

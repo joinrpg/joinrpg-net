@@ -41,5 +41,5 @@ internal class SaveToCharacterOnlyStrategy(
     protected override bool FieldIsMandatory(FieldWithValue field) =>
         field.Field.MandatoryStatus == MandatoryStatus.Required
         && field.Field.BoundTo == FieldBoundTo.Character // Игнорируем пустые поля заявок в данном случае
-        && field.Field.IsAvailableForTarget(Character);
+        && field.Field.IsAvailableForTarget(Character, ProjectInfo);
 }
