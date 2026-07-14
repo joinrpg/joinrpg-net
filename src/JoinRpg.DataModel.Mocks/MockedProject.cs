@@ -91,6 +91,13 @@ public class MockedProject
 
     public void ReInitProjectInfo()
     {
+        // Имитация lazy-loading EF6: боевой код полагается на то, что ProjectAcl.User
+        // подгрузится по UserId сама, даже если ACL создан "на лету" (см. ProjectAccessService.GrantAccess).
+        foreach (var acl in Project.ProjectAcls)
+        {
+            acl.User ??= new User { UserId = acl.UserId, PrefferedName = $"User{acl.UserId}", Email = $"user{acl.UserId}@example.com", Claims = [] };
+        }
+
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
     }
 

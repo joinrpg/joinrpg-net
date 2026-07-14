@@ -1,153 +1,129 @@
 using System.Data.Entity.Validation;
-using JoinRpg.Data.Write.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;
+using JoinRpg.Services.Interfaces.Subscribe;
 
 namespace JoinRpg.Services.Impl.Projects.Metadata;
 
-internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor)
-    : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectAccessService
+internal class ProjectAccessService(
+    IProjectPropsService projectPropsService,
+    IClaimsRepository claimsRepository,
+    IClaimService claimService,
+    IGameSubscribeService gameSubscribeService,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor,
+    ILogger<ProjectAccessService> logger) : IProjectAccessService
 {
-    public async Task GrantAccess(GrantAccessRequest grantAccessRequest)
-    {
-        var project = await ProjectRepository.GetProjectAsync(grantAccessRequest.ProjectId);
-        if (!IsCurrentUserAdmin)
-        {
-            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanGrantRights);
-        }
-
-        _ = project.EnsureProjectActive();
-
-        var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == grantAccessRequest.UserId);
-        if (acl == null)
-        {
-            acl = new ProjectAcl
+    public Task GrantAccess(GrantAccessRequest request)
+        => projectPropsService.ChangeProjectProperties(
+            request.ProjectId,
+            Permission.CanGrantRights,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx =>
             {
-                ProjectId = project.ProjectId,
-                UserId = grantAccessRequest.UserId,
-                Project = project,
-            };
-            project.ProjectAcls.Add(acl);
-        }
+                var acl = ctx.Project.ProjectAcls.SingleOrDefault(a => a.UserId == ctx.Request.UserId);
+                if (acl is null)
+                {
+                    acl = new ProjectAcl { ProjectId = ctx.Project.ProjectId, UserId = ctx.Request.UserId, Project = ctx.Project };
+                    ctx.Project.ProjectAcls.Add(acl);
+                }
+                acl.SetPermissions(ctx.Request.Permissions);
+            });
 
-        SetRightsFromRequest(grantAccessRequest, acl);
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterIdOrDefault)
-    {
-        var project = await ProjectRepository.GetProjectAsync(projectId);
-        if (userId != CurrentUserId)
-        {
-            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanGrantRights);
-        }
-
-        if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
-        {
-            throw new DbEntityValidationException();
-        }
-
-        var acl = project.ProjectAcls.Single(a => a.UserId == userId);
-
-        var respFor = project.CharacterGroups.Where(g => g.ResponsibleMasterUserId == userId).ToList();
-
-        var claims =
-            await ClaimsRepository.GetClaimsForMaster(projectId,
-                acl.UserId,
-                ClaimStatusSpec.Any);
-
-        if (claims.Count > 0 || respFor.Count > 0)
-        {
-            if (newResponsibleMasterIdOrDefault is not int newResponsible || newResponsible == userId)
+    public Task ChangeAccess(ChangeAccessRequest request)
+        => projectPropsService.ChangeProjectProperties(
+            request.ProjectId,
+            Permission.CanGrantRights,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx =>
             {
-                throw new MasterHasResponsibleException(acl);
+                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId);
+                acl.SetPermissions(ctx.Request.Permissions);
+                if (ctx.Project.ProjectAcls.All(a => !a.CanGrantRights))
+                {
+                    acl.CanGrantRights = true; // последний с CanGrantRights не может снять его сам с себя
+                }
+            });
+
+    public async Task RemoveAccess(ProjectIdentification projectId, UserIdentification userId, UserIdentification? newResponsibleMasterIdOrDefault)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        var requiredPermission = userId == currentUserAccessor.UserIdentification ? Permission.None : Permission.CanGrantRights;
+        if (!currentUserAccessor.IsAdmin)
+        {
+            _ = projectInfo.RequestMasterAccess(currentUserAccessor, requiredPermission);
+        }
+
+        var claims = await claimsRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
+        var hasResponsibleGroups = projectInfo.ResponsibleMasterRules.Any(g => g.ResponsibleMasterId == userId);
+
+        if (claims.Count > 0 || hasResponsibleGroups)
+        {
+            if (newResponsibleMasterIdOrDefault is null || newResponsibleMasterIdOrDefault == userId)
+            {
+                throw new MasterHasResponsibleException(projectId, userId);
             }
 
-            _ = project.RequestMasterAccess(newResponsible);
+            _ = projectInfo.RequestMasterAccess(newResponsibleMasterIdOrDefault); // newResponsible must actually be a project master
 
             foreach (var claim in claims)
             {
-                claim.ResponsibleMasterUserId = newResponsible;
-            }
-
-            foreach (var respForItem in respFor)
-            {
-                respForItem.ResponsibleMasterUserId = newResponsible;
+                await claimService.SetResponsible(claim.GetId(), newResponsibleMasterIdOrDefault);
             }
         }
 
-        if (acl.IsOwner)
-        {
-            if (acl.UserId == CurrentUserId)
+        await projectPropsService.ChangeProjectProperties(
+            projectId,
+            requiredPermission,
+            ProjectActiveRequirement.AllowInactive,
+            (UserId: userId, NewResponsible: newResponsibleMasterIdOrDefault),
+            ctx =>
             {
-                // if owner removing himself, assign "random" owner
-                project.ProjectAcls.OrderBy(a => a.UserId).First().IsOwner = true;
-            }
-            else
-            {
-                //who kills the king, becomes one
-                project.ProjectAcls.Single(a => a.UserId == CurrentUserId).IsOwner = true;
-            }
-        }
+                if (!ctx.Project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != ctx.Request.UserId.Value))
+                {
+                    throw new DbEntityValidationException();
+                }
 
-        _ = UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
-        _ = UnitOfWork.GetDbSet<UserSubscription>()
-            .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
-                         .Where(x => x.UserId == userId && x.ProjectId == projectId));
+                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId.Value);
 
-        await UnitOfWork.SaveChangesAsync();
+                foreach (var group in ctx.Project.CharacterGroups.Where(g => g.ResponsibleMasterUserId == ctx.Request.UserId.Value))
+                {
+                    group.ResponsibleMasterUserId = ctx.Request.NewResponsible?.Value;
+                }
+
+                if (acl.IsOwner)
+                {
+                    if (acl.UserId == ctx.CurrentUser.UserId)
+                    {
+                        ctx.Project.ProjectAcls.OrderBy(a => a.UserId).First().IsOwner = true;
+                    }
+                    else
+                    {
+                        ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.CurrentUser.UserId).IsOwner = true;
+                    }
+                }
+
+                ctx.RemovePermanently(acl);
+            });
+
+        await gameSubscribeService.RemoveAllSubscriptions(projectId, userId);
     }
 
-    public async Task ChangeAccess(ChangeAccessRequest changeAccessRequest)
+    public Task GrantFullAccess(ProjectIdentification projectId)
     {
-        var project = await ProjectRepository.GetProjectAsync(changeAccessRequest.ProjectId);
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanGrantRights);
-
-        var acl = project.ProjectAcls.Single(
-            a => a.ProjectId == changeAccessRequest.ProjectId && a.UserId == changeAccessRequest.UserId);
-        SetRightsFromRequest(changeAccessRequest, acl);
-
-        if (project.ProjectAcls.All(a => !a.CanGrantRights))
+        logger.LogInformation("Администратор {UserId} запрашивает полный доступ к проекту {ProjectId}", currentUserAccessor.UserId, projectId);
+        return GrantAccess(new GrantAccessRequest
         {
-            acl.CanGrantRights = true; // Чтобы нельзя было снять с себя галочку, если оставался последний.
-        }
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task GrantAccessAsAdmin(ProjectIdentification projectId)
-    {
-        var project = await ProjectRepository.GetProjectAsync(projectId.Value);
-        if (!IsCurrentUserAdmin)
-        {
-            throw new NoAccessToProjectException(project, CurrentUserId);
-        }
-
-        var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId);
-        if (acl == null)
-        {
-            project.ProjectAcls.Add(ProjectAcl.CreateRootAcl(CurrentUserId));
-        }
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    private static void SetRightsFromRequest(AccessRequestBase grantAccessRequest, ProjectAcl acl)
-    {
-        acl.CanGrantRights = grantAccessRequest.CanGrantRights;
-        acl.CanChangeFields = grantAccessRequest.CanChangeFields;
-        acl.CanChangeProjectProperties = grantAccessRequest.CanChangeProjectProperties;
-        acl.CanManageClaims = grantAccessRequest.CanManageClaims;
-        acl.CanEditRoles = grantAccessRequest.CanEditRoles;
-        acl.CanManageMoney = grantAccessRequest.CanManageMoney;
-        acl.CanSendMassMails = grantAccessRequest.CanSendMassMails;
-        acl.CanManagePlots = grantAccessRequest.CanManagePlots;
-        acl.CanManageAccommodation = grantAccessRequest.CanManageAccommodation &&
-                                     acl.Project.Details.EnableAccommodation;
-        acl.CanSetPlayersAccommodations = grantAccessRequest.CanSetPlayersAccommodations &&
-                                          acl.Project.Details.EnableAccommodation;
+            ProjectId = projectId,
+            UserId = currentUserAccessor.UserIdentification,
+            Permissions = [.. Enum.GetValues<Permission>().Where(p => p != Permission.None)],
+        });
     }
 }

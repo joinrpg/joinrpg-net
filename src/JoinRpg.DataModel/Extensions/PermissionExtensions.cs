@@ -41,4 +41,20 @@ public static class PermissionExtensions
             }
         }
     }
+
+    public static void SetPermissions(this ProjectAcl acl, IReadOnlyCollection<Permission> permissions)
+    {
+        bool Has(Permission p) => permissions.Contains(p);
+
+        acl.CanChangeFields = Has(Permission.CanChangeFields);
+        acl.CanChangeProjectProperties = Has(Permission.CanChangeProjectProperties);
+        acl.CanGrantRights = Has(Permission.CanGrantRights);
+        acl.CanManageClaims = Has(Permission.CanManageClaims);
+        acl.CanEditRoles = Has(Permission.CanEditRoles);
+        acl.CanManageMoney = Has(Permission.CanManageMoney);
+        acl.CanSendMassMails = Has(Permission.CanSendMassMails);
+        acl.CanManagePlots = Has(Permission.CanManagePlots);
+        acl.CanManageAccommodation = Has(Permission.CanManageAccommodation) && acl.Project.Details.EnableAccommodation;
+        acl.CanSetPlayersAccommodations = Has(Permission.CanSetPlayersAccommodations) && acl.Project.Details.EnableAccommodation;
+    }
 }
