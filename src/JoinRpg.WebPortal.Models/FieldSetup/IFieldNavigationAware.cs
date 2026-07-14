@@ -1,4 +1,7 @@
-namespace JoinRpg.Web.Models.FieldSetup;
+using JoinRpg.Web.Games.FieldSetup;
+using JoinRpg.Web.Models;
+
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 public interface IFieldNavigationAware : IProjectIdAware
 {

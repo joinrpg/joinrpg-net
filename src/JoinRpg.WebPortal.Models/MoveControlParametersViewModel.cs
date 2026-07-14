@@ -1,8 +1,9 @@
 namespace JoinRpg.Web.Models;
 
+[Obsolete]
 public class MoveControlParametersViewModel
 {
-    public IMovableListItem Item { get; set; }
+    public IMoveableNonInteractiveListItem Item { get; set; }
     public int ProjectId { get; set; }
     public int ListItemId { get; set; }
     public int ParentObjectId { get; set; }

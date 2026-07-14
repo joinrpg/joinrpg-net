@@ -1,20 +1,14 @@
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.Web.Games.FieldSetup;
 
 /// <summary>
 /// Navigation in fields area
 /// </summary>
-public class FieldNavigationModel : IProjectIdAware
+public class FieldNavigationModel
 {
     /// <see cref="FieldNavigationPage"/>
     public FieldNavigationPage Page { get; set; }
 
-    /// <inheritdoc />
     public int ProjectId { get; set; }
-
-    /// <summary>
-    /// Can current user edit fields
-    /// </summary>
-    public bool CanEditFields { get; set; }
 }
 
 /// <summary>

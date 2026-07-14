@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>, IMovableListItem
+public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>, IMoveableNonInteractiveListItem
 {
     public int RootGroupId
     { get; set; }
@@ -48,6 +48,6 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
 
     public override string ToString() => $"ChGroup(Name={Name})";
 
-    int IMovableListItem.ItemId => CharacterGroupId;
+    int IMoveableNonInteractiveListItem.ItemId => CharacterGroupId;
 }
 

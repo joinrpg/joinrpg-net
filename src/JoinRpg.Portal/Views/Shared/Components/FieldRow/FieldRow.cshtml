@@ -1,6 +1,5 @@
-@using JoinRpg.Web.Models
 @using JoinRpg.Web.ProjectCommon.Fields
-@model JoinRpg.Web.Models.FieldSetup.GameFieldEditViewModel
+@model JoinRpg.Web.Games.FieldSetup.GameFieldListItemViewModel
 
 @{
     var item = Model;
@@ -44,17 +43,17 @@
           />
     </td>
     <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
-    <td>@item.DescriptionDisplay @item.MasterDescriptionDisplay</td>
+    <td>@Html.Raw(item.DescriptionHtml) @Html.Raw(item.MasterDescriptionHtml)</td>
     <td>
         @if (item.HasValueList)
         {
             <ul>
-                @foreach (var value in item.DropdownValues)
+                @foreach (var value in item.Variants)
                 {
                     <li>
-                        @if (value.CharacterGroupId is not null)
+                        @if (value.CharacterGroup is not null)
                         {
-                            <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@item.ProjectId" asp-route-CharacterGroupId="@value.CharacterGroupId">
+                            <a asp-controller="CharacterList" asp-action="ByGroup" asp-route-ProjectId="@item.Id.ProjectId.Value" asp-route-CharacterGroupId="@value.CharacterGroup.CharacterGroupId">
                                 @if (!value.IsActive)
                                 {
                                     <del>@value.Label</del>
@@ -79,7 +78,7 @@
                 <li>
                     (<i>
                         @Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
-                new { item.ProjectFieldId, item.ProjectId }, null)
+                new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value }, null)
                     </i>)
                 </li>
                         }
@@ -88,7 +87,7 @@
                 <li>
                     (<i>
                         @Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
-                new { item.ProjectFieldId, item.ProjectId }, null)
+                new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value }, null)
                     </i>)
                 </li>
                         }
@@ -105,11 +104,11 @@
                         {
                             case FieldBoundToViewModel.Character:
             @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
-                     new { item.ProjectFieldId, item.ProjectId }, null)
+                     new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value }, null)
                                 break;
                             case FieldBoundToViewModel.Claim:
             @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
-                     new { item.ProjectFieldId, item.ProjectId }, null)
+                     new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value }, null)
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
@@ -122,12 +121,12 @@
                 @if (item.FieldBoundTo == FieldBoundToViewModel.Character)
                         {
                 @Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
-                    new { item.ProjectFieldId, item.ProjectId }, null)
+                    new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value }, null)
                         }
                         else
                         {
                 @Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
-                    new { item.ProjectFieldId, item.ProjectId }, null)
+                    new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value }, null)
                         }
             </i>
                 }
@@ -139,23 +138,23 @@
             <div class="btn-group btn-group-sm" style="display: inline-block">
                 @if (item.IsActive)
                     {
-                <a title="Изменить" href="@Url.Action("Edit", "GameField", new { item.ProjectFieldId, item.ProjectId })"
+                <a title="Изменить" href="@Url.Action("Edit", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
                    class="btn btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
                    @if (item.FieldViewType.HasValuesList())
                    {
-                        <a title="Добавить значение" href="@Url.Action("CreateValue", "GameField", new { item.ProjectFieldId, item.ProjectId })"
+                        <a title="Добавить значение" href="@Url.Action("CreateValue", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
                            class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i></a>
                    }
                 <a title="Удалить"
                    data-toggle="modal"
                    data-target="#deleteEntityModal"
-                   data-element="@item.ProjectFieldId"
-                   data-action-url="@Url.Action("Delete", "GameField",new { item.ProjectFieldId, item.ProjectId })"
+                   data-element="@item.Id.ProjectFieldId"
+                   data-action-url="@Url.Action("Delete", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
                    class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
                     }
                     else
                     {
-                <a title="Восстановить" href="@Url.Action("Edit", "GameField",new { item.ProjectFieldId, item.ProjectId })"
+                <a title="Восстановить" href="@Url.Action("Edit", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
                    class="btn btn-primary"><i class="glyphicon glyphicon-heart"></i></a>
                     }
             </div>
@@ -165,9 +164,9 @@
             @if (item.CanEditFields)
             {
             <div class="btn-group btn-group-sm" style="display: inline-block">
-                <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
+                <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.Id.ProjectFieldId"
                    class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
-            
+
             @await Html.MoveControlAsync(model => item, "Move")
             </div>
             }

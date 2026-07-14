@@ -1,6 +1,6 @@
-using JoinRpg.Web.ProjectCommon.Fields;
+using JoinRpg.Web.Games.FieldSetup;
 
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 public abstract class GameFieldViewModelBase : IValidatableObject, IFieldNavigationAware
 {

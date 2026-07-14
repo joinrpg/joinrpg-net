@@ -1,6 +1,4 @@
-using System.ComponentModel;
-
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
 /// Base view class for dropdown value

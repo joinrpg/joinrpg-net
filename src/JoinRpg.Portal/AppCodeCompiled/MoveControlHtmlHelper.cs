@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.ProjectCommon.Fields;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -8,12 +8,13 @@ namespace JoinRpg.Portal;
 
 public static class MoveControlHtmlHelper
 {
+    [Obsolete]
     public static async Task<IHtmlContent> MoveControlAsync<TModel, TValue>(this IHtmlHelper<TModel> self,
       Expression<Func<TModel, TValue>> expression, string actionName,
       string? controllerName, int? parentObjectId = null)
-        where TValue : IMovableListItem
+        where TValue : IMoveableNonInteractiveListItem
     {
-        var item = (IMovableListItem)self.GetValue(expression);
+        var item = (IMoveableNonInteractiveListItem)self.GetValue(expression);
 
         var paramters = new MoveControlParametersViewModel()
         {
@@ -28,9 +29,10 @@ public static class MoveControlHtmlHelper
         return await self.PartialAsync("_MoveControlPartial", paramters);
     }
 
+    [Obsolete]
     public static async Task<IHtmlContent> MoveControlAsync<TModel, TValue>(this IHtmlHelper<TModel> self,
       Expression<Func<TModel, TValue>> expression, string actionName)
-        where TValue : IMovableListItem
+        where TValue : IMoveableNonInteractiveListItem
     {
         var currentController = GetRequiredString(self.ViewContext.RouteData, "controller");
         return await self.MoveControlAsync(expression, actionName, currentController);

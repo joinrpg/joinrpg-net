@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
 /// View class for editing dropdown value
@@ -12,12 +12,12 @@ public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewMod
     public GameFieldDropdownValueEditViewModel(ProjectFieldInfo field, ProjectFieldVariant value) : base(field)
     {
         Label = value.Label;
-        Description = value.Description?.Value;
+        Description = value.Description?.Value ?? "";
         IsActive = value.IsActive;
         Price = value.Price;
         ProjectFieldDropdownValueId = value.Id.ProjectFieldVariantId;
         PlayerSelectable = value.IsPlayerSelectable;
-        ProgrammaticValue = value.ProgrammaticValue;
+        ProgrammaticValue = value.ProgrammaticValue ?? "";
         if (value is TimeSlotFieldVariant timeSlotFieldVariant)
         {
             TimeSlotInMinutes = timeSlotFieldVariant.TimeSlotOptions.TimeSlotInMinutes;
