@@ -1,4 +1,6 @@
-namespace JoinRpg.Web.Models.FieldSetup;
+using JoinRpg.Web.Games.FieldSetup;
+
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 public class FieldSettingsViewModel : IFieldNavigationAware
 {

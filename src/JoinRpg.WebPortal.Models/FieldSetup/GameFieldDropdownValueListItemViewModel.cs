@@ -1,11 +1,11 @@
 using JoinRpg.Markdown;
 
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
 /// View class for displaying dropdown value in field's editor
 /// </summary>
-public class GameFieldDropdownValueListItemViewModel : IMovableListItem
+public class GameFieldDropdownValueListItemViewModel : IMoveableNonInteractiveListItem
 {
     [Display(Name = "Значение"), Required]
     public string Label { get; set; }
@@ -39,11 +39,11 @@ public class GameFieldDropdownValueListItemViewModel : IMovableListItem
         MasterRestricted = !variant.IsPlayerSelectable && canPlayerEdit;
     }
 
-    #region Implementation of IMovableListItem
+    #region Implementation of IMoveableNonInteractiveListItem
 
     public bool First { get; set; }
     public bool Last { get; set; }
-    int IMovableListItem.ItemId => ValueId;
+    int IMoveableNonInteractiveListItem.ItemId => ValueId;
 
     #endregion
 }

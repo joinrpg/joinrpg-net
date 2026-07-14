@@ -1,3 +1,4 @@
+global using System.ComponentModel;
 global using System.ComponentModel.DataAnnotations;
 global using JoinRpg.Common.PrimitiveTypes;
 global using JoinRpg.DomainTypes;
@@ -5,3 +6,4 @@ global using JoinRpg.DomainTypes.Characters.Claims.Finances;
 global using JoinRpg.DomainTypes.ProjectMetadata;
 global using JoinRpg.DomainTypes.Users;
 global using JoinRpg.Web.Models.CommonTypes;
+global using JoinRpg.Web.ProjectCommon.Fields;

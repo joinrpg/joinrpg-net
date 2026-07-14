@@ -1,7 +1,8 @@
 
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Dialogs
-@using JoinRpg.Web.Models.FieldSetup
+@using JoinRpg.Web.Games.FieldSetup
+@using JoinRpg.WebPortal.Models.FieldSetup
 @model GameFieldListViewModel
 
 @{
@@ -15,7 +16,7 @@
                 <th>Поле</th>
                 <th>Видимость</th>
                 <th class="price-table" style="white-space: nowrap">Цена, ₽</th>
-                <th>@Html.DisplayNameFor(model => firstItem.DescriptionDisplay)</th>
+                <th>Описание</th>
                 <th></th>
                 <th style="min-width: 6em; width: 9em;"></th>
                 <th style="min-width: 9em; width: 9em;"></th>
@@ -37,7 +38,7 @@
     <div class="modal fade modaldialogforid" id="fastMoveModal" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
-                @using (Html.BeginForm("MoveFast", "GameField", new {projectId = firstItem.ProjectId}, FormMethod.Post))
+                @using (Html.BeginForm("MoveFast", "GameField", new {projectId = firstItem.Id.ProjectId.Value}, FormMethod.Post))
                 {
                     <input type="hidden" name="ProjectFieldId" id="entityId" value="0" />
                     @Html.AntiForgeryToken()
@@ -55,7 +56,7 @@
                                         <option value="-1" selected="selected">Поставить в начало</option>
                                         @foreach (var field in Model.Items)
                                         {
-                                            <option value="@field.ProjectFieldId">@field.Name</option>
+                                            <option value="@field.Id.ProjectFieldId">@field.Name</option>
                                         }
                                     </select>
                                 </div>

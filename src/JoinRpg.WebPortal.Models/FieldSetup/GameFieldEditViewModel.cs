@@ -1,10 +1,9 @@
-using System.ComponentModel;
 using JoinRpg.Markdown;
-using JoinRpg.Web.ProjectCommon.Fields;
+using JoinRpg.Web.Games.FieldSetup;
 
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
-public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
+public class GameFieldEditViewModel : GameFieldViewModelBase
 {
     public int ProjectFieldId { get; set; }
 
@@ -24,12 +23,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         Description = "Используется для передачи во внешние ИТ-системы игры, если они есть. Значение определяется программистами внешней системы. Игнорируйте это поле, если у вас на игре нет никакой ИТ-системы")]
     public string ProgrammaticValue { get; set; }
 
-    [ReadOnly(true)]
-    public bool WasEverUsed { get; set; }
-
-    public string[] GroupNames { get; set; }
-
-    public GameFieldEditViewModel(ProjectFieldInfo field, ProjectInfo projectInfo, UserIdentification userId)
+    public GameFieldEditViewModel(ProjectFieldInfo field, ProjectInfo projectInfo)
     {
         CanPlayerView = field.CanPlayerView;
         CanPlayerEdit = field.CanPlayerEdit;
@@ -43,16 +37,15 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         ProjectId = field.Id.ProjectId;
         MandatoryStatus = (MandatoryStatusViewType)field.MandatoryStatus;
         ShowForGroups = [.. field.GroupsAvailableForIds];
-        GroupNames = [.. projectInfo.GetGroupsById(field.GroupsAvailableForIds).Select(g => g.Name)];
         IncludeInPrint = field.IncludeInPrint;
         ValidForNpc = field.ValidForNpc;
         ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
         Price = field.Price;
         ProgrammaticValue = field.ProgrammaticValue ?? "";
-        FillNotEditable(field, projectInfo, userId);
+        FillNotEditable(field, projectInfo);
     }
 
-    public void FillNotEditable(ProjectFieldInfo field, ProjectInfo projectInfo, UserIdentification userId)
+    public void FillNotEditable(ProjectFieldInfo field, ProjectInfo projectInfo)
     {
         DropdownValues = field.SortedVariants
             .Select(v => new GameFieldDropdownValueListItemViewModel(v, field.CanPlayerEdit))
@@ -61,11 +54,9 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
         FieldBoundTo = (FieldBoundToViewModel)field.BoundTo;
         IsActive = field.IsActive;
         HasValueList = field.HasValueList;
-        WasEverUsed = field.WasEverUsed;
-        CanEditFields = projectInfo.HasMasterAccess(userId, Permission.CanChangeFields);
-        CanDeleteField = CanEditFields && !field.IsName && !field.IsRoomSlot && !field.IsTimeSlot;
         SupportsMassAdding = field.SupportsMassAdding;
     }
+
     public GameFieldEditViewModel()
     { }
 
@@ -81,14 +72,6 @@ public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
     [ReadOnly(true)]
     public bool IsActive { get; private set; }
 
-    public bool First { get; set; }
-
-    public bool Last { get; set; }
-
-    int IMovableListItem.ItemId => ProjectFieldId;
-
-    public bool CanEditFields { get; private set; }
-    public bool CanDeleteField { get; private set; }
     [Display(Name = "Включать в распечатки")]
     public bool IncludeInPrint { get; set; } = true;
 

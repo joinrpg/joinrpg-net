@@ -1,9 +1,11 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Games.FieldSetup;
 using JoinRpg.Web.Models.CommonTypes;
-using JoinRpg.Web.Models.FieldSetup;
+using JoinRpg.WebPortal.Managers.Fields;
 using JoinRpg.WebPortal.Managers.Interfaces;
+using JoinRpg.WebPortal.Models.FieldSetup;
 
 namespace JoinRpg.WebPortal.Managers;
 
@@ -67,16 +69,16 @@ public class FieldSetupManager
     /// <summary>
     /// Get field edit page
     /// </summary>
-    public async Task<GameFieldEditViewModel?> EditPageAsync(int projectFieldId)
+    public async Task<GameFieldEditViewModel?> EditPageAsync(ProjectFieldIdentification projectFieldId)
     {
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
-        var field = projectInfo.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == projectFieldId);
+        var field = projectInfo.GetFieldById(projectFieldId);
         if (field is null)
         {
             return null;
         }
 
-        var model = new GameFieldEditViewModel(field, projectInfo, CurrentUser.UserIdentification);
+        var model = new GameFieldEditViewModel(field, projectInfo);
         return FillFromProject(projectInfo, model);
     }
 
@@ -168,8 +170,6 @@ public class FieldSetupManager
         {
             Page = page,
             ProjectId = projectInfo.ProjectId,
-            CanEditFields = projectInfo.HasMasterAccess(CurrentUser.UserIdentification, Permission.CanChangeFields)
-                && projectInfo.IsActive,
         };
     }
 

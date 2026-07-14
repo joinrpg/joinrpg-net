@@ -1,6 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 
-
-namespace JoinRpg.Web.Models;
+namespace JoinRpg.Web.ProjectCommon.Fields;
 
 public enum ProjectFieldViewType
 {
@@ -37,9 +37,9 @@ public enum ProjectFieldViewType
         Order = 11)]
     PinCode,
     [Display(
-    Name = "Uri",
-    Description = "Ссылка на страницу на сайте, гугл-док, чаршит etc",
-    Order = 12)]
+        Name = "Uri",
+        Description = "Ссылка на страницу на сайте, гугл-dok, чаршит etc",
+        Order = 12)]
     Uri,
 }
 
@@ -76,4 +76,3 @@ public enum FieldBoundToViewModel
          Description = "всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
     Claim,
 }
-

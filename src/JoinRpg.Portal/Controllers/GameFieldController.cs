@@ -3,10 +3,10 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.FieldSetup;
+using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Interfaces;
+using JoinRpg.WebPortal.Models.FieldSetup;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -127,9 +127,9 @@ public class GameFieldController(
     }
 
     [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> Edit(int projectId, int projectFieldId)
+    public async Task<ActionResult> Edit(ProjectIdentification projectId, int projectFieldId)
     {
-        var model = await Manager.EditPageAsync(projectFieldId);
+        var model = await Manager.EditPageAsync(new(projectId, projectFieldId));
         return ViewIfFound(model);
     }
 
@@ -146,7 +146,7 @@ public class GameFieldController(
         }
         if (!ModelState.IsValid)
         {
-            viewModel.FillNotEditable(field, projectInfo, currentUserAccessor.UserIdentification);
+            viewModel.FillNotEditable(field, projectInfo);
             return View(viewModel);
         }
         try
@@ -173,7 +173,7 @@ public class GameFieldController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            viewModel.FillNotEditable(field, projectInfo, currentUserAccessor.UserIdentification);
+            viewModel.FillNotEditable(field, projectInfo);
             return View(viewModel);
         }
     }

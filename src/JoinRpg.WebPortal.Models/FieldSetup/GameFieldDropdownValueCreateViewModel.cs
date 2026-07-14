@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Models.FieldSetup;
+namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
 /// View class for creating dropdown value
