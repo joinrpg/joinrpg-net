@@ -44,14 +44,10 @@
                         <li>
                             @Html.ActionLink("Сетка ролей", "Index", "GameGroups", new { Model.ProjectId }, null)
                         </li>
-                        <li>
-                            @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
-                        </li>
-                        <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
+                         <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
 
                         @if (Model.ProjectRolesLists.Any(x => x.PublicMode))
                         {
-                            <li role="separator" class="dropdown-header">Таблицей:</li>
                             @foreach (var rl in Model.ProjectRolesLists.Where(x => x.PublicMode))
                             {
                                 <li><a asp-page="/GamePages/ProjectRoleListView"

@@ -1,5 +1,6 @@
 using JoinRpg.Services.Impl.Projects.Create;
 using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl.Projects;
@@ -11,6 +12,7 @@ internal partial class CreateProjectService
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     IProjectRepository projectRepository,
+    IProjectRolesListService projectRolesListService,
     ILogger<CreateProjectService> logger,
     CloneProjectHelperFactory cloneProjectHelperFactory
     ) : ICreateProjectService

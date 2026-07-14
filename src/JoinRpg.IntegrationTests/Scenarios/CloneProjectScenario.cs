@@ -125,7 +125,8 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
             var cloneInfo = await metadataRepository.GetProjectMetadata(cloneProjectId);
 
-            cloneInfo.ProjectRolesLists.Count.ShouldBe(2);
+            // В Larp-проекте автоматически создаётся сетка «Горячие роли» — она тоже клонируется.
+            cloneInfo.ProjectRolesLists.Count.ShouldBe(3);
 
             foreach (var rolesList in cloneInfo.ProjectRolesLists)
             {
@@ -148,6 +149,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             var names = cloneInfo.ProjectRolesLists.Select(r => r.Name).ToHashSet();
             names.ShouldContain(rolesListAName);
             names.ShouldContain(rolesListBName);
+            names.ShouldContain("Горячие роли");
 
             // Сетка A: без привязки к группе, с полем, публичная
             var cloneA = cloneInfo.ProjectRolesLists.Single(r => r.Name == rolesListAName);
