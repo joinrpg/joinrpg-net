@@ -8,6 +8,7 @@ using JoinRpg.Services.Impl.Projects.Stale;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,8 +37,6 @@ public static class Services
         yield return typeof(GameSubscribeService);
         yield return typeof(RespMasterRuleService);
 
-        yield return typeof(ProjectAccessService);
-
         yield return typeof(CloneProjectHelperFactory);
 
         foreach (var provider in Assembly.GetExecutingAssembly().DefinedTypes.Where(t => t.IsAssignableTo(typeof(ISearchProvider))).Select(t => t.AsType()))
@@ -56,6 +55,7 @@ public static class Services
             .AddTransient<IProjectPropsService, ProjectPropsService>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
+            .AddTransient<IProjectAccessService, ProjectAccessService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()

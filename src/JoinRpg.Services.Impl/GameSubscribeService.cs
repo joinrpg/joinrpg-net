@@ -7,9 +7,12 @@ namespace JoinRpg.Services.Impl;
 
 internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 {
-    public GameSubscribeService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor)
+    private readonly IProjectMetadataRepository projectMetadataRepository;
+
+    public GameSubscribeService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor, IProjectMetadataRepository projectMetadataRepository)
         : base(unitOfWork, currentUserAccessor)
     {
+        this.projectMetadataRepository = projectMetadataRepository;
     }
 
     public async Task RemoveSubscribe(RemoveSubscribeRequest request)
@@ -90,6 +93,19 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
             }
         }
 
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RemoveAllSubscriptions(ProjectIdentification projectId, UserIdentification userId)
+    {
+        if (userId != currentUserAccessor.UserIdentification && !IsCurrentUserAdmin)
+        {
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+            _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanGrantRights);
+        }
+
+        _ = UnitOfWork.GetDbSet<UserSubscription>().RemoveRange(
+            UnitOfWork.GetDbSet<UserSubscription>().Where(x => x.UserId == userId.Value && x.ProjectId == projectId.Value));
         await UnitOfWork.SaveChangesAsync();
     }
 }

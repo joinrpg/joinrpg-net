@@ -165,12 +165,6 @@ public class ClaimTargetIsNotAcceptingClaims : JoinRpgBaseException
 
 public class InsufficientContactsException() : JoinRpgBaseException("Для отправки заявки необходимы контакты");
 
-public class MasterHasResponsibleException : JoinRpgProjectEntityException
-{
-    public User Master { get; }
-    public MasterHasResponsibleException(ProjectAcl entity) : base(entity, "Cannot remove master that has groups attached to it.") => Master = entity.User;
-}
-
 public class RoomIsOccupiedException : JoinRpgProjectEntityException
 {
     public RoomIsOccupiedException(ProjectAccommodation entity) : base(entity, "Cannot peforrm this operation on occupied room.")

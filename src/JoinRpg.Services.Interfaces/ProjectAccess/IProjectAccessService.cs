@@ -4,9 +4,9 @@ public interface IProjectAccessService
 {
     Task GrantAccess(GrantAccessRequest grantAccessRequest);
 
-    Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId);
+    Task RemoveAccess(ProjectIdentification projectId, UserIdentification userId, UserIdentification? newResponsibleMasterId);
 
     Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
 
-    Task GrantAccessAsAdmin(ProjectIdentification projectId);
+    Task GrantFullAccess(ProjectIdentification projectId);
 }

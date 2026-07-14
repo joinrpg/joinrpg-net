@@ -16,4 +16,22 @@ public class ChangeAclViewModel
     public int ProjectId { get; set; }
 
     public int UserId { get; set; }
+
+    public Permission[] ToPermissions() =>
+        new[]
+        {
+            (CanGrantRights, Permission.CanGrantRights),
+            (CanChangeFields, Permission.CanChangeFields),
+            (CanChangeProjectProperties, Permission.CanChangeProjectProperties),
+            (CanManageClaims, Permission.CanManageClaims),
+            (CanEditRoles, Permission.CanEditRoles),
+            (CanManageMoney, Permission.CanManageMoney),
+            (CanSendMassMails, Permission.CanSendMassMails),
+            (CanManagePlots, Permission.CanManagePlots),
+            (CanManageAccommodation, Permission.CanManageAccommodation),
+            (CanSetPlayersAccommodations, Permission.CanSetPlayersAccommodations),
+        }
+        .Where(t => t.Item1)
+        .Select(t => t.Item2)
+        .ToArray();
 }

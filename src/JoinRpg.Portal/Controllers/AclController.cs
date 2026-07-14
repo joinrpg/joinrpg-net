@@ -47,18 +47,9 @@ public class AclController(
         {
             await projectAccessService.GrantAccess(new GrantAccessRequest()
             {
-                ProjectId = viewModel.ProjectId,
-                UserId = viewModel.UserId,
-                CanGrantRights = viewModel.CanGrantRights,
-                CanChangeFields = viewModel.CanChangeFields,
-                CanChangeProjectProperties = viewModel.CanChangeProjectProperties,
-                CanManageClaims = viewModel.CanManageClaims,
-                CanEditRoles = viewModel.CanEditRoles,
-                CanManageMoney = viewModel.CanManageMoney,
-                CanSendMassMails = viewModel.CanSendMassMails,
-                CanManagePlots = viewModel.CanManagePlots,
-                CanManageAccommodation = viewModel.CanManageAccommodation,
-                CanSetPlayersAccommodations = viewModel.CanSetPlayersAccommodations,
+                ProjectId = new ProjectIdentification(viewModel.ProjectId),
+                UserId = new UserIdentification(viewModel.UserId),
+                Permissions = viewModel.ToPermissions(),
             });
         }
         catch (Exception exception)
@@ -108,7 +99,10 @@ public class AclController(
         ProjectIdentification projectId = new(viewModel.ProjectId);
         try
         {
-            await projectAccessService.RemoveAccess(projectId, viewModel.UserId, viewModel.ResponsibleMasterId);
+            await projectAccessService.RemoveAccess(
+                projectId,
+                new UserIdentification(viewModel.UserId),
+                viewModel.ResponsibleMasterId is int responsibleMasterId ? new UserIdentification(responsibleMasterId) : null);
         }
         catch
         {
@@ -151,18 +145,9 @@ public class AclController(
         {
             await projectAccessService.ChangeAccess(new ChangeAccessRequest()
             {
-                ProjectId = viewModel.ProjectId,
-                UserId = viewModel.UserId,
-                CanGrantRights = viewModel.CanGrantRights,
-                CanChangeFields = viewModel.CanChangeFields,
-                CanChangeProjectProperties = viewModel.CanChangeProjectProperties,
-                CanManageClaims = viewModel.CanManageClaims,
-                CanEditRoles = viewModel.CanEditRoles,
-                CanManageMoney = viewModel.CanManageMoney,
-                CanSendMassMails = viewModel.CanSendMassMails,
-                CanManagePlots = viewModel.CanManagePlots,
-                CanManageAccommodation = viewModel.CanManageAccommodation,
-                CanSetPlayersAccommodations = viewModel.CanSetPlayersAccommodations,
+                ProjectId = new ProjectIdentification(viewModel.ProjectId),
+                UserId = new UserIdentification(viewModel.UserId),
+                Permissions = viewModel.ToPermissions(),
             });
         }
         catch
@@ -182,7 +167,7 @@ public class AclController(
     [HttpPost("force-admin-access")]
     public async Task<ActionResult> ForceSet(int projectId, IFormCollection unused)
     {
-        await projectAccessService.GrantAccessAsAdmin(new(projectId));
+        await projectAccessService.GrantFullAccess(new(projectId));
         return RedirectToAction("Details", "Game", new { projectId });
     }
 
