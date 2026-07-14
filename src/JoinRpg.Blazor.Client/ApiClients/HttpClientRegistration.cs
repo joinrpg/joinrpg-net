@@ -15,6 +15,7 @@ using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
@@ -56,6 +57,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectRolesListClient, ProjectRolesListClientImpl>()
                 .AddHttpClient<IProjectRoleGridClient, ProjectRoleGridClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
-                .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>();
+                .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
+                .AddHttpClient<IMoveClient, MoveClientImpl>();
     }
 }

@@ -218,9 +218,9 @@ internal class FieldSetupServiceImpl(
             });
     }
 
-    public async Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId)
+    public async Task<IReadOnlyList<ProjectFieldIdentification>> MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId)
     {
-        await projectPropsService.ChangeProjectProperties(
+        return await projectPropsService.ChangeProjectProperties(
             new ProjectIdentification(projectId),
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
@@ -232,8 +232,12 @@ internal class FieldSetupServiceImpl(
                     ? null
                     : GetField(ctx.Project, (int)ctx.Request.afterFieldId);
 
-                ctx.Project.Details.FieldsOrdering
-                    = ctx.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
+                var container = ctx.Project.GetFieldsContainer().MoveAfter(field, afterField);
+                ctx.Project.Details.FieldsOrdering = container.GetStoredOrder();
+                var pid = new ProjectIdentification(ctx.Project.ProjectId);
+                return container.OrderedItems
+                    .Select(f => f.GetId())
+                    .ToList();
             });
     }
 

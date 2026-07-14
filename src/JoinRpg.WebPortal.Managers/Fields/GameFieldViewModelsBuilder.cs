@@ -11,7 +11,7 @@ internal static class GameFieldViewModelsBuilder
         public IList<GameFieldListItemViewModel> ToViewModels(
         ProjectInfo projectInfo,
         UserIdentification userId)
-        => fields.Select(f => ToListItemViewModel(f, projectInfo, userId)).ToArray().MarkFirstAndLast();
+        => fields.Select(f => ToListItemViewModel(f, projectInfo, userId)).ToArray();
     }
 
     private static GameFieldListItemViewModel ToListItemViewModel(

@@ -335,29 +335,6 @@ public class GameFieldController(
 
     [MasterAuthorize(Permission.CanChangeFields)]
     // TODO: Refactor to HEAD request (require UI fixes)
-    [HttpGet("~/{projectId:int}/fields/{listItemId:int}/move/{direction:int}")]
-    public async Task<ActionResult> Move(int projectId, int listItemId, int direction)
-    {
-        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != listItemId))
-        {
-            return NotFound();
-        }
-
-        try
-        {
-            await fieldSetupService.MoveField(projectId, listItemId, (short)direction);
-
-            return ReturnToIndex();
-        }
-        catch
-        {
-            return ReturnToIndex();
-        }
-    }
-
-    [MasterAuthorize(Permission.CanChangeFields)]
-    // TODO: Refactor to HEAD request (require UI fixes)
     [HttpGet("~/{projectId:int}/fields/{parentObjectId:int}/values/{listItemId:int}/move/{direction:int}")]
     public async Task<ActionResult> MoveValue(ProjectIdentification projectId, int listItemId, int parentObjectId, int direction)
     {
@@ -401,31 +378,7 @@ public class GameFieldController(
         }
     }
 
-    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
-    {
-        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != projectFieldId))
-        {
-            return NotFound();
-        }
 
-        if (afterFieldId == -1)
-        {
-            afterFieldId = null;
-        }
-
-        try
-        {
-            await fieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
-
-            return ReturnToIndex();
-        }
-        catch
-        {
-            return ReturnToIndex();
-        }
-    }
 
     [MasterAuthorize(Permission.CanChangeFields)]
     [HttpPost("~/{projectId:int}/fields/{projectFieldId:int}/sortvariants")]

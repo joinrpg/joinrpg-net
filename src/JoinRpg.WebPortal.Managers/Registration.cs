@@ -15,8 +15,10 @@ using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.WebComponents;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Claims;
+using JoinRpg.WebPortal.Managers.Fields;
 using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.WebPortal.Managers.Projects;
 using JoinRpg.WebPortal.Managers.Subscribe;
@@ -55,6 +57,7 @@ public static class Registration
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
+        .AddScoped<IMoveClient, MoveViewService>()
 
         ;
     }
