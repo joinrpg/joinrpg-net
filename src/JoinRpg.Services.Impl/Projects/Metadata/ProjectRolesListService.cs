@@ -1,35 +1,38 @@
-using System.Data.Entity;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 
-namespace JoinRpg.Services.Impl.ProjectMetadata;
+namespace JoinRpg.Services.Impl.Projects.Metadata;
 
 internal class ProjectRolesListService(
-    IUnitOfWork unitOfWork,
-    ICurrentUserAccessor currentUserAccessor,
+    IProjectPropsService projectPropsService,
     IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor,
     ILogger<ProjectRolesListService> logger)
-    : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectRolesListService
+    : IProjectRolesListService
 {
-
     public async Task<ProjectRolesList> CreateAsync(ProjectRolesList model)
     {
         logger.LogInformation("Создаём сетку ролей {Name} для проекта {ProjectId}", model.Name, model.ProjectRolesListId.ProjectId);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(model.ProjectRolesListId.ProjectId);
-        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
-        ValidateShowCharacterGroups(model, projectInfo);
+        var entity = await projectPropsService.ChangeProjectProperties(
+            model.ProjectRolesListId.ProjectId,
+            Permission.CanManageClaims,
+            ProjectActiveRequirement.MustBeActive,
+            model,
+            ctx =>
+            {
+                ValidateShowCharacterGroups(ctx.Request, ctx.ProjectInfo);
 
-        // Для создания игнорируем переданный ID, база данных сгенерирует новый
-        var entity = CreateEntity(model);
-        UpdateEntity(entity, model);
-
-        UnitOfWork.GetDbSet<DataModel.ProjectRolesList>().Add(entity);
-        await UnitOfWork.SaveChangesAsync();
+                // Для создания игнорируем переданный ID, база данных сгенерирует новый
+                var entity = CreateEntity(ctx.Request);
+                UpdateEntity(entity, ctx.Request);
+                ctx.Project.ProjectRolesLists.Add(entity);
+                return entity;
+            });
 
         logger.LogInformation("Создана сетка ролей {ProjectRolesListId} с именем {Name}", entity.ProjectRolesListId, model.Name);
 
+        // ProjectRolesListId генерируется БД при SaveChanges — читаем уже после возврата из сервиса.
         return ToDomain(entity);
     }
 
@@ -37,11 +40,18 @@ internal class ProjectRolesListService(
     {
         logger.LogInformation("Обновляем сетку ролей {ProjectRolesListId} (проект {ProjectId})", model.ProjectRolesListId.ProjectRolesListId, model.ProjectRolesListId.ProjectId);
 
-        var (entity, projectInfo) = await GetEntityOrThrow(model.ProjectRolesListId);
-        ValidateShowCharacterGroups(model, projectInfo);
-        UpdateEntity(entity, model);
-
-        await UnitOfWork.SaveChangesAsync();
+        var entity = await projectPropsService.ChangeProjectProperties(
+            model.ProjectRolesListId.ProjectId,
+            Permission.CanManageClaims,
+            ProjectActiveRequirement.MustBeActive,
+            model,
+            ctx =>
+            {
+                var (entity, _) = ctx.GetProjectRolesListForChange(ctx.Request.ProjectRolesListId);
+                ValidateShowCharacterGroups(ctx.Request, ctx.ProjectInfo);
+                UpdateEntity(entity, ctx.Request);
+                return entity;
+            });
 
         logger.LogInformation("Обновлена сетка ролей {ProjectRolesListId} с именем {Name}", entity.ProjectRolesListId, model.Name);
 
@@ -50,39 +60,29 @@ internal class ProjectRolesListService(
 
     public async Task RemoveAsync(ProjectRolesListIdentification id)
     {
-        var (entity, _) = await GetEntityOrThrow(id);
+        await projectPropsService.ChangeProjectProperties(
+            id.ProjectId,
+            Permission.CanManageClaims,
+            ProjectActiveRequirement.MustBeActive,
+            id,
+            ctx =>
+            {
+                var (entity, _) = ctx.GetProjectRolesListForChange(ctx.Request);
 
-        logger.LogInformation("Удаляем сетку ролей {ProjectRolesListId} (проект {ProjectId}) с именем {Name}",
-            entity.ProjectRolesListId, entity.ProjectId, entity.Name);
+                logger.LogInformation("Удаляем сетку ролей {ProjectRolesListId} (проект {ProjectId}) с именем {Name}",
+                    entity.ProjectRolesListId, entity.ProjectId, entity.Name);
 
-        UnitOfWork.GetDbSet<DataModel.ProjectRolesList>().Remove(entity);
-        await UnitOfWork.SaveChangesAsync();
+                ctx.RemovePermanently(entity);
+            });
 
-        logger.LogInformation("Удалена сетка ролей {ProjectRolesListId}", entity.ProjectRolesListId);
+        logger.LogInformation("Удалена сетка ролей {ProjectRolesListId}", id.ProjectRolesListId);
     }
 
     public async Task<ProjectRolesList> GetByIdAsync(ProjectRolesListIdentification id)
     {
-        var (entity, _) = await GetEntityOrThrow(id);
-        return ToDomain(entity);
-    }
-
-    private async Task<(DataModel.ProjectRolesList entity, ProjectInfo projectInfo)> GetEntityOrThrow(ProjectRolesListIdentification id)
-    {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
         projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
-
-        var entity = await UnitOfWork.GetDbSet<DataModel.ProjectRolesList>()
-            .Where(prl => prl.ProjectId == id.ProjectId.Value && prl.ProjectRolesListId == id.ProjectRolesListId)
-            .SingleOrDefaultAsync();
-
-        if (entity == null)
-        {
-            logger.LogWarning("Сетка ролей {ProjectRolesListId} не найдена в проекте {ProjectId}", id.ProjectRolesListId, id.ProjectId);
-            throw new JoinRpgEntityNotFoundException(id.ProjectRolesListId, "ProjectRolesList");
-        }
-
-        return (entity, projectInfo);
+        return projectInfo.GetRolesListById(id);
     }
 
     private static DataModel.ProjectRolesList CreateEntity(ProjectRolesList model)
@@ -90,7 +90,6 @@ internal class ProjectRolesListService(
         return new DataModel.ProjectRolesList
         {
             ProjectId = model.ProjectRolesListId.ProjectId.Value,
-            ProjectRolesListId = model.ProjectRolesListId.ProjectRolesListId,
         };
     }
 

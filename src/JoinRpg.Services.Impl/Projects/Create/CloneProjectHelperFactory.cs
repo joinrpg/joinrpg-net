@@ -3,7 +3,7 @@ using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Create;
 
 internal class CloneProjectHelperFactory(IProjectService projectService, ICharacterGroupService characterGroupService, IFieldSetupService fieldSetupService, IProjectMetadataRepository projectMetadataRepository, ICharacterService characterService, IPlotService plotService, IProjectRolesListService projectRolesListService, ILogger<CloneProjectHelper> logger)
 {

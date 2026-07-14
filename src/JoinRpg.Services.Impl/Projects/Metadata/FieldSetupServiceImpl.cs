@@ -2,8 +2,9 @@ using System.Text.Json;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.Services.Impl;
 
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Metadata;
 
 internal class FieldSetupServiceImpl(
     IProjectPropsService projectPropsService)

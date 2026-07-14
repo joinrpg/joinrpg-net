@@ -2,7 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Projects;
 
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Metadata;
 
 internal class CharacterGroupService(IProjectPropsService projectPropsService) : ICharacterGroupService
 {
