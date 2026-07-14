@@ -49,6 +49,7 @@ internal class ProjectPropsService(
         Func<ProjectMutationContext<TArgs>, TResult> action,
         string operationName)
     {
+        using var activity = ProjectPropsServiceActivity.ActivitySource.StartActivity(operationName);
         try
         {
             // Write-репозиторий берём из UnitOfWork: он обязан использовать тот же DbContext, через
@@ -101,6 +102,7 @@ internal class ProjectPropsService(
         Func<ProjectCreationContext<TArgs>, Project> factory,
         [CallerMemberName] string operationName = "")
     {
+        using var activity = ProjectPropsServiceActivity.ActivitySource.StartActivity(operationName);
         try
         {
             var ctx = new ProjectCreationContext<TArgs>(now, currentUserAccessor, arguments);
