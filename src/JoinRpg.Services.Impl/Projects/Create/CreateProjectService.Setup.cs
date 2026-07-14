@@ -64,5 +64,7 @@ internal partial class CreateProjectService
             new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: true, AutoAcceptClaims: false, IsAcceptingClaims: false, IsPublicProject: true));
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
+
+        await projectRolesListService.CreateAsync(HotRolesListDefaults.Build(projectId, description));
     }
 }
