@@ -18,7 +18,6 @@ using JoinRpg.Web.ProjectMasterTools.Subscribe;
 using JoinRpg.WebComponents;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Claims;
-using JoinRpg.WebPortal.Managers.Fields;
 using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.WebPortal.Managers.Projects;
 using JoinRpg.WebPortal.Managers.Subscribe;

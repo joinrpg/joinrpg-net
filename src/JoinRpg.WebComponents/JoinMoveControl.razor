@@ -54,6 +54,9 @@
     [Parameter]
     public bool SkipGroup { get; set; } = false;
 
+    [Parameter]
+    public bool AutoRefresh { get; set; } = false;
+
     private bool showUp, showDown;
     private TItem? targetIfUp, targetIfDown;
     private TypedSelectListItem<string>[] selectorItems = [];
@@ -125,7 +128,7 @@
         ReorderItems(newOrder);
         if (OnMoveCompleted.HasDelegate)
             await OnMoveCompleted.InvokeAsync();
-        else
+        if (AutoRefresh)
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
 

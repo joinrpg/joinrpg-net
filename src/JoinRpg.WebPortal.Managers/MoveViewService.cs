@@ -2,7 +2,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon.ElementMoving;
 using JoinRpg.WebComponents;
 
-namespace JoinRpg.WebPortal.Managers.Fields;
+namespace JoinRpg.WebPortal.Managers;
 
 internal class MoveViewService(IFieldSetupService fieldSetupService) : IMoveClient
 {
