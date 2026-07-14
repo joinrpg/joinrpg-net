@@ -1,6 +1,3 @@
-@using JoinRpg.DomainTypes.Interfaces
-@using JoinRpg.Web.ProjectCommon.ElementMoving
-@using JoinRpg.WebComponents
 @using JoinRpg.WebComponents.Dialog
 @typeparam TItem where TItem : class, IMoveableListItem
 @inject IMoveClient MoveClient
@@ -24,12 +21,16 @@
     <JoinButton Preset="ButtonPreset.Sort"
                 Size="SizeStyleEnum.Small"
                 Title="Переместить в любую позицию"
+                Label=""
+                ProgressLabel=""
                 OnClick="OpenSortDialogAsync" />
 </JoinButtonGroup>
 
 <JoinDialog @ref="_sortDialog"
             Caption="Переместить"
-            Buttons="SortDialogButtons">
+            Buttons="SortDialogButtons"
+            MinWidth="22em"
+            MinHeight="30em">
     <ChildContent>
         <TypedSelector TKey="string"
                        PossibleValues="selectorItems"
@@ -68,11 +69,11 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        var selfIdStr = Self.Id.ToString()!;
+        var selfId = Self.Id;
         var idx = -1;
         for (var i = 0; i < Items.Count; i++)
         {
-            if (Items[i].Id.ToString() == selfIdStr) { idx = i; break; }
+            if (Items[i].Id == selfId) { idx = i; break; }
         }
 
         if (idx == -1)
@@ -85,8 +86,8 @@
         _selectedTarget = null;
 
         selectorItems = Items
-            .Where(i => i.Id.ToString() != selfIdStr)
-            .Select(i => new TypedSelectListItem<string>(i.Id.ToString()!, i.DisplayText, i.Subtext))
+            .Where(i => i.Id != selfId)
+            .Select(i => new TypedSelectListItem<string>(i.Id, i.DisplayText, i.Subtext))
             .ToArray();
     }
 
@@ -109,10 +110,7 @@
             var result = await _sortDialog!.ShowModalAsync();
             if (result == nameof(ButtonPreset.Sort))
             {
-                var moveAfterId = _selectedTarget is not null
-                    ? Items.FirstOrDefault(i => i.Id.ToString() == _selectedTarget)?.Id
-                    : null;
-                await ExecuteMoveAsync(moveAfterId);
+                await ExecuteMoveAsync(_selectedTarget);
             }
         }
         finally
@@ -121,9 +119,9 @@
         }
     }
 
-    private async Task ExecuteMoveAsync(IProjectEntityId? moveAfterId)
+    private async Task ExecuteMoveAsync(string? moveAfterIdStr)
     {
-        var newOrder = await MoveClient.MoveAfterAsync(new MoveRequest(Self.Id, Self.ParentId, moveAfterId));
+        var newOrder = await MoveClient.MoveAfterAsync(Self.Id, Self.ParentId, moveAfterIdStr);
         ReorderItems(newOrder);
         if (OnMoveCompleted.HasDelegate)
             await OnMoveCompleted.InvokeAsync();
@@ -133,7 +131,7 @@
 
     private void ReorderItems(string[] newOrder)
     {
-        var lookup = Items.ToDictionary(i => i.Id.ToString()!);
+        var lookup = Items.ToDictionary(i => i.Id);
         var pos = 0;
         foreach (var idStr in newOrder.Where(lookup.ContainsKey))
             Items[pos++] = lookup[idStr];

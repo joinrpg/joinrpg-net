@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Games.FieldSetup;
 
-public class GameFieldListItemViewModel : IMoveableNonInteractiveListItem
+public class GameFieldListItemViewModel : IMoveableListItem
 {
     public required ProjectFieldIdentification Id { get; init; }
     public required string Name { get; init; }
@@ -27,9 +27,8 @@ public class GameFieldListItemViewModel : IMoveableNonInteractiveListItem
     public bool WasEverUsed { get; init; }
     public bool CanEditFields { get; init; }
 
-    public bool First { get; set; }
-    public bool Last { get; set; }
-
-    int IMoveableNonInteractiveListItem.ProjectId => Id.ProjectId.Value;
-    int IMoveableNonInteractiveListItem.ItemId => Id.ProjectFieldId;
+    string IMoveableListItem.Id => Id.ToString()!;
+    string IMoveableListItem.ParentId => Id.ProjectId.ToString()!;
+    string IMoveableListItem.DisplayText => Name;
+    string IMoveableListItem.Subtext => FieldBoundTo == FieldBoundToViewModel.Character ? "Персонаж" : "Заявка";
 }

@@ -104,13 +104,19 @@
     public string? Width { get; set; }
 
     [Parameter]
+    public string? MinWidth { get; set; }
+
+    [Parameter]
     public string? MaxWidth { get; set; }
 
     [Parameter]
-    public string? MaxHeight { get; set; }
+    public string? Height { get; set; }
 
     [Parameter]
-    public string? Height { get; set; }
+    public string? MinHeight { get; set; }
+
+    [Parameter]
+    public string? MaxHeight { get; set; }
 
     /// <summary>
     /// Fired when dialog has been closed.
@@ -251,10 +257,14 @@
     {
         if (!string.IsNullOrWhiteSpace(Width))
             yield return $"width: {Width}";
+        if (!string.IsNullOrWhiteSpace(MinWidth))
+            yield return $"min-width: {MinWidth}";
         if (!string.IsNullOrWhiteSpace(MaxWidth))
             yield return $"max-width: {MaxWidth}";
         if (!string.IsNullOrWhiteSpace(Height))
             yield return $"height: {Height}";
+        if (!string.IsNullOrWhiteSpace(MinHeight))
+            yield return $"min-height: {MinHeight}";
         if (!string.IsNullOrWhiteSpace(MaxHeight))
             yield return $"max-height: {MaxHeight}";
     }

@@ -1,3 +1,3 @@
 namespace JoinRpg.Web.Games.FieldSetup;
 
-public record GameFieldListViewModel(FieldNavigationModel Navigation, IEnumerable<GameFieldListItemViewModel> Items);
+public record GameFieldListViewModel(FieldNavigationModel Navigation, IList<GameFieldListItemViewModel> Items);

@@ -1,12 +1,16 @@
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon.ElementMoving;
+using JoinRpg.WebComponents;
 
 namespace JoinRpg.WebPortal.Managers.Fields;
 
 internal class MoveViewService(IFieldSetupService fieldSetupService) : IMoveClient
 {
-    public async Task<string[]> MoveAfterAsync(MoveRequest request)
+    public async Task<string[]> MoveAfterAsync(string selfId, string parentId, string? moveAfterId)
     {
+        if (!MoveRequest.TryParse(selfId, parentId, moveAfterId, out var request))
+            throw new ArgumentException($"Cannot parse IDs: selfId='{selfId}', parentId='{parentId}'");
+
         return request switch
         {
             { SelfId: ProjectFieldIdentification fieldId, ParentId: ProjectIdentification projectId }
@@ -14,7 +18,7 @@ internal class MoveViewService(IFieldSetupService fieldSetupService) : IMoveClie
                     && (request.MoveAfterId is null or ProjectFieldIdentification)
                 => await MoveFieldAsync(fieldId, projectId, request.MoveAfterId as ProjectFieldIdentification),
             _ => throw new ArgumentException(
-                $"Unsupported ID combination: selfId='{request.SelfId}', parentId='{request.ParentId}'"),
+                $"Unsupported ID combination: selfId='{selfId}', parentId='{parentId}'"),
         };
     }
 
