@@ -1,5 +1,6 @@
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 
@@ -19,9 +20,17 @@ public class EF6LoggerToMSExtLogging(DbContext context, Action<string> writeActi
             logger.LogDebug("SQL started: {sql}", sql);
             if (command.Parameters.Count == 1 && command.Parameters[0].ParameterName == "EntityKeyValue1")
             {
-                lazyLoadCounter.Add(1);
                 var tableName = TryGetTableNameFromSql(sql) ?? "!unknown_table";
-                logger.LogWarning("SQL: Probably lazy load from '{lazyLoadTableName}': {sql}", tableName, sql);
+                var operation = Activity.Current?.OperationName ?? "<unknown>";
+                lazyLoadCounter.Add(1, new KeyValuePair<string, object?>("operation", operation));
+                logger.LogWarning(
+                    "SQL: Probably lazy load from '{lazyLoadTableName}' during operation '{operation}': {sql}",
+                    tableName,
+                    operation,
+                    sql);
+                Activity.Current?.AddEvent(new ActivityEvent(
+                    "lazy-load",
+                    tags: new ActivityTagsCollection { ["table"] = tableName }));
             }
         }
         else

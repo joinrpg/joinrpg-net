@@ -24,6 +24,7 @@ using JoinRpg.Portal.Menu;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Notifications;
 using JoinRpg.Services.Notifications.Senders;
@@ -91,7 +92,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             environment,
             "JoinRpg",
             dataProtectionConnectionStringName: "DataProtection",
-            telemetryServiceNames: [BackgroundServiceActivity.ActivitySourceName, SenderServiceActivityHolder.ActivitySourceName]);
+            telemetryServiceNames: [
+                BackgroundServiceActivity.ActivitySourceName,
+                SenderServiceActivityHolder.ActivitySourceName,
+                ProjectPropsServiceActivity.ActivitySourceName,
+            ]);
 
         services.AddJoinDailyJob(Configuration, environment);
         services.AddNotificationsDal(Configuration, environment);

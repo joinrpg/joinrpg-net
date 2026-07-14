@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata;
@@ -133,5 +134,29 @@ public class ProjectPropsServiceTest
 
         mock.Project.Details.EnableAccommodation.ShouldBeTrue();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ChangeProjectProperties_StartsActivityTaggedWithCallingOperationName()
+    {
+        string? startedActivityName = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == ProjectPropsServiceActivity.ActivitySourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity => startedActivityName = activity.OperationName,
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.ChangeProjectProperties(
+            ProjectId,
+            Permission.CanChangeProjectProperties,
+            ProjectActiveRequirement.AllowInactive,
+            true,
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
+
+        startedActivityName.ShouldBe(nameof(ChangeProjectProperties_StartsActivityTaggedWithCallingOperationName));
     }
 }
