@@ -96,6 +96,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 BackgroundServiceActivity.ActivitySourceName,
                 SenderServiceActivityHolder.ActivitySourceName,
                 ProjectPropsServiceActivity.ActivitySourceName,
+                NotificationServiceActivity.ActivitySourceName,
+                KogdaIgraSyncServiceActivity.ActivitySourceName,
             ]);
 
         services.AddJoinDailyJob(Configuration, environment);

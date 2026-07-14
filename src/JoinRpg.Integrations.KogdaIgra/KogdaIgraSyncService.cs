@@ -16,7 +16,7 @@ internal class KogdaIgraSyncService(
     ICurrentUserAccessor currentUserAccessor)
     : IKogdaIgraSyncService, IKogdaIgraBindService
 {
-    private readonly ActivitySource activitySource = new(nameof(KogdaIgraSyncService));
+    private readonly ActivitySource activitySource = KogdaIgraSyncServiceActivity.ActivitySource;
 
     public async Task<SyncStatus> GetSyncStatus()
     {

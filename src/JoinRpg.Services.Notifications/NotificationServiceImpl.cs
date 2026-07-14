@@ -14,7 +14,7 @@ public partial class NotificationServiceImpl(
     ILogger<NotificationServiceImpl> logger
     ) : INotificationService
 {
-    private readonly ActivitySource activitySource = new(nameof(NotificationServiceImpl));
+    private readonly ActivitySource activitySource = NotificationServiceActivity.ActivitySource;
 
     private record class NotificationRow(
         NotificationRecepient Recipient, UserDisplayName DisplayName, IReadOnlyCollection<NotificationAddress> Channels, Email Email);
