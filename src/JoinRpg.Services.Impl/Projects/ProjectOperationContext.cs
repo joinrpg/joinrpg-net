@@ -73,6 +73,21 @@ internal static class ProjectOperationContextExtensions
     }
 
     /// <summary>
+    /// Резолвит сетку ролей для изменения: возвращает трекаемую EF-сущность и её доменный снимок.
+    /// В отличие от <see cref="GetCharacterGroupForChange"/> не помечает сущность изменённой —
+    /// <see cref="DataModel.ProjectRolesList"/> не несёт аудит-полей.
+    /// </summary>
+    public static (DataModel.ProjectRolesList Entity, DomainTypes.ProjectMetadata.ProjectRolesList Info) GetProjectRolesListForChange(
+        this ProjectMutationContext ctx, ProjectRolesListIdentification id)
+    {
+        var entity = ctx.Project.ProjectRolesLists
+            .SingleOrDefault(x => x.ProjectRolesListId == id.ProjectRolesListId)
+            ?? throw new JoinRpgEntityNotFoundException(id.ProjectRolesListId, "ProjectRolesList");
+        var info = ctx.ProjectInfo.GetRolesListById(id);
+        return (entity, info);
+    }
+
+    /// <summary>
     /// «Умное» удаление под-сущности существующего проекта: permanent — через DbContext контекста,
     /// иначе soft-delete (<c>IsActive = false</c>).
     /// </summary>

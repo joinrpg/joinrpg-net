@@ -5,11 +5,12 @@ using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Create;
 
 internal class CloneProjectHelper(
     CloneProjectRequest cloneRequest,

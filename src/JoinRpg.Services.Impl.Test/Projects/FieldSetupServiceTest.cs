@@ -1,6 +1,6 @@
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.Services.Impl.Projects;
+using JoinRpg.Services.Impl.Projects.Metadata;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl.Test.Projects;

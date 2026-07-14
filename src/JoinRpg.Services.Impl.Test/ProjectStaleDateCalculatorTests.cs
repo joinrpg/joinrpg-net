@@ -1,4 +1,4 @@
-using JoinRpg.Services.Impl.Projects;
+using JoinRpg.Services.Impl.Projects.Stale;
 
 namespace JoinRpg.Services.Impl.Test;
 

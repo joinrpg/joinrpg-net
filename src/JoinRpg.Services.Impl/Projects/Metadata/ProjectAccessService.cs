@@ -5,7 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Metadata;
 
 internal class ProjectAccessService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor)
     : DbServiceImplBase(unitOfWork, currentUserAccessor), IProjectAccessService

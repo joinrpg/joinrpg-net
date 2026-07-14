@@ -1,5 +1,4 @@
-
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Stale;
 
 internal class ProjectStaleDateCalculator
 {

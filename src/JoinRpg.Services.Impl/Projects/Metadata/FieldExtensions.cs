@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Impl.Projects;
+namespace JoinRpg.Services.Impl.Projects.Metadata;
 
 internal static class FieldExtensions
 {

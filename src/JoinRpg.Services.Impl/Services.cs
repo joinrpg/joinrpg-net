@@ -1,8 +1,10 @@
 using System.Reflection;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl.Claims;
-using JoinRpg.Services.Impl.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects;
+using JoinRpg.Services.Impl.Projects.Create;
+using JoinRpg.Services.Impl.Projects.Metadata;
+using JoinRpg.Services.Impl.Projects.Stale;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
