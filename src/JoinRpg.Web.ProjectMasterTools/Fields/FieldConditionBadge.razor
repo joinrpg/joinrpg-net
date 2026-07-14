@@ -1,4 +1,4 @@
-@if (GroupNames.Length > 0)
+@if (GroupNames.Count > 0)
 {
     <Tooltip Title="@tooltip">
       <JoinBadge Variation="VariationStyleEnum.Primary" Size="SizeStyleEnum.Small"><InfoIcon /> Условное</JoinBadge>
@@ -8,7 +8,7 @@
 {
     [Parameter]
     [EditorRequired]
-    public string[] GroupNames { get; set; } = null!;
+    public IReadOnlyList<string> GroupNames { get; set; } = null!;
 
     private string tooltip = "";
 
