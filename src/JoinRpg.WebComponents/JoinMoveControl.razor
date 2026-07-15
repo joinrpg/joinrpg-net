@@ -3,25 +3,23 @@
 @inject IMoveClient MoveClient
 @inject NavigationManager NavigationManager
 
-<JoinButtonGroup SkipGroup="SkipGroup">
-    @if (showUp)
-    {
-        <JoinButton Preset="ButtonPreset.Up"
-                    Size="ButtonSize"
-                    Title="Переместить вверх"
-                    OnClick="MoveUpAsync" />
-    }
-    @if (showDown)
-    {
-        <JoinButton Preset="ButtonPreset.Down"
-                    Size="ButtonSize"
-                    Title="Переместить вниз"
-                    OnClick="MoveDownAsync" />
-    }
-    @if (showSort)
-    {
+ <JoinButtonGroup SkipGroup="SkipGroup">
+        @if (showUp)
+        {
+            <JoinButton Preset="ButtonPreset.Up"
+                        Size="Size"
+                        Title="Переместить вверх"
+                        OnClick="MoveUpAsync" />
+        }
+        @if (showDown)
+        {
+            <JoinButton Preset="ButtonPreset.Down"
+                        Size="Size"
+                        Title="Переместить вниз"
+                        OnClick="MoveDownAsync" />
+        }
         <JoinButton Preset="ButtonPreset.Sort"
-                    Size="ButtonSize"
+                    Size="Size"
                     Title="Переместить в любую позицию"
                     Label=""
                     ProgressLabel=""
@@ -35,6 +33,7 @@
             MinWidth="22em"
             MinHeight="30em">
     <ChildContent>
+        <label class="control-label">Поместить после</label>
         <TypedSelector TKey="string"
                        PossibleValues="selectorItems"
                        SelectedValues="@(_selectedTarget is null ? [] : [_selectedTarget])"
@@ -60,14 +59,8 @@
     [Parameter]
     public bool AutoRefresh { get; set; } = false;
 
-    /// <summary>
-    /// Уменьшить кнопки до размера <see cref="SizeStyleEnum.ExtraSmall"/> — как в GameGroups.Index
-    /// (там кнопки перемещения компактнее обычного <see cref="SizeStyleEnum.Small"/>).
-    /// </summary>
     [Parameter]
-    public bool ExtraSmallSize { get; set; } = false;
-
-    private SizeStyleEnum ButtonSize => ExtraSmallSize ? SizeStyleEnum.ExtraSmall : SizeStyleEnum.Small;
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
 
     private bool showUp, showDown, showSort;
     private TItem? targetIfUp, targetIfDown;
