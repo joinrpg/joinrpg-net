@@ -1,4 +1,4 @@
-using JoinRpg.Web.Games.FieldSetup;
+using JoinRpg.Web.ProjectMasterTools.Fields;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
 

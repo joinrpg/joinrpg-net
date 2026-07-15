@@ -1,6 +1,7 @@
+using JoinRpg.Web.ProjectCommon.Fields;
 using Microsoft.AspNetCore.Components;
 
-namespace JoinRpg.Web.Games.FieldSetup;
+namespace JoinRpg.Web.ProjectMasterTools.Fields;
 
 public class GameFieldListItemViewModel : IMoveableListItem
 {

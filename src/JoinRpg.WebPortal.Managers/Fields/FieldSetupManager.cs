@@ -1,8 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Games.FieldSetup;
 using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.ProjectMasterTools.Fields;
 using JoinRpg.WebPortal.Managers.Fields;
 using JoinRpg.WebPortal.Managers.Interfaces;
 using JoinRpg.WebPortal.Models.FieldSetup;
