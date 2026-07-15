@@ -36,8 +36,10 @@
             MinHeight="30em">
     <ChildContent>
         <label class="control-label">Поместить после</label>
-        <TypedSelector TKey="string"
-                       PossibleValues="selectorItems"
+        <TypedSelector TKey="string" TItem="TItem"
+                       Items="selectorItems"
+                       KeySelector="@(i => i.Id)"
+                       ToListItem="@(i => TypedSelectList.CreateItem(Value: i.Id, Text: i.DisplayText, Subtext: i.Subtext))"
                        SelectedValues="@(_selectedTarget is null ? [] : [_selectedTarget])"
                        SelectedValuesChanged="v => _selectedTarget = v.FirstOrDefault()"
                        AllowEmpty="true"
@@ -66,7 +68,7 @@
 
     private bool showUp, showDown, showSort;
     private TItem? targetIfUp, targetIfDown;
-    private TypedSelectListItem<string>[] selectorItems = [];
+    private TItem[] selectorItems = [];
     private string? _selectedTarget;
     private JoinDialog? _sortDialog;
 
@@ -96,10 +98,7 @@
         targetIfDown = idx < Items.Count - 1 ? Items[idx + 1] : null;
         _selectedTarget = null;
 
-        selectorItems = Items
-            .Where(i => i.Id != selfId)
-            .Select(i => new TypedSelectListItem<string>(i.Id, i.DisplayText, i.Subtext))
-            .ToArray();
+        selectorItems = [.. Items.Where(i => i.Id != selfId)];
     }
 
     private async Task MoveUpAsync(ButtonClickEventArgs args)

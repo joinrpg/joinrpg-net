@@ -1,22 +1,20 @@
 @using System.Linq.Expressions
 @inject ICharactersClient client
 
-@if (items is null)
-{
-   <JoinLoadingMessage />
-}
-else
-{
-  int[] initial = SelectedCharacterIds is not null ? [..SelectedCharacterIds.Select(x => x.CharacterId)] : [];
-  <IntSelector
+<TypedSelector TKey="CharacterIdentification" TItem="CharacterDto"
                Name="@Name"
-               SelectedValues="initial"
-               SelectedValuesChanged="SelectedValuesChanged"
-               PossibleValues="items"
+               Items="chars"
+               KeySelector="@(c => c.CharacterId)"
+               ToListItem="@(c => TypedSelectList.CreateItem(
+                   Value: c.CharacterId,
+                   Text: c.Name,
+                   Subtext: c.Description))"
+               SelectedValues="SelectedCharacterIds"
+               SelectedItemsChanged="HandleSelectedItemsChanged"
                Multiple="@Multiple"
+               AllowEmpty="@AllowEmpty"
                />
-  <p>@SelectedCharactersText</p>
-}
+<p>@SelectedCharactersText</p>
 
 @code {
 
@@ -35,15 +33,11 @@ else
 
     public string SelectedCharactersText{ get; private set; } = "";
 
-    private IntSelectListItem[] items = null!;
-    private List<CharacterDto> chars = null!;
+    private CharacterDto[]? chars;
     private FieldIdentifier? fieldIdentifier = null;
 
-    private async Task SelectedValuesChanged(int[] values)
+    private async Task HandleSelectedItemsChanged(CharacterDto[] selectedItems)
     {
-        values = [..values.Where(v => v != -1)];
-
-        var selectedItems = chars.Where(item => values.Contains(item.CharacterId.CharacterId)).ToArray();
         RefreshSelectedNames(selectedItems);
         await SelectedCharacterIdsChanged.InvokeAsync(selectedItems.Select(x => x.CharacterId).ToArray());
         await SelectedCharactersChanged.InvokeAsync(selectedItems);
@@ -68,16 +62,8 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        chars = await client.GetCharacters(ProjectId, ListType);
+        chars = [.. await client.GetCharacters(ProjectId, ListType)];
         var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId)).ToArray();
-        if (AllowEmpty)
-        {
-            var empty = new IntSelectListItem(-1, "(нет)");
-            items = [empty, .. chars.Select(ToSelectListItem)];
-        }
-        else {
-            items = [.. chars.Select(ToSelectListItem)];
-        }
         RefreshSelectedNames(selectedItems);
 
         if (SelectedCharacterIdsExpression is not null)
@@ -85,14 +71,5 @@ else
             fieldIdentifier = FieldIdentifier.Create(SelectedCharacterIdsExpression);
             Name ??= fieldIdentifier.Value.FieldName;
         }
-    }
-
-    private static IntSelectListItem ToSelectListItem(CharacterDto item)
-    {
-        return new IntSelectListItem(
-          Value: item.CharacterId.CharacterId,
-          Text: item.Name,
-          Subtext: item.Description,
-          ExtraSearch: "");
     }
 }
