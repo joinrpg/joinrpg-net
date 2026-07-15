@@ -7,21 +7,21 @@
     @if (showUp)
     {
         <JoinButton Preset="ButtonPreset.Up"
-                    Size="SizeStyleEnum.Small"
+                    Size="ButtonSize"
                     Title="Переместить вверх"
                     OnClick="MoveUpAsync" />
     }
     @if (showDown)
     {
         <JoinButton Preset="ButtonPreset.Down"
-                    Size="SizeStyleEnum.Small"
+                    Size="ButtonSize"
                     Title="Переместить вниз"
                     OnClick="MoveDownAsync" />
     }
     @if (showSort)
     {
         <JoinButton Preset="ButtonPreset.Sort"
-                    Size="SizeStyleEnum.Small"
+                    Size="ButtonSize"
                     Title="Переместить в любую позицию"
                     Label=""
                     ProgressLabel=""
@@ -59,6 +59,15 @@
 
     [Parameter]
     public bool AutoRefresh { get; set; } = false;
+
+    /// <summary>
+    /// Уменьшить кнопки до размера <see cref="SizeStyleEnum.ExtraSmall"/> — как в GameGroups.Index
+    /// (там кнопки перемещения компактнее обычного <see cref="SizeStyleEnum.Small"/>).
+    /// </summary>
+    [Parameter]
+    public bool ExtraSmallSize { get; set; } = false;
+
+    private SizeStyleEnum ButtonSize => ExtraSmallSize ? SizeStyleEnum.ExtraSmall : SizeStyleEnum.Small;
 
     private bool showUp, showDown, showSort;
     private TItem? targetIfUp, targetIfDown;
