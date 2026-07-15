@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.ProjectCommon;
@@ -20,7 +21,7 @@ public class ProjectRoleGridViewModelBuilderTests
         ProjectRolesListVisibilityMode contacts = ProjectRolesListVisibilityMode.None,
         ProjectRolesListVisibilityMode groups = ProjectRolesListVisibilityMode.None,
         IReadOnlyList<ProjectFieldIdentification>? fields = null,
-        bool showCharacterGroups = false)
+        RolesGridGroupsViewMode groupsViewMode = RolesGridGroupsViewMode.None)
         => new(
             new ProjectRolesListIdentification(_mock.ProjectInfo.ProjectId, 1),
             "Сетка",
@@ -29,7 +30,7 @@ public class ProjectRoleGridViewModelBuilderTests
             fields ?? [],
             contacts,
             groups,
-            ShowCharacterGroups: showCharacterGroups,
+            GroupsViewMode: groupsViewMode,
             ShowRolesFilter: ShowRolesFilter.All);
 
     private ProjectRoleGridViewModel BuildGrid(
@@ -445,7 +446,7 @@ public class ProjectRoleGridViewModelBuilderTests
             .Character.ApprovedClaimId.ShouldBeNull();
     }
 
-    // --- ShowCharacterGroups ---
+    // --- GroupsViewMode ---
 
     private CharacterGroup SetupChildGroup()
     {
@@ -457,14 +458,14 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
-    public void ShowCharacterGroups_True_InsertsGroupHeaderRows()
+    public void GroupsViewMode_Sections_InsertsGroupHeaderRows()
     {
         var childGroup = SetupChildGroup();
 
         var character = _mock.CreateCharacter("Вася");
         character.ParentCharacterGroupIds = [childGroup.CharacterGroupId];
 
-        var result = BuildGrid(Config(showCharacterGroups: true), [character]);
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Sections), [character]);
 
         // Ожидаем: заголовок root, заголовок childGroup, затем персонаж
         var rows = result.Rows;
@@ -477,7 +478,7 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
-    public void ShowCharacterGroups_True_RepeatsCharacterInMultipleGroups()
+    public void GroupsViewMode_Sections_RepeatsCharacterInMultipleGroups()
     {
         var rootId = _mock.Project.CharacterGroups.Single(x => x.IsRoot).CharacterGroupId;
         var groupA = SetupChildGroup();
@@ -486,7 +487,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var character = _mock.CreateCharacter("Вася");
         character.ParentCharacterGroupIds = [groupA.CharacterGroupId, groupB.CharacterGroupId];
 
-        var result = BuildGrid(Config(showCharacterGroups: true), [character]);
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Sections), [character]);
 
         var charRows = result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ToList();
         // Персонаж должен появиться дважды: один раз в groupA, один раз в groupB
@@ -496,7 +497,7 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
-    public void ShowCharacterGroups_False_NoRepetition()
+    public void GroupsViewMode_None_NoRepetition()
     {
         var rootId = _mock.Project.CharacterGroups.Single(x => x.IsRoot).CharacterGroupId;
         var groupA = SetupChildGroup();
@@ -505,11 +506,215 @@ public class ProjectRoleGridViewModelBuilderTests
         var character = _mock.CreateCharacter("Вася");
         character.ParentCharacterGroupIds = [groupA.CharacterGroupId, groupB.CharacterGroupId];
 
-        var result = BuildGrid(Config(showCharacterGroups: false), [character]);
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.None), [character]);
 
         var charRows = result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ToList();
         // Без группировки — персонаж появляется только один раз
         charRows.ShouldHaveSingleItem().Character.Character.Name.ShouldBe("Вася");
         result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().ShouldBeEmpty();
+    }
+
+    // --- GroupsViewMode.Tree ---
+
+    private int RootGroupId => _mock.Project.CharacterGroups.Single(x => x.IsRoot).CharacterGroupId;
+
+    private CharacterGroup CreateGroup(string name, int parentId)
+    {
+        var group = _mock.CreateCharacterGroup(skipReinit: true);
+        group.CharacterGroupName = name;
+        group.ParentCharacterGroupIds = [parentId];
+        return group;
+    }
+
+    [Fact]
+    public void Tree_DepthAndOrder_MatchesPreorderDfs()
+    {
+        // root -> (A, B), A -> (A1)
+        var groupA = CreateGroup("A", RootGroupId);
+        var groupB = CreateGroup("B", RootGroupId);
+        var groupA1 = CreateGroup("A1", groupA.CharacterGroupId);
+        _mock.ReInitProjectInfo();
+
+        var character = _mock.CreateCharacter("Вася");
+        character.ParentCharacterGroupIds = [groupA.CharacterGroupId];
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [character]);
+
+        var headers = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().ToList();
+        headers.Select(h => h.Group.Name).ShouldBe(["test_1", "A", "A1", "B"]);
+        headers.Select(h => h.Depth).ShouldBe([0, 1, 2, 1]);
+
+        // Персонаж идёт сразу после заголовка своей группы (A), перед заголовком A1
+        var rows = result.Rows.ToList();
+        var groupAIndex = rows.IndexOf(headers[1]);
+        var characterRow = rows.OfType<ProjectRoleGridCharacterRowViewModel>().ShouldHaveSingleItem();
+        var characterIndex = rows.IndexOf(characterRow);
+        var groupA1Index = rows.IndexOf(headers[2]);
+        characterIndex.ShouldBe(groupAIndex + 1);
+        groupA1Index.ShouldBe(characterIndex + 1);
+    }
+
+    [Fact]
+    public void Tree_EmptyGroup_IsIncludedInOutput()
+    {
+        var emptyGroup = CreateGroup("Пустая группа", RootGroupId);
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), []);
+
+        result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .ShouldContain(h => h.Group.Name == emptyGroup.CharacterGroupName);
+    }
+
+    [Fact]
+    public void Tree_GroupWithTwoParents_SecondOccurrenceIsNotFirstCopyAndNotExpanded()
+    {
+        // root -> (A, B); X — общий ребёнок A и B; у X есть персонаж и дочерняя группа Y
+        var groupA = CreateGroup("A", RootGroupId);
+        var groupB = CreateGroup("B", RootGroupId);
+        var groupX = _mock.CreateCharacterGroup(skipReinit: true);
+        groupX.CharacterGroupName = "X";
+        groupX.ParentCharacterGroupIds = [groupA.CharacterGroupId, groupB.CharacterGroupId];
+        var groupY = CreateGroup("Y", groupX.CharacterGroupId);
+        _mock.ReInitProjectInfo();
+
+        var character = _mock.CreateCharacter("Персонаж X");
+        character.ParentCharacterGroupIds = [groupX.CharacterGroupId];
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [character]);
+
+        var xHeaders = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .Where(h => h.Group.Name == "X").ToList();
+        xHeaders.Count.ShouldBe(2);
+        xHeaders[0].FirstCopy.ShouldBeTrue();
+        xHeaders[1].FirstCopy.ShouldBeFalse();
+
+        // Персонаж и дочерняя группа Y выведены только один раз (при первом вхождении X)
+        result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().Count().ShouldBe(1);
+        result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().Count(h => h.Group.Name == "Y").ShouldBe(1);
+
+        // Сразу после второго заголовка X ничего из его содержимого не идёт
+        var secondXIndex = result.Rows.ToList().IndexOf(xHeaders[1]);
+        secondXIndex.ShouldBe(result.Rows.Count - 1);
+    }
+
+    [Fact]
+    public void Tree_CharacterInTwoGroups_SecondRowIsNotFirstCopy()
+    {
+        var groupA = CreateGroup("A", RootGroupId);
+        var groupB = CreateGroup("B", RootGroupId);
+        _mock.ReInitProjectInfo();
+
+        var character = _mock.CreateCharacter("Вася");
+        character.ParentCharacterGroupIds = [groupA.CharacterGroupId, groupB.CharacterGroupId];
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [character]);
+
+        var charRows = result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ToList();
+        charRows.Count.ShouldBe(2);
+        charRows[0].FirstCopy.ShouldBeTrue();
+        charRows[1].FirstCopy.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Tree_PrivateBranch_NonMaster_BranchIsCutEntirely()
+    {
+        var privateGroup = CreateGroup("Приватная", RootGroupId); // IsPublic по умолчанию false
+        var publicChild = CreateGroup("Публичный ребёнок", privateGroup.CharacterGroupId);
+        publicChild.IsPublic = true;
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [], canViewPrivate: false);
+
+        result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .ShouldNotContain(h => h.Group.Name == privateGroup.CharacterGroupName);
+        result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .ShouldNotContain(h => h.Group.Name == publicChild.CharacterGroupName);
+    }
+
+    [Fact]
+    public void Tree_PrivateBranch_Master_BranchIsShown()
+    {
+        var privateGroup = CreateGroup("Приватная", RootGroupId);
+        var publicChild = CreateGroup("Публичный ребёнок", privateGroup.CharacterGroupId);
+        publicChild.IsPublic = true;
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [], canViewPrivate: true);
+
+        result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .ShouldContain(h => h.Group.Name == privateGroup.CharacterGroupName);
+        result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .ShouldContain(h => h.Group.Name == publicChild.CharacterGroupName);
+    }
+
+    [Fact]
+    public void Tree_SpecialGroup_SortedLastAmongSiblingsWithBoundExpression()
+    {
+        // Создаём спецгруппу первой, обычную — второй: по «естественному» порядку спецгруппа
+        // была бы первой, но сортировка должна поставить её последней среди детей.
+        var specialGroup = _mock.CreateCharacterGroup(skipReinit: true);
+        specialGroup.CharacterGroupName = "Эльф";
+        specialGroup.IsSpecial = true;
+        specialGroup.ParentCharacterGroupIds = [RootGroupId];
+
+        var regularGroup = CreateGroup("Обычная", RootGroupId);
+        _mock.ReInitProjectInfo();
+
+        _mock.AddField(f =>
+        {
+            f.FieldName = "Раса";
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.CanPlayerView = true;
+            f.Description = new MarkdownDbValue();
+            f.MasterDescription = new MarkdownDbValue();
+            f.DropdownValues.Add(new ProjectFieldDropdownValue
+            {
+                ProjectFieldDropdownValueId = 1,
+                ProjectId = _mock.Project.ProjectId,
+                Label = "Эльф",
+                IsActive = true,
+                CharacterGroupId = specialGroup.CharacterGroupId,
+                Description = new MarkdownDbValue(),
+                MasterDescription = new MarkdownDbValue(),
+            });
+        });
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), []);
+
+        var headers = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().ToList();
+        // root, затем дети: обычная группа перед спецгруппой (спецгруппы — последними)
+        headers.Select(h => h.Group.Name).ShouldBe(["test_1", "Обычная", "Эльф"]);
+
+        var specialHeader = headers.Single(h => h.Group.Name == "Эльф");
+        specialHeader.BoundExpression.ShouldBe("Раса = Эльф");
+    }
+
+    [Fact]
+    public void Tree_SecondLevelGroup_PathDoesNotIncludeRoot()
+    {
+        var groupA = CreateGroup("A", RootGroupId);
+        var groupA1 = CreateGroup("A1", groupA.CharacterGroupId);
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), []);
+
+        var headerA1 = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>()
+            .Single(h => h.Group.Name == "A1");
+        headerA1.Path.ShouldBe("A→A1");
+    }
+
+    [Fact]
+    public void Tree_ActiveClaimsCount_CountsOnlyActiveClaims()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        _mock.CreateApprovedClaim(character, _mock.Player);
+        var declinedClaim = _mock.CreateClaim(character, _mock.Master);
+        declinedClaim.ClaimStatus = ClaimStatus.DeclinedByMaster;
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [character]);
+
+        var characterRow = result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ShouldHaveSingleItem();
+        characterRow.ActiveClaimsCount.ShouldBe(1);
     }
 }

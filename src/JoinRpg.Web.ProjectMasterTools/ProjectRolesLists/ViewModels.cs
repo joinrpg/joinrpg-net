@@ -24,9 +24,8 @@ public class AddProjectRolesListViewModel : IValidatableObject
     [Display(Name = "Колонка групп")]
     public ProjectRolesListVisibilityModeView GroupsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
 
-    [Display(Name = "Показывать дочерние группы в сетке ролей",
-        Description = "Группирует персонажей по дочерним группам.")]
-    public bool ShowCharacterGroups { get; set; }
+    [Display(Name = "Показ групп")]
+    public RolesGridGroupsViewModeView GroupsViewMode { get; set; } = RolesGridGroupsViewModeView.None;
 
     [Display(Name = "Показывать роли")]
     public ShowRolesFilterView ShowRolesFilter { get; set; } = ShowRolesFilterView.All;
@@ -54,7 +53,7 @@ public class AddProjectRolesListViewModel : IValidatableObject
             Fields: Fields,
             ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
-            ShowCharacterGroups: ShowCharacterGroups,
+            GroupsViewMode: (RolesGridGroupsViewMode)GroupsViewMode,
             ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
     }
 
@@ -81,7 +80,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             ContactsColumn = (ContactsColumnVisibilityModeView)domain.ContactsColumn,
             GroupsColumn = ToViewVisibilityMode(domain.GroupsColumn),
             Fields = domain.Fields,
-            ShowCharacterGroups = domain.ShowCharacterGroups,
+            GroupsViewMode = (RolesGridGroupsViewModeView)domain.GroupsViewMode,
             ShowRolesFilter = (ShowRolesFilterView)domain.ShowRolesFilter,
         };
     }
@@ -96,7 +95,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             Fields: Fields,
             ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
-            ShowCharacterGroups: ShowCharacterGroups,
+            GroupsViewMode: (RolesGridGroupsViewMode)GroupsViewMode,
             ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
     }
 }
@@ -123,6 +122,18 @@ public enum ContactsColumnVisibilityModeView
 
     [Display(Name = "Все контакты", Description = "Показывать имя игрока и все контакты (просмотр от имени мастера)")]
     All
+}
+
+public enum RolesGridGroupsViewModeView
+{
+    [Display(Name = "Не показывать группы", Description = "Плоская таблица без групп")]
+    None,
+
+    [Display(Name = "Секции в таблице", Description = "Персонажи группируются по дочерним группам")]
+    Sections,
+
+    [Display(Name = "Иерархическое дерево", Description = "Полное дерево групп с отступами, как классическая сетка ролей")]
+    Tree,
 }
 
 public enum ShowRolesFilterView

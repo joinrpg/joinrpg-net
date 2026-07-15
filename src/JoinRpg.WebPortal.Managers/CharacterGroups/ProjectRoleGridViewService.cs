@@ -46,7 +46,7 @@ internal class ProjectRoleGridViewService(
             .ToLookup(x => x.group, x => x.character);
 
         var groupFullInfos =
-            config.ShowCharacterGroups
+            config.GroupsViewMode != RolesGridGroupsViewMode.None
                 ? (await characterGroupRepository.GetCharacterGroupsFullInfo([.. orderedGroups.Select(g => g.Id)]))
                     .ToDictionary(g => g.Id)
                 : [];

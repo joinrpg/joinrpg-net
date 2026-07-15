@@ -21,7 +21,7 @@ internal class ProjectRolesListService(
             model,
             ctx =>
             {
-                ValidateShowCharacterGroups(ctx.Request, ctx.ProjectInfo);
+                ValidateGroupsViewMode(ctx.Request, ctx.ProjectInfo);
 
                 // Для создания игнорируем переданный ID, база данных сгенерирует новый
                 var entity = CreateEntity(ctx.Request);
@@ -48,7 +48,7 @@ internal class ProjectRolesListService(
             ctx =>
             {
                 var (entity, _) = ctx.GetProjectRolesListForChange(ctx.Request.ProjectRolesListId);
-                ValidateShowCharacterGroups(ctx.Request, ctx.ProjectInfo);
+                ValidateGroupsViewMode(ctx.Request, ctx.ProjectInfo);
                 UpdateEntity(entity, ctx.Request);
                 return entity;
             });
@@ -101,7 +101,7 @@ internal class ProjectRolesListService(
         entity.FieldIds = model.Fields.Select(f => f.ProjectFieldId).ToArray();
         entity.ContactsColumn = model.ContactsColumn;
         entity.GroupsColumn = model.GroupsColumn;
-        entity.ShowCharacterGroups = model.ShowCharacterGroups;
+        entity.GroupsViewMode = model.GroupsViewMode;
         entity.ShowRolesFilter = model.ShowRolesFilter;
     }
 
@@ -122,14 +122,14 @@ internal class ProjectRolesListService(
             Fields: fields,
             ContactsColumn: entity.ContactsColumn,
             GroupsColumn: entity.GroupsColumn,
-            ShowCharacterGroups: entity.ShowCharacterGroups,
+            GroupsViewMode: entity.GroupsViewMode,
             ShowRolesFilter: entity.ShowRolesFilter
         );
     }
 
-    private static void ValidateShowCharacterGroups(ProjectRolesList model, ProjectInfo projectInfo)
+    private static void ValidateGroupsViewMode(ProjectRolesList model, ProjectInfo projectInfo)
     {
-        if (!model.ShowCharacterGroups || model.CharacterGroupId is not { } groupId)
+        if (model.GroupsViewMode == RolesGridGroupsViewMode.None || model.CharacterGroupId is not { } groupId)
         {
             return;
         }

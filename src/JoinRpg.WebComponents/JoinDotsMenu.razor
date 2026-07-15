@@ -1,5 +1,5 @@
 <span class="dropdown">
-    <button class="btn btn-default dropdown-toggle btn-sm"
+    <button class="@ButtonClass dropdown-toggle"
             type="button"
             id="@_menuId"
             data-toggle="dropdown"
@@ -14,6 +14,14 @@
 
 @code {
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>
+    /// Размер кнопки — та же шкала, что у <see cref="JoinButton"/>, чтобы меню
+    /// совпадало по высоте с кнопками рядом.
+    /// </summary>
+    [Parameter] public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
+
+    private string ButtonClass => BootstrapStyle.Build("btn", VariationStyleEnum.None, Size);
 
     private readonly string _menuId = $"dots-menu-{Guid.NewGuid():N}";
 }

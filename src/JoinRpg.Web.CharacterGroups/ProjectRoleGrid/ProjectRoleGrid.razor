@@ -19,17 +19,120 @@ else if (!Result.HasAccess)
 else
 {
     var Model = Result.Grid!;
-    <div class="d-flex align-items-center">
-        <h4>@Model.Name</h4>
+    @* Портал на Bootstrap 3 — flex-утилит (d-flex и т.п.) нет, поэтому inline-стили. *@
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <h1 style="margin: 0;">@Model.Name</h1>
+        @* Medium = обычный размер, как у JoinButton «Настройки сетки» рядом. *@
+        <GroupEditMenu GroupId="Model.RootGroupId"
+                       GroupType="Model.RootGroupType"
+                       ShowEditControls="Model.CanEditSettings"
+                       Size="SizeStyleEnum.Medium" />
         @if (Model.CanEditSettings)
         {
-            <span class="ms-3">
-                <JoinButton Preset="ButtonPreset.Edit"
-                            OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesListId.ProjectId.Value}/tools/roleslist/edit/{Model.RolesListId.ProjectRolesListId}")'
-                    Label="Настройки сетки" />
-            </span>
+            <JoinButton Preset="ButtonPreset.Edit"
+                        OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesListId.ProjectId.Value}/tools/roleslist/edit/{Model.RolesListId.ProjectRolesListId}")'
+                        Label="Настройки сетки" />
         }
     </div>
+    @if (Model.GroupsViewMode == RolesGridGroupsViewMode.Tree)
+    {
+        var currentDepth = 0;
+        @foreach (var block in _renderBlocks)
+        {
+            @if (block is ProjectRoleGridGroupHeaderRowViewModel groupHeader)
+            {
+                currentDepth = groupHeader.Depth;
+                <div style="margin-left: @(groupHeader.Depth)em">
+                    @if (groupHeader.Depth > 0)
+                    {
+                        <span class="@HeaderClass(groupHeader.Depth)" title="@groupHeader.Path">
+                            <CharacterGroupLink Model="groupHeader.Group" />
+                        </span>
+                        <GroupEditMenu GroupId="groupHeader.Group.CharacterGroupId"
+                                       GroupType="groupHeader.GroupType"
+                                       ShowEditControls="Model.CanEditSettings" />
+                        @if (groupHeader.IsSpecial)
+                        {
+                            string title = "Эта группа автоматически заполняется в зависимости от полей персонажа." + groupHeader.BoundExpression;
+                            <JoinBadge Title="title">Спецгруппа</JoinBadge>
+                        }
+                        @if (!groupHeader.FirstCopy)
+                        {
+                            <span>см. выше</span>
+                        }
+                    }
+                    @if (groupHeader.Description is { } description)
+                    {
+                        <div>@description</div>
+                    }
+                </div>
+            }
+            else if (block is List<ProjectRoleGridCharacterRowViewModel> charBlock)
+            {
+                <div style="margin-left: @(currentDepth)em">
+                    <ul>
+                        @foreach (var charRow in charBlock)
+                        {
+                            <li>
+                                <CharacterLinkWithEdit Model="charRow.Character" />
+                                @if (charRow.Character.CanEdit && charBlock.Count > 1)
+                                {
+                                    <JoinMoveControl TItem="ProjectRoleGridCharacterRowViewModel"
+                                                     Items="charBlock"
+                                                     Self="charRow"
+                                                     SkipGroup="true"
+                                                     Size="SizeStyleEnum.ExtraSmall"
+                                                     OnMoveCompleted="StateHasChanged" />
+                                }
+                                <text> </text>
+                                <ProjectRoleGridPlayerCell Row="charRow" />
+                                @if (charRow.Groups is { } groups && groups.Groups.Count > 0)
+                                {
+                                    <div>
+                                        Группы:
+                                        @for (var i = 0; i < groups.Groups.Count; i++)
+                                        {
+                                            if (i > 0)
+                                            {
+                                                <text>, </text>
+                                            }
+                                            <CharacterGroupLink Model="groups.Groups[i]" />
+                                        }
+                                    </div>
+                                }
+                                @if (!charRow.FirstCopy)
+                                {
+                                    @if (Model.FieldColumnNames.Count > 0)
+                                    {
+                                        <div>(см. выше)</div>
+                                    }
+                                }
+                                else
+                                {
+                                    @for (var i = 0; i < charRow.FieldValues.Count; i++)
+                                    {
+                                        @if (!string.IsNullOrWhiteSpace(charRow.FieldValues[i]))
+                                        {
+                                            @if (Model.SuppressFieldLabels)
+                                            {
+                                                <div>@charRow.FieldValues[i]</div>
+                                            }
+                                            else
+                                            {
+                                                <div><strong>@Model.FieldColumnNames[i]</strong>: @charRow.FieldValues[i]</div>
+                                            }
+                                        }
+                                    }
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+    }
+    else
+    {
     <table class="table">
         <thead>
             <tr>
@@ -82,28 +185,7 @@ else
                                 }
                             </td>
                             <td>
-                                @if (charRow.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
-                                {
-                                    <text>NPC</text>
-                                }
-                                else if (charRow.Player.ApplyStatus.IsSlot)
-                                {
-                                    <text>шаблон</text>
-                                }
-                                else if (charRow.Player.Link is { } link)
-                                {
-                                    <UserLink Model="link" />
-                                }
-                                else
-                                {
-                                    <text>нет&nbsp;игрока</text>
-                                }
-                                @if (charRow.Player.Contacts is not null)
-                                {
-                                    <text> (</text><UserContactsView Contacts="charRow.Player.Contacts" /><text>)</text>
-                                }
-                                <text> </text>
-                                <ApplyForCharacterButton Model="charRow.Player.ApplyStatus" />
+                                <ProjectRoleGridPlayerCell Row="charRow" />
                             </td>
                             @if (charRow.Groups is { } groups)
                             {
@@ -128,6 +210,7 @@ else
             }
         </tbody>
     </table>
+    }
 }
 
 @code {
@@ -136,6 +219,14 @@ else
     private ProjectRoleGridViewResult? Result { get; set; }
     private PersistingComponentStateSubscription _persistingSubscription;
     private List<object> _renderBlocks = [];
+
+    // Заголовки уровней как в классической сетке ролей: 1 → h2, 2 → h3, глубже → h4.
+    private static string HeaderClass(int depth) => depth switch
+    {
+        1 => "h2",
+        2 => "h3",
+        _ => "h4",
+    };
 
     protected override async Task OnInitializedAsync()
     {

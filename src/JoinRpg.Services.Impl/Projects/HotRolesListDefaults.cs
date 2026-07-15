@@ -22,6 +22,6 @@ internal static class HotRolesListDefaults
             Fields: descriptionField is { } field ? [field] : [],
             ContactsColumn: ProjectRolesListVisibilityMode.None,
             GroupsColumn: ProjectRolesListVisibilityMode.None,
-            ShowCharacterGroups: false,
+            GroupsViewMode: RolesGridGroupsViewMode.None,
             ShowRolesFilter: ShowRolesFilter.HotOnly);
 }

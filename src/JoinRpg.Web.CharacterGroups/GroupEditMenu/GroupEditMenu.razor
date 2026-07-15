@@ -2,7 +2,7 @@
 @using JoinRpg.DomainTypes.ProjectMetadata
 @inject ICharacterGroupUriLocator UriLocator
 
-<JoinDotsMenu>
+<JoinDotsMenu Size="Size">
     <JoinMenuItem Href="@UriLocator.GetClaimListUri(GroupId).ToString()">список заявок</JoinMenuItem>
     <JoinMenuItem Href="@UriLocator.GetCharacterListUri(GroupId).ToString()">список персонажей</JoinMenuItem>
     <JoinMenuItem Href="@UriLocator.GetReportUri(GroupId).ToString()">сводный отчет</JoinMenuItem>
@@ -31,4 +31,5 @@
     [Parameter, EditorRequired] public CharacterGroupIdentification GroupId { get; set; } = null!;
     [Parameter, EditorRequired] public CharacterGroupType GroupType { get; set; }
     [Parameter] public bool ShowEditControls { get; set; }
+    [Parameter] public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
 }

@@ -28,7 +28,11 @@ internal static class ProjectRoleGridViewModelBuilder
         var fields = config.Fields.Select(projectInfo.GetFieldById).ToList();
         var fieldColumnNames = fields.Select(f => f.Name).ToList();
 
-        var rows = BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
+        var rootGroup = orderedGroups[0];
+
+        var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo)
+            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
@@ -37,7 +41,11 @@ internal static class ProjectRoleGridViewModelBuilder
             CanEditSettings: canEditSettings,
             HasGroupsColumn: hasGroupsColumn,
             FieldColumnNames: fieldColumnNames,
-            Rows: rows);
+            Rows: rows,
+            GroupsViewMode: config.GroupsViewMode,
+            RootGroupId: rootGroup.Id,
+            RootGroupType: rootGroup.GroupType,
+            SuppressFieldLabels: fields.Count == 1 && fields[0].IsDescription);
     }
 
     private static List<ProjectRoleGridRowViewModel> BuildRows(
@@ -61,7 +69,7 @@ internal static class ProjectRoleGridViewModelBuilder
                 .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering)
                 .ToList();
 
-            if (config.ShowCharacterGroups && (group.Id == topGroupId || ordered.Count > 0))
+            if (config.GroupsViewMode != RolesGridGroupsViewMode.None && (group.Id == topGroupId || ordered.Count > 0))
             {
                 var description = groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString().Value;
                 var groupLink = new CharacterGroupLinkSlimViewModel(group);
@@ -70,7 +78,7 @@ internal static class ProjectRoleGridViewModelBuilder
 
             foreach (var character in ordered)
             {
-                if (config.ShowCharacterGroups || seen.Add(character.CharacterId))
+                if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.CharacterId))
                 {
                     result.Add(BuildCharacterRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
                 }
@@ -78,6 +86,75 @@ internal static class ProjectRoleGridViewModelBuilder
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Режим дерева: рекурсивный preorder-DFS по дереву групп с глубиной, как в классической
+    /// сетке ролей (GameGroups/Index). Пустые группы включаются, повторные вхождения группы
+    /// или персонажа (несколько родителей) помечаются FirstCopy == false («см. выше»).
+    /// </summary>
+    private static List<ProjectRoleGridRowViewModel> BuildTreeRows(
+        ProjectRolesList config,
+        CharacterGroupIdentification rootGroupId,
+        ILookup<CharacterGroupIdentification, Character> charactersByGroup,
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        bool hasGroupsColumn,
+        bool canViewPrivate,
+        bool canEditSettings,
+        IReadOnlyList<ProjectFieldInfo> fields,
+        ProjectInfo projectInfo)
+    {
+        var result = new List<ProjectRoleGridRowViewModel>();
+        var seenGroups = new HashSet<CharacterGroupIdentification>();
+        var seenCharacters = new HashSet<int>();
+
+        AddGroupSubtree(projectInfo.GetGroupById(rootGroupId.CharacterGroupId), depth: 0, parentPath: "");
+        return result;
+
+        void AddGroupSubtree(CharacterGroupInfo group, int depth, string parentPath)
+        {
+            var firstCopy = seenGroups.Add(group.Id);
+            var path = parentPath.Length == 0 ? group.Name : $"{parentPath}→{group.Name}";
+
+            string? boundExpression = null;
+            if (group.IsSpecial && projectInfo.GetVariantByGroupIdOrDefault(group.Id) is { } variant)
+            {
+                boundExpression = $"{variant.ParentFieldName} = {variant.Label}";
+            }
+
+            result.Add(new ProjectRoleGridGroupHeaderRowViewModel(
+                new CharacterGroupLinkSlimViewModel(group),
+                DescriptionHtml: firstCopy ? groupFullInfos.GetValueOrDefault(group.Id)?.Description?.ToHtmlString().Value : null,
+                GroupType: group.GroupType,
+                Depth: depth,
+                FirstCopy: firstCopy,
+                Path: path,
+                BoundExpression: boundExpression));
+
+            if (!firstCopy)
+            {
+                return;
+            }
+
+            var ordered = charactersByGroup[group.Id]
+                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering);
+            foreach (var character in ordered)
+            {
+                result.Add(BuildCharacterRow(
+                    character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings,
+                    fields, group.Id, firstCopy: seenCharacters.Add(character.CharacterId)));
+            }
+
+            // Как в старой сетке: скрытые ветки не показываем не-мастерам, спецгруппы — последними.
+            var children = group.DirectChildGroupIds
+                .Select(id => projectInfo.GetGroupById(id.CharacterGroupId))
+                .Where(g => g.IsActive && (canViewPrivate || g.IsPublic))
+                .OrderBy(g => g.IsSpecial);
+            foreach (var child in children)
+            {
+                AddGroupSubtree(child, depth + 1, depth == 0 ? "" : path);
+            }
+        }
     }
 
     private static ProjectRoleGridCharacterRowViewModel BuildCharacterRow(
@@ -88,7 +165,8 @@ internal static class ProjectRoleGridViewModelBuilder
         bool canViewPrivate,
         bool canEditRoles,
         IReadOnlyList<ProjectFieldInfo> fields,
-        CharacterGroupIdentification groupId)
+        CharacterGroupIdentification groupId,
+        bool firstCopy = true)
     {
         var characterSlim = new CharacterLinkSlimViewModel(
             character.GetId(),
@@ -110,7 +188,10 @@ internal static class ProjectRoleGridViewModelBuilder
         var fieldsDict = character.GetFieldsDict(projectInfo);
         var fieldValues = fields.Select(f => fieldsDict[f.Id].DisplayString).ToList();
 
-        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues, groupId);
+        // Количество активных заявок видно всем, как в классической сетке ролей.
+        var activeClaimsCount = character.Claims.Count(claim => claim.ClaimStatus.IsActive());
+
+        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues, groupId, activeClaimsCount, firstCopy);
     }
 
     private static PlayerCellViewModel BuildPlayerCell(
