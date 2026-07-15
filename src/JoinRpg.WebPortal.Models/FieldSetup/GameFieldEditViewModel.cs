@@ -1,5 +1,5 @@
 using JoinRpg.Markdown;
-using JoinRpg.Web.Games.FieldSetup;
+using JoinRpg.Web.ProjectMasterTools.Fields;
 
 namespace JoinRpg.WebPortal.Models.FieldSetup;
 
