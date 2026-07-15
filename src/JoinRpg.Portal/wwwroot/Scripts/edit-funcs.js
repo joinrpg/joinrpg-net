@@ -25,23 +25,6 @@ $(".datepicker").datepicker({
     autoclose: true
 });
 
-//TODO: merge this
-
-$(".modaldialogforid").on("show.bs.modal", function (event) {
-    var modal = $(this);
-    var button = $(event.relatedTarget);
-
-    var entityId = button.data("element");
-    modal.find("#entityId").val(entityId);
-
-    var href = button.data("action-url");
-    if (href) {
-        modal.find("form").attr({
-            "action": href
-        });
-    }
-});
-
 var hash = window.location.hash.substr(1);
 if (hash) {
     $("#" + hash).collapse('show');

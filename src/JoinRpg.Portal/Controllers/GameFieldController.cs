@@ -15,7 +15,6 @@ namespace JoinRpg.Portal.Controllers;
 [Authorize]
 [Route("{ProjectId}/fields/[action]")]
 public class GameFieldController(
-    IProjectRepository projectRepository,
     IFieldSetupService fieldSetupService,
     FieldSetupManager manager,
     ICurrentProjectAccessor currentProjectAccessor,
@@ -175,26 +174,6 @@ public class GameFieldController(
             AddModelException(exception);
             viewModel.FillNotEditable(field, projectInfo);
             return View(viewModel);
-        }
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> Delete(int projectId, int projectFieldId, IFormCollection collection)
-    {
-        var field = await projectRepository.GetProjectField(projectId, projectFieldId);
-
-        try
-        {
-            await fieldSetupService.DeleteField(projectId, field.ProjectFieldId);
-
-            return ReturnToIndex();
-        }
-        catch (Exception exception)
-        {
-            AddModelException(exception);
-            return View(field);
         }
     }
 

@@ -83,7 +83,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
                 new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
         }
         if (!CanPlayerView && FieldViewType.SupportsPricing()
-                && ((FieldViewType.HasValuesList() && DropdownValues.Any(v => v.Price != 0)) || Price != 0))
+                && ((DropdownValues.Any(v => v.Price != 0)) || Price != 0))
         {
             yield return
                 new ValidationResult("Нельзя скрыть от игрока поле, влияющее на размер взноса.");

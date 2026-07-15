@@ -1,5 +1,4 @@
 
-@using JoinRpg.Web.Models.Dialogs
 @using JoinRpg.Web.Games.FieldSetup
 @model GameFieldListViewModel
 
@@ -16,8 +15,7 @@
                 <th class="price-table" style="white-space: nowrap">Цена, ₽</th>
                 <th>Описание</th>
                 <th></th>
-                <th style="min-width: 6em; width: 9em;"></th>
-                <th style="min-width: 9em; width: 9em;"></th>
+                <th style="min-width: 15em; width: 18em;"></th>
             </tr>
             @foreach (var item in Model.Items)
             {
@@ -29,6 +27,4 @@
     <a asp-controller="GameField" asp-action="Create" asp-route-ProjectId="@Model.Navigation.ProjectId" class="btn btn-success">
         <span class="glyphicon glyphicon-plus"></span>Добавить новое поле
     </a>
-
-    @await Html.PartialAsync("_DeleteEntityDlg", new DeleteDialogViewModel() { ProjectId = Model.Navigation.ProjectId, Title = "Удаление поля"})
 }
