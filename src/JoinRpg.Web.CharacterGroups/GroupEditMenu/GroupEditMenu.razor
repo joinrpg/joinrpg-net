@@ -5,6 +5,7 @@
 <JoinDotsMenu>
     <JoinMenuItem Href="@UriLocator.GetClaimListUri(GroupId).ToString()">список заявок</JoinMenuItem>
     <JoinMenuItem Href="@UriLocator.GetCharacterListUri(GroupId).ToString()">список персонажей</JoinMenuItem>
+    <JoinMenuItem Href="@UriLocator.GetReportUri(GroupId).ToString()">сводный отчет</JoinMenuItem>
 
     @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
     {

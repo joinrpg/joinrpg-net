@@ -200,6 +200,10 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ByGroup", "CharacterList",
             new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
 
+    Uri ICharacterGroupUriLocator.GetReportUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Report", "GameGroups",
+            new { ProjectId = id.ProjectId.Value, characterGroupId = id.CharacterGroupId }));
+
     Uri ICharacterGroupUriLocator.GetSubscribeUri(CharacterGroupIdentification id) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("EditForGroup", "GameSubscribe",
             new { projectId = id.ProjectId.Value, characterGroupId = id.CharacterGroupId }));
