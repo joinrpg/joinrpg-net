@@ -39,6 +39,9 @@ public static class UriLocatorExtensions
         Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/characters/bygroup/{id.CharacterGroupId}", UriKind.Relative);
 
+        Uri ICharacterGroupUriLocator.GetReportUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/report", UriKind.Relative);
+
         Uri ICharacterGroupUriLocator.GetSubscribeUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/subscribe/forgroup/{id.CharacterGroupId}", UriKind.Relative);
 
