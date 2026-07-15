@@ -44,7 +44,6 @@
                         <li>
                             @Html.ActionLink("Сетка ролей", "Index", "GameGroups", new { Model.ProjectId }, null)
                         </li>
-                         <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
 
                         @if (Model.ProjectRolesLists.Any(x => x.PublicMode))
                         {
@@ -131,6 +130,7 @@
                         <li>@Html.ActionLink("Игрокам нужно заполнить", "SomeFieldsToFill", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
+                        <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
                         <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
                             <a asp-page="/GamePages/InvitePlayer" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
                                 Пригласить игрока
