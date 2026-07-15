@@ -18,13 +18,15 @@
                         Title="Переместить вниз"
                         OnClick="MoveDownAsync" />
         }
+        @if (showSort)
+        {
         <JoinButton Preset="ButtonPreset.Sort"
                     Size="Size"
                     Title="Переместить в любую позицию"
                     Label=""
                     ProgressLabel=""
                     OnClick="OpenSortDialogAsync" />
-    }
+        }
 </JoinButtonGroup>
 
 <JoinDialog @ref="_sortDialog"

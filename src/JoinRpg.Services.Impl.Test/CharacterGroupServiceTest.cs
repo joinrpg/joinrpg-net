@@ -25,6 +25,9 @@ public class CharacterGroupServiceTest
     private CharacterGroupIdentification GroupId(CharacterGroup group)
         => new(ProjectId, group.CharacterGroupId);
 
+    private CharacterIdentification CharacterId(Character character)
+        => new(ProjectId, character.CharacterId);
+
     private CharacterGroupIdentification RootGroupId
         => GroupId(mock.Project.CharacterGroups.Single(g => g.IsRoot));
 
@@ -147,6 +150,25 @@ public class CharacterGroupServiceTest
         await service.MoveCharacterGroup(GroupId(second), GroupId(parent), direction: -1);
 
         parent.ChildGroupsOrdering.ShouldNotBeNullOrEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task MoveCharacterAfter_ReordersCharacters()
+    {
+        var parent = mock.Group;
+        var first = mock.CreateCharacter("Первый");
+        var second = mock.CreateCharacter("Второй");
+        first.ParentCharacterGroupIds = [parent.CharacterGroupId];
+        second.ParentCharacterGroupIds = [parent.CharacterGroupId];
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        var newOrder = await service.MoveCharacterAfter(GroupId(parent), CharacterId(first), CharacterId(second));
+
+        newOrder.ShouldBe([CharacterId(second), CharacterId(first)]);
+        parent.ChildCharactersOrdering.ShouldNotBeNullOrEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 }

@@ -57,14 +57,22 @@ internal static class ProjectOperationContextExtensions
     /// <summary>
     /// Резолвит группу для изменения: возвращает трекаемую сущность и её метаданные, проверяет, что
     /// группа обычная (<see cref="CharacterGroupType.Regular"/>) — root и специальные группы менять
-    /// нельзя — и помечает сущность изменённой.
+    /// нельзя, если явно не разрешено через <paramref name="allowSpecialToValue"/> — и помечает
+    /// сущность изменённой.
     /// </summary>
+    /// <param name="allowSpecialToValue">
+    /// Разрешить также <see cref="CharacterGroupType.SpecialToValue"/> (например, автосетку «горячие
+    /// роли») — её содержимое (порядок персонажей) можно менять, хотя саму группу (имя, родителей)
+    /// нельзя.
+    /// </param>
     public static (CharacterGroup Group, CharacterGroupInfo GroupInfo) GetCharacterGroupForChange(
-        this ProjectMutationContext ctx, CharacterGroupIdentification id)
+        this ProjectMutationContext ctx, CharacterGroupIdentification id, bool allowSpecialToValue = false)
     {
         var group = ctx.Project.CharacterGroups.Single(g => g.CharacterGroupId == id.CharacterGroupId);
         var groupInfo = ctx.ProjectInfo.Groups[id];
-        if (groupInfo.GroupType != CharacterGroupType.Regular)
+        var allowed = groupInfo.GroupType == CharacterGroupType.Regular
+            || (allowSpecialToValue && groupInfo.GroupType == CharacterGroupType.SpecialToValue);
+        if (!allowed)
         {
             throw new InvalidOperationException();
         }
