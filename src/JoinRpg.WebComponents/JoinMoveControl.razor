@@ -3,27 +3,28 @@
 @inject IMoveClient MoveClient
 @inject NavigationManager NavigationManager
 
-<JoinButtonGroup SkipGroup="SkipGroup">
-    @if (showUp)
-    {
-        <JoinButton Preset="ButtonPreset.Up"
-                    Size="SizeStyleEnum.Small"
-                    Title="Переместить вверх"
-                    OnClick="MoveUpAsync" />
+ <JoinButtonGroup SkipGroup="SkipGroup">
+        @if (showUp)
+        {
+            <JoinButton Preset="ButtonPreset.Up"
+                        Size="Size"
+                        Title="Переместить вверх"
+                        OnClick="MoveUpAsync" />
+        }
+        @if (showDown)
+        {
+            <JoinButton Preset="ButtonPreset.Down"
+                        Size="Size"
+                        Title="Переместить вниз"
+                        OnClick="MoveDownAsync" />
+        }
+        <JoinButton Preset="ButtonPreset.Sort"
+                    Size="Size"
+                    Title="Переместить в любую позицию"
+                    Label=""
+                    ProgressLabel=""
+                    OnClick="OpenSortDialogAsync" />
     }
-    @if (showDown)
-    {
-        <JoinButton Preset="ButtonPreset.Down"
-                    Size="SizeStyleEnum.Small"
-                    Title="Переместить вниз"
-                    OnClick="MoveDownAsync" />
-    }
-    <JoinButton Preset="ButtonPreset.Sort"
-                Size="SizeStyleEnum.Small"
-                Title="Переместить в любую позицию"
-                Label=""
-                ProgressLabel=""
-                OnClick="OpenSortDialogAsync" />
 </JoinButtonGroup>
 
 <JoinDialog @ref="_sortDialog"
@@ -32,6 +33,7 @@
             MinWidth="22em"
             MinHeight="30em">
     <ChildContent>
+        <label class="control-label">Поместить после</label>
         <TypedSelector TKey="string"
                        PossibleValues="selectorItems"
                        SelectedValues="@(_selectedTarget is null ? [] : [_selectedTarget])"
@@ -57,7 +59,10 @@
     [Parameter]
     public bool AutoRefresh { get; set; } = false;
 
-    private bool showUp, showDown;
+    [Parameter]
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
+
+    private bool showUp, showDown, showSort;
     private TItem? targetIfUp, targetIfDown;
     private TypedSelectListItem<string>[] selectorItems = [];
     private string? _selectedTarget;
@@ -84,6 +89,7 @@
 
         showUp = idx > 0;
         showDown = idx < Items.Count - 1;
+        showSort = Items.Count > 1;
         targetIfUp = idx > 1 ? Items[idx - 2] : null;
         targetIfDown = idx < Items.Count - 1 ? Items[idx + 1] : null;
         _selectedTarget = null;
