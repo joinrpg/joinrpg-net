@@ -137,4 +137,26 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
                     .GetCharacterGroupsContainer().Move(thisCharacterGroup, ctx.Request.direction).GetStoredOrder();
             });
     }
+
+    public async Task<IReadOnlyList<CharacterIdentification>> MoveCharacterAfter(
+        CharacterGroupIdentification parentCharacterGroupId,
+        CharacterIdentification characterId,
+        CharacterIdentification? afterCharacterId)
+    {
+        return await projectPropsService.ChangeProjectProperties(
+            parentCharacterGroupId.ProjectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            (parentCharacterGroupId, characterId, afterCharacterId),
+            ctx =>
+            {
+                var (parentCharacterGroup, _) = ctx.GetCharacterGroupForChange(ctx.Request.parentCharacterGroupId, allowSpecialToValue: true);
+
+                var container = parentCharacterGroup.GetCharactersContainer()
+                    .MoveAfter(ctx.Request.characterId.CharacterId, ctx.Request.afterCharacterId?.CharacterId);
+                parentCharacterGroup.ChildCharactersOrdering = container.GetStoredOrder();
+
+                return container.OrderedItems.Select(c => c.GetId()).ToList();
+            });
+    }
 }

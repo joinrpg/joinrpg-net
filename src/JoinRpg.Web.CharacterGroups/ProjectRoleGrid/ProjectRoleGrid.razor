@@ -46,9 +46,9 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var row in Model.Rows)
+            @foreach (var block in _renderBlocks)
             {
-                @if (row is ProjectRoleGridGroupHeaderRowViewModel groupHeader)
+                @if (block is ProjectRoleGridGroupHeaderRowViewModel groupHeader)
                 {
                     var colspan = 2 + (Model.HasGroupsColumn ? 1 : 0) + Model.FieldColumnNames.Count;
                     <tr class="table-secondary">
@@ -64,52 +64,65 @@ else
                         </td>
                     </tr>
                 }
-                else if (row is ProjectRoleGridCharacterRowViewModel charRow)
+                else if (block is List<ProjectRoleGridCharacterRowViewModel> charBlock)
                 {
-                    <tr>
-                        <td><CharacterLinkWithEdit Model="charRow.Character" /></td>
-                        <td>
-                            @if (charRow.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
-                            {
-                                <text>NPC</text>
-                            }
-                            else if (charRow.Player.ApplyStatus.IsSlot)
-                            {
-                                <text>шаблон</text>
-                            }
-                            else if (charRow.Player.Link is { } link)
-                            {
-                                <UserLink Model="link" />
-                            }
-                            else
-                            {
-                                <text>нет&nbsp;игрока</text>
-                            }
-                            @if (charRow.Player.Contacts is not null)
-                            {
-                                <text> (</text><UserContactsView Contacts="charRow.Player.Contacts" /><text>)</text>
-                            }
-                            <text> </text>
-                            <ApplyForCharacterButton Model="charRow.Player.ApplyStatus" />
-                        </td>
-                        @if (charRow.Groups is { } groups)
-                        {
+                    @foreach (var charRow in charBlock)
+                    {
+                        <tr>
                             <td>
-                                @for (var i = 0; i < groups.Groups.Count; i++)
+                                <CharacterLinkWithEdit Model="charRow.Character" />
+                                @if (charRow.Character.CanEdit && charBlock.Count > 1)
                                 {
-                                    if (i > 0)
-                                    {
-                                        <text>, </text>
-                                    }
-                                    <CharacterGroupLink Model="groups.Groups[i]" />
+                                    <JoinMoveControl TItem="ProjectRoleGridCharacterRowViewModel"
+                                                      Items="charBlock"
+                                                      Self="charRow"
+                                                      SkipGroup="true"
+                                                      ExtraSmallSize="true" />
                                 }
                             </td>
-                        }
-                        @foreach (var fieldValue in charRow.FieldValues)
-                        {
-                            <td>@fieldValue</td>
-                        }
-                    </tr>
+                            <td>
+                                @if (charRow.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
+                                {
+                                    <text>NPC</text>
+                                }
+                                else if (charRow.Player.ApplyStatus.IsSlot)
+                                {
+                                    <text>шаблон</text>
+                                }
+                                else if (charRow.Player.Link is { } link)
+                                {
+                                    <UserLink Model="link" />
+                                }
+                                else
+                                {
+                                    <text>нет&nbsp;игрока</text>
+                                }
+                                @if (charRow.Player.Contacts is not null)
+                                {
+                                    <text> (</text><UserContactsView Contacts="charRow.Player.Contacts" /><text>)</text>
+                                }
+                                <text> </text>
+                                <ApplyForCharacterButton Model="charRow.Player.ApplyStatus" />
+                            </td>
+                            @if (charRow.Groups is { } groups)
+                            {
+                                <td>
+                                    @for (var i = 0; i < groups.Groups.Count; i++)
+                                    {
+                                        if (i > 0)
+                                        {
+                                            <text>, </text>
+                                        }
+                                        <CharacterGroupLink Model="groups.Groups[i]" />
+                                    }
+                                </td>
+                            }
+                            @foreach (var fieldValue in charRow.FieldValues)
+                            {
+                                <td>@fieldValue</td>
+                            }
+                        </tr>
+                    }
                 }
             }
         </tbody>
@@ -121,6 +134,7 @@ else
 
     private ProjectRoleGridViewResult? Result { get; set; }
     private PersistingComponentStateSubscription _persistingSubscription;
+    private List<object> _renderBlocks = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,6 +145,38 @@ else
             result = await Client.GetRoleGrid(RolesListId);
         }
         Result = result;
+
+        if (result?.Grid is { } grid)
+        {
+            BuildRenderBlocks(grid);
+        }
+    }
+
+    // Character-строки одной группы в Model.Rows всегда идут подряд (см. BuildRows в
+    // ProjectRoleGridViewModelBuilder), поэтому их можно безопасно схлопывать в изменяемый
+    // список: он же передаётся в JoinMoveControl.Items, и перестановка внутри него сразу
+    // видна в рендере — без похода на сервер за всей сеткой заново.
+    private void BuildRenderBlocks(ProjectRoleGridViewModel grid)
+    {
+        _renderBlocks = [];
+        List<ProjectRoleGridCharacterRowViewModel>? current = null;
+        foreach (var row in grid.Rows)
+        {
+            if (row is ProjectRoleGridCharacterRowViewModel charRow)
+            {
+                if (current is null)
+                {
+                    current = [];
+                    _renderBlocks.Add(current);
+                }
+                current.Add(charRow);
+            }
+            else
+            {
+                current = null;
+                _renderBlocks.Add(row);
+            }
+        }
     }
 
     private Task PersistData()

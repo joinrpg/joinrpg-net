@@ -72,7 +72,7 @@ internal static class ProjectRoleGridViewModelBuilder
             {
                 if (config.ShowCharacterGroups || seen.Add(character.CharacterId))
                 {
-                    result.Add(BuildCharacterRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields));
+                    result.Add(BuildCharacterRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
                 }
             }
         }
@@ -87,7 +87,8 @@ internal static class ProjectRoleGridViewModelBuilder
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditRoles,
-        IReadOnlyList<ProjectFieldInfo> fields)
+        IReadOnlyList<ProjectFieldInfo> fields,
+        CharacterGroupIdentification groupId)
     {
         var characterSlim = new CharacterLinkSlimViewModel(
             character.GetId(),
@@ -109,7 +110,7 @@ internal static class ProjectRoleGridViewModelBuilder
         var fieldsDict = character.GetFieldsDict(projectInfo);
         var fieldValues = fields.Select(f => fieldsDict[f.Id].DisplayString).ToList();
 
-        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues);
+        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues, groupId);
     }
 
     private static PlayerCellViewModel BuildPlayerCell(

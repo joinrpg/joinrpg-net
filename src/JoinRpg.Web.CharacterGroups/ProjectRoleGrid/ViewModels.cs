@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebComponents;
@@ -39,7 +40,14 @@ public record ProjectRoleGridCharacterRowViewModel(
     CharacterLinkWithEditViewModel Character,
     PlayerCellViewModel Player,
     GroupsCellViewModel? Groups,
-    IReadOnlyList<string> FieldValues) : ProjectRoleGridRowViewModel;
+    IReadOnlyList<string> FieldValues,
+    CharacterGroupIdentification GroupId) : ProjectRoleGridRowViewModel, IMoveableListItem
+{
+    string IMoveableListItem.Id => Character.Character.CharacterId.ToString();
+    string IMoveableListItem.ParentId => GroupId.ToString();
+    string IMoveableListItem.DisplayText => Character.Character.Name;
+    string IMoveableListItem.Subtext => "";
+}
 
 public record ProjectRoleGridGroupHeaderRowViewModel(
     CharacterGroupLinkSlimViewModel Group,
