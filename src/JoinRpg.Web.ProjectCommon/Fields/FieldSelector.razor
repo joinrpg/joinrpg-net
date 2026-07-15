@@ -1,32 +1,26 @@
 @inject IProjectFieldsClient fieldsClient
 
-@if (_items is null)
-{
-    <JoinLoadingMessage />
-}
-else
-{
-    <TypedSelector TKey="ProjectFieldIdentification"
-        SelectedValues="@SelectedFieldIds"
-        SelectedValuesChanged="@SelectedFieldIdsChanged"
-        PossibleValues="_items"
-        Multiple="true" />
-}
+<TypedSelector TKey="ProjectFieldIdentification" TItem="ProjectFieldDto"
+    Items="_items"
+    KeySelector="@(f => f.FieldId)"
+    ToListItem="@(f => TypedSelectList.CreateItem(
+        Value: f.FieldId,
+        Text: f.Name,
+        Subtext: f.BoundTo == FieldBoundTo.Character ? "Персонаж" : "Заявка"))"
+    SelectedValues="SelectedFieldIds"
+    SelectedValuesChanged="SelectedFieldIdsChanged"
+    Multiple="true" />
 
 @code {
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
     [Parameter] public ProjectFieldIdentification[] SelectedFieldIds { get; set; } = [];
     [Parameter] public EventCallback<ProjectFieldIdentification[]> SelectedFieldIdsChanged { get; set; }
 
-    private TypedSelectListItem<ProjectFieldIdentification>[]? _items;
+    private ProjectFieldDto[]? _items;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        var fields = await fieldsClient.GetProjectFields(ProjectId);
-        _items = [.. fields.Select(f => TypedSelectList.CreateItem(
-            Value: f.FieldId,
-            Text: f.Name,
-            Subtext: f.BoundTo == FieldBoundTo.Character ? "Персонаж" : "Заявка"))];
+        _items = [.. await fieldsClient.GetProjectFields(ProjectId)];
     }
 }

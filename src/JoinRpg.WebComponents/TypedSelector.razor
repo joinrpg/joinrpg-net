@@ -1,66 +1,101 @@
 @using System.Globalization
 @typeparam TKey where TKey : notnull, ISpanParsable<TKey>
+@typeparam TItem
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<select class="selectpicker"
-        data-live-search="@(PossibleValues.Length > 10 ? "true" : "false")"
-        data-live-search-normalize="true"
-        data-size="10"
-        data-none-selected-text="@EmptyText"
-        name="@Name"
-        multiple="@Multiple"
-        @ref="selectRef"
-        @onchange="OnSelectionChangedAsync"
-        >
-  @if (AllowEmpty)
-  {
-    <option value="" selected="@(SelectedValues.Length == 0)">@EmptyText</option>
-  }
-  @foreach (var val in PossibleValues)
-  {
-    var selected = SelectedValues.Contains(val.Value);
-    <option
-            data-tokens="@($"{val.Text} {val.ExtraSearch}")"
-            data-subtext="@(val.Subtext)"
-            value="@val.Value"
-            selected="@selected">@val.Text</option>
-  }
-</select>
+@if (Items is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    <select class="selectpicker"
+            data-live-search="@(Items.Length > 10 ? "true" : "false")"
+            data-live-search-normalize="true"
+            data-size="10"
+            data-none-selected-text="@EmptyText"
+            name="@Name"
+            multiple="@Multiple"
+            @ref="selectRef"
+            @onchange="OnSelectionChangedAsync"
+            >
+      @if (AllowEmpty)
+      {
+        <option value="" selected="@(SelectedValues.Length == 0)">@EmptyText</option>
+      }
+      @foreach (var item in Items)
+      {
+        var key = KeySelector(item);
+        var val = ToListItem(item);
+        var selected = SelectedValues.Contains(key);
+        <option
+                data-tokens="@($"{val.Text} {val.ExtraSearch}")"
+                data-subtext="@(val.Subtext)"
+                value="@key"
+                selected="@selected">@val.Text</option>
+      }
+    </select>
+}
 
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
+    [Parameter] [EditorRequired] public TItem[]? Items { get; set; }
+    [Parameter] [EditorRequired] public Func<TItem, TKey> KeySelector { get; set; } = null!;
+    [Parameter] [EditorRequired] public Func<TItem, TypedSelectListItem<TKey>> ToListItem { get; set; } = null!;
     [Parameter] public TKey[] SelectedValues { get; set; } = [];
     [Parameter] public EventCallback<TKey[]> SelectedValuesChanged { get; set; }
-    [Parameter] public TypedSelectListItem<TKey>[] PossibleValues { get; set; } = null!;
+    [Parameter] public EventCallback<TItem[]> SelectedItemsChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = false;
     [Parameter] public bool AllowEmpty { get; set; } = false;
     [Parameter] public string EmptyText { get; set; } = "(нет)";
 
     private ElementReference selectRef;
-    private IJSObjectReference module = null!;
+    private IJSObjectReference? module;
+    private bool selectInitialized;
 
     private async Task OnSelectionChangedAsync(ChangeEventArgs eventArgs)
     {
-      var values = await module.InvokeAsync<List<string>>("getSelectedValues", selectRef);
-      var selected = values
+      var values = await module!.InvokeAsync<List<string>>("getSelectedValues", selectRef);
+      var selectedKeys = values
           .Where(v => !string.IsNullOrEmpty(v))
           .Select(v => TKey.Parse(v, CultureInfo.InvariantCulture))
           .ToArray();
-      await SelectedValuesChanged.InvokeAsync(selected);
+      await SelectedValuesChanged.InvokeAsync(selectedKeys);
+      if (SelectedItemsChanged.HasDelegate)
+      {
+        await SelectedItemsChanged.InvokeAsync([.. Items!.Where(i => selectedKeys.Contains(KeySelector(i)))]);
+      }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-      if (firstRender)
+      if (firstRender && RendererInfo.IsInteractive)
       {
+        // Импорт JS-модуля не зависит от Items — запускаем сразу, параллельно с загрузкой данных снаружи.
+        // RendererInfo.IsInteractive исключает вызов во время серверного prerender-прохода (JS interop там недоступен).
         module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.WebComponents/component-interop.js");
-        await module.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues.Select(v => v.ToString()).ToArray());
+      }
+
+      if (module is null)
+      {
+        return; // Prerender-проход: JS-модуль ещё не импортирован, инициализировать select нечем.
+      }
+
+      if (Items is null)
+      {
+        return; // <select> ещё не отрендерен — инициализировать нечего.
+      }
+
+      if (!selectInitialized)
+      {
+        await module!.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues.Select(v => v.ToString()).ToArray());
+        selectInitialized = true;
       }
       else
       {
-        await module.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
+        await module!.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
       }
     }
 

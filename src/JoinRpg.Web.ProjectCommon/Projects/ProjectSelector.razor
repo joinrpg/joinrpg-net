@@ -1,20 +1,17 @@
 @using System.Linq.Expressions
 @inject IProjectListClient client
 
-@if (items is null)
-{
-    <JoinLoadingMessage />
-}
-else
-{
-    <IntSelector
+<TypedSelector TKey="ProjectIdentification" TItem="ProjectLinkViewModel"
     Name="@Name"
+    Items="items"
+    KeySelector="@(i => i.ProjectId)"
+    ToListItem="@(i => TypedSelectList.CreateItem(
+        Value: i.ProjectId,
+        Text: i.ProjectName))"
     SelectedValues="@Selected"
-    SelectedValuesChanged="@HandleSelectedChanged"
-    PossibleValues="items"
+    SelectedItemsChanged="@HandleSelectedChanged"
     Multiple="false"
     />
-}
 
 @code {
 
@@ -29,22 +26,13 @@ else
     [EditorRequired]
     [Parameter] public ProjectSelectionCriteria Criteria { get; set; }
 
-    private int[] Selected { get; set; } = new int[0];
-    private IntSelectListItem[] items = null!;
-    private List<ProjectLinkViewModel> sourceItems = null!;
+    private ProjectIdentification[] Selected { get; set; } = [];
+    private ProjectLinkViewModel[]? items;
     private FieldIdentifier? fieldIdentifier = null;
 
     protected override async Task OnInitializedAsync()
     {
-        sourceItems = await client.GetProjects(Criteria);
-        items = sourceItems
-          .Select(i =>
-            new IntSelectListItem(
-              Value: i.ProjectId.Value,
-              Text: i.ProjectName,
-              Subtext: "",
-              ExtraSearch: ""))
-           .ToArray();
+        items = [.. await client.GetProjects(Criteria)];
         if (ProjectIdExpression is not null)
         {
             fieldIdentifier = FieldIdentifier.Create(ProjectIdExpression);
@@ -57,20 +45,19 @@ else
         base.OnParametersSet();
         if (ProjectId is not null)
         {
-            Selected = [ ProjectId.Value ];
+            Selected = [ ProjectId ];
         }
         else if (Project is not null)
         {
-            Selected = [ Project.ProjectId.Value ];
+            Selected = [ Project.ProjectId ];
         }
     }
 
-    private async Task HandleSelectedChanged(int[] values)
+    private async Task HandleSelectedChanged(ProjectLinkViewModel[] values)
     {
-        int? id = values.Length == 0 ? null : values.Single();
-        var master = sourceItems.SingleOrDefault(m => m.ProjectId.Value == id);
-        await ProjectIdChanged.InvokeAsync(ProjectIdentification.FromOptional(id));
-        await ProjectChanged.InvokeAsync(master);
+        var selected = values.Length == 0 ? null : values.Single();
+        await ProjectIdChanged.InvokeAsync(selected?.ProjectId);
+        await ProjectChanged.InvokeAsync(selected);
         if (EditContext is not null && fieldIdentifier is not null)
         {
             EditContext.NotifyFieldChanged(fieldIdentifier.Value);
