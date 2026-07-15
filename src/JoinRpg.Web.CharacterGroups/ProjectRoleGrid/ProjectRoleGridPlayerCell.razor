@@ -1,0 +1,42 @@
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.ProjectCommon.Characters
+
+@* Содержимое ячейки «Игрок»: статус/ссылка на игрока, счётчик активных заявок,
+   контакты и кнопка «Заявиться». Общее для табличного и древовидного режимов. *@
+
+@if (Row.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
+{
+    <text>NPC</text>
+}
+else if (Row.Player.ApplyStatus.IsSlot)
+{
+    <text>шаблон</text>
+    @if (Row.ActiveClaimsCount > 0)
+    {
+        <text> (@ClaimsCountText)</text>
+    }
+}
+else if (Row.Player.Link is { } link)
+{
+    <UserLink Model="link" />
+}
+else if (Row.ActiveClaimsCount > 0)
+{
+    <text>@ClaimsCountText</text>
+}
+else
+{
+    <text>нет&nbsp;игрока</text>
+}
+@if (Row.Player.Contacts is not null)
+{
+    <text> (</text><UserContactsView Contacts="Row.Player.Contacts" /><text>)</text>
+}
+<text> </text>
+<ApplyForCharacterButton Model="Row.Player.ApplyStatus" />
+
+@code {
+    [Parameter, EditorRequired] public ProjectRoleGridCharacterRowViewModel Row { get; set; } = null!;
+
+    private string ClaimsCountText => CountHelper.DisplayCount(Row.ActiveClaimsCount, "заявка", "заявки", "заявок");
+}

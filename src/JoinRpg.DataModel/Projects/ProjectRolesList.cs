@@ -38,7 +38,7 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
 
     public ProjectRolesListVisibilityMode GroupsColumn { get; set; }
 
-    public bool ShowCharacterGroups { get; set; }
+    public RolesGridGroupsViewMode GroupsViewMode { get; set; }
 
     public ShowRolesFilter ShowRolesFilter { get; set; }
 

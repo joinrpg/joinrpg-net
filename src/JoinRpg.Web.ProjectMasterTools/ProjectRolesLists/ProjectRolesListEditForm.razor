@@ -25,8 +25,8 @@
         <FormRowFor For="@(() => _model.GroupsColumn)">
             <EnumRadioButtonGroup @bind-SelectedValue="_model.GroupsColumn" />
         </FormRowFor>
-        <FormRowFor For="@(() => _model.ShowCharacterGroups)">
-            <CheckboxInput @bind-Value="_model.ShowCharacterGroups" />
+        <FormRowFor For="@(() => _model.GroupsViewMode)">
+            <EnumRadioButtonGroup @bind-SelectedValue="_model.GroupsViewMode" />
         </FormRowFor>
         <FormRowFor For="@(() => _model.ShowRolesFilter)">
             <EnumRadioButtonGroup @bind-SelectedValue="_model.ShowRolesFilter" />

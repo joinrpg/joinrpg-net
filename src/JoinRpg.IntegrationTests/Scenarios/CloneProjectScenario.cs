@@ -85,7 +85,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
                 Fields: [extraFieldId],
                 ContactsColumn: ProjectRolesListVisibilityMode.None,
                 GroupsColumn: ProjectRolesListVisibilityMode.PublicOnly,
-                ShowCharacterGroups: true,
+                GroupsViewMode: RolesGridGroupsViewMode.Sections,
                 ShowRolesFilter: ShowRolesFilter.All));
 
             // Сетка B: от конкретной группы, без полей
@@ -97,7 +97,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
                 Fields: [],
                 ContactsColumn: ProjectRolesListVisibilityMode.None,
                 GroupsColumn: ProjectRolesListVisibilityMode.None,
-                ShowCharacterGroups: false,
+                GroupsViewMode: RolesGridGroupsViewMode.None,
                 ShowRolesFilter: ShowRolesFilter.VacantOnly));
         });
 
@@ -164,7 +164,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             cloneB.CharacterGroupId.ShouldNotBeNull();
             cloneB.Fields.Count.ShouldBe(0);
             cloneB.PublicMode.ShouldBeFalse();
-            cloneB.ShowCharacterGroups.ShouldBeFalse();
+            cloneB.GroupsViewMode.ShouldBe(RolesGridGroupsViewMode.None);
             cloneB.ShowRolesFilter.ShouldBe(ShowRolesFilter.VacantOnly);
         });
     }

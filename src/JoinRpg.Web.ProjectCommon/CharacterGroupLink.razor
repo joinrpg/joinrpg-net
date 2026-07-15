@@ -1,8 +1,8 @@
 ﻿@inject IUriLocator<CharacterGroupLinkSlimViewModel> linkLocator
-<a href="@TargetUri">@Model.Name</a>
+<a href="@TargetUri" class="@(Model.IsPublic ? "" : "world-object-hidden")">@Model.Name</a>
 
 @code {
-    // TODO Use IsPublic, IsActive
+    // TODO Use IsActive
     [Parameter] [EditorRequired]
     public CharacterGroupLinkSlimViewModel Model { get; set; } = null!;
 
