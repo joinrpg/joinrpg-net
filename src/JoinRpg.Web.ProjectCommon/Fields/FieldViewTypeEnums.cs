@@ -56,12 +56,6 @@ public static class ProjectFieldViewTypeHelper
     /// </summary>
     public static bool SupportsPricingOnField(this ProjectFieldViewType self)
         => ((ProjectFieldType)self).SupportsPricingOnField();
-
-    /// <summary>
-    /// Returns true if field has predefined values
-    /// </summary>
-    public static bool HasValuesList(this ProjectFieldViewType self)
-        => ((ProjectFieldType)self).HasValuesList();
 }
 
 public enum FieldBoundToViewModel

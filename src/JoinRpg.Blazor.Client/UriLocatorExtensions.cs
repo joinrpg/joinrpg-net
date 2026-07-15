@@ -8,7 +8,7 @@ public static class UriLocatorExtensions
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
-        ICharacterUriLocator, ICharacterGroupUriLocator
+        ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -53,6 +53,12 @@ public static class UriLocatorExtensions
 
         Uri ICharacterGroupUriLocator.GetAddGroupUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/addgroup", UriKind.Relative);
+
+        Uri IProjectFieldUriLocator.GetEditUri(ProjectFieldIdentification fieldId) =>
+            new($"/{fieldId.ProjectId.Value}/fields/Edit?projectFieldId={fieldId.ProjectFieldId}", UriKind.Relative);
+
+        Uri IProjectFieldUriLocator.GetCreateVariantUri(ProjectFieldIdentification fieldId) =>
+            new($"/{fieldId.ProjectId.Value}/fields/CreateValue?projectFieldId={fieldId.ProjectFieldId}", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
@@ -65,6 +71,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
             .AddSingleton<ICharacterUriLocator>(locator)
             .AddSingleton<ICharacterGroupUriLocator>(locator)
+            .AddSingleton<IProjectFieldUriLocator>(locator)
             ;
     }
 }

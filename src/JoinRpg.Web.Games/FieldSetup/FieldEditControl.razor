@@ -1,0 +1,69 @@
+@using JoinRpg.Web.ProjectCommon
+@inject IProjectFieldOperationsClient ProjectFieldOperationsClient
+@inject IProjectFieldUriLocator UriLocator
+@inject NavigationManager NavigationManager
+
+<JoinButtonGroup Size="SizeStyleEnum.Small">
+    @if (Item.IsActive)
+    {
+        <JoinButton Preset="ButtonPreset.Edit"
+                    Size="SizeStyleEnum.Small"
+                    Label=""
+                    Title="Изменить"
+                    Link="@UriLocator.GetEditUri(Item.Id).ToString()" />
+        @if (Item.HasValueList)
+        {
+            <JoinButton Preset="ButtonPreset.Add"
+                        Size="SizeStyleEnum.Small"
+                        Label=""
+                        Title="Добавить значение"
+                        Link="@UriLocator.GetCreateVariantUri(Item.Id).ToString()" />
+        }
+        <JoinButton Preset="ButtonPreset.Delete"
+                    Size="SizeStyleEnum.Small"
+                    Label=""
+                    Title="Удалить"
+                    AutoConfirm="true"
+                    AutoConfirmMessage="@($"Удалить поле «{Item.Name}»?")"
+                    OnClick="DeleteAsync" />
+    }
+    else
+    {
+        <JoinButton Preset="ButtonPreset.Restore"
+                    Size="SizeStyleEnum.Small"
+                    Label=""
+                    Title="Восстановить"
+                    Link="@UriLocator.GetEditUri(Item.Id).ToString()" />
+    }
+</JoinButtonGroup>
+
+@if (Item.IsActive)
+{
+    <JoinMoveControl TItem="GameFieldListItemViewModel"
+                      Items="AllItems"
+                      Self="Item"
+                      SkipGroup="true"
+                      AutoRefresh="true"
+                      />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public GameFieldListItemViewModel Item { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public IList<GameFieldListItemViewModel> AllItems { get; set; } = null!;
+
+    private async Task DeleteAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            await ProjectFieldOperationsClient.Delete(Item.Id);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+}

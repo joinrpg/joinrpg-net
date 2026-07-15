@@ -4,6 +4,7 @@ using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
+using JoinRpg.Web.Games.FieldSetup;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
@@ -58,6 +59,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectRoleGridClient, ProjectRoleGridClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
                 .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
-                .AddHttpClient<IMoveClient, MoveClientImpl>();
+                .AddHttpClient<IMoveClient, MoveClientImpl>()
+                .AddHttpClient<IProjectFieldOperationsClient, ProjectFieldOperationsClientImpl>();
     }
 }

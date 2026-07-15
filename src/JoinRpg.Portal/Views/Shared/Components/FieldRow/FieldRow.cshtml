@@ -136,40 +136,10 @@
         <td>
             @if (item.CanEditFields)
             {
-            <div class="btn-group btn-group-sm" style="display: inline-block">
-                @if (item.IsActive)
-                    {
-                <a title="Изменить" href="@Url.Action("Edit", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
-                   class="btn btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
-                   @if (item.FieldViewType.HasValuesList())
-                   {
-                        <a title="Добавить значение" href="@Url.Action("CreateValue", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
-                           class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i></a>
-                   }
-                <a title="Удалить"
-                   data-toggle="modal"
-                   data-target="#deleteEntityModal"
-                   data-element="@item.Id.ProjectFieldId"
-                   data-action-url="@Url.Action("Delete", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
-                   class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
-                    }
-                    else
-                    {
-                <a title="Восстановить" href="@Url.Action("Edit", "GameField", new { projectFieldId = item.Id.ProjectFieldId, projectId = item.Id.ProjectId.Value })"
-                   class="btn btn-primary"><i class="glyphicon glyphicon-heart"></i></a>
-                    }
-            </div>
-            }
-        </td>
-        <td>
-            @if (item.CanEditFields)
-            {
-            <component type="typeof(JoinRpg.WebComponents.JoinMoveControl<JoinRpg.Web.Games.FieldSetup.GameFieldListItemViewModel>)"
+            <component type="typeof(JoinRpg.Web.Games.FieldSetup.FieldEditControl)"
                        render-mode="WebAssemblyPrerendered"
-                       Param-Items="Model.AllItems"
-                       Param-Self="item"
-                       Param-SkipGroup="true"
-                       Param-AutoRefresh="true" />
+                       Param-Item="@item"
+                       Param-AllItems="@Model.AllItems" />
             }
         </td>
     </tr>

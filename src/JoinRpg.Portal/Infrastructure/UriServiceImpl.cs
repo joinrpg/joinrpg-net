@@ -24,6 +24,7 @@ internal class UriServiceImpl(
     IProjectUriLocator,
     ICharacterUriLocator,
     ICharacterGroupUriLocator,
+    IProjectFieldUriLocator,
     IUriLocator<PlotFolderIdentification>,
     IUriLocator<ClaimIdentification>,
     IUriLocator<ClaimCommentIdentification>,
@@ -218,6 +219,12 @@ internal class UriServiceImpl(
     Uri ICharacterGroupUriLocator.GetAddGroupUri(CharacterGroupIdentification id) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("AddGroup", "GameGroups",
             new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
+    Uri IProjectFieldUriLocator.GetEditUri(ProjectFieldIdentification fieldId) => GetUri(fieldId);
+
+    Uri IProjectFieldUriLocator.GetCreateVariantUri(ProjectFieldIdentification fieldId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("CreateValue", "GameField",
+            new { ProjectId = fieldId.ProjectId.Value, fieldId.ProjectFieldId }));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {
