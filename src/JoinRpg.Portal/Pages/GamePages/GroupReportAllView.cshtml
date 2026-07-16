@@ -1,0 +1,9 @@
+@page "/{projectId:int}/roles/all/report"
+@using JoinRpg.Web.CharacterGroups.GroupReport
+@model JoinRpg.Portal.Pages.GamePages.GroupReportPageModel
+@{
+    ViewData["Title"] = "Сводный отчет — " + Model.Details.Name;
+}
+
+@Html.DisplayFor(model => model.Details)
+@(await Html.RenderComponentAsync<GroupReport>(RenderMode.WebAssemblyPrerendered, new { Model.GroupId }))

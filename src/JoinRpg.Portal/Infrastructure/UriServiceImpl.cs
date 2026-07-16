@@ -196,6 +196,10 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ListForGroup", "ClaimList",
             new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
 
+    Uri ICharacterGroupUriLocator.GetDiscussingClaimListUri(CharacterGroupIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("DiscussingForGroup", "ClaimList",
+            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+
     Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ByGroup", "CharacterList",
             new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));

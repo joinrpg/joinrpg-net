@@ -1,5 +1,6 @@
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.CharacterGroups.GroupReport;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
@@ -43,6 +44,7 @@ public static class Registration
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IProjectRolesListClient, ProjectRolesListViewService>()
         .AddScoped<IProjectRoleGridClient, CharacterGroups.ProjectRoleGridViewService>()
+        .AddScoped<IGroupReportClient, CharacterGroups.GroupReportViewService>()
         .AddScoped<IProjectFieldsClient, Fields.ProjectFieldsViewService>()
         .AddScoped<IMasterClient, ProjectMasterViewService>()
         .AddTransient<IProjectListClient, ProjectListViewService>()

@@ -69,6 +69,8 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
 
     [Theory]
     [InlineData("{projectId:int}/roleslist/{id:int}", "/GamePages/ProjectRoleListView")]
+    [InlineData("{projectId:int}/roles/{characterGroupId:int}/report", "/GamePages/GroupReportView")]
+    [InlineData("{projectId:int}/roles/all/report", "/GamePages/GroupReportAllView")]
     public void CanonicalRouteResolvesToPage(string canonicalRoute, string expectedPage)
     {
         var endpointSource = _services.GetRequiredService<EndpointDataSource>();

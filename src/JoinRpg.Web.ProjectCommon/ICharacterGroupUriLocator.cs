@@ -3,6 +3,7 @@ namespace JoinRpg.Web.ProjectCommon;
 public interface ICharacterGroupUriLocator
 {
     Uri GetClaimListUri(CharacterGroupIdentification groupId);
+    Uri GetDiscussingClaimListUri(CharacterGroupIdentification groupId);
     Uri GetCharacterListUri(CharacterGroupIdentification groupId);
     Uri GetReportUri(CharacterGroupIdentification groupId);
     Uri GetSubscribeUri(CharacterGroupIdentification groupId);

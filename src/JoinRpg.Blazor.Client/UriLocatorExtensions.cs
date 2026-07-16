@@ -36,6 +36,9 @@ public static class UriLocatorExtensions
         Uri ICharacterGroupUriLocator.GetClaimListUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/claims/roles/{id.CharacterGroupId}", UriKind.Relative);
 
+        Uri ICharacterGroupUriLocator.GetDiscussingClaimListUri(CharacterGroupIdentification id) =>
+            new($"/{id.ProjectId.Value}/claims/DiscussingForGroup?characterGroupId={id.CharacterGroupId}", UriKind.Relative);
+
         Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/characters/bygroup/{id.CharacterGroupId}", UriKind.Relative);
 
