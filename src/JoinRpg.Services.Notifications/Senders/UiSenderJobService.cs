@@ -4,6 +4,8 @@ internal class UiSenderJobService : ISenderJob
 {
     public static NotificationChannel Channel => NotificationChannel.ShowInUi;
 
+    public NotificationChannel InstanceChannel => Channel;
+
     public bool Enabled => true;
 
     public Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)

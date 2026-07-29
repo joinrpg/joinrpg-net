@@ -1,0 +1,60 @@
+@using JoinRpg.Web.AdminTools.Jobs
+@inject INotificationDashboardClient Client
+@inject ILogger<NotificationDashboard> logger
+
+@if (isError)
+{
+    <JoinErrorMessage />
+    return;
+}
+
+@if (channels is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<JoinBorderedTable Items="channels" Context="channel">
+    <HeadContent>
+        <tr>
+            <th>Канал</th>
+            <th>В очереди</th>
+            <th>Логи</th>
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        <tr>
+            <td><NotificationChannelName Channel="channel.Channel" /></td>
+            <td>@channel.QueueLength</td>
+            <td>
+                @if (channel.Error is not null)
+                {
+                    <JoinBadge Variation="VariationStyleEnum.Danger">channel.Error</JoinBadge>
+                }
+                else
+                {
+                    <JobLogsLink JobName="@channel.JobFullName" />
+                }
+            </td>
+        </tr>
+    </ItemTemplate>
+</JoinBorderedTable>
+
+@code {
+    private bool isError;
+    private NotificationChannelStatusViewModel[]? channels;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            channels = await Client.GetStatus();
+        }
+        catch (Exception ex)
+        {
+            isError = true;
+            logger.LogError(ex, "Ошибка при загрузке статуса уведомлений");
+        }
+        await base.OnInitializedAsync();
+    }
+}

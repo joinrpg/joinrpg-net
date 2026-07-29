@@ -1,5 +1,6 @@
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.AdminTools.Notifications;
 using JoinRpg.Web.CharacterGroups.GroupReport;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
@@ -59,6 +60,7 @@ public static class Registration
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IMoveClient, MoveViewService>()
+        .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()
 
         ;
     }

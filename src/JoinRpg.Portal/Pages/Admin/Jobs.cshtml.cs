@@ -10,9 +10,7 @@ public class JobsModel(IEnumerable<IJobRunner> dailyJobs) : PageModel
 {
     public void OnGet()
     {
-        string[] jobNames = [.. dailyJobs.Select(j => j.Name)];
-
-        Jobs = [.. jobNames.Select(n => new JobInfoViewModel(n))];
+        Jobs = [.. dailyJobs.Select(j => new JobInfoViewModel(j.Name, j.FullName))];
     }
 
     public async Task<IActionResult> OnPost(string name, [FromServices] IServiceProvider serviceProvider, CancellationToken cancellationToken)
@@ -29,4 +27,4 @@ public class JobsModel(IEnumerable<IJobRunner> dailyJobs) : PageModel
 
 }
 
-public record class JobInfoViewModel(string Name);
+public record class JobInfoViewModel(string Name, string FullName);

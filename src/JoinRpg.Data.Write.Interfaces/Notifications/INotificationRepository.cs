@@ -30,6 +30,11 @@ public interface INotificationRepository
     Task MarkEnqueued(NotificationId id, NotificationChannel channel, DateTimeOffset sendAfter, int? attempts = null);
 
     Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination);
+
+    /// <summary>
+    /// Returns the number of queued messages per channel.
+    /// </summary>
+    Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths();
 }
 
 public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);

@@ -185,6 +185,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         public Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(
             UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination)
             => Task.FromResult<IReadOnlyCollection<NotificationHistoryDto>>([]);
+
+        public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
+            => Task.FromResult<IReadOnlyDictionary<NotificationChannel, int>>(new Dictionary<NotificationChannel, int>());
     }
 
     private sealed class NullNotificationService : INotificationService

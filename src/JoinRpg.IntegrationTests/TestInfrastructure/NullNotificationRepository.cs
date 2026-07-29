@@ -27,4 +27,7 @@ internal class NullNotificationRepository : INotificationRepository
         NotificationChannel notificationChannel,
         KeySetPagination pagination)
         => Task.FromResult<IReadOnlyCollection<NotificationHistoryDto>>([]);
+
+    public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
+        => Task.FromResult<IReadOnlyDictionary<NotificationChannel, int>>(new Dictionary<NotificationChannel, int>());
 }
