@@ -1,0 +1,118 @@
+@using JoinRpg.Web.ProjectCommon
+@inject IGroupReportClient Client
+@inject ICharacterGroupUriLocator UriLocator
+@inject NavigationManager NavigationManager
+@inject PersistentComponentState ApplicationState
+@implements IDisposable
+
+@if (_result is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    <div style="margin-bottom: 1em">
+        <SingleCharacterGroupSelector ProjectId="@GroupId.ProjectId.Value" SelectedGroupId="@GroupId" SelectedGroupIdChanged="OnGroupChanged" />
+    </div>
+    <table class="table table-bordered">
+        <tr>
+            <th>Группа</th>
+            <th>Всего прописано</th>
+            <th>Размер ролевки</th>
+            <th>NPC</th>
+            <th>Занято</th>
+            <th>Свободно</th>
+            @if (_result.CheckinModuleEnabled)
+            {
+                <th>В игре</th>
+            }
+            <th>Всего заявок</th>
+            <th>Принято</th>
+            @if (_result.CheckinModuleEnabled)
+            {
+                <th>Заехало</th>
+            }
+            <th>Обсуждается</th>
+        </tr>
+        @foreach (var row in _result.Rows)
+        {
+            <tr>
+                <td>
+                    @if (IsTotalRow(row))
+                    {
+                        <b>итого</b>
+                    }
+                    else
+                    {
+                        <span class="@(row.Group.IsPublic ? "" : "world-object-hidden")">
+                            <CharacterGroupLink Model="row.Group" />
+                        </span>
+                    }
+                    @if (row.Unlimited)
+                    {
+                        <span title="Разрешены неограниченные заявки"> + &#8734;</span>
+                    }
+                </td>
+                <td style="text-align: right">
+                        <a href="@UriLocator.GetCharacterListUri(row.Group.CharacterGroupId)">@row.TotalCharacters</a>
+                </td>
+                <td style="text-align: right">@row.TotalSlots</td>
+                <td style="text-align: right">@row.TotalNpcCharacters</td>
+                <td style="text-align: right">@row.TotalCharactersWithPlayers</td>
+                <td style="text-align: right">@row.TotalFreeSlots</td>
+                @if (_result.CheckinModuleEnabled)
+                {
+                    <td style="text-align: right">@row.TotalInGameCharacters</td>
+                }
+                <td style="text-align: right">
+                        <a href="@UriLocator.GetClaimListUri(row.Group.CharacterGroupId)">@row.TotalActiveClaims</a>
+                </td>
+                <td style="text-align: right">@row.TotalAcceptedClaims</td>
+                @if (_result.CheckinModuleEnabled)
+                {
+                    <td style="text-align: right">@row.TotalCheckedInClaims</td>
+                }
+                <td style="text-align: right">
+                        <a href="@UriLocator.GetDiscussingClaimListUri(row.Group.CharacterGroupId)">@row.TotalDiscussedClaims</a>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    [Parameter, EditorRequired] public CharacterGroupIdentification GroupId { get; set; } = null!;
+
+    private GroupReportViewModel? _result;
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
+
+        if (!ApplicationState.TryTakeFromJson<GroupReportViewModel>(nameof(GroupReport), out var result))
+        {
+            result = await Client.GetReport(GroupId);
+        }
+        _result = result;
+    }
+
+    private bool IsTotalRow(GroupReportRowViewModel row) => row.Group.CharacterGroupId == _result!.GroupId;
+
+    private Task PersistData()
+    {
+        ApplicationState.PersistAsJson(nameof(GroupReport), _result);
+        return Task.CompletedTask;
+    }
+
+    private void OnGroupChanged(CharacterGroupIdentification? newGroupId)
+    {
+        if (newGroupId is null)
+        {
+            return;
+        }
+        NavigationManager.NavigateTo($"/{GroupId.ProjectId.Value}/roles/{newGroupId.CharacterGroupId}/report", forceLoad: true);
+    }
+
+    public void Dispose() => _persistingSubscription.Dispose();
+}

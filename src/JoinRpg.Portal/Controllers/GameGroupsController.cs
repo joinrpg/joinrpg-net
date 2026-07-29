@@ -54,28 +54,6 @@ public class GameGroupsController(
           });
     }
 
-    [MasterAuthorize]
-    [HttpGet("~/{projectId}/roles/{characterGroupId:int}/report")]
-    [HttpGet("~/{projectId}/roles/all/report")]
-    public async Task<ActionResult> Report(int projectId, int? characterGroupId)
-    {
-        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
-
-        if (field == null)
-        {
-            return NotFound();
-        }
-
-        return View(
-          new GameRolesReportViewModel
-          {
-              ProjectId = field.Project.ProjectId,
-              Data = CharacterGroupReportViewModel.GetGroups(field),
-              Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Report),
-              CheckinModuleEnabled = field.Project.Details.EnableCheckInModule,
-          });
-    }
-
     [HttpGet("~/{projectId}/roles/hot")]
     [AllowAnonymous]
     public Task<ActionResult> Hot(int projectId) => Hot(projectId, null);
