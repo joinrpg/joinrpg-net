@@ -61,7 +61,7 @@
         items.RemoveAt(idx);
         try
         {
-            await Client.Remove(item.RolesList.ProjectRolesListId);
+            await Client.Remove(item.RolesList.ProjectRolesListId!);
         }
         catch (Exception exc)
         {

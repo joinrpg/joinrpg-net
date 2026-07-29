@@ -12,10 +12,12 @@ internal class ProjectRolesListService(
 {
     public async Task<ProjectRolesList> CreateAsync(ProjectRolesList model)
     {
-        logger.LogInformation("Создаём сетку ролей {Name} для проекта {ProjectId}", model.Name, model.ProjectRolesListId.ProjectId);
+        // На пути создания/обновления настройка всегда сохранённая (id задан, хотя бы временный).
+        var modelId = model.ProjectRolesListId ?? throw new InvalidOperationException("Нельзя сохранить транзиентную сетку ролей без id");
+        logger.LogInformation("Создаём сетку ролей {Name} для проекта {ProjectId}", model.Name, modelId.ProjectId);
 
         var entity = await projectPropsService.ChangeProjectProperties(
-            model.ProjectRolesListId.ProjectId,
+            modelId.ProjectId,
             Permission.CanManageClaims,
             ProjectActiveRequirement.MustBeActive,
             model,
@@ -38,16 +40,17 @@ internal class ProjectRolesListService(
 
     public async Task<ProjectRolesList> UpdateAsync(ProjectRolesList model)
     {
-        logger.LogInformation("Обновляем сетку ролей {ProjectRolesListId} (проект {ProjectId})", model.ProjectRolesListId.ProjectRolesListId, model.ProjectRolesListId.ProjectId);
+        var modelId = model.ProjectRolesListId ?? throw new InvalidOperationException("Нельзя сохранить транзиентную сетку ролей без id");
+        logger.LogInformation("Обновляем сетку ролей {ProjectRolesListId} (проект {ProjectId})", modelId.ProjectRolesListId, modelId.ProjectId);
 
         var entity = await projectPropsService.ChangeProjectProperties(
-            model.ProjectRolesListId.ProjectId,
+            modelId.ProjectId,
             Permission.CanManageClaims,
             ProjectActiveRequirement.MustBeActive,
             model,
             ctx =>
             {
-                var (entity, _) = ctx.GetProjectRolesListForChange(ctx.Request.ProjectRolesListId);
+                var (entity, _) = ctx.GetProjectRolesListForChange(modelId);
                 ValidateGroupsViewMode(ctx.Request, ctx.ProjectInfo);
                 UpdateEntity(entity, ctx.Request);
                 return entity;
@@ -89,7 +92,7 @@ internal class ProjectRolesListService(
     {
         return new DataModel.ProjectRolesList
         {
-            ProjectId = model.ProjectRolesListId.ProjectId.Value,
+            ProjectId = model.ProjectRolesListId!.ProjectId.Value,
         };
     }
 

@@ -1,71 +1,11 @@
 @using JoinRpg.Web.Models
-@using JoinRpg.Web.CharacterGroups.GroupEditMenu
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
 @model GameRolesViewModel
 
-@if (!Model.Data.Any())
-{
-    <p>Группа не существует, удалена или скрыта.</p>
-    return;
-}
-
 @{
-    ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.Single(g => g.DeepLevel == 0).Name;
+    ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.RootGroupName;
     ViewData["ShowEditControls"] = Model.ShowEditControls;
 }
 @Html.DisplayFor(model => model.Details)
-@foreach (var item in Model.Data)
-{
-    var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
-    <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
-            @{
-                var groupLink = Html.ActionLink(item.Name, "Details", new {Model.ProjectId, item.CharacterGroupId}, null);
-                var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
-            }
-            <div>@switch (item.DeepLevel)
-                 {
-                     case 2:
-                         <span class="h3" title="@pathString">@groupLink</span>
-                         break;
-                     case 1:
-                         <span class="h2" title="@pathString">@groupLink</span>
-                         break;
-                     case 0:
-                         break;
-                     default:
-                         <span class="h4" title="@pathString">@groupLink</span>
-                         break;
-                 }
-            @if (item.DeepLevel != 0 && Model.HasMasterAccess)
-            {
-                <component type="typeof(GroupEditMenu)" render-mode="Static"
-                           param-GroupId="@(new CharacterGroupIdentification(new ProjectIdentification(item.ProjectId), item.CharacterGroupId))"
-                           param-GroupType="@item.GroupType"
-                           param-ShowEditControls="@Model.ShowEditControls" />
-            }
-            @if (item.IsSpecial)
-            {
-                <span class="label label-default" title="Эта группа автоматически заполняется в зависимости от полей персонажа. @item.BoundExpression">Спецгруппа</span>
-            }
-            </div>
-
-    @if (!item.FirstCopy)
-    {
-        <span>см. выше</span>
-    }
-
-            @if (item.FirstCopy)
-            {
-            <div>
-                @item.Description
-                <ul>
-                    @foreach (var character in item.ActiveCharacters)
-                    {
-                        <li>
-                            @await Html.PartialAsync("_CharacterPartial", character)
-                        </li>
-                    }
-                </ul>
-            </div>
-            }
-        </div>
-    }
+@* Тело сетки строит остров ProjectRoleGrid в классическом режиме (транзиентная настройка без id). *@
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { ClassicRootGroupId = (CharacterGroupIdentification?)Model.RootGroupId }))

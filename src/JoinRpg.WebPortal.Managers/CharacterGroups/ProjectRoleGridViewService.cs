@@ -1,11 +1,13 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.ProjectCommon;
+using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 
@@ -20,7 +22,20 @@ internal class ProjectRoleGridViewService(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
         var config = projectInfo.GetRolesListById(id);
+        return await BuildResult(projectInfo, config);
+    }
 
+    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(CharacterGroupIdentification groupId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
+        var groupName = projectInfo.GetGroupById(groupId.CharacterGroupId).Name;
+        // Транзиентная настройка «на лету»: режим дерева + колонка описания, публичная (как старая Index).
+        var config = ClassicRolesGridDefaults.Build(groupId, groupName, projectInfo.CharacterDescriptionField?.Id);
+        return await BuildResult(projectInfo, config);
+    }
+
+    private async Task<ProjectRoleGridViewResult> BuildResult(ProjectInfo projectInfo, ProjectRolesList config)
+    {
         // Доступ зависит от данных (PublicMode), поэтому проверяется здесь, а не атрибутом.
         // Возвращаем результат «нет доступа» (а не исключение), чтобы остров показал панель.
         if (!config.PublicMode && !projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))

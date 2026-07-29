@@ -25,7 +25,9 @@ public enum RolesGridGroupsViewMode
 /// <summary>
 /// Это класс соответствует настройке страницы «сетки ролей»
 /// </summary>
-/// <param name="ProjectRolesListId"></param>
+/// <param name="ProjectRolesListId">Идентификатор сохранённой настройки. <c>null</c> — транзиентная
+/// настройка, построенная «на лету» и не сохранённая в БД (например, классическая сетка
+/// <c>GameGroups/Index</c>, см. <see cref="ClassicRolesGridDefaults"/>)</param>
 /// <param name="Name">Как она называется в меню</param>
 /// <param name="CharacterGroupId">От какой группы она строится. Если null, то строится от верха, не используя спецгруппы</param>
 /// <param name="PublicMode">Доступна ли эта сетка ролей публично, или только через вводные</param>
@@ -35,7 +37,7 @@ public enum RolesGridGroupsViewMode
 /// <param name="GroupsViewMode">Как показывать группы: не показывать, секциями в таблице, деревом</param>
 /// <param name="ShowRolesFilter">Какие роли показывать: все, только вакантные, только горячие</param>
 public record class ProjectRolesList(
-    ProjectRolesListIdentification ProjectRolesListId,
+    ProjectRolesListIdentification? ProjectRolesListId,
     string Name,
     CharacterGroupIdentification? CharacterGroupId,
     bool PublicMode,

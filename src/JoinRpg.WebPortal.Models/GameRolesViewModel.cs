@@ -1,17 +1,18 @@
 using JoinRpg.Web.Models.CharacterGroups;
-using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models;
 
 public class GameRolesViewModel
 {
-    public int ProjectId { get; set; }
 
-    public string ProjectName { get; set; }
+    public required string ProjectName { get; set; }
 
-    public bool ShowEditControls { get; set; }
-    public bool HasMasterAccess { get; set; }
-    public IEnumerable<CharacterGroupListItemViewModel> Data { get; set; }
+    public required bool ShowEditControls { get; set; }
 
-    public CharacterGroupDetailsViewModel Details { get; set; }
+    /// <summary>Корневая группа сетки — передаётся острову ProjectRoleGrid как классическая сетка.</summary>
+    public required CharacterGroupIdentification RootGroupId { get; set; }
+
+    public required string RootGroupName { get; set; }
+
+    public required CharacterGroupDetailsViewModel Details { get; set; }
 }

@@ -71,7 +71,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 GroupsViewMode: RolesGridGroupsViewMode.Sections,
                 ShowRolesFilter: ShowRolesFilter.All));
 
-            return (created.ProjectRolesListId, names);
+            return (created.ProjectRolesListId!, names);
         });
 
         var apiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}";
@@ -120,7 +120,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 GroupsColumn: ProjectRolesListVisibilityMode.None,
                 GroupsViewMode: RolesGridGroupsViewMode.Sections,
                 ShowRolesFilter: ShowRolesFilter.All));
-            return created.ProjectRolesListId;
+            return created.ProjectRolesListId!;
         });
 
         var privateApiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={privateRolesListId.ProjectRolesListId}";

@@ -717,4 +717,54 @@ public class ProjectRoleGridViewModelBuilderTests
         var characterRow = result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ShouldHaveSingleItem();
         characterRow.ActiveClaimsCount.ShouldBe(1);
     }
+
+    // --- Классическая (транзиентная) сетка ролей: GameGroups/Index ---
+
+    [Fact]
+    public void ClassicRolesGridDefaults_Build_ProducesTransientPublicTreeConfig()
+    {
+        var groupId = _mock.ProjectInfo.RootCharacterGroupId;
+        var descriptionField = new ProjectFieldIdentification(_mock.ProjectInfo.ProjectId, 42);
+
+        var config = ClassicRolesGridDefaults.Build(groupId, "Все роли", descriptionField);
+
+        config.ProjectRolesListId.ShouldBeNull(); // транзиентная сетка не имеет id
+        config.Name.ShouldBe("Все роли");
+        config.CharacterGroupId.ShouldBe(groupId);
+        config.PublicMode.ShouldBeTrue();
+        config.GroupsViewMode.ShouldBe(RolesGridGroupsViewMode.Tree);
+        config.ShowRolesFilter.ShouldBe(ShowRolesFilter.All);
+        config.ContactsColumn.ShouldBe(ProjectRolesListVisibilityMode.None);
+        config.GroupsColumn.ShouldBe(ProjectRolesListVisibilityMode.None);
+        config.Fields.ShouldHaveSingleItem().ShouldBe(descriptionField);
+    }
+
+    [Fact]
+    public void ClassicRolesGridDefaults_Build_WithoutDescriptionField_HasNoColumns()
+    {
+        var config = ClassicRolesGridDefaults.Build(
+            _mock.ProjectInfo.RootCharacterGroupId, "Все роли", descriptionField: null);
+
+        config.Fields.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Build_TransientConfigWithoutId_RolesListIdIsNull()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        var config = new ProjectRolesList(
+            ProjectRolesListId: null,
+            "Все роли",
+            CharacterGroupId: _mock.ProjectInfo.RootCharacterGroupId,
+            PublicMode: true,
+            Fields: [],
+            ContactsColumn: ProjectRolesListVisibilityMode.None,
+            GroupsColumn: ProjectRolesListVisibilityMode.None,
+            GroupsViewMode: RolesGridGroupsViewMode.Tree,
+            ShowRolesFilter: ShowRolesFilter.All);
+
+        var result = BuildGrid(config, [character]);
+
+        result.RolesListId.ShouldBeNull();
+    }
 }
