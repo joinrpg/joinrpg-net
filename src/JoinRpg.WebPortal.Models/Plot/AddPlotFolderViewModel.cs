@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.Plot;

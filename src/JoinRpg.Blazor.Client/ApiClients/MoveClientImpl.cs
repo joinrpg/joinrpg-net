@@ -1,4 +1,3 @@
-using JoinRpg.DomainTypes;
 using JoinRpg.WebComponents;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
@@ -15,7 +14,9 @@ internal class MoveClientImpl(
         try
         {
             if (!ProjectEntityIdParser.TryParseId(selfId, out var self))
+            {
                 throw new ArgumentException($"Cannot parse selfId: '{selfId}'");
+            }
 
             var wire = new WireMoveRequest(selfId, parentId, moveAfterId);
             await csrfTokenProvider.SetCsrfToken(httpClient);

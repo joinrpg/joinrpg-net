@@ -16,9 +16,13 @@ public class MoveRequestTryParseTests
         result.SelfId.ShouldBeOfType<ProjectFieldIdentification>();
         result.ParentId.ShouldBeOfType<ProjectIdentification>();
         if (moveAfterId is not null)
+        {
             result.MoveAfterId.ShouldBeOfType<ProjectFieldIdentification>();
+        }
         else
+        {
             result.MoveAfterId.ShouldBeNull();
+        }
     }
 
     [Theory]

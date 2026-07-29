@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace JoinRpg.Web.Models.CharacterGroups;
 
 public abstract class CharacterGroupViewModelBase : IProjectIdAware

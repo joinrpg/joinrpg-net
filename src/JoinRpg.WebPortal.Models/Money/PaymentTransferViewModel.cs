@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;

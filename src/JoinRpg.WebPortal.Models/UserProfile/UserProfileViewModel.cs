@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.ClaimList;
