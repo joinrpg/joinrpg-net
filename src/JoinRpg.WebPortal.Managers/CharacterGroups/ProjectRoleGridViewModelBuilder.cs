@@ -39,6 +39,7 @@ internal static class ProjectRoleGridViewModelBuilder
             Name: config.Name,
             GroupName: groupName,
             CanEditSettings: canEditSettings,
+            HasMasterAccess: canViewPrivate,
             HasGroupsColumn: hasGroupsColumn,
             FieldColumnNames: fieldColumnNames,
             Rows: rows,

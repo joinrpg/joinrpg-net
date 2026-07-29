@@ -31,6 +31,7 @@ public record ProjectRoleGridViewModel(
     string Name,
     string? GroupName,
     bool CanEditSettings,
+    bool HasMasterAccess,
     bool HasGroupsColumn,
     IReadOnlyList<string> FieldColumnNames,
     IReadOnlyList<ProjectRoleGridRowViewModel> Rows,
