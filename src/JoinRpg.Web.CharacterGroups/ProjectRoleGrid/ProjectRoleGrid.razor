@@ -25,6 +25,7 @@ else
         @* Medium = обычный размер, как у JoinButton «Настройки сетки» рядом. *@
         <GroupEditMenu GroupId="Model.RootGroupId"
                        GroupType="Model.RootGroupType"
+                       HasMasterAccess="Model.HasMasterAccess"
                        ShowEditControls="Model.CanEditSettings"
                        Size="SizeStyleEnum.Medium" />
         @if (Model.CanEditSettings)
@@ -50,6 +51,7 @@ else
                         </span>
                         <GroupEditMenu GroupId="groupHeader.Group.CharacterGroupId"
                                        GroupType="groupHeader.GroupType"
+                                       HasMasterAccess="Model.HasMasterAccess"
                                        ShowEditControls="Model.CanEditSettings" />
                         @if (groupHeader.IsSpecial)
                         {
@@ -159,6 +161,7 @@ else
                             <strong><CharacterGroupLink Model="groupHeader.Group" /></strong>
                             <GroupEditMenu GroupId="groupHeader.Group.CharacterGroupId"
                                           GroupType="groupHeader.GroupType"
+                                          HasMasterAccess="Model.HasMasterAccess"
                                           ShowEditControls="Model.CanEditSettings" />
                             @if (groupHeader.Description is { } description)
                             {
