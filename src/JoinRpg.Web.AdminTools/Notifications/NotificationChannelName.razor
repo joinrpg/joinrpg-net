@@ -1,0 +1,14 @@
+@ChannelLabel(Channel)
+
+@code {
+    [Parameter]
+    public NotificationChannel Channel { get; set; }
+
+    private static string ChannelLabel(NotificationChannel channel) => channel switch
+    {
+        NotificationChannel.ShowInUi => "В приложении",
+        NotificationChannel.Email => "Email",
+        NotificationChannel.Telegram => "Telegram",
+        _ => channel.ToString(),
+    };
+}

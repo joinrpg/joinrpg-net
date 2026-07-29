@@ -12,10 +12,7 @@
 
                             <input type="submit" value="Запустить джобу" class="btn btn-success" />
             </form>
-            @{
-                var link = $"https://console.yandex.cloud/folders/b1g1a4nj5oq5sv996tcv/logging/group/e2371utkp5mj3oltko4r/logs?from=now-1d&to=now&size=100&linesInRow=1&query=jobName%3A+%22{job.Name}%22";
-            }
-            <a href="@link">[Логи]</a>
+            <component type="typeof(JoinRpg.Web.AdminTools.Jobs.JobLogsLink)" param-JobName="@job.FullName" render-mode="Static" />
     </div>
     </div>
 }

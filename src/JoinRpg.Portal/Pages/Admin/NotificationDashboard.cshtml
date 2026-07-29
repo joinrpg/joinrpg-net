@@ -1,0 +1,7 @@
+@page "/admin/notifications"
+@model JoinRpg.Portal.Pages.Admin.NotificationDashboardModel
+@{
+    ViewBag.Title = "Статус уведомлений";
+}
+<h3>@ViewBag.Title</h3>
+<component type="typeof(JoinRpg.Web.AdminTools.Notifications.NotificationDashboard)" render-mode="Static" />

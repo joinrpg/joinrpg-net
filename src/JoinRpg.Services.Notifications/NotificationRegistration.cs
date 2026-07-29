@@ -32,6 +32,7 @@ public static class NotificationRegistration
     {
         return serviceCollection
             .AddScoped<TSenderJob>()
+            .AddScoped<ISenderJob>(sp => sp.GetRequiredService<TSenderJob>())
             .AddHostedService<SenderJobService<TSenderJob>>();
     }
 

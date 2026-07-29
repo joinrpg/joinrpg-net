@@ -15,6 +15,8 @@ internal class TelegramSenderJobService(
 {
     public static NotificationChannel Channel => NotificationChannel.Telegram;
 
+    public NotificationChannel InstanceChannel => Channel;
+
     public bool Enabled => telegramLoginOptions.Value.Enabled;
 
     public async Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)

@@ -19,6 +19,8 @@ internal class PostboxSenderJobService(
 {
     static NotificationChannel ISenderJob.Channel => NotificationChannel.Email;
 
+    NotificationChannel ISenderJob.InstanceChannel => NotificationChannel.Email;
+
     bool ISenderJob.Enabled => options.Value.Enabled;
 
     async Task<SendingResult> ISenderJob.SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)

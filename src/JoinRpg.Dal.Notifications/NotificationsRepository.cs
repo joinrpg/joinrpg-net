@@ -209,4 +209,15 @@ internal class NotificationsRepository(
         return [.. result.Select(x => new NotificationHistoryDto(CreateNotificationMessageDto(x), [.. x.NotificationMessageChannels.Select(c => c.Channel)]))];
 
     }
+
+    public async Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
+    {
+        var counts = await dbContext.NotificationMessageChannels
+            .Where(c => c.NotificationMessageStatus == NotificationMessageStatus.Queued)
+            .GroupBy(c => c.Channel)
+            .Select(g => new { Channel = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        return counts.ToDictionary(x => x.Channel, x => x.Count);
+    }
 }
