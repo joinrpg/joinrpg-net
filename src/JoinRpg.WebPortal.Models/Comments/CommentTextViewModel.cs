@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace JoinRpg.Web.Models;
 
 public class CommentTextViewModel

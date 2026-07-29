@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Accommodation;

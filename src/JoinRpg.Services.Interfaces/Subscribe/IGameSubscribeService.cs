@@ -1,5 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
-
 namespace JoinRpg.Services.Interfaces.Subscribe;
 
 public interface IGameSubscribeService

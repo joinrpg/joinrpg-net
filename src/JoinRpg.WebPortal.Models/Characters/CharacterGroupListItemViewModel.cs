@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace JoinRpg.Web.Models.Characters;
 
 public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>, IMoveableNonInteractiveListItem

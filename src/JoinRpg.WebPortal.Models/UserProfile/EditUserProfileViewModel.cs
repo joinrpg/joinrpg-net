@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models;

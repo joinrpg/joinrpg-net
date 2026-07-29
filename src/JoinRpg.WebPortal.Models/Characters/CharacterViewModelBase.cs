@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
