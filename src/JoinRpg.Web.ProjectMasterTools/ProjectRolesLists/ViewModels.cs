@@ -73,7 +73,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
     {
         return new EditProjectRolesListViewModel
         {
-            ProjectRolesListId = domain.ProjectRolesListId,
+            ProjectRolesListId = domain.ProjectRolesListId!,
             Name = domain.Name,
             CharacterGroupId = domain.CharacterGroupId,
             PublicMode = domain.PublicMode,

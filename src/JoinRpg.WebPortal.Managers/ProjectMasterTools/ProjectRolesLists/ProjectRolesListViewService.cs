@@ -58,6 +58,6 @@ internal class ProjectRolesListViewService(
     public async Task<ProjectRolesListViewModel> Update(DomainTypes.ProjectMetadata.ProjectRolesList model)
     {
         await service.UpdateAsync(model);
-        return await GetList(model.ProjectRolesListId.ProjectId);
+        return await GetList(model.ProjectRolesListId!.ProjectId);
     }
 }

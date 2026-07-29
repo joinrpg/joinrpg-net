@@ -40,16 +40,15 @@ public class GameGroupsController(
             return NotFound();
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-
+        // Данные сетки теперь строит остров ProjectRoleGrid (классический режим) из транзиентной
+        // настройки; здесь загружаем группу только для обрамления (Details-заголовок) и заголовка.
         return View(
           new GameRolesViewModel
           {
-              ProjectId = field.Project.ProjectId,
               ProjectName = field.Project.ProjectName,
               ShowEditControls = field.HasEditRolesAccess(currentUserAccessor.UserIdOrDefault),
-              HasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor),
-              Data = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo),
+              RootGroupId = field.GetId(),
+              RootGroupName = field.CharacterGroupName,
               Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Roles),
           });
     }

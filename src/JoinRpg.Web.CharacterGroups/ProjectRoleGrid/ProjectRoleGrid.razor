@@ -27,10 +27,11 @@ else
                        GroupType="Model.RootGroupType"
                        ShowEditControls="Model.CanEditSettings"
                        Size="SizeStyleEnum.Medium" />
-        @if (Model.CanEditSettings)
+        @* У транзиентной («классической») сетки нет id — кнопки настроек не показываем. *@
+        @if (Model.CanEditSettings && Model.RolesListId is { } rolesListId)
         {
             <JoinButton Preset="ButtonPreset.Edit"
-                        OnClick='() => NavigationManager.NavigateTo($"/{Model.RolesListId.ProjectId.Value}/tools/roleslist/edit/{Model.RolesListId.ProjectRolesListId}")'
+                        OnClick='() => NavigationManager.NavigateTo($"/{rolesListId.ProjectId.Value}/tools/roleslist/edit/{rolesListId.ProjectRolesListId}")'
                         Label="Настройки сетки" />
         }
     </div>
@@ -214,7 +215,10 @@ else
 }
 
 @code {
-    [Parameter, EditorRequired] public ProjectRolesListIdentification RolesListId { get; set; }
+    // Режим сохранённой сетки: задаётся RolesListId. Классический режим (GameGroups/Index):
+    // задаётся ClassicRootGroupId (конкретный корень сетки, несёт projectId). Ровно один из них.
+    [Parameter] public ProjectRolesListIdentification RolesListId { get; set; }
+    [Parameter] public CharacterGroupIdentification? ClassicRootGroupId { get; set; }
 
     private ProjectRoleGridViewResult? Result { get; set; }
     private PersistingComponentStateSubscription _persistingSubscription;
@@ -234,7 +238,9 @@ else
 
         if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewResult>(nameof(ProjectRoleGrid), out var result))
         {
-            result = await Client.GetRoleGrid(RolesListId);
+            result = ClassicRootGroupId is { } classicGroupId
+                ? await Client.GetClassicRoleGrid(classicGroupId)
+                : await Client.GetRoleGrid(RolesListId);
         }
         Result = result;
 

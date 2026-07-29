@@ -131,7 +131,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             foreach (var rolesList in cloneInfo.ProjectRolesLists)
             {
                 // Все сетки принадлежат новому проекту
-                rolesList.ProjectRolesListId.ProjectId.ShouldBe(cloneProjectId);
+                rolesList.ProjectRolesListId!.ProjectId.ShouldBe(cloneProjectId);
 
                 // Поля ссылаются на новый проект
                 foreach (var field in rolesList.Fields)

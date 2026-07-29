@@ -27,7 +27,7 @@ public record ProjectRoleGridViewResult(
 /// <param name="SuppressFieldLabels">Не подписывать значения полей в режиме дерева
 /// (выбрано единственное поле и это «Описание персонажа»)</param>
 public record ProjectRoleGridViewModel(
-    ProjectRolesListIdentification RolesListId,
+    ProjectRolesListIdentification? RolesListId,
     string Name,
     string? GroupName,
     bool CanEditSettings,

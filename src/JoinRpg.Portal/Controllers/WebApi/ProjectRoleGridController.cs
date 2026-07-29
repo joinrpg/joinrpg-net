@@ -18,4 +18,15 @@ public class ProjectRoleGridController(IProjectRoleGridClient client) : Controll
         var id = new ProjectRolesListIdentification(projectId, projectRolesListId);
         return Ok(await client.GetRoleGrid(id));
     }
+
+    /// <summary>
+    /// «Классическая» сетка ролей (GameGroups/Index) — строится на лету без сохранённой настройки.
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<ProjectRoleGridViewResult>> GetClassic(
+        [FromQuery] ProjectIdentification projectId, [FromQuery] int characterGroupId)
+    {
+        var groupId = new CharacterGroupIdentification(projectId, characterGroupId);
+        return Ok(await client.GetClassicRoleGrid(groupId));
+    }
 }

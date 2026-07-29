@@ -35,7 +35,7 @@ public class AddHotRolesListJobScenario(JoinApplicationFactory factory) : IClass
 
             foreach (var autoList in await rolesListRepository.GetForProjectAsync(projectId))
             {
-                await rolesListService.RemoveAsync(autoList.ProjectRolesListId);
+                await rolesListService.RemoveAsync(autoList.ProjectRolesListId!);
             }
 
             await characterService.AddCharacter(new AddCharacterRequest(
