@@ -57,7 +57,7 @@
         <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
         <PackageVersion Include="OpenIddict.AspNetCore" Version="7.6.0" />
         <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.6.0" />
-        <PackageVersion Include="OpenTelemetry.Api" Version="1.16.0" />
+        <PackageVersion Include="OpenTelemetry.Api" Version="1.17.0" />
         <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
         <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.16.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.16.0" />
