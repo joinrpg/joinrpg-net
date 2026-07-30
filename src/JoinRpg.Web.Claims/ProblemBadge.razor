@@ -3,7 +3,11 @@
     {
         <ExclamationIcon Title="Обратитесь в техподдержку сайта" />
     }
-    @Model.ProblemTypeText<EventTime Model="Model.ProblemTime"/>@if (!string.IsNullOrWhiteSpace(Model.Extra))
+    @Model.ProblemTypeText@if (Model.ProblemTime is not null)
+    {
+        <text> </text>
+    }
+    <EventTime Model="Model.ProblemTime" />@if (!string.IsNullOrWhiteSpace(Model.Extra))
     {
         <text>: @Model.Extra</text>
     }
