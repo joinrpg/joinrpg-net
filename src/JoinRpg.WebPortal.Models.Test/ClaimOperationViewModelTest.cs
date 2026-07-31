@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Web.Claims;
 
 namespace JoinRpg.WebPortal.Models.Test;
 
