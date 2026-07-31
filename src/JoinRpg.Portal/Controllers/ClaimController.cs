@@ -227,7 +227,7 @@ public class ClaimController(
     }
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> OnHoldByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
+    public async Task<ActionResult> OnHoldByMaster(int projectId, int claimId, RequiredCommentClaimOperationViewModel viewModel)
     {
         var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
@@ -286,7 +286,7 @@ public class ClaimController(
     [HttpPost]
     [MasterAuthorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
+    public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, RequiredCommentClaimOperationViewModel viewModel, int characterId)
     {
         var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)
@@ -315,7 +315,7 @@ public class ClaimController(
     [HttpPost]
     [Authorize()]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> DeclineByPlayer(int projectId, int claimId, ClaimOperationViewModel viewModel)
+    public async Task<ActionResult> DeclineByPlayer(int projectId, int claimId, RequiredCommentClaimOperationViewModel viewModel)
     {
         var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)

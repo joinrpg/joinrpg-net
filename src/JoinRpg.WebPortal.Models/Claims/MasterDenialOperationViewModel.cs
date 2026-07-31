@@ -2,7 +2,7 @@ using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models;
 
-public class MasterDenialOperationViewModel : ClaimOperationViewModel
+public class MasterDenialOperationViewModel : RequiredCommentClaimOperationViewModel
 {
     public ClaimStatusView ClaimStatus { get; set; }
 

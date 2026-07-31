@@ -262,7 +262,7 @@ new { Model.ProjectId, Model.Player.UserId }, null).
                     Заявка в листе ожидания ждет освобождения какой-то роли или другого события.
                 </div>
                 <form asp-action="OnHoldByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-                    @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+                    @await Html.PartialAsync("ClaimOperationPartial", new RequiredCommentClaimOperationViewModel
             {
             ActionName = "В лист ожидания"
             })
@@ -339,7 +339,7 @@ new { Model.CharacterId, Model.ProjectId }, null)
                             }
                             @Html.HiddenFor(model => model.CharacterId)
                         }
-                        @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+                        @await Html.PartialAsync("ClaimOperationPartial", new RequiredCommentClaimOperationViewModel
               {
               ActionName = "Восстановить заявку"
               })
@@ -389,7 +389,7 @@ new { Model.CharacterId, Model.ProjectId }, null)
         <div class="panel-heading">Отозвать заявку</div>
         <div class="panel-body">
             <form asp-action="DeclineByPlayer" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-                @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+                @await Html.PartialAsync("ClaimOperationPartial", new RequiredCommentClaimOperationViewModel
           {
           ActionName = "Отозвать заявку",
           CommentText = "Извините, я передумал ехать"
