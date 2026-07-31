@@ -246,7 +246,8 @@ new { Model.ProjectId, Model.Player.UserId }, null).
                     <form asp-action="ApproveByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
                         @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
                {
-                 ActionName = "Принять заявку"
+                 ActionName = "Принять заявку",
+                 CommentText = "Добро пожаловать"
                })
                         <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
                     </form>
