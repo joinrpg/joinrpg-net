@@ -757,6 +757,8 @@ internal class ClaimServiceImpl(
         _ = projectInfo.RequestMasterAccess(responsibleMasterId);
 
         var oldResponsibleMaster = new UserIdentification(claim.ResponsibleMasterUserId);
+        var oldMasterDisplayName = claim.ResponsibleMasterUser?.GetDisplayName()
+            ?? (await UserRepository.GetById(oldResponsibleMaster)).GetDisplayName();
 
         if (responsibleMasterId == oldResponsibleMaster)
         {
@@ -767,7 +769,7 @@ internal class ClaimServiceImpl(
         var newMaster = await UserRepository.GetById(responsibleMasterId);
 
         var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(
-            $"{claim.ResponsibleMasterUser.GetDisplayName()} → {newMaster.GetDisplayName()}",
+            $"{oldMasterDisplayName} → {newMaster.GetDisplayName()}",
             claim,
             projectInfo,
             CommentExtraAction.ChangeResponsible,
