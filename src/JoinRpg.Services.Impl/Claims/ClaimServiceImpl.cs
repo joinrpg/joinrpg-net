@@ -757,8 +757,7 @@ internal class ClaimServiceImpl(
         _ = projectInfo.RequestMasterAccess(responsibleMasterId);
 
         var oldResponsibleMaster = new UserIdentification(claim.ResponsibleMasterUserId);
-        var oldMasterDisplayName = claim.ResponsibleMasterUser?.GetDisplayName()
-            ?? (await UserRepository.GetById(oldResponsibleMaster)).GetDisplayName();
+        var oldMasterDisplayName = claim.ResponsibleMasterUser.GetDisplayName();
 
         if (responsibleMasterId == oldResponsibleMaster)
         {
