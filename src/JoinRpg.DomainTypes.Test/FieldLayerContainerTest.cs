@@ -520,6 +520,102 @@ public class FieldLayerContainerTest
         result.ShouldBeNull();
     }
 
+    [Fact]
+    public void GetAllFieldsForEditShouldReturnEntryForEveryField()
+    {
+        var projectInfo = MakeProject(MakeField(1), MakeField(2), MakeField(3));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.Count.ShouldBe(3);
+        result.Single(f => f.Field.Id.ProjectFieldId == 1).Value.ShouldBe("a");
+        result.Single(f => f.Field.Id.ProjectFieldId == 2).Value.ShouldBeNull();
+        result.Single(f => f.Field.Id.ProjectFieldId == 3).Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetAllFieldsForEditShouldIncludeHeaderFields()
+    {
+        var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Field.Type.ShouldBe(ProjectFieldType.Header);
+    }
+
+    [Fact]
+    public void GetAllFieldsForEditShouldPreferClaimLayerForCharacterBoundField()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-claim" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-character" } });
+        var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBe("from-claim");
+    }
+
+    [Fact]
+    public void GetAllFieldsForEditShouldFallBackToCharacterLayerForCharacterBoundField()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-character" } });
+        var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBe("from-character");
+    }
+
+    [Fact]
+    public void GetAllFieldsForEditShouldReadClaimBoundFieldOnlyFromClaimLayer()
+    {
+        var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "claim-val" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBe("claim-val");
+    }
+
+    [Fact]
+    public void GetAllFieldsForEditShouldReturnEmptyValueForClaimBoundFieldWhenNoClaimLayer()
+    {
+        var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetAllFieldsForEditShouldNotFilterByViewAccess()
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+        var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsPlayer);
+
+        var result = layers.GetAllFieldsForEdit().ToList();
+
+        result.ShouldHaveSingleItem();
+        result[0].Value.ShouldBe("secret");
+    }
+
     private static ProjectInfo MakeProject(params ProjectFieldInfo[] fields)
         => MakeProject("", fields);
 

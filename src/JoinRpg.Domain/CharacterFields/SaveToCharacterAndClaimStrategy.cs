@@ -25,7 +25,6 @@ internal class SaveToCharacterAndClaimStrategy(Claim claim,
     }
 
     protected override void SetCharacterNameFromPlayer() => Character.CharacterName = Claim.Player.GetDisplayName();
-    protected override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields(ProjectInfo);
 
     protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character, ProjectInfo);
 }

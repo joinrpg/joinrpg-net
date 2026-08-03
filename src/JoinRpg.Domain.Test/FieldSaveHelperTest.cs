@@ -132,6 +132,54 @@ public class FieldSaveHelperTest
     }
 
     [Fact]
+    public void ApprovedClaimSaveShouldPreserveMasterOnlyValueInvisibleToPlayer()
+    {
+        _original = new MockedProject();
+        var mock = new MockedProject();
+        var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
+
+        // На персонаже уже стоит значение master-only поля, недоступного игроку на просмотр
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(mock.MasterOnlyFieldInfo, "master-secret"));
+
+        // Игрок редактирует своё поле в подтверждённой заявке
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Player.UserId,
+            claim,
+            new Dictionary<int, string?>()
+            {
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, "player-value"},
+            }, mock.ProjectInfo);
+
+        // master-only значение не должно потеряться при сохранении (чтение без view-фильтрации)
+        mock.Character.JsonData.ShouldContain("master-secret");
+        mock.Character.JsonData.ShouldContain("player-value");
+    }
+
+    [Fact]
+    public void UnapprovedClaimSaveShouldNotLeakMasterOnlyCharacterValueIntoClaim()
+    {
+        _original = new MockedProject();
+        var mock = new MockedProject();
+
+        // На персонаже стоит значение master-only поля
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(mock.MasterOnlyFieldInfo, "master-secret"));
+
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Player.UserId,
+            claim,
+            new Dictionary<int, string?>()
+            {
+                {mock.CharacterFieldInfo.Id.ProjectFieldId, "player-value"},
+            }, mock.ProjectInfo);
+
+        // master-only значение персонажа не должно утечь в JSON заявки (PublicOnly унаследованного слоя сохранён)
+        claim.JsonData.ShouldNotContain("master-secret");
+        claim.JsonData.ShouldContain("player-value");
+    }
+
+    [Fact]
     public void ConditionalFieldChangeTest()
     {
         _original = new MockedProject();

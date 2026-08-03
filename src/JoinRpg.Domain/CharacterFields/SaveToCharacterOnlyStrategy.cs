@@ -12,7 +12,7 @@ internal class SaveToCharacterOnlyStrategy(
     generator,
     projectInfo)
 {
-    public override void Save(Dictionary<int, FieldWithValue> fields)
+    protected override void Save(Dictionary<int, FieldWithValue> fields)
     {
         Character.JsonData = fields.Values
             .Where(v => v.Field.BoundTo == FieldBoundTo.Character).SerializeFields();
@@ -20,8 +20,6 @@ internal class SaveToCharacterOnlyStrategy(
 
         UpdateSpecialGroups(fields);
     }
-
-    protected override IReadOnlyCollection<FieldWithValue> GetFields() => Character.GetFields(ProjectInfo);
 
     protected override void SetCharacterNameFromPlayer()
     {
