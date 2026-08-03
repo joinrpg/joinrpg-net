@@ -174,20 +174,26 @@ internal class FieldSetupServiceImpl(
             });
     }
 
-    public async Task MoveFieldVariant(int projectid, int projectFieldId, int projectFieldVariantId, short direction)
+    public async Task<IReadOnlyList<ProjectFieldVariantIdentification>> MoveFieldVariantAfter(ProjectFieldVariantIdentification variantId, ProjectFieldVariantIdentification? afterVariantId)
     {
-        await projectPropsService.ChangeProjectProperties(
-            new ProjectIdentification(projectid),
+        return await projectPropsService.ChangeProjectProperties(
+            variantId.FieldId.ProjectId,
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
-            (projectFieldId, projectFieldVariantId, direction),
+            (variantId, afterVariantId),
             ctx =>
             {
-                var field = GetField(ctx.Project, ctx.Request.projectFieldId);
-                field.ValuesOrdering =
-                    field.GetFieldValuesContainer()
-                        .Move(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == ctx.Request.projectFieldVariantId), ctx.Request.direction)
-                        .GetStoredOrder();
+                var field = GetField(ctx.Project, ctx.Request.variantId.FieldId.ProjectFieldId);
+                var variant = field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == ctx.Request.variantId.ProjectFieldVariantId);
+                var afterVariant = ctx.Request.afterVariantId == null
+                    ? null
+                    : field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == ctx.Request.afterVariantId.ProjectFieldVariantId);
+
+                var container = field.GetFieldValuesContainer().MoveAfter(variant, afterVariant);
+                field.ValuesOrdering = container.GetStoredOrder();
+                return container.OrderedItems
+                    .Select(v => v.GetId())
+                    .ToList();
             });
     }
 

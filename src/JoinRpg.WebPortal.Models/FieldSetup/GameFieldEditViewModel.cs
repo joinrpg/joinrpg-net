@@ -48,8 +48,16 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
     public void FillNotEditable(ProjectFieldInfo field, ProjectInfo projectInfo)
     {
         DropdownValues = field.SortedVariants
-            .Select(v => new GameFieldDropdownValueListItemViewModel(v, field.CanPlayerEdit))
-            .MarkFirstAndLast();
+            .Select(v => new FieldVariantListItemViewModel
+            {
+                VariantId = v.Id,
+                Label = v.Label,
+                Description = v.Description.ToPlainTextWithoutHtmlEscape(),
+                Price = v.Price,
+                IsActive = v.IsActive,
+                MasterRestricted = !v.IsPlayerSelectable && field.CanPlayerEdit,
+            })
+            .ToList();
         FieldViewType = (ProjectFieldViewType)field.Type;
         FieldBoundTo = (FieldBoundToViewModel)field.BoundTo;
         IsActive = field.IsActive;
@@ -61,7 +69,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
     { }
 
     [ReadOnly(true)]
-    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; private set; }
+    public IList<FieldVariantListItemViewModel> DropdownValues { get; private set; } = [];
 
     [Display(Name = "Тип поля"), ReadOnly(true)]
     public ProjectFieldViewType FieldViewType { get; private set; }

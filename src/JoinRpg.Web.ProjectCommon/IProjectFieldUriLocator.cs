@@ -4,4 +4,5 @@ public interface IProjectFieldUriLocator
 {
     Uri GetEditUri(ProjectFieldIdentification fieldId);
     Uri GetCreateVariantUri(ProjectFieldIdentification fieldId);
+    Uri GetEditVariantUri(ProjectFieldVariantIdentification variantId);
 }

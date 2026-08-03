@@ -23,4 +23,21 @@ internal class ProjectFieldOperationsClientImpl(
             throw;
         }
     }
+
+    public async Task DeleteVariant(ProjectFieldVariantIdentification variantId)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync(
+                $"webapi/project-field-operations/deletevariant?projectId={variantId.FieldId.ProjectId.Value}",
+                variantId);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during field variant delete");
+            throw;
+        }
+    }
 }

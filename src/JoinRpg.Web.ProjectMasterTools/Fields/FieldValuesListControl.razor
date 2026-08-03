@@ -1,0 +1,81 @@
+@inject IProjectFieldUriLocator UriLocator
+@inject IProjectFieldOperationsClient ProjectFieldOperationsClient
+@inject NavigationManager NavigationManager
+
+<div class="table-responsive" style="margin-top: 1em;">
+    <JoinTableSimple>
+        <TableHeader>
+            <th style="width: 20%;">Значение</th>
+            <th class="price-table" style="width: 15%;"><span class="price-value price-RUR">Цена,</span></th>
+            <th>Описание</th>
+            <th style="min-width: 12em; width: 12em;"></th>
+        </TableHeader>
+        <TableBody>
+            @foreach (var item in Items)
+            {
+                <tr title="@item.Label">
+                    <td class="@(item.IsActive ? "" : "deleted")">
+                        @item.Label
+                        @if (item.MasterRestricted)
+                        {
+                            <JoinBadge Variation="VariationStyleEnum.Warning" Title="Это значение может выбрать только мастер (игрок не может выбрать)">только мастер</JoinBadge>
+                        }
+                    </td>
+                    <td class="price-table">@(item.Price != 0 ? item.Price.ToString() : "")</td>
+                    <td>@item.Description</td>
+                    <td>
+                        <JoinButtonGroup Size="SizeStyleEnum.Small">
+                            @if (item.IsActive)
+                            {
+                                <JoinButton Preset="ButtonPreset.Edit"
+                                            Size="SizeStyleEnum.Small"
+                                            Label=""
+                                            Title="Изменить"
+                                            Link="@UriLocator.GetEditVariantUri(item.VariantId).ToString()" />
+                                <JoinButton Preset="ButtonPreset.Delete"
+                                            Size="SizeStyleEnum.Small"
+                                            Label=""
+                                            Title="Удалить"
+                                            AutoConfirm="true"
+                                            AutoConfirmMessage="@($"Удалить значение «{item.Label}»?")"
+                                            OnClick="args => DeleteAsync(item, args)" />
+                            }
+                            else
+                            {
+                                <JoinButton Preset="ButtonPreset.Restore"
+                                            Size="SizeStyleEnum.Small"
+                                            Label=""
+                                            Title="Восстановить"
+                                            Link="@UriLocator.GetEditVariantUri(item.VariantId).ToString()" />
+                            }
+                            <JoinMoveControl TItem="FieldVariantListItemViewModel"
+                                          Items="Items"
+                                          Self="item"
+                                          SkipGroup="true"
+                                          Size="SizeStyleEnum.Small"
+                                          OnMoveCompleted="StateHasChanged" />
+                        </JoinButtonGroup>
+                    </td>
+                </tr>
+            }
+        </TableBody>
+    </JoinTableSimple>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IList<FieldVariantListItemViewModel> Items { get; set; } = null!;
+
+    private async Task DeleteAsync(FieldVariantListItemViewModel item, ButtonClickEventArgs args)
+    {
+        try
+        {
+            await ProjectFieldOperationsClient.DeleteVariant(item.VariantId);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+}
