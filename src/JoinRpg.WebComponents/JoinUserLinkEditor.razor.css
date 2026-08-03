@@ -1,0 +1,7 @@
+/* CSS for JoinUserLinkEditor component */
+.join-user-link-editor-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}

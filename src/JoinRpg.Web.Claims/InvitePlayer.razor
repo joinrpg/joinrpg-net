@@ -29,11 +29,11 @@
                 <ValidationSummary />
 
                 <FormRowFor For="@(() => model.CharacterId)" Required="true">
-                    <SingleCharacterSelector @bind-SelectedCharacterId="@selectedCharacterId" ProjectId="@ProjectId" AllowEmpty="false" ListType="CharacterListType.Available" />
+                    <SingleCharacterSelector @bind-SelectedCharacterId="@selectedCharacterId" ProjectId="@ProjectId" AllowEmpty="false" ListType="@characterListType" />
                 </FormRowFor>
 
-                <FormRowFor For="@(() => model.UserLink)" Required="true">
-                    <JoinUserLinkEditor @bind-Value="model.UserLink" />
+                <FormRowFor For="@(() => model.UserLinks)" Required="true">
+                    <JoinUserLinkEditor Multiple="true" Values="@model.UserLinks" ValuesChanged="@OnUserLinksChanged" />
                 </FormRowFor>
 
                 <FormRowFor For="@(() => model.ClaimText)">
@@ -60,6 +60,22 @@
     private bool loading = false;
     private string? errorMessage = null;
     private string? successMessage = null;
+
+    private CharacterListType characterListType =>
+        HasMultiplePlayers(model.UserLinks) ? CharacterListType.AvailableTemplates : CharacterListType.Available;
+
+    private static bool HasMultiplePlayers(List<string> userLinks) => userLinks.Count(l => !string.IsNullOrWhiteSpace(l)) > 1;
+
+    private void OnUserLinksChanged(List<string> newUserLinks)
+    {
+        var wasMultiplePlayers = HasMultiplePlayers(model.UserLinks);
+        model.UserLinks = newUserLinks;
+        if (HasMultiplePlayers(model.UserLinks) && !wasMultiplePlayers)
+        {
+            // Список персонажей сузился до шаблонов — ранее выбранный персонаж мог в него не попасть.
+            model.CharacterId = 0;
+        }
+    }
 
     private CharacterIdentification? selectedCharacterId
     {
@@ -97,21 +113,41 @@
         successMessage = null;
         StateHasChanged();
 
-        try
+        var succeeded = new List<ClaimIdentification>();
+        var failed = new List<(string UserLink, string Message)>();
+
+        foreach (var userLink in model.UserLinks)
         {
-            var claimId = await InvitePlayerClient.InvitePlayer(model.CharacterIdentification, model.UserLink, model.ClaimText);
-            successMessage = $"Игрок успешно приглашён. Заявка создана: {claimId.ClaimId}";
-            NavigationManager.NavigateTo($"/{claimId.ProjectId.Value}/claim/{claimId.ClaimId}/edit", forceLoad: true);
+            try
+            {
+                var claimId = await InvitePlayerClient.InvitePlayer(model.CharacterIdentification, userLink, model.ClaimText);
+                succeeded.Add(claimId);
+            }
+            catch (Exception ex)
+            {
+                failed.Add((userLink, ex.Message));
+            }
+        }
+
+        if (failed.Count == 0)
+        {
+            var lastClaimId = succeeded[^1];
+            successMessage = succeeded.Count == 1
+                ? $"Игрок успешно приглашён. Заявка создана: {lastClaimId.ClaimId}"
+                : $"Игроки успешно приглашены. Создано заявок: {succeeded.Count}";
+            NavigationManager.NavigateTo($"/{lastClaimId.ProjectId.Value}/claim/{lastClaimId.ClaimId}/edit", forceLoad: true);
             model = new InvitePlayerViewModel { ProjectId = ProjectId };
         }
-        catch (Exception ex)
+        else
         {
-            errorMessage = ex.Message;
+            model.UserLinks = failed.Select(f => f.UserLink).ToList();
+            var failedText = string.Join("; ", failed.Select(f => $"{f.UserLink} — {f.Message}"));
+            errorMessage = succeeded.Count == 0
+                ? $"Не удалось пригласить игроков: {failedText}"
+                : $"Приглашено игроков: {succeeded.Count}. Не удалось пригласить: {failedText}";
         }
-        finally
-        {
-            loading = false;
-            StateHasChanged();
-        }
+
+        loading = false;
+        StateHasChanged();
     }
 }

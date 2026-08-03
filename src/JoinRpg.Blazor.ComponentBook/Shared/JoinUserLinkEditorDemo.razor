@@ -1,0 +1,15 @@
+@using JoinRpg.WebComponents
+
+<h3>JoinUserLinkEditorDemo</h3>
+
+<h4>Multiple="false"</h4>
+<JoinUserLinkEditor @bind-Values="@Single" />
+
+<h4>Multiple="true"</h4>
+<JoinUserLinkEditor Multiple="true" @bind-Values="@Multi" />
+
+@code {
+    private List<string> Single { get; set; } = ["123"];
+
+    private List<string> Multi { get; set; } = ["123", "vk.com/id456"];
+}

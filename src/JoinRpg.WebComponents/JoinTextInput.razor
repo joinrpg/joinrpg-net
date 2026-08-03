@@ -1,5 +1,12 @@
 @using System.Linq.Expressions
-<input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+@if (Immediate)
+{
+    <input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+}
+else
+{
+    <input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+}
 
 @code {
     [CascadingParameter]
@@ -18,6 +25,12 @@
     [Parameter]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// When true, updates fire on every keystroke (oninput) instead of on blur/change (onchange).
+    /// </summary>
+    [Parameter]
+    public bool Immediate { get; set; } = false;
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -25,7 +38,7 @@
 
     private string internalValue = "";
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
         internalValue = Value;
         if (ValueExpression is not null)

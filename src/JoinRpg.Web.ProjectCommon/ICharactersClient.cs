@@ -11,5 +11,6 @@ public enum CharacterListType
     AllTemplates,
     Available,
     AvailableNonSlots,
+    AvailableTemplates,
 }
 
