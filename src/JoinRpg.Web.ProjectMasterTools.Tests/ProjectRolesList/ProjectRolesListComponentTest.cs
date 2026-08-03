@@ -9,7 +9,7 @@ using Xunit;
 
 namespace JoinRpg.Web.ProjectMasterTools.Tests.ProjectRolesList;
 
-public class ProjectRolesListComponentTest : TestContext
+public class ProjectRolesListComponentTest : BunitContext
 {
     private readonly FakeProjectRolesListClient _client = new();
     private readonly ProjectIdentification _projectId = new(123);
