@@ -15,6 +15,7 @@ else
         <SingleCharacterGroupSelector ProjectId="@GroupId.ProjectId.Value" SelectedGroupId="@GroupId" SelectedGroupIdChanged="OnGroupChanged" />
     </div>
     <table class="table table-bordered">
+        <thead>
         <tr>
             <th>Группа</th>
             <th>Всего прописано</th>
@@ -34,6 +35,8 @@ else
             }
             <th>Обсуждается</th>
         </tr>
+        </thead>
+        <tbody>
         @foreach (var row in _result.Rows)
         {
             <tr>
@@ -77,6 +80,7 @@ else
                 </td>
             </tr>
         }
+        </tbody>
     </table>
 }
 
