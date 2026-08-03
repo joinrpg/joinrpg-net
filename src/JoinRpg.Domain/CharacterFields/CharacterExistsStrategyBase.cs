@@ -5,7 +5,11 @@ using JoinRpg.DomainTypes.Characters;
 namespace JoinRpg.Domain.CharacterFields;
 
 internal abstract class CharacterExistsStrategyBase(Claim? claim, Character character, UserIdentification currentUserId, IFieldDefaultValueGenerator generator, ProjectInfo projectInfo)
-    : FieldSaveStrategyBase(claim, character, currentUserId, generator, projectInfo, AccessArgumentsFactory.Create(character, currentUserId, projectInfo))
+    : FieldSaveStrategyBase(claim, character, currentUserId, generator, projectInfo,
+        new CharacterFieldLayers(
+            ClaimLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim?.JsonData),
+            CharacterLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, character.JsonData),
+            AccessArgumentsFactory.Create(character, currentUserId, projectInfo)))
 {
     protected new Character Character => base.Character!; //Character should always exists
 
@@ -42,7 +46,7 @@ internal abstract class CharacterExistsStrategyBase(Claim? claim, Character char
         string? GetFieldValue(ProjectFieldInfo field) => fields[field.Id.ProjectFieldId].Value;
     }
 
-    public override void Save(Dictionary<int, FieldWithValue> fields)
+    protected override void Save(Dictionary<int, FieldWithValue> fields)
     {
         base.Save(fields);
 
@@ -52,5 +56,5 @@ internal abstract class CharacterExistsStrategyBase(Claim? claim, Character char
     }
 
     [DoesNotReturn]
-    protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Character.CharacterId));
+    protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, Character.GetId());
 }

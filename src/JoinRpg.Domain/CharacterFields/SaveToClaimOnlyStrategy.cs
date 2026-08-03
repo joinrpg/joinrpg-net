@@ -12,7 +12,10 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     currentUserId,
     generator,
     projectInfo,
-    AccessArgumentsFactory.Create(claim, currentUserId, projectInfo))
+    new CharacterFieldLayers(
+        ClaimLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData),
+        CharacterLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.Character.JsonData).PublicOnly(),
+        AccessArgumentsFactory.Create(claim, currentUserId, projectInfo)))
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
 
@@ -26,8 +29,6 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     {
         //Do nothing player could not change character yet
     }
-
-    protected override IReadOnlyCollection<FieldWithValue> GetFields() => Claim.GetFields(ProjectInfo);
 
     [DoesNotReturn]
     protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Claim.CharacterId));

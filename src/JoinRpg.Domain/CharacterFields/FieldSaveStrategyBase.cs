@@ -8,24 +8,26 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     UserIdentification currentUserId,
     IFieldDefaultValueGenerator generator,
     ProjectInfo projectInfo,
-    AccessArguments accessArguments)
+    CharacterFieldLayers characterFieldLayers)
 {
     protected Claim? Claim { get; } = claim;
     protected Character? Character { get; } = character;
 
     protected ProjectInfo ProjectInfo { get; } = projectInfo;
 
+    protected CharacterFieldLayers CharacterFieldLayers { get; } = characterFieldLayers;
+
+    protected AccessArguments AccessArguments { get; } = characterFieldLayers.AccessArguments;
+
     private Dictionary<ProjectFieldIdentification, FieldWithPreviousAndNewValue> UpdatedFields { get; } = [];
 
-    public virtual void Save(Dictionary<int, FieldWithValue> fields) => SerializeFields(fields);
+    protected virtual void Save(Dictionary<int, FieldWithValue> fields) => SerializeFields(fields);
 
     protected abstract void SerializeFields(Dictionary<int, FieldWithValue> fields);
 
-    protected abstract IReadOnlyCollection<FieldWithValue> GetFields();
-
     private void EnsureEditAccess(FieldWithValue field)
     {
-        var editAccess = field.Field.HasEditAccess(accessArguments);
+        var editAccess = field.Field.HasEditAccess(AccessArguments);
         if (!editAccess)
         {
             throw new NoAccessToProjectException(ProjectInfo, currentUserId);
@@ -35,7 +37,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     /// <summary>
     /// Returns true is the value has changed
     /// </summary>
-    public bool AssignFieldValue(FieldWithValue field, string? newValue)
+    private bool AssignFieldValue(FieldWithValue field, string? newValue)
     {
         if (field.Value == newValue)
         {
@@ -51,7 +53,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         return true;
     }
 
-    public string? GenerateDefaultValue(FieldWithValue field)
+    private string? GenerateDefaultValue(FieldWithValue field)
     {
         return field.Field.BoundTo switch
         {
@@ -63,7 +65,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     protected abstract void SetCharacterNameFromPlayer();
 
-    public void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
+    private void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
     {
         foreach (var field in fields.Values.Where(
             f => !f.HasEditableValue && f.Field.CanHaveValue &&
@@ -77,7 +79,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         }
     }
 
-    public void AssignValues(IReadOnlyDictionary<int, string?> newFieldValue, Dictionary<int, FieldWithValue> fields)
+    private void AssignValues(IReadOnlyDictionary<int, string?> newFieldValue, Dictionary<int, FieldWithValue> fields)
     {
         foreach (var keyValuePair in newFieldValue)
         {
@@ -109,7 +111,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(IReadOnlyDictionary<int, string?> newFieldValue)
     {
-        var fields = GetFields().ToDictionary(f => f.Field.Id.ProjectFieldId);
+        var fields = CharacterFieldLayers.GetAllFieldsForEdit().ToDictionary(f => f.Field.Id.ProjectFieldId);
 
         AssignValues(newFieldValue, fields);
 
