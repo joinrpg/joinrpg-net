@@ -652,9 +652,10 @@ internal class ClaimServiceImpl(
         var oldCharacterId = claim.GetCharacterId(); // Сохраняем на случай если он изменится
         var character = await CharactersRepository.GetCharacterAsync(characterId);
 
-        claim.EnsureCanChangeStatus(ClaimStatus.AddedByUser);
-        claim.ClaimStatus = ClaimStatus.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
+        claim.EnsureCanChangeStatus(ClaimStatus.AddedByMaster);
+        claim.ClaimStatus = ClaimStatus.AddedByMaster;
         claim.ClaimDenialStatus = null;
+        claim.PlayerAllowedSenstiveData = false; // Мастер не может дать разрешение на чувствительные данные от имени игрока
         SetDiscussed(claim, true);
 
         if (character.ApprovedClaim is not null)

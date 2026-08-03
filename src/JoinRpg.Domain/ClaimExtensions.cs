@@ -57,7 +57,9 @@ public static class ClaimExtensions
                     {ClaimStatus.DeclinedByUser, ClaimStatus.DeclinedByMaster, ClaimStatus.OnHold}
                   .Contains(fromStatus);
             case ClaimStatus.AddedByMaster:
-                return false;
+                return new[]
+                    {ClaimStatus.DeclinedByUser, ClaimStatus.DeclinedByMaster, ClaimStatus.OnHold}
+                  .Contains(fromStatus);
             case ClaimStatus.DeclinedByUser:
             case ClaimStatus.DeclinedByMaster:
                 return
