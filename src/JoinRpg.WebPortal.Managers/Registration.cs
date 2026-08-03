@@ -13,6 +13,7 @@ using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
+using JoinRpg.Web.ProjectMasterTools.Fields;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
@@ -60,6 +61,7 @@ public static class Registration
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IMoveClient, MoveViewService>()
+        .AddScoped<IProjectFieldOperationsClient, Fields.ProjectFieldOperationsViewService>()
         .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()
 
         ;

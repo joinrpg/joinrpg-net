@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects.Metadata;
@@ -82,5 +83,49 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
             () => service.AddField(CreateFieldRequest(ProjectFieldType.ScheduleTimeSlotField)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task MoveFieldVariantAfter_MovesVariantAndReturnsNewOrder()
+    {
+        var dropdownField = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = 100,
+                    Label = "Вариант 1",
+                    IsActive = true,
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
+                },
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = 101,
+                    Label = "Вариант 2",
+                    IsActive = true,
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
+                },
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = 102,
+                    Label = "Вариант 3",
+                    IsActive = true,
+                    Description = new MarkdownDbValue(),
+                    MasterDescription = new MarkdownDbValue(),
+                },
+            ];
+        });
+        var service = CreateService(mock.Master.UserId);
+
+        var newOrder = await service.MoveFieldVariantAfter(
+            new ProjectFieldVariantIdentification(dropdownField.Id, 102),
+            new ProjectFieldVariantIdentification(dropdownField.Id, 100));
+
+        newOrder.Select(id => id.ProjectFieldVariantId).ShouldBe([100, 102, 101]);
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 }

@@ -65,6 +65,9 @@ public static class UriLocatorExtensions
 
         Uri IProjectFieldUriLocator.GetCreateVariantUri(ProjectFieldIdentification fieldId) =>
             new($"/{fieldId.ProjectId.Value}/fields/CreateValue?projectFieldId={fieldId.ProjectFieldId}", UriKind.Relative);
+
+        Uri IProjectFieldUriLocator.GetEditVariantUri(ProjectFieldVariantIdentification variantId) =>
+            new($"/{variantId.FieldId.ProjectId.Value}/fields/EditValue?projectFieldId={variantId.FieldId.ProjectFieldId}&valueId={variantId.ProjectFieldVariantId}", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {

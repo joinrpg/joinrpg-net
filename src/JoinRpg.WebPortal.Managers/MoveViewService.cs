@@ -24,6 +24,10 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
                 when characterId.ProjectId == groupId.ProjectId
                     && (request.MoveAfterId is null or CharacterIdentification)
                 => await MoveCharacterAsync(groupId, characterId, request.MoveAfterId as CharacterIdentification),
+            { SelfId: ProjectFieldVariantIdentification variantId, ParentId: ProjectFieldIdentification fieldId }
+                when variantId.FieldId == fieldId
+                    && (request.MoveAfterId is null or ProjectFieldVariantIdentification)
+                => await MoveFieldVariantAsync(variantId, request.MoveAfterId as ProjectFieldVariantIdentification),
             _ => throw new ArgumentException(
                 $"Unsupported ID combination: selfId='{selfId}', parentId='{parentId}'"),
         };
@@ -35,6 +39,14 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
         ProjectFieldIdentification? moveAfterId)
     {
         var sortedIds = await fieldSetupService.MoveFieldAfter(projectId, fieldId.ProjectFieldId, moveAfterId?.ProjectFieldId);
+        return [.. sortedIds.Select(id => id.ToString())];
+    }
+
+    private async Task<string[]> MoveFieldVariantAsync(
+        ProjectFieldVariantIdentification variantId,
+        ProjectFieldVariantIdentification? afterVariantId)
+    {
+        var sortedIds = await fieldSetupService.MoveFieldVariantAfter(variantId, afterVariantId);
         return [.. sortedIds.Select(id => id.ToString())];
     }
 

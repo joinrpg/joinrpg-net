@@ -20,4 +20,16 @@ public class ProjectFieldOperationsController(IFieldSetupService fieldSetupServi
         await fieldSetupService.DeleteField(projectId.Value, fieldId.ProjectFieldId);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteVariant([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldVariantIdentification variantId)
+    {
+        if (variantId.FieldId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        _ = await fieldSetupService.DeleteFieldValueVariant(projectId.Value, variantId.FieldId.ProjectFieldId, variantId.ProjectFieldVariantId);
+        return Ok();
+    }
 }

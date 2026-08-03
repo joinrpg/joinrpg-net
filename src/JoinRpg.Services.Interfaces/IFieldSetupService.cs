@@ -20,15 +20,12 @@ public interface IFieldSetupService
 
     Task MoveField(int projectid, int projectcharacterfieldid, short direction);
 
-    Task MoveFieldVariant(int projectid,
-        int projectFieldId,
-        int projectFieldVariantId,
-        short direction);
-
     Task CreateFieldValueVariants(ProjectFieldIdentification projectFieldId,
         string valuesToAdd);
 
     Task<IReadOnlyList<ProjectFieldIdentification>> MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
+
+    Task<IReadOnlyList<ProjectFieldVariantIdentification>> MoveFieldVariantAfter(ProjectFieldVariantIdentification variantId, ProjectFieldVariantIdentification? afterVariantId);
 
     Task SetFieldSettingsAsync(FieldSettingsRequest request);
     Task SortFieldVariants(int projectId, int projectFieldId);

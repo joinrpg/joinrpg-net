@@ -234,6 +234,10 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByAction("CreateValue", "GameField",
             new { ProjectId = fieldId.ProjectId.Value, fieldId.ProjectFieldId }));
 
+    Uri IProjectFieldUriLocator.GetEditVariantUri(ProjectFieldVariantIdentification variantId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("EditValue", "GameField",
+            new { ProjectId = variantId.FieldId.ProjectId.Value, projectFieldId = variantId.FieldId.ProjectFieldId, valueId = variantId.ProjectFieldVariantId }));
+
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {
         public Linkable(LinkType linkType, IProjectEntityId projectEntityId) : this(linkType, projectEntityId.ProjectId, projectEntityId.Id.ToString())

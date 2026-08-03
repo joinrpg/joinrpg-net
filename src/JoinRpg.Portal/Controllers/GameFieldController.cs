@@ -19,8 +19,7 @@ public class GameFieldController(
     FieldSetupManager manager,
     ICurrentProjectAccessor currentProjectAccessor,
     ICurrentUserAccessor currentUserAccessor,
-    IProjectMetadataRepository projectMetadataRepository,
-    ILogger<GameFieldController> logger
+    IProjectMetadataRepository projectMetadataRepository
         ) : JoinControllerGameBase
 {
     public FieldSetupManager Manager { get; } = manager;
@@ -267,73 +266,6 @@ public class GameFieldController(
         }
     }
 
-
-    /// <summary>
-    /// Removes custom field value by HTTP GET request
-    /// </summary>
-    /// <param name="projectId">Id of a project where field is located in</param>
-    /// <param name="projectFieldId">Id of a field to delete value from</param>
-    /// <param name="valueId">Id of a value to delete</param>
-    /// <returns>
-    /// 200 -- if a value was successfully deleted
-    /// 250 -- if a value was marked as inactive
-    /// 500 -- if any exception occured
-    /// 401 -- if logged user is not authorized to delete values
-    /// 404 -- if no field or project found
-    /// </returns>
-    [MasterAuthorize(Permission.CanChangeFields)]
-    [HttpDelete("~/{projectId:int}/fields/{projectFieldId:int}/DeleteValueEx/{valueId:int}")]
-    public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
-    {
-        try
-        {
-            var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-            var field = metadata.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == projectFieldId);
-            if (field is null)
-            {
-                return NotFound();
-            }
-            var variant = field.Variants.SingleOrDefault(v => v.Id.ProjectFieldVariantId == valueId);
-            if (variant is null)
-            {
-                return NotFound();
-            }
-
-            _ = await fieldSetupService.DeleteFieldValueVariant(projectId, projectFieldId, valueId);
-            return variant.IsActive
-                ? Ok()
-                : StatusCode(250);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Ошибка");
-            // TODO: Implement exception logging here
-            return StatusCode(500);
-        }
-    }
-
-    [MasterAuthorize(Permission.CanChangeFields)]
-    // TODO: Refactor to HEAD request (require UI fixes)
-    [HttpGet("~/{projectId:int}/fields/{parentObjectId:int}/values/{listItemId:int}/move/{direction:int}")]
-    public async Task<ActionResult> MoveValue(ProjectIdentification projectId, int listItemId, int parentObjectId, int direction)
-    {
-        var metadata = await projectMetadataRepository.GetProjectMetadata(projectId);
-        if (metadata.UnsortedFields.All(f => f.Id.ProjectFieldId != parentObjectId))
-        {
-            return NotFound();
-        }
-
-        try
-        {
-            await fieldSetupService.MoveFieldVariant(projectId, parentObjectId, listItemId, (short)direction);
-
-            return ReturnToField(new ProjectFieldIdentification(projectId, parentObjectId));
-        }
-        catch
-        {
-            return ReturnToField(new ProjectFieldIdentification(projectId, parentObjectId));
-        }
-    }
 
     [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> MassCreateValueVariants(int projectId, int projectFieldId, string valuesToAdd)
