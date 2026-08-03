@@ -1,19 +1,103 @@
 @using System.Linq.Expressions
 
-<JoinTextInput Value="@Value"
-               ValueChanged="@ValueChanged"
-               ValueExpression="@ValueExpression"
-               Placeholder="@("123, /user/123, vk.com/id…, @username, email@example.com")"
-               autocomplete="off" />
+@for (var i = 0; i < RowsToRender.Count; i++)
+{
+    var index = i;
+    <div class="join-user-link-editor-row">
+        <JoinTextInput Value="@RowsToRender[index]"
+                       ValueChanged="@(newValue => OnRowChangedAsync(index, newValue))"
+                       Placeholder="@("Ссылка или ID")"
+                       Immediate="@Multiple"
+                       autocomplete="off" />
+        @if (Multiple && index < Values.Count)
+        {
+            <JoinButton Preset="ButtonPreset.Delete" Label="" Size="SizeStyleEnum.Small" OnClick="@(() => OnRemoveRowAsync(index))" />
+        }
+    </div>
+}
 
 @code {
     [Parameter]
+    public bool Multiple { get; set; } = false;
+
+    [Parameter]
     [EditorRequired]
-    public string Value { get; set; } = "";
+    public List<string> Values { get; set; } = new();
 
     [Parameter]
-    public EventCallback<string> ValueChanged { get; set; }
+    public EventCallback<List<string>> ValuesChanged { get; set; }
 
     [Parameter]
-    public Expression<Func<string>> ValueExpression { get; set; } = default!;
+    public Expression<Func<List<string>>>? ValuesExpression { get; set; }
+
+    [CascadingParameter]
+    private EditContext? EditContext { get; set; }
+
+    private FieldIdentifier fieldIdentifier;
+
+    protected override void OnParametersSet()
+    {
+        if (ValuesExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(ValuesExpression);
+        }
+    }
+
+    private List<string> RowsToRender
+    {
+        get
+        {
+            if (!Multiple)
+            {
+                return [Values.Count > 0 ? Values[0] : ""];
+            }
+
+            if (Values.Count == 0 || !string.IsNullOrEmpty(Values[^1]))
+            {
+                return [.. Values, ""];
+            }
+
+            return Values;
+        }
+    }
+
+    private async Task OnRowChangedAsync(int index, string newValue)
+    {
+        if (!Multiple)
+        {
+            Values = string.IsNullOrEmpty(newValue) ? [] : [newValue];
+        }
+        else if (index == Values.Count)
+        {
+            if (!string.IsNullOrEmpty(newValue))
+            {
+                Values.Add(newValue);
+            }
+        }
+        else
+        {
+            Values[index] = newValue;
+            if (index == Values.Count - 1 && string.IsNullOrEmpty(newValue))
+            {
+                Values.RemoveAt(index);
+            }
+        }
+
+        await NotifyChangedAsync();
+    }
+
+    private async Task OnRemoveRowAsync(int index)
+    {
+        Values.RemoveAt(index);
+        await NotifyChangedAsync();
+    }
+
+    private async Task NotifyChangedAsync()
+    {
+        await ValuesChanged.InvokeAsync(Values);
+        if (ValuesExpression is not null)
+        {
+            EditContext?.NotifyFieldChanged(fieldIdentifier);
+        }
+    }
 }

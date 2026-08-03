@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Remove="libman.json" />
+    <None Remove="JoinUserLinkEditor.razor.css~RF16470767.TMP" />
     <None Include="libman.json" />
     <None Update="libman.json" />
   </ItemGroup>
