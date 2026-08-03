@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Projects;
+using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 
 namespace JoinRpg.Services.Impl.Projects;
 
@@ -20,6 +21,8 @@ internal partial class CreateProjectService
         _ = await CreateField(projectId, "Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
+
+        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Мероприятия", [description], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
     }
 
     private async Task SetupConventionParticipant(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
@@ -51,6 +54,8 @@ internal partial class CreateProjectService
         });
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Required });
+
+        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Участники", [], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
     }
 
     private async Task SetupLarp(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
@@ -65,6 +70,8 @@ internal partial class CreateProjectService
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
 
-        await projectRolesListService.CreateAsync(HotRolesListDefaults.Build(projectId, description));
+        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Все роли", [description], RolesGridGroupsViewMode.Tree, ShowRolesFilter.All));
+        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Горячие роли", [description], RolesGridGroupsViewMode.None, ShowRolesFilter.HotOnly));
+        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Вакантные роли", [description], RolesGridGroupsViewMode.None, ShowRolesFilter.VacantOnly));
     }
 }

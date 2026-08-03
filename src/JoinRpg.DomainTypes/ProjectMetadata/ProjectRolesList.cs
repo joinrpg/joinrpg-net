@@ -48,6 +48,24 @@ public record class ProjectRolesList(
     ShowRolesFilter ShowRolesFilter
     )
 {
-    //TODO проверять на валидность, например, что в публичной сетке ролей не может быть колонки со всеми контактами
+    public ProjectRolesList(
+        ProjectIdentification projectId,
+        string name,
+        IReadOnlyList<ProjectFieldIdentification> fields,
+        RolesGridGroupsViewMode groupsViewMode,
+        ShowRolesFilter filter = ShowRolesFilter.All
+        ) : this(
+            new ProjectRolesListIdentification(projectId, -1), // id сгенерирует БД
+            Name: name,
+            CharacterGroupId: null,
+            PublicMode: true,
+            Fields: fields,
+            ContactsColumn: ProjectRolesListVisibilityMode.None,
+            GroupsColumn: ProjectRolesListVisibilityMode.None,
+            GroupsViewMode: groupsViewMode,
+            ShowRolesFilter: filter)
+    {
+
+    }
 }
 

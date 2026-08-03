@@ -41,32 +41,17 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сетка ролей <span class="caret"></span></a>
 
                     <ul class="dropdown-menu">
-                        <li>
-                            @Html.ActionLink("Сетка ролей", "Index", "GameGroups", new { Model.ProjectId }, null)
-                        </li>
-
                         @if (Model.ProjectRolesLists.Any(x => x.PublicMode))
                         {
                             @foreach (var rl in Model.ProjectRolesLists.Where(x => x.PublicMode))
                             {
                                 <li><a asp-page="/GamePages/ProjectRoleListView"
                                        asp-route-projectId="@Model.ProjectId"
-                                       asp-route-id="@rl.ProjectRolesListId.ProjectRolesListId">@rl.Name</a></li>
+                                       asp-route-id="@rl.ProjectRolesListId!.ProjectRolesListId">@rl.Name</a></li>
                             }
                         }
-                        @if (Model.BigGroups.Any())
-                        {
-                            <li role="separator" class="dropdown-header">По группам:</li>
-                        }
-                        @foreach (var cg in Model.BigGroups)
-                        {
-                            <li>@(await Html.RenderComponentAsync<CharacterGroupLink>(RenderMode.Static, new {Model = cg})) </li>
-                        }
-                        @if (Model.ProjectRolesLists.Any())
-                        {
                             <li><a asp-page="/GamePages/ProjectRolesList"
                                    asp-route-projectId="@Model.ProjectId">Настроить сетку ролей</a></li>
-                        }
                     </ul>
                 </li>
                 <li class="dropdown">
