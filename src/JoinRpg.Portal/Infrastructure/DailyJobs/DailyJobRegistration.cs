@@ -17,6 +17,6 @@ public static class DailyJobRegistration
             .AddDailyJob<UpdatePaymentStatusJob>()
             ;
         services.AddDailyJob<PerformRecurrentPaymentMidnightJob>();
-        services.AddDailyJob<AddHotRolesListJob>();
+        services.AddDailyJob<EnsureRolesListsJob>();
     }
 }
