@@ -1,4 +1,5 @@
 @using JoinRpg.Web.ProjectCommon.Projects
+@using JoinRpg.WebComponents
 
 Даты: <DateRangeDisplay Start="Model.Begin" End="Model.End" />
 <br />
@@ -12,6 +13,21 @@
 @if (Model.SiteUri is not null)
 {
     <text>Сайт: <a href="@Model.SiteUri"> @Model.SiteUri?.Host </a><br /></text>
+}
+@if (Model.Vk is not null)
+{
+    <VkLink Contact="Model.Vk" />
+    <br />
+}
+@if (Model.LiveJournal is not null)
+{
+    <LiveJournalLink Contact="Model.LiveJournal" />
+    <br />
+}
+@if (Model.TelegramChannel is not null)
+{
+    <text>Telegram: <TelegramLink Link="@Model.TelegramChannel" /></text>
+    <br />
 }
 @code {
     [Parameter]

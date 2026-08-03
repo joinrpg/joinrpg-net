@@ -60,6 +60,20 @@ public class GameDataParserTest
     }
 
     [Fact]
+    public void TestParseSocialNetworks()
+    {
+        var str = """
+            {"id":12666,"name":"Метро 2033","uri":"","mg":"МГ Негатив","sub_region_disp_name":"Бшк","sub_region_name":"Башкортостан","vk_club":"club219947794","lj_comm":null,"fb_comm":null,"telegram_channel":"metro2013ufa","telegram_contact":"hodunoval","begin":"2026-09-27","time":"1","update_date":"2026-07-15T15:57:43+03:00"}
+            """;
+
+        var gameInfo = ResultParser.TryParseGameInfo(str);
+        gameInfo.ShouldNotBeNull();
+        gameInfo.VkClub.ShouldBe("club219947794");
+        gameInfo.LiveJournalCommunity.ShouldBeNull();
+        gameInfo.TelegramChannel.ShouldBe("metro2013ufa");
+    }
+
+    [Fact]
     public void TestParseWithIncorrectUri()
     {
         var str = """                        

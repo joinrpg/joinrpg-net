@@ -71,6 +71,9 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
                     g.RegionName,
                     g.MasterGroupName,
                     Uri.TryCreate(g.SiteUri, UriKind.Absolute, out var u) ? u : null,
-                    g.Active);
+                    g.Active,
+                    VkId.FromOptional(g.VkClub),
+                    LiveJournalId.FromOptional(g.LjComm),
+                    g.TelegramChannel);
     }
 }

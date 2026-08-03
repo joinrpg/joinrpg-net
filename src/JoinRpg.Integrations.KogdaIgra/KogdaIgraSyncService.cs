@@ -119,6 +119,9 @@ internal class KogdaIgraSyncService(
         dbRecord.SiteUri = kiData.SiteUri?.AbsoluteUri;
         dbRecord.MasterGroupName = kiData.MasterGroupName;
         dbRecord.RegionName = kiData.RegionName;
+        dbRecord.VkClub = kiData.VkClub;
+        dbRecord.LjComm = kiData.LiveJournalCommunity;
+        dbRecord.TelegramChannel = kiData.TelegramChannel;
         dbRecord.Active = true;
 
         await unitOfWork.SaveChangesAsync();

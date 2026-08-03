@@ -38,6 +38,9 @@ public class KogdaIgraGame
     public DateTime? End { get; set; }
     public string MasterGroupName { get; set; }
     public string? SiteUri { get; set; }
+    public string? VkClub { get; set; }
+    public string? LjComm { get; set; }
+    public string? TelegramChannel { get; set; }
 
     /// <summary>
     /// Привязанные проекты. Пусто = ничего не привязано.

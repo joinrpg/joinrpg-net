@@ -9,4 +9,7 @@ public record class KogdaIgraGameData(
     string MasterGroupName,
     Uri? SiteUri
 ,
-    bool IsActive);
+    bool IsActive,
+    VkId? VkClub = null,
+    LiveJournalId? LjComm = null,
+    string? TelegramChannel = null);

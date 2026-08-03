@@ -25,7 +25,10 @@ public record class KogdaIgraCardViewModel(
     DateOnly Begin,
     DateOnly End,
     string RegionName,
-    string MasterGroupName, Uri? SiteUri);
+    string MasterGroupName, Uri? SiteUri,
+    VkId? Vk = null,
+    LiveJournalId? LiveJournal = null,
+    string? TelegramChannel = null);
 
 [method: JsonConstructor]
 public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims,
