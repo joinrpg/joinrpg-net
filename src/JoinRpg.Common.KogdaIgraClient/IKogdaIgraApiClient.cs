@@ -21,5 +21,8 @@ public record class KogdaIgraGameInfo(
     string RegionName,
     string RegionShortName,
     string MasterGroupName,
-    Uri? SiteUri
+    Uri? SiteUri,
+    string? VkClub,
+    string? LiveJournalCommunity,
+    string? TelegramChannel
     );

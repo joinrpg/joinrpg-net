@@ -19,7 +19,10 @@ internal static class ViewModelBuilders
             End: game.End,
             RegionName: game.RegionName,
             MasterGroupName: game.MasterGroupName,
-            SiteUri: game.SiteUri
+            SiteUri: game.SiteUri,
+            Vk: game.VkClub,
+            LiveJournal: game.LjComm,
+            TelegramChannel: game.TelegramChannel
             );
     }
 }
