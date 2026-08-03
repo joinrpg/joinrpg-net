@@ -1,7 +1,6 @@
 using JoinRpg.Dal.JobService;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl;
-using JoinRpg.Services.Impl.Projects;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
@@ -17,6 +16,5 @@ public static class DailyJobRegistration
             .AddDailyJob<UpdatePaymentStatusJob>()
             ;
         services.AddDailyJob<PerformRecurrentPaymentMidnightJob>();
-        services.AddDailyJob<EnsureRolesListsJob>();
     }
 }
