@@ -49,6 +49,7 @@
 
 <h3>Overrides</h3>
 <table style="border-collapse: unset; border-spacing: 4px;">
+    <tbody>
     <tr>
         <td>Custom normal label</td>
         <td><JoinButton Preset="ButtonPreset.Add" Label="Custom Normal Label" /></td>
@@ -81,19 +82,23 @@
         <td>No progress icon</td>
         <td><JoinButton Preset="ButtonPreset.Add" InProgress="@true" ProgressIcon="" /></td>
     </tr>
+    </tbody>
 </table>
 
 <h3>Types</h3>
 <table style="border-collapse: unset; border-spacing: 4px;">
+    <tbody>
     <tr>
         <td><JoinButton Label="Regular Button" /></td>
         <td><JoinButton Label="Submit Button" Submit="@true" /></td>
         <td><JoinButton Label="Link" Link="/" /></td>
     </tr>
+    </tbody>
 </table>
 
 <h3>Sizes</h3>
 <table style="border-collapse: unset; border-spacing: 4px;">
+    <tbody>
     <tr>
             <td><JoinButton Label="Undefined size" /></td>
         @foreach (var size in Enum.GetValues<SizeStyleEnum>())
@@ -101,6 +106,7 @@
             <td><JoinButton Label="@size.ToString()" Size="size" /></td>
         }
     </tr>
+    </tbody>
 </table>
 
 
@@ -134,17 +140,20 @@
 <h4>Automatic configuration by dialog type</h4>
 
 <table style="border-collapse: unset; border-spacing: 4px;">
+    <tbody>
     <tr>
         @foreach (var mdt in Enum.GetValues<MessageDialogType>())
         {
             <td><JoinButton Label="@mdt.ToString()" OnClick="() => ShowMessageDialog(mdt, stdFunc: true)" AutoProgress="@false" /></td>
         }
     </tr>
+    </tbody>
 </table>
 
 <h4>Custom configurations</h4>
 
 <table style="border-collapse: unset; border-spacing: 4px;">
+    <tbody>
     <tr>
         <td>Custom all</td>
         <td><JoinButton Label="Show" OnClick="() => _joinMessageDialog2!.ShowModalAsync()" /></td>
@@ -153,6 +162,7 @@
         <td>Custom content</td>
         <td><JoinButton Label="Show" OnClick="() => _joinMessageDialog3!.ShowModalAsync()" /></td>
     </tr>
+    </tbody>
 </table>
 
 <h4>Button with auto-confirmation</h4>
