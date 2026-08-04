@@ -13,13 +13,17 @@ internal class ProjectMetadataWriteRepository(MyDbContext ctx) : IProjectMetadat
     private sealed class ProjectMetadataUpdateHandle(MyDbContext ctx, Project project, ProjectIdentification projectId)
         : IProjectMetadataUpdateHandle
     {
-        public Project Project { get; } = project;
+        public Project Project { get; private set; } = project;
 
         public ProjectInfo ProjectInfo { get; private set; }
             = ProjectMetadataRepository.CreateInfoFromProject(project, projectId);
 
-        public ProjectInfo Refresh()
-            => ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, projectId);
+        public async Task<ProjectInfo> Refresh()
+        {
+            Project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: true)
+                ?? throw new InvalidOperationException($"Project with {projectId} not found");
+            return ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, projectId);
+        }
 
         public void Remove(object entity) => ctx.Set(entity.GetType()).Remove(entity);
     }

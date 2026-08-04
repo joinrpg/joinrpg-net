@@ -91,8 +91,10 @@ public class MockedProject
 
     public void ReInitProjectInfo()
     {
-        // Имитация lazy-loading EF6: боевой код полагается на то, что ProjectAcl.User
-        // подгрузится по UserId сама, даже если ACL создан "на лету" (см. ProjectAccessService.GrantAccess).
+        // Имитация перечитывания Project из БД (см. ProjectMetadataWriteRepository.Refresh): в бою
+        // свежий запрос с Include подтягивает navigation-свойства даже тем сущностям, которые были
+        // добавлены в рамках мутации "на лету" (например новый ProjectAcl без явно проставленного
+        // User) — lazy loading для них не сработал бы, а реальный реload сработает.
         foreach (var acl in Project.ProjectAcls)
         {
             acl.User ??= new User { UserId = acl.UserId, PrefferedName = $"User{acl.UserId}", Email = $"user{acl.UserId}@example.com", Claims = [] };
