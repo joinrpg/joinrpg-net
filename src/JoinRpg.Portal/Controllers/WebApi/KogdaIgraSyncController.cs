@@ -29,6 +29,9 @@ public class KogdaIgraSyncController(IKogdaIgraSyncClient client) : ControllerBa
         => await client.ForceResyncGames(gameIds);
 
     [HttpPost]
+    public async Task<ResyncOperationResultsViewModel> ScheduleUpdateAll() => await client.ScheduleUpdateAllGames();
+
+    [HttpPost]
     public async Task UpdateBindings([FromBody] KogdaIgraBindViewModel command, [FromServices] IKogdaIgraBindClient bindClient)
         => await bindClient.UpdateProjectKogdaIgraBindings(command);
 }
