@@ -6,3 +6,6 @@ public class KogdaIgraParseException(int Id, string message = "Ошибка пр
 {
     public int Id { get; } = Id;
 }
+
+public class KogdaIgraEmptyResponseException(string message = "КогдаИгра вернула пустой ответ вместо JSON")
+    : Exception(message);
