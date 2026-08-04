@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using JoinRpg.DataModel.Projects;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using LinqKit;
 
@@ -163,13 +162,13 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         {
             return [];
         }
-        var projectId = characterGroupIdentifications.EnsureSameProject().First().ProjectId;
-        await LoadProjectFields(projectId); //TODO Remove
-        await LoadProjectCharactersAndGroups(projectId);
-        await LoadMasters(projectId); //TODO Remove
-        await LoadProjectClaims(projectId);
 
-        return await Ctx.Set<Character>().Where(CharacterPredicates.ByGroup(characterGroupIdentifications)).ToListAsync();
+        return await Ctx.Set<Character>()
+            .Include(c => c.Claims)
+            .Include(c => c.ApprovedClaim!.Player.Extra)
+            .Include(c => c.ApprovedClaim!.Player.ExternalLogins)
+            .Where(CharacterPredicates.ByGroup(characterGroupIdentifications))
+            .ToListAsync();
     }
 
     async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification)
