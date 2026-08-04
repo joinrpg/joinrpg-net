@@ -29,7 +29,6 @@ public record ProjectRoleGridViewResult(
 public record ProjectRoleGridViewModel(
     ProjectRolesListIdentification? RolesListId,
     string Name,
-    string? GroupName,
     bool CanEditSettings,
     bool HasMasterAccess,
     bool HasGroupsColumn,
@@ -74,6 +73,7 @@ public record ProjectRoleGridGroupHeaderRowViewModel(
     string? BoundExpression = null) : ProjectRoleGridRowViewModel
 {
     // Это нужно, потому что MarkupString не умеет нормально десереиализоваться из JSON
+    [JsonIgnore]
     public MarkupString? Description { get; } = DescriptionHtml is null ? null : new MarkupString(DescriptionHtml);
 
     public bool IsSpecial => GroupType is CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue;

@@ -66,8 +66,6 @@ internal class ProjectRoleGridViewService(
                     .ToDictionary(g => g.Id)
                 : [];
 
-        var groupName = projectInfo.GetGroupById(groupId.CharacterGroupId).Name;
-
         var canEditSettings = projectInfo.HasMasterAccess(
             currentUserAccessor.UserIdentificationOrDefault,
             Permission.CanEditRoles);
@@ -75,7 +73,7 @@ internal class ProjectRoleGridViewService(
         return new ProjectRoleGridViewResult(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
-                config, groupName, canEditSettings, canViewPrivate,
+                config, canEditSettings, canViewPrivate,
                 orderedGroups, charactersByGroup, groupFullInfos, projectInfo),
             NoAccess: null);
     }
