@@ -168,9 +168,7 @@ public class IdentificationCommonTest
     // IdentificationParseHelper.TryParse1 отбрасывает значения <= 0 (управляет model binding: ?projectId=0
     // должен биндиться как отсутствующее значение, а не как 0). Одноногие Id поэтому сериализуются, но не
     // десериализуются при значении 0 или отрицательном. Тест фиксирует текущее поведение, не является багом.
-    // Это поведение появляется только со строковым JSON-конвертером — до переопубликования
-    // JoinRpg.Common.PrimitiveTypes.SourceGenerator (ADR011, PR4) старый вложенный формат не проходит через TryParse1.
-    [Theory(Skip = "Требует переопубликованный JoinRpg.Common.PrimitiveTypes.SourceGenerator (ADR011, PR4)")]
+    [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     public void SingleLeafType_ZeroOrNegativeValue_DoesNotRoundTripThroughJson(int value)
