@@ -15,7 +15,6 @@ internal static class ProjectRoleGridViewModelBuilder
 {
     public static ProjectRoleGridViewModel Build(
         ProjectRolesList config,
-        string? groupName,
         bool canEditSettings,
         bool canViewPrivate,
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
@@ -37,7 +36,6 @@ internal static class ProjectRoleGridViewModelBuilder
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
             Name: config.Name,
-            GroupName: groupName,
             CanEditSettings: canEditSettings,
             HasMasterAccess: canViewPrivate,
             HasGroupsColumn: hasGroupsColumn,
@@ -187,7 +185,9 @@ internal static class ProjectRoleGridViewModelBuilder
             : null;
 
         var fieldsDict = character.GetFieldsDict(projectInfo);
-        var fieldValues = fields.Select(f => fieldsDict[f.Id].DisplayString).ToList();
+        var fieldValues = firstCopy
+            ? fields.Select(f => fieldsDict[f.Id].DisplayString).ToList()
+            : [];
 
         // Количество активных заявок видно всем, как в классической сетке ролей.
         var activeClaimsCount = character.Claims.Count(claim => claim.ClaimStatus.IsActive());

@@ -36,7 +36,6 @@ public class ProjectRoleGridViewModelBuilderTests
     private ProjectRoleGridViewModel BuildGrid(
         ProjectRolesList config,
         IReadOnlyCollection<Character> characters,
-        string? groupName = null,
         bool canEditSettings = false,
         bool canViewPrivate = true)
     {
@@ -47,7 +46,7 @@ public class ProjectRoleGridViewModelBuilderTests
             .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
             .ToLookup(x => x.group, x => x.character);
         return ProjectRoleGridViewModelBuilder.Build(
-            config, groupName, canEditSettings, canViewPrivate,
+            config, canEditSettings, canViewPrivate,
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
             _mock.ProjectInfo);
@@ -605,15 +604,23 @@ public class ProjectRoleGridViewModelBuilderTests
         var groupB = CreateGroup("B", RootGroupId);
         _mock.ReInitProjectInfo();
 
+        // CreateField пишет прямо в ProjectInfo, а не в Project — вызывать после ReInitProjectInfo,
+        // иначе следующий ReInitProjectInfo (или сам этот вызов) стёр бы поле.
+        var field = _mock.CreateField("Описание", projectFieldVisibility: ProjectFieldVisibility.Public, showOnUnApprovedClaims: true);
+
         var character = _mock.CreateCharacter("Вася");
         character.ParentCharacterGroupIds = [groupA.CharacterGroupId, groupB.CharacterGroupId];
 
-        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [character]);
+        var result = BuildGrid(Config(fields: [field.Id], groupsViewMode: RolesGridGroupsViewMode.Tree), [character]);
 
         var charRows = result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ToList();
         charRows.Count.ShouldBe(2);
         charRows[0].FirstCopy.ShouldBeTrue();
         charRows[1].FirstCopy.ShouldBeFalse();
+
+        // Повторная строка не возит fieldValues — клиент их не читает (рисует «см. выше»).
+        charRows[0].FieldValues.ShouldNotBeEmpty();
+        charRows[1].FieldValues.ShouldBeEmpty();
     }
 
     [Fact]
