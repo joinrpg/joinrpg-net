@@ -13,7 +13,8 @@ public interface IProjectRoleGridClient
 
     /// <summary>
     /// «Классическая» сетка ролей (страница GameGroups/Index) — строится на лету, без сохранённой
-    /// настройки. <paramref name="groupId"/> — конкретный корень сетки (резолвится на странице).
+    /// настройки. <paramref name="groupId"/> — явно выбранный корень сетки, или null, если корень
+    /// не указан в URL: тогда сетка строится от корня проекта, не используя спецгруппы.
     /// </summary>
-    Task<ProjectRoleGridViewResult> GetClassicRoleGrid(CharacterGroupIdentification groupId);
+    Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId);
 }

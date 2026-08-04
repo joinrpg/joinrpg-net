@@ -35,7 +35,8 @@ public class GameGroupsController(
     {
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var characterGroupId2 = CharacterGroupIdentification.FromOptional(projectId, characterGroupId) ?? projectInfo.RootCharacterGroupId;
+        var explicitGroupId = CharacterGroupIdentification.FromOptional(projectId, characterGroupId);
+        var characterGroupId2 = explicitGroupId ?? projectInfo.RootCharacterGroupId;
         var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
         if (charGroupFullInfo is null)
         {
@@ -49,7 +50,8 @@ public class GameGroupsController(
           {
               ProjectName = projectInfo.ProjectName,
               ShowEditControls = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentificationOrDefault),
-              RootGroupId = charGroupFullInfo.Id,
+              ProjectId = projectId,
+              GridGroupId = explicitGroupId,
               RootGroupName = charGroupFullInfo.Name,
               Details = new CharacterGroupDetailsViewModel(charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentificationOrDefault, GroupNavigationPage.Roles),
           });

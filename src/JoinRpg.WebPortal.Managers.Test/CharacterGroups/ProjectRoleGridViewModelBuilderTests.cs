@@ -37,16 +37,19 @@ public class ProjectRoleGridViewModelBuilderTests
         ProjectRolesList config,
         IReadOnlyCollection<Character> characters,
         bool canEditSettings = false,
-        bool canViewPrivate = true)
+        bool canViewPrivate = true,
+        bool excludeSpecialGroups = false)
     {
         var rootId = _mock.ProjectInfo.RootCharacterGroupId;
-        var orderedGroups = _mock.ProjectInfo.GetChildGroupsIncludingThis(rootId).ToList();
+        var orderedGroups = _mock.ProjectInfo.GetChildGroupsIncludingThis(rootId)
+            .Where(g => !excludeSpecialGroups || !g.IsSpecial)
+            .ToList();
         var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic).ToList();
         var charactersByGroup = visibleCharacters
             .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
             .ToLookup(x => x.group, x => x.character);
         return ProjectRoleGridViewModelBuilder.Build(
-            config, canEditSettings, canViewPrivate,
+            config, canEditSettings, canViewPrivate, excludeSpecialGroups,
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
             _mock.ProjectInfo);
@@ -687,7 +690,9 @@ public class ProjectRoleGridViewModelBuilderTests
             });
         });
 
-        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), []);
+        // excludeSpecialGroups: false — как при явно заданном корне (просмотр конкретной подгруппы):
+        // спецгруппа остаётся, но последней среди сиблингов.
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [], excludeSpecialGroups: false);
 
         var headers = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().ToList();
         // root, затем дети: обычная группа перед спецгруппой (спецгруппы — последними)
@@ -695,6 +700,25 @@ public class ProjectRoleGridViewModelBuilderTests
 
         var specialHeader = headers.Single(h => h.Group.Name == "Эльф");
         specialHeader.BoundExpression.ShouldBe("Раса = Эльф");
+    }
+
+    [Fact]
+    public void Tree_NullRoot_SpecialGroupsExcludedEntirely()
+    {
+        var specialGroup = _mock.CreateCharacterGroup(skipReinit: true);
+        specialGroup.CharacterGroupName = "Эльф";
+        specialGroup.IsSpecial = true;
+        specialGroup.ParentCharacterGroupIds = [RootGroupId];
+
+        var regularGroup = CreateGroup("Обычная", RootGroupId);
+        _mock.ReInitProjectInfo();
+
+        // excludeSpecialGroups: true — как при построении сетки от null-корня (без явно
+        // заданной группы): спецгруппа не должна попасть в вывод вовсе.
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), [], excludeSpecialGroups: true);
+
+        var headers = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().ToList();
+        headers.Select(h => h.Group.Name).ShouldBe(["test_1", "Обычная"]);
     }
 
     [Fact]
@@ -753,6 +777,16 @@ public class ProjectRoleGridViewModelBuilderTests
             _mock.ProjectInfo.RootCharacterGroupId, "Все роли", descriptionField: null);
 
         config.Fields.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ClassicRolesGridDefaults_Build_NullGroupId_ProducesNullCharacterGroupId()
+    {
+        // Группа не указана в URL — сетка должна строиться от корня проекта, не используя
+        // спецгруппы (как и сохранённая ProjectRolesList с CharacterGroupId == null).
+        var config = ClassicRolesGridDefaults.Build(groupId: null, "Все роли", descriptionField: null);
+
+        config.CharacterGroupId.ShouldBeNull();
     }
 
     [Fact]

@@ -24,9 +24,9 @@ public class ProjectRoleGridController(IProjectRoleGridClient client) : Controll
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<ProjectRoleGridViewResult>> GetClassic(
-        [FromQuery] ProjectIdentification projectId, [FromQuery] int characterGroupId)
+        [FromQuery] ProjectIdentification projectId, [FromQuery] int? characterGroupId)
     {
-        var groupId = new CharacterGroupIdentification(projectId, characterGroupId);
-        return Ok(await client.GetClassicRoleGrid(groupId));
+        var groupId = CharacterGroupIdentification.FromOptional(projectId, characterGroupId);
+        return Ok(await client.GetClassicRoleGrid(projectId, groupId));
     }
 }

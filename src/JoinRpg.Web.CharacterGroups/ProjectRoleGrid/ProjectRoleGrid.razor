@@ -218,10 +218,12 @@ else
 }
 
 @code {
-    // Режим сохранённой сетки: задаётся RolesListId. Классический режим (GameGroups/Index):
-    // задаётся ClassicRootGroupId (конкретный корень сетки, несёт projectId). Ровно один из них.
-    [Parameter] public ProjectRolesListIdentification RolesListId { get; set; }
-    [Parameter] public CharacterGroupIdentification? ClassicRootGroupId { get; set; }
+    // Режим выбирается по RolesListId: задан — сохранённая сетка, не задан — классическая
+    // (GameGroups/Index), строится от ProjectId + ClassicGroupId (null, если группа в URL не
+    // указана — тогда сетка строится от корня проекта без спецгрупп).
+    [Parameter] public ProjectRolesListIdentification? RolesListId { get; set; }
+    [Parameter] public ProjectIdentification ProjectId { get; set; }
+    [Parameter] public CharacterGroupIdentification? ClassicGroupId { get; set; }
 
     private ProjectRoleGridViewResult? Result { get; set; }
     private PersistingComponentStateSubscription _persistingSubscription;
@@ -241,9 +243,9 @@ else
 
         if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewResult>(nameof(ProjectRoleGrid), out var result))
         {
-            result = ClassicRootGroupId is { } classicGroupId
-                ? await Client.GetClassicRoleGrid(classicGroupId)
-                : await Client.GetRoleGrid(RolesListId);
+            result = RolesListId is { } rolesListId
+                ? await Client.GetRoleGrid(rolesListId)
+                : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId);
         }
         Result = result;
 
