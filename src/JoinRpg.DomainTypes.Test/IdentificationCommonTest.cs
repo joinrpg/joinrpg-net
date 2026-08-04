@@ -1,5 +1,7 @@
 using System.Text.Json;
 using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Test;
 
@@ -132,5 +134,49 @@ public class IdentificationCommonTest
     public void ShouldHaveSpanParseMethodDirectlyNotAtInterface(Type type)
     {
         type.GetMethod("Parse", [typeof(ReadOnlySpan<char>), typeof(IFormatProvider)]).ShouldNotBeNull();
+    }
+
+    // ProjectRolesList.cs использует new ProjectRolesListIdentification(projectId, -1) как sentinel «БД присвоит».
+    // Отрицательная последняя компонента должна round-trip'иться и через ToString/Parse, и через JSON.
+    [Fact]
+    public void NegativeLastComponent_TwoLeafType_ShouldRoundTrip()
+    {
+        var instance = new ProjectRolesListIdentification(1, -1);
+
+        instance.ToString().ShouldBe("ProjectRolesListId(1--1)");
+
+        var parsed = ProjectRolesListIdentification.Parse(instance.ToString(), null);
+        parsed.ShouldBe(instance);
+
+        var json = JsonSerializer.Serialize(instance);
+        JsonSerializer.Deserialize<ProjectRolesListIdentification>(json).ShouldBe(instance);
+    }
+
+    [Fact]
+    public void NegativeLastComponent_FourLeafType_ShouldRoundTrip()
+    {
+        var plotElementId = new PlotElementIdentification(new PlotFolderIdentification(1, 2), 3);
+        var instance = new PlotVersionIdentification(plotElementId, -1);
+
+        var parsed = PlotVersionIdentification.Parse(instance.ToString(), null);
+        parsed.ShouldBe(instance);
+
+        var json = JsonSerializer.Serialize(instance);
+        JsonSerializer.Deserialize<PlotVersionIdentification>(json).ShouldBe(instance);
+    }
+
+    // IdentificationParseHelper.TryParse1 отбрасывает значения <= 0 (управляет model binding: ?projectId=0
+    // должен биндиться как отсутствующее значение, а не как 0). Одноногие Id поэтому сериализуются, но не
+    // десериализуются при значении 0 или отрицательном. Тест фиксирует текущее поведение, не является багом.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void SingleLeafType_ZeroOrNegativeValue_DoesNotRoundTripThroughJson(int value)
+    {
+        var instance = new UserIdentification(value);
+
+        var json = JsonSerializer.Serialize(instance);
+
+        _ = Should.Throw<JsonException>(() => JsonSerializer.Deserialize<UserIdentification>(json));
     }
 }
