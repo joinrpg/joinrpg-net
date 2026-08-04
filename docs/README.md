@@ -27,6 +27,7 @@
 - [ADR008: Страница просмотра сетки ролей](adr008-roles-list-view-page.md)
 - [ADR009: ProjectPropsService — единая точка изменения метаданных проекта](adr009-project-props-service.md)
 - [ADR010: Реклама горячих вакансий](adr010-hot-vacancy-advertisement.md)
+- [ADR011: Размер payload сетки ролей](adr011-roles-grid-payload.md)
 
 ## Быстрые ссылки
 
