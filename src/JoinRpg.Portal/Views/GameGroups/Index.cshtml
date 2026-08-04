@@ -8,4 +8,4 @@
 }
 @Html.DisplayFor(model => model.Details)
 @* Тело сетки строит остров ProjectRoleGrid в классическом режиме (транзиентная настройка без id). *@
-@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { ClassicRootGroupId = (CharacterGroupIdentification?)Model.RootGroupId }))
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.ProjectId, ClassicGroupId = Model.GridGroupId }))

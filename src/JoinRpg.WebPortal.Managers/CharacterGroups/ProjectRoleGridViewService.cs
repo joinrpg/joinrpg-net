@@ -25,10 +25,11 @@ internal class ProjectRoleGridViewService(
         return await BuildResult(projectInfo, config);
     }
 
-    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(CharacterGroupIdentification groupId)
+    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
-        var groupName = projectInfo.GetGroupById(groupId.CharacterGroupId).Name;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var resolvedGroupId = groupId ?? projectInfo.RootCharacterGroupId;
+        var groupName = projectInfo.GetGroupById(resolvedGroupId.CharacterGroupId).Name;
         // Транзиентная настройка «на лету»: режим дерева + колонка описания, публичная (как старая Index).
         var config = ClassicRolesGridDefaults.Build(groupId, groupName, projectInfo.CharacterDescriptionField?.Id);
         return await BuildResult(projectInfo, config);
@@ -44,13 +45,17 @@ internal class ProjectRoleGridViewService(
         }
 
         var groupId = config.CharacterGroupId ?? projectInfo.RootCharacterGroupId;
+        // Если корень не задан явно, строим сетку от верха, не используя спецгруппы (см. doc-комментарий CharacterGroupId).
+        var excludeSpecialGroups = config.CharacterGroupId is null;
 
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(groupId).ToList();
+        var orderedGroups = projectInfo.GetChildGroupsIncludingThis(groupId)
+            .Where(g => !excludeSpecialGroups || !g.IsSpecial)
+            .ToList();
+        var groupIds = orderedGroups.Select(g => g.Id).ToList();
+
         var characters = (await projectRepository.GetCharacterByGroups(groupIds))
             .Where(c => c.IsActive)
             .ToList();
-
-        var orderedGroups = projectInfo.GetChildGroupsIncludingThis(groupId).ToList();
 
         // Скрытое (приватные персонажи и скрытые игроки) видит только мастер.
         var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
@@ -73,7 +78,7 @@ internal class ProjectRoleGridViewService(
         return new ProjectRoleGridViewResult(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
-                config, canEditSettings, canViewPrivate,
+                config, canEditSettings, canViewPrivate, excludeSpecialGroups,
                 orderedGroups, charactersByGroup, groupFullInfos, projectInfo),
             NoAccess: null);
     }

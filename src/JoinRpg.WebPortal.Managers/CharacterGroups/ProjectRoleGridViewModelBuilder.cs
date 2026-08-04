@@ -17,6 +17,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectRolesList config,
         bool canEditSettings,
         bool canViewPrivate,
+        bool excludeSpecialGroups,
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
         ILookup<CharacterGroupIdentification, Character> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
@@ -30,7 +31,7 @@ internal static class ProjectRoleGridViewModelBuilder
         var rootGroup = orderedGroups[0];
 
         var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
-            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo)
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
             : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
@@ -100,6 +101,7 @@ internal static class ProjectRoleGridViewModelBuilder
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditSettings,
+        bool excludeSpecialGroups,
         IReadOnlyList<ProjectFieldInfo> fields,
         ProjectInfo projectInfo)
     {
@@ -144,10 +146,12 @@ internal static class ProjectRoleGridViewModelBuilder
                     fields, group.Id, firstCopy: seenCharacters.Add(character.CharacterId)));
             }
 
-            // Как в старой сетке: скрытые ветки не показываем не-мастерам, спецгруппы — последними.
+            // Как в старой сетке: скрытые ветки не показываем не-мастерам; если корень задан явно —
+            // спецгруппы остаются, но последними; если строим от верха (null-корень) — исключаем совсем.
             var children = group.DirectChildGroupIds
                 .Select(id => projectInfo.GetGroupById(id.CharacterGroupId))
                 .Where(g => g.IsActive && (canViewPrivate || g.IsPublic))
+                .Where(g => !excludeSpecialGroups || !g.IsSpecial)
                 .OrderBy(g => g.IsSpecial);
             foreach (var child in children)
             {

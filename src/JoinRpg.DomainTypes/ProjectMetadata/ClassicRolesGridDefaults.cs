@@ -10,11 +10,13 @@ namespace JoinRpg.DomainTypes.ProjectMetadata;
 public static class ClassicRolesGridDefaults
 {
     /// <summary>
-    /// Собирает транзиентную настройку классической сетки от группы <paramref name="groupId"/>
-    /// (конкретный id корня сетки, обычно уже резолвленный из nullable-параметра роута).
+    /// Собирает транзиентную настройку классической сетки от группы <paramref name="groupId"/>.
+    /// Если <paramref name="groupId"/> == null (в роуте не был указан характерGroupId), сетка
+    /// строится от корня проекта, не используя спецгруппы — см. doc-комментарий
+    /// <see cref="ProjectRolesList.CharacterGroupId"/>.
     /// </summary>
     public static ProjectRolesList Build(
-        CharacterGroupIdentification groupId,
+        CharacterGroupIdentification? groupId,
         string groupName,
         ProjectFieldIdentification? descriptionField)
         => new(
