@@ -6,4 +6,5 @@
     ViewData["Title"] = "Сетка ролей";
 }
 
-@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssemblyPrerendered, new { Model.RolesListId }))
+@* Большие сетки ролей просто не рендерятся на сервере из-за размера *@
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.RolesListId }))
