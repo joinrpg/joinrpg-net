@@ -8,6 +8,7 @@
 <Tooltip Title="@Title">
     <span @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
         @TryGetLabel()
+        @Text
         @ChildContent
     </span>
 </Tooltip>
@@ -26,6 +27,9 @@
 
     [Parameter]
     public string Title { get; set; } = null!;
+
+    [Parameter]
+    public string? Text { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? InputAttributes { get; set; }
