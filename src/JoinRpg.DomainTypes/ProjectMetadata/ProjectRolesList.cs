@@ -36,6 +36,7 @@ public enum RolesGridGroupsViewMode
 /// <param name="GroupsColumn">Показывать ли специальную колонку «интересные группы» (нет, только публичные группы, все группы)</param>
 /// <param name="GroupsViewMode">Как показывать группы: не показывать, секциями в таблице, деревом</param>
 /// <param name="ShowRolesFilter">Какие роли показывать: все, только вакантные, только горячие</param>
+[method: JsonConstructor]
 public record class ProjectRolesList(
     ProjectRolesListIdentification? ProjectRolesListId,
     string Name,
