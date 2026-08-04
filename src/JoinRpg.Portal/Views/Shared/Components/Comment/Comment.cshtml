@@ -44,7 +44,7 @@
 
                         @if (!comment.IsRead)
                             {
-                        <span class="label label-default" title="Новый комментарий">New</span>
+                        <component type="typeof(JoinBadge)" render-mode="Static" Param-Title='"Новый комментарий"' Param-Text='"New"' />
                             }
 
                         <a
@@ -104,7 +104,7 @@
 
                             if (Model.Finance.State == FinanceOperationState.Declined)
                             {
-                    <span class="label label-warning">Мастер не подтверждает оплату</span>
+                    <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Warning" Param-Text='"Мастер не подтверждает оплату"' />
                     <br />
                             }
                             else if (Model.Finance.State == FinanceOperationState.Proposed)
@@ -118,7 +118,7 @@
                                 }
                                 else
                                 {
-                    <span class="label label-default">Ждет одобрения мастером</span>
+                    <component type="typeof(JoinBadge)" render-mode="Static" Param-Text='"Ждет одобрения мастером"' />
                     <br />
                                 }
                             }

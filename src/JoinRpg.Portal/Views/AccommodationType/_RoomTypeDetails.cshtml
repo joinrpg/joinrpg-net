@@ -30,15 +30,15 @@
         <td>
             @if (Model.IsInfinite)
             {
-                <span class="label label-info">Бесконечное</span>
+                <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Info" Param-Text='"Бесконечное"' />
             }
             @if (!Model.IsPlayerSelectable)
             {
-                <span class="label label-warning">Закрыто для участников</span>
+                <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Warning" Param-Text='"Закрыто для участников"' />
             }
             @if (Model.IsAutoFilledAccommodation)
             {
-                <span class="label label-success">Автозаполнение</span>
+                <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Success" Param-Text='"Автозаполнение"' />
             }
         </td>
         <td>

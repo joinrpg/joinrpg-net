@@ -30,7 +30,9 @@
                 <span style="display: inline-flex; align-items: center;">
                     @if (item.IsDefault)
                     {
-                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => paymentType!.IsDefault)</span>
+                        <span style="margin-right: 0.5em">
+                            <component type="typeof(JoinBadge)" render-mode="Static" Param-Text="@Html.DisplayNameFor(model => paymentType!.IsDefault)" />
+                        </span>
                     }
                     <span class="@(item.IsActive ? "" : "deleted")">@(item.Name)</span>
                 </span>
@@ -39,7 +41,9 @@
                 <span style="display: inline-flex; align-items: center;">
                     @if (item.Master.VerifiedProfileFlag)
                     {
-                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => item.Master.VerifiedProfileFlag)</span>
+                        <span style="margin-right: 0.5em">
+                            <component type="typeof(JoinBadge)" render-mode="Static" Param-Text="@Html.DisplayNameFor(model => item.Master.VerifiedProfileFlag)" />
+                        </span>
                     }
                     @Html.DisplayFor(modelItem => item.Master)
                 </span>

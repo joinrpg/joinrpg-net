@@ -13,28 +13,27 @@
         <br />
         @if (item.FieldBoundTo == FieldBoundToViewModel.Claim)
         {
-            <span class="label label-primary">Привязано к заявке</span>
+            <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Primary" Param-Text='"Привязано к заявке"' />
         }
     </td>
     <td>
         @if (item.IsPublic)
         {
-            <span class="label label-success">
-                <component type="typeof(EyeIcon)" render-mode="Static" /> Публичное
-            </span>
+            <component type="typeof(EyeIcon)" render-mode="Static" />
+            <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Success" Param-Text='"Публичное"' />
         }
         else if (item.CanPlayerView)
         {
-            <span class="label label-info">Видно игроку</span>
+            <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Info" Param-Text='"Видно игроку"' />
         }
         else
         {
-            <span class="label label-default">Только мастерам</span>
+            <component type="typeof(JoinBadge)" render-mode="Static" Param-Text='"Только мастерам"' />
         }
         <br />
         @if (item.CanPlayerEdit)
         {
-            <span class="label label-warning">Игрок может менять</span>
+            <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Warning" Param-Text='"Игрок может менять"' />
             <br />
         }
         <component
