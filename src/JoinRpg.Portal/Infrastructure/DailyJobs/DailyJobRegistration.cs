@@ -10,8 +10,6 @@ public static class DailyJobRegistration
     {
         services.AddDailyJobsDal(configuration, environment);
         //TODO invent way to construct every implementation of IDailyJob
-        services.AddDailyJob<DoNothingMidnightJob>();
-
         _ = services
             .AddDailyJob<UpdatePaymentStatusJob>()
             ;
