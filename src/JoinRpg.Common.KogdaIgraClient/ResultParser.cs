@@ -8,7 +8,24 @@ internal static class ResultParser
     private static readonly JsonSerializerOptions serializerOptions = new() { NumberHandling = JsonNumberHandling.AllowReadingFromString };
     internal static KogdaIgraGameUpdateMarker[] ParseGameUpdateMarkers(string strResult)
     {
-        var deserializeResult = JsonSerializer.Deserialize<kogda_igra_game_marker[]>(strResult) ?? throw new Exception("Failed to parse JSON");
+        if (string.IsNullOrWhiteSpace(strResult))
+        {
+            throw new KogdaIgraEmptyResponseException();
+        }
+
+        kogda_igra_game_marker[]? deserializeResult;
+        try
+        {
+            deserializeResult = JsonSerializer.Deserialize<kogda_igra_game_marker[]>(strResult);
+        }
+        catch (JsonException e)
+        {
+            throw new KogdaIgraParseException(0, $"Не удалось разобрать JSON от КогдаИгры: {e.Message}");
+        }
+        if (deserializeResult is null)
+        {
+            throw new KogdaIgraParseException(0, "КогдаИгра вернула JSON-литерал null вместо списка игр");
+        }
         return [.. deserializeResult.Select(x => x.ToMarker()).WhereNotNull()];
     }
 

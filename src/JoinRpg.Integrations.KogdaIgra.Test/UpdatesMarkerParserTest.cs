@@ -40,4 +40,18 @@ public class UpdatesMarkerParserTest
         var x = ResultParser.ParseGameUpdateMarkers(str);
         x.Length.ShouldBe(0);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TestEmptyResponseThrowsClearException(string str)
+    {
+        Should.Throw<KogdaIgraEmptyResponseException>(() => ResultParser.ParseGameUpdateMarkers(str));
+    }
+
+    [Fact]
+    public void TestGarbageResponseThrowsClearException()
+    {
+        Should.Throw<KogdaIgraParseException>(() => ResultParser.ParseGameUpdateMarkers("not a json"));
+    }
 }
