@@ -26,6 +26,7 @@
             <p>Ошибка обновления: @resyncResult.OperationStatusMessage</p>
         }
         <JoinButton Label="Обновить" OnClick="@OnSyncClicked" Preset="ButtonPreset.Download" />
+        <JoinButton Label="Запланировать обновление всех игр" OnClick="@OnScheduleAllClicked" Preset="ButtonPreset.Download" />
     </Body>
 </JoinPanel>
 
@@ -64,6 +65,20 @@
         try {
             NotUpdated = null;
             resyncResult = await Client.ResyncKograIgra();
+            model = resyncResult.SyncStatus;
+            NotUpdated = await Client.GetKogdaIgraNotUpdated();
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task OnScheduleAllClicked(ButtonClickEventArgs args)
+    {
+        try {
+            NotUpdated = null;
+            resyncResult = await Client.ScheduleUpdateAllGames();
             model = resyncResult.SyncStatus;
             NotUpdated = await Client.GetKogdaIgraNotUpdated();
         }

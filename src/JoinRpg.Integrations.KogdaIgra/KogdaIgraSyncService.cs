@@ -151,6 +151,23 @@ internal class KogdaIgraSyncService(
         return await GetSyncStatus();
     }
 
+    public async Task<SyncStatus> ScheduleUpdateAllGames()
+    {
+        if (!currentUserAccessor.IsAdmin)
+        {
+            throw new MustBeAdminException();
+        }
+        var now = DateTimeOffset.Now;
+        var games = await unitOfWork.GetDbSet<KogdaIgraGame>().ToListAsync();
+        foreach (var game in games)
+        {
+            game.UpdateRequestedAt = now;
+        }
+        await unitOfWork.SaveChangesAsync();
+        logger.LogInformation("Scheduled update for all {kogdaIgraCount} kogda-igra games", games.Count);
+        return await GetSyncStatus();
+    }
+
     public async Task UpdateKogdaIgraBindings(ProjectIdentification projectId, KogdaIgraIdentification[] kogdaIgraIdentifications, bool DisableKogdaIgraMapping)
     {
         if (!currentUserAccessor.IsAdmin)
