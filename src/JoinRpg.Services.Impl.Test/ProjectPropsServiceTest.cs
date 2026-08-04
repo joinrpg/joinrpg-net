@@ -139,12 +139,24 @@ public class ProjectPropsServiceTest
     [Fact]
     public async Task ChangeProjectProperties_StartsActivityTaggedWithCallingOperationName()
     {
+        // ActivityListener регистрируется на уровне процесса и получает уведомления обо всех
+        // активностях этого источника — включая запущенные параллельно другими тестами
+        // (например, FieldSetupServiceTest, где ChangeProjectProperties вызывается с операцией
+        // "AddField"). AsyncLocal привязан к логическому контексту вызова именно этого теста,
+        // поэтому события из чужих параллельных вызовов отфильтровываются корректно.
+        var isThisTestCall = new AsyncLocal<bool> { Value = true };
         string? startedActivityName = null;
         using var listener = new ActivityListener
         {
             ShouldListenTo = source => source.Name == ProjectPropsServiceActivity.ActivitySourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activity => startedActivityName = activity.OperationName,
+            ActivityStarted = activity =>
+            {
+                if (isThisTestCall.Value)
+                {
+                    startedActivityName = activity.OperationName;
+                }
+            },
         };
         ActivitySource.AddActivityListener(listener);
 
