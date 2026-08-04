@@ -21,6 +21,8 @@ public interface IKogdaIgraSyncClient
     Task<ResyncOperationResultsViewModel> ForceResyncGames(KogdaIgraIdentification[] gameIds);
 
     Task<ResyncOperationResultsViewModel> ScheduleUpdateAllGames();
+
+    Task<ResyncOperationResultsViewModel> RunSyncJob();
 }
 
 public interface IKogdaIgraBindClient
