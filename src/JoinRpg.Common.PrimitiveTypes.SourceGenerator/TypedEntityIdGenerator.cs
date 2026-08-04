@@ -409,6 +409,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             interfaces.Add($"IComparable<{info.TypeName}>");
         }
 
+        sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<{info.TypeName}>))]");
         sb.AppendLine($"public partial record {info.TypeName} : {string.Join(", ", interfaces)}");
         sb.AppendLine("{");
 
