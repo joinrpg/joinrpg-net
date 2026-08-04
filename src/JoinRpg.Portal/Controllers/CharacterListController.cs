@@ -22,6 +22,7 @@ public class CharacterListController(
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Character> problemValidator,
     ICharacterRepository characterRepository,
+    ICharacterGroupRepository charGroupRepository,
     ICurrentUserAccessor currentUserAccessor
     ) : JoinControllerGameBase
 {
@@ -73,7 +74,7 @@ public class CharacterListController(
     public async Task<ActionResult> ByGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
         var characterGroupIdentification = new CharacterGroupIdentification(projectId, characterGroupId);
-        var characterGroup = await projectRepository.GetGroupAsync(characterGroupIdentification);
+        var characterGroup = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupIdentification);
 
         if (characterGroup == null)
         {

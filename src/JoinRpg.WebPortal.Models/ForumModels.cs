@@ -6,9 +6,9 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models;
 
-public class ForumThreadViewModel(ForumThread forumThread, UserIdentification currentUserId) : IEntityWithCommentsViewModel
+public class ForumThreadViewModel(ForumThread forumThread, CharacterGroupFullInfo characterGroup, ProjectInfo projectInfo, UserIdentification currentUserId) : IEntityWithCommentsViewModel
 {
-    public CharacterGroupDetailsViewModel GroupDetails { get; } = new CharacterGroupDetailsViewModel(forumThread.CharacterGroup, currentUserId, GroupNavigationPage.None);
+    public CharacterGroupDetailsViewModel GroupDetails { get; } = new CharacterGroupDetailsViewModel(characterGroup, projectInfo, currentUserId, GroupNavigationPage.None);
 
     public IReadOnlyCollection<CommentViewModel> RootComments { get; } = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
 
@@ -64,10 +64,10 @@ public class ForumThreadListViewModel(ProjectInfo project, IEnumerable<IForumThr
     public bool HasMasterAccess { get; } = project.HasMasterAccess(currentUserId);
 }
 
-public class ForumThreadListForGroupViewModel(ProjectInfo projectInfo, CharacterGroup group, IEnumerable<IForumThreadListItem> threads,
+public class ForumThreadListForGroupViewModel(ProjectInfo projectInfo, CharacterGroupFullInfo group, IEnumerable<IForumThreadListItem> threads,
   UserIdentification currentUserId) : ForumThreadListViewModel(projectInfo, threads, currentUserId)
 {
-    public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Forums);
+    public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, projectInfo, currentUserId, GroupNavigationPage.Forums);
 }
 
 public class ForumThreadListItemViewModel

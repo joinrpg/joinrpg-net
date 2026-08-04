@@ -12,14 +12,15 @@ namespace JoinRpg.Web.Models.Characters;
 
 public class CharacterListByGroupViewModel(UserIdentification currentUserId,
     IReadOnlyCollection<Character> characters,
-    CharacterGroup group,
+    CharacterGroupFullInfo group,
     ProjectInfo projectInfo,
     IProblemValidator<Character> problemValidator) :
 
-    CharacterListViewModel(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, projectInfo, problemValidator), IOperationsAwareView
+    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, projectInfo, problemValidator), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } =
             new CharacterGroupDetailsViewModel(group,
+                projectInfo,
                 currentUserId,
                 GroupNavigationPage.Characters);
 

@@ -5,12 +5,7 @@ namespace JoinRpg.Data.Interfaces;
 public interface IProjectRepository : IDisposable
 {
     Task<Project> GetProjectAsync(int project);
-    [Obsolete]
-    Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
-
-    [Obsolete]
-    Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId);
 
     Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
@@ -18,9 +13,6 @@ public interface IProjectRepository : IDisposable
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
 
     Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds);
-
-    [Obsolete]
-    Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
 
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);

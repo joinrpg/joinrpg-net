@@ -17,8 +17,8 @@ namespace JoinRpg.Portal.Controllers;
 [Authorize]
 [Route("{projectId}/forums/{forumThreadId}/[action]")]
 public class ForumController(
-    IProjectRepository projectRepository,
     IProjectMetadataRepository projectMetadataRepository,
+    ICharacterGroupRepository charGroupRepository,
     IForumService forumService,
     IForumRepository forumRepository,
     IClaimsRepository claimsRepository,
@@ -74,17 +74,23 @@ public class ForumController(
     [HttpGet]
     public async Task<ActionResult> ViewThread(ProjectIdentification projectid, int forumThreadId)
     {
-        var forumThread = await GetForumThread(projectid, forumThreadId);
+        var (forumThread, projectInfo) = await GetForumThread(projectid, forumThreadId);
         if (forumThread == null)
         {
             return NotFound();
         }
 
-        var viewModel = new ForumThreadViewModel(forumThread, currentUserAccessor.UserIdentification);
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(new CharacterGroupIdentification(projectid, forumThread.CharacterGroupId));
+        if (charGroupFullInfo is null)
+        {
+            return NotFound();
+        }
+
+        var viewModel = new ForumThreadViewModel(forumThread, charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
 
-    private async Task<ForumThread> GetForumThread(ProjectIdentification projectid, int forumThreadId)
+    private async Task<(ForumThread, ProjectInfo)> GetForumThread(ProjectIdentification projectid, int forumThreadId)
     {
         var forumThread = await forumRepository.GetThread(new(projectid, forumThreadId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
@@ -97,7 +103,7 @@ public class ForumController(
         {
             throw new NoAccessToProjectException(projectInfo, currentUserAccessor.UserIdentification);
         }
-        return forumThread;
+        return (forumThread, projectInfo);
     }
 
     [HttpPost("~/{projectId}/forums/createcomment")]
@@ -174,15 +180,15 @@ public class ForumController(
     [HttpGet("~/{projectId}/roles/{characterGroupId}/forums")]
     public async Task<ActionResult> ListThreadsByGroup(ProjectIdentification projectid, int characterGroupId)
     {
-        var group = await projectRepository.GetGroupAsync(new CharacterGroupIdentification(projectid, characterGroupId));
-        if (group == null)
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(new CharacterGroupIdentification(projectid, characterGroupId));
+        if (charGroupFullInfo == null)
         {
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
         var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var threads = await forumRepository.GetThreads(projectid.Value, isMaster, new[] { characterGroupId });
-        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, group, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentification)), currentUserAccessor.UserIdentification);
+        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, charGroupFullInfo, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentification)), currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
 

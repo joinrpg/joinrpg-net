@@ -13,15 +13,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public Task<Project> GetProjectWithDetailsAsync(int project)
-      => AllProjects
-        .Include(p => p.Details)
-        .Include(p => p.ProjectAcls.Select(a => a.User))
-        .SingleOrDefaultAsync(p => p.ProjectId == project);
-
     public Task<Project?> GetProjectWithFieldsAsync(int project) => ProjectLoaderCommon.GetProjectWithFieldsAsync(Ctx, project, skipCache: false);
-
-    public Task<CharacterGroup?> GetGroupAsync(int projectId, int characterGroupId) => GetGroupAsync(new(new ProjectIdentification(projectId), characterGroupId));
 
     public async Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId)
     {
@@ -69,15 +61,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         }
         (var projectId, var ids) = EnsureSingleProject(groupIds);
         return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && ids.Contains(cg.CharacterGroupId)).ToListAsync();
-    }
-
-    [Obsolete]
-    public Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId)
-    {
-        return Ctx.Set<ProjectField>()
-          .Include(f => f.Project)
-          .Include(f => f.DropdownValues)
-          .SingleOrDefaultAsync(f => f.ProjectFieldId == projectCharacterFieldId && f.ProjectId == projectId);
     }
 
     public Task<Project> GetProjectWithFinances(int projectid)

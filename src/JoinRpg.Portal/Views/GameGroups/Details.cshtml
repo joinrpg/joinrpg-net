@@ -54,7 +54,9 @@
                         }
 
                     </div>
-                    @await Html.PartialAsync("CreateUpdated", Model)
+                    <component type="typeof(JoinRpg.Web.ProjectCommon.CreateUpdatedMarks)"
+                               render-mode="Static"
+                               param-Model="Model.Marks" />
                 </div>
             }
 
