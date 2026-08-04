@@ -92,6 +92,27 @@ internal class KogdaIgraSyncManager(
         }
     }
 
+    public async Task<ResyncOperationResultsViewModel> RunSyncJob()
+    {
+        try
+        {
+            var status = await kogdaIgraSyncService.GetSyncStatus();
+            int beforePending;
+            do
+            {
+                beforePending = status.PendingGamesCount;
+                status = await kogdaIgraSyncService.PerformSync();
+            } while (status.PendingGamesCount > 0 && status.PendingGamesCount < beforePending);
+            return new ResyncOperationResultsViewModel(true, "", status.ToViewModel());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error during running KogdaIgra sync job");
+            var status = await kogdaIgraSyncService.GetSyncStatus();
+            return new ResyncOperationResultsViewModel(false, $"Error during sync: {ex.Message}", status.ToViewModel());
+        }
+    }
+
     public async Task UpdateProjectKogdaIgraBindings(KogdaIgraBindViewModel command)
     {
         await kogdaIgraBindService.UpdateKogdaIgraBindings(command.ProjectId, command.KogdaIgraIdentifications, command.DisableKogdaIgraMapping);

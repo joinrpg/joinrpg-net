@@ -1,5 +1,6 @@
 @inject IKogdaIgraSyncClient Client
 @implements IDisposable
+@using JoinRpg.Web.AdminTools.Jobs
 @using Timer = System.Timers.Timer
 
 @if (model is null)
@@ -29,6 +30,8 @@
         }
         <JoinButton Label="Обновить" OnClick="@OnSyncClicked" Preset="ButtonPreset.Download" />
         <JoinButton Label="Запланировать обновление всех игр" OnClick="@OnScheduleAllClicked" Preset="ButtonPreset.Download" />
+        <JoinButton Label="Запустить джобу SyncKogdaIgraJob" OnClick="@OnRunJobClicked" Preset="ButtonPreset.Download" />
+        <JobLogsLink JobName="JoinRpg.Integrations.KogdaIgra.SyncKogdaIgraJob" />
     </Body>
 </JoinPanel>
 
@@ -99,6 +102,20 @@
         try {
             NotUpdated = null;
             resyncResult = await Client.ScheduleUpdateAllGames();
+            model = resyncResult.SyncStatus;
+            NotUpdated = await Client.GetKogdaIgraNotUpdated();
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task OnRunJobClicked(ButtonClickEventArgs args)
+    {
+        try {
+            NotUpdated = null;
+            resyncResult = await Client.RunSyncJob();
             model = resyncResult.SyncStatus;
             NotUpdated = await Client.GetKogdaIgraNotUpdated();
         }
