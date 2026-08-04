@@ -134,7 +134,7 @@ public record class ProjectInfo
         => Masters.FirstOrDefault(m => m.IsOwner)
             ?? Masters.OrderBy(m => m.UserId.Value).First();
 
-    public bool HasEditRolesAccess(UserIdentification userId)
+    public bool HasEditRolesAccess(UserIdentification? userId)
     {
         return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
     }

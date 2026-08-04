@@ -15,7 +15,7 @@ public class PlotListController(
     IPlotRepository plotRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
-    ICharacterRepository characterRepository
+    ICharacterGroupRepository charGroupRepository
     ) : JoinControllerGameBase
 {
     [RequireMasterOrPublish]
@@ -62,7 +62,13 @@ public class PlotListController(
 
         var folders = await plotRepository.GetPlotsForTargets(projectId, [.. characters.Select(x => x.CharacterId)], [.. characterGroupIds.Select(x => x.Id)]);
 
-        var groupNavigation = new CharacterGroupDetailsViewModel(characterGroup, currentUser.UserIdOrDefault, GroupNavigationPage.Plots);
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
+        if (charGroupFullInfo is null)
+        {
+            return NotFound();
+        }
+
+        var groupNavigation = new CharacterGroupDetailsViewModel(charGroupFullInfo, projectInfo, currentUser.UserIdentificationOrDefault, GroupNavigationPage.Plots);
 
 
         var list = PlotFolderListViewModelBuilder.ToPlotFolderListViewModel(folders, currentUser, projectInfo, "Сюжеты группы «" + characterGroup.CharacterGroupName + "»");

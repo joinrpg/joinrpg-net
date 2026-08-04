@@ -1,6 +1,5 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.CharacterGroups;
 
@@ -17,16 +16,17 @@ public enum GroupNavigationPage
     Plots,
 }
 
-public class CharacterGroupDetailsViewModel(CharacterGroup group, int? currentUser, GroupNavigationPage page) : CharacterGroupWithDescViewModel(group), ICreatedUpdatedTracked
+public class CharacterGroupDetailsViewModel(
+    CharacterGroupFullInfo group,
+    ProjectInfo projectInfo,
+    UserIdentification? currentUser,
+    GroupNavigationPage page) : CharacterGroupWithDescViewModel(group)
 {
     public GroupNavigationPage Page { get; } = page;
 
-    public bool HasMasterAccess { get; } = group.HasMasterAccess(UserIdentification.FromOptional(currentUser));
-    public bool ShowEditControls { get; } = group.HasEditRolesAccess(currentUser);
+    public bool HasMasterAccess { get; } = projectInfo.HasMasterAccess(currentUser);
+    public bool ShowEditControls { get; } = projectInfo.HasEditRolesAccess(currentUser);
     public bool IsSpecial { get; } = group.IsSpecial;
     public bool IsRootGroup { get; } = group.IsRoot;
-    public DateTime CreatedAt { get; } = group.CreatedAt;
-    public User CreatedBy { get; } = group.CreatedBy;
-    public DateTime UpdatedAt { get; } = group.UpdatedAt;
-    public User UpdatedBy { get; } = group.UpdatedBy;
+    public CreateUpdateMarksViewModel Marks { get; } = group.Marks.ToViewModel();
 }

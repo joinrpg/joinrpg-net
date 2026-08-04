@@ -33,9 +33,11 @@ public class GameGroupsController(
     [AllowAnonymous]
     public async Task<ActionResult> Index(ProjectIdentification projectId, int? characterGroupId)
     {
-        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-        if (field == null)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var characterGroupId2 = CharacterGroupIdentification.FromOptional(projectId, characterGroupId) ?? projectInfo.RootCharacterGroupId;
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
@@ -45,11 +47,11 @@ public class GameGroupsController(
         return View(
           new GameRolesViewModel
           {
-              ProjectName = field.Project.ProjectName,
-              ShowEditControls = field.HasEditRolesAccess(currentUserAccessor.UserIdOrDefault),
-              RootGroupId = field.GetId(),
-              RootGroupName = field.CharacterGroupName,
-              Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Roles),
+              ProjectName = projectInfo.ProjectName,
+              ShowEditControls = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentificationOrDefault),
+              RootGroupId = charGroupFullInfo.Id,
+              RootGroupName = charGroupFullInfo.Name,
+              Details = new CharacterGroupDetailsViewModel(charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentificationOrDefault, GroupNavigationPage.Roles),
           });
     }
 
@@ -378,14 +380,16 @@ public class GameGroupsController(
     public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
 
     [HttpGet, AllowAnonymous]
-    public async Task<ActionResult> Details(int projectId, int characterGroupId)
+    public async Task<ActionResult> Details(ProjectIdentification projectId, int characterGroupId)
     {
-        var group = await projectRepository.GetGroupAsync(projectId, characterGroupId);
-        if (group == null)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(new CharacterGroupIdentification(projectId, characterGroupId));
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
-        var viewModel = new CharacterGroupDetailsViewModel(group, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Home);
+
+        var viewModel = new CharacterGroupDetailsViewModel(charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentificationOrDefault, GroupNavigationPage.Home);
         return View(viewModel);
     }
 

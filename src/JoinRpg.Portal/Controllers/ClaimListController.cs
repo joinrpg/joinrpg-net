@@ -18,13 +18,13 @@ namespace JoinRpg.Portal.Controllers;
 
 [Route("{ProjectId}/claims/[action]")]
 public class ClaimListController(
-    IProjectRepository projectRepository,
     IExportDataService exportDataService,
     IClaimsRepository claimsRepository,
     IUriService uriService,
     IAccommodationRepository accommodationRepository,
     IProblemValidator<Claim> claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
+    ICharacterGroupRepository charGroupRepository,
     ICurrentUserAccessor currentUserAccessor
         ) : Common.JoinControllerGameBase
 {
@@ -83,7 +83,7 @@ public class ClaimListController(
 
     }
 
-    private async Task<ActionResult> ShowMasterClaimListForGroup(CharacterGroup characterGroup, string export,
+    private async Task<ActionResult> ShowMasterClaimListForGroup(CharacterGroupFullInfo? characterGroup, string export,
         string title, IReadOnlyCollection<Claim> claims, GroupNavigationPage page, ClaimStatusSpec claimStatusSpec)
     {
         if (characterGroup == null)
@@ -91,13 +91,13 @@ public class ClaimListController(
             return NotFound();
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(characterGroup.ProjectId));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroup.Id.ProjectId);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
         if (exportType == null)
         {
-            var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.ProjectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
+            var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.Id.ProjectId.Value, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
             var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
             return View("ByGroup", view);
         }
@@ -107,7 +107,7 @@ public class ClaimListController(
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
                         new ClaimListItemViewModelExporter(uriService, projectInfo),
-                        characterGroup.Project.ProjectName);
+                        projectInfo.ProjectName);
         }
     }
 
@@ -158,7 +158,7 @@ public class ClaimListController(
     public async Task<ActionResult> ListForGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
         var characterGroupId2 = new CharacterGroupIdentification(projectId, characterGroupId);
-        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId2);
+        var characterGroup = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
 
         if (characterGroup == null)
         {
@@ -177,7 +177,7 @@ public class ClaimListController(
     public async Task<ActionResult> DiscussingForGroup(ProjectIdentification projectId, int characterGroupId, string export)
     {
         var characterGroupId2 = new CharacterGroupIdentification(projectId, characterGroupId);
-        var characterGroup = await projectRepository.GetGroupAsync(characterGroupId2);
+        var characterGroup = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
 
         if (characterGroup == null)
         {

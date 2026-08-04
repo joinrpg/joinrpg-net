@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace JoinRpg.Portal.Pages.GamePages;
 
 [RequireMaster]
-public class GroupReportPageModel(IProjectRepository projectRepository, ICurrentUserAccessor currentUserAccessor) : PageModel
+public class GroupReportPageModel(
+    IProjectMetadataRepository projectMetadataRepository,
+    ICharacterGroupRepository charGroupRepository,
+    ICurrentUserAccessor currentUserAccessor) : PageModel
 {
     [BindProperty(SupportsGet = true)]
     public int ProjectId { get; set; }
@@ -22,14 +25,17 @@ public class GroupReportPageModel(IProjectRepository projectRepository, ICurrent
 
     public async Task<IActionResult> OnGet()
     {
-        var field = await projectRepository.LoadGroupWithTreeAsync(ProjectId, CharacterGroupId);
-        if (field is null)
+        GroupId = new CharacterGroupIdentification(new ProjectIdentification(ProjectId), CharacterGroupId!.Value);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(GroupId.ProjectId);
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(GroupId);
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
 
-        Details = new CharacterGroupDetailsViewModel(field, currentUserAccessor.UserIdOrDefault, GroupNavigationPage.Report);
-        GroupId = new CharacterGroupIdentification(new ProjectIdentification(ProjectId), field.CharacterGroupId);
+        Details = new CharacterGroupDetailsViewModel(charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentificationOrDefault, GroupNavigationPage.Report);
+
         return Page();
     }
 }

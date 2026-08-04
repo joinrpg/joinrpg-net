@@ -7,14 +7,14 @@ namespace JoinRpg.Web.Models.ClaimList;
 
 public class ClaimListForGroupViewModel(ICurrentUserAccessor currentUserId,
     IReadOnlyCollection<Claim> claims,
-    CharacterGroup @group,
+    CharacterGroupFullInfo @group,
     GroupNavigationPage page,
     Dictionary<int, int> unreadComments,
     IProblemValidator<Claim> claimValidator,
     ProjectInfo projectInfo,
-    string title) : ClaimListViewModel(currentUserId, claims, new ProjectIdentification(group.ProjectId), unreadComments, title, projectInfo, claimValidator), IOperationsAwareView
+    string title) : ClaimListViewModel(currentUserId, claims, group.Id.ProjectId, unreadComments, title, projectInfo, claimValidator), IOperationsAwareView
 {
-    public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, currentUserId.UserIdOrDefault, page);
+    public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, projectInfo, currentUserId.UserIdentificationOrDefault, page);
 
     int? IOperationsAwareView.CharacterGroupId => GroupModel.CharacterGroupId;
 
