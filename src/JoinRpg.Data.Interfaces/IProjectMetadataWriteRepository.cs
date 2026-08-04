@@ -31,10 +31,13 @@ public interface IProjectMetadataUpdateHandle
     ProjectInfo ProjectInfo { get; }
 
     /// <summary>
-    /// Пересобирает <see cref="ProjectInfo"/> из текущего состояния <see cref="Project"/>
-    /// и возвращает его.
+    /// Перечитывает <see cref="Project"/> из БД (тем же <c>DbContext</c>, значит — в той же
+    /// транзакции) и пересобирает из него <see cref="ProjectInfo"/>. Перечитывание, а не пересборка
+    /// по уже загруженному в памяти графу, нужно, чтобы сущности, добавленные в рамках мутации
+    /// (например новый <c>ProjectAcl</c>), получили все navigation-свойства: EF6 lazy loading не
+    /// работает для сущностей, созданных через <c>new</c>, а не через прокси-фабрику контекста.
     /// </summary>
-    ProjectInfo Refresh();
+    Task<ProjectInfo> Refresh();
 
     /// <summary>
     /// Окончательно удаляет под-сущность проекта из того же <c>DbContext</c>, через который потом

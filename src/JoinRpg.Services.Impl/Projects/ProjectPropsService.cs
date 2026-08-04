@@ -73,9 +73,12 @@ internal class ProjectPropsService(
 
             await unitOfWork.SaveChangesAsync();
 
-            // Project изменился — пересобираем ProjectInfo и обновляем кэш, чтобы повторные
-            // чтения в рамках того же запроса видели актуальное состояние.
-            metadataRepository.PrimeCache(handle.Refresh());
+            // Project изменился — перечитываем его из БД (тот же DbContext, так что это одна
+            // транзакция) и пересобираем ProjectInfo, обновляя кэш. Перечитывание, а не пересборка
+            // по уже загруженному графу, нужно, чтобы сущности, добавленные в рамках мутации (например
+            // новый ProjectAcl), получили все navigation-свойства — EF6 lazy loading для сущностей,
+            // созданных через `new`, не работает.
+            metadataRepository.PrimeCache(await handle.Refresh());
 
             logger.LogInformation(
                 "Изменены метаданные проекта {projectId}: операция {operation}, аргументы {@arguments}",

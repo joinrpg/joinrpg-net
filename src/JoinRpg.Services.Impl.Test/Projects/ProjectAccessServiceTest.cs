@@ -78,6 +78,30 @@ public class ProjectAccessServiceTest
     }
 
     [Fact]
+    public async Task GrantAccess_NewUser_PopulatesAclUser_AndProjectInfoRefreshesWithoutError()
+    {
+        // Регрессия: ProjectAcl для нового мастера создаётся через `new`, а не через прокси-фабрику
+        // EF6, поэтому lazy loading для acl.User не сработает. Правильное поведение — перечитать
+        // Project из БД после SaveChanges (см. ProjectMetadataWriteRepository.Refresh), а не
+        // пересобирать ProjectInfo по уже загруженному в памяти графу: иначе CreateInfoFromProject
+        // падает с NullReferenceException (см. CreateMasterList).
+        var service = CreateService(mock.Master.UserId);
+
+        await service.GrantAccess(new GrantAccessRequest
+        {
+            ProjectId = ProjectId,
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        });
+
+        var acl = mock.Project.ProjectAcls.Single(a => a.UserId == 50);
+        acl.User.ShouldNotBeNull();
+        acl.User.UserId.ShouldBe(50);
+
+        mock.ProjectInfo.Masters.ShouldContain(m => m.UserId == new UserIdentification(50));
+    }
+
+    [Fact]
     public async Task GrantAccess_ExistingUser_ReplacesPermissions()
     {
         var acl = AddMaster(50, canGrantRights: false);
