@@ -67,11 +67,11 @@ public class CharacterController(
         {
             ProjectId = field.ProjectId,
             CharacterId = field.CharacterId,
-            ProjectName = field.Project.ProjectName,
+            ProjectName = projectInfo.ProjectName,
             CharacterTypeInfo = view.CharacterTypeInfo,
             Name = field.CharacterName,
             ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
-        }.Fill(field, CurrentUserId, projectInfo));
+        }.Fill(field, currentUser.UserIdentification, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
@@ -85,7 +85,7 @@ public class CharacterController(
         {
             if (!ModelState.IsValid)
             {
-                return View(viewModel.Fill(field, CurrentUserId, projectInfo));
+                return View(viewModel.Fill(field, currentUser.UserIdentification, projectInfo));
             }
 
             await characterService.EditCharacter(
@@ -102,7 +102,7 @@ public class CharacterController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            return View(viewModel.Fill(field, CurrentUserId, projectInfo));
+            return View(viewModel.Fill(field, currentUser.UserIdentification, projectInfo));
         }
     }
 

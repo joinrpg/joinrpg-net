@@ -9,11 +9,11 @@ namespace JoinRpg.Web.Models.Characters;
 
 public static class CharacterGroupListViewModel
 {
-    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId, ProjectInfo projectInfo)
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, UserIdentification? currentUserId, ProjectInfo projectInfo)
         => new CharacterGroupHierarchyBuilder(field, currentUserId, projectInfo).Generate().WhereNotNull();
 
     //TODO: unit tests
-    private class CharacterGroupHierarchyBuilder(CharacterGroup root, int? currentUserId, ProjectInfo projectInfo)
+    private class CharacterGroupHierarchyBuilder(CharacterGroup root, UserIdentification? currentUserId, ProjectInfo projectInfo)
     {
         private IList<int> AlreadyOutputedChars { get; } = [];
 
@@ -129,7 +129,7 @@ public static class CharacterGroupListViewModel
             return vm;
         }
 
-        private bool HasEditRolesAccess { get; } = root.HasEditRolesAccess(currentUserId);
+        private bool HasEditRolesAccess { get; } = projectInfo.HasEditRolesAccess(currentUserId);
         public ProjectInfo ProjectInfo { get; } = projectInfo;
     }
 }

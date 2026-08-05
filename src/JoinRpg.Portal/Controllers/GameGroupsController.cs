@@ -91,7 +91,7 @@ public class GameGroupsController(
     private async Task<IEnumerable<CharacterViewModel>> GetHotCharacters(CharacterGroup field)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(field.GetId().ProjectId);
-        return CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo)
+        return CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdentificationOrDefault, projectInfo)
           .SelectMany(
             g => g.PublicCharacters.Where(ch => ch.ApplyStatus.IsHot && ch.IsFirstCopy)).Distinct();
     }
@@ -115,7 +115,7 @@ public class GameGroupsController(
             field.Project.ProjectId,
             field.Project.ProjectName,
             ShowEditControls = hasMasterAccess,
-            Groups = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdOrDefault, projectInfo).Select(
+            Groups = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdentificationOrDefault, projectInfo).Select(
                 g =>
                   new
                   {
