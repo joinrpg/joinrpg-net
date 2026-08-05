@@ -48,7 +48,7 @@ public record ProjectRoleGridCharacterRowViewModel(
     CharacterLinkWithEditViewModel Character,
     PlayerCellViewModel Player,
     GroupsCellViewModel? Groups,
-    IReadOnlyList<string> FieldValues,
+    IReadOnlyList<string> FieldValuesHtml,
     CharacterGroupIdentification GroupId,
     int ActiveClaimsCount = 0,
     bool FirstCopy = true) : ProjectRoleGridRowViewModel, IMoveableListItem
@@ -57,6 +57,11 @@ public record ProjectRoleGridCharacterRowViewModel(
     string IMoveableListItem.ParentId => GroupId.ToString();
     string IMoveableListItem.DisplayText => Character.Character.Name;
     string IMoveableListItem.Subtext => "";
+
+    // Это нужно, потому что MarkupString не умеет нормально десереиализоваться из JSON
+    [JsonIgnore]
+    public IReadOnlyList<MarkupString> FieldValues { get; } =
+        FieldValuesHtml.Select(html => new MarkupString(html)).ToList();
 }
 
 /// <param name="Depth">Глубина вложенности в режиме дерева (0 = корневая группа сетки)</param>

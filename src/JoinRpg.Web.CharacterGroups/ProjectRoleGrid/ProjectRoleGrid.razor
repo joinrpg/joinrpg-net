@@ -114,7 +114,7 @@ else
                                 {
                                     @for (var i = 0; i < charRow.FieldValues.Count; i++)
                                     {
-                                        @if (!string.IsNullOrWhiteSpace(charRow.FieldValues[i]))
+                                        @if (!string.IsNullOrWhiteSpace(charRow.FieldValuesHtml[i]))
                                         {
                                             @if (Model.SuppressFieldLabels)
                                             {
