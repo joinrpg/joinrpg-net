@@ -34,7 +34,7 @@ public static class UriLocatorExtensions
         Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetClaimListUri(CharacterGroupIdentification id) =>
-            new($"/{id.ProjectId.Value}/claims/roles/{id.CharacterGroupId}", UriKind.Relative);
+            new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/claims", UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetDiscussingClaimListUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/claims/DiscussingForGroup?characterGroupId={id.CharacterGroupId}", UriKind.Relative);
@@ -46,7 +46,7 @@ public static class UriLocatorExtensions
             new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/report", UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetSubscribeUri(CharacterGroupIdentification id) =>
-            new($"/{id.ProjectId.Value}/subscribe/forgroup/{id.CharacterGroupId}", UriKind.Relative);
+            new($"/{id.ProjectId.Value}/subscribe/editforgroup/{id.CharacterGroupId}", UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetEditUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/edit", UriKind.Relative);
@@ -55,7 +55,7 @@ public static class UriLocatorExtensions
             new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/delete", UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetCreateCharacterUri(CharacterGroupIdentification id) =>
-            new($"/{id.ProjectId.Value}/character/create/{id.CharacterGroupId}", UriKind.Relative);
+            new($"/{id.ProjectId.Value}/character/create?charactergroupid={id.CharacterGroupId}", UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetAddGroupUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/addgroup", UriKind.Relative);
