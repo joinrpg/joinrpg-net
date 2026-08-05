@@ -22,7 +22,7 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
     [ReadOnly(true)]
     public bool IsDefaultTemplate { get; private set; }
 
-    public EditCharacterViewModel Fill(Character field, int currentUserId, ProjectInfo projectInfo)
+    public EditCharacterViewModel Fill(Character field, UserIdentification currentUserId, ProjectInfo projectInfo)
     {
         Navigation = CharacterNavigationViewModel.FromCharacter(field,
             CharacterNavigationPage.Editing,

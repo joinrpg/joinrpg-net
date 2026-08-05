@@ -10,13 +10,13 @@ namespace JoinRpg.Web.Models.Characters;
 /// <summary>
 /// TODO: LEO describe the meaning of this tricky class properly
 /// </summary>
-public class CharacterNavigationViewModel(Character character, int? currentUserId, ProjectInfo projectInfo)
+public class CharacterNavigationViewModel(Character character, UserIdentification? currentUserId, ProjectInfo projectInfo)
 {
     public CharacterNavigationPage Page { get; private set; }
-    private AccessArguments AccessArguments { get; } = AccessArgumentsFactory.Create(character, UserIdentification.FromOptional(currentUserId), projectInfo);
+    private AccessArguments AccessArguments { get; } = AccessArgumentsFactory.Create(character, currentUserId, projectInfo);
     public bool HasMasterAccess => AccessArguments.MasterAccess;
-    public bool CanEditRoles { get; } = character.HasEditRolesAccess(currentUserId);
-    public bool CanManageClaims { get; } = projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanManageClaims);
+    public bool CanEditRoles { get; } = projectInfo.HasEditRolesAccess(currentUserId);
+    public bool CanManageClaims { get; } = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageClaims);
 
     public bool CanAddClaim { get; private set; }
     public int? ClaimId { get; private set; }
@@ -32,11 +32,15 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
 
     public static CharacterNavigationViewModel FromCharacter(Character character,
         CharacterNavigationPage page,
-        int? currentUserId, ProjectInfo projectInfo)
+        UserIdentification? currentUserId, ProjectInfo projectInfo)
     {
         int? claimId;
 
-        if (character.ApprovedClaim?.HasAccess(currentUserId, Permission.None, ExtraAccessReason.Player) == true
+        if (currentUserId is null)
+        {
+            claimId = null;
+        }
+        else if (character.ApprovedClaim?.HasAccess(currentUserId, Permission.None, ExtraAccessReason.Player) == true
         ) //If Approved Claim exists and we have access to it, so be it.
         {
             claimId = character.ApprovedClaim.ClaimId;
@@ -57,17 +61,17 @@ public class CharacterNavigationViewModel(Character character, int? currentUserI
         return vm;
     }
 
-    private static IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, int? currentUserId,
+    private static IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, UserIdentification? currentUserId,
         Func<Claim, bool> predicate, ProjectInfo projectInfo)
     {
-        return projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId))
+        return projectInfo.HasMasterAccess(currentUserId)
             ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim.Character.CharacterName, claim.GetId(), UserLinks.Create(claim.Player.ToUserInfoHeader())))
             : [];
     }
 
     public static CharacterNavigationViewModel FromClaim(
         Claim claim,
-        int currentUserId,
+        UserIdentification currentUserId,
         CharacterNavigationPage characterNavigationPage, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claim);

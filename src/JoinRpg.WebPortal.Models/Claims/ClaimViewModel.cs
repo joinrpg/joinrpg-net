@@ -139,7 +139,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo);
         Navigation =
             CharacterNavigationViewModel.FromClaim(claim,
-                currentUser.UserId,
+                currentUser.UserIdentification,
                 CharacterNavigationPage.Claim, projectInfo);
         Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
         PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUser);

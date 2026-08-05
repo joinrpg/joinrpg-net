@@ -90,10 +90,11 @@ public class CheckInController(
 
         return View("CheckIn",
             new CheckInClaimModel(claim,
-            await userRepository.GetById(currentUserAccessor.UserIdentification),
+            await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
             handouts[characterId],
             claimValidator,
-            projectInfo
+            projectInfo,
+            currentUserAccessor
           ));
     }
 
@@ -142,7 +143,7 @@ public class CheckInController(
 
         var characters = await characterRepository.GetAvailableCharacters(projectId);
 
-        return View(new SecondRoleViewModel(claim, characters, await userRepository.GetById(currentUserAccessor.UserIdentification), projectInfo));
+        return View(new SecondRoleViewModel(claim, characters, await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification), projectInfo));
     }
 
     [ValidateAntiForgeryToken]

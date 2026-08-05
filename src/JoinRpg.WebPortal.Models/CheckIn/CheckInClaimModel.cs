@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;
@@ -12,10 +13,12 @@ namespace JoinRpg.Web.Models.CheckIn;
 public class CheckInClaimModel : IProjectIdAware
 {
     public CheckInClaimModel(Claim claim,
-        User currentUser,
+        UserInfo currentUser,
         IReadOnlyCollection<PlotTextDto> plotElements,
         IProblemValidator<Claim> claimValidator,
-        ProjectInfo projectInfo)
+        ProjectInfo projectInfo,
+        ICurrentUserAccessor currentUserAccessor
+        )
     {
         ArgumentNullException.ThrowIfNull(claim);
 
@@ -24,17 +27,17 @@ public class CheckInClaimModel : IProjectIdAware
         Validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
-        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo);
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None, projectInfo);
+        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUserAccessor);
+        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUserAccessor.UserIdentification, CharacterNavigationPage.None, projectInfo);
 
-        CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUser.GetId());
+        CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUserAccessor.UserIdentification);
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
         Master = claim.ResponsibleMasterUser;
         Handouts = [.. plotElements.Select(e => new HandoutListItemViewModel(e))];
         ProblemFields = [.. Validator.FieldProblems.Select(frp => new NotFilledFieldViewModel(frp))];
 
-        CurrentUserFullName = currentUser.FullName;
+        CurrentUserFullName = currentUser.UserFullName.FullName ?? "";
     }
 
     public ClaimCheckInValidator Validator { get; }

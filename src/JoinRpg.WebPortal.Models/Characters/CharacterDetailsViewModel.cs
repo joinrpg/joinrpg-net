@@ -50,14 +50,14 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         ProjectInfo projectInfo)
     {
 
-        PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserId.UserIdOrDefault);
+        PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserId.UserIdentificationOrDefault);
 
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId, projectInfo) with { EditAllowed = false };
 
         ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess, projectInfo);
         Navigation =
           CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
-            currentUserId.UserIdOrDefault, projectInfo);
+            currentUserId.UserIdentificationOrDefault, projectInfo);
 
         Fields = new CustomFieldsViewModel(
             character,

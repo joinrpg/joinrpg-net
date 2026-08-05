@@ -81,6 +81,7 @@ public static class ProjectEntityExtensions
         return field;
     }
 
+    [Obsolete]
     public static T EnsureActive<T>([NotNull] this T? entity) where T : IDeletableSubEntity, IProjectEntity
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -114,9 +115,6 @@ public static class ProjectEntityExtensions
 
         return claim.PlayerUserId == currentUserIdOrDefault;
     }
-
-    //TODO добавить это в AccessArguments
-    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanEditRoles) && character.Project.Active;
 
     [Obsolete("Передавай сюда ProjectInfo")]
     public static T EnsureProjectActive<T>(this T entity)

@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Models.Characters;
 
 public static class CharacterViewModeExtensions
 {
-    public static ViewMode GetViewModeForCharacter(this Character character, int? currentUserIdOrDefault)
+    public static ViewMode GetViewModeForCharacter(this Character character, UserIdentification? currentUserIdOrDefault)
     {
         var hasAccess = character.HasAnyAccess(currentUserIdOrDefault);
         return (character.HidePlayerForCharacter, hasAccess, character.Project.Details.PublishPlot)
@@ -21,7 +21,7 @@ public static class CharacterViewModeExtensions
         };
     }
 
-    public static UserLinkViewModel? GetCharacterPlayerLinkViewModel(this Character character, int? currentUserIdOrDefault)
+    public static UserLinkViewModel? GetCharacterPlayerLinkViewModel(this Character character, UserIdentification? currentUserIdOrDefault)
     {
         return UserLinks.Create(character.ApprovedClaim?.Player.ToUserInfoHeader(), character.GetViewModeForCharacter(currentUserIdOrDefault));
     }

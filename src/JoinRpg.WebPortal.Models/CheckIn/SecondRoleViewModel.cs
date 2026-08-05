@@ -6,11 +6,11 @@ namespace JoinRpg.Web.Models.CheckIn;
 
 public class SecondRoleViewModel
 {
-    public SecondRoleViewModel(Claim claim, IEnumerable<Character> characters, User currentUser, ProjectInfo projectInfo)
+    public SecondRoleViewModel(Claim claim, IEnumerable<Character> characters, UserInfo currentUser, ProjectInfo projectInfo)
     {
         Master = claim.ResponsibleMasterUser;
         Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None, projectInfo);
-        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), currentUser.GetUserInfo());
+        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), currentUser);
         ClaimId = claim.ClaimId;
         Characters =
           characters.Select(
@@ -18,7 +18,7 @@ public class SecondRoleViewModel
             {
                 Id = c.CharacterId,
                 Name = c.CharacterName,
-                Master = c.GetResponsibleMaster().GetDisplayName(),
+                Master = c.GetResponsibleMaster(projectInfo).Name.DisplayName,
             });
     }
 
