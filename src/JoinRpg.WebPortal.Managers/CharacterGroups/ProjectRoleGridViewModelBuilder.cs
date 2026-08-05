@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -189,15 +190,22 @@ internal static class ProjectRoleGridViewModelBuilder
             : null;
 
         var fieldsDict = character.GetFieldsDict(projectInfo);
-        var fieldValues = firstCopy
-            ? fields.Select(f => fieldsDict[f.Id].DisplayString).ToList()
+        var fieldValuesHtml = firstCopy
+            ? fields.Select(f => RenderFieldValue(f, fieldsDict[f.Id].DisplayString)).ToList()
             : [];
 
         // Количество активных заявок видно всем, как в классической сетке ролей.
         var activeClaimsCount = character.Claims.Count(claim => claim.ClaimStatus.IsActive());
 
-        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues, groupId, activeClaimsCount, firstCopy);
+        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValuesHtml, groupId, activeClaimsCount, firstCopy);
     }
+
+    // Как и DisplayString в FieldValueViewModel: markdown-поля рендерим в HTML,
+    // остальные — экранируем как обычный текст (renderer не передаём, как и для Description группы).
+    private static string RenderFieldValue(ProjectFieldInfo field, string value) =>
+        field.SupportsMarkdown
+            ? new MarkdownString(value).ToHtmlString().Value
+            : HtmlEncoder.Default.Encode(value);
 
     private static PlayerCellViewModel BuildPlayerCell(
         Character character,
