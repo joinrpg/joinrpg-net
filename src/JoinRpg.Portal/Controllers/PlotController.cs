@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
@@ -127,11 +128,12 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int plotFolderId, string content,
-      string todoField, ICollection<int>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
+      string todoField, IReadOnlyCollection<CharacterIdentification>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
         PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
-        var targetCharIds = CharacterIdentification.FromList(targetCharacters ?? [], projectId).ToList();
+
         var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
+        var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
         try
         {
             var versionId =
@@ -234,7 +236,7 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
-      ICollection<int>? targetCharacters, ICollection<int>? targetGroups, bool isMasterOnly)
+      IReadOnlyCollection<CharacterIdentification>? targetCharacters, ICollection<int>? targetGroups, bool isMasterOnly)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
         try
@@ -243,7 +245,7 @@ public class PlotController(
             if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
                 var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
-                var targetCharIds = CharacterIdentification.FromList(targetCharacters ?? [], projectId).ToList();
+                var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
 
                 await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds, isMasterOnly);
             }
