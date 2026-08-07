@@ -1,4 +1,5 @@
 @using JoinRpg.Helpers
+@using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Masters
 @model JoinRpg.Web.Models.Masters.MastersListViewModel
 @{
@@ -57,9 +58,18 @@
               }
               @if (item.ResponsibleFor.Any())
               {
-                var first = item.ResponsibleFor.First();
                 <div>
-                  <b>Отв. мастер</b>: @Html.JoinDisplayFor(", ", item.ResponsibleFor)
+                  <b>Отв. мастер</b>:
+                  @{ var isFirstGroup = true; }
+                  @foreach (var group in item.ResponsibleFor)
+                  {
+                    if (!isFirstGroup)
+                    {
+                      @:,
+                    }
+                    isFirstGroup = false;
+                    <component type="typeof(CharacterGroupLink)" param-Model="group" render-mode="Static" />
+                  }
                 </div>
               }
               <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@item.ProjectId" asp-route-masterId="@item.UserId" class="btn btn-default btn-sm">
