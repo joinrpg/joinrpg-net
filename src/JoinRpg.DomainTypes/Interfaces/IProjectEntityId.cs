@@ -44,4 +44,17 @@ public static class IProjectEntityIdExtensions
         }
         return (projectId, list);
     }
+
+    public static IReadOnlyCollection<TId> EnsureProject<TId>(
+        this IReadOnlyCollection<TId> entityIds,
+        ProjectIdentification projectId,
+        [CallerArgumentExpression(nameof(entityIds))] string name = "entityId")
+        where TId : IProjectEntityId
+    {
+        if (entityIds.Any(e => e.ProjectId != projectId))
+        {
+            throw new ArgumentException("Все идентификаторы должны относиться к текущему проекту", name);
+        }
+        return entityIds;
+    }
 }
