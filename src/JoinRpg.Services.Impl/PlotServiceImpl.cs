@@ -313,7 +313,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task ReorderPlotByChar(CharacterIdentification characterId, PlotElementIdentification targetId, PlotElementIdentification? afterId)
+    public async Task<IReadOnlyList<PlotElementIdentification>> ReorderPlotByChar(CharacterIdentification characterId, PlotElementIdentification targetId, PlotElementIdentification? afterId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
 
@@ -325,10 +325,12 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         var plots = await PlotRepository.GetPlotsBySpecification(new PlotSpecification(plotTarget, PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot));
 
-        var resultOrder = DomainMoveHelper.MoveAfter(targetId, afterId, character.PlotElementOrderData, plots.Select(x => x.Id.PlotElementId), preserveOrder: true);
-        character.PlotElementOrderData = resultOrder;
+        var elementIds = plots.Select(x => x.Id.PlotElementId).ToList();
+        character.PlotElementOrderData = DomainMoveHelper.MoveAfter(targetId, afterId, character.PlotElementOrderData, elementIds, preserveOrder: true);
 
         await UnitOfWork.SaveChangesAsync();
+
+        return [.. elementIds.OrderByStoredOrder(id => id.Id, character.PlotElementOrderData, preserveOrder: true)];
     }
 
 
