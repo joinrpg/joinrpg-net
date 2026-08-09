@@ -9,11 +9,9 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 public class GroupReportController(IGroupReportClient client) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<GroupReportViewModel>> Get(
-        [FromQuery] ProjectIdentification projectId, [FromQuery] int characterGroupId)
+    public async Task<ActionResult<GroupReportViewModel>> Get([FromQuery] CharacterGroupIdentification characterGroupId)
     {
-        var groupId = new CharacterGroupIdentification(projectId, characterGroupId);
-        var result = await client.GetReport(groupId);
+        var result = await client.GetReport(characterGroupId);
         return result is null ? NotFound() : Ok(result);
     }
 }
