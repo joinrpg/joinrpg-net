@@ -65,4 +65,5 @@ public record class UserSocialNetworks(
     string? LiveJournal,
     int? AllrpgInfoId,
     string? VkId,
+    bool VkVerified,
     ContactsAccessType SocialNetworksAccess);

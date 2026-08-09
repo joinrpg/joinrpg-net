@@ -29,7 +29,7 @@ public class GetUserInfoMethodTest
     {
         return new UserInfo(
             UserId: UserId1,
-            Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.OnlyForMasters),
+            Social: new UserSocialNetworks(null, null, null, null, false, ContactsAccessType.OnlyForMasters),
             ActiveClaims: [],
             ActiveProjects: [],
             AllProjects: [],

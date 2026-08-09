@@ -9,7 +9,7 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
     {
         return new[]{
             CheckContact(claim.Player.Extra?.Telegram, projectInfo.ProfileRequirementSettings.RequireTelegram, ClaimProblemType.MissingTelegram),
-            CheckContact(claim.Player.Extra?.Vk, projectInfo.ProfileRequirementSettings.RequireVkontakte, ClaimProblemType.MissingVkontakte),
+            CheckContact(claim.Player.Extra?.VkVerified == true ? claim.Player.Extra.Vk : null, projectInfo.ProfileRequirementSettings.RequireVkontakte, ClaimProblemType.MissingVkontakte),
             CheckContact(claim.Player.Extra?.PhoneNumber, projectInfo.ProfileRequirementSettings.RequirePhone, ClaimProblemType.MissingPhone),
             CheckContact(claim.Player.FullName, projectInfo.ProfileRequirementSettings.RequireRealName, ClaimProblemType.MissingRealname),
 

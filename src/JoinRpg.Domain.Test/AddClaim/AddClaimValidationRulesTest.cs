@@ -109,6 +109,31 @@ public class AddClaimValidationRulesTest
         ShouldBeAllowed(another, Mock.ProjectInfo);
     }
 
+    [Fact]
+    public void CantSendClaimIfVkRequiredButNotVerified()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireVkontakte = MandatoryStatus.Required });
+        var playerWithUnverifiedVk = Mock.PlayerInfo with
+        {
+            Social = Mock.PlayerInfo.Social with { VkId = "id1", VkVerified = false },
+        };
+        Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo)
+            .ShouldContain(AddClaimForbideReason.VkontakteMissing);
+    }
+
+    [Fact]
+    public void CanSendClaimIfVkRequiredAndVerified()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireVkontakte = MandatoryStatus.Required });
+        var playerWithVerifiedVk = Mock.PlayerInfo with
+        {
+            Social = Mock.PlayerInfo.Social with { VkId = "id1", VkVerified = true },
+        };
+        Mock.Character.ValidateIfCanAddClaim(playerWithVerifiedVk, projectInfo).ShouldBeEmpty();
+    }
+
     private void ShouldBeAllowed(Character mockCharacter, ProjectInfo projectInfo)
         => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).ShouldBeEmpty();
 

@@ -99,6 +99,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Extra!.Livejournal,
                 AllRpgInfoId = user.Allrpg!.Sid,
                 user.Extra.Vk,
+                user.Extra.VkVerified,
                 user.Extra.SocialNetworksAccess,
                 user.SelectedAvatarId,
                 user.VerifiedProfileFlag,
@@ -120,7 +121,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             FatherName.FromOptional(result.FatherName));
         return new UserInfo(
             new UserIdentification(result.UserId),
-            new UserSocialNetworks(telegramId, result.Livejournal, result.AllRpgInfoId, result.Vk, result.SocialNetworksAccess),
+            new UserSocialNetworks(telegramId, result.Livejournal, result.AllRpgInfoId, result.Vk, result.VkVerified, result.SocialNetworksAccess),
             result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
             result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
