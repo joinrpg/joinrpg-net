@@ -20,6 +20,9 @@
 
         <ImplicitUsings>enable</ImplicitUsings>
 
+        <!-- Внедряет commit sha в AssemblyInformationalVersion через Microsoft.SourceLink.GitHub -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
         <!-- Версия контейнера совпадает с версией приложения -->
         <ContainerVersion>$(Version)</ContainerVersion>
 
@@ -41,5 +44,6 @@
     </ItemGroup>
     <ItemGroup>
         <GlobalPackageReference Include="ReferenceTrimmer" Version="3.5.7" />
+        <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
     </ItemGroup>
 </Project>

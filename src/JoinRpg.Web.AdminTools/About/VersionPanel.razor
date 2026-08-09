@@ -1,0 +1,37 @@
+@using System.Reflection
+
+<JoinPanel>
+    <Header>Версия</Header>
+    <Body>
+        Версия: @version
+        @if (commitSha is not null)
+        {
+            <br />
+            <text>Коммит: </text><a href="https://github.com/leotsarev/joinrpg-net/commit/@commitSha" target="_blank">@commitSha</a>
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    private string version = "неизвестна";
+    private string? commitSha;
+
+    protected override void OnInitialized()
+    {
+        var informationalVersion = Assembly.GetEntryAssembly()?
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
+
+        if (informationalVersion is null)
+        {
+            return;
+        }
+
+        var parts = informationalVersion.Split('+', 2);
+        version = parts[0];
+        if (parts.Length == 2)
+        {
+            commitSha = parts[1];
+        }
+    }
+}
