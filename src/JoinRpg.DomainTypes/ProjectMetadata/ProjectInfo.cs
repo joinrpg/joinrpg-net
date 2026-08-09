@@ -173,6 +173,17 @@ public record class ProjectInfo
             ProjectRolesLists, Groups, ResponsibleMasterRules);
     }
 
+    internal ProjectInfo WithProfileRequirementSettings(ProjectProfileRequirementSettings profileRequirementSettings)
+    {
+        return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
+            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
+            AllowToSetGroups,
+            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            ProjectStatus,
+            ProjectScheduleSettings, CloneSettings, CreateDate, profileRequirementSettings, ClaimSettings,
+            ProjectRolesLists, Groups, ResponsibleMasterRules);
+    }
+
     public CharacterGroupInfo GetGroupById(int id)
     {
         var groupId = new CharacterGroupIdentification(ProjectId, id);

@@ -142,7 +142,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
     private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
     {
-        if (projectInfo.ProfileRequirementSettings.RequireVkontakte == MandatoryStatus.Required && userInfo.Social.VkId is null)
+        if (projectInfo.ProfileRequirementSettings.RequireVkontakte == MandatoryStatus.Required && !userInfo.Social.VkVerified)
         {
             yield return AddClaimForbideReason.VkontakteMissing;
         }
