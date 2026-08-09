@@ -46,6 +46,13 @@ UserInfo (`/connect/user_info`)
 ---
 `OAuthRegistrator` (hosted service) создаёт OAuth-клиентов при старте из конфигурации `OAuthServer:Clients[]`.
 
+Вторая роль: AS для MCP-сервера
+---
+[ADR012](adr012-llm-mcp-access.md) расширяет IdPortal до authorization server для внешних
+LLM-клиентов, работающих с `JoinRpg.Portal` по MCP. Оттуда приходят: скоупы `joinrpg.*`,
+resource indicators (RFC 8707), эндпоинт интроспекции, поддержка Client ID Metadata
+Documents и страница «Подключённые приложения» для отзыва доступа.
+
 Тесты
 ---
 - Юнит-тесты: `JoinRpg.IdPortal.OAuthServer.Test` 
