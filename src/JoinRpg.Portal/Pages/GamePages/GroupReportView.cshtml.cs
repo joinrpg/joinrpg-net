@@ -14,10 +14,10 @@ public class GroupReportPageModel(
     ICurrentUserAccessor currentUserAccessor) : PageModel
 {
     [BindProperty(SupportsGet = true)]
-    public int ProjectId { get; set; }
+    public ProjectIdentification ProjectId { get; set; } = null!;
 
     [BindProperty(SupportsGet = true)]
-    public int? CharacterGroupId { get; set; }
+    public CharacterGroupIdentification? CharacterGroupId { get; set; }
 
     public CharacterGroupDetailsViewModel Details { get; private set; } = null!;
 
@@ -25,9 +25,11 @@ public class GroupReportPageModel(
 
     public async Task<IActionResult> OnGet()
     {
-        GroupId = new CharacterGroupIdentification(new ProjectIdentification(ProjectId), CharacterGroupId!.Value);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(ProjectId);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(GroupId.ProjectId);
+        // Страница "/roles/all/report" не передаёт characterGroupId — в этом случае берём корневую группу проекта.
+        GroupId = CharacterGroupId ?? projectInfo.RootCharacterGroupId;
+
         var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(GroupId);
         if (charGroupFullInfo is null)
         {

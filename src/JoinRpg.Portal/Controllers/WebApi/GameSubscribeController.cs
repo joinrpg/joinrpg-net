@@ -22,14 +22,14 @@ public class GameSubscribeController(IGameSubscribeClient subscribeViewService) 
         => await subscribeViewService.SaveGroupSubscription(projectId, model);
 
     [HttpGet]
-    public async Task<ClaimSubscribeViewModel> GetForClaim(int projectId, int claimId)
-        => await subscribeViewService.GetSubscribeForClaim(new ClaimIdentification(projectId, claimId));
+    public async Task<ClaimSubscribeViewModel> GetForClaim(ClaimIdentification claimId)
+        => await subscribeViewService.GetSubscribeForClaim(claimId);
 
     [HttpPost]
-    public async Task<ClaimSubscribeViewModel> SubscribeClaim(int projectId, int claimId)
-        => await subscribeViewService.SubscribeClaimToUser(new ClaimIdentification(projectId, claimId));
+    public async Task<ClaimSubscribeViewModel> SubscribeClaim(ClaimIdentification claimId)
+        => await subscribeViewService.SubscribeClaimToUser(claimId);
 
     [HttpPost]
-    public async Task<ClaimSubscribeViewModel> UnsubscribeClaim(int projectId, int claimId)
-        => await subscribeViewService.UnsubscribeClaimToUser(new ClaimIdentification(projectId, claimId));
+    public async Task<ClaimSubscribeViewModel> UnsubscribeClaim(ClaimIdentification claimId)
+        => await subscribeViewService.UnsubscribeClaimToUser(claimId);
 }

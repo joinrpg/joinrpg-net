@@ -71,9 +71,9 @@ public class CheckInController(
     }
 
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
-    public async Task<ActionResult> CheckIn(int projectId, int claimId)
+    public async Task<ActionResult> CheckIn(ClaimIdentification claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(new ClaimIdentification(projectId, claimId));
+        var claim = await claimsRepository.GetClaimWithDetails(claimId);
         if (claim == null)
         {
             return NotFound();

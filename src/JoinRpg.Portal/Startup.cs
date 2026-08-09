@@ -19,6 +19,7 @@ using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
+using JoinRpg.Portal.Infrastructure.ModelBinding;
 using JoinRpg.Portal.Infrastructure.XApi;
 using JoinRpg.Portal.Menu;
 using JoinRpg.Services.Email;
@@ -74,6 +75,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 options.Filters.Add<SerilogProjectRazorPagesFilter>();
                 options.Filters.Add(new SetIsProductionFilterAttribute());
                 options.Filters.Add(new AddFullUriFilter());
+
+                options.ModelBinderProviders.Insert(0, new ProjectEntityIdModelBinderProvider());
 
                 //TODO need to fix this
                 options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
