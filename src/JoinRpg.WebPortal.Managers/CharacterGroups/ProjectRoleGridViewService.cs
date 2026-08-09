@@ -25,13 +25,17 @@ internal class ProjectRoleGridViewService(
         return await BuildResult(projectInfo, config);
     }
 
-    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId)
+    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var resolvedGroupId = groupId ?? projectInfo.RootCharacterGroupId;
-        var groupName = projectInfo.GetGroupById(resolvedGroupId.CharacterGroupId).Name;
-        // Транзиентная настройка «на лету»: режим дерева + колонка описания, публичная (как старая Index).
-        var config = ClassicRolesGridDefaults.Build(groupId, groupName, projectInfo.CharacterDescriptionField?.Id);
+        // Транзиентная настройка «на лету»: режим дерева + колонка описания, публичная (как старая Index);
+        // для hotOnly — плоский список только горячих ролей (как старая GameGroups/Hot).
+        var config = hotOnly
+            ? ClassicRolesGridDefaults.BuildHot(groupId, projectInfo.CharacterDescriptionField?.Id)
+            : ClassicRolesGridDefaults.Build(
+                groupId,
+                projectInfo.GetGroupById((groupId ?? projectInfo.RootCharacterGroupId).CharacterGroupId).Name,
+                projectInfo.CharacterDescriptionField?.Id);
         return await BuildResult(projectInfo, config);
     }
 

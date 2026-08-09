@@ -1,14 +1,9 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.Characters.CharacterViewModel>
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
+@using JoinRpg.Web.Models
+@model GameRolesViewModel
 
 @{
-    ViewBag.Title = "Горячие роли";
+    ViewBag.Title = "Горячие роли: " + Model.ProjectName;
 }
-
-<h2>@ViewBag.Title</h2>
-
-@foreach (var character in Model)
-{
-<li>
-    @await Html.PartialAsync("_CharacterPartial", character)
-</li>
-}
+@* Тело сетки строит остров ProjectRoleGrid в классическом режиме с фильтром HotRolesOnly. *@
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.ProjectId, ClassicGroupId = Model.GridGroupId, HotRolesOnly = true }))

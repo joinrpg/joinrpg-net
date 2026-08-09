@@ -21,12 +21,13 @@ public class ProjectRoleGridController(IProjectRoleGridClient client) : Controll
 
     /// <summary>
     /// «Классическая» сетка ролей (GameGroups/Index) — строится на лету без сохранённой настройки.
+    /// <paramref name="hotOnly"/> — сетка горячих ролей (GameGroups/Hot) вместо обычной классической.
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<ProjectRoleGridViewResult>> GetClassic(
-        [FromQuery] ProjectIdentification projectId, [FromQuery] int? characterGroupId)
+        [FromQuery] ProjectIdentification projectId, [FromQuery] int? characterGroupId, [FromQuery] bool hotOnly = false)
     {
         var groupId = CharacterGroupIdentification.FromOptional(projectId, characterGroupId);
-        return Ok(await client.GetClassicRoleGrid(projectId, groupId));
+        return Ok(await client.GetClassicRoleGrid(projectId, groupId, hotOnly));
     }
 }

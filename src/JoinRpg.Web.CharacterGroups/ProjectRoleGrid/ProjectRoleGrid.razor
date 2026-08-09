@@ -133,6 +133,7 @@ else
     [Parameter] public ProjectRolesListIdentification? RolesListId { get; set; }
     [Parameter] public ProjectIdentification ProjectId { get; set; }
     [Parameter] public CharacterGroupIdentification? ClassicGroupId { get; set; }
+    [Parameter] public bool HotRolesOnly { get; set; }
 
     private ProjectRoleGridViewResult? Result { get; set; }
     private PersistingComponentStateSubscription _persistingSubscription;
@@ -150,7 +151,7 @@ else
         {
             result = RolesListId is { } rolesListId
                 ? await Client.GetRoleGrid(rolesListId)
-                : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId);
+                : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId, HotRolesOnly);
         }
         Result = result;
 

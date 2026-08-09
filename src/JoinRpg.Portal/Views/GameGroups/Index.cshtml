@@ -6,6 +6,9 @@
     ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.RootGroupName;
     ViewData["ShowEditControls"] = Model.ShowEditControls;
 }
-@Html.DisplayFor(model => model.Details)
+@if (Model.Details is not null)
+{
+    @Html.DisplayFor(model => model.Details)
+}
 @* Тело сетки строит остров ProjectRoleGrid в классическом режиме (транзиентная настройка без id). *@
 @(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.ProjectId, ClassicGroupId = Model.GridGroupId }))

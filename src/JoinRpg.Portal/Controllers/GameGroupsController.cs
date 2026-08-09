@@ -62,15 +62,28 @@ public class GameGroupsController(
     public Task<ActionResult> Hot(int projectId) => Hot(projectId, null);
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
-        var field = await projectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
-        if (field == null)
+        var projectIdentification = new ProjectIdentification(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectIdentification);
+        var explicitGroupId = CharacterGroupIdentification.FromOptional(projectIdentification, characterGroupId);
+        if (explicitGroupId is { } groupId && await charGroupRepository.GetCharacterGroupFullInfo(groupId) is null)
         {
             return NotFound();
         }
 
-        return View(await GetHotCharacters(field));
+        // Данные сетки строит остров ProjectRoleGrid (классический режим, HotRolesOnly) — здесь
+        // только заголовок страницы, без обрамления группы (сетка не привязана к одной группе).
+        return View(
+          new GameRolesViewModel
+          {
+              ProjectName = projectInfo.ProjectName,
+              ShowEditControls = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentificationOrDefault),
+              ProjectId = projectIdentification,
+              GridGroupId = explicitGroupId,
+              RootGroupName = "Горячие роли",
+          });
     }
 
     [HttpGet]

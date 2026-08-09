@@ -140,24 +140,6 @@ internal class CharacterServiceImpl(
         return character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
     }
 
-    public async Task MoveCharacter(int currentUserId,
-        int projectId,
-        int characterId,
-        int parentCharacterGroupId,
-        short direction)
-    {
-        var parentCharacterGroup =
-            await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
-        _ = parentCharacterGroup.RequestMasterAccess(currentUserId, Permission.CanEditRoles);
-        _ = parentCharacterGroup.EnsureProjectActive();
-
-        var item = parentCharacterGroup.Characters.Single(i => i.CharacterId == characterId);
-
-        parentCharacterGroup.ChildCharactersOrdering = parentCharacterGroup
-            .GetCharactersContainer().Move(item, direction).GetStoredOrder();
-        await UnitOfWork.SaveChangesAsync();
-    }
-
     public async Task SetFields(CharacterIdentification characterId, Dictionary<int, string?> requestFieldValues)
     {
         var character = await LoadCharacter(characterId);

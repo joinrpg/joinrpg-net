@@ -12,10 +12,11 @@ internal class ProjectRoleGridClientImpl(HttpClient httpClient) : IProjectRoleGr
             ?? throw new Exception("Couldn't get result from server");
     }
 
-    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId)
+    public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)
     {
         var url = $"webapi/project-role-grid/getclassic?projectId={projectId.Value}"
-            + (groupId is { } g ? $"&characterGroupId={g.CharacterGroupId}" : "");
+            + (groupId is { } g ? $"&characterGroupId={g.CharacterGroupId}" : "")
+            + (hotOnly ? "&hotOnly=true" : "");
         return await httpClient.GetFromJsonAsync<ProjectRoleGridViewResult>(url)
             ?? throw new Exception("Couldn't get result from server");
     }
