@@ -263,25 +263,6 @@ public class PlotController(
         }
     }
 
-    //TODO: Make this POST
-    [HttpGet]
-    [MasterAuthorize(Permission.CanEditRoles)]
-
-    public async Task<ActionResult> MoveElementForCharacter(int projectid, int listItemId, int parentObjectId, int direction)
-    {
-        try
-        {
-            await plotService.MoveElement(projectid, listItemId, parentObjectId, direction);
-
-
-            return RedirectToAction("Details", "Character", new { projectId = projectid, characterId = parentObjectId });
-        }
-        catch
-        {
-            return RedirectToAction("Details", "Character", new { projectId = projectid, characterId = parentObjectId });
-        }
-    }
-
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ShowElementVersion(ProjectIdentification projectId, int plotFolderId, int plotElementId, int version, bool printMode)
     {

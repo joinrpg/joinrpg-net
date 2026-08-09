@@ -16,8 +16,6 @@ public interface IPlotService
     Task EditPlotElement(PlotElementIdentification plotelementid, string contents, string todoField,
       IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly);
 
-    Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction);
-
     Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText);
 
     Task UnPublishElement(PlotElementIdentification element);

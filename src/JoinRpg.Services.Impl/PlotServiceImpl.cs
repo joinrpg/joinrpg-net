@@ -232,32 +232,6 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
-    {
-        var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
-        _ = character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
-
-        var plots = await PlotRepository.GetDirectPlotsForCharacter(new CharacterIdentification(projectId, parentCharacterId));
-
-        var voc = character.GetCharacterPlotContainer(plots);
-        var element = plots.Single(p => p.PlotElementId == plotElementId);
-        switch (direction)
-        {
-            case -1:
-                voc.MoveUp(element);
-                break;
-            case 1:
-                voc.MoveDown(element);
-                break;
-            default:
-                throw new ArgumentException(nameof(direction));
-        }
-
-        character.PlotElementOrderData = voc.GetStoredOrder();
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-
     private List<Claim> GetClaimsFromGroups(IEnumerable<CharacterGroup> groups)
     {
         var claims = new List<Claim>();
