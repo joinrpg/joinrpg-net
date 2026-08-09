@@ -47,7 +47,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public PlotDisplayViewModel Plot { get; }
 
     [Display(Name = "Ответственный мастер")]
-    public int ResponsibleMasterId { get; set; }
+    public UserIdentification ResponsibleMasterId { get; set; } = null!;
 
     [Display(Name = "Ответственный мастер"), ReadOnly(true)]
     public User ResponsibleMaster { get; set; }
@@ -134,7 +134,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                     ? 0
                     : claim.OtherPendingClaimsForThisPlayer().Count();
 
-        ResponsibleMasterId = claim.ResponsibleMasterUserId;
+        ResponsibleMasterId = new UserIdentification(claim.ResponsibleMasterUserId);
         ResponsibleMaster = claim.ResponsibleMasterUser;
         Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo);
         Navigation =

@@ -8,7 +8,7 @@ public class TogglePaymentTypeViewModel : IValidatableObject
 
     public PaymentTypeKindViewModel? TypeKind { get; set; }
 
-    public int? MasterId { get; set; }
+    public UserIdentification? MasterId { get; set; }
 
     /// <inheritdoc />
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

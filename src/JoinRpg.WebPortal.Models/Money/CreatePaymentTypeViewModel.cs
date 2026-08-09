@@ -6,7 +6,7 @@ public class CreatePaymentTypeViewModel : PaymentTypeViewModelBase
 {
 
     [Display(Name = "Мастер", Description = "Укажите здесь мастера, которому принадлежит карточка, на которую будут переводить деньги")]
-    public int UserId { get; set; }
+    public UserIdentification UserId { get; set; } = null!;
     [ReadOnly(true)]
     public IEnumerable<MasterViewModel> Masters { get; set; }
 }

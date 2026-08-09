@@ -102,7 +102,7 @@ public class AclController(
             await projectAccessService.RemoveAccess(
                 projectId,
                 new UserIdentification(viewModel.UserId),
-                viewModel.ResponsibleMasterId is int responsibleMasterId ? new UserIdentification(responsibleMasterId) : null);
+                viewModel.ResponsibleMasterId);
         }
         catch
         {

@@ -1,47 +1,38 @@
+@using JoinRpg.Common.PrimitiveTypes
 @inject IMasterClient client
 
-@if (items is null)
-{
-   <JoinLoadingMessage />
-}
-else
-{
-  <IntSelector
-               Name="@Name"
-               SelectedValues="@Selected"
-               SelectedValuesChanged="@HandleSelectedChanged"
-               PossibleValues="items"
-               Multiple="false"
-               />
-}
+<TypedSelector TKey="UserIdentification" TItem="MasterViewModel"
+    Name="@Name"
+    Items="items"
+    KeySelector="@(m => m.MasterId)"
+    ToListItem="@(m => TypedSelectList.CreateItem(
+        Value: m.MasterId,
+        Text: m.DisplayName.DisplayName,
+        Subtext: m.DisplayName.FullName ?? "",
+        ExtraSearch: m.DisplayName.FullName ?? ""))"
+    SelectedValues="@Selected"
+    SelectedItemsChanged="@HandleSelectedChanged"
+    Multiple="false"
+    />
 
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] [EditorRequired] public int ProjectId { get; set; }
-    [Parameter] public int? MasterId { get; set; }
-    [Parameter] public EventCallback<int?> MasterIdChanged { get; set; }
-    [Parameter] public int[] IdsToRemove { get; set; } = [];
+    [Parameter] public UserIdentification? MasterId { get; set; }
+    [Parameter] public EventCallback<UserIdentification?> MasterIdChanged { get; set; }
+    [Parameter] public UserIdentification[] IdsToRemove { get; set; } = [];
 
-    [Parameter] public MasterViewModel? Master{ get; set; }
+    [Parameter] public MasterViewModel? Master { get; set; }
     [Parameter] public EventCallback<MasterViewModel?> MasterChanged { get; set; }
 
-    private int[] Selected { get; set; } = new int[0];
-    private IntSelectListItem[] items = null!;
-    private List<MasterViewModel> masters = null!;
+    private UserIdentification[] Selected { get; set; } = [];
+    private MasterViewModel[]? items;
 
     protected override async Task OnInitializedAsync()
     {
-        masters = await client.GetMasters(ProjectId);
-        items = masters
-          .Where(master => !IdsToRemove.Contains(master.MasterId))
-          .Select(master =>
-            new IntSelectListItem(
-              Value: master.MasterId,
-              Text: master.DisplayName.DisplayName,
-              Subtext: master.DisplayName.FullName ?? "",
-              ExtraSearch: master.DisplayName.FullName ?? ""))
-           .ToArray();
+        var masters = await client.GetMasters(ProjectId);
+        items = [.. masters.Where(master => !IdsToRemove.Contains(master.MasterId))];
     }
 
     protected override void OnParametersSet()
@@ -49,19 +40,18 @@ else
         base.OnParametersSet();
         if (MasterId is not null)
         {
-            Selected = new int[] { MasterId.Value };
+            Selected = [MasterId];
         }
         else if (Master is not null)
         {
-            Selected = new int[] { Master.MasterId };
+            Selected = [Master.MasterId];
         }
     }
 
-    private async Task HandleSelectedChanged(int[] values)
+    private async Task HandleSelectedChanged(MasterViewModel[] values)
     {
-        int? id = values.Length == 0 ? null : values.Single();
-        var master = masters.SingleOrDefault(m => m.MasterId == id);
-        await MasterIdChanged.InvokeAsync(id);
+        var master = values.Length == 0 ? null : values.Single();
+        await MasterIdChanged.InvokeAsync(master?.MasterId);
         await MasterChanged.InvokeAsync(master);
     }
 }

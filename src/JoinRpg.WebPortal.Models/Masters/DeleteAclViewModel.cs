@@ -7,7 +7,7 @@ public class DeleteAclViewModel
     [Display(
       Name = "Новый ответственный мастер",
       Description = "Ответственный мастер, который будет назначен тем заявкам, за которые раньше отвечал этот мастер.")]
-    public int? ResponsibleMasterId { get; set; }
+    public UserIdentification? ResponsibleMasterId { get; set; }
 
     public bool SelfRemove { get; set; }
 
