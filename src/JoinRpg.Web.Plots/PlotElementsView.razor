@@ -1,6 +1,5 @@
-@using JoinRpg.Web
 @using JoinRpg.Web.Plots
-@using JoinRpg.WebComponents.ElementMoving
+@using JoinRpg.WebComponents
 
 @if (PlotTexts.Count == 0)
 {
@@ -19,8 +18,9 @@
         }
     </Header>
     <Body>
-        @foreach (var plotText in PlotTexts)
+        @foreach (var item in moveItems)
         {
+            var plotText = item.Plot;
             var hideClass = plotText.PlotStatus == PlotStatus.InWork ? "world-object-hidden" : "";
             string id = @"pe" + plotText.PlotVersionId.PlotElementId.PlotElementId;
 
@@ -36,7 +36,7 @@
                     @if (ShowEditControls)
                     {
                         <EditPlotElementButton Id="plotText.PlotVersionId.PlotElementId" />
-                        <JoinMoveControlNonInteractive Endpoint="@endpoint" SelfId="@plotText.PlotVersionId.PlotElementId.ToString()" ItemIds="@itemIds" />
+                        <JoinMoveControl TItem="PlotElementMoveItem" Items="moveItems" Self="item" OnMoveCompleted="StateHasChanged" />
                     }
                 </div>
 
@@ -46,7 +46,7 @@
                 }
 
                 <div class="@hideClass">
-                    @plotText.Content
+                    @((MarkupString)plotText.Content)
                 </div>
             </div>
         }
@@ -55,8 +55,7 @@
 
 @code
 {
-    private string endpoint = null!;
-    private string[] itemIds = null!;
+    private List<PlotElementMoveItem> moveItems = [];
 
     [Parameter]
     [EditorRequired]
@@ -73,7 +72,6 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        endpoint = $"/{CharacterId.ProjectId.Value}/plots/ReorderByCharacter?characterId={CharacterId.CharacterId}";
-        itemIds = [.. PlotTexts.Select(x => x.PlotVersionId.PlotElementId.ToString())];
+        moveItems = [.. PlotTexts.Select(p => new PlotElementMoveItem(p, CharacterId))];
     }
 }

@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectCommon.ElementMoving;
@@ -5,7 +6,7 @@ using JoinRpg.WebComponents;
 
 namespace JoinRpg.WebPortal.Managers;
 
-internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterGroupService characterGroupService) : IMoveClient
+internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterGroupService characterGroupService, IPlotService plotService) : IMoveClient
 {
     public async Task<string[]> MoveAfterAsync(string selfId, string parentId, string? moveAfterId)
     {
@@ -32,6 +33,10 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
                 when variantId.FieldId == fieldId
                     && (request.MoveAfterId is null or ProjectFieldVariantIdentification)
                 => await MoveFieldVariantAsync(variantId, request.MoveAfterId as ProjectFieldVariantIdentification),
+            { SelfId: PlotElementIdentification elementId, ParentId: CharacterIdentification characterId }
+                when elementId.ProjectId == characterId.ProjectId
+                    && (request.MoveAfterId is null or PlotElementIdentification)
+                => await MovePlotElementAsync(characterId, elementId, request.MoveAfterId as PlotElementIdentification),
             _ => throw new ArgumentException(
                 $"Unsupported ID combination: selfId='{selfId}', parentId='{parentId}'"),
         };
@@ -69,6 +74,15 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
         CharacterGroupIdentification? afterGroupId)
     {
         var sortedIds = await characterGroupService.MoveCharacterGroupAfter(parentGroupId, groupId, afterGroupId);
+        return [.. sortedIds.Select(id => id.ToString())];
+    }
+
+    private async Task<string[]> MovePlotElementAsync(
+        CharacterIdentification characterId,
+        PlotElementIdentification elementId,
+        PlotElementIdentification? afterId)
+    {
+        var sortedIds = await plotService.ReorderPlotByChar(characterId, elementId, afterId);
         return [.. sortedIds.Select(id => id.ToString())];
     }
 }

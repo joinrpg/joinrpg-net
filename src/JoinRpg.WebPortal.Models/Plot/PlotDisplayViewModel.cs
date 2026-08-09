@@ -31,10 +31,13 @@ public class PlotDisplayViewModel
 
         var linkRenderer = new JoinrpgMarkdownLinkRenderer(character.Project, projectInfo);
 
-        Elements = [.. plots.Select(p => p.Render(linkRenderer, projectInfo, currentUser))];
+        Elements = plots.Select(p => p.Render(linkRenderer, projectInfo, currentUser)).ToList();
     }
 
-    public IReadOnlyList<PlotRenderedTextViewModel> Elements { get; }
+    // Blazor-параметру PlotElementsView.PlotTexts нужен конкретный публичный тип (List<T>),
+    // а не внутренний тип, который генерирует компилятор для collection expression с target-type IReadOnlyList<T> —
+    // иначе десериализация параметра при WebAssemblyPrerendered падает с "type could not be found".
+    public List<PlotRenderedTextViewModel> Elements { get; }
 
     public CharacterIdentification CharacterId { get; }
 
