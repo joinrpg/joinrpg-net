@@ -24,4 +24,9 @@ public interface ICharacterGroupService
         CharacterGroupIdentification parentCharacterGroupId,
         CharacterIdentification characterId,
         CharacterIdentification? afterCharacterId);
+
+    Task<IReadOnlyList<CharacterGroupIdentification>> MoveCharacterGroupAfter(
+        CharacterGroupIdentification parentCharacterGroupId,
+        CharacterGroupIdentification characterGroupId,
+        CharacterGroupIdentification? afterCharacterGroupId);
 }

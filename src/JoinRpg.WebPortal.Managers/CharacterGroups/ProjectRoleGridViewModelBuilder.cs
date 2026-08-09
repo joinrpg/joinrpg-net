@@ -110,10 +110,10 @@ internal static class ProjectRoleGridViewModelBuilder
         var seenGroups = new HashSet<CharacterGroupIdentification>();
         var seenCharacters = new HashSet<int>();
 
-        AddGroupSubtree(projectInfo.GetGroupById(rootGroupId.CharacterGroupId), depth: 0, parentPath: "");
+        AddGroupSubtree(projectInfo.GetGroupById(rootGroupId.CharacterGroupId), depth: 0, parentPath: "", parentGroupId: null);
         return result;
 
-        void AddGroupSubtree(CharacterGroupInfo group, int depth, string parentPath)
+        void AddGroupSubtree(CharacterGroupInfo group, int depth, string parentPath, CharacterGroupIdentification? parentGroupId)
         {
             var firstCopy = seenGroups.Add(group.Id);
             var path = parentPath.Length == 0 ? group.Name : $"{parentPath}→{group.Name}";
@@ -131,7 +131,8 @@ internal static class ProjectRoleGridViewModelBuilder
                 Depth: depth,
                 FirstCopy: firstCopy,
                 Path: path,
-                BoundExpression: boundExpression));
+                BoundExpression: boundExpression,
+                ParentGroupId: parentGroupId));
 
             if (!firstCopy)
             {
@@ -156,7 +157,7 @@ internal static class ProjectRoleGridViewModelBuilder
                 .OrderBy(g => g.IsSpecial);
             foreach (var child in children)
             {
-                AddGroupSubtree(child, depth + 1, depth == 0 ? "" : path);
+                AddGroupSubtree(child, depth + 1, depth == 0 ? "" : path, parentGroupId: group.Id);
             }
         }
     }

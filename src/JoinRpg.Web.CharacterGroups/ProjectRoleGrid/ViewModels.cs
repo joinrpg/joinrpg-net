@@ -75,8 +75,14 @@ public record ProjectRoleGridGroupHeaderRowViewModel(
     int Depth = 0,
     bool FirstCopy = true,
     string? Path = null,
-    string? BoundExpression = null) : ProjectRoleGridRowViewModel
+    string? BoundExpression = null,
+    CharacterGroupIdentification? ParentGroupId = null) : ProjectRoleGridRowViewModel, IMoveableListItem
 {
+    string IMoveableListItem.Id => Group.CharacterGroupId.ToString();
+    string IMoveableListItem.ParentId => ParentGroupId?.ToString() ?? "";
+    string IMoveableListItem.DisplayText => Group.Name;
+    string IMoveableListItem.Subtext => "";
+
     // Это нужно, потому что MarkupString не умеет нормально десереиализоваться из JSON
     [JsonIgnore]
     public MarkupString? Description { get; } = DescriptionHtml is null ? null : new MarkupString(DescriptionHtml);
