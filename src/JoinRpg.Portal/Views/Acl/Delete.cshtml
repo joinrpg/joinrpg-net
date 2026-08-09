@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models.CharacterGroups;
+﻿@using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.Web.Models.CharacterGroups;
 @model JoinRpg.Web.Models.DeleteAclViewModel
 
 @{
@@ -32,7 +33,7 @@
                     <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
                       param-Name="nameof(Model.ResponsibleMasterId)"
                       param-ProjectId="@Model.ProjectId"
-                      param-IdsToRemove="@(new int[] {Model.UserId})"
+                      param-IdsToRemove="@(new UserIdentification[] {new UserIdentification(Model.UserId)})"
                       render-mode="Static" />
                 </div>
             </div>

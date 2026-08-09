@@ -30,7 +30,7 @@ public class TransferController(
         var viewModel = new CreateMoneyTransferViewModel
         {
             ProjectId = projectId,
-            Receiver = currentUserAccessor.UserId,
+            Receiver = currentUserAccessor.UserIdentification,
         };
 
         Fill(viewModel, project);

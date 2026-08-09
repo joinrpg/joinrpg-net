@@ -48,8 +48,8 @@ public class MarkMeAsPreferentialFeeOperationRequest : IClaimOperationRequest
 public class CreateTransferRequest
 {
     public int ProjectId { get; set; }
-    public int Sender { get; set; }
-    public int Receiver { get; set; }
+    public required UserIdentification Sender { get; set; }
+    public required UserIdentification Receiver { get; set; }
     public int Amount { get; set; }
     public DateTime OperationDate { get; set; }
     public required string Comment { get; set; }
@@ -68,7 +68,7 @@ public class ApproveRejectTransferRequest
 public class CreatePaymentTypeRequest
 {
     public int ProjectId { get; set; }
-    public int? TargetMasterId { get; set; }
+    public UserIdentification? TargetMasterId { get; set; }
     public PaymentTypeKind TypeKind { get; set; }
     public required string? Name { get; set; }
 }

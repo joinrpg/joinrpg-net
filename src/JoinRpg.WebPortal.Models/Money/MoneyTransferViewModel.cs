@@ -19,10 +19,10 @@ public class CreateMoneyTransferViewModel : MoneyTransferViewModelBase, IValidat
     public bool HasAdminAccess { get; set; }
 
     [Display(Name = "От")]
-    public int Sender { get; set; }
+    public UserIdentification Sender { get; set; } = null!;
 
     [Display(Name = "Кому")]
-    public int Receiver { get; set; }
+    public UserIdentification Receiver { get; set; } = null!;
 
     [Required(ErrorMessage = "Заполните текст комментария"),
      Display(

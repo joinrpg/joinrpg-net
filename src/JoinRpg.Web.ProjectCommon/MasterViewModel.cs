@@ -1,9 +1,11 @@
+using JoinRpg.Common.PrimitiveTypes;
+
 namespace JoinRpg.Web.ProjectCommon;
 
-public record MasterViewModel(int MasterId, UserDisplayName DisplayName)
+public record MasterViewModel(UserIdentification MasterId, UserDisplayName DisplayName)
 {
     public static MasterViewModel Empty(string label)
-        => new(-1, new UserDisplayName(DisplayName: label, FullName: null));
+        => new(new UserIdentification(-1), new UserDisplayName(DisplayName: label, FullName: null));
 
-    public UserLinkViewModel ToUserLinkViewModel() => new UserLinkViewModel(MasterId, DisplayName.DisplayName, ViewMode.Show);
+    public UserLinkViewModel ToUserLinkViewModel() => new UserLinkViewModel(MasterId.Value, DisplayName.DisplayName, ViewMode.Show);
 }
