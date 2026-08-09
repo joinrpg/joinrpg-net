@@ -29,4 +29,22 @@ public static class ClassicRolesGridDefaults
             GroupsColumn: ProjectRolesListVisibilityMode.None,
             GroupsViewMode: RolesGridGroupsViewMode.Tree,
             ShowRolesFilter: ShowRolesFilter.All);
+
+    /// <summary>
+    /// Собирает транзиентную настройку сетки горячих ролей (страница <c>GameGroups/Hot</c>, роут
+    /// <c>~/{projectId}/roles/hot</c>) — плоский список без групп, только горячие роли.
+    /// </summary>
+    public static ProjectRolesList BuildHot(
+        CharacterGroupIdentification? groupId,
+        ProjectFieldIdentification? descriptionField)
+        => new(
+            ProjectRolesListId: null, // транзиентная сетка, в БД не сохраняется
+            Name: "Горячие роли",
+            CharacterGroupId: groupId,
+            PublicMode: true,
+            Fields: descriptionField is { } field ? [field] : [],
+            ContactsColumn: ProjectRolesListVisibilityMode.None,
+            GroupsColumn: ProjectRolesListVisibilityMode.None,
+            GroupsViewMode: RolesGridGroupsViewMode.None,
+            ShowRolesFilter: ShowRolesFilter.HotOnly);
 }

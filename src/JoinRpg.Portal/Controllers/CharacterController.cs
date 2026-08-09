@@ -229,46 +229,4 @@ public class CharacterController(
         }
     }
 
-    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
-    public Task<ActionResult> MoveUp(int projectid,
-        int characterid,
-        int parentcharactergroupid,
-        int currentrootgroupid) => MoveImpl(projectid,
-        characterid,
-        parentcharactergroupid,
-        currentrootgroupid,
-        direction: -1);
-
-    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
-    public Task<ActionResult> MoveDown(int projectid,
-        int characterid,
-        int parentcharactergroupid,
-        int currentrootgroupid) => MoveImpl(projectid,
-        characterid,
-        parentcharactergroupid,
-        currentrootgroupid,
-        direction: +1);
-
-    private async Task<ActionResult> MoveImpl(int projectId,
-        int characterId,
-        int parentCharacterGroupId,
-        int currentRootGroupId,
-        short direction)
-    {
-        try
-        {
-            await characterService.MoveCharacter(CurrentUserId,
-                projectId,
-                characterId,
-                parentCharacterGroupId,
-                direction);
-
-            return RedirectToIndex(projectId, currentRootGroupId);
-        }
-        catch
-        {
-            //TODO Show Error
-            return RedirectToIndex(projectId, currentRootGroupId);
-        }
-    }
 }

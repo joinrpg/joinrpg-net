@@ -15,6 +15,8 @@ public interface IProjectRoleGridClient
     /// «Классическая» сетка ролей (страница GameGroups/Index) — строится на лету, без сохранённой
     /// настройки. <paramref name="groupId"/> — явно выбранный корень сетки, или null, если корень
     /// не указан в URL: тогда сетка строится от корня проекта, не используя спецгруппы.
+    /// <paramref name="hotOnly"/> — строить сетку горячих ролей (страница GameGroups/Hot): плоский
+    /// список без групп, только персонажи с <c>IsHot == true</c>, вместо обычной классической сетки.
     /// </summary>
-    Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId);
+    Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false);
 }

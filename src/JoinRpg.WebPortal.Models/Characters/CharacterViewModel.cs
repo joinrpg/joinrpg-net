@@ -28,12 +28,6 @@ public class CharacterViewModel :
     public UserLinkViewModel? PlayerLink { get; set; }
     public int ActiveClaimsCount { get; set; }
 
-    public bool FirstInGroup { get; set; }
-    public bool LastInGroup { get; set; }
-
-    public int ParentCharacterGroupId { get; set; }
-    public int RootGroupId { get; set; }
-
     public bool HasEditRolesAccess { get; set; }
 
     LinkType ILinkable.LinkType => LinkType.ResultCharacter;

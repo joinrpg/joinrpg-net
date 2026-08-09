@@ -137,4 +137,67 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
         anonPrivateResult.Grid.ShouldBeNull();
         anonPrivateResult.NoAccess.ShouldNotBeNull();
     }
+
+    [Fact]
+    public async Task ClassicGrid_HotOnly_ShowsOnlyHotCharacters()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            (masterId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект с горячими ролями");
+        }
+
+        const string hotName = "Горячая роль";
+        const string coldName = "Обычная роль";
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
+            var characterService = sp.GetRequiredService<ICharacterService>();
+
+            var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
+            var rootGroupId = projectInfo.RootCharacterGroupId;
+            var nameFieldId = (projectInfo.CharacterNameField
+                ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
+                .Id.ProjectFieldId;
+
+            await characterService.AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [rootGroupId],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: new Dictionary<int, string?> { [nameFieldId] = hotName }));
+
+            await characterService.AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [rootGroupId],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: new Dictionary<int, string?> { [nameFieldId] = coldName }));
+        });
+
+        var anonClient = factory.CreateClient();
+
+        // Страница /{projectId}/roles/hot открывается.
+        var hotPageResponse = await anonClient.GetAsync($"{projectId.Value}/roles/hot");
+        hotPageResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // hotOnly=true — только горячая роль.
+        var hotResult = await anonClient.GetFromJsonAsync<ProjectRoleGridViewResult>(
+            $"webapi/project-role-grid/getclassic?projectId={projectId.Value}&hotOnly=true");
+        hotResult!.HasAccess.ShouldBeTrue();
+        var hotCharacterNames = CharacterNames(hotResult.Grid!);
+        hotCharacterNames.ShouldContain(hotName);
+        hotCharacterNames.ShouldNotContain(coldName);
+
+        // Без hotOnly (обычная классическая сетка) — видны обе роли.
+        var classicResult = await anonClient.GetFromJsonAsync<ProjectRoleGridViewResult>(
+            $"webapi/project-role-grid/getclassic?projectId={projectId.Value}");
+        var classicCharacterNames = CharacterNames(classicResult!.Grid!);
+        classicCharacterNames.ShouldContain(hotName);
+        classicCharacterNames.ShouldContain(coldName);
+    }
+
+    private static List<string> CharacterNames(ProjectRoleGridViewModel grid) =>
+        [.. grid.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().Select(r => r.Character.Character.Name)];
 }

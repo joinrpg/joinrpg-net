@@ -20,5 +20,9 @@ public class GameRolesViewModel
 
     public required string RootGroupName { get; set; }
 
-    public required CharacterGroupDetailsViewModel Details { get; set; }
+    /// <summary>
+    /// Заголовок группы (breadcrumbs, описание). Null для страницы горячих ролей (GameGroups/Hot) —
+    /// там сетка не привязана к одной группе, заголовок группы показывать не нужно.
+    /// </summary>
+    public CharacterGroupDetailsViewModel? Details { get; set; }
 }

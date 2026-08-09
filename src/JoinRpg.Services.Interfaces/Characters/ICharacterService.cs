@@ -8,11 +8,5 @@ public interface ICharacterService
 
     Task EditCharacter(EditCharacterRequest editCharacterRequest);
 
-    Task MoveCharacter(int currentUserId,
-        int projectId,
-        int characterId,
-        int parentCharacterGroupId,
-        short direction);
-
     Task SetFields(CharacterIdentification characterId, Dictionary<int, string?> requestFieldValues);
 }

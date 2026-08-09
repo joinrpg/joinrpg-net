@@ -92,12 +92,12 @@ public static class CharacterGroupListViewModel
 
         private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroup characterGroup)
         {
-            var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(currentUserId)).ToArray();
+            var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(currentUserId));
 
-            return characters.Select(character => GenerateCharacter(character, characterGroup, characters));
+            return characters.Select(GenerateCharacter);
         }
 
-        private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, Character[] siblings)
+        private CharacterViewModel GenerateCharacter(Character arg)
         {
             var vm = new CharacterViewModel
             {
@@ -117,10 +117,6 @@ public static class CharacterGroupListViewModel
                 PlayerLink = arg.GetCharacterPlayerLinkViewModel(currentUserId),
                 HasEditRolesAccess = HasEditRolesAccess,
                 ProjectId = arg.ProjectId,
-                FirstInGroup = siblings[0] == arg,
-                LastInGroup = siblings[^1] == arg,
-                ParentCharacterGroupId = group.CharacterGroupId,
-                RootGroupId = root.CharacterGroupId,
             };
             if (vm.IsFirstCopy)
             {
