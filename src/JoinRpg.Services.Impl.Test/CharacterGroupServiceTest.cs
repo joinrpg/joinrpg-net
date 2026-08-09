@@ -171,4 +171,42 @@ public class CharacterGroupServiceTest
         parent.ChildCharactersOrdering.ShouldNotBeNullOrEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task MoveCharacterGroupAfter_ReordersChildGroups()
+    {
+        var parent = mock.Group;
+        var first = mock.CreateCharacterGroup();
+        var second = mock.CreateCharacterGroup();
+        first.ParentCharacterGroupIds = [parent.CharacterGroupId];
+        second.ParentCharacterGroupIds = [parent.CharacterGroupId];
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        var newOrder = await service.MoveCharacterGroupAfter(GroupId(parent), GroupId(first), GroupId(second));
+
+        newOrder.ShouldBe([GroupId(second), GroupId(first)]);
+        parent.ChildGroupsOrdering.ShouldNotBeNullOrEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task MoveCharacterGroupAfter_RootParent_ReordersTopLevelGroups()
+    {
+        var root = mock.Project.CharacterGroups.Single(g => g.IsRoot);
+        var first = mock.CreateCharacterGroup();
+        var second = mock.CreateCharacterGroup();
+        first.ParentCharacterGroupIds = [root.CharacterGroupId];
+        second.ParentCharacterGroupIds = [root.CharacterGroupId];
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        var newOrder = await service.MoveCharacterGroupAfter(RootGroupId, GroupId(first), GroupId(second));
+
+        newOrder.ShouldBe([GroupId(second), GroupId(first)]);
+        root.ChildGroupsOrdering.ShouldNotBeNullOrEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
 }

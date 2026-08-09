@@ -24,6 +24,10 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
                 when characterId.ProjectId == groupId.ProjectId
                     && (request.MoveAfterId is null or CharacterIdentification)
                 => await MoveCharacterAsync(groupId, characterId, request.MoveAfterId as CharacterIdentification),
+            { SelfId: CharacterGroupIdentification childGroupId, ParentId: CharacterGroupIdentification parentGroupId }
+                when childGroupId.ProjectId == parentGroupId.ProjectId
+                    && (request.MoveAfterId is null or CharacterGroupIdentification)
+                => await MoveCharacterGroupAsync(parentGroupId, childGroupId, request.MoveAfterId as CharacterGroupIdentification),
             { SelfId: ProjectFieldVariantIdentification variantId, ParentId: ProjectFieldIdentification fieldId }
                 when variantId.FieldId == fieldId
                     && (request.MoveAfterId is null or ProjectFieldVariantIdentification)
@@ -56,6 +60,15 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
         CharacterIdentification? afterCharacterId)
     {
         var sortedIds = await characterGroupService.MoveCharacterAfter(groupId, characterId, afterCharacterId);
+        return [.. sortedIds.Select(id => id.ToString())];
+    }
+
+    private async Task<string[]> MoveCharacterGroupAsync(
+        CharacterGroupIdentification parentGroupId,
+        CharacterGroupIdentification groupId,
+        CharacterGroupIdentification? afterGroupId)
+    {
+        var sortedIds = await characterGroupService.MoveCharacterGroupAfter(parentGroupId, groupId, afterGroupId);
         return [.. sortedIds.Select(id => id.ToString())];
     }
 }

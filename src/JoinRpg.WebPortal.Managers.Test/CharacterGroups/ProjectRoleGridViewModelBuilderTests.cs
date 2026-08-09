@@ -557,6 +557,26 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
+    public void Tree_ParentGroupId_MatchesImmediateParentInTraversal()
+    {
+        // root -> A -> A1
+        var groupA = CreateGroup("A", RootGroupId);
+        var groupA1 = CreateGroup("A1", groupA.CharacterGroupId);
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(groupsViewMode: RolesGridGroupsViewMode.Tree), []);
+
+        var headers = result.Rows.OfType<ProjectRoleGridGroupHeaderRowViewModel>().ToList();
+        var rootHeader = headers.Single(h => h.Depth == 0);
+        var headerA = headers.Single(h => h.Group.Name == "A");
+        var headerA1 = headers.Single(h => h.Group.Name == "A1");
+
+        rootHeader.ParentGroupId.ShouldBeNull();
+        headerA.ParentGroupId.ShouldBe(new CharacterGroupIdentification(_mock.ProjectInfo.ProjectId, RootGroupId));
+        headerA1.ParentGroupId.ShouldBe(headerA.Group.CharacterGroupId);
+    }
+
+    [Fact]
     public void Tree_EmptyGroup_IsIncludedInOutput()
     {
         var emptyGroup = CreateGroup("Пустая группа", RootGroupId);

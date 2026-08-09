@@ -57,21 +57,26 @@ internal static class ProjectOperationContextExtensions
     /// <summary>
     /// Резолвит группу для изменения: возвращает трекаемую сущность и её метаданные, проверяет, что
     /// группа обычная (<see cref="CharacterGroupType.Regular"/>) — root и специальные группы менять
-    /// нельзя, если явно не разрешено через <paramref name="allowSpecialToValue"/> — и помечает
-    /// сущность изменённой.
+    /// нельзя, если явно не разрешено через <paramref name="allowSpecialToValue"/> или
+    /// <paramref name="allowRoot"/> — и помечает сущность изменённой.
     /// </summary>
     /// <param name="allowSpecialToValue">
     /// Разрешить также <see cref="CharacterGroupType.SpecialToValue"/> (например, автосетку «горячие
     /// роли») — её содержимое (порядок персонажей) можно менять, хотя саму группу (имя, родителей)
     /// нельзя.
     /// </param>
+    /// <param name="allowRoot">
+    /// Разрешить также <see cref="CharacterGroupType.Root"/> — саму корневую группу переименовать
+    /// или перепривязать нельзя, но порядок её прямых детей (групп/персонажей) менять можно.
+    /// </param>
     public static (CharacterGroup Group, CharacterGroupInfo GroupInfo) GetCharacterGroupForChange(
-        this ProjectMutationContext ctx, CharacterGroupIdentification id, bool allowSpecialToValue = false)
+        this ProjectMutationContext ctx, CharacterGroupIdentification id, bool allowSpecialToValue = false, bool allowRoot = false)
     {
         var group = ctx.Project.CharacterGroups.Single(g => g.CharacterGroupId == id.CharacterGroupId);
         var groupInfo = ctx.ProjectInfo.Groups[id];
         var allowed = groupInfo.GroupType == CharacterGroupType.Regular
-            || (allowSpecialToValue && groupInfo.GroupType == CharacterGroupType.SpecialToValue);
+            || (allowSpecialToValue && groupInfo.GroupType == CharacterGroupType.SpecialToValue)
+            || (allowRoot && groupInfo.GroupType == CharacterGroupType.Root);
         if (!allowed)
         {
             throw new InvalidOperationException();
