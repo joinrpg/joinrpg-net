@@ -1,4 +1,5 @@
 ﻿@model JoinRpg.Web.Models.MoneyInfoTotalViewModel
+@using JoinRpg.WebComponents
 
 @{
     ViewBag.Title = "Сводка по деньгам";
@@ -15,6 +16,14 @@
 
 @await Html.PartialAsync("_PaymentTypes", Model.PaymentTypeSummary)
 
-<h3>Переводы</h3>
+<h3>
+    Переводы
+    <component type="typeof(JoinButton)"
+               render-mode="Static"
+               param-Link="@(Url.Action("Create", "Transfer", new { Model.ProjectId }))"
+               param-Preset="ButtonPreset.Add"
+               param-Style="VariationStyleEnum.Success"
+               param-Label="@("Отметить перевод")" />
+</h3>
 
 @await Html.PartialAsync("_Transfers", Model.Transfers)
