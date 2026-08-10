@@ -42,7 +42,7 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
             return requirement switch
             {
                 MandatoryStatus.Optional => null,
-                MandatoryStatus.Recommended => new ProfileRelatedProblem(problemType, ProblemSeverity.Hint),
+                MandatoryStatus.Recommended => new ProfileRelatedProblem(problemType, ProblemSeverity.Warning),
                 MandatoryStatus.Required => new ProfileRelatedProblem(problemType, ProblemSeverity.Warning),
                 _ => throw new ArgumentOutOfRangeException(nameof(requirement)),
             };

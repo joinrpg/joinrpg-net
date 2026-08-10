@@ -39,7 +39,7 @@ internal class FieldNotSetFilter : IFieldRelatedProblemFilter<Character>, IField
                 case MandatoryStatus.Optional:
                     break;
                 case MandatoryStatus.Recommended:
-                    yield return FieldProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Hint, fieldWithValue);
+                    yield return FieldProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Warning, fieldWithValue);
                     break;
                 case MandatoryStatus.Required:
                     yield return FieldProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Warning, fieldWithValue);
