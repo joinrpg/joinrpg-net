@@ -40,6 +40,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
         model.Title = string.IsNullOrWhiteSpace(model.Title)
             ? "Ошибка онлайн-оплаты"
             : model.Title.Trim();
+        model.RequestId ??= HttpContext.TraceIdentifier;
         return View("Error", model);
     }
 
@@ -79,6 +80,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Error while creating recurrent payment subscription");
             return Error(
                 new ErrorViewModel
                 {
@@ -161,6 +163,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Error while creating payment");
             return Error(
                 new ErrorViewModel
                 {
