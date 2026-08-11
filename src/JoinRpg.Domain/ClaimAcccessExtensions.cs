@@ -33,6 +33,7 @@ public static class ClaimAcccessExtensions
         return claim;
     }
 
+    [Obsolete]
     public static bool HasAccess(this Claim claim,
         int? userId,
         Permission permission = Permission.None,
@@ -56,6 +57,31 @@ public static class ClaimAcccessExtensions
         }
 
         return claim.HasMasterAccess(UserIdentification.FromOptional(userId), permission);
+    }
+
+    public static bool HasAccess(this Claim claim,
+        UserIdentification? userId,
+        Permission permission = Permission.None,
+        ExtraAccessReason reasons = ExtraAccessReason.None)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+
+        if (userId == null)
+        {
+            return false;
+        }
+
+        if (reasons.HasFlag(ExtraAccessReason.Player) && claim.PlayerUserId == userId)
+        {
+            return true;
+        }
+
+        if (reasons.HasFlag(ExtraAccessReason.ResponsibleMaster) && claim.ResponsibleMasterUserId == userId)
+        {
+            return true;
+        }
+
+        return claim.HasMasterAccess(userId, permission);
     }
 
 }

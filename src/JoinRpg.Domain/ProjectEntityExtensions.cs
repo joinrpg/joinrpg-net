@@ -109,6 +109,18 @@ public static class ProjectEntityExtensions
         return playerAccess || character.HasMasterAccess(UserIdentification.FromOptional(currentUserIdOrDefault));
     }
 
+    // Отдельный оверлоад для UserIdentification? обязателен: implicit operator int(UserIdentification self)
+    // разыменовывает self при конвертации в int?, и вызов HasAnyAccess(int?) с null-значением падал с NullReferenceException.
+    [Obsolete("Используйте AccessArguments")]
+    public static bool HasAnyAccess(this Character character, UserIdentification? currentUserIdOrDefault)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var playerAccess = currentUserIdOrDefault is not null && character.ApprovedClaim?.PlayerUserId == currentUserIdOrDefault.Value;
+
+        return playerAccess || character.HasMasterAccess(currentUserIdOrDefault);
+    }
+
     public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)
     {
         ArgumentNullException.ThrowIfNull(claim);
