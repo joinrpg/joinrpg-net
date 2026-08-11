@@ -16,6 +16,8 @@ public class ErrorViewModel
 
     public object? Data { get; set; }
 
+    public string? RequestId { get; set; }
+
     public ErrorViewModel()
     {
 #if DEBUG
