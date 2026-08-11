@@ -31,7 +31,7 @@ public class PrintController(
         {
             return NotFound();
         }
-        if (!character.HasAnyAccess(currentUserAccessor.UserIdOrDefault))
+        if (!character.HasAnyAccess(currentUserAccessor.UserIdentificationOrDefault))
         {
             return NoAccesToProjectView(projectInfo, currentUserAccessor);
         }

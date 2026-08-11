@@ -83,7 +83,7 @@ public static class AccessArgumentsFactory
         return mode switch
         {
             CharacterAccessMode.Usual => Create(character, user, projectInfo),
-            CharacterAccessMode.Print => CreateForPrint(character, user.UserIdOrDefault),
+            CharacterAccessMode.Print => CreateForPrint(character, user.UserIdentificationOrDefault),
             CharacterAccessMode.SendClaim => CreateForAdd(character, user.UserIdentification),
             _ => throw new NotImplementedException(),
         };
@@ -92,7 +92,7 @@ public static class AccessArgumentsFactory
     /// <summary>
     /// Для печати мы используем режим показа от имени игрока, даже если у нас есть мастерские права
     /// </summary>
-    private static AccessArguments CreateForPrint(Character character, int? userId)
+    private static AccessArguments CreateForPrint(Character character, UserIdentification? userId)
     {
         ArgumentNullException.ThrowIfNull(character);
 
