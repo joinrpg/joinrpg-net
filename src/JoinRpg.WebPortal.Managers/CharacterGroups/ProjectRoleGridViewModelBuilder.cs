@@ -2,6 +2,7 @@ using System.Text.Encodings.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Markdown;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
