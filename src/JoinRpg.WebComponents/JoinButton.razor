@@ -1,5 +1,6 @@
 @using System.Diagnostics
 @using JoinRpg.WebComponents.Dialog
+@inject ILogger<JoinButton> Logger
 
 @if (Link is not null)
 {
@@ -242,8 +243,8 @@ else
         }
 
         var presetContent = ButtonPresets.All[Preset];
-        NormalContent = FormatLabel(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon);
-        ProgressContent = FormatLabel(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon);
+        NormalContent = FormatLabelLogged(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon, "Normal");
+        ProgressContent = FormatLabelLogged(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon, "Progress");
         ActualStyle = Style ?? presetContent.Style;
         DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";
 
@@ -277,5 +278,18 @@ else
     internal static RenderFragment FormatLabel(string? customLabel, string? defaultLabel, string? customIcon, string? defaultIcon)
     {
       return FormatLabel(customLabel?.Trim() ?? defaultLabel, customIcon?.Trim() ?? defaultIcon);
+    }
+
+    private RenderFragment FormatLabelLogged(string? customLabel, string? defaultLabel, string? customIcon, string? defaultIcon, string state)
+    {
+      var label = customLabel?.Trim() ?? defaultLabel;
+      var icon = customIcon?.Trim() ?? defaultIcon;
+      if (string.IsNullOrEmpty(label) && string.IsNullOrEmpty(icon))
+      {
+          Logger.LogWarning(
+              "JoinButton preset {Preset} ({State}) has neither label nor icon (Label={Label}, Icon={Icon}); rendering INVALID BUTTON placeholder",
+              Preset, state, Label, Icon);
+      }
+      return FormatLabel(label, icon);
     }
 }
