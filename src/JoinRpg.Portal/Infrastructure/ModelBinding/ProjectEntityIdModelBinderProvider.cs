@@ -16,6 +16,13 @@ public sealed class ProjectEntityIdModelBinderProvider : IModelBinderProvider
             return null;
         }
 
+        // [FromBody]-параметры должны биндиться из JSON тела запроса (через TypedEntityIdJsonConverter),
+        // а не из query/route/form — иначе значение всегда будет null.
+        if (context.Metadata.BindingSource == BindingSource.Body)
+        {
+            return null;
+        }
+
         var allowAnotherProject = context.Metadata is DefaultModelMetadata defaultMetadata
             && defaultMetadata.Attributes.ParameterAttributes?.OfType<AllowAnotherProjectAttribute>().Any() == true;
 

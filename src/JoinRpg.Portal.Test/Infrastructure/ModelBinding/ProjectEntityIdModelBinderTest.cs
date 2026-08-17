@@ -221,11 +221,30 @@ public class ProjectEntityIdModelBinderTest
         bindingContext.Result.Model.ShouldBe(id);
     }
 
+    // Регрессия: провайдер выбирался по одному лишь типу параметра, независимо от источника
+    // привязки. Из-за этого он перехватывал и [FromBody]-параметры, пытаясь прочитать значение
+    // из query/route/form (где его нет), и биндинг всегда возвращал null — баг в
+    // ProjectFieldOperationsController.Delete, где fieldId приходил из тела запроса.
+    [Fact]
+    public void Provider_ForFromBodyParameter_ReturnsNull_SoDefaultBodyBinderIsUsed()
+    {
+        var method = typeof(ProviderTestActions).GetMethod(nameof(ProviderTestActions.WithFromBody))!;
+        var parameterInfo = method.GetParameters().Single(p => p.ParameterType == typeof(CharacterIdentification));
+        var modelMetadata = MetadataProvider.GetMetadataForParameter(parameterInfo);
+        var providerContext = new TestModelBinderProviderContext(modelMetadata, MetadataProvider);
+
+        var binder = Provider.GetBinder(providerContext);
+
+        binder.ShouldBeNull();
+    }
+
     private static class ProviderTestActions
     {
         public static void WithoutAttribute(CharacterIdentification characterId) { }
 
         public static void WithAttribute([AllowAnotherProject] CharacterIdentification characterId) { }
+
+        public static void WithFromBody([FromBody] CharacterIdentification characterId) { }
     }
 
     private sealed class TestModelBinderProviderContext(ModelMetadata metadata, IModelMetadataProvider metadataProvider) : ModelBinderProviderContext
