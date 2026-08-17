@@ -16,7 +16,7 @@ internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadata
             Name: project.ProjectName,
             Masters: [.. project.Masters.Select(m => m.ToUserLinkViewModel())],
             DescriptionHtml: details.ProjectDescription.ToHtmlString(),
-            KogdaIgraLinkedIds: [.. details.KogdaIgraLinkedIds]
+            KogdaIgraLinkedIds: [.. details.KogdaIgraCards.Select(c => c.Id)]
             );
     }
 }

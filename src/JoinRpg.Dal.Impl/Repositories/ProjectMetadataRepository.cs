@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -215,7 +216,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         return new DomainTypes.ProjectMetadata.ProjectDetails(
             project.Details.ProjectAnnounce,
-            [.. project.KogdaIgraGames.Where(x => x.Active).Select(k => new KogdaIgraIdentification(k.KogdaIgraGameId))],
+            [.. project.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
             project.Details.DisableKogdaIgraMapping);
     }
 }

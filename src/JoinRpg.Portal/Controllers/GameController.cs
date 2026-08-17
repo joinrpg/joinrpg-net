@@ -1,3 +1,4 @@
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
@@ -8,13 +9,14 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.WebPortal.Managers.AdminTools;
 using JoinRpg.WebPortal.Managers.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Controllers;
 
@@ -29,7 +31,7 @@ public class GameController(
     //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
     public async Task<IActionResult> Details(ProjectIdentification projectId,
         [FromServices] IClaimsRepository claimsRepository,
-        [FromServices] IKogdaIgraSyncClient kiClient,
+        [FromServices] IOptions<KogdaIgraOptions> kogdaIgraOptions,
         [FromServices] ICaptainRulesRepository captainRulesRepository)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
@@ -40,7 +42,7 @@ public class GameController(
             return NotFound();
         }
 
-        var list = await kiClient.GetKogdaIgraCards(details.KogdaIgraLinkedIds);
+        var list = details.KogdaIgraCards.Where(x => x.IsActive).Select(x => x.ToViewModel(kogdaIgraOptions.Value)).ToArray();
 
         if (currentUserAccessor.UserIdentificationOrDefault is UserIdentification userId)
         {

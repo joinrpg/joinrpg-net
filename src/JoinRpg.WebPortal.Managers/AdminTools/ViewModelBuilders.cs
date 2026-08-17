@@ -5,7 +5,7 @@ using JoinRpg.Web.Games.Projects;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
-internal static class ViewModelBuilders
+public static class ViewModelBuilders
 {
     public static SyncStatusViewModel ToViewModel(this SyncStatus status) => new(status.CountOfGames, status.LastUpdated, status.PendingGamesCount);
 

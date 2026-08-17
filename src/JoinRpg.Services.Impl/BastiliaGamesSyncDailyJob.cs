@@ -39,9 +39,9 @@ internal class BastiliaGamesSyncDailyJob(
         {
             logger.LogDebug("Загружаем данные по проекту {projectId}", p);
             var details = await projectMetadataRepository.GetProjectDetails(p);
-            foreach (var ki in details.KogdaIgraLinkedIds)
+            foreach (var card in details.KogdaIgraCards)
             {
-                kiSet.Add(ki);
+                kiSet.Add(card.Id);
             }
         }
 
