@@ -21,7 +21,7 @@ internal static class ButtonPresets
         { ButtonPreset.Download, new("Скачать", "Скачиваем...", "glyphicon-cloud-download") },
         { ButtonPreset.Update, new("Обновить", "Обновляем...", "glyphicon-refresh") },
         { ButtonPreset.Hide, new("Скрыть", "Скрываем...", "glyphicon-remove-sign", VariationStyleEnum.Info) },
-        { ButtonPreset.Restore, new("Восстановить", "Восстанавливаем...", style: VariationStyleEnum.Success) },
+        { ButtonPreset.Restore, new("Восстановить", "Восстанавливаем...", "glyphicon-pencil", VariationStyleEnum.Success) },
         { ButtonPreset.Print, new("Напечатать", "Печатаем...", "glyphicon-print") },
         { ButtonPreset.Email, new("Написать", "Отправляем письмо...", "glyphicon-envelope") },
         { ButtonPreset.Publish, new("Опубликовать", "Публикуем...", "glyphicon-share-alt", VariationStyleEnum.Success) },
