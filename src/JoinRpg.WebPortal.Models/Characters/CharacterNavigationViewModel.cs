@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
 

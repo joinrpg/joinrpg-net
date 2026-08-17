@@ -45,6 +45,38 @@ public record CharacterTypeInfo
         this.CharacterVisibility = CharacterVisibility;
     }
 
+    /// <summary>
+    /// Собирает <see cref="CharacterTypeInfo"/> из «сырых» флагов персонажа, как они хранятся
+    /// в БД. Единственное место, где живёт этот маппинг — иначе он расходится между
+    /// загрузчиками (см. ADR013).
+    /// </summary>
+    public static CharacterTypeInfo Create(
+        CharacterType characterType,
+        bool isHot,
+        int? characterSlotLimit,
+        string characterName,
+        bool isPublic,
+        bool hidePlayerForCharacter)
+        => new(
+            characterType,
+            isHot,
+            characterSlotLimit,
+            characterType == CharacterType.Slot ? characterName : null,
+            GetVisibility(isPublic, hidePlayerForCharacter));
+
+    /// <summary>
+    /// Маппинг пары флагов в видимость. Асимметричен: при <paramref name="isPublic"/> == false
+    /// значение <paramref name="hidePlayerForCharacter"/> роли не играет, поэтому обратно из
+    /// <see cref="CharacterVisibility"/> исходную пару восстановить нельзя.
+    /// </summary>
+    public static CharacterVisibility GetVisibility(bool isPublic, bool hidePlayerForCharacter)
+        => (isPublic, hidePlayerForCharacter) switch
+        {
+            (false, _) => CharacterVisibility.Private,
+            (true, false) => CharacterVisibility.Public,
+            (true, true) => CharacterVisibility.PlayerHidden,
+        };
+
     public static CharacterTypeInfo Default() => new(CharacterType.Player, false, null, null, CharacterVisibility.Public);
 
     public static CharacterTypeInfo DefaultSlot(string slotName)
