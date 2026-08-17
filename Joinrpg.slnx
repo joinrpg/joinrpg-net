@@ -94,7 +94,7 @@
   <Project Path="src/JoinRpg.DataModel/JoinRpg.DataModel.csproj" />
   <Project Path="src/JoinRpg.Domain/JoinRpg.Domain.csproj" />
   <Project Path="src/JoinRpg.Interfaces/JoinRpg.Interfaces.csproj" />
-  <Project Path="src/JoinRpg.Portal/JoinRpg.Portal.csproj" />
+  <Project Path="src/JoinRpg.Portal/JoinRpg.Portal.csproj" DefaultStartup="true" />
   <Project Path="src/Joinrpg.Web.Identity/Joinrpg.Web.Identity.csproj" />
 </Solution>
 
