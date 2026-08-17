@@ -41,6 +41,13 @@ public interface IProjectRepository : IDisposable
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>
     Task<ProjectPersonalizedInfo[]> GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids);
+
+    /// <summary>
+    /// Публичные проекты, открытые для рекламы горячих ролей (принимают заявки) и имеющие хотя бы одну
+    /// горячую роль, с их <see cref="ProjectAdvertisementCandidate.ActiveClaimsCount"/> для взвешивания
+    /// по ADR010 §4.
+    /// </summary>
+    Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement();
 }
 
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)

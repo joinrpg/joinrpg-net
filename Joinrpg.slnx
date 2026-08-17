@@ -28,6 +28,7 @@
   <Folder Name="/Services/">
     <Project Path="src/JoinRpg.DomainTypes/JoinRpg.DomainTypes.csproj" />
     <Project Path="src/JoinRpg.Integrations.KogdaIgra/JoinRpg.Integrations.KogdaIgra.csproj" />
+    <Project Path="src/JoinRpg.Services.Advertisement/JoinRpg.Services.Advertisement.csproj" />
     <Project Path="src/JoinRpg.Services.Email/JoinRpg.Services.Email.csproj" />
     <Project Path="src/JoinRpg.Services.Export/JoinRpg.Services.Export.csproj" />
     <Project Path="src/JoinRpg.Services.Impl/JoinRpg.Services.Impl.csproj" />
@@ -62,6 +63,7 @@
     <Project Path="src/JoinRpg.IntegrationTests/JoinRpg.IntegrationTest.csproj" />
     <Project Path="src/JoinRpg.Markdown.Test/JoinRpg.Markdown.Test.csproj" />
     <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
+    <Project Path="src/JoinRpg.Services.Advertisement.Test/JoinRpg.Services.Advertisement.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Export.Test/JoinRpg.Services.Export.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Impl.Test/JoinRpg.Services.Impl.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Notifications.Tests/JoinRpg.Services.Notifications.Tests.csproj" />

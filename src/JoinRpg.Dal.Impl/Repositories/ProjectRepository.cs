@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using JoinRpg.DataModel.Projects;
+using JoinRpg.DomainTypes.Advertisement;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers;
 using LinqKit;
@@ -195,6 +196,28 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         return [.. result.Select(BuildProjectShortInfo)];
 
+    }
+
+    async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement()
+    {
+        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+
+        var query = AllProjects
+            .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
+            .Where(ProjectPredicates.Public())
+            .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()))
+            .Select(p => new
+            {
+                p.ProjectId,
+                ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+            });
+
+        var result = await query.ToListAsync();
+
+        return [.. result.Select(x => new ProjectAdvertisementCandidate(
+            new ProjectIdentification(x.ProjectId),
+            x.ActiveClaimsCount,
+            AdvertisementCount: 0 /* TODO: считать по таблице AdvertisementLog, когда она появится (ADR010 §4) */))];
     }
 
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)

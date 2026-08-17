@@ -4,6 +4,12 @@ namespace JoinRpg.DomainTypes.ProjectMetadata;
 /// </summary>
 public record ProjectDetails(
     MarkdownString ProjectDescription,
-    IReadOnlyCollection<KogdaIgraIdentification> KogdaIgraLinkedIds,
-    bool DisableKogdaIgraMapping
-    );
+    IReadOnlyCollection<KogdaIgraGameData> KogdaIgraCards,
+    bool DisableKogdaIgraMapping)
+{
+    public KogdaIgraGameData? NearestFutureKogdaIgraCard =>
+        KogdaIgraCards
+            .Where(g => g.IsActive && g.Begin > DateOnly.FromDateTime(DateTime.UtcNow))
+            .OrderBy(g => g.Begin)
+            .FirstOrDefault();
+}

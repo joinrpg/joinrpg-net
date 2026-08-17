@@ -2,7 +2,58 @@
 
 ## Статус
 
-Черновик. Требует согласования новых полей DataModel с @leotsarev (см. [CLAUDE.md](../CLAUDE.md)).
+Частично реализовано. Первая итерация (MVP) поднимает сквозной путь только для
+`SingleHotRole` поверх **захардкоженных** канала/расписания и без реального лога — см.
+«Статус реализации» ниже. Хранение в БД (§2), безопасность секрета бота (§5) и UI (§8)
+отложены; новые поля DataModel по-прежнему требуют согласования с @leotsarev (см.
+[CLAUDE.md](../CLAUDE.md)), когда до них дойдёт очередь.
+
+## Статус реализации
+
+MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) реализует
+только вертикальный срез — один способ (`SingleHotRole`), один вид канала (Telegram), без
+хранения в БД:
+
+- ✅ **§1 Доменные типы** — реализовано, с упрощениями: нет отдельного
+  `AdvertisementChannelKind`, вид канала определяется через `is TelegramChannelSettings`; нет
+  обёртки `WeeklyAdvertisementSchedule` — дни недели хранятся прямо в
+  `AdvertisementScheduleInfo.Days`.
+- ❌ **§2 Хранение в БД** — не реализовано. Таблиц `AdvertisementChannels` /
+  `AdvertisementSchedules` / `AdvertisementLog` нет; канал и расписание захардкожены
+  (`HardcodedAdvertisementChannelRepository`, `HardcodedAdvertisementScheduleRepository`), лог
+  не пишется (`NullAdvertisementLogRepository.RecordAdvertisement` — no-op, а
+  `GetHotCharactersAdvertisementInfo` всегда отдаёт `AdvertisementCount: 0`,
+  `AlreadySentForSchedule: false`). Как следствие, **anti-repeat из §4 фактически не работает** —
+  роль может быть отреклармирована повторно на следующий день.
+- ⚠️ **§3 Слои и проекты** — частично. Проект `JoinRpg.Services.Advertisement` создан и
+  зарегистрирован через `AddJoinAdvertisement(this IJoinServiceCollection)` (не Autofac), но без
+  выделенных `IAdvertisementChannelService`/`IAdvertisementDispatchService` — вся оркестрация в
+  `SingleHotRoleAdvertisementJob`. Доставка — через `ISingleHotRoleSender`/`IAdvSenderFactory`
+  (аналог `IAdvertisementSender` из ADR, но заточен под один способ) вместо
+  `TelegramAdvertisementSender`.
+- ⚠️ **§4 Выборка контента** — реализованы только шаги 1, 3, 4, 5 (частично) для
+  `SingleHotRole`: кандидаты — `IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement()`,
+  ранжирование игр — `AdvertisementGameRanking` (та же формула
+  `ActiveClaimsCount / (AdvertisementCount + 1)`), выбор наименее рекламированной роли —
+  `HotRoleSelector`. `HotRolesDigest`/`OpenVacanciesDigest` не реализованы. Anti-repeat (шаг 2) не
+  работает — см. §2.
+- ❌ **§5 Секрет бота и безопасность** — не реализовано. Канал использует общего бота из
+  конфигурации приложения (`TelegramLoginOptions`/`TelegramBotClient`, тот же, что и для личных
+  уведомлений), захардкоженный `chatId`; отдельного хранения/шифрования секрета в БД нет. Джоба
+  зарегистрирована как обычная ежедневная (`AddDailyJob<SingleHotRoleAdvertisementJob>`,
+  `[JobDelay(9)]` = 09:00 UTC / 12:00 МСК), выполняется под роботом-админом — этот пункт §5
+  реализован.
+- ✅ **§6 Формирование сообщений** — реализовано для `SingleHotRole`
+  (`TelegramSingleHotRoleSender.BuildMessage`): русский текст, ссылка на заявку через
+  `ICharacterUriLocator`, HTML переживает телеграм-санитайзер (`b`/`strong`/`em`/`a`; `h1`-`h6` и
+  `small` сознательно не используются — телеграм-санитайзер вырезает их вместе с содержимым), даты
+  игры и регион/МГ — из `KogdaIgraGameData` (через `IProjectMetadataRepository.GetProjectDetails`,
+  без обращения к `IKogdaIgraSyncClient`).
+- ⚠️ **§7 Обработка ошибок доставки** — модель есть (`SendingResult`,
+  `AdvertisementLogEntryInfo.Status`), но т.к. лог не пишется (см. §2), различие
+  `Sent`/`Failed` сейчас ни на что не влияет.
+- ❌ **§8 UI** — не реализовано. CRUD каналов/расписаний отсутствует; единственный канал и
+  единственное расписание заведены в коде.
 
 ## Контекст
 

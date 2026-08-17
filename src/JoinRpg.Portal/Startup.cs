@@ -21,6 +21,7 @@ using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Portal.Infrastructure.XApi;
 using JoinRpg.Portal.Menu;
+using JoinRpg.Services.Advertisement;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
@@ -134,6 +135,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinNotificationJobs()
             .AddJoinTelegram()
             .AddJoinBlobStorage();
+
+        services.AddJoinAdvertisement();
 
         services.AddOptions<DonateOptions>();
 
