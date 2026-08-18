@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace JoinRpg.Blazor.ComponentBook;
+namespace JoinRpg.Common.WebComponentBook.Client;
 
 public class Program
 {

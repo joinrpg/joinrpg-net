@@ -3,9 +3,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\..\..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
   </ItemGroup>
 </Project>

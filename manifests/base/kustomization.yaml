@@ -8,6 +8,10 @@ resources:
   - id-portal-ingress.yaml
   - id-portal-pdp.yaml
   - id-portal-service.yaml
+  - componentbook-deployment.yaml
+  - componentbook-ingress.yaml
+  - componentbook-pdp.yaml
+  - componentbook-service.yaml
 
 namespace: override-me
 

@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "JoinRpg.Blazor.ComponentBook": {
+    "JoinRpg.Common.WebComponentBook.Client": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
