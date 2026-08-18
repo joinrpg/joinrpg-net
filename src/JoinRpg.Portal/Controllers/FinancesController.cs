@@ -159,8 +159,9 @@ public class FinancesController(
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> EditPaymentType(int projectid, int paymenttypeid)
     {
-        var project = await projectRepository.GetProjectAsync(projectid);
-        var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == paymenttypeid);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+        var paymentType = projectInfo.ProjectFinanceSettings.PaymentTypes
+            .SingleOrDefault(pt => pt.PaymentTypeId == new PaymentTypeIdentification(projectid, paymenttypeid));
         if (paymentType == null)
         {
             return NotFound();
@@ -178,8 +179,9 @@ public class FinancesController(
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> EditPaymentType(EditPaymentTypeViewModel viewModel)
     {
-        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
-        var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == viewModel.PaymentTypeId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
+        var paymentType = projectInfo.ProjectFinanceSettings.PaymentTypes
+            .SingleOrDefault(pt => pt.PaymentTypeId == new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId));
         if (paymentType == null)
         {
             return NotFound();
@@ -201,12 +203,6 @@ public class FinancesController(
     [HttpPost]
     public async Task<ActionResult> CreateFeeSetting(CreateProjectFeeSettingViewModel viewModel)
     {
-        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
         try
         {
             await financeService.CreateFeeSetting(new CreateFeeSettingRequest()
@@ -230,12 +226,6 @@ public class FinancesController(
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
-        var project = await projectRepository.GetProjectAsync(projectid);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
         try
         {
             await financeService.DeleteFeeSetting(projectid, projectFeeSettingId);
@@ -280,12 +270,6 @@ public class FinancesController(
     [HttpPost]
     public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
     {
-        var project = await projectRepository.GetProjectAsync(viewModel.ProjectId);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
         try
         {
             await financeService.SaveGlobalSettings(new SetFinanceSettingsRequest

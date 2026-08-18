@@ -4,6 +4,7 @@ namespace JoinRpg.Data.Interfaces;
 
 public interface IProjectRepository : IDisposable
 {
+    [Obsolete("Используйте IProjectMetadataRepository.GetProjectMetadata")]
     Task<Project> GetProjectAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
 
