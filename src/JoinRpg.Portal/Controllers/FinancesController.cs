@@ -160,8 +160,7 @@ public class FinancesController(
     public async Task<ActionResult> EditPaymentType(int projectid, int paymenttypeid)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        var paymentType = projectInfo.ProjectFinanceSettings.PaymentTypes
-            .SingleOrDefault(pt => pt.PaymentTypeId == new PaymentTypeIdentification(projectid, paymenttypeid));
+        var paymentType = projectInfo.ProjectFinanceSettings.GetPaymentByIdOrDefault(new PaymentTypeIdentification(projectid, paymenttypeid));
         if (paymentType == null)
         {
             return NotFound();
@@ -180,8 +179,7 @@ public class FinancesController(
     public async Task<ActionResult> EditPaymentType(EditPaymentTypeViewModel viewModel)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
-        var paymentType = projectInfo.ProjectFinanceSettings.PaymentTypes
-            .SingleOrDefault(pt => pt.PaymentTypeId == new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId));
+        var paymentType = projectInfo.ProjectFinanceSettings.GetPaymentByIdOrDefault(new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId));
         if (paymentType == null)
         {
             return NotFound();
