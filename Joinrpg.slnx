@@ -64,6 +64,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="src/JoinRpg.CommonUI.Models.Test/JoinRpg.CommonUI.Models.Test.csproj" />
+    <Project Path="src/JoinRpg.Dal.Impl.Tests/JoinRpg.Dal.Impl.Tests.csproj" />
     <Project Path="src/JoinRpg.DataModel.Mocks/JoinRpg.DataModel.Mocks.csproj" />
     <Project Path="src/JoinRpg.Domain.Test/JoinRpg.Domain.Test.csproj" />
     <Project Path="src/JoinRpg.DomainTypes.Test/JoinRpg.DomainTypes.Test.csproj" />
