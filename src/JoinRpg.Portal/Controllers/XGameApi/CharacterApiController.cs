@@ -10,6 +10,8 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
+// Не путать с доменным JoinRpg.DomainTypes.Characters.CharacterInfo (ADR013): здесь — DTO внешнего API.
+using CharacterInfo = JoinRpg.XGameApi.Contract.CharacterInfo;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
 

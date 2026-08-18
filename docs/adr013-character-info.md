@@ -103,7 +103,8 @@ public record class CharacterInfo
 
 ### 2. `CharacterClaimInfo`
 
-Файл: новый, `src/JoinRpg.DomainTypes/Characters/CharacterClaimInfo.cs`.
+Файл: новый, `src/JoinRpg.DomainTypes/Characters/Claims/CharacterClaimInfo.cs` (namespace
+`JoinRpg.DomainTypes.Characters.Claims` — рядом с `ClaimStatus` и `ClaimIdentification`).
 
 ```csharp
 public record class CharacterClaimInfo(

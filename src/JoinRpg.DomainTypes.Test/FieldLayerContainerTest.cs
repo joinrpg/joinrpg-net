@@ -1,7 +1,7 @@
 using System.Text.Json;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
+using static JoinRpg.DomainTypes.Test.ProjectInfoFixture;
 
 namespace JoinRpg.DomainTypes.Test;
 
@@ -615,84 +615,4 @@ public class FieldLayerContainerTest
         result.ShouldHaveSingleItem();
         result[0].Value.ShouldBe("secret");
     }
-
-    private static ProjectInfo MakeProject(params ProjectFieldInfo[] fields)
-        => MakeProject("", fields);
-
-    private static ProjectInfo MakeProject(string ordering, params ProjectFieldInfo[] fields)
-    {
-        var projectId = new ProjectIdentification(1);
-        return new ProjectInfo(
-            projectId,
-            new ProjectName("Test"),
-ordering,
-            fields,
-            new ProjectFieldSettings(null, null),
-            new ProjectFinanceSettings(false, [], []),
-            false,
-            false,
-            new CharacterGroupIdentification(projectId, 1),
-            [],
-            false,
-            new ProjectCheckInSettings(false, false, false),
-            ProjectLifecycleStatus.ActiveClaimsOpen,
-            new ProjectScheduleSettings(false),
-            ProjectCloneSettings.CloneDisabled,
-            new DateOnly(2024, 1, 1),
-            ProjectProfileRequirementSettings.AllNotRequired,
-            new ProjectClaimSettings(null, false, false, false, false),
-            [],
-            new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>(),
-            []
-        );
-    }
-
-    private static ProjectFieldInfo MakeField(int fieldId, ProjectFieldType type = ProjectFieldType.String, ProjectFieldVisibility visibility = ProjectFieldVisibility.Public, FieldBoundTo boundTo = FieldBoundTo.Character, string ordering = "")
-    {
-        var projectId = new ProjectIdentification(1);
-        var id = new ProjectFieldIdentification(projectId, fieldId);
-        return new ProjectFieldInfo(
-            id,
-            $"Field{fieldId}",
-            type,
-            boundTo,
-            [],
-            ordering,
-            0,
-            true,
-            true,
-            MandatoryStatus.Optional,
-            true,
-            true,
-            [],
-            null,
-            null,
-            false,
-            new ProjectFieldSettings(null, null),
-            null,
-            visibility,
-            null,
-            WasEverUsed: false
-        );
-    }
-
-    private static readonly AccessArguments AccessArgumentsNone = AccessArguments.None;
-
-    private static readonly AccessArguments AccessArgumentsPlayer = new(
-        MasterAccess: false,
-        PlayerAccessToCharacter: true,
-        PlayerAccesToClaim: false,
-        EditAllowed: false,
-        Published: false,
-        CharacterPublic: false,
-        IsCapitan: false);
-
-    private static readonly AccessArguments AccessArgumentsMaster = new(
-        MasterAccess: true,
-        PlayerAccessToCharacter: false,
-        PlayerAccesToClaim: false,
-        EditAllowed: false,
-        Published: false,
-        CharacterPublic: false,
-        IsCapitan: false);
 }
