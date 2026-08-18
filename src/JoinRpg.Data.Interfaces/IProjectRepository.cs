@@ -10,7 +10,6 @@ public interface IProjectRepository : IDisposable
     Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
     Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
-    Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
 
     Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds);
 
