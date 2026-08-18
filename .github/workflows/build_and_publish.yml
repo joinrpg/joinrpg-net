@@ -16,7 +16,8 @@ env:
   APP_PROJECT: ./src/JoinRpg.Portal/JoinRpg.Portal.csproj
   MIGRATOR_PROJECT: ./src/Joinrpg.Dal.Migrate/Joinrpg.Dal.Migrate.csproj
   IDPORTAL_PROJECT: ./src/JoinRpg.IdPortal/JoinRpg.IdPortal/JoinRpg.IdPortal.csproj
-  
+  COMPONENTBOOK_PROJECT: ./src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Portal/JoinRpg.Common.WebComponentBook.Portal.csproj
+
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -77,6 +78,7 @@ jobs:
         dotnet publish --no-restore --os linux --arch x64 -c Release ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
         dotnet publish --no-restore --os linux --arch x64 -c Release ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
         dotnet publish --no-restore --os linux --arch x64 -c Release ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+        dotnet publish --no-restore --os linux --arch x64 -c Release ${COMPONENTBOOK_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
     #Rest of the pipeline implies write api privileges and can't be run on PRs
 
@@ -97,7 +99,11 @@ jobs:
 
     - name: Publish & push id portal
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} 
+      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
+
+    - name: Publish & push component book
+      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${COMPONENTBOOK_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
   report:
     runs-on: ubuntu-24.04

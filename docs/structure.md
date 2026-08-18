@@ -75,11 +75,14 @@
 - `JoinRpg.Web.AdminTools` — инструменты администратора платформы
 - `JoinRpg.XGameApi.Contract` — DTO-контракты API для интеграции с внешними игровыми системами
 - `JoinRpg.Blazor.Client` — Blazor WebAssembly клиент (в процессе миграции страниц)
-- `JoinRpg.Blazor.ComponentBook` — каталог компонентов для разработки (аналог Storybook)
 
 ### IdPortal (портал аккаунтов)
 - `JoinRpg.IdPortal` — отдельное ASP.NET Core приложение для управления аккаунтами
 - `JoinRpg.IdPortal.Client` — Blazor WebAssembly клиент IdPortal
+
+### WebComponentBook (каталог компонентов)
+- `JoinRpg.Common.WebComponentBook.Portal` — ASP.NET Core приложение, хостит клиент как статические файлы (аналог Storybook)
+- `JoinRpg.Common.WebComponentBook.Client` — Blazor WebAssembly клиент с каталогом компонентов
 
 ### Tests
 - `JoinRpg.TestHelpers` — общие тестовые утилиты

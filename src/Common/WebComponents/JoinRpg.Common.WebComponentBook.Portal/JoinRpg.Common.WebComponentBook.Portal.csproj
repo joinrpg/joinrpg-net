@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
+    <ContainerRegistry>cr.yandex</ContainerRegistry>
+    <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-componentbook</ContainerRepository>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <!-- ReferenceTrimmer не видит, что ссылка на Client нужна UseBlazorFrameworkFiles() для копирования wwwroot/_framework при публикации, т.к. нет прямого использования типов Client -->
+    <NoWarn>$(NoWarn);RT0002</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Common.WebComponentBook.Client\JoinRpg.Common.WebComponentBook.Client.csproj" />
+    <ProjectReference Include="..\..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+  </ItemGroup>
+
+</Project>

@@ -10,6 +10,10 @@
     <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
     <Project Path="src/JoinRpg.Markdown/JoinRpg.Markdown.csproj" />
   </Folder>
+  <Folder Name="/Common/WebComponents/">
+    <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Client/JoinRpg.Common.WebComponentBook.Client.csproj" />
+    <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Portal/JoinRpg.Common.WebComponentBook.Portal.csproj" />
+  </Folder>
   <Folder Name="/Dal/">
     <Project Path="src/JoinRpg.Dal.Impl/JoinRpg.Dal.Impl.csproj" />
     <Project Path="src/JoinRpg.Dal.JobService/JoinRpg.Dal.JobService.csproj" />
@@ -76,7 +80,6 @@
   </Folder>
   <Folder Name="/WebPortalShared/">
     <Project Path="src/JoinRpg.Blazor.Client/JoinRpg.Blazor.Client.csproj" />
-    <Project Path="src/JoinRpg.Blazor.ComponentBook/JoinRpg.Blazor.ComponentBook.csproj" />
     <Project Path="src/JoinRpg.Web.AdminTools/JoinRpg.Web.AdminTools.csproj" />
     <Project Path="src/JoinRpg.Web.CharacterGroups/JoinRpg.Web.CharacterGroups.csproj" />
     <Project Path="src/JoinRpg.Web.CheckIn/JoinRpg.Web.CheckIn.csproj" />

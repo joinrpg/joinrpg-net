@@ -20,7 +20,10 @@ env:
 
   IDPORTAL_NAME: joinrpg-idportal
   IDPORTAL_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-idportal"
-  
+
+  COMPONENTBOOK_NAME: joinrpg-componentbook
+  COMPONENTBOOK_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-componentbook"
+
   REGISTRY_HOST: cr.yandex
 
 jobs:
@@ -60,6 +63,10 @@ jobs:
           docker pull --quiet ${REGISTRY_HOST}/${IDPORTAL_IMAGE_ID}:${COMMON_IMAGE_VERSION} > /dev/null
           IDPORTAL_IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${REGISTRY_HOST}/${IDPORTAL_IMAGE_ID}:${COMMON_IMAGE_VERSION} | cut -d@ -f2)
           echo "IDPORTAL_IMAGE_VERSION_WITH_DIGEST=${COMMON_IMAGE_VERSION}@${IDPORTAL_IMAGE_DIGEST}" >> $GITHUB_ENV
+
+          docker pull --quiet ${REGISTRY_HOST}/${COMPONENTBOOK_IMAGE_ID}:${COMMON_IMAGE_VERSION} > /dev/null
+          COMPONENTBOOK_IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${REGISTRY_HOST}/${COMPONENTBOOK_IMAGE_ID}:${COMMON_IMAGE_VERSION} | cut -d@ -f2)
+          echo "COMPONENTBOOK_IMAGE_VERSION_WITH_DIGEST=${COMMON_IMAGE_VERSION}@${COMPONENTBOOK_IMAGE_DIGEST}" >> $GITHUB_ENV
 
       - name: Checkout Repo
         uses: actions/checkout@v7
@@ -108,6 +115,10 @@ jobs:
             - name: ${IDPORTAL_NAME}
               newName: ${REGISTRY_HOST}/${{ env.IDPORTAL_IMAGE_ID }}
               newTag: ${{ env.IDPORTAL_IMAGE_VERSION_WITH_DIGEST }}
+
+            - name: ${COMPONENTBOOK_NAME}
+              newName: ${REGISTRY_HOST}/${{ env.COMPONENTBOOK_IMAGE_ID }}
+              newTag: ${{ env.COMPONENTBOOK_IMAGE_VERSION_WITH_DIGEST }}
 
 
             EOF
@@ -187,3 +198,4 @@ jobs:
           kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${ENVIRONMENT} $KUBECTL_PRUNE_WHITELIST
           kubectl rollout status deployment/${APP_NAME} --namespace ${ENVIRONMENT}
           kubectl rollout status deployment/${IDPORTAL_NAME} --namespace ${ENVIRONMENT}
+          kubectl rollout status deployment/${COMPONENTBOOK_NAME} --namespace ${ENVIRONMENT}

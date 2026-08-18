@@ -77,7 +77,7 @@ EF-предикаты и проекции пишутся через `Expression<
 
 Небольшие интерактивные виджеты Blazor встраиваются в Razor-страницы.
 `JoinRpg.Blazor.Client` — WA-клиент основного портала (в процессе миграции).
-`JoinRpg.Blazor.ComponentBook` — каталог компонентов для разработки (аналог Storybook).
+`JoinRpg.Common.WebComponentBook.Portal`/`.Client` — каталог компонентов для разработки (аналог Storybook), задеплоен на components.joinrpg.ru.
 
 ### Фоновые задачи (ADR002)
 

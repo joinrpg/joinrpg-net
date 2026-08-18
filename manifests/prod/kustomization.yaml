@@ -89,3 +89,19 @@ patchesJson6902:
       - op: replace
         path: /spec/minAvailable
         value: 1
+
+  - target:
+      kind: Ingress
+      group: networking.k8s.io
+      version: v1
+      name: joinrpg-componentbook
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: components.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: components.joinrpg.ru
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: components-joinrpg-ru-tls
