@@ -15,20 +15,20 @@
     @if (Model.CanManageRooms)
     {
         <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId })" class="btn btn-success">
-            <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения
+            <join-icon icon="Add" /> Добавить тип размещения
         </a>
     }
     @if (Model.CanAssignRooms)
     {
         @*<a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
-            <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>*@
+            <join-icon icon="Accommodation" /> Заселить всех</a>*@
         <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
-            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех
+            <join-icon icon="EvictAll" /> Выселить всех
         </a>
     }
     <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})" class="btn btn-default">Игроки без поселения...</a>
     <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", Model.ProjectId})" class="btn btn-default">
-        <i class="glyphicon glyphicon-download"></i> Список расселения (Excel)
+        <join-icon icon="Download" /> Список расселения (Excel)
     </a>
 </div>
 
@@ -76,7 +76,7 @@
       <td class="price-value">@(Model.FreeCapacity)</td>
       <td class="price-value">
         @(Model.TotalPending) / @(Model.TotalOccupied)
-        <a class="btn btn-sm btn-default glyphicon glyphicon-option-horizontal disabled" href="#"></a>
+        <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>
       </td>
       <td colspan="2">
         &nbsp;
@@ -89,7 +89,7 @@
   {
     <div style="margin-top: 1em;">
       <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId})" class="btn btn-success">
-        <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения
+        <join-icon icon="Add" /> Добавить тип размещения
       </a>
     </div>
   }

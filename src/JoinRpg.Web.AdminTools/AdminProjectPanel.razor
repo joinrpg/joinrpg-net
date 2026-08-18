@@ -3,7 +3,7 @@
 @inject ILogger<AdminProjectPanel> logger
 <div style="margin:0.5em; margin-top:2em">
     <span class="h3">Игры</span> <EnumSelector TValue="StatusEnum" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
-    <InfoIcon Title="@StatusFilter.GetDescription()" />
+    <JoinIcon Icon="JoinIconType.Info" Title="@StatusFilter.GetDescription()" />
 </div>
 <AdminProjectGrid Criteria="@Criteria" />
 

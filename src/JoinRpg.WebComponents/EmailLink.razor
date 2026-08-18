@@ -1,6 +1,6 @@
 @if (Contact is not null)
 {
-    <ContactLink IconClass="glyphicon-envelope" Href="@($"mailto:{Contact.Value}")">@Contact.Value.Trim()</ContactLink>
+    <ContactLink Icon="JoinIconType.Email" Href="@($"mailto:{Contact.Value}")">@Contact.Value.Trim()</ContactLink>
 }
 
 @code {

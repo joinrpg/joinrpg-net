@@ -1,7 +1,7 @@
 <span style="white-space: nowrap">
-    @if (IconClass is not null)
+    @if (Icon is not null)
     {
-        <span class="glyphicon @IconClass" style="margin-right: 2px" aria-hidden="true"></span>
+        <JoinIcon Icon="@Icon.Value" style="margin-right: 2px" />
     }
     @if (Prefix is not null)
     {
@@ -18,7 +18,7 @@
 </span>
 
 @code {
-    [Parameter] public string? IconClass { get; set; }
+    [Parameter] public JoinIconType? Icon { get; set; }
     [Parameter] public string? Prefix { get; set; }
     [Parameter] public string? Href { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }

@@ -1,0 +1,33 @@
+@using JoinRpg.WebComponents
+
+<h3>JoinIcon</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Тип иконки</th>
+            <th>Иконка</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var iconType in Enum.GetValues<JoinIconType>())
+        {
+            <tr>
+                <td>@iconType</td>
+                <td><JoinIcon Icon="@iconType" /></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Размеры</h4>
+<p>
+    Без размера: <JoinIcon Icon="JoinIconType.Info" />
+    @foreach (var size in Enum.GetValues<SizeStyleEnum>())
+    {
+        <text> @size: <JoinIcon Icon="JoinIconType.Info" Size="@size" /></text>
+    }
+</p>
+
+<h4>Подсказка</h4>
+<p>Иконка с подсказкой (наведите курсор): <JoinIcon Icon="JoinIconType.Help" Title="Это подсказка" /></p>

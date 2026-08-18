@@ -171,7 +171,7 @@
 
                 <div class="modal-body">
                     <div class="join alert alert-info">
-                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <join-icon icon="Info" />
                         <div>
                             <p>Размер взноса для этой заявки будет назначен вручную.</p>
                             <p>После этого взнос не будет больше зависеть от времени сдачи и&nbsp;будет зафиксирован.</p>
@@ -180,7 +180,7 @@
                     @if (Model.HasFieldsWithFee)
                     {
                         <div class="join alert alert-warning">
-                            <i class="glyphicon glyphicon-exclamation-sign"></i>
+                            <join-icon icon="Warning" />
                             Эта настройка меняет только базовое значение взноса. Итоговая сумма взноса складывается
                             из установленного вручную взноса и суммы модификаторов от полей.
                         </div>

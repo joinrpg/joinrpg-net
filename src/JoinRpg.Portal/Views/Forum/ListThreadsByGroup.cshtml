@@ -23,6 +23,6 @@ else
 @if (Model.HasMasterAccess)
 {
     <a href="@Url.Action("CreateThread", new {Model.ProjectId, Model.GroupModel.CharacterGroupId})" class="btn btn-success">
-        <span class="glyphicon glyphicon-plus"></span>открыть дискуссию
+        <join-icon icon="Add" />открыть дискуссию
     </a>
 }

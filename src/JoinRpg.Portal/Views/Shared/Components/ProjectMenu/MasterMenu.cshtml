@@ -74,7 +74,7 @@
                             @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
                         </li>
                         <li>
-                            <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить персонажа</a>
+                            <a asp-controller="Character" asp-action="Create" asp-route-projectId="@Model.ProjectId"><join-icon icon="Add" />Добавить персонажа</a>
                         </li>
 
                         @if (Model.BigGroups.Any())
@@ -100,7 +100,7 @@
                         @if (Model.ProjectStatus != ProjectLifecycleStatus.Archived)
                         {
                             <li>
-                                <a asp-controller="Plot" asp-action="CreateElement" asp-route-projectId="@Model.ProjectId"><i class="glyphicon glyphicon-plus"></i>Добавить вводную</a>
+                                <a asp-controller="Plot" asp-action="CreateElement" asp-route-projectId="@Model.ProjectId"><join-icon icon="Add" />Добавить вводную</a>
                             </li>
                         }
                     </ul>

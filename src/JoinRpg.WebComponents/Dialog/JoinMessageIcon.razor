@@ -1,4 +1,9 @@
-﻿<span class="join-message-icon @IconClassNames">@IconContent</span>
+﻿<span class="join-message-icon @IconClassNames">
+    @if (Icon is not null)
+    {
+        <JoinIcon Icon="@Icon.Value" />
+    }
+</span>
 @code {
 
     /// <summary>
@@ -7,7 +12,7 @@
     [Parameter]
     public MessageDialogType Type { get; set; }
 
-    private string? IconContent { get; set; }
+    private JoinIconType? Icon { get; set; }
     private string? IconClassNames { get; set; }
 
     /// <inheritdoc />
@@ -15,14 +20,14 @@
     {
         base.OnParametersSet();
 
-        IconContent = Type switch
+        Icon = Type switch
         {
             MessageDialogType.None => null,
-            MessageDialogType.Confirmation => "?",
-            MessageDialogType.Information => "i",
-            MessageDialogType.Success => "♥",
-            MessageDialogType.Alert => "!",
-            MessageDialogType.Fail => "×",
+            MessageDialogType.Confirmation => JoinIconType.DialogQuestion,
+            MessageDialogType.Information => JoinIconType.DialogInfo,
+            MessageDialogType.Success => JoinIconType.DialogSuccess,
+            MessageDialogType.Alert => JoinIconType.DialogAlert,
+            MessageDialogType.Fail => JoinIconType.DialogFail,
             _ => throw new ArgumentOutOfRangeException(nameof(Type)),
         };
 

@@ -11,14 +11,14 @@
 
         @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
         {
-            <JoinMenuItem Href="@UriLocator.GetEditUri(GroupId).ToString()" Icon="glyphicon-pencil" Label="настроить" />
+            <JoinMenuItem Href="@UriLocator.GetEditUri(GroupId).ToString()" Icon="JoinIconType.Edit" Label="настроить" />
         }
 
-        <JoinMenuItem Href="@UriLocator.GetSubscribeUri(GroupId).ToString()" Icon="glyphicon-pushpin" Label="подписка" />
+        <JoinMenuItem Href="@UriLocator.GetSubscribeUri(GroupId).ToString()" Icon="JoinIconType.Subscribe" Label="подписка" />
 
         @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
         {
-            <JoinMenuItem Href="@UriLocator.GetDeleteUri(GroupId).ToString()" Icon="glyphicon-trash" Label="удалить" />
+            <JoinMenuItem Href="@UriLocator.GetDeleteUri(GroupId).ToString()" Icon="JoinIconType.Delete" Label="удалить" />
         }
 
         @if (GroupType is not (CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue) && ShowEditControls)

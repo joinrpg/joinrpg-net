@@ -13,16 +13,16 @@
     <label>@characterType.GetDisplayName()</label>
     <input type="hidden" value="@characterType" Name="@(Name + ".CharacterType")" />
     if (IsDefaultTemplate)
-    {      
-      <InfoIcon Title="Нельзя изменить тип персонажа, т.к. это шаблон по умолчанию для заявок. Это можно поменять в настройках" /> 
+    {
+      <JoinIcon Icon="JoinIconType.Info" Title="Нельзя изменить тип персонажа, т.к. это шаблон по умолчанию для заявок. Это можно поменять в настройках" />
     }
     else if (!CharactersHaveNameField)
     {
-      <InfoIcon Title="Если имя персонажа привязано к игроку, в проекте можно создавать только шаблоны персонажей (другие типы персонажей создавать нельзя)" />
+      <JoinIcon Icon="JoinIconType.Info" Title="Если имя персонажа привязано к игроку, в проекте можно создавать только шаблоны персонажей (другие типы персонажей создавать нельзя)" />
     }
     else if (ActiveClaimsCount > 0)
     {
-      <InfoIcon Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
+      <JoinIcon Icon="JoinIconType.Info" Title="Нельзя изменить тип персонажа, т.к. на него уже есть заявки" />
     }
   }
 </FormRow>

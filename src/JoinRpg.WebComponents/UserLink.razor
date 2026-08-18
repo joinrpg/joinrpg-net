@@ -2,13 +2,13 @@
     @switch (Model.ViewMode)
     {
         case JoinRpg.WebComponents.ViewMode.Show:
-            <a class="join-user" href="@ProfileUri"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
+            <a class="join-user" href="@ProfileUri"><JoinIcon Icon="JoinIconType.User" />@Model.DisplayName</a>
             break;
         case JoinRpg.WebComponents.ViewMode.ShowAsPrivate:
-            <a class="join-user world-object-hidden" href="@ProfileUri"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName</a>
+            <a class="join-user world-object-hidden" href="@ProfileUri"><JoinIcon Icon="JoinIconType.User" />@Model.DisplayName</a>
             break;
         case JoinRpg.WebComponents.ViewMode.Hide:
-            <span class="glyphicon glyphicon-user"></span><i>занято</i>
+            <JoinIcon Icon="JoinIconType.User" /><i>занято</i>
             break;
     }
 

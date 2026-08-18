@@ -97,7 +97,7 @@
                     <a href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.PublishedVersion})"
                     class="btn btn-default btn-sm"
                     title="Предыдущая версия (опубликованная)">
-                        <span class="glyphicon glyphicon-fast-backward"></span>
+                        <join-icon icon="GoToFirst" />
                         @Html.DisplayFor(model => model.PrevModifiedDateTime) — опубликованная версия
                     </a>
                 }
@@ -106,7 +106,7 @@
                     <a href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.CurrentVersion - 1})"
                     class="btn btn-default btn-sm"
                     title="Предыдущая версия">
-                        <span class="glyphicon glyphicon-step-backward"></span>
+                        <join-icon icon="GoToPrev" />
                         @Html.DisplayFor(model => model.PrevModifiedDateTime)
                     </a>
                 }
@@ -120,14 +120,14 @@
                 asp-route-Version="@Model.CurrentVersion"
                 asp-route-PrintMode="true"
                 class="btn btn-default btn-sm">
-                    <span class="glyphicon glyphicon-print"></span>
+                    <join-icon icon="Print" />
                     Печать
                 </a>
                 if (Model.NextModifiedDateTime == null)
                 {
                     <a class="btn btn-default btn-sm"
                     href="@Url.Action("EditElement", "Plot", new {Model.ProjectId, elementId = Model.PlotElementIdentification}, null)">
-                        <span class="glyphicon glyphicon-pencil"></span>
+                        <join-icon icon="Edit" />
                         Изменить
                     </a>
                 }
@@ -163,7 +163,7 @@
                     class="btn btn-default btn-sm"
                     title="Следующая версия">
                         @Html.DisplayFor(model => model.NextModifiedDateTime)
-                        <span class="glyphicon glyphicon-forward"></span>
+                        <join-icon icon="GoToNext" />
                     </a>
                 }
                   

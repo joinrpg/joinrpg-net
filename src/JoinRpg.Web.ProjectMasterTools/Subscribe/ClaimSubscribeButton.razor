@@ -8,19 +8,19 @@
 }
 else if (model.IsDirect)
 {
-    <JoinButton Icon="glyphicon-pushpin" Label="Отписаться" Title="Вы подписаны на эту заявку" OnClick="OnUnsubscribeClicked" />
+    <JoinButton Icon="JoinIconType.Subscribe" Label="Отписаться" Title="Вы подписаны на эту заявку" OnClick="OnUnsubscribeClicked" />
 }
 else if (model.ParentSubscribe.AllSet)
 {
-    <JoinButton Icon="glyphicon-pushpin" Label="Вы подписаны" Title="Вы подписаны на эту заявку" Disabled="true" />
+    <JoinButton Icon="JoinIconType.Subscribe" Label="Вы подписаны" Title="Вы подписаны на эту заявку" Disabled="true" />
 }
 else if (!model.ParentSubscribe.AnySet)
 {
-    <JoinButton Icon="glyphicon-pushpin" Label="Подписаться" Title="Вы не подписаны на эту заявку" OnClick="OnSubscribeClicked" />
+    <JoinButton Icon="JoinIconType.Subscribe" Label="Подписаться" Title="Вы не подписаны на эту заявку" OnClick="OnSubscribeClicked" />
 }
 else
 {
-    <JoinButton Icon="glyphicon-pushpin" Label="Подписаться" OnClick="OnSubscribeClicked">
+    <JoinButton Icon="JoinIconType.Subscribe" Label="Подписаться" OnClick="OnSubscribeClicked">
         <TitleContent>
             Вы не подписаны на эту заявку, но будете получать уведомления в случаях:
             <ul>

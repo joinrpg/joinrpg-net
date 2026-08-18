@@ -1,7 +1,7 @@
 @using JoinRpg.Web.ProjectCommon.Projects
 
 <JoinPanel>
-    <Header><CalendarIcon Title="Данные с КогдаИгры" /> Игра: <a href="@Model.KogdaIgraUri"> @Model.Name</a></Header>
+    <Header><JoinIcon Icon="JoinIconType.Calendar" Title="Данные с КогдаИгры" style="color:black;" /> Игра: <a href="@Model.KogdaIgraUri"> @Model.Name</a></Header>
     <Body>
       <KogdaIgraDetails Model="Model" />
     </Body>

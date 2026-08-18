@@ -24,8 +24,7 @@ public class JoinButtonPresetsTest
         else
         {
             var label = preset.Normal.Label?.Trim();
-            var icon = preset.Normal.Icon?.Trim();
-            (!string.IsNullOrEmpty(label) || !string.IsNullOrEmpty(icon)).ShouldBeTrue("Label or icon or both must be specified");
+            (!string.IsNullOrEmpty(label) || preset.Normal.Icon is not null).ShouldBeTrue("Label or icon or both must be specified");
         }
     }
 }

@@ -112,11 +112,10 @@ else
     public string? Label { get; set; }
 
     /// <summary>
-    /// Icon name from the built-in glyphicon collection or another style class name.
-    /// This icon will be rendered in normal and disabled states.
+    /// Icon to be rendered in normal and disabled states.
     /// </summary>
     [Parameter]
-    public string? Icon { get; set; }
+    public JoinIconType? Icon { get; set; }
 
     /// <summary>
     /// When true, button is rendered as in progress state.
@@ -146,16 +145,15 @@ else
     public string? ProgressLabel { get; set; }
 
     /// <summary>
-    /// Icon name from the built-in glyphicon collection or another style class name.
-    /// This icon will be rendered in progress state.
+    /// Icon to be rendered in progress state.
     /// </summary>
     [Parameter]
-    public string? ProgressIcon { get; set; } = DefaultProgressIcon;
+    public JoinIconType? ProgressIcon { get; set; } = DefaultProgressIcon;
 
     /// <summary>
     /// Default icon to render in progress state.
     /// </summary>
-    public const string DefaultProgressIcon = "glyphicon-hourglass";
+    public const JoinIconType DefaultProgressIcon = JoinIconType.Progress;
 
     /// <summary>
     /// Invoked when user clicks a button somehow.
@@ -264,27 +262,27 @@ else
         
     }
 
-    private static RenderFragment FormatLabel(string? label, string? icon)
+    private static RenderFragment FormatLabel(string? label, JoinIconType? icon)
     {
-      return (string.IsNullOrEmpty(label), string.IsNullOrEmpty(icon)) switch
+      return (string.IsNullOrEmpty(label), icon is null) switch
       {
-        (false, false) => @<text><span class="glyphicon @icon"></span>&nbsp;@label</text>,
+        (false, false) => @<text><JoinIcon Icon="@icon!.Value" />&nbsp;@label</text>,
         (false, true) => @<text>@label</text>,
-        (true, false) => @<text><span class="glyphicon @icon"></span></text>,
+        (true, false) => @<text><JoinIcon Icon="@icon!.Value" /></text>,
         _ => @<text>INVALID BUTTON</text>,
       };
     }
 
-    internal static RenderFragment FormatLabel(string? customLabel, string? defaultLabel, string? customIcon, string? defaultIcon)
+    internal static RenderFragment FormatLabel(string? customLabel, string? defaultLabel, JoinIconType? customIcon, JoinIconType? defaultIcon)
     {
-      return FormatLabel(customLabel?.Trim() ?? defaultLabel, customIcon?.Trim() ?? defaultIcon);
+      return FormatLabel(customLabel?.Trim() ?? defaultLabel, customIcon ?? defaultIcon);
     }
 
-    private RenderFragment FormatLabelLogged(string? customLabel, string? defaultLabel, string? customIcon, string? defaultIcon, string state)
+    private RenderFragment FormatLabelLogged(string? customLabel, string? defaultLabel, JoinIconType? customIcon, JoinIconType? defaultIcon, string state)
     {
       var label = customLabel?.Trim() ?? defaultLabel;
-      var icon = customIcon?.Trim() ?? defaultIcon;
-      if (string.IsNullOrEmpty(label) && string.IsNullOrEmpty(icon))
+      var icon = customIcon ?? defaultIcon;
+      if (string.IsNullOrEmpty(label) && icon is null)
       {
           Logger.LogWarning(
               "JoinButton preset {Preset} ({State}) has neither label nor icon (Label={Label}, Icon={Icon}); rendering INVALID BUTTON placeholder",

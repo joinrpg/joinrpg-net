@@ -1,5 +1,5 @@
 @inject IUriLocator<ClaimIdentification> linkLocator
-<a href="@TargetUri"><span class="glyphicon glyphicon-file"></span>@Model.CharacterName</a>
+<a href="@TargetUri"><JoinIcon Icon="JoinIconType.Claim" />@Model.CharacterName</a>
 @if (ShowPlayer)
 {
     <text>&nbsp;(<UserLink Model="Model.ToUserLinkViewModel()" />)</text>

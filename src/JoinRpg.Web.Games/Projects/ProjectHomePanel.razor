@@ -22,7 +22,7 @@
 
 @if (Model.Status== ProjectLifecycleStatus.Archived)
 {
-    <JoinAlert Variation="VariationStyleEnum.Warning"><RemoveIcon /> Проект <strong>закрыт</strong></JoinAlert>
+    <JoinAlert Variation="VariationStyleEnum.Warning"><JoinIcon Icon="JoinIconType.Closed" />&nbsp; Проект <strong>закрыт</strong></JoinAlert>
 }
 
 @foreach (var ki in Model.KogdaIgras.OrderByDescending(ki => ki.End))

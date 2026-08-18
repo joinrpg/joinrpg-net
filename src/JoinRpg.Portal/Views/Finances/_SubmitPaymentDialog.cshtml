@@ -15,7 +15,7 @@
               @if (!Model.ClaimApproved)
               {
                 <div class="join alert alert-warning" role="alert">
-                  <i class="glyphicon glyphicon-warning-sign"></i>
+                  <join-icon icon="Warning" />
                   Заявка не принята. Вы точно хотите отметить оплату взноса?
                 </div>
               }
@@ -23,7 +23,7 @@
               @if (Model.HasUnApprovedPayments)
               {
                 <div class="join alert alert-warning" role="alert">
-                  <i class="glyphicon glyphicon-warning-sign"></i>
+                  <join-icon icon="Warning" />
                   Вы отмечаете новый платеж от игрока, а тем временем игрок уже отметил какой-то платеж самостоятельно.
                   Просмотрите платеж ниже в комментариях, и ответьте на него, чтобы обработать.
                 </div>

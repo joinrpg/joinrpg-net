@@ -78,7 +78,7 @@
               @if (Model.CanCurrentUserGrantRights)
                {
                  <a href="@Url.Action("Edit", new {item.ProjectId, userId = item.UserId})" class="btn btn-default btn-sm">
-                            <span class="glyphicon glyphicon-pencil"></span> Изменить права
+                            <join-icon icon="Edit" /> Изменить права
                         </a>
                }
 
@@ -88,7 +88,7 @@
                     if (Model.AnyoneElseCanGrantRights)
                     {
                         <a href="@Url.Action("RemoveYourself", new {item.ProjectId, userId = item.UserId})" class="btn btn-danger btn-sm">
-                            <span class="glyphicon glyphicon-trash"></span> Уйти из мастеров
+                            <join-icon icon="Delete" /> Уйти из мастеров
                         </a>
                     }
                     else
@@ -99,7 +99,7 @@
               else if (Model.CanCurrentUserGrantRights)
               {
                   <a href="@Url.Action("Delete", new {item.ProjectId, userId = item.UserId})" class="btn btn-danger btn-sm">
-                    <span class="glyphicon glyphicon-trash"></span> Снять доступ
+                    <join-icon icon="Delete" /> Снять доступ
                   </a>
               }
             </td>
