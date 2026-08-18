@@ -23,18 +23,18 @@
                         @if (!Model.IsSpecial && Model.ShowEditControls && !Model.IsRootGroup)
                         {
                             <a type="button" class="btn btn-default" href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
-                                <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
+                                <join-icon icon="Tools" title="настроить" /> настроить
                             </a>
                         }
                         <a type="button" class="btn btn-default" asp-controller="GameSubscribe" asp-action="EditForGroup" asp-route-projectId="@Model.ProjectId" asp-route-characterGroupId="@Model.CharacterGroupId" >
-                            <span class="glyphicon glyphicon-pushpin"></span> подписка
+                            <join-icon icon="Subscribe" /> подписка
                         </a>
 
                         @if (!Model.IsRootGroup && !Model.IsSpecial && Model.ShowEditControls)
                         {
                             var uri = Url.Action("Delete", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null);
                             <a href="@uri" type="button" class="btn btn-default">
-                                <span title="удалить" class="glyphicon glyphicon-trash"></span> удалить
+                                <join-icon icon="Delete" title="удалить" /> удалить
                             </a>
                         }
 

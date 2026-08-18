@@ -19,7 +19,7 @@
     <td>
         @if (item.IsPublic)
         {
-            <component type="typeof(EyeIcon)" render-mode="Static" />
+            <join-icon icon="Visible" />
             <component type="typeof(JoinBadge)" render-mode="Static" Param-Variation="VariationStyleEnum.Success" Param-Text='"Публичное"' />
         }
         else if (item.CanPlayerView)

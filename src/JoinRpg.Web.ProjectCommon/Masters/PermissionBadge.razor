@@ -1,11 +1,11 @@
 <JoinBadge Variation="@(Model.Value ? VariationStyleEnum.Success : VariationStyleEnum.None)" Title="@Model.Description">
     @if (Model.Value)
     {
-        <span class="glyphicon glyphicon-ok-sign"></span>
+        <JoinIcon Icon="JoinIconType.HasAccess" />
     }
     else
     {
-        <span class="glyphicon glyphicon-remove-sign"></span>
+        <JoinIcon Icon="JoinIconType.NoAccess" />
     }
     @Model.DisplayName
 </JoinBadge>

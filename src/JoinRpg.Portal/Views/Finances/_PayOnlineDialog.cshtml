@@ -20,14 +20,14 @@
                 <div class="modal-body">
                     @if (!Model.ClaimApproved)
                     {
-                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                        <div class="join alert alert-warning" role="alert"><join-icon icon="Warning" />
                             Заявка не принята. Вы точно хотите оплатить взнос?
                         </div>
                     }
 
                     @if (Model.Money == 0)
                     {
-                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-question-sign"></i>
+                        <div class="join alert alert-warning" role="alert"><join-icon icon="Help" />
                             Вы уже вносили деньги. Вы точно хотите оплатить еще?
                         </div>
                     }

@@ -19,7 +19,7 @@
                 <br /><component type="typeof(EmailLink)" render-mode="Static" param-Contact="@Model.Email" />
                 @if (!Model.EmailConfirmed && Model.ViewAsAdmin)
                 {
-                    <component type="typeof(InfoIcon)" render-mode="Static" param-Title="@("Email не подтвержден")" />
+                    <join-icon icon="Info" title="Email не подтвержден" />
                 }
             }
             @if (Model.PhoneNumber is not null)

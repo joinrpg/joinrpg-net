@@ -3,7 +3,7 @@
 @using JoinRpg.Web.Models.Money
 @model AccRequestViewModel
 <div class="list-group-item">
-    <button class="btn btn-xs btn-default glyphicon glyphicon-remove" title="Выселить из комнаты" onclick="Kick(@Model.Id)"></button>
-    <span class="badge acc-payment alert-@Model.PaymentStatusCssClass" title="@Model.PaymentStatusTitle"><i class="glyphicon glyphicon-thumbs-up"></i>@await Html.PartialAsync("Money", new Money(-Model.FeeToPay))</span>
+    <button class="btn btn-xs btn-default" title="Выселить из комнаты" onclick="Kick(@Model.Id)"><join-icon icon="Remove" /></button>
+    <span class="badge acc-payment alert-@Model.PaymentStatusCssClass" title="@Model.PaymentStatusTitle"><join-icon icon="FeePaid" />@await Html.PartialAsync("Money", new Money(-Model.FeeToPay))</span>
     @await Html.PartialAsync("_RoomRequest", Model)
 </div>

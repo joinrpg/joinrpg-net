@@ -5,11 +5,11 @@
 {
     if (Collapse)
     {
-        <a href="@($"https://t.me/{effectiveLink}")"><span class="glyphicon glyphicon-send" aria-hidden="true"></span></a>
+        <a href="@($"https://t.me/{effectiveLink}")"><JoinIcon Icon="JoinIconType.Telegram" /></a>
     }
     else
     {
-        <ContactLink IconClass="glyphicon-send" Href="@($"https://t.me/{effectiveLink}")">
+        <ContactLink Icon="JoinIconType.Telegram" Href="@($"https://t.me/{effectiveLink}")">
             @if (ChildContent is null)
             {
                 @effectiveLink

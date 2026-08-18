@@ -19,13 +19,13 @@
                 <div class="modal-body">
                     @if (!Model.ClaimApproved)
                     {
-                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                        <div class="join alert alert-warning" role="alert"><join-icon icon="Warning" />
                             Заявка не принята. Вы точно хотите оформить подписку?
                         </div>
                     }
 
                     <div class="join alert alert-info">
-                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <join-icon icon="Info" />
                         <div style="font-size: smaller;">
                             @await Html.PartialAsync("..\\Finances\\_PaymentLegalInfoPartial")
                         </div>
@@ -61,7 +61,7 @@
                         <div class="form-group">
                           <div class="col-md-12">
                             <div class="join alert alert-info">
-                              <i class="glyphicon glyphicon-info-sign"></i>
+                              <join-icon icon="Info" />
                               <div style="font-size: smaller;">
                                 Ваша текущая подписка будет заменена новой подпиской с новой суммой и будет действовать со следующего периода.
                                 Если сумма останется прежней, то ничего не произойдет.

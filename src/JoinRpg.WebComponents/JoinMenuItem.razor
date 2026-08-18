@@ -8,7 +8,7 @@
         {
             @if (Icon is not null)
             {
-                <span class="glyphicon @Icon"></span>
+                <JoinIcon Icon="@Icon.Value" />
                 <text> </text>
             }
             @Label
@@ -20,5 +20,5 @@
     [Parameter, EditorRequired] public string Href { get; set; } = "";
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string? Label { get; set; }
-    [Parameter] public string? Icon { get; set; }
+    [Parameter] public JoinIconType? Icon { get; set; }
 }

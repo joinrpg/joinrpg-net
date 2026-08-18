@@ -79,7 +79,7 @@
                         @if (Model.IsActive && Model.ActiveClaimsCount == 0 &&!Model.IsDefaultTemplate)
                         {
                             <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)" class="btn btn-danger">
-                                <span title="удалить" class="glyphicon glyphicon-trash"></span> Удалить персонажа
+                                <join-icon icon="Delete" title="удалить" /> Удалить персонажа
                             </a>
                         }
                     </div>

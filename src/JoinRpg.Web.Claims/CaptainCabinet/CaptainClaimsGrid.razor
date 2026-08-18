@@ -6,7 +6,7 @@
 
 <div style="margin:0.5em">
   <span class="h3">Моя команда</span> <EnumSelector TValue="UgStatusFilterView" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
-  <InfoIcon Title="@StatusFilter.GetDescription()" />
+  <JoinIcon Icon="JoinIconType.Info" Title="@StatusFilter.GetDescription()" />
 </div>
 
 @if (claimListItems is null)

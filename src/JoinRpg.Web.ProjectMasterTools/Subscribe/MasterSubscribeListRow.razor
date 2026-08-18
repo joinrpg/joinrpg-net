@@ -1,7 +1,7 @@
 <tr>
     <td>
         <a asp-controller="GameSubscribe" asp-action="EditRedirect" asp-route-projectId="@Model.ProjectId" asp-route-subscriptionId="@Model.UserSubscriptionId">
-            <span class="glyphicon glyphicon-pushpin"></span>
+            <JoinIcon Icon="JoinIconType.Subscribe" />
         </a>
         <a href="@Model.Link">
             @Model.Name

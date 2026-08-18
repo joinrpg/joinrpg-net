@@ -38,7 +38,7 @@ public class DialogButton
     /// <summary>
     /// Icon to be displayed on a button. Transferred to the <see cref="JoinButton.Icon"/> property.
     /// </summary>
-    public string? Icon { get; set; }
+    public JoinIconType? Icon { get; set; }
 
     /// <summary>
     /// Button style. Transferred to the <see cref="JoinButton.Style"/> property.
@@ -61,7 +61,7 @@ public class DialogButton
     public DialogButton(
         string name,
         string label,
-        string? icon = null,
+        JoinIconType? icon = null,
         VariationStyleEnum? style = null,
         DialogButtonAlignment alignment = DialogButtonAlignment.Right,
         bool disabled = false,
@@ -79,7 +79,7 @@ public class DialogButton
             throw new ArgumentException("Button label must not be empty string", nameof(label));
         }
 
-        Icon = icon?.Trim();
+        Icon = icon;
         Style = style;
         Alignment = alignment;
         Disabled = disabled;
@@ -102,7 +102,7 @@ public class DialogButton
         DialogButtonAlignment alignment = DialogButtonAlignment.Right,
         bool disabled = false,
         string? label = null,
-        string? icon = null,
+        JoinIconType? icon = null,
         VariationStyleEnum? style = null,
         bool cancel = false)
     {
@@ -116,7 +116,7 @@ public class DialogButton
         Alignment = alignment;
         Disabled = disabled;
         Label = label?.Trim();
-        Icon = icon?.Trim();
+        Icon = icon;
         Style = style;
         Cancel = cancel;
     }

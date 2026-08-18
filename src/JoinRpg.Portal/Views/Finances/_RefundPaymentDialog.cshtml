@@ -18,14 +18,14 @@
         <p>Пожалуйста, подтвердите возврат платежа.</p>
 
         <div class="join alert alert-info">
-          <i class="glyphicon glyphicon-info-sign"></i>
+          <join-icon icon="Info" />
           <div style="font-size: smaller;">
             Платеж будет возвращен в полном объеме.
           </div>
         </div>
 
         <div class="join alert alert-warning">
-          <i class="glyphicon glyphicon-alert"></i>
+          <join-icon icon="Alert" />
           <div style="font-size: smaller;">
             Для успешного возврата платежа на транзитном счете в банке должны быть необходимые средства.
             Если за сегодня не было других входящих платежей на чуть большую сумму, чем требуется вернуть,
@@ -36,7 +36,7 @@
         @if (Model.ShowTransfersNotification)
         {
           <div class="join alert alert-warning">
-            <i class="glyphicon glyphicon-sort"></i>
+            <join-icon icon="Sort" />
             <div style="font-size: smaller;">
               У текущей заявки имеются переводы средств между заявками. Обратите внимание, что автоматической
               отмены перевода средств не предусмотрено. Вам может потребоваться вручную скомпенсировать

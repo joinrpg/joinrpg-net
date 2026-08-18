@@ -70,7 +70,7 @@
                         @Html.DisplayFor(model => model.ParentGroups)
                         @if (Model.Navigation.CanEditRoles)
                         {
-                            <a href="@Url.Action("Edit", "Character" , new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
+                            <a href="@Url.Action("Edit", "Character" , new {Model.ProjectId, Model.CharacterId})"><join-icon icon="Edit" /></a>
                         }
                     </dd>
                 }
@@ -141,7 +141,7 @@
                 {
                     <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
                     aria-expanded="false">
-                        <span class="glyphicon glyphicon-transfer"></span>
+                        <join-icon icon="Move" />
                         Переместить заявку
                     </button>
                 }
@@ -185,13 +185,13 @@
             @if (Model.Status.IsAlreadyApproved())
             {
                 <a href="@Url.Action("Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
-                    <span class="glyphicon glyphicon-print"></span>
+                    <join-icon icon="Print" />
                     Для печати
                 </a>
                 if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
                 {
                     <a href="@Url.Action("CheckIn", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
-                        <span class="glyphicon glyphicon-tree-conifer"></span>
+                        <join-icon icon="CheckIn" />
                         Зарегистрировать
                     </a>
                 }
@@ -200,7 +200,7 @@
             @if (Model.Status.CanHaveSecondRole())
             {
                 <a href="@Url.Action("SecondRole", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
-                    <span class="glyphicon glyphicon-duplicate"></span>
+                    <join-icon icon="Copy" />
                     Вторая роль
                 </a>
             }

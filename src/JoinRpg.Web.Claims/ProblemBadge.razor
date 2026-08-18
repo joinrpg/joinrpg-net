@@ -1,7 +1,7 @@
 <JoinBadge Variation="GetVariation()">
   @if (Model.Severity == ProblemSeverity.Fatal)
     {
-        <ExclamationIcon Title="Обратитесь в техподдержку сайта" />
+        <JoinIcon Icon="JoinIconType.Warning" Title="Обратитесь в техподдержку сайта" /><text>&nbsp;</text>
     }
     @Model.ProblemTypeText@if (Model.ProblemTime is not null)
     {

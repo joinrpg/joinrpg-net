@@ -22,7 +22,7 @@
 }
 <h2>@ViewBag.Title</h2>
 <ul class="nav nav-tabs">
-  <li><a href="@Url.Action("Index", "AccommodationType", new {Model.ProjectId})"><i class="glyphicon glyphicon-arrow-left"></i> Список типов поселения</a></li>
+  <li><a href="@Url.Action("Index", "AccommodationType", new {Model.ProjectId})"><join-icon icon="Back" /> Список типов поселения</a></li>
   <li><a href="@Url.Action("EditRoomType", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id})">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
   <li class="active"><a href="#">Комнаты</a></li>
 </ul>
@@ -33,16 +33,16 @@
   @if (Model.CanManageRooms)
   {
     <button id="bnAddRooms" type="button" onclick="AddRoom()" class="btn btn-default">
-      <i class="glyphicon glyphicon-plus"></i> Добавить&hellip;
+      <join-icon icon="Add" /> Добавить&hellip;
     </button>
   }
   @if (Model.CanAssignRooms)
   {
     <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
-      <i class="glyphicon glyphicon-bed"></i> Заселить всех
+      <join-icon icon="Accommodation" /> Заселить всех
     </button>
     <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id })')" class="btn btn-default">
-      <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех
+      <join-icon icon="EvictAll" /> Выселить всех
     </button>
   }
 </div>

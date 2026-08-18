@@ -23,7 +23,7 @@
                             <form method="post" asp-controller="Claim" asp-action="CancelInvite" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" enctype="multipart/form-data">
                                 @Html.AntiForgeryToken()
                                 @Html.Hidden("InviteId", invite.Id)
-                                <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#cancel-@(invite.Id)"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отозвать</button>
+                                <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#cancel-@(invite.Id)"><join-icon icon="Decline" />&nbsp;Отозвать</button>
                                 @Html.ConfirmDialog(
                                     "cancel-" + invite.Id,
                                     "Отменить приглашение к совместному проживанию?",

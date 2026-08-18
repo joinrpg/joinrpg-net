@@ -24,7 +24,7 @@
                                 <form method="post" asp-controller="Claim" asp-action="AcceptInvite" enctype="multipart/form-data" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" style="margin-right: 1em;">
                                     @Html.AntiForgeryToken()
                                     @Html.Hidden("InviteId", invite.Id)
-                                    <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#accept-@(invite.Id)"><i class="glyphicon glyphicon-check text-success"></i>&nbsp;Принять</button>
+                                    <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#accept-@(invite.Id)"><join-icon icon="Approve" />&nbsp;Принять</button>
                                     @Html.ConfirmDialog(
                                         "accept-" + invite.Id,
                                         "Принять приглашение к совместному проживанию?",
@@ -35,7 +35,7 @@
                                 <form method="post" asp-controller="Claim" asp-action="DeclineInvite" enctype="multipart/form-data" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId">
                                     @Html.AntiForgeryToken()
                                     @Html.Hidden("InviteId", invite.Id)
-                                    <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#cancel-@(invite.Id)"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отклонить</button>
+                                    <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#cancel-@(invite.Id)"><join-icon icon="Decline" />&nbsp;Отклонить</button>
                                     @Html.ConfirmDialog(
                                         "cancel-" + invite.Id,
                                         "Отклонить приглашение к совместному проживанию?",

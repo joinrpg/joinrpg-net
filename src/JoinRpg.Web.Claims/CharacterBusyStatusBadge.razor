@@ -8,7 +8,7 @@
         <JoinBadge Variation="VariationStyleEnum.Primary">Вакансия</JoinBadge>
         break;
     case CharacterBusyStatusView.HotVacancy:
-        <JoinBadge Variation="VariationStyleEnum.Warning" Title="Горячая роль"><HotIcon />Hot</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Warning" Title="Горячая роль"><JoinIcon Icon="JoinIconType.Hot" />&nbsp;Hot</JoinBadge>
         break;
     case CharacterBusyStatusView.Slot:
         <JoinBadge Variation="VariationStyleEnum.Primary">
@@ -25,7 +25,7 @@
         break;
     case CharacterBusyStatusView.HotSlot:
         <JoinBadge Variation="VariationStyleEnum.Warning" Title="Горячая роль">
-            <HotIcon />
+            <JoinIcon Icon="JoinIconType.Hot" /><text>&nbsp;</text>
             Шаблон
             @if (SlotCount is not null)
             {

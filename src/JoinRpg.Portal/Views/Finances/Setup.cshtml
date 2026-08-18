@@ -12,13 +12,13 @@
 
 @if (Model.PaymentTypes.Any() && !Model.FeeSettings.Any())
 {
-    <div class="join alert alert-danger"><i class="glyphicon glyphicon-alert"></i>
+    <div class="join alert alert-danger"><join-icon icon="Alert" />
         Необходимо настроить размеры взносов, прежде чем принимать их.
     </div>
 }
 else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 {
-    <div class="join alert alert-danger"><i class="glyphicon glyphicon-alert"></i>
+    <div class="join alert alert-danger"><join-icon icon="Alert" />
         Необходимо настроить хотя бы один метод оплаты, прежде чем принимать взносы.
     </div>
 }
@@ -38,7 +38,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                 @if (!Model.FeeSettings.Any())
                 {
                     <div class="join alert alert-info">
-                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <join-icon icon="Info" />
                         <div>
                             Коллеги! Если вы оказались в этом разделе, то, скорее всего, хотите настроить размер взноса для вашей игры для того, чтобы
                             покрыть расходы на ее проведение. Мы просим вас на секунду задуматься о том, как покрываются расходы на работу Joinrpg.ru.
@@ -91,7 +91,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                                                 data-toggle="modal"
                                                 data-target="#deleteFeeSetting"
                                                 data-element="@item.ProjectFeeSettingId">
-                                            <span class="glyphicon glyphicon-trash"></span>Удалить..
+                                            <join-icon icon="Delete" />Удалить..
                                         </button>
                                     }
                                 </td>
@@ -106,7 +106,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                     <button type="button" class="btn btn-success"
                             data-toggle="modal"
                             data-target="#addFeeSettingModal">
-                        <span class="glyphicon glyphicon-plus"></span>Добавить новый размер взноса ...
+                        <join-icon icon="Add" />Добавить новый размер взноса ...
                     </button>
 
                 }

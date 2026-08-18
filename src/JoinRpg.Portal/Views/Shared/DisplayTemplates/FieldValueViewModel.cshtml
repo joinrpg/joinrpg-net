@@ -73,7 +73,7 @@
             case ProjectFieldViewType.Checkbox:
                 <div class="form-control-complex">
                     <label for="@Model.FieldClientId" class="form-control-left">
-                        <span type="checkbox" class="glyphicon glyphicon-@(Model.IsCheckboxSet() ? "check" : "unchecked")" @(Model.HasPrice ? "price=" + Model.Price.ToString() : "")></span>
+                        <join-icon icon="@(Model.IsCheckboxSet() ? JoinIconType.CheckboxChecked : JoinIconType.CheckboxUnchecked)" type="checkbox" />
                         @Model.Description
                     </label>
                     @if (Model.ShowPrice)
