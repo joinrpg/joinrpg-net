@@ -10,7 +10,6 @@ namespace JoinRpg.Portal.Controllers;
 [MasterAuthorize()]
 [Route("{projectId}/rooms/[action]")]
 public class AccommodationTypeController(
-    IProjectRepository projectRepository,
     IAccommodationService accommodationService,
     IAccommodationRepository accommodationRepository,
     IProjectMetadataRepository projectMetadataRepository,
@@ -47,8 +46,7 @@ public class AccommodationTypeController(
     public async Task<ActionResult> AddRoomType(int projectId)
     {
         var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return View(new RoomTypeViewModel(
-            await projectRepository.GetProjectAsync(projectId), currentUserAccessor.UserIdentification, pi));
+        return View(new RoomTypeViewModel(currentUserAccessor.UserIdentification, pi));
     }
 
     /// <summary>

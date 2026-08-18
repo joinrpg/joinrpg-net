@@ -17,7 +17,6 @@ namespace JoinRpg.Portal.Controllers;
 
 [Route("{projectId}/plots/[action]")]
 public class PlotController(
-    IProjectRepository projectRepository,
     IPlotService plotService,
     IPlotRepository plotRepository,
     IUriService uriService,
@@ -30,11 +29,11 @@ public class PlotController(
     [HttpGet]
     public async Task<ActionResult> Create(int projectId)
     {
-        var project1 = await projectRepository.GetProjectAsync(projectId);
+        var project1 = await projectMetadataRepository.GetProjectMetadata(new(projectId));
         return View(new AddPlotFolderViewModel
         {
-            ProjectId = project1.ProjectId,
-            ProjectName = project1.ProjectName,
+            ProjectId = project1.ProjectId.Value,
+            ProjectName = project1.ProjectName.Value,
         });
     }
 

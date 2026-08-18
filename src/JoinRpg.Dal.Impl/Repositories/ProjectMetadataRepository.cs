@@ -33,7 +33,9 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                         pt.TypeKind,
                         pt.IsActive,
                         new UserInfoHeader(new UserIdentification(pt.User.UserId), pt.User.ExtractDisplayName()),
-                        new PaymentTypeIdentification(pt.ProjectId, pt.PaymentTypeId)
+                        new PaymentTypeIdentification(pt.ProjectId, pt.PaymentTypeId),
+                        pt.Name,
+                        pt.IsDefault
                         )
                     )]);
 

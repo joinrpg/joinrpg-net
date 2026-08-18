@@ -5,6 +5,7 @@ public record ProjectFinanceSettings(bool PreferentialFeeEnabled, IReadOnlyColle
     public PaymentTypeInfo? GetCashPaymentType(UserIdentification userId)
         => PaymentTypes.SingleOrDefault(pt => pt.User.UserId == userId && pt.TypeKind == PaymentTypeKind.Cash);
     public PaymentTypeInfo GetRequiredPayment(PaymentTypeIdentification paymentTypeId) => PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
+    public PaymentTypeInfo? GetPaymentByIdOrDefault(PaymentTypeIdentification paymentTypeId) => PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == paymentTypeId);
 
     public bool CanAcceptCash(UserIdentification userId) => GetCashPaymentType(userId)?.Enabled ?? false;
 }

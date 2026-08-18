@@ -48,7 +48,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     [DisplayName("Описание"), UIHint("MarkdownString")]
     public string DescriptionEditable { get; set; }
 
-    public Project Project { get; set; }
+    public string ProjectName { get; set; }
 
 
     /// <summary>
@@ -70,7 +70,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
 
     public RoomTypeViewModel(ProjectAccommodationType entity, UserIdentification userId, ProjectInfo projectInfo)
-        : this(entity.Project, userId, projectInfo)
+        : this(userId, projectInfo)
     {
         if (entity.ProjectId == 0 || entity.Id == 0)
         {
@@ -136,10 +136,10 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Rooms = rl;
     }
 
-    public RoomTypeViewModel(Project project, UserIdentification userId, ProjectInfo projectInfo)
+    public RoomTypeViewModel(UserIdentification userId, ProjectInfo projectInfo)
     {
-        Project = project;
-        ProjectId = project.ProjectId;
+        ProjectName = projectInfo.ProjectName.Value;
+        ProjectId = projectInfo.ProjectId.Value;
         CanManageRooms = projectInfo.HasMasterAccess(userId, Permission.CanManageAccommodation);
         CanAssignRooms = projectInfo.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
     }
