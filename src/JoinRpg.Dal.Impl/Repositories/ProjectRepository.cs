@@ -45,14 +45,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         }
     }
 
-    public async Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
-    {
-        await LoadProjectCharactersAndGroups(projectId);
-        return
-          await Ctx.Set<CharacterGroup>()
-            .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
-    }
-
     public async Task<IList<CharacterGroup>> LoadGroups(IReadOnlyCollection<CharacterGroupIdentification> groupIds)
     {
         if (groupIds.Count == 0)
