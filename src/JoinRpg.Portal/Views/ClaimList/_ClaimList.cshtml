@@ -1,4 +1,5 @@
 @using JoinRpg.Portal.Infrastructure.Authentication
+@using JoinRpg.Web.Claims
 @model           JoinRpg.Web.Models.ClaimList.ClaimListViewModel
 
 @await Html.PartialAsync("_ListOperationsDropdown", Model)
@@ -44,7 +45,7 @@
                       }
                 </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ClaimFullStatusView)
+                <component type="typeof(ClaimStatusBadge)" render-mode="Static" param-Status="@item.ClaimFullStatusView" param-IsMaster="true" />
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdateDate)

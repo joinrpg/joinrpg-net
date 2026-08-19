@@ -1,3 +1,4 @@
+@using JoinRpg.Web.Claims
 @model           JoinRpg.Web.Models.ClaimList.MyClaimListViewModel
 
 @{
@@ -37,7 +38,7 @@
                     @Html.DisplayFor(modelItem => item.ProjectName)
                 </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ClaimFullStatusView)
+                <component type="typeof(ClaimStatusBadge)" render-mode="Static" param-Status="@item.ClaimFullStatusView" param-IsMaster="false" />
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdateDate)
