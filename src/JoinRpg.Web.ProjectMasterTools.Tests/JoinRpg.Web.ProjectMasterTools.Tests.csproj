@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
-    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
   </ItemGroup>
 
 </Project>

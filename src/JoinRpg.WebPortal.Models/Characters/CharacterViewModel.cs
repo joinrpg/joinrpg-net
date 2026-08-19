@@ -1,6 +1,6 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;
 

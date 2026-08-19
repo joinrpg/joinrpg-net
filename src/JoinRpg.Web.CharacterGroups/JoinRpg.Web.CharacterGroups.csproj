@@ -11,6 +11,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <ProjectReference Include="..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
-    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
   </ItemGroup>
 </Project>

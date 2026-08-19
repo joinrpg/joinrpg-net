@@ -1,9 +1,9 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon.Projects;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models;
 

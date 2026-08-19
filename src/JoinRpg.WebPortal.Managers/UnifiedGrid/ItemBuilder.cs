@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
@@ -9,7 +10,6 @@ using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Claims;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.WebPortal.Managers.UnifiedGrid;
 

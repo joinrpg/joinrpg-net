@@ -1,5 +1,5 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Blazor.Client;
 

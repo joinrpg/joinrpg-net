@@ -1,5 +1,3 @@
-using JoinRpg.Services.Advertisement.Log;
-
 namespace JoinRpg.Services.Advertisement;
 
 internal static class HotRoleSelector

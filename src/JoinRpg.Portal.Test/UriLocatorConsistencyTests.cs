@@ -1,6 +1,5 @@
 using JoinRpg.Blazor.Client;
 using JoinRpg.DomainTypes;
-using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.Extensions.DependencyInjection;
 

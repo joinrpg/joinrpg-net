@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.WebComponents;
+using JoinRpg.Common.WebComponents;
 
 namespace JoinRpg.Web.Models.UserProfile;
 

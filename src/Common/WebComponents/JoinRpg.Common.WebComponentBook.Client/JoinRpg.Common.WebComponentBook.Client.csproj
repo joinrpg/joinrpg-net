@@ -5,6 +5,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
   </ItemGroup>
 </Project>

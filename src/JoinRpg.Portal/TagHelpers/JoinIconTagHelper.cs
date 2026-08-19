@@ -1,4 +1,4 @@
-using JoinRpg.WebComponents;
+using JoinRpg.Common.WebComponents;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace JoinRpg.Portal.TagHelpers;
@@ -8,7 +8,7 @@ namespace JoinRpg.Portal.TagHelpers;
 /// </summary>
 /// <remarks>
 /// Что рисовать, решает <see cref="JoinIconMarkup"/> — тот же код, что и у Blazor-компонента <c>JoinIcon</c>.
-/// Тег-хелпер живёт в Portal, а не в JoinRpg.WebComponents, потому что в Razor Class Library,
+/// Тег-хелпер живёт в Portal, а не в JoinRpg.Common.WebComponents, потому что в Razor Class Library,
 /// на которую ссылается Blazor WebAssembly, нельзя тянуть ASP.NET Core MVC.
 /// Все прочие атрибуты, написанные на теге, попадают в итоговую разметку.
 /// </remarks>

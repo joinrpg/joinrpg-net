@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
@@ -7,7 +8,6 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 using JoinRpg.WebPortal.Managers.CharacterGroups;
 using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 

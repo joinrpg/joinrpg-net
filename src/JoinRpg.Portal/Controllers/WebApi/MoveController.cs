@@ -1,5 +1,5 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;

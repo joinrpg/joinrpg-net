@@ -1,10 +1,10 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.Plot;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Characters;
 

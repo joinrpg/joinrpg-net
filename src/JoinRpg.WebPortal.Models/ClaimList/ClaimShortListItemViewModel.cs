@@ -1,4 +1,4 @@
-using JoinRpg.WebComponents;
+using JoinRpg.Common.WebComponents;
 
 namespace JoinRpg.Web.Models.ClaimList;
 

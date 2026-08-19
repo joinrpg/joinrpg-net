@@ -1,4 +1,5 @@
 using System.Text.Encodings.Web;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -8,7 +9,6 @@ using JoinRpg.Markdown;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroups;

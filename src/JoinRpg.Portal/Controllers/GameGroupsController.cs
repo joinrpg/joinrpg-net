@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -11,7 +12,6 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;

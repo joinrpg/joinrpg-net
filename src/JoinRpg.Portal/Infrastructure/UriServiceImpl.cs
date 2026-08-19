@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
@@ -8,7 +9,6 @@ using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
-using JoinRpg.WebComponents;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure;

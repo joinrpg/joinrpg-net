@@ -23,7 +23,7 @@
     <ProjectReference Include="..\..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
     <ProjectReference Include="..\..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
-    <ProjectReference Include="..\..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal.Client\JoinRpg.IdPortal.Client.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal.OAuthServer\JoinRpg.IdPortal.OAuthServer.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />

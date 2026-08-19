@@ -53,7 +53,7 @@
     <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />
     <ProjectReference Include="..\JoinRpg.XGameApi.Contract\JoinRpg.XGameApi.Contract.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
-    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
   <ItemGroup>

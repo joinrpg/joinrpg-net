@@ -13,6 +13,8 @@
   <Folder Name="/Common/WebComponents/">
     <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Client/JoinRpg.Common.WebComponentBook.Client.csproj" />
     <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponentBook.Portal/JoinRpg.Common.WebComponentBook.Portal.csproj" />
+    <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponents.Test/JoinRpg.Common.WebComponents.Test.csproj" />
+    <Project Path="src/Common/WebComponents/JoinRpg.Common.WebComponents/JoinRpg.Common.WebComponents.csproj" />
   </Folder>
   <Folder Name="/Dal/">
     <Project Path="src/JoinRpg.Dal.Impl/JoinRpg.Dal.Impl.csproj" />
@@ -74,7 +76,6 @@
     <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
     <Project Path="src/JoinRpg.Web.CharacterGroups.Test/JoinRpg.Web.CharacterGroups.Test.csproj" Id="b5cb2aae-df4c-4a0c-9a0c-30be2c4840f6" />
     <Project Path="src/JoinRpg.Web.ProjectMasterTools.Tests/JoinRpg.Web.ProjectMasterTools.Tests.csproj" />
-    <Project Path="src/JoinRpg.WebComponents.Test/JoinRpg.WebComponents.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
   </Folder>
@@ -88,7 +89,6 @@
     <Project Path="src/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectCommon/JoinRpg.Web.ProjectCommon.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectMasterTools/JoinRpg.Web.ProjectMasterTools.csproj" />
-    <Project Path="src/JoinRpg.WebComponents/JoinRpg.WebComponents.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers/JoinRpg.WebPortal.Managers.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
     <Project Path="src/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
