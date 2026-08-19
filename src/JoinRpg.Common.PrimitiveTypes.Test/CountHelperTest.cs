@@ -1,4 +1,4 @@
-namespace JoinRpg.Helpers.Test;
+namespace JoinRpg.Common.PrimitiveTypes.Test;
 
 public class CountHelperTest
 {

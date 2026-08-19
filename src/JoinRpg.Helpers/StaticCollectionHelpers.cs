@@ -45,8 +45,4 @@ public static class StaticCollectionHelpers
             }
         }
     }
-
-    [Obsolete]
-    public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T>? collection) => collection ?? Enumerable.Empty<T>();
-
 }

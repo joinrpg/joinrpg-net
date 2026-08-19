@@ -1,4 +1,4 @@
-namespace JoinRpg.Helpers;
+namespace JoinRpg.Common.PrimitiveTypes;
 
 public static class CountHelper
 {

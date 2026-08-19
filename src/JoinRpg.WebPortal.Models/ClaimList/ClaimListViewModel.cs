@@ -2,7 +2,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
