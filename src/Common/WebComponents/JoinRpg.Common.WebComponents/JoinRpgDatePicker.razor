@@ -1,0 +1,32 @@
+<input type="date" class="form-control" style="max-width: 10em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" min="@Format(Min)" max="@Format(Max)" />
+
+@code {
+    private const string IsoDateFormat = "yyyy-MM-dd";
+
+    [Parameter]
+    public DateOnly? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<DateOnly?> ValueChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = null!;
+
+    [Parameter]
+    public DateOnly? Min { get; set; }
+
+    [Parameter]
+    public DateOnly? Max { get; set; }
+
+    private static string? Format(DateOnly? date) => date?.ToString(IsoDateFormat, System.Globalization.CultureInfo.InvariantCulture);
+
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
+    {
+        var value = eventArgs.Value?.ToString();
+        await ValueChanged.InvokeAsync(
+            DateOnly.TryParseExact(value, IsoDateFormat, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var parsed)
+                ? parsed
+                : null);
+    }
+}

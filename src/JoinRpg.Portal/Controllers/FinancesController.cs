@@ -208,7 +208,7 @@ public class FinancesController(
                 ProjectId = viewModel.ProjectId,
                 Fee = viewModel.Fee,
                 PreferentialFee = viewModel.PreferentialFee,
-                StartDate = viewModel.StartDate,
+                StartDate = viewModel.StartDate.ToDateTime(TimeOnly.MinValue),
             });
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }

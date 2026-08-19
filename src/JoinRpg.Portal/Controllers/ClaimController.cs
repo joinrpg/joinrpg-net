@@ -445,7 +445,7 @@ public class ClaimController(
                     Contents = viewModel.CommentText,
                     FeeChange = viewModel.FeeChange,
                     Money = viewModel.Money,
-                    OperationDate = viewModel.OperationDate,
+                    OperationDate = viewModel.OperationDate.ToDateTime(TimeOnly.MinValue),
                     PaymentTypeId = new DomainTypes.ProjectMetadata.Payments.PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId),
                 });
 
@@ -589,7 +589,7 @@ public class ClaimController(
                     ProjectId = claim.ProjectId,
                     ClaimId = claim.ClaimId,
                     Contents = viewModel.CommentText,
-                    OperationDate = viewModel.OperationDate,
+                    OperationDate = viewModel.OperationDate.ToDateTime(TimeOnly.MinValue),
                 })
                     .ConfigureAwait(false);
 

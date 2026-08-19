@@ -11,8 +11,13 @@ public class DateShouldBeInPastAttribute : ValidationAttribute
         {
             return new ValidationResult(ErrorMessage ?? "Date is null");
         }
-        var dt = (DateTime)value;
-        if (dt.Date <= DateTime.UtcNow.Date.AddDays(+1)
+        var date = value switch
+        {
+            DateTime dt => DateOnly.FromDateTime(dt),
+            DateOnly d => d,
+            _ => throw new ArgumentException($"Unsupported type {value.GetType()}", nameof(value)),
+        };
+        if (date <= DateOnly.FromDateTime(DateTime.UtcNow).AddDays(+1)
         ) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
         {
             return ValidationResult.Success;

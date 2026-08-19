@@ -215,7 +215,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
       <div class="modal-content">
           <form asp-action="CreateFeeSetting"  asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
           @{
-            var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.GlobalSettings.PreferentialFeeEnabled };
+            var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.GlobalSettings.PreferentialFeeEnabled, StartDate = DateOnly.FromDateTime(DateTime.UtcNow) };
 
 
             <div class="modal-header">

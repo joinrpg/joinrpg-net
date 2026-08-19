@@ -18,9 +18,5 @@
             "library": "twitter-bootstrap@3.4.0",
             "destination": "wwwroot/lib/twitter-bootstrap/"
         },
-        {
-            "library": "bootstrap-datepicker@1.8.0",
-            "destination": "wwwroot/lib/bootstrap-datepicker/"
-        },
 ]
 }

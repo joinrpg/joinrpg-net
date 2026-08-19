@@ -1,0 +1,13 @@
+<h3>JoinRpgDatePicker</h3>
+
+<JoinRpgDatePicker Name="date" @bind-Value="@Selected" Min="@Min" Max="@Max" />
+
+<p>Выбрано: @(Selected?.ToString("yyyy-MM-dd") ?? "(ничего)")</p>
+
+@code {
+    private DateOnly? Selected { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+
+    private DateOnly Min { get; set; } = DateOnly.FromDateTime(DateTime.Today).AddYears(-1);
+
+    private DateOnly Max { get; set; } = DateOnly.FromDateTime(DateTime.Today).AddYears(1);
+}

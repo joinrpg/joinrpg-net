@@ -72,7 +72,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
                     PayerId = CurrentUserAccessor.UserId,
                     Money = data.Money,
                     Method = (PaymentMethod)data.Method,
-                    OperationDate = data.OperationDate,
+                    OperationDate = data.OperationDate.ToDateTime(TimeOnly.MinValue),
                     Recurrent = true,
                 });
 
@@ -131,7 +131,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
                         PayerId = CurrentUserAccessor.UserId,
                         Money = data.Money,
                         Method = (PaymentMethod)data.Method,
-                        OperationDate = data.OperationDate,
+                        OperationDate = data.OperationDate.ToDateTime(TimeOnly.MinValue),
                     },
                     platform);
 
@@ -155,7 +155,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
                         PayerId = CurrentUserAccessor.UserId,
                         Money = data.Money,
                         Method = (PaymentMethod)data.Method,
-                        OperationDate = data.OperationDate,
+                        OperationDate = data.OperationDate.ToDateTime(TimeOnly.MinValue),
                     });
 
                 return View("RedirectToBank", paymentContext);
