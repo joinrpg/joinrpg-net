@@ -265,7 +265,7 @@ public interface ICharacterInfoRepository
 | `AccessArgumentsFactory.Create(UgDto, …)` | `ApprovedClaim?.PlayerId`, `IsPublic` | нет |
 | `BusyStatusExtensions.GetBusyStatus` ×3 | `CharacterTypeInfo`, `ApprovedClaimId is not null`, `HasActiveClaims` | нет |
 | `UnifiedGrid/ItemBuilder` | `PlayerId`, `Status` / `DenialStatus`, `CreateDate`, `CheckInDate`, `ResponsibleMasterId`, финансы, `Last*CommentAt` ×3 | имя игрока — bulk `IUserRepository` |
-| `FinanceExtensions.CalculateClaimBalance` | `FeePaid`, `CurrentFee`, `PreferentialFeeUser`, `Fields`, `AccommodationFee`, `ProjectInfo.ProjectFinanceSettings` | нет; попутно уходит мутирующий кеш `Claim.FieldsFee` |
+| `FinanceExtensions.CalculateClaimBalance` | `FeePaid`, `CurrentFee`, `PreferentialFeeUser`, `Fields`, `AccommodationFee`, `ProjectInfo.ProjectFinanceSettings` | **была дырка**: расписание взносов в `ProjectFinanceSettings` отсутствовало, добавлено (см. «Статус»). Попутно уходит мутирующий кеш `Claim.FieldsFee` |
 | `CharacterView` | `Id`, `UpdatedAt`, `IsActive`, `IsPublic`, `InGame`, `CharacterTypeInfo`, `ApprovedClaim`, `Claims`, `DirectGroups`, `CharacterFields`, `CharacterName`, `Description` | `GroupHeader.ParentGroupIds` — уже в `ProjectInfo.Groups` |
 | `ProjectRoleGridViewModelBuilder` | всё выше + `HidePlayerForCharacter`, `ActiveClaimsCount`, `IntrestingGroupsForDisplay`, `GetFieldLayers` | контакты игрока — bulk (это улучшает ADR011) |
 | `CharacterListItemViewModel` | то же + `ResponsibleMasterId`, `ParentGroupsToTop` | `User` → `UserInfoHeader` bulk |
@@ -329,7 +329,31 @@ public interface ICharacterInfoRepository
 
 Шаги 3–8 сделаны: `CharacterClaimInfo` + `CharacterInfo` с тестами,
 `ICharacterInfoRepository` + `CharacterInfoRepository` / `CharacterInfoMapper` с тестами маппинга,
-регистрация в DI. Потребители пока не мигрированы — это следующие PR.
+регистрация в DI.
+
+Первый мигрированный потребитель — `GET /x-game-api/{projectId}/characters/{id}/`
+(`CharacterApiController.GetOne`). Выбран как проверка агрегата: у него уже был сквозной
+интеграционный тест на настоящем MS SQL (Testcontainers), внешний контракт даёт с чем сверяться, и
+он не тянет общих вью-моделей. Заодно ушла фабрика `CharacterFieldLayersBuilder.FromCharacterView`
+(других вызовов у неё не было).
+
+Что вскрыла эта проверка:
+
+- **Расписание взносов не входило в `ProjectInfo`.** Таблица достаточности утверждала, что
+  `CalculateClaimBalance` закрывается `ProjectFinanceSettings`, но там лежали только типы оплаты, а
+  сами `ProjectFeeSettings` читались из EF-сущности `Project` по ленивой навигации. Добавлен
+  `ProjectFeeSettingInfo`; `FinanceExtensions.ProjectFeeForDate` переключён на него, чтобы правило
+  выбора действующей строки не размножилось.
+- **Через API был недостижим статус `Discussed`.** `GetCharacterViewAsync` грузил в `Claims` только
+  утверждённые заявки, поэтому персонаж с заявкой в обсуждении выглядел как «нет заявок». Агрегат
+  несёт все заявки, статус чинится сам собой.
+- **`ToPlayerContacts(UserInfo)` отдавал неподтверждённый VK**, в отличие от версии для `User` и
+  вопреки контракту `PlayerContacts`. Всплыло при переходе на данные игрока из `IUserRepository`.
+
+Ручная проверка плана запроса из раздела «Проверка» по-прежнему не сделана: интеграционные тесты
+доказали, что EF6-запрос работает, но не то, что он один и без N+1.
+
+Остальные потребители не мигрированы — это следующие PR.
 
 ---
 *Создано: 14.08.2026*
@@ -337,3 +361,6 @@ public interface ICharacterInfoRepository
 *Обновлено: 18.08.2026 — реализованы шаги 3–8: тип, репозиторий, маппер, тесты, регистрация в DI.
 Не проверено на живой БД: EF6-запрос покрыт только компиляцией, план запроса и отсутствие N+1
 надо подтвердить вручную (см. «Проверка»).*
+*Обновлено: 19.08.2026 — мигрирован первый потребитель (x-game-api GetOne), запрос выполнен на
+настоящей БД под интеграционными тестами. Исправлена ошибка в таблице достаточности: расписание
+взносов пришлось добавить в `ProjectInfo`.*
