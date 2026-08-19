@@ -53,4 +53,9 @@ public class NotificationWorkerOptions
     /// How many subsequent successes should happen to stop counting cooldowns.
     /// </summary>
     public int MinSubsequentSuccessesToStopCooldownCounting { get; set; } = 20;
+
+    /// <summary>
+    /// How often to poll notification queue lengths for metrics.
+    /// </summary>
+    public TimeSpan QueueMetricsPollInterval { get; set; } = TimeSpan.FromSeconds(30);
 }
