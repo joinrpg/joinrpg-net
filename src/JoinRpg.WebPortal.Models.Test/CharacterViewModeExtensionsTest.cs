@@ -1,6 +1,6 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.WebPortal.Models.Test;
 

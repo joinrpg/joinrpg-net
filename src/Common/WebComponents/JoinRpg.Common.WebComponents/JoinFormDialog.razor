@@ -1,0 +1,94 @@
+@typeparam TViewModel where TViewModel: class
+@using JoinRpg.Common.WebComponents.Dialog
+
+@if (editContext is not null)
+{
+
+    <JoinDialog @ref="dialogRef"
+                Buttons="@buttons"
+                Caption="@Caption"
+                DisableSumbit="formInvalid"
+                MaxWidth="@MaxWidth"
+                Width="@Width"
+                Height="@Height"
+                MaxHeight="@MaxHeight"
+    >
+        <EditForm FormName="@FormName" EditContext="@editContext">
+            <FormHorizontal>
+              @ChildContent
+            </FormHorizontal>
+        </EditForm>
+    </JoinDialog>
+
+}
+@code
+{
+    [Parameter]
+    public string? Caption { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string FormName { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ButtonPreset SubmitButtonPreset { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public TViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public string? Width { get; set; } = "700px";
+
+    [Parameter]
+    public string? MaxWidth { get; set; } = "80%";
+
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Тело формы
+    /// </summary>
+    [Parameter]
+    public required RenderFragment ChildContent { get; set; }
+
+    private JoinDialog dialogRef = default!;
+    private EditContext? editContext;
+    private bool formInvalid;
+
+    private IReadOnlyCollection<DialogButton> buttons = null!;
+
+    public async Task<TViewModel?> ShowModalAsync()
+    {
+        var result = await dialogRef.ShowBoolModalAsync();
+        editContext = null;
+        if (result)
+        {
+            return Model;
+        }
+        return null;
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            // TODO если нужно добавить доп. валидацию, это тут
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        buttons = [new DialogButton(SubmitButtonPreset), new DialogButton(ButtonPreset.Cancel, cancel: true)];
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        formInvalid = !editContext.Validate();
+        return base.OnParametersSetAsync();
+    }
+}

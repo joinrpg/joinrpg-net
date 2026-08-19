@@ -1,5 +1,3 @@
-using JoinRpg.Services.Advertisement.Sending;
-
 namespace JoinRpg.Services.Advertisement.Test;
 
 public class HotRoleAdvertisementMessageBuilderTests

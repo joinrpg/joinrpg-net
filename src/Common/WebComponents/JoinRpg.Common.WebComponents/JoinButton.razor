@@ -1,0 +1,293 @@
+@using System.Diagnostics
+@using JoinRpg.Common.WebComponents.Dialog
+@inject ILogger<JoinButton> Logger
+
+@if (Link is not null)
+{
+  <Tooltip Title="@Title" TooltipContent="@TitleContent">
+        <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled">@LabelContent</a>
+  </Tooltip>
+}
+else
+{
+  <Tooltip Title="@ActualTitle" TooltipContent="@TitleContent">
+    <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @onclick="OnClickHappened">@LabelContent</button>
+  </Tooltip>
+}
+@if (AutoConfirm)
+{
+    DialogButton[] dialogButtons = [DialogButton.FromJoinButton(this), new DialogButton(ButtonPreset.Cancel)];
+    <JoinMessageDialog
+      @ref="_confirmDialogRef"
+      Type="@MessageDialogType.Confirmation"
+      Caption="@DialogCaption"
+      Buttons="dialogButtons"
+    >
+      @AutoConfirmMessage
+    </JoinMessageDialog>
+}
+@code {
+    /// <summary>
+    /// Button link.
+    /// </summary>
+    [Parameter]
+    public string? Link { get; set; }
+
+    /// <summary>
+    /// Button style.
+    /// </summary>
+    /// <remarks>This member is obsolete. Use <see cref="Style"/> instead.</remarks>
+    /// <seealso cref="VariationStyleEnum"/>
+    [Parameter]
+    [Obsolete("Use Style instead")]
+    public VariationStyleEnum? Variation { get => Style; set => Style = value; }
+
+    /// <summary>
+    /// Button style.
+    /// </summary>
+    /// <seealso cref="VariationStyleEnum"/>
+    [Parameter]
+    public VariationStyleEnum? Style { get; set; }
+
+    /// <summary>
+    /// Button size.
+    /// </summary>
+    /// <seealso cref="SizeStyleEnum"/>
+    [Parameter]
+    public SizeStyleEnum? Size { get; set; }
+
+    /// <summary>
+    /// When true and <see cref="Link"/> is null, button is rendered as form submit button.
+    /// </summary>
+    [Parameter]
+    public bool Submit { get; set; }
+
+    /// <summary>
+    /// When true, button is rendered disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// The pop-up hint text will be shown when mouse is over the button.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Rich HTML content for the pop-up hint. Takes precedence over <see cref="Title"/> when set.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? TitleContent { get; set; }
+
+    /// <summary>
+    /// When <see cref="Disabled"/> is true, a value from this property will be used instead of <see cref="Title"/> for the pop-up hint.
+    /// </summary>
+    [Parameter]
+    public string? DisabledTitle { get; set; }
+
+    /// <summary>
+    /// Preconfigured button type.
+    /// </summary>
+    /// <seealso cref="ButtonPreset"/>
+    [Parameter]
+    public ButtonPreset Preset { get; set; } = ButtonPreset.None;
+
+    /// <summary>
+    /// When true, the confirmation dialog appears when user clicks the button.
+    /// </summary>
+    [Parameter]
+    public bool AutoConfirm { get; set; }
+
+    /// <summary>
+    /// Automatic confirmation dialog message. Required when <see cref="AutoConfirm"/> is true.
+    /// </summary>
+    [Parameter]
+    public string? AutoConfirmMessage { get; set; }
+
+    /// <summary>
+    /// Button label.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Icon to be rendered in normal and disabled states.
+    /// </summary>
+    [Parameter]
+    public JoinIconType? Icon { get; set; }
+
+    /// <summary>
+    /// When true, button is rendered as in progress state.
+    /// Set this property initially to true to display button in progress state from the very beginning.
+    /// </summary>
+    [Parameter]
+    public bool InProgress { get; set; }
+
+    /// <summary>
+    /// When true, button will be automatically switched into progress state when clicked by user.
+    /// </summary>
+    [Parameter]
+    public bool AutoProgress { get; set; } = true; // true is for backward compatibility here
+
+    /// <summary>
+    /// Button label to be used in progress state.
+    /// </summary>
+    /// <remarks>This member is obsolete. Use <see cref="ProgressLabel"/> instead.</remarks>
+    [Parameter]
+    [Obsolete("Use ProgressLabel instead")]
+    public string? ProgressText { get => ProgressLabel; set => ProgressLabel = value; }
+
+    /// <summary>
+    /// Button label to be used in progress state.
+    /// </summary>
+    [Parameter]
+    public string? ProgressLabel { get; set; }
+
+    /// <summary>
+    /// Icon to be rendered in progress state.
+    /// </summary>
+    [Parameter]
+    public JoinIconType? ProgressIcon { get; set; } = DefaultProgressIcon;
+
+    /// <summary>
+    /// Default icon to render in progress state.
+    /// </summary>
+    public const JoinIconType DefaultProgressIcon = JoinIconType.Progress;
+
+    /// <summary>
+    /// Invoked when user clicks a button somehow.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ButtonClickEventArgs> OnClick { get; set; }
+
+
+    private JoinMessageDialog? _confirmDialogRef;
+
+    private string ButtonType => Submit ? "submit" : "button";
+    private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size);
+    private bool PreventSubmit => Disabled || InProgress;
+    private string? ActualTitle => Disabled ? DisabledTitle ?? Title : Title;
+
+    private RenderFragment LabelContent => InProgress ? ProgressContent : NormalContent;
+
+    private RenderFragment NormalContent { get; set; } = null!;
+    private RenderFragment ProgressContent { get; set; } = null!;
+    private VariationStyleEnum ActualStyle { get; set; }
+    private string? DialogCaption { get; set; }
+
+    [CascadingParameter]
+    public EditContext? CascadingEditContext { get; set; }
+
+
+    private async Task OnClickHappened(MouseEventArgs e)
+    {
+        if (PreventSubmit)
+            return;
+        await DoClick(e);
+    }
+
+    private async Task DoClick(MouseEventArgs e)
+    {
+        if (AutoProgress)
+        {
+            InProgress = true;
+        }
+
+        var confirmed = true;
+        if (AutoConfirm)
+        {
+            Debug.Assert(_confirmDialogRef is not null);
+            confirmed = await _confirmDialogRef.ShowBoolModalAsync();
+        }
+
+        var args = new ButtonClickEventArgs { MouseEvent = e };
+        if (confirmed)
+        {
+            await OnClick.InvokeAsync(args);
+            // TODO: Do we have to catch an error somehow and render button in some invalid operation result style?
+        }
+
+        if (args.ExitProgressState is true || AutoProgress && !confirmed)
+        {
+            InProgress = false;
+        }
+
+        if (args.EnterDisabledState)
+        {
+            Disabled = true;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Disabled)
+        {
+            OnClick = EventCallback<ButtonClickEventArgs>.Empty;
+            Link = null;
+        }
+
+        if (Link is not null && OnClick.HasDelegate)
+        {
+            throw new InvalidOperationException($"The {nameof(OnClick)} event handler and {nameof(Link)} property can not be both set in the same time");
+        }
+
+        AutoConfirmMessage ??= Title;
+
+        if (AutoConfirm && string.IsNullOrWhiteSpace(AutoConfirmMessage))
+        {
+            throw new InvalidOperationException($"The {nameof(AutoConfirmMessage)} is required when {nameof(AutoConfirm)} is true");
+        }
+
+        var presetContent = ButtonPresets.All[Preset];
+        NormalContent = FormatLabelLogged(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon, "Normal");
+        ProgressContent = FormatLabelLogged(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon, "Progress");
+        ActualStyle = Style ?? presetContent.Style;
+        DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";
+
+        if (CascadingEditContext is not null)
+        {
+            CascadingEditContext.OnValidationStateChanged += EditContextValidationStateChanged;
+        }
+    }
+
+    public void EditContextValidationStateChanged(object? sender, ValidationStateChangedEventArgs? _)
+    {
+        if (InProgress)
+        {
+            InProgress = false; // Валидация закончилась, значит сабмит прошел
+            StateHasChanged();
+        }
+        
+    }
+
+    private static RenderFragment FormatLabel(string? label, JoinIconType? icon)
+    {
+      return (string.IsNullOrEmpty(label), icon is null) switch
+      {
+        (false, false) => @<text><JoinIcon Icon="@icon!.Value" />&nbsp;@label</text>,
+        (false, true) => @<text>@label</text>,
+        (true, false) => @<text><JoinIcon Icon="@icon!.Value" /></text>,
+        _ => @<text>INVALID BUTTON</text>,
+      };
+    }
+
+    internal static RenderFragment FormatLabel(string? customLabel, string? defaultLabel, JoinIconType? customIcon, JoinIconType? defaultIcon)
+    {
+      return FormatLabel(customLabel?.Trim() ?? defaultLabel, customIcon ?? defaultIcon);
+    }
+
+    private RenderFragment FormatLabelLogged(string? customLabel, string? defaultLabel, JoinIconType? customIcon, JoinIconType? defaultIcon, string state)
+    {
+      var label = customLabel?.Trim() ?? defaultLabel;
+      var icon = customIcon ?? defaultIcon;
+      if (string.IsNullOrEmpty(label) && icon is null)
+      {
+          Logger.LogWarning(
+              "JoinButton preset {Preset} ({State}) has neither label nor icon (Label={Label}, Icon={Icon}); rendering INVALID BUTTON placeholder",
+              Preset, state, Label, Icon);
+      }
+      return FormatLabel(label, icon);
+    }
+}

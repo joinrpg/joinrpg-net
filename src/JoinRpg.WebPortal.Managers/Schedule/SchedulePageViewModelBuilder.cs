@@ -1,8 +1,8 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.Web.Models.UserProfile;
-using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.WebPortal.Managers.Schedule;

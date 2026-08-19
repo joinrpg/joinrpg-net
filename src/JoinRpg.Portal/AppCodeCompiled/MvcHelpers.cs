@@ -66,7 +66,7 @@ public static class MvcHtmlHelpers
     /// <summary>
     /// Renders specified number as a price to html tag
     /// </summary>
-    [Obsolete("Используй Blazor-компонент PriceElement из JoinRpg.WebComponents")]
+    [Obsolete("Используй Blazor-компонент PriceElement из JoinRpg.Common.WebComponents")]
     public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
@@ -87,7 +87,7 @@ public static class MvcHtmlHelpers
 
     public static Task<IHtmlContent> HelpLink(this IHtmlHelper self, string link = "", string message = "")
     {
-        return self.RenderComponentAsync<WebComponents.HelpLink>(RenderMode.Static, new { link, message });
+        return self.RenderComponentAsync<JoinRpg.Common.WebComponents.HelpLink>(RenderMode.Static, new { link, message });
     }
 
     public static TValue GetValue<TModel, TValue>(this IHtmlHelper<TModel> self,

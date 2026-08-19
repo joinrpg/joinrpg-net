@@ -5,7 +5,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
-    <ProjectReference Include="..\JoinRpg.WebComponents\JoinRpg.WebComponents.csproj" />
+    <ProjectReference Include="..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

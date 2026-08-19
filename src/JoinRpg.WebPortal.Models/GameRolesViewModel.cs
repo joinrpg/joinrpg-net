@@ -1,4 +1,3 @@
-using JoinRpg.DomainTypes;
 using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models;

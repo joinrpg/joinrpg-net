@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Web.ProjectCommon;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Claims.UnifiedGrid;
 

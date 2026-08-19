@@ -1,5 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes;
-
 namespace JoinRpg.DomainTypes.Advertisement;
 
 public abstract record AdvertisementChannelSettings;

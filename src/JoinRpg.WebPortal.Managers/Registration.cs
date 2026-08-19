@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.AdminTools.Notifications;
@@ -18,7 +19,6 @@ using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
-using JoinRpg.WebComponents;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Claims;
 using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;

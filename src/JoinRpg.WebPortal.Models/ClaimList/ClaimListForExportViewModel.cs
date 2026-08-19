@@ -1,8 +1,8 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.ClaimList;
 

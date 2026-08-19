@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.Services.Advertisement.Log;
 
 namespace JoinRpg.Services.Advertisement.Test;
 

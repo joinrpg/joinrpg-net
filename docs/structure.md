@@ -32,6 +32,7 @@
 - `JoinRpg.Common.Telegram` — интеграция с Telegram Bot
 - `JoinRpg.Common.BastiliaRatingClient` — HTTP-клиент к сайту клуба #Бастилия
 - `JoinRpg.Common.KogdaIgraClient` — HTTP-клиент к сервису KogdaIgra (сырые вызовы API)
+- `JoinRpg.Common.WebComponents` — базовые Razor-компоненты. Для каждого компонента должны быть тесты на bUnit.
 
 ### DAL
 - `JoinRpg.DataModel` — EF-сущности (схема БД). Без логики. Логику — в `JoinRpg.PrimitiveTypes` или в `JoinRpg.Domain` как методы-расширения. Можно реализовать `IValidatableObject` для проверки перед сохранением. Ограничения БД всегда предпочтительнее. 
@@ -64,7 +65,6 @@
 - `JoinRpg.WebPortal.Managers` — подготовка ViewModels для веб-портала
 
 ### WebPortalShared (разделяемые UI-компоненты)
-- `JoinRpg.WebComponents` — базовые Razor-компоненты. Для каждого компонента должны быть тесты на bUnit.
 - `JoinRpg.Web.ProjectCommon` — общий UI для всех страниц, относящимся к проектам
 - `JoinRpg.Web.Games` — UI страниц описания проекта, настроек проекта, etc
 - `JoinRpg.Web.Claims` — UI для заявок игроков

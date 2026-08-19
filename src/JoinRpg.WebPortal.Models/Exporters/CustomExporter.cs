@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Reflection;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -8,7 +9,6 @@ using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
-using JoinRpg.WebComponents;
 
 namespace JoinRpg.Web.Models.Exporters;
 

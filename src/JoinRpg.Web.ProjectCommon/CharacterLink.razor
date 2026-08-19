@@ -4,13 +4,13 @@
 }
 @switch (Model.ViewMode)
 {
-    case JoinRpg.WebComponents.ViewMode.Show:
+    case JoinRpg.Common.WebComponents.ViewMode.Show:
         <a href="@TargetUri" class="@activeClass">@Model.Name</a>
         break;
-    case JoinRpg.WebComponents.ViewMode.ShowAsPrivate:
+    case JoinRpg.Common.WebComponents.ViewMode.ShowAsPrivate:
         <a href="@TargetUri" class="world-object-hidden @activeClass">@Model.Name</a>
         break;
-    case JoinRpg.WebComponents.ViewMode.Hide:
+    case JoinRpg.Common.WebComponents.ViewMode.Hide:
         <i>???</i>
         break;
 }

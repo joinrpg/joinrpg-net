@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CharacterGroups.GroupReport;
@@ -17,7 +18,6 @@ using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
-using JoinRpg.WebComponents;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace JoinRpg.Blazor.Client.ApiClients;

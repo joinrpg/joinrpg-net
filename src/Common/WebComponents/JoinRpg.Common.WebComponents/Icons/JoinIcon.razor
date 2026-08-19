@@ -1,0 +1,36 @@
+@namespace JoinRpg.Common.WebComponents
+@*
+    Иконка Joinrpg. Единственный способ показать иконку в Blazor-разметке.
+    В .cshtml используйте тег-хелпер <join-icon icon="..." />.
+*@
+<Tooltip Title="@Title">
+    @if (Html.ImageUrl is not null)
+    {
+        <img class="@Html.CssClass" style="@Html.InlineStyle" src="@Html.ImageUrl" alt="" @attributes="InputAttributes" />
+    }
+    else
+    {
+        <span class="@Html.CssClass" style="@Html.InlineStyle" aria-hidden="true" @attributes="InputAttributes">@Html.TextContent</span>
+    }
+</Tooltip>
+
+@code {
+    /// <summary>Какую иконку показываем.</summary>
+    [Parameter]
+    [EditorRequired]
+    public JoinIconType Icon { get; set; }
+
+    /// <summary>Всплывающая подсказка. Если не задана, подсказки не будет.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>Размер иконки. По умолчанию — как у окружающего текста.</summary>
+    [Parameter]
+    public SizeStyleEnum? Size { get; set; }
+
+    /// <summary>Дополнительные html-атрибуты.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? InputAttributes { get; set; }
+
+    private JoinIconHtml Html => JoinIconMarkup.Describe(Icon, Size);
+}
