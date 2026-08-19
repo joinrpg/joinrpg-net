@@ -212,4 +212,14 @@ public record class CharacterInfo
         var claim = claimId is null ? ApprovedClaim : GetClaimById(claimId);
         return new CharacterFieldLayers(claim?.Fields, CharacterFields, access);
     }
+
+    /// <summary>
+    /// Полный набор полей — запись для каждого поля проекта, без фильтрации по доступу.
+    /// Для расчётов (взносы, проблемы), а не для показа: для показа нужен
+    /// <see cref="GetFieldLayers"/> с правами конкретного зрителя.
+    /// </summary>
+    /// <param name="claimId">См. <see cref="GetFieldLayers"/>.</param>
+    public IReadOnlyCollection<FieldWithValue> GetAllFields(ClaimIdentification? claimId = null)
+        // AccessArguments.None здесь безвреден: GetAllFieldsForEdit прав не смотрит.
+        => GetFieldLayers(AccessArguments.None, claimId).GetAllFieldsForEdit();
 }
