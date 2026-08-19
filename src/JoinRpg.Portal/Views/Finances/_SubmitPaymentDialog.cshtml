@@ -41,14 +41,11 @@
                 <div class="form-group">
                   @Html.LabelFor(model => model.OperationDate, htmlAttributes: new { @class = "control-label col-md-4" })
                   <div class="col-md-8">
-                    <input id="OperationDate"
-                           name="OperationDate"
-                           data-provide="datepicker"
-                           class="datepicker form-control"
-                           data-date-end-date="0d"
-                           data-date-format="dd.mm.yyyy"
-                           value="@Model.OperationDate.ToString("dd.MM.yyyy")"
-                           style="max-width: 150px" />
+                    <component type="typeof(JoinRpg.Common.WebComponents.JoinRpgDatePicker)"
+                               param-Name="nameof(Model.OperationDate)"
+                               param-Value="Model.OperationDate"
+                               param-Max="DateOnly.FromDateTime(DateTime.Today)"
+                               render-mode="Static" />
                   </div>
                 </div>
 

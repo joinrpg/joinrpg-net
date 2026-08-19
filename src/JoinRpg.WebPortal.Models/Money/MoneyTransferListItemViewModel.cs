@@ -35,7 +35,7 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
         Sender = fo.Sender;
         Receiver = fo.Receiver;
         MarkingMaster = fo.CreatedBy;
-        OperationDate = fo.OperationDate.UtcDateTime;
+        OperationDate = DateOnly.FromDateTime(fo.OperationDate.UtcDateTime);
         State = (MoneyTransferStateViewModel)fo.ResultState;
 
         Money = fo.Amount;

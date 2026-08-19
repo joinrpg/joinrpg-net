@@ -13,7 +13,7 @@ public class MarkMeAsPreferentialViewModel : FinanceViewModelBase
     {
         ProjectId = claim.ProjectId;
         ClaimId = claim.ClaimId;
-        OperationDate = DateTime.UtcNow;
+        OperationDate = DateOnly.FromDateTime(DateTime.UtcNow);
         CommentDiscussionId = claim.CommentDiscussionId;
         PreferentialFeeConditions = claim.ClaimFee.PreferentialFeeConditions;
     }

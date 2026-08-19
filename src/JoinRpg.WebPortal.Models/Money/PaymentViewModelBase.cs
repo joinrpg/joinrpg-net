@@ -24,7 +24,7 @@ public class PaymentViewModelBase : FinanceViewModelBase
         ParentCommentId = null;
         EnableHideFromUser = false;
         HideFromUser = false;
-        OperationDate = DateTime.Today;
+        OperationDate = DateOnly.FromDateTime(DateTime.Today);
         Money = Math.Max(claim.ClaimFee.CurrentFee - claim.ClaimFee.CurrentBalance, 0);
         ClaimApproved = claim.Status.IsAlreadyApproved();
 

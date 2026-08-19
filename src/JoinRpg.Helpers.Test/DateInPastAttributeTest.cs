@@ -11,6 +11,18 @@ public class DateInPastAttributeTest
         public DateTime? Time { get; } = DateTime.MaxValue;
     }
 
+    private class ClassToValidateDateOnlyInPast
+    {
+        [DateShouldBeInPast]
+        public DateOnly? Date { get; } = DateOnly.MaxValue;
+    }
+
+    private class ClassToValidateDateOnlyToday
+    {
+        [DateShouldBeInPast]
+        public DateOnly? Date { get; } = DateOnly.FromDateTime(DateTime.UtcNow);
+    }
+
     private class ClassToValidateEmpty
     {
         [CannotBeEmpty]
@@ -19,6 +31,12 @@ public class DateInPastAttributeTest
 
     [Fact]
     public void TestShouldBeInPastFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateInPast()));
+
+    [Fact]
+    public void TestShouldBeInPastFailure_DateOnly() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateDateOnlyInPast()));
+
+    [Fact]
+    public void TestShouldBeInPastSuccess_DateOnlyToday() => Should.NotThrow(() => Validate(new ClassToValidateDateOnlyToday()));
 
     private static void Validate(object classToValidate)
     {

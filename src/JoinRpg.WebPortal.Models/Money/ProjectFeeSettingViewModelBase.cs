@@ -9,7 +9,7 @@ public abstract class ProjectFeeSettingViewModelBase
     public int? PreferentialFee { get; set; }
 
     [Display(Name = "Действует с")]
-    public DateTime StartDate { get; set; }
+    public DateOnly StartDate { get; set; }
 
     public int ProjectId { get; set; }
 }

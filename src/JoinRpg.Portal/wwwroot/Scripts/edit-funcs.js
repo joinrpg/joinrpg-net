@@ -21,10 +21,6 @@ $("[data-toggle='confirmation']").popConfirm({
     title: "Подтверждение операции",
     container: "body"
 });
-$(".datepicker").datepicker({
-    autoclose: true
-});
-
 var hash = window.location.hash.substr(1);
 if (hash) {
     $("#" + hash).collapse('show');

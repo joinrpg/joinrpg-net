@@ -31,6 +31,7 @@ public class TransferController(
         {
             ProjectId = projectId,
             Receiver = currentUserAccessor.UserIdentification,
+            OperationDate = DateOnly.FromDateTime(DateTime.Now),
         };
 
         Fill(viewModel, project);
@@ -60,7 +61,7 @@ public class TransferController(
             Sender = viewModel.Sender,
             Receiver = viewModel.Receiver,
             Amount = viewModel.Money,
-            OperationDate = viewModel.OperationDate,
+            OperationDate = viewModel.OperationDate.ToDateTime(TimeOnly.MinValue),
             Comment = viewModel.CommentText,
         };
 

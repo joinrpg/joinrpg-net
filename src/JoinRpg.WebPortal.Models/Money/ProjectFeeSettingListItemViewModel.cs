@@ -11,7 +11,7 @@ public class ProjectFeeSettingListItemViewModel : ProjectFeeSettingViewModelBase
     {
         Fee = fs.Fee;
         PreferentialFee = fs.PreferentialFee;
-        StartDate = fs.StartDate;
+        StartDate = DateOnly.FromDateTime(fs.StartDate);
         IsActual = fs.StartDate > DateTime.UtcNow;
         ProjectFeeSettingId = fs.ProjectFeeSettingId;
         ProjectId = fs.ProjectId;

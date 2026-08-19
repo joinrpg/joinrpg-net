@@ -8,7 +8,7 @@ public abstract class MoneyTransferViewModelBase : IProjectIdAware
     public int Money { get; set; }
 
     [Display(Name = "Дата перевода"), Required, DateShouldBeInPast]
-    public DateTime OperationDate { get; set; }
+    public DateOnly OperationDate { get; set; }
 
     public int ProjectId { get; set; }
 }
