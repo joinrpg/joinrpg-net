@@ -2,28 +2,28 @@
 @switch (Status.ClaimStatus)
 {
     case ClaimStatusView.Approved:
-        <JoinBadge Variation="VariationStyleEnum.Success">Принята</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Success" Title="@Tooltip">Принята</JoinBadge>
         break;
     case ClaimStatusView.CheckedIn:
-        <JoinBadge Variation="VariationStyleEnum.Success">Заехал</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Success" Title="@Tooltip">Заехал</JoinBadge>
         break;
     case ClaimStatusView.AddedByUser:
-        <JoinBadge Variation="VariationStyleEnum.Primary">Подана</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Primary" Title="@Tooltip">Подана</JoinBadge>
         break;
     case ClaimStatusView.AddedByMaster:
-        <JoinBadge Variation="VariationStyleEnum.Primary">Предложена</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Primary" Title="@Tooltip">Предложена</JoinBadge>
         break;
     case ClaimStatusView.Discussed:
-        <JoinBadge Variation="VariationStyleEnum.Primary">Обсуждается</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Primary" Title="@Tooltip">Обсуждается</JoinBadge>
         break;
     case ClaimStatusView.DeclinedByUser:
-        <JoinBadge Variation="VariationStyleEnum.Danger">Отозвана</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Danger" Title="@Tooltip">Отозвана</JoinBadge>
         break;
     case ClaimStatusView.OnHold:
-        <JoinBadge Variation="VariationStyleEnum.None">Лист ожидания</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.None" Title="@Tooltip">Лист ожидания</JoinBadge>
         break;
     case ClaimStatusView.DeclinedByMaster:
-        <JoinBadge Variation="VariationStyleEnum.Danger">
+        <JoinBadge Variation="VariationStyleEnum.Danger" Title="@Tooltip">
             Отклонена
             @if (Status.ClaimDenialStatus is not null)
             {
@@ -34,11 +34,16 @@
 
 
     default:
-        <JoinBadge Variation="VariationStyleEnum.Danger">Неизвестно</JoinBadge>
+        <JoinBadge Variation="VariationStyleEnum.Danger" Title="@Tooltip">Неизвестно</JoinBadge>
         break;
 }
 @code {
     [Parameter]
     [EditorRequired]
     public ClaimFullStatusView Status { get; set; } = default!;
+
+    [Parameter]
+    public bool IsMaster { get; set; }
+
+    private string Tooltip => ClaimStatusTooltip.Build(Status.ClaimStatus, Status.ClaimDenialStatus, IsMaster);
 }
