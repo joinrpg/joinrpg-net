@@ -26,6 +26,21 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
     private static readonly Counter<int> numberOfSuccessCounter = meter.CreateCounter<int>(JobName.ToLowerInvariant() + "." + "success");
 
     /// <summary>
+    /// Момент завершения последней итерации (успешной или с ошибкой). Если джоба зависла внутри итерации
+    /// (например, застряла в бесконечном ожидании), это значение перестаёт обновляться,
+    /// и метрика ниже начинает бесконечно расти.
+    /// </summary>
+    private static DateTimeOffset lastIterationFinishedAt = DateTimeOffset.UtcNow;
+
+    // Возврат CreateObservableGauge не сохраняем: инструмент живёт, пока жив meter, регистрация не требует хранения ссылки.
+    static SenderJobService()
+        => _ = meter.CreateObservableGauge(
+            JobName.ToLowerInvariant() + "." + "seconds_since_last_iteration",
+            () => (DateTimeOffset.UtcNow - lastIterationFinishedAt).TotalSeconds,
+            unit: "s",
+            description: "Seconds since the sender job last finished an iteration. Growing indefinitely indicates the job is stuck.");
+
+    /// <summary>
     /// Counts the subsequent cooldowns.
     /// </summary>
     private int CooldownCounter { get; set; }
@@ -94,6 +109,10 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 logger.LogError(ex, "Ошибка при запуске итерации SenderJobService<{senderJobName}>", JobName);
                 SuccessCounter = 0;
                 FailureCounter++;
+            }
+            finally
+            {
+                lastIterationFinishedAt = DateTimeOffset.UtcNow;
             }
         }
     }

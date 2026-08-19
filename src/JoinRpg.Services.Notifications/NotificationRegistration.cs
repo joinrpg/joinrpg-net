@@ -24,6 +24,7 @@ public static class NotificationRegistration
             .AddSenderJob<UiSenderJobService>()
             .AddSenderJob<PostboxSenderJobService>()
             .AddSenderJob<TelegramSenderJobService>()
+            .AddHostedService<NotificationQueueMetricsPublisher>()
             ;
     }
 
