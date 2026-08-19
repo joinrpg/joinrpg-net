@@ -51,6 +51,9 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            using var activity = SenderServiceActivityHolder.ActivitySource.StartActivity($"Iteration of {JobName}");
+            activity?.AddTag("jobName", JobName);
+
             logger.LogDebug("Запущена итерация обработки... ");
 
             if (FailureCounter >= WorkerOptions.MaxSubsequentFailures)
@@ -98,8 +101,6 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
     private async Task RunIteration(CancellationToken stoppingToken)
     {
         using var scope = serviceProvider.CreateScope();
-        using var activity = SenderServiceActivityHolder.ActivitySource.StartActivity($"Run of {JobName}");
-        activity?.AddTag("jobName", JobName);
 
         var notificationRepository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
 
