@@ -40,6 +40,29 @@ public static class AccessArgumentsFactory
             IsCapitan: false);
     }
 
+    /// <summary>
+    /// Права на персонажа поверх доменного агрегата (ADR013). <c>ProjectInfo</c> отдельным
+    /// параметром не нужен — агрегат несёт его в себе.
+    /// </summary>
+    public static AccessArguments Create(CharacterInfo character, UserIdentification? user)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var playerIsApprovedClaim = SamePlayerId(user, character.ApprovedClaim?.PlayerId);
+
+        return new AccessArguments(
+            MasterAccess: character.ProjectInfo.HasMasterAccess(user),
+            PlayerAccessToCharacter: playerIsApprovedClaim,
+            PlayerAccesToClaim: playerIsApprovedClaim,
+            EditAllowed: character.ProjectInfo.IsActive,
+            Published: character.ProjectInfo.PublishPlot,
+            CharacterPublic: character.IsPublic,
+            IsCapitan: false);
+    }
+
+    public static AccessArguments Create(CharacterInfo character, ICurrentUserAccessor user)
+        => Create(character, user.UserIdentificationOrDefault);
+
     public static AccessArguments Create(CharacterView character, UserIdentification? user, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);

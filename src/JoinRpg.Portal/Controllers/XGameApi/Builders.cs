@@ -1,8 +1,11 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.XGameApi.Contract;
+// Доменный агрегат (ADR013) и DTO внешнего API называются одинаково — разводим псевдонимом.
+using DomainCharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
@@ -48,6 +51,20 @@ public class ApiInfoBuilder
                                     );
     }
 
+    /// <summary>
+    /// Сведения об игроке поверх доменного агрегата (ADR013). Отображаемые данные игрока в агрегат
+    /// не входят — они приходят отдельно из <c>IUserRepository</c>.
+    /// </summary>
+    public static CharacterPlayerInfo CreatePlayerInfo(
+        DomainCharacterInfo character,
+        CharacterClaimInfo claim,
+        UserInfo player)
+        => new(
+            claim.PlayerId.Value,
+            character.CalculateClaimBalance(claim, character.ProjectInfo).FeeDue <= 0,
+            player.DisplayName.DisplayName,
+            ToPlayerContacts(player));
+
     public static PlayerContacts ToPlayerContacts(User player)
     {
         return new PlayerContacts(player.Email, player.Extra?.PhoneNumber,
@@ -58,7 +75,9 @@ public class ApiInfoBuilder
     public static PlayerContacts ToPlayerContacts(UserInfo player)
     {
         return new PlayerContacts(player.Email, player.PhoneNumber,
-                                                player.Social.Vk is null ? null : $"id{player.Social.Vk.Id}",
+                                                // Контракт PlayerContacts обещает отдавать только
+                                                // подтверждённый VK — как и версия для User.
+                                                player.Social.Vk is { IsVerified: true } vk ? $"id{vk.Id}" : null,
                                                 player.Social.Telegram?.PrettyName?.Value);
     }
 

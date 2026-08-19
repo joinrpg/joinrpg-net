@@ -13,12 +13,6 @@ public static class CharacterFieldLayersBuilder
             CharacterLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, character.JsonData),
             AccessArguments: AccessArgumentsFactory.Create(character, user, projectInfo));
 
-    public static CharacterFieldLayers FromCharacterView(ProjectInfo projectInfo, CharacterView character, ICurrentUserAccessor user)
-        => new(
-            ClaimLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, character.ApprovedClaim?.JsonData),
-            CharacterLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, character.JsonData),
-            AccessArguments: AccessArgumentsFactory.Create(character, user.UserIdentificationOrDefault, projectInfo));
-
     public static CharacterFieldLayers FromClaim(ProjectInfo projectInfo, Claim claim, ICurrentUserAccessor user)
         => new(
             ClaimLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData),
