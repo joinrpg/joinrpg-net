@@ -21,6 +21,7 @@ jobs:
           - JoinRpg.Common.PrimitiveTypes
           - JoinRpg.Common.PrimitiveTypes.SourceGenerator
           - JoinRpg.Common.KogdaIgraClient
+          - JoinRpg.Common.WebComponents
           # Добавить новые проекты сюда:
           # - SomeOtherProject.csproj
 
