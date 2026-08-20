@@ -219,7 +219,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 
 
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
               <h4 class="modal-title" id="deleteTitle">Добавление нового размера взноса оплаты</h4>
             </div>
             <div class="modal-body">
@@ -252,7 +252,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
             <input type="hidden" name="projectFeeSettingId" id="elementId" value="0" />
             @Html.AntiForgeryToken()
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
                 <h4 class="modal-title" id="deleteTitle">Удаление размера взноса</h4>
             </div>
 

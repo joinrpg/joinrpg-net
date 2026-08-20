@@ -7,7 +7,7 @@
       <div class="modal-content">
         <form asp-action="FinanceOperation" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
               <h4 class="modal-title" id="deleteTitle">@(Model.ActionName)</h4>
             </div>
             <div class="modal-body">

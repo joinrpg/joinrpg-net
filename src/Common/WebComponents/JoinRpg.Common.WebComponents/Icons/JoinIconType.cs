@@ -137,6 +137,20 @@ public enum JoinIconType
     /// <summary>Неудача в диалоге.</summary>
     DialogFail,
 
+    /// <summary>Запрет, отсутствие чего-либо.</summary>
+    Forbidden,
+    /// <summary>Список, оглавление раздела.</summary>
+    List,
+    /// <summary>Награда, звание.</summary>
+    Award,
+    /// <summary>Достижение.</summary>
+    Achievement,
+    /// <summary>Проект.</summary>
+    Project,
+
+    /// <summary>Главная страница.</summary>
+    Home,
+
     /// <summary>ВКонтакте.</summary>
     Vk,
 }
