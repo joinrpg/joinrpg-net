@@ -42,6 +42,7 @@ public class MockedProject
             Claims = [],
             Details = new ProjectDetails(),
             PaymentTypes = [],
+            ProjectFeeSettings = [],
             ProjectName = "Mocked project",
             KogdaIgraGames = [],
             ProjectRolesLists = [],
