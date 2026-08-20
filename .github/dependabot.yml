@@ -36,6 +36,9 @@ updates:
       opentelemetry:
         patterns:
           - "OpenTelemetry.*"
+      codeanalysis:
+        patterns:
+          - "Microsoft.CodeAnalysis*"
 
   - package-ecosystem: "github-actions"
     directory: "/" 
