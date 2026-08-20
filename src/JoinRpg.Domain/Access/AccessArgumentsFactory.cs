@@ -128,8 +128,8 @@ public static class AccessArgumentsFactory
             MasterAccess: projectInfo.HasMasterAccess(UserIdentification.FromOptional(userId)),
             PlayerAccessToCharacter: claim.Character.HasPlayerAccess(userId),
             PlayerAccesToClaim: claim.HasPlayerAccesToClaim(userId),
-            EditAllowed: claim.Project.Active,
-            Published: claim.Project.Details.PublishPlot,
+            EditAllowed: projectInfo.IsActive,
+            Published: projectInfo.PublishPlot,
             CharacterPublic: claim.Character.IsPublic, IsCapitan: false);
     }
 

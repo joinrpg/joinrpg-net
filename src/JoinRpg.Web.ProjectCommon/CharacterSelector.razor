@@ -30,6 +30,7 @@
     [Parameter] public bool Multiple { get; set; } = true;
     [Parameter] public CharacterListType ListType { get; set; } = CharacterListType.All;
     [Parameter] public bool AllowEmpty { get; set; } = false;
+    [Parameter] public CharacterIdentification[] ExcludeCharacterIds { get; set; } = [];
 
     public string SelectedCharactersText{ get; private set; } = "";
 
@@ -62,7 +63,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        chars = [.. await client.GetCharacters(ProjectId, ListType)];
+        chars = [.. (await client.GetCharacters(ProjectId, ListType)).Where(c => !ExcludeCharacterIds.Contains(c.CharacterId))];
         var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId)).ToArray();
         RefreshSelectedNames(selectedItems);
 

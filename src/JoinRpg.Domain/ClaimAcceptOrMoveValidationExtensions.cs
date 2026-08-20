@@ -15,8 +15,6 @@ public static class ClaimAcceptOrMoveValidationExtensions
         UserInfo? userInfo, ProjectInfo projectInfo)
         => ValidateImpl(claimSource, userInfo, existingClaim: null, projectInfo).ToList();
 
-    public static bool CanMoveClaimTo(this Character character, Claim claim, UserInfo userInfo, ProjectInfo projectInfo) => !ValidateIfCanMoveClaim(character, claim, userInfo, projectInfo).Any();
-
     public static IEnumerable<AddClaimForbideReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
         => ValidateImpl(claimSource, userInfo, claim, projectInfo);
 

@@ -5,6 +5,8 @@
 <script src="~/Scripts/platform.js"></script>
 
 @using JoinRpg.Web.Claims
+@using JoinRpg.DomainTypes.ProjectMetadata
+@using JoinRpg.DomainTypes.Characters
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
 @using JoinRpg.Web.Models.CharacterGroups
@@ -295,10 +297,9 @@ new { Model.ProjectId, Model.Player.UserId }, null).
 
                     @await Html.PartialAsync("MoveClaimOperationPartial", new MoveClaimOperationViewModel
             {
-              PotentialCharactersToMove = Model.PotentialCharactersToMove,
               IsAlreadyAccepted = Model.Status.IsAlreadyApproved(),
               ProjectId = Model.ProjectId,
-              CharacterId = Model.CharacterId,
+              CurrentCharacterId = Model.CharacterId,
               CanAcceptAfter = Model.CanManageThisClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready,
             })
                 </form>
@@ -328,7 +329,10 @@ new { Model.ProjectId, Model.Player.UserId }, null).
 new { Model.CharacterId, Model.ProjectId }, null)
                                 Вам необходимо выбрать, куда перенести эту заявку.
                             </div>
-                            @await Html.PartialAsync("AvailClaimTargetsPartial", Model.PotentialCharactersToMove)
+                            @(await Html.RenderComponentAsync<AvailClaimTargets>(RenderMode.WebAssembly, new {
+                                ProjectId = new ProjectIdentification(Model.ProjectId),
+                                CurrentCharacterId = new CharacterIdentification(Model.ProjectId, Model.CharacterId),
+                            }))
                         }
                         else
                         {

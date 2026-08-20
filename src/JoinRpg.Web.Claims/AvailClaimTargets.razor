@@ -1,0 +1,12 @@
+<FormHorizontal>
+    <FormRow Label="Переместить заявку">
+        <SingleCharacterSelector Name="characterId" ProjectId="@ProjectId" ListType="@CharacterListType.Available" AllowEmpty="false" ExcludeCharacterIds="@excludeCharacterIds" />
+    </FormRow>
+</FormHorizontal>
+
+@code {
+    [Parameter, EditorRequired] public ProjectIdentification ProjectId { get; set; }
+    [Parameter, EditorRequired] public CharacterIdentification CurrentCharacterId { get; set; }
+
+    private CharacterIdentification[] excludeCharacterIds => [CurrentCharacterId];
+}

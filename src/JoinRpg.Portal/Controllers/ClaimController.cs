@@ -286,9 +286,9 @@ public class ClaimController(
     [HttpPost]
     [MasterAuthorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel, int characterId)
+    public async Task<ActionResult> RestoreByMaster(int projectId, ClaimIdentification claimId, ClaimOperationViewModel viewModel, CharacterIdentification characterId)
     {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
+        var claim = await claimsRepository.GetClaim(claimId);
         if (claim == null)
         {
             return NotFound();
@@ -301,9 +301,9 @@ public class ClaimController(
                 return await ShowClaim(claim);
             }
             await
-              claimService.RestoreByMaster(claim.GetId(), viewModel.CommentText, new CharacterIdentification(projectId, characterId));
+              claimService.RestoreByMaster(claimId, viewModel.CommentText, characterId);
 
-            return ReturnToClaim(projectId, claimId);
+            return ReturnToClaim(claimId);
         }
         catch (Exception exception)
         {
@@ -370,9 +370,9 @@ public class ClaimController(
 
     [MasterAuthorize()]
     [HttpPost]
-    public async Task<ActionResult> Move(int projectId, int claimId, MoveClaimOperationViewModel viewModel, int characterId)
+    public async Task<ActionResult> Move(int projectId, ClaimIdentification claimId, MoveClaimOperationViewModel viewModel, CharacterIdentification characterId)
     {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
+        var claim = await claimsRepository.GetClaim(claimId);
         if (claim == null)
         {
             return NotFound();
@@ -385,14 +385,14 @@ public class ClaimController(
                 return await ShowClaim(claim);
             }
 
-            await claimService.MoveByMaster(claim.GetId(), viewModel.CommentText, new CharacterIdentification(projectId, characterId));
+            await claimService.MoveByMaster(claimId, viewModel.CommentText, characterId);
 
             if (viewModel.AcceptAfterMove)
             {
-                await claimService.ApproveByMaster(claim.GetId(), "");
+                await claimService.ApproveByMaster(claimId, "");
             }
 
-            return ReturnToClaim(projectId, claimId);
+            return ReturnToClaim(claimId);
         }
         catch (Exception exception)
         {
@@ -787,6 +787,8 @@ public class ClaimController(
     }
 
     private RedirectToActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
+
+    private RedirectToActionResult ReturnToClaim(ClaimIdentification claimId) => RedirectToAction("Edit", "Claim", new { claimId.ClaimId, ProjectId = claimId.ProjectId.Id });
 
     [DoesNotReturn]
     [Obsolete]
