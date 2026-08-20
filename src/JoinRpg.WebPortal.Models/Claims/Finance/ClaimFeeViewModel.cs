@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
 
@@ -12,7 +13,7 @@ public class ClaimFeeViewModel
         Status = model.Status;
 
         // Reading project fee info applicable for today
-        BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
+        BaseFeeInfo = claim.CurrentFee == null ? projectInfo.ProjectFinanceSettings.GetFeeSettingForDate(DateTime.UtcNow) : null;
         // Reading base fee of a claim
         BaseFee = claim.BaseFee(projectInfo);
         // Checks for base fee availability
@@ -41,9 +42,9 @@ public class ClaimFeeViewModel
         }
 
         HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
-        HasFeeAdminAccess = claim.HasAccess(currentUserId, Permission.CanManageMoney);
+        HasFeeAdminAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
 
-        PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
+        PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
         PreferentialFeeUser = claim.PreferentialFeeUser;
         PreferentialFeeConditions =
             ((MarkdownString?)claim.Project.Details.PreferentialFeeConditions).ToHtmlString();
@@ -51,10 +52,11 @@ public class ClaimFeeViewModel
 
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
-        FeeVariants = claim.Project.ProjectFeeSettings
+        FeeVariants = projectInfo.ProjectFinanceSettings.FeeSchedule
             .Select(f => f.Fee)
             .Append(CurrentFee)
-            .OrderBy(x => x)
+            .Order()
+            .Distinct()
             .ToList();
         FinanceOperations = claim.FinanceOperations
             .Select(
@@ -96,7 +98,7 @@ public class ClaimFeeViewModel
     /// <summary>
     /// Claim
     /// </summary>
-    public ProjectFeeSetting? BaseFeeInfo { get; }
+    public ProjectFeeSettingInfo? BaseFeeInfo { get; }
 
     /// <summary>
     /// true if there is any base fee for this claim

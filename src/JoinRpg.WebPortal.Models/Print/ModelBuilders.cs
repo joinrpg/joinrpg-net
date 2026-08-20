@@ -12,7 +12,7 @@ public static class ModelBuilders
         var respMasterId = character.GetResponsibleMaster().UserId;
         Claim? approvedClaim = character.ApprovedClaim;
         return new EnvelopeViewModel(
-            FeeDue: approvedClaim?.ClaimFeeDue(projectInfo) ?? character.Project.ProjectFeeInfo()?.Fee ?? 0,
+            FeeDue: approvedClaim?.ClaimFeeDue(projectInfo) ?? projectInfo.ProjectFinanceSettings.GetFeeForDate(DateTime.UtcNow, preferential: false),
             AccommodationEnabled: projectInfo.AccomodationEnabled,
             AccommodationTypeName: approvedClaim?.AccommodationRequest?.AccommodationType?.Name,
             AccommodationName: approvedClaim?.AccommodationRequest?.Accommodation?.Name,

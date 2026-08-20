@@ -628,7 +628,7 @@ public class FieldLayerContainerTest
 ordering,
             fields,
             new ProjectFieldSettings(null, null),
-            new ProjectFinanceSettings(false, []),
+            new ProjectFinanceSettings(false, [], []),
             false,
             false,
             new CharacterGroupIdentification(projectId, 1),

@@ -8,27 +8,10 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns project fee for a specified date for claim
     /// </summary>
-    private static int ProjectFeeForDate(this Claim claim, DateTime? operationDate)
-    {
-        var projectFeeInfo = claim.Project.ProjectFeeInfo(operationDate ?? DateTime.UtcNow);
-        return (claim.PreferentialFeeUser
-                   ? projectFeeInfo?.PreferentialFee
-                   : projectFeeInfo?.Fee) ?? 0;
-    }
-
-    /// <summary>
-    /// Returns fee info object for a specified date
-    /// </summary>
-    private static ProjectFeeSetting? ProjectFeeInfo(this Project project,
-        DateTime operationDate)
-        => project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
-            .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault();
-
-    /// <summary>
-    /// Returns fee info object for today
-    /// </summary>
-    public static ProjectFeeSetting? ProjectFeeInfo(this Project project)
-        => project.ProjectFeeInfo(DateTime.UtcNow);
+    private static int ProjectFeeForDate(this Claim claim, ProjectInfo projectInfo, DateTime? operationDate)
+        => projectInfo.ProjectFinanceSettings.GetFeeForDate(
+            operationDate ?? DateTime.UtcNow,
+            claim.PreferentialFeeUser);
 
     /// <summary>
     /// Returns total sum of claim fee and all finance operations
@@ -47,7 +30,7 @@ public static class FinanceExtensions
     /// Returns base fee (taken from project settings or claim's property CurrentFee)
     /// </summary>
     public static int BaseFee(this Claim claim, ProjectInfo projectInfo, DateTime? operationDate = null)
-        => claim.CurrentFee ?? claim.ProjectFeeForDate(operationDate);
+        => claim.CurrentFee ?? claim.ProjectFeeForDate(projectInfo, operationDate);
 
     /// <summary>
     /// Returns actual fee for a claim (as a sum of claim fee and fields fee) using current date
@@ -96,12 +79,6 @@ public static class FinanceExtensions
             return ClaimPaymentStatus.NotPaid;
         }
     }
-
-    /// <summary>
-    /// Returns claim payment status from claim' data
-    /// </summary>
-    public static ClaimPaymentStatus PaymentStatus(this Claim claim, ProjectInfo projectInfo)
-        => GetClaimPaymentStatus(claim.ClaimTotalFee(projectInfo), claim.ClaimBalance());
 
     /// <summary>
     /// Returns total sum of all money flow operations
@@ -169,13 +146,6 @@ public static class FinanceExtensions
     public static int ClaimBalance(this Claim claim)
         => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
 
-    /// <summary>
-    /// Returns sum of all unapproved finance operations
-    /// </summary>
-    public static int ClaimProposedBalance(this Claim claim)
-        => claim.FinanceOperations.Sum(fo =>
-            fo.State == FinanceOperationState.Proposed ? fo.MoneyAmount : 0);
-
     [Obsolete]
     public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {
@@ -196,12 +166,12 @@ public static class FinanceExtensions
 
     public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate, ProjectInfo projectInfo)
     {
-        if (claim.Project.ProjectFeeSettings.Any() //If project has fee 
+        if (projectInfo.ProjectFinanceSettings.FeeSchedule.Any() //If project has fee 
             && claim.CurrentFee == null //and fee not already fixed for claim
             && claim.ClaimPaidInFull(operationDate, projectInfo) //and current fee is payed in full
         )
         {
-            claim.CurrentFee = claim.ProjectFeeForDate(operationDate); //fix fee for claim
+            claim.CurrentFee = claim.ProjectFeeForDate(projectInfo, operationDate); //fix fee for claim
         }
     }
 
