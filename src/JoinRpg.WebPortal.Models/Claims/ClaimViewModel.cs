@@ -55,9 +55,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [ReadOnly(true)]
     public bool HasOtherApprovedClaim { get; }
 
-    [ReadOnly(true)]
-    public IList<JoinSelectListItem> PotentialCharactersToMove { get; }
-
     public CustomFieldsViewModel Fields { get; }
 
     public CharacterNavigationViewModel Navigation { get; }
@@ -124,10 +121,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = claim.Character.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
-        PotentialCharactersToMove = claim.Project.Characters
-            .Where(x => x.CanMoveClaimTo(claim, playerInfo, projectInfo))
-            .Select(ToJoinSelectListItem)
-            .ToList();
         OtherClaimsFromThisPlayerCount =
             OtherClaimsFromThisPlayerCount =
                 claim.IsApproved || !projectInfo.ClaimSettings.StrictlyOneCharacter
@@ -181,17 +174,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             RegistrationAddress = claim.Player.Extra?.RegistrationAddress;
         }
     }
-
-    private static JoinSelectListItem ToJoinSelectListItem(Character x)
-    {
-        return new JoinSelectListItem()
-        {
-            Value = x.CharacterId,
-            Text = x.CharacterName,
-        };
-    }
-
-
 
     public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }

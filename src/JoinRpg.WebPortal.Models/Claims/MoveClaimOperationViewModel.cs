@@ -5,8 +5,6 @@ public class MoveClaimOperationViewModel
     [DisplayName("Текст комментария")]
     [UIHint("MarkdownString")]
     public string CommentText { get; set; } = null!;
-    [ReadOnly(true)]
-    public IList<JoinSelectListItem> PotentialCharactersToMove { get; set; } = [];
 
     [ReadOnly(true)]
     public bool IsAlreadyAccepted { get; set; }
@@ -15,7 +13,7 @@ public class MoveClaimOperationViewModel
     public int ProjectId { get; set; }
 
     [ReadOnly(true)]
-    public int CharacterId { get; set; }
+    public int CurrentCharacterId { get; set; }
 
     public bool CanAcceptAfter { get; set; }
 

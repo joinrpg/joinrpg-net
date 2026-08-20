@@ -6,6 +6,7 @@
   Multiple="false"
   ListType="@ListType"
   AllowEmpty="@AllowEmpty"
+  ExcludeCharacterIds="@ExcludeCharacterIds"
   />
 
 @code {
@@ -18,6 +19,7 @@
     [Parameter] public EventCallback<CharacterDto> SelectedCharacterChanged { get; set; }
     [Parameter] public CharacterListType ListType { get; set; } = CharacterListType.All;
     [Parameter] public bool AllowEmpty { get; set; } = false;
+    [Parameter] public CharacterIdentification[] ExcludeCharacterIds { get; set; } = [];
 
     private CharacterIdentification[] selectedIds = [];
 
