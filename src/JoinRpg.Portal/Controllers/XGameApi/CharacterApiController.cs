@@ -134,11 +134,11 @@ public class CharacterApiController(
             characterTypeInfo,
             convertedFields));
 
-        var characterView = await characterRepository.GetCharacterViewAsync(projectId, characterId.CharacterId);
+        var character = await characterInfoRepository.GetCharacterInfo(characterId);
         return CreatedAtAction(
             nameof(GetOne),
             new { projectId, characterId = characterId.CharacterId },
-            BuildCharacterHeader(projectId, characterView.CharacterId, characterView.UpdatedAt, characterView.IsActive));
+            BuildCharacterHeader(projectId, character.Id.CharacterId, character.UpdatedAt, character.IsActive));
     }
 
     /// <summary>
