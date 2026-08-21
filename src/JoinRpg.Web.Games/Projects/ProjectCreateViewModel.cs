@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.ProjectCommon.Projects;
+namespace JoinRpg.Web.Games.Projects;
 
 public class ProjectCreateViewModel
 {

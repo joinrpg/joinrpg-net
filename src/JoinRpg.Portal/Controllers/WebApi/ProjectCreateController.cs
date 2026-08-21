@@ -1,5 +1,5 @@
 using JoinRpg.Services.Interfaces.Projects;
-using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.Games.Projects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

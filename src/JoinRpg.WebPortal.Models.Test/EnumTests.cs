@@ -9,8 +9,8 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Claims.UnifiedGrid;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon.Fields;
-using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using MoreLinq;
 
