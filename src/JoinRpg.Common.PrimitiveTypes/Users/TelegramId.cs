@@ -11,23 +11,28 @@ public record TelegramId(long Id, PrefferedName? UserName) : ISpanParsable<Teleg
 
     public static bool TryParse([NotNullWhen(true)] ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out TelegramId result)
     {
+        // Не используем общий IdentificationParseHelper.SplitIdentifier — он делит и по ',', и по
+        // '-', а chat id каналов/супергрупп в Telegram отрицательный, так что '-' здесь не
+        // разделитель, а часть числа. TelegramId делит только по ',' (перед именем пользователя).
         ReadOnlySpan<char> val = IdentificationParseHelper.RemovePrefixes(value, [nameof(TelegramId), "Telegram"]);
-        Span<Range> ranges = stackalloc Range[2];
-        var count = IdentificationParseHelper.SplitIdentifier(val, ranges);
-        if (count == 2
-           && long.TryParse(val[ranges[0]], provider, out var i1)
-           )
+
+        var commaIndex = val.IndexOf(',');
+        if (commaIndex < 0)
         {
-            var usernameSpan = val[ranges[1]].TrimStart('@');
-            result = new TelegramId(i1, string.IsNullOrWhiteSpace(usernameSpan.ToString()) ? null : new PrefferedName(usernameSpan.ToString()));
-            return true;
+            if (long.TryParse(val.Trim(), provider, out var i))
+            {
+                result = new TelegramId(i, null);
+                return true;
+            }
+
+            result = null!;
+            return false;
         }
 
-        if (count == 1
-          && long.TryParse(val[ranges[0]], provider, out var i)
-          )
+        if (long.TryParse(val[..commaIndex].Trim(), provider, out var i1))
         {
-            result = new TelegramId(i, null);
+            var usernameSpan = val[(commaIndex + 1)..].Trim().TrimStart('@');
+            result = new TelegramId(i1, string.IsNullOrWhiteSpace(usernameSpan.ToString()) ? null : new PrefferedName(usernameSpan.ToString()));
             return true;
         }
 

@@ -54,4 +54,22 @@ public class TelegramIdParseTest
         TelegramId.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(version);
     }
+
+    [Theory]
+    [InlineData("Telegram(-1004315256401)")]
+    [InlineData("-1004315256401")]
+    public void TelegramIdShouldParseNegativeChannelId(string val)
+    {
+        TelegramId.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(new TelegramId(-1004315256401, null));
+    }
+
+    [Fact]
+    public void NegativeChannelIdShouldRoundTrip()
+    {
+        var version = new TelegramId(-1004315256401, null);
+        var val = version.ToString();
+        TelegramId.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        parseResult.ShouldBe(version);
+    }
 }
