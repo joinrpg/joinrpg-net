@@ -19,7 +19,7 @@ public class ContactComponentsTest
         var cut = ctx.Render<EmailLink>(p => p.Add(x => x.Contact, new Email("test@example.com")));
         cut.Markup.ShouldContain("href=\"mailto:test@example.com\"");
         cut.Markup.ShouldContain("test@example.com");
-        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Email).Value);
+        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Email).IconName);
         cut.Markup.ShouldContain("white-space: nowrap");
     }
 
@@ -37,7 +37,7 @@ public class ContactComponentsTest
         using var ctx = new BunitContext();
         var cut = ctx.Render<PhoneLink>(p => p.Add(x => x.Contact, new PhoneNumber("+79161234567")));
         cut.Markup.ShouldContain("+79161234567");
-        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Phone).Value);
+        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Phone).IconName);
         cut.Markup.ShouldContain("white-space: nowrap");
     }
 
@@ -65,7 +65,7 @@ public class ContactComponentsTest
         var contact = new TelegramId(123456, new PrefferedName("joinrpg"));
         var cut = ctx.Render<TelegramLink>(p => p.Add(x => x.Contact, contact));
         cut.Markup.ShouldContain("https://t.me/joinrpg");
-        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Telegram).Value);
+        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Telegram).IconName);
         cut.Markup.ShouldContain("white-space: nowrap");
     }
 

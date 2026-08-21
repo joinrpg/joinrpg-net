@@ -13,24 +13,31 @@ public class JoinIconTest
         }
     }
 
-    [Fact]
-    public void GlyphKindIcon_RendersSpanWithFontClasses()
+    /// <summary>
+    /// Способ отрисовки ровно один: svg со ссылкой на символ спрайта.
+    /// </summary>
+    [Theory]
+    [InlineData(JoinIconType.Delete)]
+    [InlineData(JoinIconType.MandatoryStar)]
+    [InlineData(JoinIconType.Vk)]
+    public void AnyIcon_RendersSvgUseOfSprite(JoinIconType icon)
     {
         using var ctx = new BunitContext();
-        var cut = ctx.Render<JoinIcon>(p => p.Add(x => x.Icon, JoinIconType.Delete));
-        cut.Markup.ShouldContain("<span");
-        cut.Markup.ShouldContain(JoinIconDefinitions.GlyphFontCssClass);
-        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Delete).Value);
+        var cut = ctx.Render<JoinIcon>(p => p.Add(x => x.Icon, icon));
+
+        cut.Markup.ShouldContain("<svg");
         cut.Markup.ShouldContain("join-icon");
+        cut.Markup.ShouldContain("<use");
+        cut.Markup.ShouldContain(JoinIconMarkup.SpriteUrl);
+        cut.Markup.ShouldNotContain("<img");
     }
 
     [Fact]
-    public void TextIcon_RendersUnicodeSymbol()
+    public void Icon_ReferencesItsOwnSymbol()
     {
         using var ctx = new BunitContext();
-        var cut = ctx.Render<JoinIcon>(p => p.Add(x => x.Icon, JoinIconType.MandatoryStar));
-        cut.Markup.ShouldContain("*");
-        cut.Markup.ShouldNotContain(JoinIconDefinitions.GlyphFontCssClass);
+        var cut = ctx.Render<JoinIcon>(p => p.Add(x => x.Icon, JoinIconType.Delete));
+        cut.Markup.ShouldContain("#" + JoinIconDefinitions.Get(JoinIconType.Delete).IconName);
     }
 
     [Fact]
@@ -39,15 +46,6 @@ public class JoinIconTest
         using var ctx = new BunitContext();
         var cut = ctx.Render<JoinIcon>(p => p.Add(x => x.Icon, JoinIconType.MandatoryStar));
         cut.Markup.ShouldContain("text-danger");
-    }
-
-    [Fact]
-    public void ImageIcon_RendersImgFromRclStaticAssets()
-    {
-        using var ctx = new BunitContext();
-        var cut = ctx.Render<JoinIcon>(p => p.Add(x => x.Icon, JoinIconType.Vk));
-        cut.Markup.ShouldContain("<img");
-        cut.Markup.ShouldContain("/_content/JoinRpg.Common.WebComponents/images/logo-vk.svg");
     }
 
     [Fact]
