@@ -30,19 +30,15 @@ public class NotificationWorkerOptions
     public byte MaxSubsequentFailures { get; set; } = 50;
 
     /// <summary>
-    /// Base pause before releasing the cooldown.
+    /// Pause before releasing the first cooldown. Each subsequent cooldown doubles the previous one.
     /// </summary>
-    public TimeSpan BaseCooldownPause { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan BaseCooldownPause { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Maximum number of the subsequent cooldowns before stopping the worker.
+    /// Maximum allowed cooldown pause. Once the next computed cooldown would exceed this value,
+    /// the worker shuts down instead of cooling down again.
     /// </summary>
-    public byte MaxSubsequentCooldowns { get; set; } = 5;
-
-    /// <summary>
-    /// Hysteresis factor which will be multiplied by random value in range -1..+1 and added to the cooldown pause.
-    /// </summary>
-    public TimeSpan CooldownHysteresis { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan MaxCooldownPause { get; set; } = TimeSpan.FromHours(48);
 
     /// <summary>
     /// How many subsequent successes should happen to stop counting failures.
@@ -52,7 +48,7 @@ public class NotificationWorkerOptions
     /// <summary>
     /// How many subsequent successes should happen to stop counting cooldowns.
     /// </summary>
-    public int MinSubsequentSuccessesToStopCooldownCounting { get; set; } = 20;
+    public int MinSubsequentSuccessesToStopCooldownCounting { get; set; } = 2;
 
     /// <summary>
     /// How often to poll notification queue lengths for metrics.

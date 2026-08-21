@@ -73,21 +73,20 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
 
             if (FailureCounter >= WorkerOptions.MaxSubsequentFailures)
             {
-                CooldownCounter++;
                 FailureCounter = 0;
                 QueueIsEmpty = false;
 
-                if (CooldownCounter <= WorkerOptions.MaxSubsequentCooldowns)
+                var cooldownPause = GetCooldownDelay(CooldownCounter + 1);
+
+                if (cooldownPause > WorkerOptions.MaxCooldownPause)
                 {
-                    var cooldownPause = GetCooldownDelay(CooldownCounter);
-                    logger.LogWarning("The maximum number of subsequent failures has been reached. Entering cooldown for {notificationsWorkerCooldown}", cooldownPause);
-                    await Task.Delay(cooldownPause, stoppingToken);
-                }
-                else
-                {
-                    logger.LogCritical("The maximum number of subsequent cooldowns has been reached. Shutting down the worker");
+                    logger.LogCritical("The cooldown pause of {notificationsWorkerCooldown} has exceeded the maximum of {maxCooldownPause}. Shutting down the worker", cooldownPause, WorkerOptions.MaxCooldownPause);
                     break;
                 }
+
+                CooldownCounter++;
+                logger.LogWarning("The maximum number of subsequent failures has been reached. Entering cooldown for {notificationsWorkerCooldown}", cooldownPause);
+                await Task.Delay(cooldownPause, stoppingToken);
             }
 
             if (QueueIsEmpty)
@@ -229,8 +228,15 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
     private TimeSpan GetNextAttemptDelay(TargetedNotificationMessageForRecipient message)
         => GetDelay(WorkerOptions.BaseAttemptsPause, message.Attempts, WorkerOptions.HysteresisFactor);
 
+    /// <summary>
+    /// Cooldown pause doubles with every subsequent cooldown, starting from <see cref="NotificationWorkerOptions.BaseCooldownPause"/>.
+    /// Not capped: the caller decides what to do once it exceeds <see cref="NotificationWorkerOptions.MaxCooldownPause"/>.
+    /// </summary>
     private TimeSpan GetCooldownDelay(int cooldownCounter)
-        => GetDelay(WorkerOptions.BaseCooldownPause, cooldownCounter, WorkerOptions.HysteresisFactor);
+    {
+        var targetDelay = WorkerOptions.BaseCooldownPause * Math.Pow(2, cooldownCounter - 1);
+        return targetDelay + (targetDelay * WorkerOptions.HysteresisFactor * (Random.Shared.NextDouble() - 0.5));
+    }
 }
 
 public static class SenderServiceActivityHolder
