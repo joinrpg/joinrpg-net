@@ -1,5 +1,5 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.Admin;

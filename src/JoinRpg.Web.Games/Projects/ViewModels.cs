@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Games.Projects;
@@ -17,18 +18,6 @@ public record class ProjectInfoViewModel(
     KogdaIgraIdentification[] KogdaIgraLinkedIds)
 {
 }
-
-public record class KogdaIgraCardViewModel(
-    KogdaIgraIdentification KogdaIgraId,
-    Uri KogdaIgraUri,
-    string Name,
-    DateOnly Begin,
-    DateOnly End,
-    string RegionName,
-    string MasterGroupName, Uri? SiteUri,
-    VkId? Vk = null,
-    LiveJournalId? LiveJournal = null,
-    string? TelegramChannel = null);
 
 [method: JsonConstructor]
 public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims,

@@ -1,7 +1,6 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.AdminTools;
-using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CharacterGroups.GroupReport;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
@@ -12,6 +11,7 @@ using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Fields;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 using JoinRpg.Web.ProjectMasterTools.Fields;

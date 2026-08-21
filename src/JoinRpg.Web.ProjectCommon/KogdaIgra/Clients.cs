@@ -1,6 +1,4 @@
-using JoinRpg.Web.Games.Projects;
-
-namespace JoinRpg.Web.AdminTools.KogdaIgra;
+namespace JoinRpg.Web.ProjectCommon.KogdaIgra;
 
 public interface IKogdaIgraSyncClient
 {
@@ -13,6 +11,8 @@ public interface IKogdaIgraSyncClient
     Task<SyncStatusViewModel> GetSyncStatus();
 
     Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates();
+
+    Task<KogdaIgraShortViewModel[]> GetFutureKogdaIgraCandidates();
 
     Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated();
 
