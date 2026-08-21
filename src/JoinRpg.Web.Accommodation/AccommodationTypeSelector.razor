@@ -1,0 +1,104 @@
+@* Кнопка «Выбрать…/Изменить…» и диалог выбора типа проживания. *@
+@* Кнопка и диалог неразделимы, поэтому это один компонент. *@
+@using JoinRpg.Common.WebComponents.Dialog
+@inject IAccommodationTypeClient Client
+@inject NavigationManager NavigationManager
+
+@if (model is not null)
+{
+    <JoinButton Label="@(model.SelectedTypeId is null ? "Выбрать…" : "Изменить…")"
+                Size="SizeStyleEnum.Small"
+                OnClick="@ShowDialog" />
+
+    <JoinDialog @ref="dialog"
+                Caption="Варианты проживания"
+                Buttons="@dialogButtons"
+                DisableSumbit="@(chosenTypeId is null)">
+        <ChildContent>
+            @if (model.RoomAssigned)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Warning">
+                    Вам уже назначена комната. Смена типа проживания выселит вас.
+                </JoinAlert>
+            }
+            else if (model.HasNeighbours)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Warning">
+                    Смена типа проживания отменит существующие договоренности о совместном проживании.
+                </JoinAlert>
+            }
+
+            @foreach (var accommodationType in model.Types)
+            {
+                <div style="margin: 1em 0; display: flex; flex-direction: row; align-items: center;">
+                    <input type="radio"
+                           name="AccommodationTypeId"
+                           id="@($"at-{accommodationType.TypeId.AccommodationTypeId}")"
+                           style="margin: 0;"
+                           checked="@(chosenTypeId == accommodationType.TypeId)"
+                           @onchange="@(() => chosenTypeId = accommodationType.TypeId)" />
+                    <label for="@($"at-{accommodationType.TypeId.AccommodationTypeId}")"
+                           style="margin: 0 0 0 2em; display: block; font-weight: normal;">
+                        <div>
+                            <strong>@accommodationType.Name</strong>
+                            <text>(@CountHelper.DisplayCount(accommodationType.Capacity, "место", "места", "мест") в номере, @accommodationType.Cost&nbsp;&#8381;)</text>
+                        </div>
+                        <div>@accommodationType.Description</div>
+                    </label>
+                </div>
+            }
+
+            @if (errorMessage is not null)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+            }
+        </ChildContent>
+    </JoinDialog>
+}
+
+@code {
+    [PersistentState]
+    public AccommodationTypeChoiceViewModel? model { get; set; }
+
+    [Parameter, EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    private JoinDialog? dialog;
+    private AccommodationTypeIdentification? chosenTypeId;
+    private string? errorMessage;
+
+    private static readonly DialogButton[] dialogButtons =
+    [
+        new DialogButton(ButtonPreset.Save) { Label = "Сохранить проживание" },
+        new DialogButton(ButtonPreset.Cancel),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        model ??= await Client.GetAccommodationTypes(ClaimId);
+        chosenTypeId = model.SelectedTypeId;
+    }
+
+    private async Task ShowDialog(ButtonClickEventArgs args)
+    {
+        args.ExitProgressState = true;
+        errorMessage = null;
+        chosenTypeId = model!.SelectedTypeId;
+
+        if (!await dialog!.ShowBoolModalAsync() || chosenTypeId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Client.SetAccommodationType(ClaimId, chosenTypeId);
+            // Смена типа переселяет игрока и рушит приглашения — перезагружаем страницу целиком
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+        }
+    }
+}

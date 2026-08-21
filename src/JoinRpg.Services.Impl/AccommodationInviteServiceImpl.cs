@@ -3,6 +3,9 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -14,77 +17,175 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
 
     private IEmailService EmailService { get; }
 
-    private async Task<AccommodationInvite?> CreateAccommodationInvite(int projectId,
-        int senderClaimId,
-        int receiverClaimId,
-        int accommodationRequestId)
+    /// <inheritdoc />
+    public async Task CreateAccommodationInvite(
+        ClaimIdentification senderClaimId,
+        AccommodationRequestIdentification senderRequestId,
+        AccommodationTargetIdentification target)
     {
-        //todo: make null result descriptive
+        // TODO: Search for and reuse previously cancelled invitation(s) to the same person(s)
 
+        _ = new IProjectEntityId[] { senderRequestId, target }.EnsureProject(senderClaimId.ProjectId);
+
+        // Приглашать может либо сам игрок, либо мастер с правом расселять — как и в остальных
+        // операциях с проживанием (см. IClaimService.SetAccommodationType/LeaveAccommodationGroupAsync)
+        var senderClaim = await ClaimsRepository.GetClaim(senderClaimId).ConfigureAwait(false);
+        _ = senderClaim.RequestAccess(currentUserAccessor.UserIdentification,
+            Permission.CanSetPlayersAccommodations,
+            senderClaim?.ClaimStatus == ClaimStatus.Approved
+                ? ExtraAccessReason.PlayerOrResponsible
+                : ExtraAccessReason.None);
+
+        if (target.AsAccommodationRequestId() is { } receiverRequestId)
+        {
+            await CreateAccommodationInviteToAccommodationRequest(senderClaimId, senderRequestId, receiverRequestId)
+                .ConfigureAwait(false);
+        }
+        else if (target.AsClaimId() is { } receiverClaimId)
+        {
+            await CreateAccommodationInviteToClaim(senderClaimId, senderRequestId, receiverClaimId)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            //TODO[Localize]
+            throw new AccommodationInviteNotAllowedException(target.ProjectId, "Не выбрано, кого приглашать.");
+        }
+    }
+
+    private async Task CreateAccommodationInviteToClaim(
+        ClaimIdentification senderClaimId,
+        AccommodationRequestIdentification senderRequestId,
+        ClaimIdentification receiverClaimId)
+    {
         var receiverCurrentAccommodationRequest = await UnitOfWork
             .GetDbSet<Claim>()
-            .Where(claim => claim.ClaimId == receiverClaimId)
+            .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
             .Select(claim => claim.AccommodationRequest)
             .Include(request => request.Subjects)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
         var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Where(request => request.Id == accommodationRequestId)
+            .Where(request => request.Id == senderRequestId.AccommodationRequestId)
             .Include(request => request.Subjects)
             .Include(request => request.AccommodationType)
             .Include(c => c.Project)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
-        //we not allow invitation to/from already settled members
-        if (receiverCurrentAccommodationRequest?.AccommodationId != null ||
-            senderAccommodationRequest?.AccommodationId != null)
-        {
-            return null;
-        }
-
-        //invite only claims with same type of room, or claims with out room type at all
-        if (receiverCurrentAccommodationRequest?.AccommodationTypeId !=
-            senderAccommodationRequest?.AccommodationTypeId &&
-            receiverCurrentAccommodationRequest?.AccommodationTypeId != null)
-        {
-            return null;
-        }
-
-        var newDwellersCount = receiverCurrentAccommodationRequest?.Subjects.Count ?? 1;
-        var canInvite = senderAccommodationRequest.Subjects.Count + newDwellersCount <=
-                        senderAccommodationRequest.AccommodationType.Capacity;
-        canInvite = canInvite &&
-                    (senderAccommodationRequest.AccommodationTypeId ==
-                     receiverCurrentAccommodationRequest?.AccommodationTypeId ||
-                     receiverCurrentAccommodationRequest == null);
-        if (!canInvite)
-        {
-            return null;
-        }
+        EnsureCanInvite(
+            senderRequestId.ProjectId,
+            senderAccommodationRequest,
+            receiverCurrentAccommodationRequest,
+            newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1);
 
         var inviteRequest = new AccommodationInvite
         {
-            ProjectId = projectId,
-            FromClaimId = senderClaimId,
-            ToClaimId = receiverClaimId,
+            ProjectId = senderClaimId.ProjectId.Value,
+            FromClaimId = senderClaimId.ClaimId,
+            ToClaimId = receiverClaimId.ClaimId,
             IsAccepted = InviteState.Unanswered,
         };
 
         _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
         await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-        //todo email it
 
         var receiver = await UnitOfWork
             .GetDbSet<Claim>()
-            .Where(claim => claim.ClaimId == receiverClaimId)
+            .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
             .ToArrayAsync().ConfigureAwait(false);
 
         await EmailService
             .Email(await CreateInviteEmail<NewInviteEmail>(receiver,
                 senderAccommodationRequest.Project).ConfigureAwait(false))
             .ConfigureAwait(false);
+    }
 
-        return inviteRequest;
+    private async Task CreateAccommodationInviteToAccommodationRequest(
+        ClaimIdentification senderClaimId,
+        AccommodationRequestIdentification senderRequestId,
+        AccommodationRequestIdentification receiverRequestId)
+    {
+        var receiverCurrentAccommodationRequest = await UnitOfWork
+            .GetDbSet<AccommodationRequest>()
+            .Where(request => request.Id == receiverRequestId.AccommodationRequestId)
+            .Include(request => request.Subjects)
+            .FirstOrDefaultAsync().ConfigureAwait(false);
+
+        var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
+            .Where(request => request.Id == senderRequestId.AccommodationRequestId)
+            .Include(request => request.Subjects)
+            .Include(request => request.AccommodationType)
+            .Include(c => c.Project)
+            .FirstOrDefaultAsync().ConfigureAwait(false);
+
+        EnsureCanInvite(
+            senderRequestId.ProjectId,
+            senderAccommodationRequest,
+            receiverCurrentAccommodationRequest,
+            newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1);
+
+        var receiversClaims = await UnitOfWork
+            .GetDbSet<Claim>()
+            .Where(claim => claim.AccommodationRequest_Id == receiverRequestId.AccommodationRequestId)
+            .Include(c => c.Player)
+            .ToArrayAsync()
+            .ConfigureAwait(false);
+
+        foreach (var receiverClaim in receiversClaims)
+        {
+            _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(new AccommodationInvite
+            {
+                ProjectId = senderClaimId.ProjectId.Value,
+                FromClaimId = senderClaimId.ClaimId,
+                ToClaimId = receiverClaim.ClaimId,
+                IsAccepted = InviteState.Unanswered,
+            });
+        }
+
+        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+
+        await EmailService
+            .Email(await CreateInviteEmail<NewInviteEmail>(receiversClaims,
+                senderAccommodationRequest.Project).ConfigureAwait(false))
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Общие для обоих видов приглашения проверки. Раньше каждая из них молча возвращала
+    /// <c>null</c>, и игрок не понимал, почему приглашение не отправилось.
+    /// </summary>
+    //TODO[Localize]
+    internal static void EnsureCanInvite(
+        ProjectIdentification projectId,
+        AccommodationRequest? senderRequest,
+        AccommodationRequest? receiverRequest,
+        int newDwellersCount)
+    {
+        if (senderRequest is null)
+        {
+            throw new AccommodationInviteNotAllowedException(projectId,
+                "У приглашающего не выбран тип проживания.");
+        }
+
+        // Приглашать и приглашаться могут только те, кого ещё не расселили по конкретным комнатам
+        if (receiverRequest?.AccommodationId != null || senderRequest.AccommodationId != null)
+        {
+            throw new AccommodationInviteNotAllowedException(projectId,
+                "Нельзя приглашать, когда кто-то из участников уже расселён по комнатам.");
+        }
+
+        // Приглашать можно либо в такой же тип проживания, либо тех, кто ещё не выбрал тип
+        if (receiverRequest != null && receiverRequest.AccommodationTypeId != senderRequest.AccommodationTypeId)
+        {
+            throw new AccommodationInviteNotAllowedException(projectId,
+                "Приглашать можно только тех, кто выбрал такой же тип проживания.");
+        }
+
+        if (senderRequest.Subjects.Count + newDwellersCount > senderRequest.AccommodationType.Capacity)
+        {
+            throw new AccommodationInviteNotAllowedException(projectId,
+                "В номере не хватает мест для всех приглашаемых.");
+        }
     }
 
     private async Task<T> CreateInviteEmail<T>(Claim[] recipients, Project project)
@@ -100,114 +201,12 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         };
     }
 
-    private async Task<IEnumerable<AccommodationInvite>?>
-        CreateAccommodationInviteToAccommodationRequest(int projectId,
-            int senderClaimId,
-            int receiverAccommodationRequestId,
-            int accommodationRequestId)
-    {
-        //todo: make null result descriptive
-
-        var receiverCurrentAccommodationRequest = await UnitOfWork
-            .GetDbSet<AccommodationRequest>()
-            .Where(request => request.Id == receiverAccommodationRequestId)
-            .Include(request => request.Subjects)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Where(request => request.Id == accommodationRequestId)
-            .Include(request => request.Subjects)
-            .Include(request => request.AccommodationType)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        //we not allow invitation to/from already settled members
-        if (receiverCurrentAccommodationRequest?.AccommodationId != null ||
-            senderAccommodationRequest?.AccommodationId != null)
-        {
-            return null;
-        }
-
-        //invite only claims with same type of room, or claims with out room type at all
-        if (receiverCurrentAccommodationRequest?.AccommodationTypeId !=
-            senderAccommodationRequest?.AccommodationTypeId &&
-            receiverCurrentAccommodationRequest?.AccommodationTypeId != null)
-        {
-            return null;
-        }
-
-        var newDwellersCount = receiverCurrentAccommodationRequest?.Subjects.Count ?? 1;
-        var canInvite = senderAccommodationRequest?.Subjects.Count + newDwellersCount <=
-                        senderAccommodationRequest?.AccommodationType.Capacity;
-        canInvite = canInvite &&
-                    (senderAccommodationRequest.AccommodationTypeId ==
-                     receiverCurrentAccommodationRequest?.AccommodationTypeId ||
-                     receiverCurrentAccommodationRequest == null);
-        if (!canInvite)
-        {
-            return null;
-        }
-
-        var receiversClaims = await UnitOfWork
-            .GetDbSet<Claim>()
-            .Where(claim => claim.AccommodationRequest_Id == receiverAccommodationRequestId)
-            .Include(c => c.Player)
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-        var result = new List<AccommodationInvite>();
-        foreach (var receiverClaim in receiversClaims)
-        {
-            var inviteRequest = new AccommodationInvite
-            {
-                ProjectId = projectId,
-                FromClaimId = senderClaimId,
-                ToClaimId = receiverClaim.ClaimId,
-                IsAccepted = InviteState.Unanswered,
-            };
-
-            _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
-            result.Add(inviteRequest);
-        }
-
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-        await EmailService
-            .Email(await CreateInviteEmail<NewInviteEmail>(receiversClaims,
-                senderAccommodationRequest.Project).ConfigureAwait(false))
-            .ConfigureAwait(false);
-        return result;
-    }
-
-    public async Task<IEnumerable<AccommodationInvite?>?> CreateAccommodationInviteToGroupOrClaim(
-        int projectId,
-        int senderClaimId,
-        int receiverClaimOrAccommodationRequestId,
-        int accommodationRequestId)
-    {
-        // TODO: Search for and reuse previously cancelled invitation(s) to the same person(s)
-
-        if (receiverClaimOrAccommodationRequestId < 0)
-        {
-            return await CreateAccommodationInviteToAccommodationRequest(projectId,
-                senderClaimId,
-                -receiverClaimOrAccommodationRequestId,
-                accommodationRequestId);
-        }
-
-        return [
-            await CreateAccommodationInvite(projectId,
-                senderClaimId,
-                receiverClaimOrAccommodationRequestId,
-                accommodationRequestId),
-        ];
-    }
-
     /// <inheritdoc />
-    public async Task<AccommodationInvite?> AcceptAccommodationInvite(int projectId,
-        int inviteId)
+    public async Task<AccommodationInvite?> AcceptAccommodationInvite(AccommodationInviteIdentification inviteId)
     {
         //todo: make null result descriptive
         var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.Id == inviteId)
+            .Where(invite => invite.Id == inviteId.AccommodationInviteId)
             .Include(invite => invite.To)
             .Include(invite => invite.From)
             .FirstOrDefaultAsync().ConfigureAwait(false);
@@ -238,7 +237,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         {
             foreach (var claim in receiverAccommodationRequest.Subjects.ToList())
             {
-                await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
+                await DeclineOtherInvite(claim.ClaimId, inviteId.AccommodationInviteId).ConfigureAwait(false);
                 senderAccommodationRequest.Subjects.Add(claim);
             }
 
@@ -265,7 +264,8 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         return inviteRequest;
     }
 
-    public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
+    public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(
+        AccommodationInviteIdentification inviteId,
         InviteState newState)
     {
         var acceptedStates = new[]
@@ -280,7 +280,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
 
         //todo: make null result descriptive
         var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.Id == inviteId)
+            .Where(invite => invite.Id == inviteId.AccommodationInviteId)
             .Include(invite => invite.Project)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 

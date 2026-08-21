@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
@@ -176,5 +177,85 @@ public class IdentificationParseTest
     {
         PlotVersionIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
         result.ShouldBe(new PlotVersionIdentification(new PlotElementIdentification(new PlotFolderIdentification(new ProjectIdentification(1), 2), 3), 4));
+    }
+
+    // AccommodationRequestIdentification — 2 листа: projectId, accommodationRequestId
+    [Theory]
+    [InlineData("AccommodationRequestId(1-2)")]
+    [InlineData("AccommodationRequest(1-2)")]
+    [InlineData("AccommodationRequestIdentification(1-2)")]
+    [InlineData("1-2")]
+    public void AccommodationRequestShouldParse(string val)
+    {
+        AccommodationRequestIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new AccommodationRequestIdentification(new ProjectIdentification(1), 2));
+    }
+
+    // AccommodationTypeIdentification — 2 листа: projectId, accommodationTypeId
+    [Theory]
+    [InlineData("AccommodationTypeId(1-2)")]
+    [InlineData("AccommodationType(1-2)")]
+    [InlineData("AccommodationTypeIdentification(1-2)")]
+    [InlineData("1-2")]
+    public void AccommodationTypeShouldParse(string val)
+    {
+        AccommodationTypeIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new AccommodationTypeIdentification(new ProjectIdentification(1), 2));
+    }
+
+    // AccommodationInviteIdentification — 2 листа: projectId, accommodationInviteId
+    [Theory]
+    [InlineData("AccommodationInviteId(1-2)")]
+    [InlineData("AccommodationInvite(1-2)")]
+    [InlineData("AccommodationInviteIdentification(1-2)")]
+    [InlineData("1-2")]
+    public void AccommodationInviteShouldParse(string val)
+    {
+        AccommodationInviteIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new AccommodationInviteIdentification(new ProjectIdentification(1), 2));
+    }
+
+    // AccommodationTargetIdentification — 2 листа: projectId, знаковое значение
+    [Theory]
+    [InlineData("AccommodationTargetId(1-2)")]
+    [InlineData("AccommodationTarget(1-2)")]
+    [InlineData("AccommodationTargetIdentification(1-2)")]
+    [InlineData("1-2")]
+    public void AccommodationTargetShouldParse(string val)
+    {
+        AccommodationTargetIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new AccommodationTargetIdentification(new ProjectIdentification(1), 2));
+    }
+
+    // Отрицательное значение (цель — заявка на проживание) обязано пережить round-trip
+    [Fact]
+    public void AccommodationTargetWithNegativeValueShouldRoundTrip()
+    {
+        var target = new AccommodationTargetIdentification(new ProjectIdentification(1), -42);
+        var asString = target.ToString();
+        asString.ShouldBe("AccommodationTargetId(1--42)");
+
+        AccommodationTargetIdentification.TryParse(asString, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(target);
+    }
+
+    [Fact]
+    public void AccommodationTargetFromClaimShouldConvertBackToClaim()
+    {
+        var claimId = new ClaimIdentification(new ProjectIdentification(1), 2);
+        var target = AccommodationTargetIdentification.From(claimId);
+
+        target.AsClaimId().ShouldBe(claimId);
+        target.AsAccommodationRequestId().ShouldBeNull();
+    }
+
+    [Fact]
+    public void AccommodationTargetFromRequestShouldConvertBackToRequest()
+    {
+        var requestId = new AccommodationRequestIdentification(new ProjectIdentification(1), 2);
+        var target = AccommodationTargetIdentification.From(requestId);
+
+        target.AsAccommodationRequestId().ShouldBe(requestId);
+        target.AsClaimId().ShouldBeNull();
     }
 }

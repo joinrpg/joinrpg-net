@@ -1,4 +1,5 @@
 using JoinRpg.Common.WebComponents;
+using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.AdminTools.Notifications;
@@ -55,6 +56,8 @@ public static class Registration
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<IKogdaIgraBindClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<Plots.CharacterPlotViewService>()
+        .AddScoped<IAccommodationInviteClient, Accommodation.AccommodationInviteViewService>()
+        .AddScoped<IAccommodationTypeClient, Accommodation.AccommodationTypeViewService>()
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()

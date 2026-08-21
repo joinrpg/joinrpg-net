@@ -1,4 +1,5 @@
 using JoinRpg.Common.WebComponents;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
@@ -39,6 +40,10 @@ internal class UriServiceImpl(
     IUriLocator<FinanceOperationIdentification>,
     IUriLocator<ForumCommentIdentification>,
     IUriLocator<ProjectRolesListIdentification>,
+    IUriLocator<AccommodationTypeIdentification>,
+    IUriLocator<AccommodationRequestIdentification>,
+    IUriLocator<AccommodationInviteIdentification>,
+    IUriLocator<AccommodationTargetIdentification>,
     INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
@@ -170,6 +175,22 @@ internal class UriServiceImpl(
     public Uri GetUri(ProjectRolesListIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ProjectRoleListView",
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
+
+    // Отдельной страницы у заявки на проживание и у приглашения нет — ведём на список комнат проекта.
+    public Uri GetUri(AccommodationTypeIdentification target) => GetRoomsUri(target.ProjectId);
+
+    public Uri GetUri(AccommodationRequestIdentification target) => GetRoomsUri(target.ProjectId);
+
+    public Uri GetUri(AccommodationInviteIdentification target) => GetRoomsUri(target.ProjectId);
+
+    public Uri GetUri(AccommodationTargetIdentification target) => target.AsClaimId() switch
+    {
+        { } claimId => GetUri(claimId),
+        null => GetRoomsUri(target.ProjectId),
+    };
+
+    private Uri GetRoomsUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "AccommodationType", new { ProjectId = projectId.Value }));
 
     RenderedEntityLink? INotificationEntityLinkRenderer.RenderEntityLink(IProjectEntityId? entityReference)
     {

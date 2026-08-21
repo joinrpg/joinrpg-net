@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
@@ -76,6 +77,30 @@ public static class ProjectEntityIdParser
         if (PlotFolderIdentification.TryParse(value, null, out var pf))
         {
             id = pf;
+            return true;
+        }
+
+        if (AccommodationRequestIdentification.TryParse(value, null, out var accRequest))
+        {
+            id = accRequest;
+            return true;
+        }
+
+        if (AccommodationTypeIdentification.TryParse(value, null, out var accType))
+        {
+            id = accType;
+            return true;
+        }
+
+        if (AccommodationInviteIdentification.TryParse(value, null, out var accInvite))
+        {
+            id = accInvite;
+            return true;
+        }
+
+        if (AccommodationTargetIdentification.TryParse(value, null, out var accTarget))
+        {
+            id = accTarget;
             return true;
         }
 
