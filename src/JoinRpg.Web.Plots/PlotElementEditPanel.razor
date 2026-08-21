@@ -26,7 +26,7 @@
         </FormRowFor>
 
         <FormRow Label="Сюжет">
-            <input type="hidden" name="PlotFolderId" value="@editModel.PlotFolderId" />
+            <input type="hidden" name="PlotFolderId" value="@editModel.PlotFolderId?.PlotFolderId" />
             <input type="hidden" name="plotelementid" value="@editModel.PlotElementId" />
             <span>@editModel.PlotFolderName</span>
         </FormRow>
