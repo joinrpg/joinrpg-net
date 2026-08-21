@@ -188,8 +188,10 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 if (sendingResult.Common)
                 {
                     numberOfCommonFailuresCounter.Add(1);
-                    logger.LogWarning("Произошла общая ошибка отправки при отправке сообщения {messageId}", nextMessage.MessageId);
+                    logger.LogWarning("Произошла общая ошибка отправки при отправке сообщения {messageId}, возвращаем в очередь", nextMessage.MessageId);
                     FailureCounter = WorkerOptions.MaxSubsequentFailures; // Сразу выходим в кулдаун, не ждем пока накопятся ошибки.
+                    // Ошибка не связана с сообщением — не тратим его попытку, просто возвращаем в очередь.
+                    await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, DateTimeOffset.UtcNow, nextMessage.Attempts);
                 }
                 else if (nextMessage.Attempts <= WorkerOptions.MaxAttempts && sendingResult.Repeatable)
                 {
