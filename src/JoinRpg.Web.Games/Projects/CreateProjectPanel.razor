@@ -1,3 +1,4 @@
+@using JoinRpg.Web.ProjectCommon.KogdaIgra
 @inject ILogger<CreateProjectPanel> logger
 @inject NavigationManager NavigationManager
 @inject IServiceProvider Services
@@ -53,6 +54,24 @@
                 <FormRowFor For="@(() => Model.CopySettings)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.CopySettings" />
                 </FormRowFor>
+                <FormRowFor For="@(() => Model.KogdaIgraChoice)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.KogdaIgraChoice" />
+                    <JoinAlert Variation="VariationStyleEnum.Info"><a href="https://kogda-igra.ru/" target="_blank" rel="noopener">kogda-igra.ru</a> — календарь ролевых игр от нашей команды.</JoinAlert>
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.KogdaIgraGameId)" hidden="@(Model.KogdaIgraChoice != KogdaIgraLinkChoiceViewModel.Linked)">
+                    <KogdaIgraGameSelector Multiple="false" FutureOnly="true"
+                        KogdaIgraIds="@(Model.KogdaIgraGameId is { } kiId ? [kiId] : [])"
+                        KogdaIgraIdsChanged="@(ids => Model.KogdaIgraGameId = ids.FirstOrDefault())" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.MessageForKogdaIgraEditors)" hidden="@(Model.KogdaIgraChoice != KogdaIgraLinkChoiceViewModel.NotOnKogdaIgra)">
+                    <JoinTextArea @bind-Value="Model.MessageForKogdaIgraEditors" Rows="4" />
+                </FormRowFor>
+                @if (Model.KogdaIgraChoice == KogdaIgraLinkChoiceViewModel.Trial && isProduction)
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Danger">
+                        Пробные проекты нельзя создавать на боевом сайте. Попробуйте на dev-версии сайта.
+                    </JoinAlert>
+                }
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Create" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
@@ -67,6 +86,7 @@
     private EditContext? editContext;
     private bool formInvalid = true;
     private bool creating = false;
+    private bool isProduction;
     private ValidationMessageStore? messageStore;
     private ProjectIdentification? created;
     private string? createErrorResult;
@@ -85,6 +105,11 @@
         messageStore = new(editContext);
 
         logger.LogInformation("Setup everything");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isProduction = await Services.GetRequiredService<IProjectCreateClient>().IsProductionEnvironment();
     }
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
@@ -107,6 +132,16 @@
             {
                 messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
             }
+        }
+
+        if (Model.KogdaIgraChoice == KogdaIgraLinkChoiceViewModel.Linked && Model.KogdaIgraGameId is null)
+        {
+            messageStore?.Add(() => Model.KogdaIgraGameId!, "Необходимо выбрать игру на КогдаИгре");
+        }
+
+        if (Model.KogdaIgraChoice == KogdaIgraLinkChoiceViewModel.Trial && isProduction)
+        {
+            messageStore?.Add(() => Model.KogdaIgraChoice, "Пробные проекты нельзя создавать на боевом сайте");
         }
     }
 

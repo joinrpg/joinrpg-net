@@ -24,6 +24,32 @@ public class ProjectCreateViewModel
 
     [Display(Name = "Глубина копирования")]
     public ProjectCopySettingsViewModel CopySettings { get; set; } = default;
+
+    [Required]
+    [Display(Name = "Есть ли это мероприятие на КогдаИгре?")]
+    public KogdaIgraLinkChoiceViewModel KogdaIgraChoice { get; set; }
+
+    [Display(Name = "Игра на КогдаИгре")]
+    public KogdaIgraIdentification? KogdaIgraGameId { get; set; }
+
+    [Display(Name = "Сообщение для редакторов КогдаИгры")]
+    [StringLength(1000)]
+    public string MessageForKogdaIgraEditors { get; set; } = "";
+}
+
+public enum KogdaIgraLinkChoiceViewModel
+{
+    [Display(Name = "Есть на КогдаИгре", Description = "Выберите игру из списка будущих игр КогдаИгры")]
+    Linked,
+
+    [Display(Name = "Игры нет на КогдаИгре", Description = "Опишите игру, чтобы редакторы КогдаИгры могли её завести")]
+    NotOnKogdaIgra,
+
+    [Display(Name = "Не должно быть на КогдаИгре", Description = "Игра идёт в рамках другого мероприятия или по другим причинам не должна попадать на КогдаИгру")]
+    ShouldNotBeOnKogdaIgra,
+
+    [Display(Name = "Пробный проект", Description = "Я завожу проект, чтобы попробовать")]
+    Trial,
 }
 
 public enum ProjectCopySettingsViewModel

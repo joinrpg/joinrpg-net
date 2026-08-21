@@ -109,7 +109,10 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
                 new CloneProjectRequest(
                     new ProjectName("Клон проекта"),
                     originalProjectId,
-                    ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates));
+                    ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates,
+                    KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                    null,
+                    null));
 
             return result switch
             {

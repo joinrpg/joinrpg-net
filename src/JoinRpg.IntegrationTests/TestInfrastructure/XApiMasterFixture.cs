@@ -70,7 +70,10 @@ public class XApiMasterFixture : IAsyncLifetime
                         new ProjectName("Тестовая Игра"),
                         projectType,
                         null,
-                        default));
+                        default,
+                        KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                        null,
+                        null));
 
                 return result switch
                 {
