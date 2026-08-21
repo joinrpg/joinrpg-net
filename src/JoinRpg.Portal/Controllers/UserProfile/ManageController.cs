@@ -39,9 +39,9 @@ public class ManageController(
         var user = await userManager.FindByIdAsync(userId.ToString());
         ManageMessageId? message;
         var result = await userManager.RemoveLoginAsync(user, loginProvider, providerKey);
-        await externalLoginProfileExtractor.CleanAfterLogin(user, loginProvider);
         if (result.Succeeded)
         {
+            await externalLoginProfileExtractor.CleanAfterLogin(user, loginProvider);
             if (user != null)
             {
                 await signInManager.SignInAsync(user, isPersistent: true);

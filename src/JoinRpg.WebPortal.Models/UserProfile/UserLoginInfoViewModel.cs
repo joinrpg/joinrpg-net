@@ -37,6 +37,11 @@ public record UserLoginInfoViewModel
     public required bool AllowLink { get; set; }
     public required bool AllowUnlink { get; set; }
     public required bool NeedToReLink { get; set; }
+
+    /// <summary>
+    /// True когда привязка есть, но отвязать её нельзя, т.к. это единственный способ входа в аккаунт.
+    /// </summary>
+    public required bool IsOnlyLoginMethod { get; set; }
 }
 
 public static class UserLoginInfoViewModelBuilder
@@ -55,10 +60,12 @@ public static class UserLoginInfoViewModelBuilder
         {
             if (TryGetExternalLoginByProviderId(user, provider.ProviderId) is UserExternalLogin login)
             {
+                var hasOtherLoginMethods = user.PasswordHash != null || user.ExternalLogins.Count > 1;
                 return new UserLoginInfoViewModel()
                 {
                     AllowLink = false,
-                    AllowUnlink = user.PasswordHash != null || user.ExternalLogins.Count > 1,
+                    AllowUnlink = true,
+                    IsOnlyLoginMethod = !hasOtherLoginMethods,
                     LoginProvider = provider,
                     ProviderKey = login.Key,
                     NeedToReLink = false,
@@ -71,6 +78,7 @@ public static class UserLoginInfoViewModelBuilder
                 {
                     AllowLink = idFromProfile is null,
                     AllowUnlink = false,
+                    IsOnlyLoginMethod = false,
                     LoginProvider = provider,
                     ProviderKey = null,
                     NeedToReLink = idFromProfile is not null,
