@@ -1,10 +1,6 @@
 @using JoinRpg.Markdown
-@using JoinRpg.DataModel
-@using JoinRpg.Domain
-@using JoinRpg.Web.Models
+@using JoinRpg.Web.Accommodation
 @using JoinRpg.Web.Models.Accommodation
-@using JoinRpg.Web.Models.CommonTypes
-@using System.Diagnostics.Contracts
 @model ClaimAccommodationViewModel
 
 <div class="panel panel-default" id="accommodationRequests">
@@ -14,9 +10,11 @@
     <div class="panel-body">
         @if (Model.AccommodationRequest == null)
         {
-            <div>
-                <span>Проживание не выбрано.</span>
-                <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">Выбрать&hellip;</button>
+            <div style="display: flex; flex-direction: row; align-items: center;">
+                <span style="margin-right: 1em;">Проживание не выбрано.</span>
+                <component type="typeof(AccommodationTypeSelector)"
+                           render-mode="WebAssemblyPrerendered"
+                           param-ClaimId="Model.ClaimIdentification" />
             </div>
         }
         else
@@ -29,7 +27,9 @@
                    "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
               </text>
             </span>
-                <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">Изменить&hellip;</button>
+            <component type="typeof(AccommodationTypeSelector)"
+                       render-mode="WebAssemblyPrerendered"
+                       param-ClaimId="Model.ClaimIdentification" />
           </div>
             <div class="help-block">
                 @Html.Raw(((JoinRpg.Common.PrimitiveTypes.MarkdownString?)Model.AccommodationRequest.AccommodationType.Description).ToHtmlString())
@@ -75,56 +75,18 @@
               </div>
             }
 
-            @if (!Model.PotentialNeighbors.Any() && Model.RoomFreeSpace > 0)
-            {
-              <div style="margin-top: 1em;">
-                  <b>Пока еще нельзя никого пригласить к совместному проживанию.</b>
-              </div>
-            }
+            <component type="typeof(AccommodationInviteControl)"
+                       render-mode="WebAssemblyPrerendered"
+                       param-ClaimId="Model.ClaimIdentification" />
           </div>
-
-            if (Model.PotentialNeighbors.Any() && Model.RoomFreeSpace > 0)
-          {
-                <form asp-action="Invite" asp-controller="Claim" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post" style="display: flex; flex-direction: row; align-items: center; margin-top: 0.5em;">
-                    @Html.Hidden("RequestId", Model.AccommodationRequest.Id)
-
-                  @{
-                      var alreadyGroupedNeighbors = Model.PotentialNeighbors
-                      .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
-                      .GroupBy(neighbor => neighbor.AccommodationRequestId!.Value)
-                      .Where(group => group.Count() <= Model.RoomFreeSpace)
-                      .Select(neighborGroup =>
-                        new JoinSelectListItem()
-                      {
-                        Value = -neighborGroup.Key,
-                        Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
-                        ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
-                        Subtext = neighborGroup.Count() > 1 ? "(группа проживающих)" : ""
-                      });
-
-                      var unGroupedNeighbors = Model.PotentialNeighbors
-                      .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId == null)
-                      .Select(neighbor =>
-                        new JoinSelectListItem()
-                      {
-                        Value = neighbor.ClaimId,
-                        Text = neighbor.UserName,
-                        ExtraSearch = neighbor.ClaimName,
-                        Subtext = "еще не выбрал тип проживания"
-                      });
-
-
-                      var selectableRows = alreadyGroupedNeighbors.Union(unGroupedNeighbors);
-                    @Html.SearchableDropdown("ReceiverClaimOrAccommodationRequest", selectableRows)
-
-                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#sendInvite" style="margin-left: 1em;">Пригласить</button>
-                    @Html.ConfirmDialog("sendInvite", "Отправить приглашение на совместное проживание?", "Подтвердите действие", "Да", "Нет")
-                      }
-                </form>
-            }
         }
     </div>
 </div>
-@await Html.PartialAsync("_ClaimIncomingInvites", Model)
-@await Html.PartialAsync("_ClaimOutgoingInvites", Model)
-@await Html.PartialAsync("_ClaimAccommodationTypeChange", Model)
+<component type="typeof(ClaimAccommodationInvites)"
+           render-mode="WebAssemblyPrerendered"
+           param-ClaimId="Model.ClaimIdentification"
+           param-Direction="InviteDirection.Incoming" />
+<component type="typeof(ClaimAccommodationInvites)"
+           render-mode="WebAssemblyPrerendered"
+           param-ClaimId="Model.ClaimIdentification"
+           param-Direction="InviteDirection.Outgoing" />

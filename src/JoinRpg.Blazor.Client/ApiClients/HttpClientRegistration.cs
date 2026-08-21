@@ -1,4 +1,5 @@
 using JoinRpg.Common.WebComponents;
+using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.CharacterGroups.GroupReport;
@@ -51,6 +52,8 @@ public static class HttpClientRegistration
                 .AddHttpClient<ICharacterGroupsClient, CharacterGroupsClient>()
                 .AddHttpClient<ICharactersClient, CharactersClient>()
                 .AddHttpClient<ICheckInClient, CheckInClient>()
+                .AddHttpClient<IAccommodationInviteClient, AccommodationInviteClient>()
+                .AddHttpClient<IAccommodationTypeClient, AccommodationInviteClient>()
                 .AddHttpClient<IClaimOperationClient, ClaimHttpClient>()
                 .AddHttpClient<IClaimListClient, ClaimHttpClient>()
                 .AddHttpClient<IUnifiedGridClient, ClaimHttpClient>()

@@ -1,27 +1,18 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Interfaces;
 
 
 namespace JoinRpg.Web.Models.Accommodation;
 
+/// <summary>
+/// Панель «Проживание» на странице заявки. Приглашения и выбор типа проживания живут
+/// в островах <c>JoinRpg.Web.Accommodation</c> и данных отсюда не берут.
+/// </summary>
 public class ClaimAccommodationViewModel
 {
-    public ClaimAccommodationViewModel(
-        IEnumerable<ProjectAccommodationType> availableAccommodationTypes,
-        IEnumerable<AccommodationPotentialNeighbors> potentialNeighbors,
-        IEnumerable<AccommodationInvite> incomingInvite,
-        IEnumerable<AccommodationInvite> outgoingInvite,
-        Claim claim,
-        ICurrentUserAccessor currentUser
-        )
+    public ClaimAccommodationViewModel(Claim claim)
     {
-        var hasMasterAccess = claim.HasMasterAccess(currentUser);
-        AvailableAccommodationTypes = availableAccommodationTypes.Where(a => a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId || hasMasterAccess).ToList();
-        PotentialNeighbors = potentialNeighbors;
         AccommodationRequest = claim.AccommodationRequest;
-        IncomingInvite = incomingInvite;
-        OutgoingInvite = outgoingInvite;
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
         Neighbours = claim.GetClaimNeighbours();
@@ -29,14 +20,10 @@ public class ClaimAccommodationViewModel
         RoomFreeSpace = claim.AccommodationRequest?.GetRoomFreeSpace() ?? 0;
     }
 
-
-
     public int ClaimId { get; }
     public int ProjectId { get; }
-    public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; }
-    public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; }
-    public IEnumerable<AccommodationInvite> IncomingInvite { get; }
-    public IEnumerable<AccommodationInvite> OutgoingInvite { get; }
+
+    public ClaimIdentification ClaimIdentification => new(ProjectId, ClaimId);
     public AccommodationRequest? AccommodationRequest { get; }
 
     public int RoomFreeSpace { get; }

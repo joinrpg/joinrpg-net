@@ -1,0 +1,62 @@
+@* Выбор цели приглашения к совместному проживанию: игрок либо целая группа проживающих. *@
+@inject IAccommodationInviteClient Client
+
+@if (model is null)
+{
+    <JoinLoadingMessage />
+}
+else if (!HasTargets)
+{
+    <div style="margin-top: 1em;">
+        <b>Пока еще нельзя никого пригласить к совместному проживанию.</b>
+    </div>
+}
+else
+{
+    <TypedSelector TKey="AccommodationTargetIdentification"
+                   TItem="AccommodationInviteTargetViewModel"
+                   Name="@Name"
+                   Items="@Targets"
+                   KeySelector="@(target => target.TargetId)"
+                   ToListItem="@(target => TypedSelectList.CreateItem(target.TargetId, target.Text, target.Subtext, target.ExtraSearch))"
+                   SelectedValues="@SelectedValues"
+                   SelectedValuesChanged="@HandleSelectedChanged"
+                   Multiple="false"
+                   AllowEmpty="true"
+                   EmptyText="@EmptyText" />
+}
+
+@code {
+    [PersistentState]
+    public AccommodationInviteTargetsViewModel? model { get; set; }
+
+    [Parameter, EditorRequired] public ClaimIdentification ClaimId { get; set; } = null!;
+
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>Выбранная цель. <c>null</c> — не выбрано ничего</summary>
+    [Parameter] public AccommodationTargetIdentification? Value { get; set; }
+
+    [Parameter] public EventCallback<AccommodationTargetIdentification?> ValueChanged { get; set; }
+
+    /// <summary>Сообщает наружу, есть ли вообще кого приглашать — чтобы спрятать кнопку</summary>
+    [Parameter] public EventCallback<bool> HasTargetsChanged { get; set; }
+
+    [Parameter] public string EmptyText { get; set; } = "(выберите, кого пригласить)";
+
+    private bool HasTargets => model!.RoomFreeSpace > 0 && model.Targets.Count > 0;
+
+    private AccommodationInviteTargetViewModel[] Targets => [.. model!.Targets];
+
+    private AccommodationTargetIdentification[] SelectedValues
+        => Value is null ? [] : [Value];
+
+    protected override async Task OnInitializedAsync()
+    {
+        model ??= await Client.GetInviteTargets(ClaimId);
+        await HasTargetsChanged.InvokeAsync(HasTargets);
+    }
+
+    private async Task HandleSelectedChanged(AccommodationTargetIdentification[] values)
+        => await ValueChanged.InvokeAsync(values.SingleOrDefault());
+}

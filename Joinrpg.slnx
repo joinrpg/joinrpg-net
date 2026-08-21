@@ -75,6 +75,7 @@
     <Project Path="src/JoinRpg.Services.Notifications.Tests/JoinRpg.Services.Notifications.Tests.csproj" />
     <Project Path="src/JoinRpg.TestHelpers/JoinRpg.TestHelpers.csproj" />
     <Project Path="src/JoinRpg.Web.CharacterGroups.Test/JoinRpg.Web.CharacterGroups.Test.csproj" Id="b5cb2aae-df4c-4a0c-9a0c-30be2c4840f6" />
+    <Project Path="src/JoinRpg.Web.Accommodation.Test/JoinRpg.Web.Accommodation.Test.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectMasterTools.Tests/JoinRpg.Web.ProjectMasterTools.Tests.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />
@@ -84,6 +85,7 @@
     <Project Path="src/JoinRpg.Web.AdminTools/JoinRpg.Web.AdminTools.csproj" />
     <Project Path="src/JoinRpg.Web.CharacterGroups/JoinRpg.Web.CharacterGroups.csproj" />
     <Project Path="src/JoinRpg.Web.CheckIn/JoinRpg.Web.CheckIn.csproj" />
+    <Project Path="src/JoinRpg.Web.Accommodation/JoinRpg.Web.Accommodation.csproj" />
     <Project Path="src/JoinRpg.Web.Claims/JoinRpg.Web.Claims.csproj" />
     <Project Path="src/JoinRpg.Web.Games/JoinRpg.Web.Games.csproj" />
     <Project Path="src/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />

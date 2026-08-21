@@ -25,10 +25,6 @@ public class ClaimController(
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterRepository characterRepository,
-    IAccommodationRequestRepository accommodationRequestRepository,
-    IAccommodationRepository accommodationRepository,
-    IAccommodationInviteService accommodationInviteService,
-    IAccommodationInviteRepository accommodationInviteRepository,
     IUserRepository UserRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
@@ -111,7 +107,7 @@ public class ClaimController(
         var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
 
-        var accommodationModel = claim.Project.Details.EnableAccommodation ? await ShowAccommodationModel(claim) : null;
+        var accommodationModel = claim.Project.Details.EnableAccommodation ? ShowAccommodationModel(claim) : null;
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
@@ -136,49 +132,7 @@ public class ClaimController(
         return View("Edit", claimViewModel);
     }
 
-    private async Task<ClaimAccommodationViewModel> ShowAccommodationModel(Claim claim)
-    {
-        var availableAccommodation = await
-            accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
-        var requestForAccommodation = await accommodationRequestRepository
-            .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
-        var acceptedRequest = requestForAccommodation
-            .FirstOrDefault(request => request.IsAccepted == InviteState.Accepted);
-
-        var incomingInvite = await accommodationInviteRepository.GetIncomingInviteForClaim(claim);
-        var outgoingInvite = await accommodationInviteRepository.GetOutgoingInviteForClaim(claim);
-
-        IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null;
-
-        if (acceptedRequest != null)
-        {
-            var sameRequest = (await
-                accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
-                    acceptedRequest.AccommodationTypeId).ConfigureAwait(false)).Where(c => c.ClaimId != claim.ClaimId)
-                .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType));
-            var noRequest = (await
-                accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
-            var currentNeighbors = (await
-               accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
-                    acceptedRequest.Id)).Select(c => c.ClaimId);
-            potentialNeighbors = sameRequest.Union(noRequest).Where(element => !currentNeighbors.Contains(element.ClaimId));
-
-            incomingInvite = incomingInvite.Where(i => !currentNeighbors.Contains(i.FromClaimId)).ToList();
-            outgoingInvite = outgoingInvite.Where(i => !currentNeighbors.Contains(i.ToClaimId)).ToList();
-        }
-        else
-        {
-            potentialNeighbors = [];
-        }
-
-        var claimAccommodationViewModel = new ClaimAccommodationViewModel(availableAccommodation,
-        potentialNeighbors,
-        incomingInvite,
-        outgoingInvite,
-        claim,
-        currentUserAccessor);
-        return claimAccommodationViewModel;
-    }
+    private static ClaimAccommodationViewModel ShowAccommodationModel(Claim claim) => new(claim);
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
@@ -604,41 +558,6 @@ public class ClaimController(
 
     [ValidateAntiForgeryToken]
     [HttpPost]
-    public async Task<ActionResult> SetAccommodationType(AccommodationRequestViewModel viewModel)
-    {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(viewModel.ProjectId, viewModel.ClaimId)).ConfigureAwait(false);
-        if (claim == null)
-        {
-            return NotFound();
-        }
-        var error = WithClaim(claim);
-        if (error != null)
-        {
-            return error;
-        }
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
-            }
-
-            _ = await claimService.SetAccommodationType(
-                viewModel.ProjectId,
-                viewModel.ClaimId,
-                viewModel.AccommodationTypeId)
-                .ConfigureAwait(false);
-
-            return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-        }
-        catch
-        {
-            return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
-        }
-    }
-
-    [ValidateAntiForgeryToken]
-    [HttpPost]
     public async Task<IActionResult> LeaveGroupAsync(int projectId, int claimId)
     {
         var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
@@ -666,78 +585,6 @@ public class ClaimController(
             return await Edit(projectId, claimId);
         }
     }
-
-    [ValidateAntiForgeryToken]
-    [HttpPost]
-    public async Task<ActionResult> Invite(InviteRequestViewModel viewModel)
-    {
-        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return await Edit(viewModel.ProjectId, viewModel.ClaimId);
-        }
-
-        _ = await accommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
-            viewModel.ClaimId,
-            viewModel.ReceiverClaimOrAccommodationRequest,
-            viewModel.RequestId);
-
-        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-    }
-
-    private async Task<IActionResult> InviteActionAsync(
-        int projectId,
-        int claimId,
-        int inviteId,
-        InviteState inviteState)
-    {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
-        if (claim is null)
-        {
-            return NotFound();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return await Edit(projectId, claimId);
-        }
-
-        switch (inviteState)
-        {
-            case InviteState.Canceled:
-            case InviteState.Declined:
-                await accommodationInviteService.CancelOrDeclineAccommodationInvite(
-                    inviteId,
-                    inviteState);
-                break;
-
-            case InviteState.Accepted:
-                await accommodationInviteService.AcceptAccommodationInvite(projectId, inviteId);
-                break;
-        }
-
-        return RedirectToAction("Edit", "Claim", new { projectId, claimId });
-    }
-
-    [ValidateAntiForgeryToken]
-    [HttpPost]
-    public Task<IActionResult> CancelInviteAsync(int projectId, int claimId, int inviteId)
-        => InviteActionAsync(projectId, claimId, inviteId, InviteState.Canceled);
-
-    [ValidateAntiForgeryToken]
-    [HttpPost]
-    public Task<IActionResult> DeclineInviteAsync(int projectId, int claimId, int inviteId)
-        => InviteActionAsync(projectId, claimId, inviteId, InviteState.Declined);
-
-    [ValidateAntiForgeryToken]
-    [HttpPost]
-    public Task<IActionResult> AcceptInviteAsync(int projectId, int claimId, int inviteId)
-        => InviteActionAsync(projectId, claimId, inviteId, InviteState.Accepted);
 
     [HttpGet]
     [Authorize]

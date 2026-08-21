@@ -1,0 +1,66 @@
+@* Приглашение к совместному проживанию. Раньше жило в Views/Claim/_ClaimAccommodation.cshtml. *@
+@inject IAccommodationInviteClient Client
+@inject NavigationManager NavigationManager
+
+@if (errorMessage is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+}
+
+<div style="display: flex; flex-direction: row; align-items: center; margin-top: 0.5em;">
+    <AccommodationInviteTargetSelector ClaimId="@ClaimId"
+                                       Value="@selectedTarget"
+                                       ValueChanged="@HandleTargetChanged"
+                                       HasTargetsChanged="@HandleHasTargetsChanged" />
+    @if (hasTargets)
+    {
+        <span style="margin-left: 1em;">
+            <JoinButton Label="Пригласить"
+                        Style="VariationStyleEnum.Success"
+                        Size="SizeStyleEnum.Small"
+                        Disabled="@(selectedTarget is null)"
+                        DisabledTitle="Сначала выберите, кого пригласить"
+                        AutoConfirm="true"
+                        AutoConfirmMessage="Отправить приглашение на совместное проживание?"
+                        OnClick="@HandleInviteClicked" />
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    private AccommodationTargetIdentification? selectedTarget;
+    private bool hasTargets;
+    private string? errorMessage;
+
+    private void HandleHasTargetsChanged(bool value) => hasTargets = value;
+
+    private void HandleTargetChanged(AccommodationTargetIdentification? target)
+    {
+        selectedTarget = target;
+        errorMessage = null;
+    }
+
+    private async Task HandleInviteClicked(ButtonClickEventArgs args)
+    {
+        if (selectedTarget is null)
+        {
+            args.ExitProgressState = true;
+            return;
+        }
+
+        try
+        {
+            await Client.CreateInvite(ClaimId, selectedTarget);
+            // Приглашение меняет обе панели «приглашения» на странице заявки, поэтому перезагружаем её целиком
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+            args.ExitProgressState = true;
+        }
+    }
+}
