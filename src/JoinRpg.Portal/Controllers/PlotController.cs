@@ -91,7 +91,7 @@ public class PlotController(
 
     #region Create elements
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int? plotFolderId, PlotElementIdentification? copyFrom)
+    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification? plotFolderId, PlotElementIdentification? copyFrom)
     {
         var folders = await plotRepository.GetPlots(projectId);
         if (folders.Count == 0)
@@ -110,7 +110,7 @@ public class PlotController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var selectedPlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId?.PlotFolderId;
+        var selectedPlotFolderId = plotFolderId ?? copyFrom?.PlotFolderId;
 
         return View(new PlotElementCreateViewModel()
         {
@@ -126,28 +126,26 @@ public class PlotController(
     }
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, int plotFolderId, string content,
+    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification plotFolderId, string content,
       string todoField, IReadOnlyCollection<CharacterIdentification>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
-        PlotFolderIdentification plotFolderId1 = new(projectId, plotFolderId);
-
         var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
         var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
         try
         {
             var versionId =
-                await plotService.CreatePlotElement(plotFolderId1, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType, isMasterOnly);
+                await plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType, isMasterOnly);
 
             if (publishNow && string.IsNullOrWhiteSpace(todoField) && (isMasterOnly || targetGroupIds.Count != 0 || targetCharIds.Count != 0))
             {
                 await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
             }
-            return ReturnToPlot(plotFolderId1);
+            return ReturnToPlot(plotFolderId);
         }
         catch (Exception exception)
         {
             AddModelException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(plotFolderId1);
+            var folder = await plotRepository.GetPlotFolderAsync(plotFolderId);
             if (folder == null)
             {
                 return NotFound();
@@ -216,7 +214,7 @@ public class PlotController(
         var viewModel = new PlotElementEditViewModel()
         {
             ProjectId = element.PlotFolder.ProjectId,
-            PlotFolderId = element.PlotFolderId,
+            PlotFolderId = new PlotFolderIdentification(projectId, element.PlotFolderId),
             PlotElementId = element.PlotElementId,
             PlotFolderName = folder.MasterTitle,
             ElementType = (PlotElementTypeView)element.ElementType,

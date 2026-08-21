@@ -13,7 +13,7 @@ public abstract class PlotElementViewModelBase
     public int ProjectId { get; set; }
 
     [Display(Name = "Сюжет", Description = "Сюжет выступает в роли папки для вводных")]
-    public int? PlotFolderId { get; set; }
+    public PlotFolderIdentification? PlotFolderId { get; set; }
 
     [Display(Name = "Текст"), Required]
     public string Content { get; set; } = "";
