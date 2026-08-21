@@ -1,5 +1,5 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Web.AdminTools.KogdaIgra;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
@@ -11,9 +11,6 @@ public class KogdaIgraSyncController(IKogdaIgraSyncClient client) : ControllerBa
 {
     [HttpGet]
     public async Task<SyncStatusViewModel> GetSyncStatus() => await client.GetSyncStatus();
-
-    [HttpGet]
-    public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates() => await client.GetKogdaIgraCandidates();
 
     [HttpGet]
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated() => await client.GetKogdaIgraNotUpdated();

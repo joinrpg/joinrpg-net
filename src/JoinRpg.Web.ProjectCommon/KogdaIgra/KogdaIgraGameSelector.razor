@@ -11,7 +11,7 @@
                SelectedValues="@KogdaIgraIds"
                SelectedValuesChanged="@KogdaIgraIdsChanged"
                SelectedItemsChanged="@KogdaIgrasChanged"
-               Multiple="true"
+               Multiple="@Multiple"
                />
 
 @code {
@@ -24,10 +24,18 @@
     [Parameter] public EventCallback<KogdaIgraShortViewModel[]> KogdaIgrasChanged { get; set; }
     [Parameter] public KogdaIgraShortViewModel[]? InitialList { get; set; }
 
+    /// <summary>Разрешить выбор нескольких игр (по умолчанию — как в админке).</summary>
+    [Parameter] public bool Multiple { get; set; } = true;
+
+    /// <summary>Загружать только будущие игры (используется формой создания проекта).</summary>
+    [Parameter] public bool FutureOnly { get; set; } = false;
+
     private KogdaIgraShortViewModel[]? itemModels;
 
     protected override async Task OnInitializedAsync()
     {
-        itemModels = InitialList ?? await client.GetKogdaIgraCandidates();
+        itemModels = InitialList ?? (FutureOnly
+            ? await client.GetFutureKogdaIgraCandidates()
+            : await client.GetKogdaIgraCandidates());
     }
 }

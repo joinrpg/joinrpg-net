@@ -1,4 +1,4 @@
-using JoinRpg.Web.Games.Projects;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.Web.AdminTools;

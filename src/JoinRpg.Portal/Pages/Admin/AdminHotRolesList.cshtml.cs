@@ -3,9 +3,9 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.AdminTools;
-using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

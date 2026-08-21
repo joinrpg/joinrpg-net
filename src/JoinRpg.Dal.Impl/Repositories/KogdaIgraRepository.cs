@@ -42,6 +42,18 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
         return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
     }
 
+    async Task<KogdaIgraListItem[]> IKogdaIgraRepository.GetActiveFuture()
+    {
+        var result = await GetSet()
+            .AsNoTracking()
+            .Where(ki => ki.Active)
+            .Where(ki => ki.Begin != null && ki.Begin.Value.Date >= DateTime.Today)
+            .Where(ki => ki.Name.Length > 0)
+            .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin })
+            .ToListAsync();
+        return [.. result.Select(x => new KogdaIgraListItem(new KogdaIgraIdentification(x.KogdaIgraGameId), x.Name, x.Begin?.Year))];
+    }
+
     public Task<int> GetNotUpdatedCount() => GetNotUpdatedQuery().CountAsync();
 
     async Task<ICollection<KogdaIgraGame>> IKogdaIgraRepository.GetByIds(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIdentifications)

@@ -1,8 +1,8 @@
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Services.Interfaces.Integrations.KogdaIgra;
-using JoinRpg.Web.AdminTools.KogdaIgra;
 using JoinRpg.Web.Games.Projects;
+using JoinRpg.Web.ProjectCommon.KogdaIgra;
 
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
@@ -17,6 +17,12 @@ internal class KogdaIgraSyncManager(
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
     {
         var items = await kogdaIgraRepository.GetActive();
+        return ToShortViewModels(items);
+    }
+
+    public async Task<KogdaIgraShortViewModel[]> GetFutureKogdaIgraCandidates()
+    {
+        var items = await kogdaIgraRepository.GetActiveFuture();
         return ToShortViewModels(items);
     }
 
