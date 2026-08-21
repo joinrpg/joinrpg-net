@@ -22,7 +22,7 @@
     <JoinAlert Variation="VariationStyleEnum.Danger">
         Проект был создан, вы можете перейти на <a href="/@(created.Value)/home">страницу проекта</a>.
         При настройке проекта согласно вашим запросам произошла ошибка. Обратитесь в техподдержку и/или проверьте настройки проекта вручную.
-        <br> 
+        <br>
         @createErrorResult
     </JoinAlert>
     return;
@@ -36,7 +36,7 @@
         <EditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
                 <ValidationSummary />
-                <DataAnnotationsValidator />    
+                <DataAnnotationsValidator />
                 <FormRowFor For="@(() => Model.ProjectName)">
                     <JoinTextInput @bind-Value="Model.ProjectName" />
                 </FormRowFor>
