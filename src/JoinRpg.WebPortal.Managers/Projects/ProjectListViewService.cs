@@ -18,7 +18,9 @@ internal class ProjectListViewService(
         ProjectListSpecification spec = GetSpecification(currentUserAccessor.UserIdentificationOrDefault, projectSelectionCriteria);
 
         var projects = await projectRepository.GetProjectsBySpecification(spec);
-        return [.. projects.Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName))];
+        return [.. projects
+            .Select(p => new ProjectLinkViewModel(p.ProjectId, p.ProjectName))
+            .OrderBy(p => p.ProjectName)];
     }
 
     async Task<List<ProjectAdminListItemViewModel>> IProjectListForAdminClient.GetProjectsForAdmin(ProjectSelectionCriteria projectSelectionCriteria)
