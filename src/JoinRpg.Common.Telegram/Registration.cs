@@ -24,8 +24,9 @@ public static class Registration
             })
             .AddSingleton(services =>
             {
-                var options = services.GetRequiredService<IOptions<TelegramLoginOptions>>();
-                return new TelegramBotClient($"{options.Value.BotId}:{options.Value.BotSecret}");
+                var options = services.GetRequiredService<IOptions<TelegramLoginOptions>>().Value;
+                var httpClient = TelegramHttpClientFactory.Create(options.Proxy);
+                return new TelegramBotClient($"{options.BotId}:{options.BotSecret}", httpClient);
             });
 
 
