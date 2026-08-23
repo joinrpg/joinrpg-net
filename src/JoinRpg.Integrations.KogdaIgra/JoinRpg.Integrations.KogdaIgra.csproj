@@ -9,7 +9,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>

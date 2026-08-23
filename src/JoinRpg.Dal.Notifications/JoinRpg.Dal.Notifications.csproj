@@ -8,7 +8,7 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" />
-    <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />
   </ItemGroup>
 

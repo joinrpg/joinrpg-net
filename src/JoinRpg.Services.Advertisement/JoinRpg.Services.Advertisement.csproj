@@ -5,7 +5,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
