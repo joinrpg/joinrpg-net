@@ -74,7 +74,10 @@ public static class TestUserProjectHelpers
                         new ProjectName(projectName),
                         projectType,
                         null,
-                        default));
+                        default,
+                        KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                        null,
+                        null));
 
                 return result switch
                 {

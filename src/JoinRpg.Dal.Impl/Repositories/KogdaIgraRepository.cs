@@ -47,7 +47,7 @@ internal class KogdaIgraRepository(MyDbContext Ctx) : IKogdaIgraRepository
         var result = await GetSet()
             .AsNoTracking()
             .Where(ki => ki.Active)
-            .Where(ki => ki.Begin != null && ki.Begin.Value.Date >= DateTime.Today)
+            .Where(ki => ki.Begin != null && ki.Begin.Value >= DateTime.Today)
             .Where(ki => ki.Name.Length > 0)
             .Select(ki => new { ki.KogdaIgraGameId, ki.Name, ki.Begin })
             .ToListAsync();

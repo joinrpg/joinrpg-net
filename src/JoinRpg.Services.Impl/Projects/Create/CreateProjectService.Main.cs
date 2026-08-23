@@ -1,5 +1,6 @@
 using JoinRpg.Services.Impl.Projects.Create;
 using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 
@@ -14,7 +15,9 @@ internal partial class CreateProjectService
     IProjectRepository projectRepository,
     IProjectRolesListService projectRolesListService,
     ILogger<CreateProjectService> logger,
-    CloneProjectHelperFactory cloneProjectHelperFactory
+    CloneProjectHelperFactory cloneProjectHelperFactory,
+    IProjectPropsService projectPropsService,
+    IAdminNotificationService adminNotificationService
     ) : ICreateProjectService
 {
 
@@ -37,6 +40,15 @@ internal partial class CreateProjectService
         }
 
         var projectId = new ProjectIdentification(project.ProjectId);
+
+        try
+        {
+            await HandleKogdaIgraChoice(request, projectId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при обработке статуса КогдаИгры");
+        }
 
         if (request is CloneProjectRequest cloneRequest)
         {

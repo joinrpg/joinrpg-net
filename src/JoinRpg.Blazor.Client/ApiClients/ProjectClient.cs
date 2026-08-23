@@ -25,6 +25,9 @@ public class ProjectCreateClient(HttpClient httpClient) : IProjectCreateClient
         var response = await httpClient.PostAsJsonAsync("/webapi/project-create/create", model);
         return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<ProjectCreateResultViewModel>() ?? throw new Exception("Couldn't get result from server");
     }
+
+    public async Task<bool> IsProductionEnvironment()
+        => await httpClient.GetFromJsonAsync<bool>("/webapi/project-create/IsProductionEnvironment");
 }
 
 public class ProjectSettingsClient(HttpClient httpClient) : IProjectSettingsClient
