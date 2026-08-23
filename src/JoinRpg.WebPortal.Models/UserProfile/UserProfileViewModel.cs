@@ -76,10 +76,6 @@ public class UserProfileDetailsViewModel
     public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, ICurrentUserAccessor currentUserAccessor)
     : this(user, user.GetAccess(currentProject), currentUserAccessor.IsAdmin) { }
 
-    [Obsolete("Передайте сюда ICurrentUserAccessor или UserInfo")]
-    public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject)
-    : this(user, user.GetAccess(currentProject), false) { }
-
     public UserProfileDetailsViewModel(UserInfoHeader user)
     {
         User = UserLinks.Create(user);
