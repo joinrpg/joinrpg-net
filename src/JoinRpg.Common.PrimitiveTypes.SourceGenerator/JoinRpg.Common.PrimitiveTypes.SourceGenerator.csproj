@@ -17,6 +17,8 @@
     <Description>Source generator for typed entity IDs</Description>
     <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
+    <!-- Аналайзер-пакет намеренно не кладёт сборку в lib/ref (IncludeBuildOutput=false), NU5128 — ложное срабатывание -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
