@@ -11,5 +11,7 @@ public class TelegramLoginOptions
     /// </summary>
     public TimeSpan AllowedTimeOffset { get; set; } = TimeSpan.FromSeconds(30);
 
+    public TelegramProxyOptions? Proxy { get; set; }
+
     public bool Enabled => !string.IsNullOrWhiteSpace(BotName);
 }
