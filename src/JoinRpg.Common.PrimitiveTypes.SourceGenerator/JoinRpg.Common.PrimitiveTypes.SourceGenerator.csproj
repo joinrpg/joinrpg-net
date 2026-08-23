@@ -17,11 +17,22 @@
     <Description>Source generator for typed entity IDs</Description>
     <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
+    <!--
+      Анализатор грузится в компилятор потребителя как есть, версии не совместимы вперёд: если
+      Microsoft.CodeAnalysis.CSharp здесь новее, чем компилятор потребителя, хост тихо отказывается
+      загружать анализатор (CS9057 — предупреждение, не ошибка) и весь сгенерированный код исчезает,
+      что дальше валится совершенно непонятными ошибками в другом месте. Поэтому эта версия
+      НЕ должна следовать за общим Directory.Packages.props (там 5.9.0, актуальная для остального
+      решения) — фиксируем низкий потолок, достаточный только для используемых API
+      (SyntaxValueProvider.ForAttributeWithMetadataName появился в 4.3.0), чтобы пакет грузился на
+      максимально широком диапазоне SDK у потребителей.
+    -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
