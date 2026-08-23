@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
-    <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

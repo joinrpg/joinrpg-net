@@ -2,7 +2,7 @@
   <PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Notifications\JoinRpg.Services.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.Accommodation\JoinRpg.Web.Accommodation.csproj" />

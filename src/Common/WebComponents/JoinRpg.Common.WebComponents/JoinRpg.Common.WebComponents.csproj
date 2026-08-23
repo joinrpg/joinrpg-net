@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
