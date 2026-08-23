@@ -1,25 +1,18 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models.CheckIn;
 
 public class SecondRoleViewModel
 {
-    public SecondRoleViewModel(Claim claim, IEnumerable<Character> characters, UserInfo currentUser, ProjectInfo projectInfo)
+    public SecondRoleViewModel(Claim claim, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, UserInfo playerUserInfo)
     {
         Master = claim.ResponsibleMasterUser;
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.None, projectInfo);
-        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), currentUser);
+        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserIdentification, CharacterNavigationPage.None, projectInfo);
+        PlayerDetails = new UserProfileDetailsViewModel(playerUserInfo, projectInfo, currentUser);
         ClaimId = claim.ClaimId;
-        Characters =
-          characters.Select(
-            c => new CharacterListItemViewModel()
-            {
-                Id = c.CharacterId,
-                Name = c.CharacterName,
-                Master = c.GetResponsibleMaster(projectInfo).Name.DisplayName,
-            });
+        ProjectId = projectInfo.ProjectId.Value;
     }
 
     public SecondRoleViewModel() { } //For submit
@@ -33,14 +26,5 @@ public class SecondRoleViewModel
     public int ProjectId { get; set; }
 
     [Display(Name = "Новая роль")]
-    public int CharacterId { get; set; }
-
-    public IEnumerable<CharacterListItemViewModel> Characters { get; set; }
-
-    public class CharacterListItemViewModel
-    {
-        public int Id { get; set; }
-        public required string Name { get; set; }
-        public required string Master { get; set; }
-    }
+    public CharacterIdentification CharacterId { get; set; }
 }
