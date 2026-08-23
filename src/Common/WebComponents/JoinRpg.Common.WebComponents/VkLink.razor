@@ -1,9 +1,14 @@
-@if (Contact is not null)
+@{
+    var effectiveSegment = Link ?? (Contact is null ? null : $"id{Contact.Id}");
+}
+@if (effectiveSegment is not null)
 {
-    <ContactLink Prefix="ВК:" Href="@($"https://vk.com/{Contact.Value}")">@Contact.Value</ContactLink>
+    <ContactLink Prefix="ВК:" Href="@($"https://vk.com/{effectiveSegment}")">@effectiveSegment</ContactLink>
 }
 
 @code {
     [Parameter]
-    public VkId? Contact { get; set; }
+    public VkSocialLink? Contact { get; set; }
+    [Parameter]
+    public string? Link { get; set; }
 }

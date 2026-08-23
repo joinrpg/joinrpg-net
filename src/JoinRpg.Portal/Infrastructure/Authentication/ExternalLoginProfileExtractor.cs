@@ -17,11 +17,11 @@ public class ExternalLoginProfileExtractor(IUserService userService)
         UserFullName userFullName = TryGetUserName(loginInfo);
         await userService.SetNameIfNotSetWithoutAccessChecks(user.Id, userFullName);
 
-        if (TryGetVkId(loginInfo) is VkId vkId)
+        if (TryGetVkId(loginInfo) is VkSocialLink vk)
         {
             var avatar = AvatarInfo.FromOptional(loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl));
 
-            await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vkId, avatar);
+            await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vk, avatar);
         }
     }
 
@@ -38,9 +38,9 @@ public class ExternalLoginProfileExtractor(IUserService userService)
 
         var avatar = AvatarInfo.FromOptional(loginInfo.GetValueOrDefault("photo_url"));
 
-        var telegramId = new TelegramId(long.Parse(loginInfo["id"]), prefferedName);
+        var telegram = new TelegramSocialLink(new TelegramChatId(long.Parse(loginInfo["id"])), prefferedName, isVerified: true);
 
-        await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, telegramId, avatar);
+        await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, telegram, avatar);
     }
 
     private static UserFullName TryGetUserName(ExternalLoginInfo loginInfo)
@@ -52,11 +52,12 @@ public class ExternalLoginProfileExtractor(IUserService userService)
         return new UserFullName(prefferedName, bornName, surName, FatherName: null);
     }
 
-    private static VkId? TryGetVkId(ExternalLoginInfo loginInfo)
+    private static VkSocialLink? TryGetVkId(ExternalLoginInfo loginInfo)
     {
         return loginInfo.LoginProvider == ProviderDescViewModel.Vk.ProviderId
             && loginInfo.Principal.FindFirstValue(ClaimTypes.NameIdentifier) is string id
-            ? new VkId(id)
+            && long.TryParse(id, out var vkId)
+            ? new VkSocialLink(vkId, isVerified: true)
             : null;
     }
 

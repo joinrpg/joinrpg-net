@@ -17,7 +17,7 @@ public class TelegramNotificationServiceImplTimeoutTest
         var botClient = new TelegramBotClient("123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11", httpClient);
         var service = new TelegramNotificationServiceImpl(botClient, NullLogger<TelegramNotificationServiceImpl>.Instance);
 
-        var result = await service.SendTelegramNotification(new TelegramId(1, null), new TelegramHtmlString("test"));
+        var result = await service.SendTelegramNotification(new TelegramChatId(1), new TelegramHtmlString("test"));
 
         result.ShouldBe(SendingResult.UserRelatedFailure());
     }
@@ -30,7 +30,7 @@ public class TelegramNotificationServiceImplTimeoutTest
         var botClient = new TelegramBotClient("123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11", httpClient);
         var service = new TelegramNotificationServiceImpl(botClient, NullLogger<TelegramNotificationServiceImpl>.Instance);
 
-        var result = await service.SendTelegramNotification(new TelegramId(1, null), new TelegramHtmlString("test"));
+        var result = await service.SendTelegramNotification(new TelegramChatId(1), new TelegramHtmlString("test"));
 
         result.ShouldBe(SendingResult.CommonFailure());
     }
@@ -45,7 +45,7 @@ public class TelegramNotificationServiceImplTimeoutTest
         var botClient = new TelegramBotClient("123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11", httpClient);
         var service = new TelegramNotificationServiceImpl(botClient, NullLogger<TelegramNotificationServiceImpl>.Instance);
 
-        var result = await service.SendTelegramNotification(new TelegramId(1, null), new TelegramHtmlString("test"));
+        var result = await service.SendTelegramNotification(new TelegramChatId(1), new TelegramHtmlString("test"));
 
         result.ShouldBe(SendingResult.CommonFailure());
     }

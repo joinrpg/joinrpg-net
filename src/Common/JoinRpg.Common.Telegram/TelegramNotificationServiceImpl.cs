@@ -23,26 +23,26 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
 
     public async Task<string?> GetMyUserName(CancellationToken cancellationToken) => (await client.GetMe(cancellationToken)).Username;
 
-    public async Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
+    public async Task<SendingResult> SendTelegramNotification(TelegramChatId chatId, TelegramHtmlString contents)
     {
         var sw = Stopwatch.StartNew();
         try
         {
-            _ = await client.SendMessage(new ChatId(telegramId.Id), contents.SanitizeHtml(TelegramMaxMessageLength), ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
-            logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}", telegramId);
+            _ = await client.SendMessage(new ChatId(chatId.Value), contents.SanitizeHtml(TelegramMaxMessageLength), ParseMode.Html, linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true });
+            logger.LogInformation("Отправлено сообщение пользователю в телеграм {chatId}", chatId);
             return SendingResult.Success();
         }
         catch (ApiRequestException exception) when (exception.Message.Contains("bot was blocked by the user", StringComparison.OrdinalIgnoreCase))
         {
             CountError("blocked");
-            logger.LogWarning("Пользователь {telegramId} заблокировал бота", telegramId);
+            logger.LogWarning("Пользователь {chatId} заблокировал бота", chatId);
             return SendingResult.UserRelatedFailure();
         }
         catch (ApiRequestException exception)
         {
             CountError("api");
-            logger.LogWarning(exception, "Ошибка при отправке сообщения в телеграм {telegramId}. Error code={telegramErrorCode}, Параметры={telegramResponseParameters}",
-                telegramId,
+            logger.LogWarning(exception, "Ошибка при отправке сообщения в телеграм {chatId}. Error code={telegramErrorCode}, Параметры={telegramResponseParameters}",
+                chatId,
                 exception.ErrorCode,
                 exception.Parameters);
             throw;
@@ -50,13 +50,13 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
         catch (Exception exception) when (HasTimeoutInChain(exception))
         {
             CountError("timeout");
-            logger.LogWarning(exception, "Таймаут при отправке сообщения в телеграм {telegramId}", telegramId);
+            logger.LogWarning(exception, "Таймаут при отправке сообщения в телеграм {chatId}", chatId);
             return SendingResult.CommonFailure();
         }
         catch (Exception exception)
         {
             CountError("other");
-            logger.LogWarning(exception, "Ошибка при отправке сообщения в телеграм {telegramId}", telegramId);
+            logger.LogWarning(exception, "Ошибка при отправке сообщения в телеграм {chatId}", chatId);
             throw;
         }
         finally
@@ -83,9 +83,9 @@ internal class StubTelegramNotificationService(ILogger<StubTelegramNotificationS
 {
     public Task<string?> GetMyUserName(CancellationToken cancellationToken) => Task.FromResult<string?>(null);
 
-    public Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
+    public Task<SendingResult> SendTelegramNotification(TelegramChatId chatId, TelegramHtmlString contents)
     {
-        logger.LogInformation("Отправлено сообщение пользователю в телеграм {telegramId}: {message}", telegramId, contents);
+        logger.LogInformation("Отправлено сообщение пользователю в телеграм {chatId}: {message}", chatId, contents);
         return Task.FromResult(SendingResult.Success());
     }
 }

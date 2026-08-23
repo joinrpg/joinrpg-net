@@ -4,7 +4,7 @@ using JoinRpg.Markdown;
 namespace JoinRpg.Services.Advertisement.Sending;
 
 internal class TelegramSingleHotRoleSender(
-    TelegramId chatId,
+    TelegramChatId chatId,
     ITelegramNotificationService telegramNotificationService,
     KogdaIgraOptions kogdaIgraOptions) : ISingleHotRoleSender
 {

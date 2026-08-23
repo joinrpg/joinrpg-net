@@ -267,17 +267,18 @@ internal static class ProjectRoleGridViewModelBuilder
             return null;
         }
 
-        // Telegram строим как канонический TelegramId (числовой Id из привязанного логина +
+        // Telegram строим как канонический TelegramSocialLink (числовой Id из привязанного логина +
         // @username), как в UserExtensions.GetUserInfo. Это переиспользует компонент TelegramLink.
-        var telegram = TelegramId.FromOptional(
+        var telegram = TelegramSocialLink.FromOptional(
             player.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key,
-            PrefferedName.FromOptional(player.Extra?.Telegram));
+            PrefferedName.FromOptional(player.Extra?.Telegram),
+            isVerified: true);
 
         // Email — непубличный контакт, показывается только в режиме All.
-        // VkVerified не проверяем (как в markdown-рендерере).
+        // VkVerified не проверяем для решения о показе (как в markdown-рендерере).
         return new UserContacts(
             contactsColumn == ProjectRolesListVisibilityMode.All ? Email.FromOptional(player.Email) : null,
-            VkId.FromOptional(player.Extra?.Vk),
+            VkSocialLink.FromOptional(player.Extra?.Vk, player.Extra?.VkVerified ?? false),
             telegram,
             LiveJournalId.FromOptional(player.Extra?.Livejournal));
     }

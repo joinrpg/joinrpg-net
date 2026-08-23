@@ -103,9 +103,9 @@ public partial class NotificationServiceImpl(
     private IEnumerable<NotificationAddress> GetChannels(UserInfo user)
     {
         yield return NotificationAddress.Ui();
-        if (user.Social.TelegramId is not null)
+        if (user.Social.Telegram is not null)
         {
-            yield return new NotificationAddress(user.Social.TelegramId);
+            yield return new NotificationAddress(user.Social.Telegram.ChatId);
         }
 
         if (user.Email is not null)

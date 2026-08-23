@@ -7,7 +7,7 @@ public class UserIdentifiersParseTest
     [InlineData("TelegramId(1)")]
     public void TelegramShouldParseTo1(string val)
     {
-        TelegramId.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.Id.ShouldBe(1);
     }
 
@@ -15,9 +15,9 @@ public class UserIdentifiersParseTest
     [InlineData("TelegramId(1, leotsarev)")]
     public void TelegramShouldParseTo1_andusername(string val)
     {
-        TelegramId.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
+        TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.Id.ShouldBe(1);
-        parseResult.UserName.ShouldBe(new PrefferedName("leotsarev"));
+        parseResult.PrettyName.ShouldBe(new PrefferedName("leotsarev"));
     }
 
 
@@ -27,14 +27,14 @@ public class UserIdentifiersParseTest
     [InlineData("Pr1")]
     public void TelegramFailToParse(string val)
     {
-        TelegramId.TryParse(val, provider: null, out var _).ShouldBeFalse();
+        TelegramSocialLink.TryParse(val, provider: null, out var _).ShouldBeFalse();
     }
 
     [Fact]
     public void TelegramShouldRoundTrip()
     {
-        var val = new TelegramId(12, new PrefferedName("leotsarev"));
-        TelegramId.TryParse(val.ToString(), provider: null, out var parseResult).ShouldBeTrue();
+        var val = new TelegramSocialLink(new TelegramChatId(12), new PrefferedName("leotsarev"));
+        TelegramSocialLink.TryParse(val.ToString(), provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(val);
     }
 }

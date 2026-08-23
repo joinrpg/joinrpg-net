@@ -111,7 +111,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         var results = await userQuery.ToListAsync();
 
         return [.. results.Select(result => {
-             var telegramId = TelegramId.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram));
+             var telegram = TelegramSocialLink.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram), isVerified: true);
+             var vk = VkSocialLink.FromOptional(result.Vk, result.VkVerified);
 
         var userFullName =
             new UserFullName(
@@ -121,7 +122,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             FatherName.FromOptional(result.FatherName));
         return new UserInfo(
             new UserIdentification(result.UserId),
-            new UserSocialNetworks(telegramId, result.Livejournal, result.AllRpgInfoId, result.Vk, result.VkVerified, result.SocialNetworksAccess),
+            new UserSocialNetworks(telegram, result.Livejournal, result.AllRpgInfoId, vk, result.SocialNetworksAccess),
             result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
             result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),

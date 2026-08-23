@@ -3,7 +3,7 @@ namespace JoinRpg.DomainTypes.Advertisement;
 public abstract record AdvertisementChannelSettings;
 
 /// <summary>
-/// Переиспользуем <see cref="TelegramId"/> вместо отдельного типа chat id — Bot API принимает
-/// те же числовые идентификаторы, что и для личных чатов.
+/// <see cref="TelegramChatId"/> — единый числовой идентификатор адресата в Telegram Bot API: тот
+/// же тип, что и для личных чатов, отдельного типа chat id для каналов/групп не нужно.
 /// </summary>
-public record TelegramChannelSettings(TelegramId ChatId) : AdvertisementChannelSettings;
+public record TelegramChannelSettings(TelegramChatId ChatId) : AdvertisementChannelSettings;
