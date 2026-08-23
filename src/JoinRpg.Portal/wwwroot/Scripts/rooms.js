@@ -478,7 +478,7 @@ $(function()
             + req.PaymentStatusCssClass
             + '" title="'
             + req.PaymentStatusTitle
-            + '"><i class="glyphicon glyphicon-thumbs-up"></i>'
+            + '">' + joinIcon("FeePaid")
             + '<span class="">'
             + (req.FeeToPay > 0 ? -req.FeeToPay + " ₽" : "")
             + "</span></span>";

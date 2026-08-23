@@ -34,6 +34,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             return null;
         }
 
+
         var attrData = ctx.Attributes.FirstOrDefault();
         if (attrData == null)
         {
@@ -43,6 +44,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         // Извлекаем свойства атрибута
         string? shortName = null;
         var additionalPrefixes = new List<string>();
+        bool allowNonPositive = false;
 
         foreach (var namedArg in attrData.NamedArguments)
         {
@@ -59,6 +61,10 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
                         additionalPrefixes.Add(s);
                     }
                 }
+            }
+            else if (namedArg.Key == "AllowNonPositive" && namedArg.Value.Value is bool anp)
+            {
+                allowNonPositive = anp;
             }
         }
 
@@ -134,17 +140,27 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             ? null
             : typeSymbol.ContainingNamespace.ToDisplayString();
 
-        // Последний int-параметр (для IComparable и Id)
-        string? lastIntParamName = null;
+        // long поддерживается только для простого случая: единственный параметр без вложенности.
+        // Комбинации long с несколькими leaf-ами не поддерживаем — IdentificationParseHelper.SplitIdentifier
+        // делит и по '-', что для отрицательного long-листа среди нескольких частей даёт неверный результат.
+        if (parameters.Any(p => p.Kind == ParamKind.Long) && parameters.Count != 1)
+        {
+            return null;
+        }
+
+        // Последний числовой (int/long) параметр (для IComparable и Id)
+        string? lastNumericParamName = null;
+        string numericTypeKeyword = "int";
         for (int i = parameters.Count - 1; i >= 0; i--)
         {
-            if (parameters[i].Kind == ParamKind.Int)
+            if (parameters[i].Kind == ParamKind.Int || parameters[i].Kind == ParamKind.Long)
             {
-                lastIntParamName = parameters[i].Name;
+                lastNumericParamName = parameters[i].Name;
+                numericTypeKeyword = parameters[i].Kind == ParamKind.Long ? "long" : "int";
                 break;
             }
         }
-        if (lastIntParamName == null)
+        if (lastNumericParamName == null)
         {
             return null;
         }
@@ -163,7 +179,9 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             AdditionalPrefixes: additionalPrefixes.ToArray(),
             SkipComparable: HasHandWrittenCompareTo(typeSymbol),
             FlatLeafExpressions: flatLeaves,
-            LastIntParamName: lastIntParamName,
+            LastIntParamName: lastNumericParamName,
+            NumericTypeKeyword: numericTypeKeyword,
+            AllowNonPositive: allowNonPositive,
             PrimaryParams: primaryParams,
             NestedProperties: nestedProperties
         );
@@ -268,6 +286,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         switch (kind)
         {
             case ParamKind.Int:
+            case ParamKind.Long:
                 return new List<string> { accessor };
             case ParamKind.NestedEntityId:
                 return ExpandNestedType(accessor, type, compilation);
@@ -340,6 +359,11 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             return ParamKind.Int;
         }
 
+        if (type.SpecialType == SpecialType.System_Int64)
+        {
+            return ParamKind.Long;
+        }
+
         // Тип помечен [TypedEntityId] — это вложенный типизированный Id
         if (type.GetAttributes().Any(a => a.AttributeClass?.Name == "TypedEntityIdAttribute"))
         {
@@ -375,6 +399,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         return param.Kind switch
         {
             ParamKind.Int => leafParamNames[0],
+            ParamKind.Long => leafParamNames[0],
             // Для NestedEntityId: new NT(leaf1, leaf2, ...) — C# выбирает нужный конструктор по типу leaf1
             ParamKind.NestedEntityId => $"new {param.TypeName}({string.Join(", ", leafParamNames)})",
             _ => "/* Ошибка: неизвестный тип параметра */"
@@ -414,13 +439,13 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine("{");
 
         // Свойство Id — генерируется безусловно для всех TypedEntityId
-        sb.AppendLine($"    public int Id => {info.LastIntParamName};");
+        sb.AppendLine($"    public {info.NumericTypeKeyword} Id => {info.LastIntParamName};");
         sb.AppendLine();
 
-        // Неявное преобразование к int — только для не составных id (ровно одно свойство)
+        // Неявное преобразование к числовому типу — только для не составных id (ровно одно свойство)
         if (info.PrimaryParams.Count == 1)
         {
-            sb.AppendLine($"    public static implicit operator int({info.TypeName} self) => self.{info.LastIntParamName};");
+            sb.AppendLine($"    public static implicit operator {info.NumericTypeKeyword}({info.TypeName} self) => self.{info.LastIntParamName};");
             sb.AppendLine();
         }
 
@@ -440,7 +465,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         if (!info.SkipComparable)
         {
             sb.AppendLine($"    public int CompareTo({info.TypeName}? other)");
-            sb.AppendLine($"        => Comparer<int>.Default.Compare({info.LastIntParamName}, other?.{info.LastIntParamName} ?? -1);");
+            sb.AppendLine($"        => Comparer<{info.NumericTypeKeyword}>.Default.Compare({info.LastIntParamName}, other?.{info.LastIntParamName} ?? -1);");
             sb.AppendLine();
         }
 
@@ -523,6 +548,12 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
                 nullChecks.Add($"{paramNameLower} is not null");
                 ctorArgs.Add($"{paramNameLower}.Value");
             }
+            else if (param.Kind == ParamKind.Long)
+            {
+                optParams.Add($"long? {paramNameLower}");
+                nullChecks.Add($"{paramNameLower} is not null");
+                ctorArgs.Add($"{paramNameLower}.Value");
+            }
             else
             {
                 // NestedEntityId — reference type, nullable через ?
@@ -559,7 +590,12 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         string tryParseCall;
         string constructorArgs;
 
-        if (leafCount == 1)
+        if (leafCount == 1 && info.NumericTypeKeyword == "long")
+        {
+            tryParseCall = $"IdentificationParseHelper.TryParse1Long(value, provider, {(info.AllowNonPositive ? "true" : "false")}, [{prefixesStr}])";
+            constructorArgs = "parsed.Value";
+        }
+        else if (leafCount == 1)
         {
             tryParseCall = $"IdentificationParseHelper.TryParse1(value, provider, [{prefixesStr}])";
             constructorArgs = "parsed.Value";
@@ -608,7 +644,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine("    }");
     }
 
-    private enum ParamKind { Int, NestedEntityId, Unknown }
+    private enum ParamKind { Int, Long, NestedEntityId, Unknown }
 
     private sealed record ParameterInfo(string Name, INamedTypeSymbol TypeSymbol, ParamKind Kind);
 
@@ -634,6 +670,8 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         bool SkipComparable,
         List<string> FlatLeafExpressions,
         string LastIntParamName,
+        string NumericTypeKeyword,
+        bool AllowNonPositive,
         IReadOnlyList<PrimaryParamInfo> PrimaryParams,
         IReadOnlyList<NestedPropertyInfo> NestedProperties
     );

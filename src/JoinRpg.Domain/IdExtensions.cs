@@ -18,6 +18,7 @@ public static class IdExtensions
 
     public static ForumThreadIdentification GetId(this ForumThread entity) => new(entity.ProjectId, entity.ForumThreadId);
     public static CharacterIdentification GetCharacterId(this Claim group) => new(group.ProjectId, group.CharacterId);
+    public static UserIdentification GetPlayerId(this Claim group) => new(group.PlayerUserId);
 
     public static ProjectFieldIdentification GetId(this ProjectField pf) => new ProjectFieldIdentification(pf.ProjectId, pf.ProjectFieldId);
     public static ProjectFieldVariantIdentification GetId(this ProjectFieldDropdownValue variant) => new(variant.ProjectId, variant.ProjectFieldId, variant.ProjectFieldDropdownValueId);

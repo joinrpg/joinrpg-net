@@ -6,6 +6,9 @@
 }
 
 @section Scripts {
+  @* rooms.js строит разметку строками, поэтому иконки ему нужно объявить заранее. *@
+  <script>@Html.Raw(JoinIconMarkup.BuildScript(JoinIconType.FeePaid))</script>
+  <script src="~/_content/JoinRpg.Common.WebComponents/join-obsolete-icons.js"></script>
   <script src="~/Scripts/roomsMessages.js"></script>
   <script src="~/Scripts/rooms.js"></script>
   <script src="~/Scripts/edit-funcs.js"></script>

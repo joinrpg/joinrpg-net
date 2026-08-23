@@ -47,6 +47,18 @@ public static class IdentificationParseHelper
         return null;
     }
 
+    public static long? TryParse1Long(ReadOnlySpan<char> value, IFormatProvider? provider, bool allowNonPositive, params ReadOnlySpan<string> prefixes)
+    {
+        ReadOnlySpan<char> val = RemovePrefixes(value, prefixes);
+
+        if (long.TryParse(val, provider, out var id) && (allowNonPositive || id > 0))
+        {
+            return id;
+        }
+
+        return null;
+    }
+
     public static ReadOnlySpan<char> RemovePrefixes(ReadOnlySpan<char> value, ReadOnlySpan<string> prefixes)
     {
         var val = value.Trim();

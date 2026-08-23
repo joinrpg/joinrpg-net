@@ -52,6 +52,7 @@ public static class Registration
         .AddScoped<IMasterClient, ProjectMasterViewService>()
         .AddTransient<IProjectListClient, ProjectListViewService>()
         .AddTransient<IProjectListForAdminClient, ProjectListViewService>()
+        .AddScoped<IProjectCreateClient, ProjectCreateViewService>()
         .AddScoped<IPlotClient, Plots.PlotViewService>()
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<IKogdaIgraBindClient, AdminTools.KogdaIgraSyncManager>()

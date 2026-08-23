@@ -28,6 +28,8 @@
       максимально широком диапазоне SDK у потребителей.
     -->
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <!-- Аналайзер-пакет намеренно не кладёт сборку в lib/ref (IncludeBuildOutput=false), NU5128 — ложное срабатывание -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

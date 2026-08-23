@@ -9,4 +9,11 @@ public sealed class TypedEntityIdAttribute : Attribute
 
     /// <summary>Дополнительные префиксы для парсинга (например, старые форматы). По умолчанию ShortName без суффикса "Id" добавляется автоматически.</summary>
     public string[]? AdditionalPrefixes { get; set; }
+
+    /// <summary>
+    /// Разрешить значения id &lt;= 0. По умолчанию — false (обычные PK-шные id всегда положительны).
+    /// Нужно, например, для Telegram chat id, который может быть 0 или отрицательным (супергруппы/каналы).
+    /// Применимо только к типам с одним числовым (long) параметром без вложенности.
+    /// </summary>
+    public bool AllowNonPositive { get; set; }
 }

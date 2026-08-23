@@ -3,6 +3,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging.Abstractions;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 
 namespace JoinRpg.Common.Telegram.Test;
 

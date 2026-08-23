@@ -4,14 +4,9 @@
     В .cshtml используйте тег-хелпер <join-icon icon="..." />.
 *@
 <Tooltip Title="@Title">
-    @if (Html.ImageUrl is not null)
-    {
-        <img class="@Html.CssClass" style="@Html.InlineStyle" src="@Html.ImageUrl" alt="" @attributes="InputAttributes" />
-    }
-    else
-    {
-        <span class="@Html.CssClass" style="@Html.InlineStyle" aria-hidden="true" @attributes="InputAttributes">@Html.TextContent</span>
-    }
+    <svg class="@Html.CssClass" style="@Html.InlineStyle" aria-hidden="true" focusable="false" @attributes="InputAttributes">
+        <use href="@Html.SymbolHref"></use>
+    </svg>
 </Tooltip>
 
 @code {

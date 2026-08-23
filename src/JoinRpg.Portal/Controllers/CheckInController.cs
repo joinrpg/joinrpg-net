@@ -21,7 +21,6 @@ public class CheckInController(
     IProjectService projectService,
     IClaimsRepository claimsRepository,
     IClaimService claimService,
-    ICharacterRepository characterRepository,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
@@ -132,6 +131,7 @@ public class CheckInController(
     {
         var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
         if (claim == null)
         {
             return NotFound();
@@ -141,9 +141,9 @@ public class CheckInController(
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
-        var characters = await characterRepository.GetAvailableCharacters(projectId);
+        var playerUserInfo = await userRepository.GetRequiredUserInfo(claim.GetPlayerId());
 
-        return View(new SecondRoleViewModel(claim, characters, await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification), projectInfo));
+        return View(new SecondRoleViewModel(claim, currentUserAccessor, projectInfo, playerUserInfo));
     }
 
     [ValidateAntiForgeryToken]
@@ -157,7 +157,7 @@ public class CheckInController(
         }
         try
         {
-            var newClaim = await claimService.MoveToSecondRole(claim.GetId(), new(model.ProjectId, model.CharacterId), ".");
+            var newClaim = await claimService.MoveToSecondRole(claim.GetId(), model.CharacterId, ".");
             return RedirectToAction("CheckIn", new { model.ProjectId, claimId = newClaim });
         }
         catch (Exception ex)
