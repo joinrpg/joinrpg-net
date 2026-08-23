@@ -2,12 +2,16 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-family: serif;
+    /* Кружок под иконкой; размер иконки внутри задан в em, поэтому размер задаём через font-size. */
     font-size: 2.5em;
-    font-weight: bold;
     width: 1.5em;
     height: 1.5em;
     border-radius: 50%;
     line-height: 0;
     cursor: default;
+}
+
+.join-message-icon ::deep .join-icon {
+    /* Иконка занимает примерно две трети кружка. */
+    font-size: 0.65em;
 }

@@ -286,12 +286,10 @@ tr.unapprovedPayment td:last-child {
     margin-bottom: 0;
 }
 
-.join.alert .glyphicon {
+.join.alert .join-icon {
     display: block;
     margin-right: 1em;
-}
-
-.join.alert .glyphicon::before {
+    /* Иконка в алерте крупнее текста: размер svg задан в em, поэтому увеличиваем font-size. */
     font-size: 1.5em;
 }
 
@@ -351,12 +349,12 @@ tr.unapprovedPayment td:last-child {
 #roomsRows .list-group-item .alert-success .price-value,
 #availRequestsList .list-group-item .alert-success .price-value,
 #peopleList .list-group-item .alert-success .price-value,
-#roomsRows .list-group-item .alert-warning .glyphicon,
-#availRequestsList .list-group-item .alert-warning .glyphicon,
-#peopleList .list-group-item .alert-warning .glyphicon,
-#roomsRows .list-group-item .alert-danger .glyphicon,
-#availRequestsList .list-group-item .alert-danger .glyphicon,
-#peopleList .list-group-item .alert-danger .glyphicon {
+#roomsRows .list-group-item .alert-warning .join-icon,
+#availRequestsList .list-group-item .alert-warning .join-icon,
+#peopleList .list-group-item .alert-warning .join-icon,
+#roomsRows .list-group-item .alert-danger .join-icon,
+#availRequestsList .list-group-item .alert-danger .join-icon,
+#peopleList .list-group-item .alert-danger .join-icon {
     display: none;
 }
 

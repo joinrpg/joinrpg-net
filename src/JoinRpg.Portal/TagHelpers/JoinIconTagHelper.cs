@@ -32,30 +32,26 @@ public class JoinIconTagHelper : TagHelper
     {
         var html = JoinIconMarkup.Describe(Icon, Size);
 
-        output.TagName = html.TagName;
-        output.TagMode = html.ImageUrl is null ? TagMode.StartTagAndEndTag : TagMode.SelfClosing;
+        output.TagName = "svg";
+        output.TagMode = TagMode.StartTagAndEndTag;
 
         output.Attributes.SetAttribute("class", html.CssClass);
         if (html.InlineStyle is not null)
         {
             output.Attributes.SetAttribute("style", html.InlineStyle);
         }
-        if (!string.IsNullOrWhiteSpace(Title))
-        {
-            output.Attributes.SetAttribute("title", Title);
-        }
 
-        if (html.ImageUrl is not null)
+        if (string.IsNullOrWhiteSpace(Title))
         {
-            output.Attributes.SetAttribute("src", html.ImageUrl);
-            output.Attributes.SetAttribute("alt", "");
-            return;
+            output.Attributes.SetAttribute("aria-hidden", "true");
         }
+        else
+        {
+            // Подсказка у svg — вложенный тег title, атрибут браузеры не показывают.
+            output.Attributes.SetAttribute("role", "img");
+        }
+        output.Attributes.SetAttribute("focusable", "false");
 
-        output.Attributes.SetAttribute("aria-hidden", "true");
-        if (html.TextContent is not null)
-        {
-            _ = output.Content.SetContent(html.TextContent);
-        }
+        _ = output.Content.SetHtmlContent(JoinIconMarkup.BuildContent(html, Title));
     }
 }

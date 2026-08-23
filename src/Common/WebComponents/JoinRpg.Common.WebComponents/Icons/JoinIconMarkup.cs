@@ -1,25 +1,24 @@
 using System.Net;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 
 namespace JoinRpg.Common.WebComponents;
 
 /// <summary>
 /// Как отрисовать иконку: результат <see cref="JoinIconMarkup.Describe"/>.
 /// </summary>
-/// <param name="TagName">Имя html-тега — <c>span</c> либо <c>img</c>.</param>
 /// <param name="CssClass">Css-классы иконки, включая цвет.</param>
 /// <param name="InlineStyle">Значение атрибута style или <c>null</c>.</param>
-/// <param name="TextContent">Содержимое тега для юникодных иконок, иначе <c>null</c>.</param>
-/// <param name="ImageUrl">Адрес картинки для иконок-картинок, иначе <c>null</c>.</param>
+/// <param name="SymbolHref">Адрес символа в спрайте для вложенного тега <c>use</c>.</param>
 public readonly record struct JoinIconHtml(
-    string TagName,
     string CssClass,
     string? InlineStyle,
-    string? TextContent,
-    string? ImageUrl);
+    string SymbolHref);
 
 /// <summary>
 /// Разметка иконки, общая для Blazor-компонента <c>JoinIcon</c> и тег-хелпера MVC.
+/// Иконка — это всегда <c>&lt;svg&gt;</c> со ссылкой на символ спрайта, других способов нет.
 /// </summary>
 /// <remarks>
 /// Прикладной код должен использовать компонент <c>JoinIcon</c> (в .razor) или
@@ -30,6 +29,36 @@ public readonly record struct JoinIconHtml(
 public static class JoinIconMarkup
 {
     /// <summary>
+    /// Адрес спрайта с иконками. Версия сборки в адресе — чтобы добавленная иконка
+    /// не потерялась из-за закэшированного браузером старого спрайта.
+    /// </summary>
+    public static readonly string SpriteUrl =
+        "/_content/JoinRpg.Common.WebComponents/icons/join-icons.svg?v="
+        + Uri.EscapeDataString(
+            typeof(JoinIconMarkup).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion
+            ?? "0");
+
+    /// <summary>
+    /// Скрипт, объявляющий перечисленные иконки для функции <c>joinIcon</c> из join-obsolete-icons.js.
+    /// </summary>
+    /// <remarks>
+    /// Нужен только тем страницам, где остался старый скрипт, строящий разметку строками.
+    /// Иконки перечисляются явно, чтобы страница не тащила таблицу, которая ей не нужна.
+    /// </remarks>
+    /// <param name="icons">Иконки, которые понадобятся скриптам страницы.</param>
+    public static string BuildScript(params JoinIconType[] icons)
+    {
+        var symbols = icons.ToDictionary(
+            icon => icon.ToString(),
+            icon => JoinIconDefinitions.Get(icon).IconName);
+
+        return $"window.joinIconSprite={JsonSerializer.Serialize(SpriteUrl)};"
+            + $"window.joinIconSymbols={JsonSerializer.Serialize(symbols)};";
+    }
+
+    /// <summary>
     /// Как отрисовать иконку.
     /// </summary>
     /// <param name="icon">Иконка.</param>
@@ -37,27 +66,20 @@ public static class JoinIconMarkup
     public static JoinIconHtml Describe(JoinIconType icon, SizeStyleEnum? size = null)
     {
         var definition = JoinIconDefinitions.Get(icon);
-        var isImage = definition.Kind == JoinIconKind.Image;
         return new JoinIconHtml(
-            TagName: isImage ? "img" : "span",
             CssClass: BuildCssClass(definition),
             InlineStyle: BuildSizeStyle(size),
-            TextContent: definition.Kind == JoinIconKind.Text ? definition.Value : null,
-            ImageUrl: isImage ? definition.Value : null);
+            SymbolHref: SpriteUrl + "#" + definition.IconName);
     }
 
     private static string BuildCssClass(JoinIconDefinition definition)
     {
-        var cssClass = definition.Kind == JoinIconKind.Glyph
-            ? $"join-icon {JoinIconDefinitions.GlyphFontCssClass} {definition.Value}"
-            : "join-icon";
-
         // Цвет — часть смысла иконки, а не оформление на месте использования:
         // нужен другой цвет — заводите новое значение JoinIconType.
         // BootstrapStyle для null отдаёт text-default, чего у иконок сегодня нигде нет.
         return definition.Variation is null
-            ? cssClass
-            : cssClass + " " + BootstrapStyle.Build("text", definition.Variation, size: null);
+            ? "join-icon"
+            : "join-icon " + BootstrapStyle.Build("text", definition.Variation, size: null);
     }
 
     /// <summary>
@@ -65,7 +87,8 @@ public static class JoinIconMarkup
     /// </summary>
     /// <remarks>
     /// Размер задаётся инлайном, а не через scoped css: та же разметка строится тег-хелпером,
-    /// на который изоляция стилей Blazor не распространяется.
+    /// на который изоляция стилей Blazor не распространяется. Работает потому,
+    /// что размеры самой иконки в join-icons.css заданы в em.
     /// </remarks>
     private static string? BuildSizeStyle(SizeStyleEnum? size) => size switch
     {
@@ -91,28 +114,40 @@ public static class JoinIconMarkup
         var html = Describe(icon, size);
 
         var builder = new StringBuilder();
-        builder.Append('<').Append(html.TagName);
-        builder.Append(" class=\"").Append(html.CssClass).Append('"');
+        builder.Append("<svg class=\"").Append(html.CssClass).Append('"');
         if (html.InlineStyle is not null)
         {
             builder.Append(" style=\"").Append(html.InlineStyle).Append('"');
         }
-        if (!string.IsNullOrWhiteSpace(title))
-        {
-            builder.Append(" title=\"").Append(WebUtility.HtmlEncode(title)).Append('"');
-        }
-
-        if (html.ImageUrl is not null)
-        {
-            builder.Append(" src=\"").Append(html.ImageUrl).Append("\" alt=\"\" />");
-            return builder.ToString();
-        }
-
-        builder.Append(" aria-hidden=\"true\">");
-        // Не кодируем: текст берётся из JoinIconDefinitions, это наши собственные символы.
-        // Кодирование дало бы &#215; там, где Blazor рендерит ×, и разметка перестала бы совпадать.
-        builder.Append(html.TextContent);
-        builder.Append("</").Append(html.TagName).Append('>');
+        builder.Append(BuildAccessibilityAttributes(title)).Append('>');
+        builder.Append(BuildContent(html, title));
+        builder.Append("</svg>");
         return builder.ToString();
+    }
+
+    /// <summary>
+    /// Атрибуты доступности. Без подсказки иконка декоративна и прячется от скринридера,
+    /// с подсказкой — становится картинкой с названием.
+    /// </summary>
+    /// <param name="title">Всплывающая подсказка.</param>
+    public static string BuildAccessibilityAttributes(string? title)
+        => string.IsNullOrWhiteSpace(title)
+            ? " aria-hidden=\"true\" focusable=\"false\""
+            : " role=\"img\" focusable=\"false\"";
+
+    /// <summary>
+    /// Содержимое тега svg: ссылка на символ спрайта и, если задана, подсказка.
+    /// </summary>
+    /// <remarks>
+    /// Подсказка — вложенный тег <c>title</c>, а не атрибут: у svg атрибут title браузеры не показывают.
+    /// </remarks>
+    /// <param name="html">Описание иконки.</param>
+    /// <param name="title">Всплывающая подсказка.</param>
+    public static string BuildContent(JoinIconHtml html, string? title)
+    {
+        var titleTag = string.IsNullOrWhiteSpace(title)
+            ? ""
+            : "<title>" + WebUtility.HtmlEncode(title) + "</title>";
+        return titleTag + "<use href=\"" + html.SymbolHref + "\"></use>";
     }
 }

@@ -41,6 +41,18 @@ dotnet format --verify-no-changes --severity error        # Проверка (CI
 git commit --edit -m "предложенное сообщение коммита"
 ```
 
+### Ребейз: upstream, а не origin
+
+`origin` — личный форк (`leotsarev/joinrpg-net`), основной репозиторий — `upstream` (`joinrpg/joinrpg-net`).
+Туда же идут PR. Поэтому ребейзить и сверяться с базовой веткой всегда через `upstream`:
+
+```bash
+git fetch upstream
+git rebase upstream/master
+```
+
+`origin/master` в форке отстаёт и на «ребейзни» отвечает «уже актуально» — это ложный ответ, не верить ему.
+
 ### GitHub: создание PR после завершения issue
 
 **ОБЯЗАТЕЛЬНО**: При работе в контексте GitHub (через claude-code-action) — после коммита кода сразу создавать PR через `gh pr create`. Не предоставлять ссылку «Create PR» — создавать PR самостоятельно. Не ждать отдельной просьбы.
