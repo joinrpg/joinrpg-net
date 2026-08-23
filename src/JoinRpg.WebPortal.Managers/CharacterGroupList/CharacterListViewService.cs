@@ -27,7 +27,8 @@ public class CharacterListViewService(
         var masterAccess = project.HasMasterAccess(currentUserAccessor);
         return [.. characters
             .Select(CreateDto)
-            .Where(x => masterAccess || x.IsPublic)];
+            .Where(x => masterAccess || x.IsPublic)
+            .OrderBy(x => x.Name)];
     }
 
     private static CharacterDto CreateDto(Character c) => new(
