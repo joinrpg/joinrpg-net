@@ -12,5 +12,7 @@
  * получает вменяемую базу и не ломается.
  */
 .join-btn-group ::deep > * {
-    font-size: 1rem;
+    /* 1rem здесь — не браузерные 16px, а 10px (html { font-size: 10px } в Bootstrap 3),
+       поэтому используем 1.4rem, чтобы получить обычные 14px, как у body */
+    font-size: 1.4rem;
 }
