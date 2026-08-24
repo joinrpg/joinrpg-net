@@ -37,8 +37,8 @@ internal class AdminNotificationServiceImpl(
         var notificationEvent = new NotificationEvent(
             NotificationClass.AdminMessage,
             EntityReference: projectId,
-            Header: $"Новый проект «{projectName}» — статус КогдаИгры",
-            TemplateText: new NotificationEventTemplate($"Добрый день, %recepient.name%!\n\nСоздан новый проект «{projectName}».\n\n{body}"),
+            Header: $"Новый проект «{projectName.Value}» — статус КогдаИгры",
+            TemplateText: new NotificationEventTemplate($"Добрый день, %recepient.name%!\n\nСоздан новый проект «{projectName.Value}».\n\n{body}"),
             Recepients: [.. admins.Select(a => NotificationRecepient.Admin(a))],
             Initiator: currentUserAccessor.UserIdentification);
 
