@@ -364,7 +364,12 @@ public class AccountController(
                     logger.LogInformation("Пользователь входит через {loginProvider} / {loginProviderKey}, но у него не подтвержден email {email}. Он соответствует тому, что отдает ВК, подтверждаем.",
                         loginInfo.LoginProvider, loginInfo.ProviderKey, email);
                     var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                    _ = await userManager.ConfirmEmailAsync(user, token);
+                    var confirmResult = await userManager.ConfirmEmailAsync(user, token);
+                    if (!confirmResult.Succeeded)
+                    {
+                        logger.LogError("Не удалось автоматически подтвердить email {email} пользователю {userId} при входе через {loginProvider} / {loginProviderKey}: {confirmResult}",
+                            email, user.Id, loginInfo.LoginProvider, loginInfo.ProviderKey, confirmResult);
+                    }
                 }
 
                 // Возможно не получается зайти, т.к. логин не привязан к этому аккаунту
