@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Common.WebComponentBook.Client\JoinRpg.Common.WebComponentBook.Client.csproj" />
-    <ProjectReference Include="..\..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
   </ItemGroup>
 
