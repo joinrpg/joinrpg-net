@@ -9,7 +9,8 @@ public record NotificationMessageForRecipient(
     string Header,
     UserIdentification Recipient,
     IProjectEntityId? EntityReference,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool SkipSignature = false);
 
 // Конкретный экземпляр уведомления для конкретного пользователя через конкретный канал
 public record TargetedNotificationMessageForRecipient(NotificationMessageForRecipient Message, NotificationAddress NotificationAddress, int Attempts, NotificationId MessageId);

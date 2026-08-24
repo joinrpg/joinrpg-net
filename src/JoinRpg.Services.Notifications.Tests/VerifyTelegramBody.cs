@@ -17,7 +17,20 @@ public class VerifyTelegramBody
         var result = TelegramSenderJobService.FormatMessage(
             header,
             new MarkdownDbValue(body),
-            new UserDisplayName("Master", null),
+            withLink ? SampleLink : null,
+            new UserDisplayName("Master", null));
+
+        return Verify(result.Contents).UseParameters(num);
+    }
+
+    [Theory]
+    [InlineData(3, "Заголовок", "Привет!\n\nЭто **тело** сообщения.", false)]
+    [InlineData(4, "Заголовок", "Привет!\n\nЭто **тело** сообщения.", true)]
+    public Task HtmlSkipSignature(int num, string header, string body, bool withLink)
+    {
+        var result = TelegramSenderJobService.FormatMessage(
+            header,
+            new MarkdownDbValue(body),
             withLink ? SampleLink : null);
 
         return Verify(result.Contents).UseParameters(num);

@@ -21,18 +21,28 @@ internal class TelegramSenderJobService(
 
     public async Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
     {
-        var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
         var entityLink = linkRenderer.RenderEntityLink(message.Message.EntityReference);
-        var html = FormatMessage(message.Message.Header, message.Message.Body, sender.DisplayName, entityLink);
+        TelegramHtmlString html;
+        if (message.Message.SkipSignature)
+        {
+            html = FormatMessage(message.Message.Header, message.Message.Body, entityLink);
+        }
+        else
+        {
+            var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
+            html = FormatMessage(message.Message.Header, message.Message.Body, entityLink, sender.DisplayName);
+        }
+
         return await telegramNotificationService.SendTelegramNotification(message.NotificationAddress.AsTelegram(), html);
     }
 
-    internal static TelegramHtmlString FormatMessage(string header, MarkdownString body, UserDisplayName displayName, RenderedEntityLink? entityLink)
+    internal static TelegramHtmlString FormatMessage(string header, MarkdownString body, RenderedEntityLink? entityLink, UserDisplayName? displayName = null)
     {
-        // Заголовок — жирным, тело, ссылка, затем подпись курсивом. Теги <strong>/<em>/<a>
-        // переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer).
+        // Заголовок — жирным, тело, ссылка, затем (если не пропущена) подпись курсивом. Теги
+        // <strong>/<em>/<a> переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer).
         var linkPart = entityLink is null ? "" : $"\n\n{entityLink.Markdown.Value}";
-        var markdown = new MarkdownString($"**{header}**\n\n{body.Value}{linkPart}\n\n_{displayName.DisplayName}_");
+        var signaturePart = displayName is null ? "" : $"\n\n_{displayName.DisplayName}_";
+        var markdown = new MarkdownString($"**{header}**\n\n{body.Value}{linkPart}{signaturePart}");
         return new TelegramHtmlString(markdown.ToHtmlString().Value);
     }
 }
