@@ -378,6 +378,14 @@ public class AccountController(
                     var addLoginResult = await userManager.AddLoginAsync(user, loginInfo);
                     if (!addLoginResult.Succeeded)
                     {
+                        if (addLoginResult.Errors.Any(e => e.Code == "LoginAlreadyAssociated"))
+                        {
+                            var existingOwner = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+                            logger.LogWarning("Не удалось привязать {loginProvider} / {loginProviderKey} к аккаунту {userId} (email {email}), т.к. этот внешний логин уже привязан к аккаунту {existingOwnerId}",
+                                loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, email, existingOwner?.Id);
+                            return View("Lockout");
+                        }
+
                         logger.LogError("Неожиданная ошибка при привязке {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",
                             loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, addLoginResult);
                         return View("Lockout");
@@ -408,6 +416,9 @@ public class AccountController(
 
         if (result.IsLockedOut)
         {
+            var existingOwner = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+            logger.LogWarning("Вход через {loginProvider} / {loginProviderKey} (email {email}) вернул IsLockedOut. Этот внешний логин привязан к аккаунту {existingOwnerId}",
+                loginInfo.LoginProvider, loginInfo.ProviderKey, email, existingOwner?.Id);
             return View("Lockout");
         }
 
