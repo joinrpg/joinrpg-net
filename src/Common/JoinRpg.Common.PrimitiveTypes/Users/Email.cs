@@ -3,7 +3,7 @@ namespace JoinRpg.Common.PrimitiveTypes;
 [TypedStringValue]
 public partial record Email(string Value)
 {
-    internal static string? CustomValidateAndCanonicalize(string value)
+    internal static string CustomValidateAndCanonicalize(string value)
     {
         if (!value.Contains('@'))
         {
