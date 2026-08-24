@@ -142,6 +142,9 @@ public class ManageController(
         {
             if (result.Errors.Any(i => i.Code == "LoginAlreadyAssociated"))
             {
+                var existingOwner = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+                logger.LogInformation("Пользователь {userId} пытался привязать {loginProvider} / {loginProviderKey}, но этот внешний логин уже привязан к аккаунту {existingOwnerId}",
+                    userId, loginInfo.LoginProvider, loginInfo.ProviderKey, existingOwner?.Id);
                 return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
             }
             logger.LogError("Unexpected error during linking user to another account: {loginError}", result.Errors.First().Code);
