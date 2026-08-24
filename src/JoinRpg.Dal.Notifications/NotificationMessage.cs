@@ -19,5 +19,7 @@ internal class NotificationMessage
 
     public required DateTimeOffset CreatedAt { get; set; }
 
+    public required bool SkipSignature { get; set; }
+
     public HashSet<NotificationMessageChannel> NotificationMessageChannels { get; set; } = [];
 }

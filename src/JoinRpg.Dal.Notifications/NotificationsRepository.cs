@@ -55,6 +55,7 @@ internal class NotificationsRepository(
                 NotificationMessageChannels = [.. notification.Channels.Select(c => ToNotificationMessageChannel(c, x.CreatedAt))],
                 EntityReference = x.EntityReference?.ToString(),
                 CreatedAt = x.CreatedAt,
+                SkipSignature = x.SkipSignature,
             };
             _ = dbContext.Notifications.Add(message);
         }
@@ -144,7 +145,8 @@ internal class NotificationsRepository(
                                                message.Header,
                                                new(message.RecipientUserId),
                                                ProjectEntityIdParser.TryParseId(message.EntityReference, out var id) ? id : null,
-                                               message.CreatedAt
+                                               message.CreatedAt,
+                                               message.SkipSignature
                                                );
     }
 
