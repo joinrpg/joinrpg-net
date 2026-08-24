@@ -1,5 +1,5 @@
 @{
-    var effectiveSegment = Link ?? (Contact is null ? null : $"id{Contact.Id}");
+    var effectiveSegment = Link?.Value ?? (Contact is null ? null : $"id{Contact.Id}");
 }
 @if (effectiveSegment is not null)
 {
@@ -10,5 +10,5 @@
     [Parameter]
     public VkSocialLink? Contact { get; set; }
     [Parameter]
-    public string? Link { get; set; }
+    public VkId? Link { get; set; }
 }
