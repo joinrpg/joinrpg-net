@@ -38,9 +38,13 @@ internal class TelegramSingleHotRoleSender(
         // Только <strong>/<em>/<a> переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer) —
         // заголовки (<h1>-<h6>) и <small> им не поддерживаются и вырезаются целиком вместе с содержимым,
         // поэтому вместо них используем <strong>/<em> и обычные переносы строк.
+        var masterGroupSuffix = string.IsNullOrWhiteSpace(kogdaIgraGame.MasterGroupName)
+            ? string.Empty
+            : $" ({WebUtility.HtmlEncode(kogdaIgraGame.MasterGroupName)})";
+
         var text =
             $"<strong>Горячая роль «{WebUtility.HtmlEncode(characterName)}» на игре «{WebUtility.HtmlEncode(projectName)}»</strong>\n\n" +
-            $"{WebUtility.HtmlEncode(kogdaIgraGame.Name)}, {WebUtility.HtmlEncode(kogdaIgraGame.RegionName)} ({WebUtility.HtmlEncode(kogdaIgraGame.MasterGroupName)})\n" +
+            $"{WebUtility.HtmlEncode(kogdaIgraGame.Name)}, {WebUtility.HtmlEncode(kogdaIgraGame.RegionName)}{masterGroupSuffix}\n" +
             $"{kogdaIgraGame.Begin:dd.MM.yyyy}–{kogdaIgraGame.End:dd.MM.yyyy}\n" +
             $"{kogdaIgraCardUri}\n\n" +
             $"<strong>{WebUtility.HtmlEncode(characterName)}</strong>\n\n" +
