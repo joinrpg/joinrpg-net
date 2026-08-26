@@ -89,6 +89,6 @@
 ### Tests
 - `JoinRpg.TestHelpers` — общие тестовые утилиты
 - `JoinRpg.DataModel.Mocks` — моки DataModel
-- Тестовые проекты для каждого слоя: Domain, Services.Impl, Portal, IdPortal, Managers, Models, PrimitiveTypes, PrimitiveTypes.SourceGenerator, Markdown, Helpers, Notifications, KogdaIgra, CommonUI.Models
+- Тестовые проекты для каждого слоя: Domain, Services.Impl, Portal, IdPortal, Managers, Models, PrimitiveTypes, PrimitiveTypes.SourceGenerator, Markdown, Helpers, Notifications, KogdaIgra, CommonUI.Models, EntityFrameworkCore
 
 Не используем Moq/NSubstitute. Предпочитаем классические юнит-тесты мокистким.
