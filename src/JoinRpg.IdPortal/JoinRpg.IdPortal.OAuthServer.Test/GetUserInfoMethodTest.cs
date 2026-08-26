@@ -39,7 +39,8 @@ public class GetUserInfoMethodTest
             EmailConfirmed: emailConfirmed,
             UserFullName: new UserFullName(null, BornName.FromOptional(bornName), SurName.FromOptional(surName), FatherName.FromOptional(fatherName)),
             VerifiedProfileFlag: false,
-            PhoneNumber: phoneNumber);
+            PhoneNumber: phoneNumber,
+            HasPassword: false);
     }
 
     private static IOptions<JoinRpgHostNamesOptions> DefaultOptions => Options.Create(new JoinRpgHostNamesOptions
