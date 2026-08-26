@@ -25,7 +25,8 @@ public static class UserExtensions
             user.Auth.EmailConfirmed,
             user.ExtractFullName(),
             user.VerifiedProfileFlag,
-            user.Extra?.PhoneNumber
+            user.Extra?.PhoneNumber,
+            user.PasswordHash != null
             );
     }
 

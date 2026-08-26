@@ -105,6 +105,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.VerifiedProfileFlag,
                 user.Extra.PhoneNumber,
                 user.Auth.EmailConfirmed,
+                HasPassword = user.PasswordHash != null,
             };
 
 
@@ -132,7 +133,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             result.EmailConfirmed,
             userFullName,
             result.VerifiedProfileFlag,
-            result.PhoneNumber
+            result.PhoneNumber,
+            result.HasPassword
             );
         })];
     }
