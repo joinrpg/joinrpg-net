@@ -1,0 +1,124 @@
+using Shouldly;
+using Xunit;
+
+namespace JoinRpg.Common.PrimitiveTypes.SourceGenerator.Test;
+
+/// <summary>
+/// Регрессия: генератор раньше находил основной конструктор вложенного TypedEntityId по атрибуту
+/// [JsonConstructor], который легко забыть на вложенном типе — тогда генерация вложенных Id молча
+/// не срабатывала (тип переставал реализовывать интерфейс). Теперь основной конструктор находится
+/// по синтаксису record-декларации, атрибут для этого не нужен.
+/// </summary>
+public class NestedTypedEntityIdTests
+{
+    private const string CommonDeclarations = """
+        using JoinRpg.Common.PrimitiveTypes;
+
+        namespace TestNs;
+
+        public interface IProjectEntityId
+        {
+            ProjectIdentification ProjectId { get; }
+            int Id { get; }
+        }
+
+        [TypedEntityId(ShortName = "Project")]
+        public partial record ProjectIdentification(int Value) : IProjectEntityId
+        {
+            ProjectIdentification IProjectEntityId.ProjectId => this;
+            int IProjectEntityId.Id => Value;
+        }
+        """;
+
+    [Fact]
+    public void Two_level_nesting_without_JsonConstructor_generates_ProjectId()
+    {
+        var source = CommonDeclarations + """
+
+            [TypedEntityId]
+            public partial record FolderIdentification(ProjectIdentification ProjectId, int FolderId) : IProjectEntityId;
+
+            [TypedEntityId]
+            public partial record ElementIdentification(FolderIdentification FolderId, int ElementId) : IProjectEntityId;
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Errors.ShouldBeEmpty();
+
+        var assembly = GeneratorTestHelper.EmitAndLoad(result.OutputCompilation);
+        var elementType = assembly.GetType("TestNs.ElementIdentification")!;
+        var folderType = assembly.GetType("TestNs.FolderIdentification")!;
+        var projectType = assembly.GetType("TestNs.ProjectIdentification")!;
+
+        var project = Activator.CreateInstance(projectType, 1)!;
+        var folder = Activator.CreateInstance(folderType, project, 2)!;
+        var element = Activator.CreateInstance(elementType, folder, 3)!;
+
+        var projectId = elementType.GetProperty("ProjectId")!.GetValue(element)!;
+        projectType.GetProperty("Value")!.GetValue(projectId).ShouldBe(1);
+    }
+
+    [Fact]
+    public void Three_level_nesting_without_JsonConstructor_generates_ProjectId()
+    {
+        var source = CommonDeclarations + """
+
+            [TypedEntityId]
+            public partial record FolderIdentification(ProjectIdentification ProjectId, int FolderId) : IProjectEntityId;
+
+            [TypedEntityId]
+            public partial record ElementIdentification(FolderIdentification FolderId, int ElementId) : IProjectEntityId;
+
+            [TypedEntityId]
+            public partial record VersionIdentification(ElementIdentification ElementId, int Version) : IProjectEntityId;
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Errors.ShouldBeEmpty();
+
+        var assembly = GeneratorTestHelper.EmitAndLoad(result.OutputCompilation);
+        var versionType = assembly.GetType("TestNs.VersionIdentification")!;
+        var elementType = assembly.GetType("TestNs.ElementIdentification")!;
+        var folderType = assembly.GetType("TestNs.FolderIdentification")!;
+        var projectType = assembly.GetType("TestNs.ProjectIdentification")!;
+
+        var project = Activator.CreateInstance(projectType, 1)!;
+        var folder = Activator.CreateInstance(folderType, project, 2)!;
+        var element = Activator.CreateInstance(elementType, folder, 3)!;
+        var version = Activator.CreateInstance(versionType, element, 4)!;
+
+        var projectId = versionType.GetProperty("ProjectId")!.GetValue(version)!;
+        projectType.GetProperty("Value")!.GetValue(projectId).ShouldBe(1);
+
+        version.ToString().ShouldBe("VersionId(1-2-3-4)");
+    }
+
+    [Fact]
+    public void JsonConstructor_attribute_is_not_required_for_flat_constructor_disambiguation()
+    {
+        // FolderIdentification имеет 2 листа (Value, FolderId) -> генератор сам добавляет ему
+        // плоский конструктор FolderIdentification(int, int). ElementIdentification вложен в него
+        // без [JsonConstructor] — раньше это ломало поиск основного конструктора.
+        var source = CommonDeclarations + """
+
+            [TypedEntityId]
+            public partial record FolderIdentification(ProjectIdentification ProjectId, int FolderId) : IProjectEntityId;
+
+            [TypedEntityId]
+            public partial record ElementIdentification(FolderIdentification FolderId, int ElementId) : IProjectEntityId;
+            """;
+
+        var result = GeneratorTestHelper.RunGenerator(source);
+
+        result.Errors.ShouldBeEmpty();
+
+        var generatedSource = result.OutputCompilation.SyntaxTrees
+            .Select(t => t.ToString())
+            .FirstOrDefault(t => t.StartsWith("// <auto-generated/>") && t.Contains("record ElementIdentification"));
+
+        generatedSource.ShouldNotBeNull();
+        generatedSource.ShouldContain("public ProjectIdentification ProjectId => FolderId.ProjectId;");
+    }
+}
