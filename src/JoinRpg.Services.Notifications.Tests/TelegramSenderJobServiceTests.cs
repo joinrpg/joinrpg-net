@@ -97,7 +97,8 @@ public class TelegramSenderJobServiceTests
             EmailConfirmed: true,
             new UserFullName(new PrefferedName("Master"), null, null, null),
             VerifiedProfileFlag: false,
-            PhoneNumber: null));
+            PhoneNumber: null,
+            HasPassword: false));
 
         public Task<User> GetById(int id) => throw new NotSupportedException();
         public Task<User> WithProfile(int userId) => throw new NotSupportedException();
