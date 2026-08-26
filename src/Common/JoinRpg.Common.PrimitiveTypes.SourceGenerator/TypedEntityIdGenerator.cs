@@ -433,6 +433,13 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         {
             interfaces.Add($"IComparable<{info.TypeName}>");
         }
+        // Не составные id (единственный числовой параметр) можно обобщённо смаппить на колонку БД —
+        // см. IEntityId<TSelf,TValue> в JoinRpg.Common.PrimitiveTypes и generic ValueConverter в
+        // JoinRpg.Common.EntityFrameworkCore.
+        if (info.PrimaryParams.Count == 1)
+        {
+            interfaces.Add($"IEntityId<{info.TypeName}, {info.NumericTypeKeyword}>");
+        }
 
         sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<{info.TypeName}>))]");
         sb.AppendLine($"public partial record {info.TypeName} : {string.Join(", ", interfaces)}");
@@ -567,6 +574,14 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         var checksStr = string.Join(" && ", nullChecks);
         var argsStr = string.Join(", ", ctorArgs);
 
+        // Единственный параметр — это ровно сигнатура IEntityId<TSelf,TValue>.FromOptional(TValue?):
+        // null на входе даёт null на выходе, не-null даёт не-null. Для составных id (несколько параметров)
+        // атрибут не ставим — там nullability результата это AND нескольких параметров, одним именем не выразить.
+        if (info.PrimaryParams.Count == 1)
+        {
+            var soleParamName = char.ToLower(info.PrimaryParams[0].Name[0]) + info.PrimaryParams[0].Name.Substring(1);
+            sb.AppendLine($"    [return: NotNullIfNotNull(nameof({soleParamName}))]");
+        }
         sb.AppendLine($"    public static {info.TypeName}? FromOptional({paramsStr})");
         sb.AppendLine($"        => {checksStr} ? new {info.TypeName}({argsStr}) : null;");
         sb.AppendLine();
