@@ -6,7 +6,6 @@ global using JoinRpg.DomainTypes;
 global using JoinRpg.DomainTypes.Advertisement;
 global using JoinRpg.DomainTypes.ProjectMetadata;
 global using JoinRpg.Services.Advertisement.Channels;
-global using JoinRpg.Services.Advertisement.Log;
 global using JoinRpg.Services.Advertisement.Schedules;
 global using JoinRpg.Services.Advertisement.Sending;
 global using JoinRpg.Services.Interfaces.Notification;

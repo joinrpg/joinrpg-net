@@ -37,6 +37,7 @@ public static class Registraton
             .AddTransient<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>()
             .AddTransient<IProjectRolesListRepository, ProjectRolesListRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
+            .AddTransient<IAdvertisementLogRepository, AdvertisementLogRepository>()
             .AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 
         return services;
