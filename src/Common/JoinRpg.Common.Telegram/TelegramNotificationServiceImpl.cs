@@ -89,3 +89,19 @@ internal class StubTelegramNotificationService(ILogger<StubTelegramNotificationS
         return Task.FromResult(SendingResult.Success());
     }
 }
+
+/// <summary>
+/// Пока поддерживает только дефолтного бота приложения — реальный мультибот (свои боты
+/// у рекламных каналов/мастеров) не реализован, см. ADR010 §5.
+/// </summary>
+internal class DefaultOnlyTelegramNotificationServiceFactory(ITelegramNotificationService defaultService) : ITelegramNotificationServiceFactory
+{
+    public ITelegramNotificationService GetService(string? botKey)
+    {
+        if (!string.IsNullOrEmpty(botKey))
+        {
+            throw new NotSupportedException($"Отправка от имени бота '{botKey}' пока не поддерживается (ADR010 §5).");
+        }
+        return defaultService;
+    }
+}
