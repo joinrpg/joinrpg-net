@@ -18,6 +18,8 @@ public class MyDbContext : DbContext, IUnitOfWork
 
     public DbSet<JoinRpg.DataModel.ProjectRolesList> ProjectRolesListsSet => Set<JoinRpg.DataModel.ProjectRolesList>();
 
+    public DbSet<JoinRpg.DataModel.AdvertisementLogEntryEntity> AdvertisementLogEntriesSet => Set<JoinRpg.DataModel.AdvertisementLogEntryEntity>();
+
     public DbSet<User> UserSet => Set<User>();
 
     public DbSet<Claim> ClaimSet => Set<Claim>();
@@ -155,6 +157,31 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         modelBuilder.Entity<JoinRpg.DataModel.ProjectRolesList>()
             .HasIndex(prl => prl.ProjectId);
+
+        // AdvertisementLogEntry configuration
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .ToTable("AdvertisementLogEntries");
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .HasRequired(e => e.Project)
+            .WithMany()
+            .HasForeignKey(e => e.ProjectId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .HasOptional(e => e.Character)
+            .WithMany()
+            .HasForeignKey(e => e.CharacterId)
+            .WillCascadeOnDelete(false);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .HasIndex(e => e.ProjectId);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .HasIndex(e => e.CharacterId);
+
+        modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
+            .HasIndex(e => e.ScheduleId);
 
         modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
             .WillCascadeOnDelete(false);
