@@ -1,4 +1,4 @@
-namespace JoinRpg.Portal.Infrastructure.Authentication.Telegram;
+namespace JoinRpg.Common.Telegram;
 
 public enum TelegramAuthorizationResult
 {

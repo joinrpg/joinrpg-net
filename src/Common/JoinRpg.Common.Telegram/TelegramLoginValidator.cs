@@ -1,9 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
-using JoinRpg.Common.Telegram;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Infrastructure.Authentication.Telegram;
+namespace JoinRpg.Common.Telegram;
 
 /// <summary>
 /// A helper class used to verify authorization data.
