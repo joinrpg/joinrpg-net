@@ -1,8 +1,10 @@
 using System.Text.Json;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Characters;
@@ -10,14 +12,19 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 using CharacterHeader = JoinRpg.XGameApi.Contract.CharacterHeader;
+// Не путать с доменным CharacterInfo (ADR013): здесь CharacterInfo — DTO внешнего API,
+// а доменный агрегат называется DomainCharacterInfo.
+using CharacterInfo = JoinRpg.XGameApi.Contract.CharacterInfo;
+using DomainCharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/characters"), XGameMasterAuthorize()]
 public class CharacterApiController(
     ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
+    IUserRepository userRepository,
     ICharacterService characterService,
-    IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
         ) : XGameApiController()
 {
@@ -52,28 +59,43 @@ public class CharacterApiController(
     [Route("{characterId}/")]
     public async Task<CharacterInfo> GetOne(int projectId, int characterId)
     {
-        var character = await characterRepository.GetCharacterViewAsync(projectId, characterId);
-        ProjectIdentification projectId1 = new(projectId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId1);
-        var fields = CharacterFieldLayersBuilder.FromCharacterView(projectInfo, character, currentUserAccessor);
+        var character = await characterInfoRepository.GetCharacterInfo(
+            new CharacterIdentification(new ProjectIdentification(projectId), characterId));
+
+        // ProjectInfo несёт сам агрегат — отдельный запрос метаданных не нужен.
+        var access = AccessArgumentsFactory.Create(character, currentUserAccessor);
+        var fields = character.GetFieldLayers(access);
+
         return
             new CharacterInfo
             {
-                CharacterId = character.CharacterId,
+                CharacterId = character.Id.CharacterId,
                 UpdatedAt = character.UpdatedAt,
                 IsActive = character.IsActive,
                 InGame = character.InGame,
                 BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
-                Groups = ApiInfoBuilder.ToGroupHeaders(character.DirectGroups),
-                AllGroups = ApiInfoBuilder.ToGroupHeaders([.. projectInfo.GetParentGroupsIncludingThis(CharacterGroupIdentification.FromList(character.DirectGroups.Select(x => x.CharacterGroupId), projectId1))]),
+                Groups = ApiInfoBuilder.ToGroupHeaders([.. character.DirectGroups]),
+                AllGroups = ApiInfoBuilder.ToGroupHeaders([.. character.ParentGroupsToTop]),
                 Fields = [.. fields.GetSortedFieldsForView().Select(ApiInfoBuilder.ToFieldValue)],
 #pragma warning disable CS0612 // Type or member is obsolete
-                PlayerUserId = character.ApprovedClaim?.PlayerUserId,
+                PlayerUserId = character.ApprovedClaim?.PlayerId.Value,
 #pragma warning restore CS0612 // Type or member is obsolete
-                CharacterDescription = character.Description,
-                CharacterName = character.Name,
-                PlayerInfo = ApiInfoBuilder.CreatePlayerInfo(character.ApprovedClaim, projectInfo),
+                CharacterDescription = character.Description.Value,
+                CharacterName = character.CharacterName,
+                PlayerInfo = await CreatePlayerInfo(character),
             };
+    }
+
+    private async Task<CharacterPlayerInfo?> CreatePlayerInfo(
+        DomainCharacterInfo character)
+    {
+        if (character.ApprovedClaim is not { } approvedClaim)
+        {
+            return null;
+        }
+
+        var player = await userRepository.GetRequiredUserInfo(approvedClaim.PlayerId);
+        return ApiInfoBuilder.CreatePlayerInfo(character, approvedClaim, player);
     }
 
     /// <summary>
@@ -112,11 +134,11 @@ public class CharacterApiController(
             characterTypeInfo,
             convertedFields));
 
-        var characterView = await characterRepository.GetCharacterViewAsync(projectId, characterId.CharacterId);
+        var character = await characterInfoRepository.GetCharacterInfo(characterId);
         return CreatedAtAction(
             nameof(GetOne),
             new { projectId, characterId = characterId.CharacterId },
-            BuildCharacterHeader(projectId, characterView.CharacterId, characterView.UpdatedAt, characterView.IsActive));
+            BuildCharacterHeader(projectId, character.Id.CharacterId, character.UpdatedAt, character.IsActive));
     }
 
     /// <summary>

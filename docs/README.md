@@ -29,6 +29,7 @@
 - [ADR010: Реклама горячих вакансий](adr010-hot-vacancy-advertisement.md)
 - [ADR011: Размер payload сетки ролей](adr011-roles-grid-payload.md)
 - [ADR012: Доступ к данным проекта из LLM — MCP-сервер и OAuth 2.1](adr012-llm-mcp-access.md)
+- [ADR013: CharacterInfo — доменный агрегат персонажа](adr013-character-info.md)
 
 ## Быстрые ссылки
 

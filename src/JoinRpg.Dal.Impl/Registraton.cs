@@ -1,6 +1,7 @@
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Dal.Impl.Repositories.ProjectMetadata;
 using JoinRpg.Data.Interfaces.AdminTools;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
@@ -28,6 +29,7 @@ public static class Registraton
             .AddTransient<ICharacterGroupRepository, CharacterGroupRepository>()
             .AddTransient<IProjectRepository, ProjectRepository>()
             .AddTransient<ICharacterRepository, CharacterRepositoryImpl>()
+            .AddTransient<ICharacterInfoRepository, CharacterInfoRepository>()
             .AddTransient<IPlotRepository, PlotRepositoryImpl>()
             .AddTransient<IForumRepository, ForumRepositoryImpl>()
             .AddTransient<IFinanceReportRepository, FinanceReportRepositoryImpl>()
