@@ -7,6 +7,13 @@ updates:
     ignore:
     # https://github.com/aws/aws-sdk-net/issues/3610
       - dependency-name: "AWSSDK.S3"
+    # Версия зафиксирована в JoinRpg.Common.PrimitiveTypes.SourceGenerator.csproj намеренно низкой
+    # (см. комментарий там) — анализатор не должен требовать более новый Roslyn, чем у потребителя.
+    # Разрешаем только патч-версии, чтобы dependabot не поднимал minor/major.
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "Microsoft.CodeAnalysis.Analyzers"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       net: #I like to merge this groups, but it will cause dependabot to timeout
         patterns:
