@@ -140,11 +140,11 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
     private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
     {
-        if (projectInfo.ProfileRequirementSettings.RequireVkontakte == MandatoryStatus.Required && !userInfo.Social.VkVerified)
+        if (projectInfo.ProfileRequirementSettings.RequireVkontakte == MandatoryStatus.Required && userInfo.Social.Vk?.IsVerified != true)
         {
             yield return AddClaimForbideReason.VkontakteMissing;
         }
-        if (projectInfo.ProfileRequirementSettings.RequireTelegram == MandatoryStatus.Required && userInfo.Social.TelegramId is null)
+        if (projectInfo.ProfileRequirementSettings.RequireTelegram == MandatoryStatus.Required && userInfo.Social.Telegram is null)
         {
             yield return AddClaimForbideReason.TelegramMissing;
         }

@@ -1,5 +1,5 @@
 @{
-    var effectiveLink = Link ?? Contact?.UserName?.Value;
+    var effectiveLink = Link ?? Contact?.PrettyName?.Value;
 }
 @if (!string.IsNullOrWhiteSpace(effectiveLink))
 {
@@ -23,7 +23,7 @@
 }
 
 @code {
-    [Parameter] public TelegramId? Contact { get; set; }
+    [Parameter] public TelegramSocialLink? Contact { get; set; }
     [Parameter] public string? Link { get; set; }
     [Parameter] public bool Collapse { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }

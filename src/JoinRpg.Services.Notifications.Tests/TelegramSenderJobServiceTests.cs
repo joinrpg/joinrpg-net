@@ -14,7 +14,7 @@ namespace JoinRpg.Services.Notifications.Tests;
 
 public class TelegramSenderJobServiceTests
 {
-    private static TargetedNotificationMessageForRecipient MakeMessage(bool skipSignature, TelegramId chatId) =>
+    private static TargetedNotificationMessageForRecipient MakeMessage(bool skipSignature, TelegramChatId chatId) =>
         new(
             new NotificationMessageForRecipient(
                 new MarkdownString("Тело"),
@@ -38,7 +38,7 @@ public class TelegramSenderJobServiceTests
             userRepository: new ThrowingUserRepository(),
             linkRenderer: new NullEntityLinkRenderer());
 
-        var chatId = new TelegramId(-100, null);
+        var chatId = new TelegramChatId(-100);
         var result = await service.SendAsync(MakeMessage(skipSignature: true, chatId), CancellationToken.None);
 
         result.Succeeded.ShouldBeTrue();
@@ -56,7 +56,7 @@ public class TelegramSenderJobServiceTests
             userRepository: new FakeUserRepository(),
             linkRenderer: new NullEntityLinkRenderer());
 
-        var chatId = new TelegramId(-100, null);
+        var chatId = new TelegramChatId(-100);
         var result = await service.SendAsync(MakeMessage(skipSignature: false, chatId), CancellationToken.None);
 
         result.Succeeded.ShouldBeTrue();
@@ -65,10 +65,10 @@ public class TelegramSenderJobServiceTests
 
     private sealed class FakeTelegramNotificationService : ITelegramNotificationService
     {
-        public TelegramId? LastChatId { get; private set; }
+        public TelegramChatId? LastChatId { get; private set; }
         public TelegramHtmlString? LastContents { get; private set; }
 
-        public Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents)
+        public Task<SendingResult> SendTelegramNotification(TelegramChatId telegramId, TelegramHtmlString contents)
         {
             LastChatId = telegramId;
             LastContents = contents;
@@ -87,7 +87,7 @@ public class TelegramSenderJobServiceTests
     {
         public Task<UserInfo?> GetUserInfo(UserIdentification userId) => Task.FromResult<UserInfo?>(new UserInfo(
             userId,
-            new UserSocialNetworks(null, null, null, null, false, ContactsAccessType.OnlyForMasters),
+            new UserSocialNetworks(null, null, null, null, ContactsAccessType.OnlyForMasters),
             [],
             [],
             [],

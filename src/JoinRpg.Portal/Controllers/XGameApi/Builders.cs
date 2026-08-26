@@ -58,8 +58,8 @@ public class ApiInfoBuilder
     public static PlayerContacts ToPlayerContacts(UserInfo player)
     {
         return new PlayerContacts(player.Email, player.PhoneNumber,
-                                                player.Social.VkId,
-                                                player.Social.TelegramId?.UserName?.Value);
+                                                player.Social.Vk is null ? null : $"id{player.Social.Vk.Id}",
+                                                player.Social.Telegram?.PrettyName?.Value);
     }
 
     public static FieldValue ToFieldValue(FieldWithValue field)

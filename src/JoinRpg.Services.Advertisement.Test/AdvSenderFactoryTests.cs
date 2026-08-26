@@ -7,7 +7,7 @@ public class AdvSenderFactoryTests
     {
         var factory = new AdvSenderFactory(new FakeTelegramNotificationService(), Options.Create(new KogdaIgraOptions { HostName = new Uri("https://kogda-igra.ru") }));
         var channel = new AdvertisementChannelInfo(
-            new AdvertisementChannelIdentification(1), BoundProjectId: null, new TelegramChannelSettings(new TelegramId(-100, null)));
+            new AdvertisementChannelIdentification(1), BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(-100)));
 
         var sender = factory.Create(channel);
 
@@ -20,7 +20,7 @@ public class AdvSenderFactoryTests
     {
         var factory = new AdvSenderFactory(new FakeTelegramNotificationService(), Options.Create(new KogdaIgraOptions { HostName = new Uri("https://kogda-igra.ru") }));
         var channel = new AdvertisementChannelInfo(
-            new AdvertisementChannelIdentification(1), BoundProjectId: null, new TelegramChannelSettings(new TelegramId(0, null)));
+            new AdvertisementChannelIdentification(1), BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(0)));
 
         factory.Create(channel).ShouldBeNull();
     }
@@ -39,7 +39,7 @@ public class AdvSenderFactoryTests
 
     private sealed class FakeTelegramNotificationService : ITelegramNotificationService
     {
-        public Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents) =>
+        public Task<SendingResult> SendTelegramNotification(TelegramChatId chatId, TelegramHtmlString contents) =>
             Task.FromResult(SendingResult.Success());
 
         public Task<string?> GetMyUserName(CancellationToken cancellationToken) => Task.FromResult<string?>(null);

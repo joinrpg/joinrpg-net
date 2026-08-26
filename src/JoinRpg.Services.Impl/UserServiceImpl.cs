@@ -111,14 +111,14 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc />
-    async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkId vkId, AvatarInfo? avatarInfo)
+    async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkSocialLink vk, AvatarInfo? avatarInfo)
     {
-        logger.LogInformation("About to link user: {userId} to {vkId}", userId, vkId);
+        logger.LogInformation("About to link user: {userId} to {vk}", userId, vk);
         var user = await UserRepository.WithProfile(userId);
 
         user.Extra ??= new UserExtra();
 
-        user.Extra.Vk = $"id{vkId.Value}";
+        user.Extra.Vk = $"id{vk.Id}";
         user.Extra.VkVerified = true;
 
         await TryAddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte");
@@ -126,13 +126,13 @@ public class UserServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramId telegramId, AvatarInfo? avatarInfo)
+    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramSocialLink telegram, AvatarInfo? avatarInfo)
     {
-        logger.LogInformation("About to link user: {userId} to {telegramId}", userId, telegramId);
+        logger.LogInformation("About to link user: {userId} to {telegram}", userId, telegram);
         var user = await UserRepository.WithProfile(userId);
 
         user.Extra ??= new UserExtra();
-        user.Extra.Telegram = string.IsNullOrWhiteSpace(telegramId.UserName?.Value) ? user.Extra.Telegram : telegramId.UserName;
+        user.Extra.Telegram = string.IsNullOrWhiteSpace(telegram.PrettyName?.Value) ? user.Extra.Telegram : telegram.PrettyName;
 
         await TryAddSocialAvatarImplAsync(avatarInfo, user, "telegram");
 

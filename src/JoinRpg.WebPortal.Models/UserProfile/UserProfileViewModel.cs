@@ -44,11 +44,11 @@ public class UserProfileDetailsViewModel
     public PhoneNumber? PhoneNumber { get; }
     [Display(Name = "Skype"), UIHint("Skype")]
     public string? Skype { get; }
-    public TelegramId? Telegram { get; }
+    public TelegramSocialLink? Telegram { get; }
     [Display(Name = "ЖЖ")]
     public LiveJournalId? Livejournal { get; }
     [Display(Name = "VK")]
-    public VkId? Vk { get; }
+    public VkSocialLink? Vk { get; }
     public Email? Email { get; }
     public bool EmailConfirmed { get; }
     [DisplayName("ФИО")]
@@ -99,9 +99,9 @@ public class UserProfileDetailsViewModel
         }
         if (Reason != AccessReasonView.NoAccess || user.Social.SocialNetworksAccess == ContactsAccessType.Public)
         {
-            Vk = VkId.FromOptional(user.Social.VkId);
+            Vk = user.Social.Vk;
             AllrpgId = user.Social.AllrpgInfoId;
-            Telegram = user.Social.TelegramId;
+            Telegram = user.Social.Telegram;
             Livejournal = LiveJournalId.FromOptional(user.Social.LiveJournal);
             HasSocialAccess = true;
         }

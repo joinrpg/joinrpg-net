@@ -8,7 +8,7 @@ internal class HardcodedAdvertisementChannelRepository : IAdvertisementChannelRe
     private static readonly AdvertisementChannelInfo HotRoleChannel = new(
         HotRoleChannelId,
         BoundProjectId: null,
-        new TelegramChannelSettings(new TelegramId(-1004315256401, null)));
+        new TelegramChannelSettings(new TelegramChatId(-1004315256401)));
 
     public Task<AdvertisementChannelInfo?> GetChannel(AdvertisementChannelIdentification channelId) =>
         Task.FromResult(channelId == HotRoleChannelId ? HotRoleChannel : null);

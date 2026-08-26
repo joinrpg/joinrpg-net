@@ -26,7 +26,7 @@
             {
                 <br /><component type="typeof(PhoneLink)" render-mode="Static" param-Contact="@Model.PhoneNumber" />
             }
-            @if (Model.Telegram?.UserName is not null)
+            @if (Model.Telegram?.PrettyName is not null)
             {
                 <br /><component type="typeof(TelegramLink)" render-mode="Static" param-Contact="@Model.Telegram" />
             }

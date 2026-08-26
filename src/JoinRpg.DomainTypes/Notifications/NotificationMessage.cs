@@ -27,7 +27,7 @@ public record NotificationAddress
         Channel = NotificationChannel.Email;
     }
 
-    public NotificationAddress(TelegramId id)
+    public NotificationAddress(TelegramChatId id)
     {
         InternalValue = id;
         Channel = NotificationChannel.Telegram;
@@ -44,7 +44,7 @@ public record NotificationAddress
         }
         else if (Channel == NotificationChannel.Telegram)
         {
-            InternalValue = TelegramId.Parse(channelSpeficValue);
+            InternalValue = TelegramChatId.Parse(channelSpeficValue, provider: null);
         }
         else if (Channel == NotificationChannel.ShowInUi)
         {
@@ -71,12 +71,12 @@ public record NotificationAddress
         channelSpecificValue = InternalValue.ToString() ?? "";
     }
 
-    public TelegramId AsTelegram()
+    public TelegramChatId AsTelegram()
     {
         if (Channel != NotificationChannel.Telegram)
         {
             throw new InvalidOperationException();
         }
-        return (TelegramId)InternalValue!;
+        return (TelegramChatId)InternalValue!;
     }
 }

@@ -116,7 +116,7 @@ public class AddClaimValidationRulesTest
             ProjectProfileRequirementSettings.AllNotRequired with { RequireVkontakte = MandatoryStatus.Required });
         var playerWithUnverifiedVk = Mock.PlayerInfo with
         {
-            Social = Mock.PlayerInfo.Social with { VkId = "id1", VkVerified = false },
+            Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: false) },
         };
         Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo)
             .ShouldContain(AddClaimForbideReason.VkontakteMissing);
@@ -129,7 +129,7 @@ public class AddClaimValidationRulesTest
             ProjectProfileRequirementSettings.AllNotRequired with { RequireVkontakte = MandatoryStatus.Required });
         var playerWithVerifiedVk = Mock.PlayerInfo with
         {
-            Social = Mock.PlayerInfo.Social with { VkId = "id1", VkVerified = true },
+            Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: true) },
         };
         Mock.Character.ValidateIfCanAddClaim(playerWithVerifiedVk, projectInfo).ShouldBeEmpty();
     }

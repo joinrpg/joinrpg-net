@@ -103,12 +103,12 @@ public class ProjectRoleGridViewModelBuilderTests
         var character = _mock.CreateCharacter("Вася");
         _mock.Player.Extra = new UserExtra
         {
-            Vk = "vasya",
+            Vk = "id7788",
             Telegram = "vasya_tg",
             Livejournal = "vasya_lj",
             SocialNetworksAccess = ContactsAccessType.OnlyForMasters, // в All — игнорируется
         };
-        // Канонический TelegramId требует числового Id из привязанного telegram-логина.
+        // Канонический TelegramSocialLink требует числового Id из привязанного telegram-логина.
         _mock.Player.ExternalLogins.Add(new UserExternalLogin
         {
             Provider = UserExternalLogin.TelegramProvider,
@@ -123,11 +123,11 @@ public class ProjectRoleGridViewModelBuilderTests
         player.Link.ShouldNotBeNull().DisplayName.ShouldBe("Player");
         var contacts = player.Contacts.ShouldNotBeNull();
         contacts.Email!.Value.ShouldBe("player@example.com");
-        contacts.Vk!.Value.ShouldBe("vasya");
+        contacts.Vk!.Id.ShouldBe(7788);
         contacts.LiveJournal!.Value.ShouldBe("vasya_lj");
-        // Канонический TelegramId: числовой Id из логина + @username из профиля.
+        // Канонический TelegramSocialLink: числовой Id из логина + @username из профиля.
         contacts.Telegram!.Id.ShouldBe(12345);
-        contacts.Telegram.UserName!.Value.ShouldBe("vasya_tg");
+        contacts.Telegram.PrettyName!.Value.ShouldBe("vasya_tg");
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var character = _mock.CreateCharacter("Вася");
         _mock.Player.Extra = new UserExtra
         {
-            Vk = "vasya",
+            Vk = "id4455",
             Telegram = "vasya_tg",
             Livejournal = "vasya_lj",
             SocialNetworksAccess = ContactsAccessType.Public,

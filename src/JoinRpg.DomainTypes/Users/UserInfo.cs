@@ -61,9 +61,8 @@ public record class UserInfo(
 }
 
 public record class UserSocialNetworks(
-    TelegramId? TelegramId,
+    TelegramSocialLink? Telegram,
     string? LiveJournal,
     int? AllrpgInfoId,
-    string? VkId,
-    bool VkVerified,
+    VkSocialLink? Vk,
     ContactsAccessType SocialNetworksAccess);
