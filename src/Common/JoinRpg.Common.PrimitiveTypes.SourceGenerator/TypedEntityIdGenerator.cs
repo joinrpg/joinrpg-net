@@ -333,12 +333,30 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         return result;
     }
 
+    /// <summary>
+    /// Находит основной (позиционный) конструктор record-типа — тот, что объявлен в списке параметров
+    /// record-декларации (record Foo(T1 P1, T2 P2)). Определяется по синтаксису, а не по атрибуту:
+    /// список имён параметров основного конструктора всегда совпадает с именами параметров record-декларации
+    /// (PascalCase, т.к. это имена генерируемых свойств), тогда как доп. конструктор с плоскими int-параметрами,
+    /// который генерирует сам этот генератор, использует lowerCamelCase-имена — совпадения не будет.
+    /// </summary>
     private static IMethodSymbol? FindPrimaryConstructor(INamedTypeSymbol type)
     {
-        // Для record-типов: ищем конструктор с атрибутом [JsonConstructor]
-        return type.InstanceConstructors
-            .FirstOrDefault(c => c.GetAttributes()
-                .Any(a => a.AttributeClass?.Name == "JsonConstructorAttribute"));
+        var recordDecl = type.DeclaringSyntaxReferences
+            .Select(r => r.GetSyntax())
+            .OfType<RecordDeclarationSyntax>()
+            .FirstOrDefault(r => r.ParameterList != null);
+
+        if (recordDecl?.ParameterList == null)
+        {
+            return null;
+        }
+
+        var paramNames = recordDecl.ParameterList.Parameters.Select(p => p.Identifier.Text).ToArray();
+
+        return type.InstanceConstructors.FirstOrDefault(c =>
+            c.Parameters.Length == paramNames.Length &&
+            c.Parameters.Select(p => p.Name).SequenceEqual(paramNames));
     }
 
     /// <summary>Проверяет, есть ли в типе hand-written реализация CompareTo (включая explicit interface implementations).</summary>
