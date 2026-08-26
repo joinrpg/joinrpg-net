@@ -36,6 +36,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
           .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
           .Include(pf => pf.Elements.Select(e => e.TargetGroups))
           .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
+          .Include(pf => pf.PlotTags)
           .Where(pf => pf.IsActive)
           .Where(pf => pf.ProjectId == projectid)
           .ToListAsync();
@@ -44,6 +45,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
     {
         var project = await Ctx.Set<Project>()
           .Include(p => p.PlotFolders.Select(pf => pf.Elements))
+          .Include(p => p.PlotFolders.Select(pf => pf.PlotTags))
           .Include(p => p.Details)
           .SingleAsync(pf => pf.ProjectId == projectId.Value);
 
@@ -55,6 +57,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
         return Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
           .Include(pf => pf.Elements.Select(e => e.TargetGroups))
+          .Include(pf => pf.PlotTags)
           .Where(pf => pf.ProjectId == projectId)
           .Where(
               pf =>
@@ -66,9 +69,9 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 
     public async Task<IReadOnlyCollection<PlotFolder>> GetPlotsByTag(int projectid, string tagname)
     {
-        await LoadProjectGroups(projectid); //TODO[GroupsLoad] it's unclear why we need this
         return await Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements)
+          .Include(pf => pf.PlotTags)
           .Where(pf => pf.ProjectId == projectid && pf.PlotTags.Any(tag => tag.TagName == tagname))
           .ToListAsync();
     }
