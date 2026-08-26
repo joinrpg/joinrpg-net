@@ -159,7 +159,16 @@ public class UserServiceImpl(
             }
         }
 
-        UserAvatar userAvatar = await UploadNewAvatar(avatarInfo.Uri, user, providerId);
+        UserAvatar userAvatar;
+        try
+        {
+            userAvatar = await UploadNewAvatar(avatarInfo.Uri, user, providerId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to upload avatar from {avatarUri} for provider {providerId}, skipping avatar update", avatarInfo.Uri, providerId);
+            return;
+        }
 
         user.SelectedAvatar ??= userAvatar;
 
