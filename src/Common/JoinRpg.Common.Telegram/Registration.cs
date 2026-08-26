@@ -11,6 +11,7 @@ public static class Registration
     public static IServiceCollection AddJoinTelegram(this IServiceCollection services)
     {
         _ = services
+            .AddTransient<TelegramLoginValidator>()
             .AddTransient<TelegramNotificationServiceImpl>()
             .AddTransient<StubTelegramNotificationService>()
             .AddTransient<ITelegramNotificationService>(services =>

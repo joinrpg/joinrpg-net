@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.Authentication.Telegram;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Web.Helpers;
