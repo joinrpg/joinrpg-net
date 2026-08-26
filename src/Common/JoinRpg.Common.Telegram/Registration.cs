@@ -22,6 +22,7 @@ public static class Registration
                 }
                 return services.GetRequiredService<TelegramNotificationServiceImpl>();
             })
+            .AddTransient<ITelegramNotificationServiceFactory, DefaultOnlyTelegramNotificationServiceFactory>()
             .AddSingleton(services =>
             {
                 var options = services.GetRequiredService<IOptions<TelegramLoginOptions>>().Value;
