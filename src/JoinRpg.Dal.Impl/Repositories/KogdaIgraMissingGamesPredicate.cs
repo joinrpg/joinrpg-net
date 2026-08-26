@@ -10,15 +10,18 @@ internal static class KogdaIgraMissingGamesPredicate
     /// Проект попадает в выборку если:
     /// 1. Проект активен и не отключена привязка к КогдаИгра
     /// 2. Нет активных КИ-привязок вообще, ИЛИ
-    ///    все привязанные КИ-игры уже завершились (End &lt; now) И проект недавно обновлялся (&lt;60 дней)
+    ///    все привязанные КИ-игры уже завершились (End &lt; now, End не пустой) И проект продолжает
+    ///    обновляться заметно позже завершения последней игры (&gt;60 дней после её End) —
+    ///    просто активность сразу после конца игры (пост-обработка) сигналом не считается.
     /// </summary>
     public static Expression<Func<Project, DateTime, bool>> GetPredicate(DateTime now)
     {
-        var lastUpdateMax = now.AddDays(-60);
+        var gap = TimeSpan.FromDays(60);
         return (project, lastUpdated) =>
             project.Active &&
             !project.Details.DisableKogdaIgraMapping &&
-            !project.KogdaIgraGames.Any(g => g.Active && g.End >= now) &&
-            (!project.KogdaIgraGames.Any(g => g.Active) || lastUpdated > lastUpdateMax);
+            !project.KogdaIgraGames.Any(g => g.Active && (g.End == null || g.End >= now)) &&
+            (!project.KogdaIgraGames.Any(g => g.Active)
+                || lastUpdated > project.KogdaIgraGames.Where(g => g.Active).Max(g => g.End!.Value).Add(gap));
     }
 }
