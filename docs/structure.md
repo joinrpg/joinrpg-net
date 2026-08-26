@@ -28,6 +28,7 @@
 - `JoinRpg.Helpers` — утилиты без зависимостей от проекта
 - `JoinRpg.Markdown` — обработка Markdown (Markdig)
 - `JoinRpg.PrimitiveTypes` — доменные типы-значения: идентификаторы и Value Objects
+- `JoinRpg.Common.EntityFrameworkCore` — generic EF Core ValueConverter для `[TypedEntityId]`-типов, реализующих `IEntityId<TSelf,TValue>` (не составные id)
 - `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, фоновые задачи
 - `JoinRpg.Common.Telegram` — интеграция с Telegram Bot
 - `JoinRpg.Common.BastiliaRatingClient` — HTTP-клиент к сайту клуба #Бастилия
