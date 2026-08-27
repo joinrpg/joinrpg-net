@@ -15,7 +15,8 @@ public record class UserInfo(
     UserFullName UserFullName,
     bool VerifiedProfileFlag,
     string? PhoneNumber,
-    bool HasPassword)
+    bool HasPassword,
+    bool HasSingleLoginMethod)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 

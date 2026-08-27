@@ -4,12 +4,12 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Web.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -193,6 +193,7 @@ public class ManageController(
         _ = await avatarService.EnsureAvatarPresent(currentUserAccessor.UserId);
 
         var user = await UserRepository.WithProfile(currentUserAccessor.UserId);
+        var userInfo = await UserRepository.GetUserInfo(currentUserAccessor.UserIdentification) ?? throw new InvalidOperationException();
         var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
         var claimBeforeThat = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).Skip(1).FirstOrDefault() : null;
         if (claimBeforeThat != null && claimBeforeThat.CreateDate.AddMonths(3) > DateTime.Now && lastClaim != null)
@@ -218,7 +219,7 @@ public class ManageController(
             LastClaimProjectId = lastClaim?.ProjectId,
             IsVerifiedFlag = user.VerifiedProfileFlag,
             SocialNetworkAccess = (ContactsAccessTypeView)user.Extra.SocialNetworksAccess,
-            SocialLoginStatus = user.GetSocialLogins().ToList(),
+            SocialLoginStatus = userInfo.GetSocialLogins().ToList(),
             Email = user.Email,
             HasPassword = user.PasswordHash != null,
             Avatars = new UserAvatarListViewModel(user),

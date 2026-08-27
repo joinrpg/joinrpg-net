@@ -14,6 +14,7 @@
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.UserProfile\JoinRpg.Web.UserProfile.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ical.Net" />

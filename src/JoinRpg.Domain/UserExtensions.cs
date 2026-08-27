@@ -26,7 +26,8 @@ public static class UserExtensions
             user.ExtractFullName(),
             user.VerifiedProfileFlag,
             user.Extra?.PhoneNumber,
-            user.PasswordHash != null
+            user.PasswordHash != null,
+            (user.PasswordHash != null ? 1 : 0) + user.ExternalLogins.Count == 1
             );
     }
 

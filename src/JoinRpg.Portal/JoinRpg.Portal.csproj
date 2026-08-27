@@ -55,6 +55,7 @@
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.UserProfile\JoinRpg.Web.UserProfile.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />

@@ -106,6 +106,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Extra.PhoneNumber,
                 user.Auth.EmailConfirmed,
                 HasPassword = user.PasswordHash != null,
+                LoginMethodsCount = (user.PasswordHash != null ? 1 : 0) + user.ExternalLogins.Count,
             };
 
 
@@ -134,7 +135,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             userFullName,
             result.VerifiedProfileFlag,
             result.PhoneNumber,
-            result.HasPassword
+            result.HasPassword,
+            result.LoginMethodsCount == 1
             );
         })];
     }

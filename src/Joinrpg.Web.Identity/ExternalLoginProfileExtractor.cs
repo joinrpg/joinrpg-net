@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using AspNet.Security.OAuth.Vkontakte;
-using Joinrpg.Web.Identity;
+using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Identity;
 
-namespace JoinRpg.Portal.Infrastructure.Authentication;
+namespace Joinrpg.Web.Identity;
 
 /// <summary>
 /// Task of this class is to extract useful data from social logins
@@ -54,14 +54,14 @@ public class ExternalLoginProfileExtractor(IUserService userService)
 
     private static VkSocialLink? TryGetVkId(ExternalLoginInfo loginInfo)
     {
-        return loginInfo.LoginProvider == ProviderDescViewModel.Vk.ProviderId
+        return loginInfo.LoginProvider == UserExternalLogin.VkProvider
             && loginInfo.Principal.FindFirstValue(ClaimTypes.NameIdentifier) is string id
             && long.TryParse(id, out var vkId)
             ? new VkSocialLink(vkId, isVerified: true)
             : null;
     }
 
-    internal async Task CleanAfterLogin(JoinIdentityUser user, string loginProvider)
+    public async Task CleanAfterLogin(JoinIdentityUser user, string loginProvider)
     {
         if (loginProvider == "Vkontakte")
         {
