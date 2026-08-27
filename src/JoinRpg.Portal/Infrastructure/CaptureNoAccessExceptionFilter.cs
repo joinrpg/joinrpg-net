@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -19,19 +20,21 @@ public class CaptureNoAccessExceptionFilter(IProjectMetadataRepository projectMe
                 ViewName = "ErrorNoAccessToProject",
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
             };
+            viewResult.ViewData[Constants.ProjectIdName] = noAccessException.ProjectId.Value;
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(noAccessException.ProjectId);
             viewResult.ViewData.Model = NoAccessToProjectViewModelBuilder.Build(projectInfo, noAccessException.Permission);
             filterContext.Result = viewResult;
         }
 
 
-        if (filterContext.Exception is ProjectDeactivatedException)
+        if (filterContext.Exception is ProjectDeactivatedException projectDeactivatedException)
         {
             var viewResult = new ViewResult()
             {
                 ViewName = "ErrorNotActiveProject",
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
             };
+            viewResult.ViewData[Constants.ProjectIdName] = projectDeactivatedException.ProjectId.Value;
             filterContext.Result = viewResult;
         }
     }
