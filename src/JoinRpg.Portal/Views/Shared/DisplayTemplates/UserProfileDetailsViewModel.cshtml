@@ -26,6 +26,12 @@
             {
                 <br /><component type="typeof(PhoneLink)" render-mode="Static" param-Contact="@Model.PhoneNumber" />
             }
+            @if (Model.ViewAsAdmin && !Model.HasPassword)
+            {
+                <br />
+                <span>Нет пароля</span>
+                <join-icon icon="Info" title="У пользователя не задан пароль" />
+            }
             @if (Model.Telegram?.PrettyName is not null)
             {
                 <br /><component type="typeof(TelegramLink)" render-mode="Static" param-Contact="@Model.Telegram" />

@@ -51,6 +51,7 @@ public class UserProfileDetailsViewModel
     public VkSocialLink? Vk { get; }
     public Email? Email { get; }
     public bool EmailConfirmed { get; }
+    public bool HasPassword { get; }
     [DisplayName("ФИО")]
     public string? FullName { get; }
 
@@ -93,6 +94,7 @@ public class UserProfileDetailsViewModel
         {
             Email = user.Email;
             EmailConfirmed = user.EmailConfirmed;
+            HasPassword = user.HasPassword;
             FullName = user.UserFullName.FullName;
             PhoneNumber = PhoneNumber.FromOptional(user.PhoneNumber);
             IsVerifiedUser = user.VerifiedProfileFlag;
