@@ -19,6 +19,10 @@
                 @ChildContent
             }
         </ContactLink>
+        @if (Contact is not null && !Contact.IsVerified)
+        {
+            <JoinIcon Icon="JoinIconType.Info" Title="Telegram не подтвержден" />
+        }
     }
 }
 

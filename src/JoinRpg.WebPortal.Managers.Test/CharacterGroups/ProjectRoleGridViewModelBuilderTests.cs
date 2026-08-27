@@ -131,6 +131,27 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
+    public void Build_AllMode_TelegramWithoutExternalLoginIsNotVerified()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        _mock.Player.Extra = new UserExtra
+        {
+            Telegram = "vasya_tg",
+            SocialNetworksAccess = ContactsAccessType.OnlyForMasters, // в All — игнорируется
+        };
+        // ExternalLogin не привязан — только legacy-имя из профиля.
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+
+        var contacts = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player!.Contacts.ShouldNotBeNull();
+        contacts.Telegram.ShouldNotBeNull();
+        contacts.Telegram.PrettyName!.Value.ShouldBe("vasya_tg");
+        contacts.Telegram.IsVerified.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Build_PublicOnly_HidesContactsUnlessPlayerAllowed()
     {
         var character = _mock.CreateCharacter("Вася");

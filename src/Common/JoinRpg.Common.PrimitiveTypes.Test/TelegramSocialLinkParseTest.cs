@@ -72,4 +72,33 @@ public class TelegramSocialLinkParseTest
         TelegramSocialLink.TryParse(val, provider: null, out var parseResult).ShouldBeTrue();
         parseResult.ShouldBe(version);
     }
+
+    [Fact]
+    public void FromUserData_WithExternalLogin_IsVerified()
+    {
+        var result = TelegramSocialLink.FromUserData("12345", new PrefferedName("leo"));
+
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(12345);
+        result.IsVerified.ShouldBeTrue();
+        result.PrettyName!.Value.ShouldBe("leo");
+    }
+
+    [Fact]
+    public void FromUserData_WithoutExternalLoginButWithPrettyName_IsNotVerified()
+    {
+        var result = TelegramSocialLink.FromUserData(null, new PrefferedName("leo"));
+
+        result.ShouldNotBeNull();
+        result.Id.ShouldBeNull();
+        result.IsVerified.ShouldBeFalse();
+        result.PrettyName!.Value.ShouldBe("leo");
+        result.Link.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void FromUserData_WithoutExternalLoginAndWithoutPrettyName_ReturnsNull()
+    {
+        TelegramSocialLink.FromUserData(null, null).ShouldBeNull();
+    }
 }
