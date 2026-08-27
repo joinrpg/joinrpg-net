@@ -9,21 +9,29 @@ namespace JoinRpg.Common.PrimitiveTypes;
 /// </summary>
 public abstract record SocialLink(PrefferedName? PrettyName, bool IsVerified)
 {
-    public abstract long Id { get; }
+    public abstract long? Id { get; }
     public abstract Uri? Link { get; }
 }
 
 public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSocialLink>
 {
-    public TelegramChatId ChatId { get; }
+    // Нет, если не привязан ExternalLogin (есть только legacy PrettyName из UserExtra.Telegram) —
+    // в этом случае это неверифицированный отображаемый контакт, слать через него сообщения нельзя.
+    public TelegramChatId? ChatId { get; }
 
-    public override long Id => ChatId.Value;
+    public override long? Id => ChatId?.Value;
 
     public override Uri? Link => PrettyName is null ? null : new Uri($"https://t.me/{PrettyName.Value}");
 
-    public TelegramSocialLink(TelegramChatId chatId, PrefferedName? prettyName = null, bool isVerified = false)
+    public TelegramSocialLink(TelegramChatId? chatId, PrefferedName? prettyName = null, bool isVerified = false)
         : base(NormalizeUserName(prettyName), isVerified)
     {
+        var normalizedPrettyName = NormalizeUserName(prettyName);
+        if (chatId is null && normalizedPrettyName is null)
+        {
+            throw new ArgumentException("Нужно указать либо chatId, либо prettyName.", nameof(chatId));
+        }
+
         ChatId = chatId;
     }
 
@@ -32,6 +40,20 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
 
     public static TelegramSocialLink? FromOptional(string? key, PrefferedName? userName, bool isVerified = false)
         => string.IsNullOrWhiteSpace(key) ? null : new TelegramSocialLink(new TelegramChatId(long.Parse(key)), userName, isVerified);
+
+    /// <summary>
+    /// Строит из привязанного ExternalLogin (даёт ChatId и верификацию) и/или legacy-поля
+    /// UserExtra.Telegram (даёт PrettyName). Если ExternalLogin отсутствует, а PrettyName есть,
+    /// ссылка всё равно строится (по PrettyName), но верифицированной не считается — отправлять
+    /// сообщения по ней нельзя, только показывать в профиле.
+    /// </summary>
+    public static TelegramSocialLink? FromUserData(string? externalLoginKey, PrefferedName? prettyName)
+    {
+        var hasExternalLogin = long.TryParse(externalLoginKey, out var chatId);
+        return hasExternalLogin || prettyName is not null
+            ? new TelegramSocialLink(hasExternalLogin ? new TelegramChatId(chatId) : null, prettyName, isVerified: hasExternalLogin)
+            : null;
+    }
 
     public static bool TryParse([NotNullWhen(true)] ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out TelegramSocialLink result)
     {
@@ -73,25 +95,55 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
 
     private static PrefferedName? NormalizeUserName(PrefferedName? userName) => userName is null || string.IsNullOrWhiteSpace(userName.Value) ? null : userName;
 
-    public override string ToString() => PrettyName is null ? $"Telegram({Id})" : $"Telegram({Id}, @{PrettyName.Value})";
+    public override string ToString() => (ChatId, PrettyName) switch
+    {
+        (null, _) => $"Telegram(@{PrettyName?.Value})",
+        (_, null) => $"Telegram({Id})",
+        _ => $"Telegram({Id}, @{PrettyName.Value})",
+    };
 }
 
 public sealed record VkSocialLink : SocialLink
 {
-    private readonly long id;
+    private readonly long? id;
 
-    public override long Id => id;
+    public override long? Id => id;
 
-    public override Uri Link => new($"https://vk.com/id{Id}");
+    // Как и у Telegram: если числового id нет, ссылка всё равно строится по PrettyName (slug профиля).
+    public override Uri? Link => id is long numericId
+        ? new Uri($"https://vk.com/id{numericId}")
+        : PrettyName is null ? null : new Uri($"https://vk.com/{PrettyName.Value}");
 
-    public VkSocialLink(long id, PrefferedName? prettyName = null, bool isVerified = false)
+    public VkSocialLink(long? id, PrefferedName? prettyName = null, bool isVerified = false)
         : base(prettyName, isVerified)
     {
+        if (id is null && prettyName is null)
+        {
+            throw new ArgumentException("Нужно указать либо id, либо prettyName.", nameof(id));
+        }
+
         this.id = id;
     }
 
-    /// <summary>Строит из значения колонки UserExtra.Vk (формат "id123456").</summary>
-    public static VkSocialLink? FromOptional(string? vk, bool isVerified = false)
+    /// <summary>
+    /// Строит из привязанного ExternalLogin (приоритетно) или, если его нет, из legacy-поля
+    /// UserExtra.Vk. Легаси-поле обычно хранит числовой id (формат "id123456"), но если это не
+    /// число (старый slug профиля), используем его как PrettyName — ссылка всё равно будет рабочей.
+    /// Верификация (<paramref name="vkVerified"/>) учитывается, только если есть привязанный
+    /// ExternalLogin — легаси-запись без него верифицированной не считается.
+    /// </summary>
+    public static VkSocialLink? FromUserData(string? externalLoginKey, string? legacyVk, bool vkVerified)
+    {
+        var hasExternalLogin = long.TryParse(externalLoginKey, out var externalId);
+        var id = hasExternalLogin ? externalId : ParseLegacyId(legacyVk);
+        var prettyName = id is null ? PrefferedName.FromOptional(legacyVk) : null;
+
+        return id is null && prettyName is null
+            ? null
+            : new VkSocialLink(id, prettyName, isVerified: hasExternalLogin && vkVerified);
+    }
+
+    private static long? ParseLegacyId(string? vk)
     {
         if (string.IsNullOrWhiteSpace(vk))
         {
@@ -99,8 +151,8 @@ public sealed record VkSocialLink : SocialLink
         }
 
         var trimmed = vk.StartsWith("id", StringComparison.OrdinalIgnoreCase) ? vk[2..] : vk;
-        return long.TryParse(trimmed, out var parsedId) ? new VkSocialLink(parsedId, isVerified: isVerified) : null;
+        return long.TryParse(trimmed, out var parsedId) ? parsedId : null;
     }
 
-    public override string ToString() => $"Vk({Id})";
+    public override string ToString() => Id is not null ? $"Vk({Id})" : $"Vk({PrettyName})";
 }

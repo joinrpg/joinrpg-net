@@ -1,9 +1,16 @@
 @{
-    var effectiveSegment = Link?.Value ?? (Contact is null ? null : $"id{Contact.Id}");
+    // Ссылка — всегда по числовому id, если он есть (он стабилен, в отличие от короткого имени
+    // профиля). А вот отображаемый текст — по PrettyName, если он есть, так он читаемее.
+    var hrefSegment = Link?.Value ?? (Contact is null ? null : Contact.Id is long id ? $"id{id}" : Contact.PrettyName?.Value);
+    var displaySegment = Link?.Value ?? Contact?.PrettyName?.Value ?? hrefSegment;
 }
-@if (effectiveSegment is not null)
+@if (hrefSegment is not null)
 {
-    <ContactLink Prefix="ВК:" Href="@($"https://vk.com/{effectiveSegment}")">@effectiveSegment</ContactLink>
+    <ContactLink Prefix="ВК:" Href="@($"https://vk.com/{hrefSegment}")">@displaySegment</ContactLink>
+    @if (Contact is not null && !Contact.IsVerified)
+    {
+        <JoinIcon Icon="JoinIconType.Info" Title="ВК не подтвержден" />
+    }
 }
 
 @code {

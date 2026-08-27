@@ -10,8 +10,8 @@ public static class UserExtensions
     [Obsolete("Это неэффективный метод, если у пользователя не загружены проекты. Лучше грузить UserInfo из репозитория")]
     public static UserInfo GetUserInfo(this User user)
     {
-        var telegram = TelegramSocialLink.FromOptional(user.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(user.Extra?.Telegram), isVerified: true);
-        var vk = VkSocialLink.FromOptional(user.Extra?.Vk, user.Extra?.VkVerified ?? false);
+        var telegram = TelegramSocialLink.FromUserData(user.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(user.Extra?.Telegram));
+        var vk = VkSocialLink.FromUserData(user.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.VkProvider)?.Key, user.Extra?.Vk, user.Extra?.VkVerified ?? false);
 
         return new UserInfo(
             user.GetId(),

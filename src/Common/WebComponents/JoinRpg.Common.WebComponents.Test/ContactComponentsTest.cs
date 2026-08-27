@@ -62,11 +62,22 @@ public class ContactComponentsTest
     public void TelegramLink_WithUserName_RendersLink()
     {
         using var ctx = new BunitContext();
-        var contact = new TelegramSocialLink(new TelegramChatId(123456), new PrefferedName("joinrpg"));
+        var contact = new TelegramSocialLink(new TelegramChatId(123456), new PrefferedName("joinrpg"), isVerified: true);
         var cut = ctx.Render<TelegramLink>(p => p.Add(x => x.Contact, contact));
         cut.Markup.ShouldContain("https://t.me/joinrpg");
         cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Telegram).IconName);
         cut.Markup.ShouldContain("white-space: nowrap");
+        cut.Markup.ShouldNotContain(JoinIconDefinitions.Get(JoinIconType.Info).IconName);
+    }
+
+    [Fact]
+    public void TelegramLink_NotVerified_ShowsUnverifiedIcon()
+    {
+        using var ctx = new BunitContext();
+        var contact = new TelegramSocialLink(null, new PrefferedName("joinrpg"), isVerified: false);
+        var cut = ctx.Render<TelegramLink>(p => p.Add(x => x.Contact, contact));
+        cut.Markup.ShouldContain("https://t.me/joinrpg");
+        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Info).IconName);
     }
 
     [Fact]
@@ -99,9 +110,29 @@ public class ContactComponentsTest
     public void VkLink_WithValue_RendersVkLink()
     {
         using var ctx = new BunitContext();
-        var cut = ctx.Render<VkLink>(p => p.Add(x => x.Contact, new VkSocialLink(123)));
+        var cut = ctx.Render<VkLink>(p => p.Add(x => x.Contact, new VkSocialLink(123, isVerified: true)));
         cut.Markup.ShouldContain("https://vk.com/id123");
         cut.Markup.ShouldContain("ВК:");
         cut.Markup.ShouldContain("white-space: nowrap");
+        cut.Markup.ShouldNotContain(JoinIconDefinitions.Get(JoinIconType.Info).IconName);
+    }
+
+    [Fact]
+    public void VkLink_NotVerified_ShowsUnverifiedIcon()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<VkLink>(p => p.Add(x => x.Contact, new VkSocialLink(123, isVerified: false)));
+        cut.Markup.ShouldContain("https://vk.com/id123");
+        cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Info).IconName);
+    }
+
+    [Fact]
+    public void VkLink_WithIdAndPrettyName_HrefByIdTextByPrettyName()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<VkLink>(p => p.Add(x => x.Contact, new VkSocialLink(123, new PrefferedName("durov"))));
+        cut.Markup.ShouldContain("https://vk.com/id123");
+        cut.Markup.ShouldNotContain("vk.com/durov");
+        cut.Markup.ShouldContain(">durov<");
     }
 }

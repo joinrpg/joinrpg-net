@@ -112,8 +112,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         var results = await userQuery.ToListAsync();
 
         return [.. results.Select(result => {
-             var telegram = TelegramSocialLink.FromOptional(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, new PrefferedName(result.Telegram), isVerified: true);
-             var vk = VkSocialLink.FromOptional(result.Vk, result.VkVerified);
+             var telegram = TelegramSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(result.Telegram));
+             var vk = VkSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.VkProvider)?.Key, result.Vk, result.VkVerified);
 
         var userFullName =
             new UserFullName(
