@@ -24,8 +24,12 @@ else if (Row.ActiveClaimsCount > 0)
 {
     <text>@ClaimsCountText</text>
 }
-else
+else if (Row.Player.ApplyStatus.BusyStatus is not (CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy))
 {
+    @* TODO: сейчас недостижимо — BusyStatus здесь всегда Vacancy/HotVacancy (нет заявок и
+       нет игрока не даёт других значений), а «приём заявок закрыт» в него не заложен.
+       Ветка заработает, когда ApplyForCharacterButton.IsAvailable и BusyStatus начнут
+       учитывать реальную возможность заявиться (например, project.IsAcceptingClaims). *@
     <text>нет&nbsp;игрока</text>
 }
 @if (Row.Player.Contacts is not null)
