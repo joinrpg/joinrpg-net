@@ -531,6 +531,7 @@ public class AccountController(
     {
         if (projectId is int projectIdValue)
         {
+            ViewBag.ProjectId = projectIdValue;
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectIdValue));
             return View("ErrorNoAccessToProject", NoAccessToProjectViewModelBuilder.Build(projectInfo));
         }
