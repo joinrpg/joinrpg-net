@@ -1,11 +1,36 @@
 ﻿@model string
 @{
     int LoginWidgetJsVersion = 22;
+    string containerId = $"telegram-login-widget-{Guid.NewGuid():N}";
 }
 
-<script async src="https://telegram.org/js/telegram-widget.js?@LoginWidgetJsVersion"
-        data-telegram-login="@Model"
-        data-size="small"
-        data-userpic="false"
-        data-request-access="write"
-        data-auth-url="/manage/LinkTelegramLoginCallback"></script>
+<div id="@containerId">
+    <script async src="https://telegram.org/js/telegram-widget.js?@LoginWidgetJsVersion"
+            data-telegram-login="@Model"
+            data-size="small"
+            data-userpic="false"
+            data-request-access="write"
+            data-auth-url="/manage/LinkTelegramLoginCallback"></script>
+    <p class="text-warning telegram-vpn-warning" style="display:none">
+        Кнопка привязки Telegram может не отображаться, если у вас выключен VPN
+    </p>
+</div>
+<script>
+    (function () {
+        var container = document.getElementById(@Html.Raw(Json.Serialize(containerId)));
+        var warning = container.querySelector('.telegram-vpn-warning');
+
+        var timer = setTimeout(function () {
+            warning.style.display = '';
+        }, 2000);
+
+        var observer = new MutationObserver(function () {
+            if (container.querySelector('iframe')) {
+                clearTimeout(timer);
+                warning.style.display = 'none';
+                observer.disconnect();
+            }
+        });
+        observer.observe(container, { childList: true });
+    })();
+</script>
