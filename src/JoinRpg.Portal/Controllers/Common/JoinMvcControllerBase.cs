@@ -67,6 +67,9 @@ public abstract class JoinMvcControllerBase : Controller
             case JoinFieldScheduleShouldBeUniqueException _:
                 ModelState.AddModelError("", "Невозможно добавить второе поле с настройками расписания");
                 return;
+            case JoinRpgSlotLimitedException _:
+                ModelState.AddModelError("", "Не удалось принять заявку: свободные места на эту роль закончились");
+                return;
             default:
 
                 logger.LogError(exception, "Исключение при обработке запроса");
