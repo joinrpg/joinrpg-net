@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using Xunit.Abstractions;
 
 namespace JoinRpg.Domain.Test;
@@ -177,6 +178,49 @@ public class FieldSaveHelperTest
         // master-only значение персонажа не должно утечь в JSON заявки (PublicOnly унаследованного слоя сохранён)
         claim.JsonData.ShouldNotContain("master-secret");
         claim.JsonData.ShouldContain("player-value");
+    }
+
+    [Fact]
+    public void MovedClaimApprovalShouldNotLeakOldCharacterFieldValueIntoNewCharacter()
+    {
+        // Регрессия: подали заявку на персонажа A (у него уже стоит значение поля) -> переместили
+        // заявку на персонажа B -> приняли заявку. До фикса значение поля персонажа A (в т.ч.
+        // "специальных" полей имени/описания, см. CharacterExistsStrategyBase.SetCharacterDescription)
+        // утекало в Claim.JsonData при подаче заявки и затем перезаписывало персонажа B при принятии.
+        _original = new MockedProject();
+        var mock = new MockedProject();
+
+        // Поле должно быть публичным (как обычно настроены "специальные" поля имени/описания персонажа),
+        // иначе PublicOnly()-фильтр CharacterLayer в SaveToClaimOnlyStrategy отсечёт его ещё до бага.
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(mock.PublicFieldInfo, "OldCharacterValue"));
+
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+
+        // Игрок подаёт заявку, не трогая это поле явно
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Player.UserId,
+            claim,
+            new Dictionary<int, string?>(),
+            mock.ProjectInfo);
+
+        var characterB = mock.CreateCharacter("CharacterB");
+
+        // Мастер перемещает заявку на другого персонажа (JoinRpg.Services.Impl.Claims.ClaimServiceImpl.MoveByMaster
+        // меняет только claim.Character/CharacterId, Claim.JsonData не трогает)
+        claim.Character = characterB;
+        claim.CharacterId = characterB.CharacterId;
+
+        claim.ClaimStatus = ClaimStatus.Approved;
+        characterB.ApprovedClaim = claim;
+        characterB.ApprovedClaimId = claim.ClaimId;
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Player.UserId,
+            claim,
+            new Dictionary<int, string?>(),
+            mock.ProjectInfo);
+
+        characterB.JsonData.ShouldNotContain("OldCharacterValue");
     }
 
     [Fact]
