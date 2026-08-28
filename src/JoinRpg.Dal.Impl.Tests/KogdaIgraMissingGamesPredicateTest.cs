@@ -1,3 +1,5 @@
+using System.Data.Entity;
+using System.Linq.Expressions;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Projects;
@@ -44,8 +46,32 @@ public class KogdaIgraMissingGamesPredicateTest
             KogdaIgraGames = [.. (games ?? [])],
         };
 
+    // GetPredicate() использует DbFunctions.DiffDays — канонические DbFunctions умеют
+    // транслироваться EF6 в SQL, но при прямом вызове вне LINQ to Entities кидают
+    // NotSupportedException. Для юнит-тестов подменяем такой вызов эквивалентной
+    // арифметикой на чистых DateTime, чтобы можно было Compile() и выполнить in-memory.
     private static bool TestPredicate(Project project, DateTime lastUpdated)
-        => KogdaIgraMissingGamesPredicate.GetPredicate(Now).Compile()(project, lastUpdated);
+    {
+        var predicate = (Expression<Func<Project, DateTime, bool>>)new DbFunctionsDiffDaysRewriter()
+            .Visit(KogdaIgraMissingGamesPredicate.GetPredicate(Now));
+        return predicate.Compile()(project, lastUpdated);
+    }
+
+    private sealed class DbFunctionsDiffDaysRewriter : ExpressionVisitor
+    {
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.DeclaringType == typeof(DbFunctions) && node.Method.Name == nameof(DbFunctions.DiffDays))
+            {
+                var start = Expression.Convert(Visit(node.Arguments[0]), typeof(DateTime));
+                var end = Expression.Convert(Visit(node.Arguments[1]), typeof(DateTime));
+                var totalDays = Expression.Property(Expression.Subtract(end, start), nameof(TimeSpan.TotalDays));
+                return Expression.Convert(Expression.Convert(totalDays, typeof(int)), typeof(int?));
+            }
+
+            return base.VisitMethodCall(node);
+        }
+    }
 
     // --- Нет привязок ---
 

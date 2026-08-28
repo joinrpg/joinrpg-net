@@ -16,12 +16,14 @@ internal static class KogdaIgraMissingGamesPredicate
     /// </summary>
     public static Expression<Func<Project, DateTime, bool>> GetPredicate(DateTime now)
     {
-        var gap = TimeSpan.FromDays(60);
+        const int gapDays = 60;
         return (project, lastUpdated) =>
             project.Active &&
             !project.Details.DisableKogdaIgraMapping &&
             !project.KogdaIgraGames.Any(g => g.Active && (g.End == null || g.End >= now)) &&
             (!project.KogdaIgraGames.Any(g => g.Active)
-                || lastUpdated > project.KogdaIgraGames.Where(g => g.Active).Max(g => g.End!.Value).Add(gap));
+                // EF6 не умеет транслировать в SQL ни DateTime.Add(TimeSpan)/AddDays, ни арифметику
+                // над DateTime (+ TimeSpan, .Ticks) — только канонические DbFunctions.
+                || DbFunctions.DiffDays(project.KogdaIgraGames.Where(g => g.Active).Max(g => g.End!.Value), lastUpdated) > gapDays);
     }
 }
