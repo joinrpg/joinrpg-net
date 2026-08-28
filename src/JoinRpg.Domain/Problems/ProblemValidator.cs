@@ -52,7 +52,7 @@ internal class ProblemValidator<TObject>(
         }
     }
 
-    private IEnumerable<FieldRelatedProblem> ValidateField(CharacterItem target, FieldWithValue fieldWithValue)
+    private IEnumerable<FieldRelatedProblem> ValidateField(IFieldAvailabilityTarget target, FieldWithValue fieldWithValue)
     {
         foreach (var filter in fieldFilters)
         {

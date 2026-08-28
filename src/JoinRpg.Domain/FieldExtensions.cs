@@ -27,13 +27,14 @@ public static class FieldExtensions
         return IsAvailableForTargetCore(field, isNpc, targetGroups);
     }
 
-    public static bool IsAvailableForTarget(this ProjectFieldInfo field, CharacterItem target)
+    public static bool IsAvailableForTarget(this ProjectFieldInfo field, IFieldAvailabilityTarget target)
     {
         ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(target);
 
-        var isNpc = target.Character.CharacterType == CharacterType.NonPlayer;
+        var isNpc = target.CharacterType == CharacterType.NonPlayer;
 
-        return IsAvailableForTargetCore(field, isNpc, target.ParentGroups);
+        return IsAvailableForTargetCore(field, isNpc, target.ParentGroupIdsToTop);
     }
 
     private static bool IsAvailableForTargetCore(ProjectFieldInfo field, bool isNpc, IEnumerable<CharacterGroupIdentification>? targetGroups)

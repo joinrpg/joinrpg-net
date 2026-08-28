@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Domain;
 
 public class CharacterBulkLoader
@@ -16,4 +18,14 @@ public class CharacterBulkLoader
     }
 }
 
-public record class CharacterItem(Character Character, IReadOnlyCollection<CharacterGroupIdentification> ParentGroups);
+/// <summary>
+/// Обёртка над EF-сущностью для проверок доступности поля. Временная: существует, пока проверки
+/// проблем не переехали на <see cref="CharacterInfo"/> (ADR013), который реализует тот же интерфейс.
+/// </summary>
+public record class CharacterItem(Character Character, IReadOnlyCollection<CharacterGroupIdentification> ParentGroups)
+    : IFieldAvailabilityTarget
+{
+    CharacterType IFieldAvailabilityTarget.CharacterType => Character.CharacterType;
+
+    IReadOnlyCollection<CharacterGroupIdentification> IFieldAvailabilityTarget.ParentGroupIdsToTop => ParentGroups;
+}
