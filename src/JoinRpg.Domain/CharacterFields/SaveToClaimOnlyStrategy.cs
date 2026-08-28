@@ -21,8 +21,14 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
 
     protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
     {
-        //TODO do not save fields that have values same as character's
-        Claim.JsonData = fields.Values.SerializeFields();
+        // Character-bound поля, унаследованные от текущего персонажа (не введённые игроком в этой заявке),
+        // не должны попадать в Claim.JsonData: иначе при последующем перемещении заявки на другого персонажа
+        // и её принятии эти значения перезапишут поля нового персонажа.
+        var fieldsToSave = fields.Values.Where(f =>
+            f.Field.BoundTo == FieldBoundTo.Claim ||
+            CharacterFieldLayers.CharacterLayer.LayerData.GetValueOrDefault(f.Field.Id)?.Value != f.Value);
+
+        Claim.JsonData = fieldsToSave.SerializeFields();
     }
 
     protected override void SetCharacterNameFromPlayer()
