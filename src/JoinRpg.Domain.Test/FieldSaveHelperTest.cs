@@ -26,11 +26,11 @@ public class FieldSaveHelperTest
         // честным оракулом поведения при переходе на FieldLayerContainer.
         public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
             int currentUserId, Claim claim, Dictionary<int, string?> fields, ProjectInfo projectInfo)
-            => SaveCharacterFields(currentUserId, claim, FieldLayerContainer.FromFieldValues(projectInfo, fields), projectInfo);
+            => SaveCharacterFields(currentUserId, claim, new FieldLayerContainer(projectInfo, fields), projectInfo);
 
         public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
             int currentUserId, Character character, Dictionary<int, string?> fields, ProjectInfo projectInfo)
-            => SaveCharacterFields(currentUserId, character, FieldLayerContainer.FromFieldValues(projectInfo, fields), projectInfo);
+            => SaveCharacterFields(currentUserId, character, new FieldLayerContainer(projectInfo, fields), projectInfo);
     }
 
     private MockedFieldSaveHelper InitFieldSaveHelper() => new MockedFieldSaveHelper(testOutputHelper);

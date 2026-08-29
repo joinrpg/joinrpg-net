@@ -32,7 +32,7 @@ public class CharacterInfoTest
 
         var ex = Should.Throw<ArgumentException>(() => MakeCharacter(
             projectInfo,
-            characterFields: new FieldLayerContainer(otherProjectInfo, new Dictionary<int, string>())));
+            characterFields: new FieldLayerContainer(otherProjectInfo, new Dictionary<int, string?>())));
 
         ex.ParamName.ShouldBe("characterFields");
     }
@@ -58,7 +58,7 @@ public class CharacterInfoTest
         var otherProjectInfo = MakeProject(MakeField(1));
         var claim = MakeClaim(projectInfo, 1) with
         {
-            Fields = new FieldLayerContainer(otherProjectInfo, new Dictionary<int, string>()),
+            Fields = new FieldLayerContainer(otherProjectInfo, new Dictionary<int, string?>()),
         };
 
         var ex = Should.Throw<ArgumentException>(() => MakeCharacter(projectInfo, claims: [claim]));
@@ -286,7 +286,7 @@ public class CharacterInfoTest
         var approved = MakeClaim(projectInfo, 1, ClaimStatus.Approved, fields: new() { { 1, "from claim" } });
         var character = MakeCharacter(
             projectInfo,
-            characterFields: new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from character" } }),
+            characterFields: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "from character" } }),
             claims: [approved],
             approvedClaimId: approved.ClaimId);
 
@@ -344,7 +344,7 @@ public class CharacterInfoTest
             projectInfo,
             characterFields: new FieldLayerContainer(
                 projectInfo,
-                new Dictionary<int, string> { { 1, "public" }, { 2, "secret" } }));
+                new Dictionary<int, string?> { { 1, "public" }, { 2, "secret" } }));
 
         var masterView = character.GetFieldLayers(AccessArgumentsMaster).GetSortedFieldsForView();
         var playerView = character.GetFieldLayers(AccessArgumentsPlayer).GetSortedFieldsForView();
@@ -434,7 +434,7 @@ public class CharacterInfoTest
             new MarkdownString(""),
             originalCharacterSlotId: null,
             directGroupIds ?? [],
-            characterFields ?? new FieldLayerContainer(projectInfo, new Dictionary<int, string>()),
+            characterFields ?? new FieldLayerContainer(projectInfo, new Dictionary<int, string?>()),
             claims ?? [],
             approvedClaimId,
             new DateTime(2024, 1, 1),
@@ -451,7 +451,7 @@ public class CharacterInfoTest
         ClaimStatus status = ClaimStatus.AddedByUser,
         UserIdentification? playerId = null,
         UserIdentification? responsibleMasterId = null,
-        Dictionary<int, string>? fields = null)
+        Dictionary<int, string?>? fields = null)
         => new(
             new ClaimIdentification(ProjectId, claimId),
             MakePlayer(playerId ?? PlayerId),

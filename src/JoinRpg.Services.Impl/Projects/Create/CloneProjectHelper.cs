@@ -304,7 +304,7 @@ internal class CloneProjectHelper(
                 projectId,
                 parentCharacterGroupIds,
                 originalChar.ToCharacterTypeInfo(),
-                FieldLayerContainer.FromFieldValues(target, setFieldsRequest));
+                new FieldLayerContainer(target, setFieldsRequest));
             var newId = await characterService.AddCharacter(request);
 
             CharacterMapping.Add(oldCharacterId, newId);

@@ -11,7 +11,7 @@ public class FieldLayerContainerTest
     public void ShouldCreateLayerDataWithSingleField()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var layerData = new Dictionary<int, string> { { 1, "value1" } };
+        var layerData = new Dictionary<int, string?> { { 1, "value1" } };
 
         var container = new FieldLayerContainer(projectInfo, layerData);
 
@@ -23,7 +23,7 @@ public class FieldLayerContainerTest
     public void ShouldCreateLayerDataWithMultipleFields()
     {
         var projectInfo = MakeProject(MakeField(1), MakeField(2));
-        var layerData = new Dictionary<int, string>
+        var layerData = new Dictionary<int, string?>
         {
             { 1, "alpha" },
             { 2, "beta" },
@@ -40,7 +40,7 @@ public class FieldLayerContainerTest
     public void ShouldSkipMissingValues()
     {
         var projectInfo = MakeProject(MakeField(1), MakeField(2));
-        var layerData = new Dictionary<int, string> { { 1, "only me" } };
+        var layerData = new Dictionary<int, string?> { { 1, "only me" } };
 
         var container = new FieldLayerContainer(projectInfo, layerData);
 
@@ -53,7 +53,7 @@ public class FieldLayerContainerTest
     public void ShouldThrowForUnknownFieldId()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var layerData = new Dictionary<int, string> { { 999, "ghost" } };
+        var layerData = new Dictionary<int, string?> { { 999, "ghost" } };
 
         var ex = Should.Throw<KeyNotFoundException>(() =>
             _ = new FieldLayerContainer(projectInfo, layerData));
@@ -65,7 +65,7 @@ public class FieldLayerContainerTest
     public void ShouldHandleCheckboxValue()
     {
         var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Checkbox));
-        var layerData = new Dictionary<int, string> { { 1, "on" } };
+        var layerData = new Dictionary<int, string?> { { 1, "on" } };
 
         var container = new FieldLayerContainer(projectInfo, layerData);
 
@@ -78,7 +78,7 @@ public class FieldLayerContainerTest
     public void ShouldPopulateFieldMetadata()
     {
         var projectInfo = MakeProject(MakeField(42, ProjectFieldType.String));
-        var layerData = new Dictionary<int, string> { { 42, "hello" } };
+        var layerData = new Dictionary<int, string?> { { 42, "hello" } };
 
         var container = new FieldLayerContainer(projectInfo, layerData);
 
@@ -93,7 +93,7 @@ public class FieldLayerContainerTest
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.Public),
             MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
-        var layerData = new Dictionary<int, string> { { 1, "public" }, { 2, "secret" } };
+        var layerData = new Dictionary<int, string?> { { 1, "public" }, { 2, "secret" } };
 
         var result = new FieldLayerContainer(projectInfo, layerData).PublicOnly();
 
@@ -108,7 +108,7 @@ public class FieldLayerContainerTest
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.Public),
             MakeField(2, visibility: ProjectFieldVisibility.PlayerAndMaster));
-        var layerData = new Dictionary<int, string> { { 1, "pub" }, { 2, "restricted" } };
+        var layerData = new Dictionary<int, string?> { { 1, "pub" }, { 2, "restricted" } };
 
         var result = new FieldLayerContainer(projectInfo, layerData).PublicOnly();
 
@@ -121,7 +121,7 @@ public class FieldLayerContainerTest
     {
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
-        var layerData = new Dictionary<int, string> { { 1, "secret" } };
+        var layerData = new Dictionary<int, string?> { { 1, "secret" } };
 
         var result = new FieldLayerContainer(projectInfo, layerData).PublicOnly();
 
@@ -132,7 +132,7 @@ public class FieldLayerContainerTest
     public void PublicOnlyShouldPreserveValues()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.Public));
-        var layerData = new Dictionary<int, string> { { 1, "hello" } };
+        var layerData = new Dictionary<int, string?> { { 1, "hello" } };
 
         var result = new FieldLayerContainer(projectInfo, layerData).PublicOnly();
 
@@ -145,7 +145,7 @@ public class FieldLayerContainerTest
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.Public),
             MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
-        var original = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "x" }, { 2, "y" } });
+        var original = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "x" }, { 2, "y" } });
 
         var result = original.PublicOnly();
 
@@ -156,7 +156,7 @@ public class FieldLayerContainerTest
     public void ShouldKeepSameProjectInfo()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.Public));
-        var original = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "x" } });
+        var original = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "x" } });
 
         var result = original.PublicOnly();
 
@@ -262,7 +262,7 @@ public class FieldLayerContainerTest
             "2,1",
             MakeField(1),
             MakeField(2));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" }, { 2, "b" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "a" }, { 2, "b" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -275,7 +275,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldReturnAllFieldsWithValues()
     {
         var projectInfo = MakeProject(MakeField(1), MakeField(2));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" }, { 2, "b" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "a" }, { 2, "b" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -291,7 +291,7 @@ public class FieldLayerContainerTest
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.Public),
             MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "pub" }, { 2, "secret" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "pub" }, { 2, "secret" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsPlayer);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -306,7 +306,7 @@ public class FieldLayerContainerTest
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.Public),
             MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "pub" }, { 2, "secret" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "pub" }, { 2, "secret" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsMaster);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -319,7 +319,7 @@ public class FieldLayerContainerTest
     {
         var projectInfo = MakeProject(
             MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "restricted" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "restricted" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsMaster);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -331,7 +331,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldExcludeEmptyValueFields()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -343,7 +343,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldIncludeHeaderFields()
     {
         var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -355,7 +355,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldReturnFieldsSortedById()
     {
         var projectInfo = MakeProject(MakeField(2), MakeField(1));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "x" }, { 2, "y" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "x" }, { 2, "y" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -368,8 +368,8 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldPreferClaimLayerValue()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-claim" } });
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-character" } });
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "from-claim" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "from-character" } });
         var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -382,7 +382,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldReturnEmptyWhenNoViewableFields()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "secret" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsPlayer);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -394,7 +394,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldWorkWithNullClaimLayer()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "val" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "val" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -406,8 +406,8 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldIncludeFieldBoundToClaimFromClaimLayer()
     {
         var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
-        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "claim-val" } });
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "claim-val" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
         var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -420,7 +420,7 @@ public class FieldLayerContainerTest
     public void GetSortedFieldsForViewShouldExcludeFieldBoundToClaimWhenClaimLayerNull()
     {
         var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetSortedFieldsForView().ToList();
@@ -432,7 +432,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnValueForPublicFieldWithAnyAccess()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.Public));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "val" } });
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "val" } });
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsNone);
 
@@ -444,7 +444,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnNullForMasterOnlyFieldWithPlayerAccess()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "secret" } });
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsPlayer);
 
@@ -455,7 +455,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnValueForMasterOnlyFieldWithMasterAccess()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "secret" } });
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsMaster);
 
@@ -467,7 +467,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnNullForMissingField()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsMaster);
 
@@ -478,7 +478,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnNullForPlayerAndMasterFieldWithNoAccess()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "restricted" } });
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "restricted" } });
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsNone);
 
@@ -489,7 +489,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnValueForPlayerAndMasterFieldWithMasterAccess()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "restricted" } });
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "restricted" } });
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsMaster);
 
@@ -500,7 +500,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnHeaderFieldWithNullValueWhenNotInLayer()
     {
         var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsNone);
 
@@ -513,7 +513,7 @@ public class FieldLayerContainerTest
     public void GetFromLayerShouldReturnNullForHeaderWithoutAccess()
     {
         var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header, visibility: ProjectFieldVisibility.MasterOnly));
-        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var container = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
 
         var result = container.GetFromLayer(new ProjectFieldIdentification(1, 1), AccessArgumentsPlayer);
 
@@ -524,7 +524,7 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldReturnEntryForEveryField()
     {
         var projectInfo = MakeProject(MakeField(1), MakeField(2), MakeField(3));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "a" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "a" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetAllFieldsForEdit().ToList();
@@ -539,7 +539,7 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldIncludeHeaderFields()
     {
         var projectInfo = MakeProject(MakeField(1, ProjectFieldType.Header));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetAllFieldsForEdit().ToList();
@@ -552,8 +552,8 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldPreferClaimLayerForCharacterBoundField()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-claim" } });
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-character" } });
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "from-claim" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "from-character" } });
         var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetAllFieldsForEdit().ToList();
@@ -566,8 +566,8 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldFallBackToCharacterLayerForCharacterBoundField()
     {
         var projectInfo = MakeProject(MakeField(1));
-        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "from-character" } });
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "from-character" } });
         var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetAllFieldsForEdit().ToList();
@@ -580,8 +580,8 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldReadClaimBoundFieldOnlyFromClaimLayer()
     {
         var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
-        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "claim-val" } });
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "claim-val" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
         var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetAllFieldsForEdit().ToList();
@@ -594,7 +594,7 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldReturnEmptyValueForClaimBoundFieldWhenNoClaimLayer()
     {
         var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string>());
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?>());
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsNone);
 
         var result = layers.GetAllFieldsForEdit().ToList();
@@ -607,7 +607,7 @@ public class FieldLayerContainerTest
     public void GetAllFieldsForEditShouldNotFilterByViewAccess()
     {
         var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
-        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string> { { 1, "secret" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "secret" } });
         var layers = new CharacterFieldLayers(null, characterLayer, AccessArgumentsPlayer);
 
         var result = layers.GetAllFieldsForEdit().ToList();

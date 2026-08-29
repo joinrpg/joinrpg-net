@@ -12,20 +12,17 @@ public class FieldLayerContainer
     public ProjectInfo ProjectInfo { get; }
     public IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> LayerData { get; }
 
-    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData)
-        : this(projectInfo, CreateLayerData(projectInfo, layerData.Select(kv => KeyValuePair.Create(kv.Key, (string?)kv.Value))))
-    {
-    }
-
     /// <summary>
-    /// Слой из «сырых» значений полей — например, из формы или из API, где значение может быть
-    /// <c>null</c> (стереть поле).
+    /// Слой из «сырых» значений полей: из JSON, из формы или из API. Значение нулябельно —
+    /// <c>null</c> означает «поле не заполнено».
     /// </summary>
     /// <exception cref="KeyNotFoundException">
     /// В наборе есть поле, которого нет в проекте.
     /// </exception>
-    public static FieldLayerContainer FromFieldValues(ProjectInfo projectInfo, IReadOnlyDictionary<int, string?> fieldValues)
-        => new(projectInfo, CreateLayerData(projectInfo, fieldValues));
+    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<int, string?> layerData)
+        : this(projectInfo, CreateLayerData(projectInfo, layerData))
+    {
+    }
 
     /// <summary>Пустой слой — «полей нет» / «ничего не меняем».</summary>
     public static FieldLayerContainer Empty(ProjectInfo projectInfo)
@@ -37,9 +34,9 @@ public class FieldLayerContainer
         LayerData = layerData;
     }
 
-    private static Dictionary<ProjectFieldIdentification, FieldWithValue> CreateLayerData(ProjectInfo projectInfo, IEnumerable<KeyValuePair<int, string?>> layerData)
+    private static Dictionary<ProjectFieldIdentification, FieldWithValue> CreateLayerData(ProjectInfo projectInfo, IReadOnlyDictionary<int, string?> layerData)
     {
-        var result = new Dictionary<ProjectFieldIdentification, FieldWithValue>();
+        var result = new Dictionary<ProjectFieldIdentification, FieldWithValue>(layerData.Count);
 
         foreach (var (fieldId, value) in layerData)
         {
@@ -73,7 +70,7 @@ public class FieldLayerContainer
         // (Newtonsoft.Json на "" возвращал null -> []).
         var dict = string.IsNullOrEmpty(jsonData)
             ? []
-            : JsonSerializer.Deserialize<Dictionary<int, string>>(jsonData) ?? [];
+            : JsonSerializer.Deserialize<Dictionary<int, string?>>(jsonData) ?? [];
         return new FieldLayerContainer(projectInfo, dict);
     }
 

@@ -52,7 +52,7 @@ internal partial class CreateProjectService
                 projectId,
                 ParentCharacterGroupIds: [rootCharacterGroupId],
                 CharacterTypeInfo: CharacterTypeInfo.DefaultSlot(slotName),
-                FieldValues: FieldLayerContainer.FromFieldValues(projectInfo, fields)
+                FieldValues: new FieldLayerContainer(projectInfo, fields)
                 ));
     }
 }

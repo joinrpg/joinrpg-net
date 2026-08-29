@@ -124,7 +124,7 @@ public class CharacterApiController(
         FieldLayerContainer fieldsToSet;
         try
         {
-            fieldsToSet = FieldLayerContainer.FromFieldValues(
+            fieldsToSet = new FieldLayerContainer(
                 projectInfo,
                 FieldValueConverter.ConvertToStringValues(request.FieldValues));
         }
@@ -171,7 +171,7 @@ public class CharacterApiController(
         FieldLayerContainer fieldsToSet;
         try
         {
-            fieldsToSet = FieldLayerContainer.FromFieldValues(
+            fieldsToSet = new FieldLayerContainer(
                 projectInfo,
                 FieldValueConverter.ConvertToStringValues(fieldValues));
         }

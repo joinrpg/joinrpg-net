@@ -74,7 +74,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
                 originalProjectId,
                 ParentCharacterGroupIds: [rootGroupId],
                 new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: 5, SlotName: "Северянин", CharacterVisibility.Public),
-                FieldValues: FieldLayerContainer.FromFieldValues(projectInfo, new Dictionary<int, string?> { [nameFieldId] = "Шаблон Северянина" })));
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = "Шаблон Северянина" })));
 
             // Сетка A: от корня, со строковым полем
             await rolesListService.CreateAsync(new ProjectRolesList(

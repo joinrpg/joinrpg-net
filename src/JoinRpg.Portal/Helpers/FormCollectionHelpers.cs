@@ -18,7 +18,7 @@ public static class FormCollectionHelpers
     /// «id поля → строка» превращается в доменный объект и проверяется по метаданным проекта.
     /// </summary>
     public static FieldLayerContainer GetFieldsToSetFromPost(this HttpRequest request, ProjectInfo projectInfo, string prefix)
-        => FieldLayerContainer.FromFieldValues(projectInfo, request.GetDynamicValuesFromPost(prefix));
+        => new FieldLayerContainer(projectInfo, request.GetDynamicValuesFromPost(prefix));
 
     public static Dictionary<int, string?> GetDynamicValuesFromPost(this HttpRequest request, string prefix)
     {
