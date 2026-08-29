@@ -40,8 +40,7 @@ public class GetUserInfoMethodTest
             UserFullName: new UserFullName(null, BornName.FromOptional(bornName), SurName.FromOptional(surName), FatherName.FromOptional(fatherName)),
             VerifiedProfileFlag: false,
             PhoneNumber: phoneNumber,
-            HasPassword: false,
-            HasSingleLoginMethod: false);
+            HasPassword: false);
     }
 
     private static IOptions<JoinRpgHostNamesOptions> DefaultOptions => Options.Create(new JoinRpgHostNamesOptions

@@ -9,8 +9,7 @@ public class UserLoginInfoViewModelBuilderTests
     private static UserInfo BuildUserInfo(
         VkSocialLink? vk = null,
         TelegramSocialLink? telegram = null,
-        bool hasPassword = true,
-        bool hasSingleLoginMethod = false)
+        bool hasPassword = true)
     {
         return new UserInfo(
             UserId: new UserIdentification(1),
@@ -25,8 +24,7 @@ public class UserLoginInfoViewModelBuilderTests
             UserFullName: new UserFullName(new PrefferedName("Player"), null, null, null),
             VerifiedProfileFlag: false,
             PhoneNumber: null,
-            HasPassword: hasPassword,
-            HasSingleLoginMethod: hasSingleLoginMethod);
+            HasPassword: hasPassword);
     }
 
     [Fact]
@@ -45,7 +43,7 @@ public class UserLoginInfoViewModelBuilderTests
     [Fact]
     public void GetSocialLogins_LinkedWithOtherLoginMethod_AllowsUnlinkAndNotOnlyMethod()
     {
-        var user = BuildUserInfo(vk: new VkSocialLink(123, isVerified: true), hasPassword: true, hasSingleLoginMethod: false);
+        var user = BuildUserInfo(vk: new VkSocialLink(123, isVerified: true), hasPassword: true);
 
         var vk = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Vk);
 
@@ -59,7 +57,7 @@ public class UserLoginInfoViewModelBuilderTests
     [Fact]
     public void GetSocialLogins_LinkedWithNoOtherLoginMethod_IsOnlyLoginMethod()
     {
-        var user = BuildUserInfo(vk: new VkSocialLink(123, isVerified: true), hasPassword: false, hasSingleLoginMethod: true);
+        var user = BuildUserInfo(vk: new VkSocialLink(123, isVerified: true), hasPassword: false);
 
         var vk = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Vk);
 
@@ -86,8 +84,7 @@ public class UserLoginInfoViewModelBuilderTests
         var user = BuildUserInfo(
             vk: new VkSocialLink(123, isVerified: true),
             telegram: new TelegramSocialLink(new TelegramChatId(456), isVerified: true),
-            hasPassword: false,
-            hasSingleLoginMethod: true);
+            hasPassword: false);
 
         var telegram = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Telegram);
 
@@ -102,8 +99,7 @@ public class UserLoginInfoViewModelBuilderTests
         // "единственного способа входа" фактически тоже нет.
         var user = BuildUserInfo(
             telegram: new TelegramSocialLink(new TelegramChatId(456), isVerified: true),
-            hasPassword: false,
-            hasSingleLoginMethod: false);
+            hasPassword: false);
 
         var telegram = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Telegram);
 

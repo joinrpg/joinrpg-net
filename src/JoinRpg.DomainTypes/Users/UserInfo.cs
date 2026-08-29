@@ -15,13 +15,23 @@ public record class UserInfo(
     UserFullName UserFullName,
     bool VerifiedProfileFlag,
     string? PhoneNumber,
-    bool HasPassword,
-    bool HasSingleLoginMethod)
+    bool HasPassword)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 
     // Не реализовано
     public bool PhoneNumberConfirmed { get; } = false;
+
+    /// <summary>
+    /// Есть ровно один способ войти в аккаунт. Привязка Telegram в расчёт не идёт — виджет
+    /// умеет только привязывать контакт к уже залогиненному аккаунту, отдельного входа
+    /// через него нет (см. <see cref="SocialLink.CanLogin"/>).
+    /// </summary>
+    public bool HasSingleLoginMethod =>
+        (HasPassword ? 1 : 0)
+        + (Social.Vk?.CanLogin == true ? 1 : 0)
+        + (Social.Telegram?.CanLogin == true ? 1 : 0)
+        == 1;
 
     public UserProfileAccessReason GetAccess(UserInfo? currentUser)
     {

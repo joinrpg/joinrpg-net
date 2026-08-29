@@ -26,8 +26,7 @@ public static class UserExtensions
             user.ExtractFullName(),
             user.VerifiedProfileFlag,
             user.Extra?.PhoneNumber,
-            user.PasswordHash != null,
-            (user.PasswordHash != null ? 1 : 0) + (vk?.CanLogin == true ? 1 : 0) + (telegram?.CanLogin == true ? 1 : 0) == 1
+            user.PasswordHash != null
             );
     }
 
