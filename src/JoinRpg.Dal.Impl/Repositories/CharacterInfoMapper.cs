@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
@@ -44,7 +45,15 @@ internal static class CharacterInfoMapper
     private static CharacterClaimInfo MapClaim(CharacterInfoClaimRow row, ProjectInfo projectInfo)
         => new(
             new ClaimIdentification(projectInfo.ProjectId, row.ClaimId),
-            new UserIdentification(row.PlayerUserId),
+            new UserInfoHeader(
+                new UserIdentification(row.PlayerUserId),
+                new UserDisplayName(
+                    new UserFullName(
+                        PrefferedName.FromOptional(row.PlayerPrefferedName),
+                        BornName.FromOptional(row.PlayerBornName),
+                        SurName.FromOptional(row.PlayerSurName),
+                        FatherName.FromOptional(row.PlayerFatherName)),
+                    new Email(row.PlayerEmail))),
             row.ClaimStatus,
             row.ClaimDenialStatus,
             new UserIdentification(row.ResponsibleMasterUserId),

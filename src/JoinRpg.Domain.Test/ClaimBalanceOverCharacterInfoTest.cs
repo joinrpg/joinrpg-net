@@ -118,7 +118,7 @@ public class ClaimBalanceOverCharacterInfoTest
 
         var claim = new CharacterClaimInfo(
             claimId,
-            new UserIdentification(mock.Player.UserId),
+            mock.Player.ToUserInfoHeader(),
             ClaimStatus.Approved,
             DenialStatus: null,
             ResponsibleMasterId: new UserIdentification(mock.Master.UserId),

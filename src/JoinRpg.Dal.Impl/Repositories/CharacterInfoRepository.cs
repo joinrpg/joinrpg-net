@@ -90,6 +90,13 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
                 {
                     ClaimId = claim.ClaimId,
                     PlayerUserId = claim.PlayerUserId,
+                    // Один join к User на всю выборку, без N+1: только то, из чего складывается
+                    // отображаемое имя. Контакты и соцсети сюда не тянем (ADR011).
+                    PlayerPrefferedName = claim.Player.PrefferedName,
+                    PlayerBornName = claim.Player.BornName,
+                    PlayerSurName = claim.Player.SurName,
+                    PlayerFatherName = claim.Player.FatherName,
+                    PlayerEmail = claim.Player.Email,
                     ClaimStatus = claim.ClaimStatus,
                     ClaimDenialStatus = claim.ClaimDenialStatus,
                     ResponsibleMasterUserId = claim.ResponsibleMasterUserId,

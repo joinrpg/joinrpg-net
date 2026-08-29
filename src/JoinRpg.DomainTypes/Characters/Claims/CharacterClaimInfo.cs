@@ -1,3 +1,5 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
+
 namespace JoinRpg.DomainTypes.Characters.Claims;
 
 /// <summary>
@@ -5,7 +7,12 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// Несёт ровно то, что нужно гридам, подсчёту проблем и расчёту баланса; полных данных о
 /// комментариях (сами <c>Comment</c> / <c>CommentDiscussion</c>) и о сюжетах здесь нет.
 /// </summary>
-/// <param name="PlayerId">Игрок, подавший заявку.</param>
+/// <param name="Player">
+/// Игрок, подавший заявку, вместе с отображаемым именем. Имя входит в агрегат, потому что по нему
+/// именуется персонаж, когда в проекте не настроено поле-имя; остальной профиль (контакты, аватар,
+/// соцсети) сюда по-прежнему не входит — он живёт своей жизнью и грузится через
+/// <c>IUserRepository</c>.
+/// </param>
 /// <param name="DenialStatus">
 /// Причина отказа. Показывать её можно не всем — фильтруется снаружи по
 /// <see cref="AccessArguments.CanViewDenialStatus"/>.
@@ -20,7 +27,7 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// </param>
 public record class CharacterClaimInfo(
     ClaimIdentification ClaimId,
-    UserIdentification PlayerId,
+    UserInfoHeader Player,
     ClaimStatus Status,
     ClaimDenialReason? DenialStatus,
     UserIdentification ResponsibleMasterId,
@@ -36,6 +43,9 @@ public record class CharacterClaimInfo(
     int AccommodationFee,
     FieldLayerContainer Fields)
 {
+    /// <summary>Игрок, подавший заявку.</summary>
+    public UserIdentification PlayerId => Player.UserId;
+
     /// <summary>Заявка утверждена (в том числе если игрок уже зарегистрирован на игре).</summary>
     public bool IsApproved => Status is ClaimStatus.Approved or ClaimStatus.CheckedIn;
 
