@@ -25,6 +25,7 @@ public class CharacterApiController(
     ICharacterInfoRepository characterInfoRepository,
     IUserRepository userRepository,
     ICharacterService characterService,
+    IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
         ) : XGameApiController()
 {
@@ -118,13 +119,22 @@ public class CharacterApiController(
             return BadRequest(ex.Message);
         }
 
-        Dictionary<int, string?> convertedFields;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+
+        FieldLayerContainer fieldsToSet;
         try
         {
-            convertedFields = FieldValueConverter.ConvertToStringValues(request.FieldValues);
+            fieldsToSet = FieldLayerContainer.FromFieldValues(
+                projectInfo,
+                FieldValueConverter.ConvertToStringValues(request.FieldValues));
         }
         catch (ArgumentException ex)
         {
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            // Поля, которого нет в проекте, раньше хватало на 500 из глубины домена.
             return BadRequest(ex.Message);
         }
 
@@ -132,7 +142,7 @@ public class CharacterApiController(
             new ProjectIdentification(projectId),
             [],
             characterTypeInfo,
-            convertedFields));
+            fieldsToSet));
 
         var character = await characterInfoRepository.GetCharacterInfo(characterId);
         return CreatedAtAction(
@@ -156,18 +166,27 @@ public class CharacterApiController(
     [ProducesDefaultResponseType]
     public async Task<ActionResult<string>> SetCharacterFields(int projectId, int characterId, [FromBody] Dictionary<int, JsonElement> fieldValues)
     {
-        Dictionary<int, string?> converted;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+
+        FieldLayerContainer fieldsToSet;
         try
         {
-            converted = FieldValueConverter.ConvertToStringValues(fieldValues);
+            fieldsToSet = FieldLayerContainer.FromFieldValues(
+                projectInfo,
+                FieldValueConverter.ConvertToStringValues(fieldValues));
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
+        catch (KeyNotFoundException ex)
+        {
+            // Поля, которого нет в проекте, раньше хватало на 500 из глубины домена.
+            return BadRequest(ex.Message);
+        }
         try
         {
-            await characterService.SetFields(new CharacterIdentification(projectId, characterId), converted);
+            await characterService.SetFields(new CharacterIdentification(projectId, characterId), fieldsToSet);
         }
         catch (FieldCannotHaveValueException ex)
         {

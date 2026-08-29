@@ -45,11 +45,14 @@ internal partial class CreateProjectService
         {
             fields.Add(name.ProjectFieldId, slotName);
         }
+
+        // Поля только что созданы, поэтому метаданные берём мимо кеша.
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId, ignoreCache: true);
         return await characterService.AddCharacter(new AddCharacterRequest(
                 projectId,
                 ParentCharacterGroupIds: [rootCharacterGroupId],
                 CharacterTypeInfo: CharacterTypeInfo.DefaultSlot(slotName),
-                FieldValues: fields
+                FieldValues: FieldLayerContainer.FromFieldValues(projectInfo, fields)
                 ));
     }
 }

@@ -12,9 +12,20 @@ public class FieldLayerContainer
     public ProjectInfo ProjectInfo { get; }
     public IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> LayerData { get; }
 
-    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData) : this(projectInfo, CreateLayerData(projectInfo, layerData))
+    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData)
+        : this(projectInfo, CreateLayerData(projectInfo, layerData.Select(kv => KeyValuePair.Create(kv.Key, (string?)kv.Value))))
     {
     }
+
+    /// <summary>
+    /// Слой из «сырых» значений полей — например, из формы или из API, где значение может быть
+    /// <c>null</c> (стереть поле).
+    /// </summary>
+    /// <exception cref="KeyNotFoundException">
+    /// В наборе есть поле, которого нет в проекте.
+    /// </exception>
+    public static FieldLayerContainer FromFieldValues(ProjectInfo projectInfo, IReadOnlyDictionary<int, string?> fieldValues)
+        => new(projectInfo, CreateLayerData(projectInfo, fieldValues));
 
     public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> layerData)
     {
@@ -22,9 +33,9 @@ public class FieldLayerContainer
         LayerData = layerData;
     }
 
-    private static Dictionary<ProjectFieldIdentification, FieldWithValue> CreateLayerData(ProjectInfo projectInfo, IReadOnlyDictionary<int, string> layerData)
+    private static Dictionary<ProjectFieldIdentification, FieldWithValue> CreateLayerData(ProjectInfo projectInfo, IEnumerable<KeyValuePair<int, string?>> layerData)
     {
-        var result = new Dictionary<ProjectFieldIdentification, FieldWithValue>(layerData.Count);
+        var result = new Dictionary<ProjectFieldIdentification, FieldWithValue>();
 
         foreach (var (fieldId, value) in layerData)
         {

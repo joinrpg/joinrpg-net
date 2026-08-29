@@ -6,6 +6,7 @@ using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.DomainTypes.ProjectMetadata;
@@ -180,8 +181,8 @@ internal sealed class FakeClaimService : IClaimService
         return Task.CompletedTask;
     }
 
-    public Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification characterId, string claimText, IReadOnlyDictionary<int, string?> fields, bool sensitiveDataAllowed) => throw new NotSupportedException();
-    public Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, IReadOnlyDictionary<int, string?> fields) => throw new NotSupportedException();
+    public Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification characterId, string claimText, FieldLayerContainer? fields, bool sensitiveDataAllowed) => throw new NotSupportedException();
+    public Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer? fields) => throw new NotSupportedException();
     public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction) => throw new NotSupportedException();
     public Task ApproveByMaster(ClaimIdentification claimId, string commentText) => throw new NotSupportedException();
     public Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter) => throw new NotSupportedException();
@@ -190,7 +191,7 @@ internal sealed class FakeClaimService : IClaimService
     public Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId) => throw new NotSupportedException();
     public Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId) => throw new NotSupportedException();
     public Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId) => throw new NotSupportedException();
-    public Task SaveFieldsFromClaim(ClaimIdentification claimId, IReadOnlyDictionary<int, string?> newFieldValue) => throw new NotSupportedException();
+    public Task SaveFieldsFromClaim(ClaimIdentification claimId, FieldLayerContainer? fieldsToSet) => throw new NotSupportedException();
     public Task CheckInClaim(ClaimIdentification claimId, int money) => throw new NotSupportedException();
     public Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText) => throw new NotSupportedException();
     public Task<AccommodationRequest> SetAccommodationType(int projectId, int claimId, int accommodationTypeId) => throw new NotSupportedException();

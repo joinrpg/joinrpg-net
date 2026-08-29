@@ -44,14 +44,14 @@ public class RestoreClaimByMasterScenario(JoinApplicationFactory factory) : ICla
                 projectId,
                 ParentCharacterGroupIds: [],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new Dictionary<int, string?>()));
+                FieldValues: null));
         });
 
         // 3. Игрок подаёт заявку, мастер принимает и затем отклоняет её
         var claimId = await factory.Services.RunAsAsync(playerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            return await claimService.AddClaimFromUser(characterId, "Хочу эту роль", new Dictionary<int, string?>(), sensitiveDataAllowed: false);
+            return await claimService.AddClaimFromUser(characterId, "Хочу эту роль", fields: null, sensitiveDataAllowed: false);
         });
 
         await factory.Services.RunAsAsync(masterId, async sp =>

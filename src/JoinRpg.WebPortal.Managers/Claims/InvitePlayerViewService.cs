@@ -11,6 +11,6 @@ internal class InvitePlayerViewService(
     public async Task<ClaimIdentification> InvitePlayer(CharacterIdentification characterId, string userLink, string claimText)
     {
         var userId = await userLinkResolver.ResolveAsync(userLink);
-        return await claimService.AddClaimFromMaster(characterId, userId, claimText, new Dictionary<int, string?>());
+        return await claimService.AddClaimFromMaster(characterId, userId, claimText, fields: null);
     }
 }

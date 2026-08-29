@@ -93,7 +93,7 @@ public class CharacterController(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
                     ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                    FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix))
+                    FieldValues: Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix))
                 );
 
             return RedirectToAction("Details",
@@ -147,13 +147,14 @@ public class CharacterController(
     public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
     {
         var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
         try
         {
             await characterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: new(viewModel.ProjectId),
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
                 ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
-                FieldValues: Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix)
+                FieldValues: Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix)
             ));
 
             if (viewModel.ContinueCreating)
@@ -192,8 +193,6 @@ public class CharacterController(
                     return NotFound();
                 }
             }
-
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
 
             return View(viewModel.Fill(characterGroup, CurrentUserId, projectInfo));
         }

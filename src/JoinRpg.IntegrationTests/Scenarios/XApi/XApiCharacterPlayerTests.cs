@@ -133,7 +133,7 @@ public class XApiCharacterPlayerTests(XApiMasterFixture fixture)
         => fixture.Factory.Services.RunAsAsync(
             playerId,
             sp => sp.GetRequiredService<IClaimService>()
-                .AddClaimFromUser(characterId, "Заявка от игрока", new Dictionary<int, string?>(), sensitiveDataAllowed: true));
+                .AddClaimFromUser(characterId, "Заявка от игрока", fields: null, sensitiveDataAllowed: true));
 
     private Task ApproveClaim(ClaimIdentification claimId)
         => fixture.Factory.Services.RunAsAsync(

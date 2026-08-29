@@ -43,13 +43,13 @@ public class AcceptInvitationScenario(JoinApplicationFactory factory) : IClassFi
                 projectId,
                 ParentCharacterGroupIds: [],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new Dictionary<int, string?>()));
+                FieldValues: null));
         });
 
         var claimId = await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            return await claimService.AddClaimFromMaster(characterId, playerId, "Приглашаем вас на роль", new Dictionary<int, string?>());
+            return await claimService.AddClaimFromMaster(characterId, playerId, "Приглашаем вас на роль", fields: null);
         });
 
         // Приглашение создаёт заявку в статусе «Предложена»

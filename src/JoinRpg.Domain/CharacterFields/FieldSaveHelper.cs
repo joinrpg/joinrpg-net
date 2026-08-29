@@ -13,20 +13,22 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// Saves character fields
     /// </summary>
     /// <returns>Fields that have changed.</returns>
+    /// <param name="fieldsToSet">
+    /// Поля, которые надо изменить, — дельта, а не полный слой. <c>null</c> — не менять ничего.
+    /// </param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Claim claim,
-        IReadOnlyDictionary<int, string?> newFieldValue,
+        FieldLayerContainer? fieldsToSet,
         ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claim);
-        ArgumentNullException.ThrowIfNull(newFieldValue);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
             claim.Character,
             claim,
-            newFieldValue,
+            fieldsToSet,
             projectInfo);
     }
 
@@ -34,20 +36,22 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// Saves fields of a character
     /// </summary>
     /// <returns>The list of updated fields</returns>
+    /// <param name="fieldsToSet">
+    /// Поля, которые надо изменить, — дельта, а не полный слой. <c>null</c> — не менять ничего.
+    /// </param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Character character,
-        IReadOnlyDictionary<int, string?> newFieldValue,
+        FieldLayerContainer? fieldsToSet,
         ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);
-        ArgumentNullException.ThrowIfNull(newFieldValue);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
             character,
             character.ApprovedClaim,
-            newFieldValue,
+            fieldsToSet,
             projectInfo);
     }
 
@@ -55,14 +59,14 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         UserIdentification currentUserId,
         Character character,
         Claim? claim,
-        IReadOnlyDictionary<int, string?> newFieldValue,
+        FieldLayerContainer? fieldsToSet,
         ProjectInfo projectInfo)
     {
         var strategy = CreateStrategy(currentUserId, character, claim, projectInfo);
 
         logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
-        var updatedFields = strategy.PerformSave(newFieldValue);
+        var updatedFields = strategy.PerformSave(fieldsToSet);
 
         MarkAsUsed(updatedFields, character.Project);
         return updatedFields;

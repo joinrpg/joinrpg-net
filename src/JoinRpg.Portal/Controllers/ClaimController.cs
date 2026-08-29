@@ -70,8 +70,9 @@ public class ClaimController(
 
         try
         {
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
             await claimService.AddClaimFromUser(new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                viewModel.ClaimText ?? "", Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix), viewModel.SensitiveDataAllowed);
+                viewModel.ClaimText ?? "", Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix), viewModel.SensitiveDataAllowed);
 
             return RedirectToAction(
               "SetupProfile",
@@ -146,8 +147,9 @@ public class ClaimController(
         }
         try
         {
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimIdentification.ProjectId);
             await
-              claimService.SaveFieldsFromClaim(claimIdentification, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+              claimService.SaveFieldsFromClaim(claimIdentification, Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix));
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
         catch (Exception exception)

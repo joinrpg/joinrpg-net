@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Services.Interfaces.Characters;
 
 public interface ICharacterService
@@ -8,5 +10,5 @@ public interface ICharacterService
 
     Task EditCharacter(EditCharacterRequest editCharacterRequest);
 
-    Task SetFields(CharacterIdentification characterId, Dictionary<int, string?> requestFieldValues);
+    Task SetFields(CharacterIdentification characterId, FieldLayerContainer? fieldsToSet);
 }

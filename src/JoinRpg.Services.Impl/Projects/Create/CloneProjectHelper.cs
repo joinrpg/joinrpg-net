@@ -299,7 +299,12 @@ internal class CloneProjectHelper(
                 TryMapOriginalGroupIds(originalChar.ParentCharacterGroupIds)
                 .Except(SpecialGroupMapping.Values) // Без спецгрупп, они автоматически проставятся по значениям полей
                 ];
-            var request = new AddCharacterRequest(projectId, parentCharacterGroupIds, originalChar.ToCharacterTypeInfo(), setFieldsRequest);
+            var target = await projectMetadataRepository.GetProjectMetadata(projectId);
+            var request = new AddCharacterRequest(
+                projectId,
+                parentCharacterGroupIds,
+                originalChar.ToCharacterTypeInfo(),
+                FieldLayerContainer.FromFieldValues(target, setFieldsRequest));
             var newId = await characterService.AddCharacter(request);
 
             CharacterMapping.Add(oldCharacterId, newId);
