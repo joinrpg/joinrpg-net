@@ -650,7 +650,8 @@ internal class ClaimServiceImpl(
         var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
 
         var oldCharacterId = claim.GetCharacterId(); // Сохраняем на случай если он изменится
-        var character = await CharactersRepository.GetCharacterAsync(characterId);
+        var character = await CharactersRepository.GetCharacterAsync(characterId)
+            ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, nameof(Character));
 
         claim.EnsureCanChangeStatus(ClaimStatus.AddedByMaster);
         claim.ClaimStatus = ClaimStatus.AddedByMaster;
@@ -682,12 +683,11 @@ internal class ClaimServiceImpl(
     public async Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
     {
         var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-        var source = await CharactersRepository.GetCharacterAsync(characterId);
+        var source = await CharactersRepository.GetCharacterAsync(characterId)
+            ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, nameof(Character));
         var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
 
         var oldCharacterId = claim.GetCharacterId(); // Сохраняем, так как он изменится
-
-
 
         source.EnsureCanMoveClaim(claim, userInfo, projectInfo);
 
