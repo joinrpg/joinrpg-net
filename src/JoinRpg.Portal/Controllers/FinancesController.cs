@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
@@ -90,12 +91,17 @@ public class FinancesController(
             .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
             .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
 
+        var operations = project.FinanceOperations.ToArray();
+        var masterIds = MasterBalanceBuilder.GetMasterIds(operations, transfers);
+        var masters = await UserRepository.GetRequiredUserInfos(masterIds);
+
         var viewModel = new MoneyInfoTotalViewModel(projectInfo,
             transfers,
             uriService,
-            project.FinanceOperations.ToArray(),
+            operations,
             payments,
-            currentUserAccessor);
+            currentUserAccessor,
+            masters);
 
         return View(viewModel);
     }
@@ -255,8 +261,11 @@ public class FinancesController(
 
         var masterTransfers = await financeReportRepository.GetAllMoneyTransfers(projectId);
 
+        var masterIds = MasterBalanceBuilder.GetMasterIds(masterOperations, masterTransfers);
+        var masters = await UserRepository.GetRequiredUserInfos(masterIds);
+
         var summary =
-            MasterBalanceBuilder.ToMasterBalanceViewModels(masterOperations, masterTransfers, projectId);
+            MasterBalanceBuilder.ToMasterBalanceViewModels(masters, masterOperations, masterTransfers, projectId);
 
         var generator = exportDataService.GetGenerator(ExportType.Csv, summary,
     new MoneySummaryByMasterExporter(uriService));
@@ -295,7 +304,7 @@ public class FinancesController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var transfers =
             await financeReportRepository.GetMoneyTransfersForMaster(projectId, masterId);
-        var user = await UserRepository.GetById(masterId);
+        var user = await UserRepository.GetRequiredUserInfo(new UserIdentification(masterId));
 
         var operations = project.FinanceOperations
             .Where(fo => fo.State == FinanceOperationState.Approved)

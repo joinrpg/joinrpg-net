@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.DomainTypes.Characters;
@@ -206,15 +207,15 @@ public static class FinanceExtensions
 
     public static IEnumerable<MoneyTransfer> SendedByMaster(
         this IEnumerable<MoneyTransfer> transfers,
-        User master) => transfers.Where(mt => mt.SenderId == master.UserId);
+        UserIdentification masterId) => transfers.Where(mt => mt.SenderId == masterId.Value);
 
     public static IEnumerable<MoneyTransfer> ReceivedByMaster(
         this IEnumerable<MoneyTransfer> transfers,
-        User master) => transfers.Where(mt => mt.ReceiverId == master.UserId);
+        UserIdentification masterId) => transfers.Where(mt => mt.ReceiverId == masterId.Value);
 
     public static int SendedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers,
-        User master) => transfers.Approved().SendedByMaster(master).Sum(mt => -mt.Amount);
+        UserIdentification masterId) => transfers.Approved().SendedByMaster(masterId).Sum(mt => -mt.Amount);
 
     public static int ReceivedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers,
-        User master) => transfers.Approved().ReceivedByMaster(master).Sum(mt => mt.Amount);
+        UserIdentification masterId) => transfers.Approved().ReceivedByMaster(masterId).Sum(mt => mt.Amount);
 }

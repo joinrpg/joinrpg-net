@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
@@ -8,14 +8,14 @@ using JoinRpg.Web.Models.Money;
 namespace JoinRpg.Web.Models;
 
 public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transfers,
-    User master,
+    UserInfo master,
     IUriService urlHelper,
     IReadOnlyCollection<FinanceOperation> operations,
     PaymentTypeSummaryViewModel[] payments,
     ICurrentUserAccessor currentUserId,
     ProjectInfo projectInfo)
 {
-    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(master.GetUserInfo(), projectInfo, currentUserId);
+    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(master, projectInfo, currentUserId);
     public int ProjectId { get; } = projectInfo.ProjectId;
     public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; } = transfers
             .OrderBy(f => f.Id)

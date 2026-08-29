@@ -1,13 +1,14 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Web.Models;
 
 public class MasterBalanceViewModel
 {
     [Display(Name = "Мастер")]
-    public User Master { get; }
+    public UserInfo Master { get; }
 
     [Display(Name = "Денег на руках")]
     public int Total { get; }
@@ -27,7 +28,7 @@ public class MasterBalanceViewModel
     public int ProjectId { get; }
 
     public MasterBalanceViewModel(
-        User master,
+        UserInfo master,
         int projectId,
         IReadOnlyCollection<FinanceOperation> masterOperations,
         IReadOnlyCollection<MoneyTransfer> masterTransfers)
@@ -38,16 +39,16 @@ public class MasterBalanceViewModel
 
         Master = master;
         ProjectId = projectId;
-        ReceiveBalance = masterTransfers.ReceivedByMasterSum(master);
-        SendBalance = masterTransfers.SendedByMasterSum(master);
+        ReceiveBalance = masterTransfers.ReceivedByMasterSum(master.UserId);
+        SendBalance = masterTransfers.SendedByMasterSum(master.UserId);
         FeeBalance = masterOperations
             .Where(fo => fo.Approved)
-            .Where(fo => fo.PaymentType?.User?.UserId == master.UserId)
+            .Where(fo => fo.PaymentType?.UserId == master.UserId.Value)
             .Sum(fo => fo.MoneyAmount);
 
         ModerationBalance = masterOperations
             .Where(fo => fo.RequireModeration)
-            .Where(fo => fo.PaymentType?.User.UserId == master.UserId)
+            .Where(fo => fo.PaymentType?.UserId == master.UserId.Value)
             .Sum(fo => fo.MoneyAmount);
 
         Total = FeeBalance + ReceiveBalance + SendBalance;

@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
@@ -23,19 +24,14 @@ public class MoneyInfoTotalViewModel
         IUriService urlHelper,
         IReadOnlyCollection<FinanceOperation> operations,
         PaymentTypeSummaryViewModel[] payments,
-        ICurrentUserAccessor currentUserId)
+        ICurrentUserAccessor currentUserId,
+        IReadOnlyCollection<UserInfo> masters)
     {
-
-        var masters = operations.Select(fo => fo.PaymentType?.User)
-            .Union(transfers.Select(mt => mt.Receiver))
-            .Union(transfers.Select(mt => mt.Sender))
-            .Distinct();
-
         ProjectId = project.ProjectId;
 
         Operations = new FinOperationListViewModel(project.ProjectId, urlHelper, operations);
 
-        Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(operations, transfers, project.ProjectId);
+        Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(masters, operations, transfers, project.ProjectId);
 
         Transfers = transfers.Select(transfer =>
             new MoneyTransferListItemViewModel(transfer, currentUserId)).ToArray();
