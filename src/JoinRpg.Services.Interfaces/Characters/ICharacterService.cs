@@ -10,5 +10,5 @@ public interface ICharacterService
 
     Task EditCharacter(EditCharacterRequest editCharacterRequest);
 
-    Task SetFields(CharacterIdentification characterId, FieldLayerContainer? fieldsToSet);
+    Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet);
 }

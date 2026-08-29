@@ -130,7 +130,7 @@ internal class ClaimServiceImpl(
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fieldsToSet: null, projectInfo);
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -141,7 +141,7 @@ internal class ClaimServiceImpl(
 
     public async Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification characterId,
         string claimText,
-        FieldLayerContainer? fields, bool sensitiveDataAllowed)
+        FieldLayerContainer fields, bool sensitiveDataAllowed)
     {
         ArgumentNullException.ThrowIfNull(characterId);
         ArgumentNullException.ThrowIfNull(claimText);
@@ -331,7 +331,7 @@ internal class ClaimServiceImpl(
         // 2. M.b. we need to move some field values from Claim to Characters
         // 3. (2) Could activate changing of special groups
         // we don't need send to show updated fields in email here, so ignore return result. 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fieldsToSet: null, projectInfo);
+        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -783,7 +783,7 @@ internal class ClaimServiceImpl(
 
     public async Task SaveFieldsFromClaim(
         ClaimIdentification claimId,
-        FieldLayerContainer? fieldsToSet)
+        FieldLayerContainer fieldsToSet)
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.None, ExtraAccessReason.Player);
 
@@ -931,7 +931,7 @@ internal class ClaimServiceImpl(
             logger.LogError("Некорректно настроен проект донатов {donateProjectId}", donateProjectId);
             throw new JoinRpgProjectMisconfiguredException(donateProjectId, "У проекта должен быть шаблон по умолчанию");
         }
-        return await AddClaimFromUser(projectInfo.ClaimSettings.DefaultTemplate, claimText: "", fields: null, sensitiveDataAllowed: false);
+        return await AddClaimFromUser(projectInfo.ClaimSettings.DefaultTemplate, claimText: "", fields: FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
     }
 
     public static void SetParentCommentAndCheck((Comment, ClaimSimpleChangedNotification) result, Comment parentComment, ClaimOperationType claimOperationType)
@@ -954,7 +954,7 @@ internal class ClaimServiceImpl(
         return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 
-    public async Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer? fields)
+    public async Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer fields)
     {
         ArgumentNullException.ThrowIfNull(characterId);
         ArgumentNullException.ThrowIfNull(userId);

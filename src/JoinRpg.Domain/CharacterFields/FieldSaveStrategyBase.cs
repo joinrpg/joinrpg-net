@@ -79,13 +79,8 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         }
     }
 
-    private void AssignValues(FieldLayerContainer? fieldsToSet, Dictionary<int, FieldWithValue> fields)
+    private void AssignValues(FieldLayerContainer fieldsToSet, Dictionary<int, FieldWithValue> fields)
     {
-        if (fieldsToSet is null)
-        {
-            return;
-        }
-
         foreach (var (fieldId, valueToSet) in fieldsToSet.LayerData)
         {
             var field = fields[fieldId.ProjectFieldId];
@@ -116,10 +111,10 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     /// <param name="fieldsToSet">
     /// Поля, которые надо изменить. Это дельта, а не полный слой: поля, которых в нём нет,
-    /// сохраняют текущее значение. <c>null</c> — не менять ничего (тогда сохранение сводится
+    /// сохраняют текущее значение. Пустой слой — не менять ничего (тогда сохранение сводится
     /// к генерации значений по умолчанию и пересчёту спецгрупп).
     /// </param>
-    public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(FieldLayerContainer? fieldsToSet)
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(FieldLayerContainer fieldsToSet)
     {
         var fields = CharacterFieldLayers.GetAllFieldsForEdit().ToDictionary(f => f.Field.Id.ProjectFieldId);
 

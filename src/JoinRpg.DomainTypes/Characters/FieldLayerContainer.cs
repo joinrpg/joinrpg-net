@@ -27,6 +27,10 @@ public class FieldLayerContainer
     public static FieldLayerContainer FromFieldValues(ProjectInfo projectInfo, IReadOnlyDictionary<int, string?> fieldValues)
         => new(projectInfo, CreateLayerData(projectInfo, fieldValues));
 
+    /// <summary>Пустой слой — «полей нет» / «ничего не меняем».</summary>
+    public static FieldLayerContainer Empty(ProjectInfo projectInfo)
+        => new(projectInfo, new Dictionary<ProjectFieldIdentification, FieldWithValue>());
+
     public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> layerData)
     {
         ProjectInfo = projectInfo;

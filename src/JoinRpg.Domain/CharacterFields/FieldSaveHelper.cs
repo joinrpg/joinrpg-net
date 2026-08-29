@@ -14,15 +14,16 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// </summary>
     /// <returns>Fields that have changed.</returns>
     /// <param name="fieldsToSet">
-    /// Поля, которые надо изменить, — дельта, а не полный слой. <c>null</c> — не менять ничего.
+    /// Поля, которые надо изменить, — дельта, а не полный слой. Пустой слой — не менять ничего.
     /// </param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Claim claim,
-        FieldLayerContainer? fieldsToSet,
+        FieldLayerContainer fieldsToSet,
         ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claim);
+        ArgumentNullException.ThrowIfNull(fieldsToSet);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
@@ -37,15 +38,16 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// </summary>
     /// <returns>The list of updated fields</returns>
     /// <param name="fieldsToSet">
-    /// Поля, которые надо изменить, — дельта, а не полный слой. <c>null</c> — не менять ничего.
+    /// Поля, которые надо изменить, — дельта, а не полный слой. Пустой слой — не менять ничего.
     /// </param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Character character,
-        FieldLayerContainer? fieldsToSet,
+        FieldLayerContainer fieldsToSet,
         ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(character);
+        ArgumentNullException.ThrowIfNull(fieldsToSet);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
         return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
@@ -59,7 +61,7 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         UserIdentification currentUserId,
         Character character,
         Claim? claim,
-        FieldLayerContainer? fieldsToSet,
+        FieldLayerContainer fieldsToSet,
         ProjectInfo projectInfo)
     {
         var strategy = CreateStrategy(currentUserId, character, claim, projectInfo);

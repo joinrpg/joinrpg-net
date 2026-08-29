@@ -9,5 +9,5 @@ public record EditCharacterRequest(
     CharacterIdentification Id,
     IReadOnlyCollection<CharacterGroupIdentification> ParentCharacterGroupIds,
     CharacterTypeInfo CharacterTypeInfo,
-    FieldLayerContainer? FieldValues)
+    FieldLayerContainer FieldValues)
 { }

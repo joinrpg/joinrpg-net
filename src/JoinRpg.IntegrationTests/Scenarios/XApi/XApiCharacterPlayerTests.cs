@@ -1,5 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.IntegrationTests.TestInfrastructure;
@@ -132,8 +134,14 @@ public class XApiCharacterPlayerTests(XApiMasterFixture fixture)
     private Task<ClaimIdentification> AddClaim(CharacterIdentification characterId, UserIdentification playerId)
         => fixture.Factory.Services.RunAsAsync(
             playerId,
-            sp => sp.GetRequiredService<IClaimService>()
-                .AddClaimFromUser(characterId, "Заявка от игрока", fields: null, sensitiveDataAllowed: true));
+            async sp =>
+            {
+                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
+                    .GetProjectMetadata(characterId.ProjectId);
+                return await sp.GetRequiredService<IClaimService>()
+                    .AddClaimFromUser(
+                        characterId, "Заявка от игрока", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: true);
+            });
 
     private Task ApproveClaim(ClaimIdentification claimId)
         => fixture.Factory.Services.RunAsAsync(
