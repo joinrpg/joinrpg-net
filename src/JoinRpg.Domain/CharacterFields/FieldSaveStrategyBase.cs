@@ -79,11 +79,11 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
         }
     }
 
-    private void AssignValues(IReadOnlyDictionary<int, string?> newFieldValue, Dictionary<int, FieldWithValue> fields)
+    private void AssignValues(FieldLayerContainer fieldsToSet, Dictionary<int, FieldWithValue> fields)
     {
-        foreach (var keyValuePair in newFieldValue)
+        foreach (var (fieldId, valueToSet) in fieldsToSet.LayerData)
         {
-            var field = fields[keyValuePair.Key];
+            var field = fields[fieldId.ProjectFieldId];
 
             if (!field.Field.CanHaveValue)
             {
@@ -92,7 +92,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             EnsureEditAccess(field);
 
-            var normalizedValue = field.NormalizeValueBeforeAssign(keyValuePair.Value);
+            var normalizedValue = field.NormalizeValueBeforeAssign(valueToSet.Value);
 
             if (normalizedValue is null && FieldIsMandatory(field))
             {
@@ -109,11 +109,16 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     [DoesNotReturn]
     protected abstract void ThrowRequiredField(FieldWithValue field);
 
-    public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(IReadOnlyDictionary<int, string?> newFieldValue)
+    /// <param name="fieldsToSet">
+    /// Поля, которые надо изменить. Это дельта, а не полный слой: поля, которых в нём нет,
+    /// сохраняют текущее значение. Пустой слой — не менять ничего (тогда сохранение сводится
+    /// к генерации значений по умолчанию и пересчёту спецгрупп).
+    /// </param>
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(FieldLayerContainer fieldsToSet)
     {
         var fields = CharacterFieldLayers.GetAllFieldsForEdit().ToDictionary(f => f.Field.Id.ProjectFieldId);
 
-        AssignValues(newFieldValue, fields);
+        AssignValues(fieldsToSet, fields);
 
         GenerateDefaultValues(fields);
 

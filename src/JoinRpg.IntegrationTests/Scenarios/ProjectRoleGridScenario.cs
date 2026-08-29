@@ -50,7 +50,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                     projectId,
                     ParentCharacterGroupIds: [rootGroupId],
                     new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                    FieldValues: new Dictionary<int, string?> { [nameFieldId] = name }));
+                    FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = name })));
             }
 
             // Приватный персонаж: на публичной сетке виден только мастеру.
@@ -58,7 +58,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 projectId,
                 ParentCharacterGroupIds: [rootGroupId],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Private),
-                FieldValues: new Dictionary<int, string?> { [nameFieldId] = privateName }));
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = privateName })));
 
             var created = await rolesListService.CreateAsync(new ProjectRolesList(
                 new ProjectRolesListIdentification(projectId, -1),
@@ -167,13 +167,13 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 projectId,
                 ParentCharacterGroupIds: [rootGroupId],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new Dictionary<int, string?> { [nameFieldId] = hotName }));
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = hotName })));
 
             await characterService.AddCharacter(new AddCharacterRequest(
                 projectId,
                 ParentCharacterGroupIds: [rootGroupId],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new Dictionary<int, string?> { [nameFieldId] = coldName }));
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = coldName })));
         });
 
         var anonClient = factory.CreateClient();

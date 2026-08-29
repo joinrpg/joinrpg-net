@@ -42,7 +42,7 @@ public class AdvertisementLogScenario(JoinApplicationFactory factory) : IClassFi
                 projectId,
                 ParentCharacterGroupIds: [],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new Dictionary<int, string?>()));
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
         });
 
         await factory.Services.RunAsAsync(masterId, async sp =>

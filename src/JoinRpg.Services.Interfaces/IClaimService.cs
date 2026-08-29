@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Services.Interfaces;
@@ -8,10 +9,10 @@ public interface IClaimService
     Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification
         characterId,
         string claimText,
-        IReadOnlyDictionary<int, string?> fields,
+        FieldLayerContainer fields,
         bool sensitiveDataAllowed);
 
-    Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, IReadOnlyDictionary<int, string?> fields);
+    Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer fields);
 
     Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
@@ -27,7 +28,7 @@ public interface IClaimService
 
     Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId);
 
-    Task SaveFieldsFromClaim(ClaimIdentification claimId, IReadOnlyDictionary<int, string?> newFieldValue);
+    Task SaveFieldsFromClaim(ClaimIdentification claimId, FieldLayerContainer fieldsToSet);
 
     Task CheckInClaim(ClaimIdentification claimId, int money);
     Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText);

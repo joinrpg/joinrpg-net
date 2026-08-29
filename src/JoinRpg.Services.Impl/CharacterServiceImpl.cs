@@ -141,14 +141,14 @@ internal class CharacterServiceImpl(
         return character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
     }
 
-    public async Task SetFields(CharacterIdentification characterId, Dictionary<int, string?> requestFieldValues)
+    public async Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet)
     {
         var character = await LoadCharacter(characterId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
 
         var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
             character,
-            requestFieldValues,
+            fieldsToSet,
             projectInfo);
 
         MarkChanged(character);
