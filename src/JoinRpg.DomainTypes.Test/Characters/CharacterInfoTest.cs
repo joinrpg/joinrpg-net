@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
@@ -441,6 +442,9 @@ public class CharacterInfoTest
             new DateTime(2024, 1, 2),
             DefaultMasterId);
 
+    private static UserInfoHeader MakePlayer(UserIdentification userId)
+        => new(userId, new UserDisplayName($"Игрок{userId.Value}", null));
+
     private static CharacterClaimInfo MakeClaim(
         ProjectInfo projectInfo,
         int claimId,
@@ -450,7 +454,7 @@ public class CharacterInfoTest
         Dictionary<int, string>? fields = null)
         => new(
             new ClaimIdentification(ProjectId, claimId),
-            playerId ?? PlayerId,
+            MakePlayer(playerId ?? PlayerId),
             status,
             DenialStatus: null,
             responsibleMasterId ?? DefaultMasterId,

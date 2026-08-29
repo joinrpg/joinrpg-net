@@ -40,6 +40,15 @@ internal sealed class CharacterInfoClaimRow
 {
     public required int ClaimId { get; init; }
     public required int PlayerUserId { get; init; }
+
+    // Части отображаемого имени игрока. Плоско, а не объектом: собрать UserDisplayName внутри
+    // EF6-проекции нельзя, сборка живёт в маппере. Образец — ClaimsRepositoryImpl.
+    public required string? PlayerPrefferedName { get; init; }
+    public required string? PlayerBornName { get; init; }
+    public required string? PlayerSurName { get; init; }
+    public required string? PlayerFatherName { get; init; }
+    public required string PlayerEmail { get; init; }
+
     public required ClaimStatus ClaimStatus { get; init; }
     public required ClaimDenialReason? ClaimDenialStatus { get; init; }
     public required int ResponsibleMasterUserId { get; init; }

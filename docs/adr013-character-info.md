@@ -109,7 +109,7 @@ public record class CharacterInfo
 ```csharp
 public record class CharacterClaimInfo(
     ClaimIdentification ClaimId,
-    UserIdentification PlayerId,
+    UserInfoHeader Player,     // PlayerId остался производным свойством, см. уточнение в п.4
     ClaimStatus Status,
     ClaimDenialReason? DenialStatus,
     UserIdentification ResponsibleMasterId,
@@ -202,12 +202,25 @@ XML-doc типа.
 | `FinanceOperation[]`, `RecurrentPayment[]` | нужна только сумма `FeePaid` |
 | `AccommodationRequest` целиком | нужна только `Cost` |
 | `UserSubscription[]` | своя ручка `IUserSubscribeRepository` |
-| Профиль и контакты игрока (`User`, `UserExtra`, `ExternalLogins`) | только `UserIdentification`. Профиль меняется независимо от персонажа, а его включение раздуло бы агрегат — см. ADR011, где контакты составляют заметную долю payload сетки. Отображение — bulk через `IUserRepository.GetUserInfoHeaders(ids)` |
+| Контакты, аватар и соцсети игрока (`UserExtra`, `ExternalLogins`) | только `UserInfoHeader` — id и отображаемое имя (см. уточнение ниже). Остальной профиль меняется независимо от персонажа, а его включение раздуло бы агрегат — см. ADR011, где контакты составляют заметную долю payload сетки. Отображение — bulk через `IUserRepository.GetUserInfoHeaders(ids)` |
 | `AccessArguments` | тип user-independent (см. «Решение») |
 | Заявки игрока в других персонажах | `AddClaimForbideReason.OnlyOneCharacter` требует данных по всему проекту — приходят параметром в `UserInfo` |
 
 Вне `DomainTypes` остаются: `GetBusyStatus` (возвращает UI-enum), `ValidateIfCanAddClaim` (нужен
 `UserInfo`), `CalculateClaimBalance`, фильтры проблем.
+
+#### Уточнение: отображаемое имя игрока входит в агрегат
+
+Изначально в `CharacterClaimInfo` лежал только `UserIdentification PlayerId`. Практика показала,
+что этого мало: когда в проекте не настроено поле-имя, **имя персонажа записывается по имени
+игрока** (`SaveToCharacterAndClaimStrategy`), то есть отображаемое имя нужно не для показа, а для
+доменной операции. Протаскивать его мимо агрегата отдельным параметром — значит завести ещё один
+канал данных о персонаже помимо `CharacterInfo`, ровно от чего этот ADR и уходит.
+
+Поэтому `PlayerId` заменён на `UserInfoHeader Player` (сам `PlayerId` остался производным
+свойством, так что потребители не изменились). Цена — один join к `User` за пять колонок имени
+и email в проекции загрузчика, без N+1. Граница остаётся прежней: **имя — да, контакты,
+телефон, соцсети и аватар — нет.**
 
 ### 5. Загрузчик
 
@@ -264,7 +277,7 @@ public interface ICharacterInfoRepository
 | `UgClaim(Claim, FeePaid)` | `CharacterClaimInfo` целиком | нет |
 | `AccessArgumentsFactory.Create(UgDto, …)` | `ApprovedClaim?.PlayerId`, `IsPublic` | нет |
 | `BusyStatusExtensions.GetBusyStatus` ×3 | `CharacterTypeInfo`, `ApprovedClaimId is not null`, `HasActiveClaims` | нет |
-| `UnifiedGrid/ItemBuilder` | `PlayerId`, `Status` / `DenialStatus`, `CreateDate`, `CheckInDate`, `ResponsibleMasterId`, финансы, `Last*CommentAt` ×3 | имя игрока — bulk `IUserRepository` |
+| `UnifiedGrid/ItemBuilder` | `PlayerId`, `Status` / `DenialStatus`, `CreateDate`, `CheckInDate`, `ResponsibleMasterId`, финансы, `Last*CommentAt` ×3, `Player` | нет |
 | `FinanceExtensions.CalculateClaimBalance` | `FeePaid`, `CurrentFee`, `PreferentialFeeUser`, `Fields`, `AccommodationFee`, `ProjectInfo.ProjectFinanceSettings` | **была дырка**: расписание взносов в `ProjectFinanceSettings` отсутствовало, добавлено (см. «Статус»). Попутно уходит мутирующий кеш `Claim.FieldsFee` |
 | `CharacterView` | `Id`, `UpdatedAt`, `IsActive`, `IsPublic`, `InGame`, `CharacterTypeInfo`, `ApprovedClaim`, `Claims`, `DirectGroups`, `CharacterFields`, `CharacterName`, `Description` | `GroupHeader.ParentGroupIds` — уже в `ProjectInfo.Groups` |
 | `ProjectRoleGridViewModelBuilder` | всё выше + `HidePlayerForCharacter`, `ActiveClaimsCount`, `IntrestingGroupsForDisplay`, `GetFieldLayers` | контакты игрока — bulk (это улучшает ADR011) |

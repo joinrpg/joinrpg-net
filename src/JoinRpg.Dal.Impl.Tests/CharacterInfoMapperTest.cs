@@ -76,6 +76,11 @@ public class CharacterInfoMapperTest
     private static CharacterInfoClaimRow MakeClaimRow(
         int claimId = 1,
         int playerUserId = 1,
+        string? playerPrefferedName = null,
+        string? playerBornName = null,
+        string? playerSurName = null,
+        string? playerFatherName = null,
+        string playerEmail = "player@example.com",
         ClaimStatus claimStatus = ClaimStatus.AddedByUser,
         ClaimDenialReason? claimDenialStatus = null,
         int responsibleMasterUserId = 2,
@@ -94,6 +99,11 @@ public class CharacterInfoMapperTest
         {
             ClaimId = claimId,
             PlayerUserId = playerUserId,
+            PlayerPrefferedName = playerPrefferedName,
+            PlayerBornName = playerBornName,
+            PlayerSurName = playerSurName,
+            PlayerFatherName = playerFatherName,
+            PlayerEmail = playerEmail,
             ClaimStatus = claimStatus,
             ClaimDenialStatus = claimDenialStatus,
             ResponsibleMasterUserId = responsibleMasterUserId,
@@ -386,5 +396,71 @@ public class CharacterInfoMapperTest
         claim.CreateDate.ShouldBe(createDate);
         claim.LastUpdateDateTime.ShouldBe(lastUpdate);
         claim.CheckInDate.ShouldBe(checkIn);
+    }
+
+    // 9в. Игрок заявки: отображаемое имя собирается из тех же частей, что и везде в проекте.
+
+    [Fact]
+    public void Map_ClaimPlayer_ShouldPreferPrefferedName()
+    {
+        var row = MakeRow(claims:
+        [
+            MakeClaimRow(
+                playerUserId: 42,
+                playerPrefferedName: "Лёха",
+                playerBornName: "Алексей",
+                playerSurName: "Иванов",
+                playerEmail: "alexey@example.com"),
+        ]);
+
+        var player = CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single().Player;
+
+        player.UserId.ShouldBe(new UserIdentification(42));
+        player.DisplayName.DisplayName.ShouldBe("Лёха");
+        player.DisplayName.FullName.ShouldBe("Алексей Иванов");
+    }
+
+    [Fact]
+    public void Map_ClaimPlayerWithoutPrefferedName_ShouldFallBackToFullName()
+    {
+        var row = MakeRow(claims:
+        [
+            MakeClaimRow(playerBornName: "Алексей", playerSurName: "Иванов"),
+        ]);
+
+        CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
+            .Player.DisplayName.DisplayName.ShouldBe("Алексей Иванов");
+    }
+
+    [Fact]
+    public void Map_ClaimPlayerWithoutAnyName_ShouldFallBackToEmailUserPart()
+    {
+        // Регистрация не требует имени, поэтому пустое имя — обычный случай, а не крайний.
+        var row = MakeRow(claims: [MakeClaimRow(playerEmail: "alexey@example.com")]);
+
+        CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
+            .Player.DisplayName.DisplayName.ShouldBe("alexey");
+    }
+
+    [Fact]
+    public void Map_ClaimPlayer_ShouldMatchEntityDisplayName()
+    {
+        // Страж от перепутанных колонок: маппер должен дать ровно то же, что общая сборка имени
+        // из сущности. Иначе имя персонажа, записанное по игроку, разойдётся с остальным сайтом.
+        var user = _mock.Player;
+
+        var row = MakeRow(claims:
+        [
+            MakeClaimRow(
+                playerUserId: user.UserId,
+                playerPrefferedName: user.PrefferedName,
+                playerBornName: user.BornName,
+                playerSurName: user.SurName,
+                playerFatherName: user.FatherName,
+                playerEmail: user.Email),
+        ]);
+
+        CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
+            .Player.DisplayName.ShouldBe(user.ExtractDisplayName());
     }
 }
