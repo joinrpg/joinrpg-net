@@ -21,7 +21,7 @@ namespace JoinRpg.DomainTypes.Characters;
 /// Полных данных о комментариях и о сюжетах здесь нет — это отдельные агрегаты.
 /// </para>
 /// </remarks>
-public record class CharacterInfo
+public record class CharacterInfo : IFieldAvailabilityTarget
 {
     private readonly Lazy<IReadOnlyCollection<CharacterGroupIdentification>> parentGroupIdsToTop;
     private readonly Lazy<int> activeClaimsCount;
@@ -167,6 +167,8 @@ public record class CharacterInfo
     }
 
     public bool IsPublic => CharacterTypeInfo.IsPublic;
+
+    public CharacterType CharacterType => CharacterTypeInfo.CharacterType;
 
     /// <summary>Утверждённая заявка, если она есть.</summary>
     public CharacterClaimInfo? ApprovedClaim { get; }

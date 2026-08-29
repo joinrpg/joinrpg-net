@@ -112,11 +112,11 @@ public class FieldValueViewModel
 
         CanView = ch.HasViewableValue
                   && ch.Field.HasViewAccess(model.AccessArguments)
-                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target, model.ProjectInfo));
 
         CanEdit = model.AccessArguments.EditAllowed
                   && ch.Field.HasEditAccess(model.AccessArguments)
-                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target, model.ProjectInfo));
 
 
         // Detecting if field (or its values) has a price or not
@@ -191,6 +191,13 @@ public class CustomFieldsViewModel
     public AccessArguments AccessArguments { get; }
     [Editable(false)]
     public Character Target { get; }
+
+    /// <summary>
+    /// Нужен, чтобы доступность поля считалась по метаданным проекта, а не обходом ленивых
+    /// EF-навигаций <see cref="Character"/>.
+    /// </summary>
+    [Editable(false)]
+    public ProjectInfo ProjectInfo { get; }
 
     [Editable(false)]
     public IReadOnlyCollection<FieldValueViewModel> Fields { get; }
@@ -282,6 +289,7 @@ public class CustomFieldsViewModel
         }
         AccessArguments = accessArguments;
         Target = target;
+        ProjectInfo = projectInfo;
         var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project, projectInfo);
         Fields = fields.Select(ch => CreateFieldValueView(ch, renderer, overrideValues)).ToList();
     }
