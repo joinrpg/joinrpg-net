@@ -49,7 +49,7 @@
 - `JoinRpg.Domain` — доменная логика (методы-расширения над DataModel). Устаревший проект. Вместо использования сущностей БД с методами расширения в доменной логике, надо использовать доменные объекты в `JoinRpg.PrimitiveTypes`
 - `Joinrpg.Web.Identity` — реализация ASP.NET Core Identity (`MyUserStore`, `CurrentUserAccessor`, `ExternalLoginProfileExtractor`)
 - `JoinRpg.Web.UserProfile` — ViewModel профиля/соцсетей и билдер над доменным `UserInfo` (`ProviderDescViewModel`, `UserLoginInfoViewModel`, `UserLoginInfoViewModelBuilder`), без зависимости на `JoinRpg.DataModel`; используется и Portal, и IdPortal
-- `JoinRpg.BlobStorage` — абстракция файлового хранилища (AWS S3)
+- `JoinRpg.BlobStorage` — абстракция файлового хранилища (AWS S3, endpoint Yandex Object Storage). При создании `AmazonS3Config`/`AmazonSimpleEmailServiceV2Config` (см. также Postbox в `JoinRpg.Services.Notifications`) обязательно `RequestChecksumCalculation`/`ResponseChecksumValidation = WHEN_REQUIRED` — Yandex Object Storage и Postbox не поддерживают проактивные CRC32/CRC64-чексуммы, включённые по умолчанию в AWSSDK.S3/AWSSDK.SimpleEmailV2 начиная с 3.7.412.0 (см. [aws-sdk-net#3610](https://github.com/aws/aws-sdk-net/issues/3610)). Не убирать эту настройку как "лишнюю" при будущих апгрейдах SDK
 
 ### Services
 - `JoinRpg.Services.Interfaces` — контракты сервисов. 1 метод = 1 действие пользователя
