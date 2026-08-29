@@ -11,6 +11,13 @@ public abstract record SocialLink(PrefferedName? PrettyName, bool IsVerified)
 {
     public abstract long? Id { get; }
     public abstract Uri? Link { get; }
+
+    /// <summary>
+    /// Можно ли использовать эту привязку как способ входа в аккаунт. Не то же самое, что
+    /// <see cref="IsVerified"/> — Telegram-виджет умеет только привязывать контакт к уже
+    /// залогиненному аккаунту, отдельного входа через него нет.
+    /// </summary>
+    public abstract bool CanLogin { get; }
 }
 
 public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSocialLink>
@@ -22,6 +29,8 @@ public sealed record TelegramSocialLink : SocialLink, ISpanParsable<TelegramSoci
     public override long? Id => ChatId?.Value;
 
     public override Uri? Link => PrettyName is null ? null : new Uri($"https://t.me/{PrettyName.Value}");
+
+    public override bool CanLogin => false;
 
     public TelegramSocialLink(TelegramChatId? chatId, PrefferedName? prettyName = null, bool isVerified = false)
         : base(NormalizeUserName(prettyName), isVerified)
@@ -113,6 +122,8 @@ public sealed record VkSocialLink : SocialLink
     public override Uri? Link => id is long numericId
         ? new Uri($"https://vk.com/id{numericId}")
         : PrettyName is null ? null : new Uri($"https://vk.com/{PrettyName.Value}");
+
+    public override bool CanLogin => IsVerified;
 
     public VkSocialLink(long? id, PrefferedName? prettyName = null, bool isVerified = false)
         : base(prettyName, isVerified)
