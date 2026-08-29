@@ -112,10 +112,12 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
                 Permissions.Endpoints.Authorization,
                 Permissions.Endpoints.Token,
                 Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
                 Permissions.ResponseTypes.Code,
                 Permissions.Prefixes.Scope + Scopes.OpenId,
                 Permissions.Prefixes.Scope + Scopes.Email,
                 Permissions.Prefixes.Scope + Scopes.Profile,
+                Permissions.Prefixes.Scope + Scopes.OfflineAccess,
             },
         };
         descriptor.RedirectUris.Add(new Uri(TestRedirectUri));

@@ -65,9 +65,13 @@ public static class OAuthServerRegistration
                     ;
 
 
-                options.AllowAuthorizationCodeFlow();
+                options.AllowAuthorizationCodeFlow()
+                       .RequireProofKeyForCodeExchange();
 
-                options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile);
+                options.AllowRefreshTokenFlow();
+                options.SetRefreshTokenLifetime(TimeSpan.FromDays(90));
+
+                options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile, Scopes.OfflineAccess);
 
                 if (certOptions?.Signing?.Base64 is { } signingBase64)
                 {

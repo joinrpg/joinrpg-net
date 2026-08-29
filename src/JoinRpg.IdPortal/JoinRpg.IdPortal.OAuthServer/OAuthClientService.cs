@@ -51,11 +51,13 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
                 Permissions.Endpoints.Authorization,
                 Permissions.Endpoints.Token,
                 Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
                 Permissions.ResponseTypes.Code,
                 Permissions.Prefixes.Scope + Scopes.OpenId,
                 Permissions.Prefixes.Scope + Scopes.Email,
                 Permissions.Prefixes.Scope + Scopes.Phone,
                 Permissions.Prefixes.Scope + Scopes.Profile,
+                Permissions.Prefixes.Scope + Scopes.OfflineAccess,
             }
         };
         foreach (var uri in redirectUris)
