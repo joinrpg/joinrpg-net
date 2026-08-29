@@ -33,6 +33,30 @@ public class JoinMvcControllerBaseTest
         logger.ErrorCount.ShouldBe(0);
     }
 
+    // Регрессия: OnlyOneApprovedClaimException (у игрока уже есть одобренная заявка, а проект
+    // допускает только одного персонажа на игрока — ожидаемая бизнес-ситуация) должна показываться
+    // понятным сообщением и не логироваться как ошибка, а не проваливаться в default-ветку
+    // с LogError и "Неожиданная ошибка". См. #4691.
+    [Fact]
+    public void AddModelException_OnlyOneApprovedClaimException_ShouldAddFriendlyErrorWithoutLoggingError()
+    {
+        var logger = new RecordingLogger();
+        var controller = new TestController
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = CreateHttpContext(logger),
+            },
+        };
+
+        controller.CallAddModelException(new OnlyOneApprovedClaimException());
+
+        controller.ModelState.IsValid.ShouldBeFalse();
+        var error = controller.ModelState[""]!.Errors.ShouldHaveSingleItem();
+        error.ErrorMessage.ShouldBe("Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
+        logger.ErrorCount.ShouldBe(0);
+    }
+
     private static DefaultHttpContext CreateHttpContext(ILogger<JoinMvcControllerBase> logger)
     {
         var httpContext = new DefaultHttpContext

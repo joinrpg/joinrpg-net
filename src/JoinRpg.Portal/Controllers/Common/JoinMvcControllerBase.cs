@@ -70,6 +70,9 @@ public abstract class JoinMvcControllerBase : Controller
             case JoinRpgSlotLimitedException _:
                 ModelState.AddModelError("", "Не удалось принять заявку: свободные места на эту роль закончились");
                 return;
+            case OnlyOneApprovedClaimException _:
+                ModelState.AddModelError("", "Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
+                return;
             default:
 
                 logger.LogError(exception, "Исключение при обработке запроса");
