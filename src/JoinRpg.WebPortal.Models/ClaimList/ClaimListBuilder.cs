@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -82,7 +83,7 @@ public static class ClaimListBuilder
             );
     }
 
-    public static (DateTime At, UserInfo By) GetLastComment(Claim claim, AccessArguments accessArguments)
+    public static (DateTime At, UserInfoHeader By) GetLastComment(Claim claim, AccessArguments accessArguments)
     {
         var lastComment = (At: claim.CreateDate, By: claim.Player);
 
@@ -101,7 +102,7 @@ public static class ClaimListBuilder
             lastComment = (At: claim.LastMasterCommentAt.Value.DateTime, By: claim.LastMasterCommentBy!);
         }
 
-        return (lastComment.At, lastComment.By.GetUserInfo());
+        return (lastComment.At, lastComment.By.ToUserInfoHeader());
     }
 
     public static DateTime GetLastCommentTime(Claim claim, AccessArguments accessArguments)
