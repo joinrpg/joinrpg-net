@@ -14,17 +14,10 @@ internal class SaveToCharacterAndClaimStrategy(Claim claim,
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
 
-    protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
-    {
-        Character.JsonData = fields
-            .Values
-            .Where(v => v.Field.BoundTo == FieldBoundTo.Character).SerializeFields();
+    protected override FieldLayerContainer? BuildClaimFields(Dictionary<int, FieldWithValue> fields)
+        => Layer(fields.Values.Where(v => v.Field.BoundTo == FieldBoundTo.Claim));
 
-        Claim.JsonData = fields.Values
-            .Where(v => v.Field.BoundTo == FieldBoundTo.Claim).SerializeFields();
-    }
-
-    protected override void SetCharacterNameFromPlayer() => Character.CharacterName = Claim.Player.GetDisplayName();
+    protected override string CharacterNameFromPlayer() => Claim.Player.GetDisplayName();
 
     protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character, ProjectInfo);
 }
