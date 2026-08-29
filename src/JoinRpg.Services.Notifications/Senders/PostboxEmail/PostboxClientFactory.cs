@@ -19,7 +19,6 @@ internal class PostboxClientFactory(IOptions<PostboxOptions> options)
             RequestChecksumCalculation = Amazon.Runtime.RequestChecksumCalculation.WHEN_REQUIRED,
             ResponseChecksumValidation = Amazon.Runtime.ResponseChecksumValidation.WHEN_REQUIRED,
             SignatureMethod = SigningAlgorithm.HmacSHA256,
-            SignatureVersion = "4",
             AuthenticationRegion = "ru-central1",
         };
 
