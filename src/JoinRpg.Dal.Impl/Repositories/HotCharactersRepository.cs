@@ -11,6 +11,7 @@ internal class HotCharactersRepository(MyDbContext ctx) : IHotCharactersReposito
             .AsExpandable()
             .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
             .Where(ProjectPredicates.Public())
+            .Where(ProjectPredicates.HasFutureKogdaIgraGame())
             .SelectMany(c => c.Characters)
             .Where(CharacterPredicates.Hot())
             .ApplyPaginationEf(pagination, c => c.CharacterId)
