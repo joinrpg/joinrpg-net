@@ -185,6 +185,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         var query = AllProjects
             .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
             .Where(ProjectPredicates.Public())
+            .Where(ProjectPredicates.HasFutureKogdaIgraGame())
             .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()))
             .Select(p => new
             {

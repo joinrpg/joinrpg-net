@@ -69,4 +69,7 @@ internal static class ProjectPredicates
     }
 
     internal static Expression<Func<Project, bool>> Public() => p => p.Details.IsPublicProject;
+
+    internal static Expression<Func<Project, bool>> HasFutureKogdaIgraGame() =>
+        p => p.KogdaIgraGames.Any(g => g.Active && g.Begin > DateTime.UtcNow);
 }
