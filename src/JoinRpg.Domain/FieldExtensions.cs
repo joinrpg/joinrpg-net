@@ -9,38 +9,32 @@ public static class FieldExtensions
     {
         ArgumentNullException.ThrowIfNull(field);
 
-        var isNpc = target?.CharacterType == CharacterType.NonPlayer;
-
-        var targetGroups = target?.GetParentGroupIdsToTop().ToList();
-
-        return IsAvailableForTargetCore(field, isNpc, targetGroups);
+        // Группы считаются обходом EF-навигации, а не по ProjectInfo — отсюда и Obsolete.
+        return IsAvailableForTargetCore(field, target?.CharacterType, target?.GetParentGroupIdsToTop());
     }
 
     public static bool IsAvailableForTarget(this ProjectFieldInfo field, Character? target, ProjectInfo projectInfo)
+        => field.IsAvailableForTarget(
+            target is null ? null : new CharacterItem(target, [.. target.GetParentGroupIdsToTop(projectInfo)]));
+
+    /// <summary>
+    /// Доступно ли поле персонажу. <paramref name="target"/> == <c>null</c> означает «персонажа нет»:
+    /// тогда доступны только поля без ограничения по группам.
+    /// </summary>
+    public static bool IsAvailableForTarget(this ProjectFieldInfo field, IFieldAvailabilityTarget? target)
     {
         ArgumentNullException.ThrowIfNull(field);
 
-        var isNpc = target?.CharacterType == CharacterType.NonPlayer;
-
-        var targetGroups = target?.GetParentGroupIdsToTop(projectInfo).ToList();
-
-        return IsAvailableForTargetCore(field, isNpc, targetGroups);
+        return IsAvailableForTargetCore(field, target?.CharacterType, target?.ParentGroupIdsToTop);
     }
 
-    public static bool IsAvailableForTarget(this ProjectFieldInfo field, IFieldAvailabilityTarget target)
-    {
-        ArgumentNullException.ThrowIfNull(field);
-        ArgumentNullException.ThrowIfNull(target);
-
-        var isNpc = target.CharacterType == CharacterType.NonPlayer;
-
-        return IsAvailableForTargetCore(field, isNpc, target.ParentGroupIdsToTop);
-    }
-
-    private static bool IsAvailableForTargetCore(ProjectFieldInfo field, bool isNpc, IEnumerable<CharacterGroupIdentification>? targetGroups)
+    private static bool IsAvailableForTargetCore(
+        ProjectFieldInfo field,
+        CharacterType? characterType,
+        IEnumerable<CharacterGroupIdentification>? targetGroups)
     {
         return field.IsActive
-                  && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || !isNpc)
+                  && (field.BoundTo == FieldBoundTo.Claim || field.ValidForNpc || characterType != CharacterType.NonPlayer)
                   && (field.GroupsAvailableForIds.Count == 0 || (targetGroups?.Intersect(field.GroupsAvailableForIds).Any() ?? false));
     }
 
