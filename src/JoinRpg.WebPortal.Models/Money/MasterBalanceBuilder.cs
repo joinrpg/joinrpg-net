@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models;
 
@@ -10,9 +11,9 @@ public static class MasterBalanceBuilder
     public static IReadOnlyCollection<UserIdentification> GetMasterIds(
         IReadOnlyCollection<FinanceOperation> masterOperations,
         IReadOnlyCollection<MoneyTransfer> masterTransfers)
-        => masterOperations.Select(fo => fo.PaymentType?.UserId)
-            .Where(userId => userId != null)
-            .Select(userId => userId!.Value)
+        => masterOperations.Select(fo => fo.PaymentType)
+            .WhereNotNull()
+            .Select(pt => pt.UserId)
             .Concat(masterTransfers.Select(mt => mt.ReceiverId))
             .Concat(masterTransfers.Select(mt => mt.SenderId))
             .Distinct()
