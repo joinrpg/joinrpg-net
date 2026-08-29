@@ -260,21 +260,37 @@ internal class CloneProjectHelper(
 
     private async Task CopyCharacters()
     {
+        var target = await GetTargetMetadataForCharacters();
         foreach (var originalChar in originalEntity.Characters.Where(c => c.IsActive))
         {
-            await CopyCharacter(originalChar);
+            await CopyCharacter(originalChar, target);
         }
     }
 
     private async Task CopyTemplates()
     {
+        var target = await GetTargetMetadataForCharacters();
         foreach (var originalChar in originalEntity.Characters.Where(c => c.IsActive && c.CharacterType == CharacterType.Slot))
         {
-            await CopyCharacter(originalChar);
+            await CopyCharacter(originalChar, target);
         }
     }
 
-    private async Task CopyCharacter(Character originalChar)
+    /// <summary>
+    /// Метаданные нового проекта на момент копирования персонажей.
+    /// </summary>
+    /// <remarks>
+    /// Берутся один раз и из кеша сознательно. Поля и группы к этому моменту уже созданы, а кеш
+    /// перечитан в конце <see cref="FixupConditionalFields"/> — то есть здесь уже актуальный
+    /// экземпляр. Копирование персонажей определения полей и групп не меняет, поэтому обновлять
+    /// метаданные на каждом персонаже незачем. Важно и то, что это тот же экземпляр
+    /// <see cref="ProjectInfo"/>, который возьмёт <c>AddCharacter</c>: слой полей привязан
+    /// к экземпляру.
+    /// </remarks>
+    private Task<ProjectInfo> GetTargetMetadataForCharacters()
+        => projectMetadataRepository.GetProjectMetadata(projectId);
+
+    private async Task CopyCharacter(Character originalChar, ProjectInfo target)
     {
         var oldCharacterId = new CharacterIdentification(original.ProjectId, originalChar.CharacterId);
         try
@@ -299,7 +315,6 @@ internal class CloneProjectHelper(
                 TryMapOriginalGroupIds(originalChar.ParentCharacterGroupIds)
                 .Except(SpecialGroupMapping.Values) // Без спецгрупп, они автоматически проставятся по значениям полей
                 ];
-            var target = await projectMetadataRepository.GetProjectMetadata(projectId);
             var request = new AddCharacterRequest(
                 projectId,
                 parentCharacterGroupIds,
