@@ -77,4 +77,37 @@ public class UserLoginInfoViewModelBuilderTests
         vk.AllowUnlink.ShouldBeFalse();
         vk.NeedToReLink.ShouldBeTrue();
     }
+
+    [Fact]
+    public void GetSocialLogins_TelegramNeverBlocksUnlinkEvenAsSingleLoginMethod()
+    {
+        // Vk — единственный настоящий способ входа (CanLogin=true), Telegram привязан
+        // дополнительно, но никогда не даёт войти сам по себе — отвязать его можно всегда.
+        var user = BuildUserInfo(
+            vk: new VkSocialLink(123, isVerified: true),
+            telegram: new TelegramSocialLink(new TelegramChatId(456), isVerified: true),
+            hasPassword: false,
+            hasSingleLoginMethod: true);
+
+        var telegram = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Telegram);
+
+        telegram.AllowUnlink.ShouldBeTrue();
+        telegram.IsOnlyLoginMethod.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void GetSocialLogins_TelegramOnlyConnection_DoesNotCountAsLoginMethod()
+    {
+        // Telegram привязан, пароля и ВК нет — но т.к. Telegram не умеет логинить,
+        // "единственного способа входа" фактически тоже нет.
+        var user = BuildUserInfo(
+            telegram: new TelegramSocialLink(new TelegramChatId(456), isVerified: true),
+            hasPassword: false,
+            hasSingleLoginMethod: false);
+
+        var telegram = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Telegram);
+
+        telegram.AllowUnlink.ShouldBeTrue();
+        telegram.IsOnlyLoginMethod.ShouldBeFalse();
+    }
 }

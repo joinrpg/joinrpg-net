@@ -48,7 +48,7 @@
 - `JoinRpg.Interfaces` — кросс-слойные интерфейсы (пользователь, уведомления, задачи)
 - `JoinRpg.Domain` — доменная логика (методы-расширения над DataModel). Устаревший проект. Вместо использования сущностей БД с методами расширения в доменной логике, надо использовать доменные объекты в `JoinRpg.PrimitiveTypes`
 - `Joinrpg.Web.Identity` — реализация ASP.NET Core Identity (`MyUserStore`, `CurrentUserAccessor`, `ExternalLoginProfileExtractor`)
-- `JoinRpg.Web.UserProfile` — чистые ViewModel профиля/соцсетей (`ProviderDescViewModel`, `UserLoginInfoViewModel`), без зависимости на `JoinRpg.DataModel`; используется и Portal, и IdPortal
+- `JoinRpg.Web.UserProfile` — ViewModel профиля/соцсетей и билдер над доменным `UserInfo` (`ProviderDescViewModel`, `UserLoginInfoViewModel`, `UserLoginInfoViewModelBuilder`), без зависимости на `JoinRpg.DataModel`; используется и Portal, и IdPortal
 - `JoinRpg.BlobStorage` — абстракция файлового хранилища (AWS S3)
 
 ### Services

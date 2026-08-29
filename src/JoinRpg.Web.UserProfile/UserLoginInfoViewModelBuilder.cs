@@ -19,7 +19,7 @@ public static class UserLoginInfoViewModelBuilder
                 {
                     AllowLink = false,
                     AllowUnlink = true,
-                    IsOnlyLoginMethod = user.HasSingleLoginMethod,
+                    IsOnlyLoginMethod = user.HasSingleLoginMethod && link.CanLogin,
                     LoginProvider = provider,
                     ProviderKey = link.Id?.ToString(),
                     NeedToReLink = false,

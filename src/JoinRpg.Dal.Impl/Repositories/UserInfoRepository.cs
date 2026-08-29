@@ -106,7 +106,6 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Extra.PhoneNumber,
                 user.Auth.EmailConfirmed,
                 HasPassword = user.PasswordHash != null,
-                LoginMethodsCount = (user.PasswordHash != null ? 1 : 0) + user.ExternalLogins.Count,
             };
 
 
@@ -115,6 +114,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         return [.. results.Select(result => {
              var telegram = TelegramSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(result.Telegram));
              var vk = VkSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.VkProvider)?.Key, result.Vk, result.VkVerified);
+             var loginMethodsCount = (result.HasPassword ? 1 : 0) + (vk?.CanLogin == true ? 1 : 0) + (telegram?.CanLogin == true ? 1 : 0);
 
         var userFullName =
             new UserFullName(
@@ -136,7 +136,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             result.VerifiedProfileFlag,
             result.PhoneNumber,
             result.HasPassword,
-            result.LoginMethodsCount == 1
+            loginMethodsCount == 1
             );
         })];
     }
