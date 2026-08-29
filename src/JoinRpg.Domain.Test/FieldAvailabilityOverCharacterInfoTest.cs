@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain.Problems;
 using JoinRpg.Domain.Problems.CommonProblemFilters;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
