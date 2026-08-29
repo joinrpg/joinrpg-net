@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.Users;
 
@@ -29,8 +30,7 @@ public record class UserInfo(
     /// </summary>
     public bool HasSingleLoginMethod =>
         (HasPassword ? 1 : 0)
-        + (Social.Vk?.CanLogin == true ? 1 : 0)
-        + (Social.Telegram?.CanLogin == true ? 1 : 0)
+        + Social.SocialLinks.Count(x => x.CanLogin)
         == 1;
 
     public UserProfileAccessReason GetAccess(UserInfo? currentUser)
@@ -77,4 +77,7 @@ public record class UserSocialNetworks(
     string? LiveJournal,
     int? AllrpgInfoId,
     VkSocialLink? Vk,
-    ContactsAccessType SocialNetworksAccess);
+    ContactsAccessType SocialNetworksAccess)
+{
+    public IReadOnlyCollection<SocialLink> SocialLinks { get; } = [.. new SocialLink?[] { Telegram, Vk }.WhereNotNull()];
+}
