@@ -6,6 +6,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.UserProfile;
@@ -136,6 +137,9 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
 
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserLinkViewModel?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.DisplayName, name);
+
+    [Pure]
+    protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserInfo?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.DisplayName.DisplayName, name);
 
     [Pure]
     protected ITableColumn VkColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("ВК", user => UserSocialLink.GetVKUri(func.Compile()(user)?.Extra?.Vk)?.Uri);

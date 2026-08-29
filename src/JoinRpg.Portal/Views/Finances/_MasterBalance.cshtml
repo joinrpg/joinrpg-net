@@ -30,7 +30,7 @@
             @Html.DisplayFor(modelItem => item.Master)
             @if (ViewBag.ShowLinks == true)
             {
-                @Html.ActionLink("(подробнее)", "ByMaster", new {item.ProjectId, MasterId = item.Master.UserId})
+                @Html.ActionLink("(подробнее)", "ByMaster", new {item.ProjectId, MasterId = item.Master.UserId.Value})
             }
         </td>
         <td>

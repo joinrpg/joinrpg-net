@@ -9,11 +9,9 @@ public class MoneySummaryByMasterExporter(IUriService uriService) : CustomExport
         // Порядок полей тут важен, так как гуглдоки у людей опираются скорее всего на порядок колонок
         yield return ShortUserColumn(x => x.Master, "Мастер");
         yield return ComplexElementMemberColumn(x => x.Master, x => x.Email);
-        yield return ComplexElementMemberColumn(x => x.Master,
-            x => x.Extra,
-            x => x.PhoneNumber,
-            "Телефон");
-        yield return ComplexElementMemberColumn(x => x.Master, x => x.Extra, x => x.Telegram, "Telegram");
+        yield return ComplexElementMemberColumn(x => x.Master, x => x.PhoneNumber, "Телефон");
+        yield return ComplexElementMemberColumn(x => x.Master, x => x.Social,
+            s => s.Telegram == null ? null : s.Telegram.ToString(), "Telegram");
         // Выше должно быть ровно 4 поля с какими-то данными профиля мастера
         yield return IntColumn(x => x.Total);
         yield return IntColumn(x => x.ReceiveBalance);

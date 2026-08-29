@@ -1,28 +1,35 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models;
 
 public static class MasterBalanceBuilder
 {
+    public static IReadOnlyCollection<UserIdentification> GetMasterIds(
+        IReadOnlyCollection<FinanceOperation> masterOperations,
+        IReadOnlyCollection<MoneyTransfer> masterTransfers)
+        => masterOperations.Select(fo => fo.PaymentType)
+            .WhereNotNull()
+            .Select(pt => pt.UserId)
+            .Concat(masterTransfers.Select(mt => mt.ReceiverId))
+            .Concat(masterTransfers.Select(mt => mt.SenderId))
+            .Distinct()
+            .Select(userId => new UserIdentification(userId))
+            .ToArray();
+
     public static IReadOnlyCollection<MasterBalanceViewModel> ToMasterBalanceViewModels(
+        IReadOnlyCollection<UserInfo> masters,
         IReadOnlyCollection<FinanceOperation> masterOperations,
         IReadOnlyCollection<MoneyTransfer> masterTransfers,
         int projectId)
     {
-        var masters = masterOperations.Select(fo => fo.PaymentType?.User)
-            .WhereNotNull()
-            .Union(masterTransfers.Select(mt => mt.Receiver))
-            .Union(masterTransfers.Select(mt => mt.Sender))
-            .DistinctBy(master => master.UserId);
-
-
         var summary = masters.Select(master =>
                 new MasterBalanceViewModel(master, projectId, masterOperations, masterTransfers))
             .Where(fr => fr.AnythingEverHappens())
-            .OrderBy(fr => fr.Master.GetDisplayName());
+            .OrderBy(fr => fr.Master.DisplayName.DisplayName);
         return summary.ToArray();
     }
 }
