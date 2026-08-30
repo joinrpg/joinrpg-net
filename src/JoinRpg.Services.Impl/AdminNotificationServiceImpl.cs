@@ -1,8 +1,10 @@
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Impl;
 
@@ -10,7 +12,8 @@ internal class AdminNotificationServiceImpl(
     INotificationService notificationService,
     ICurrentUserAccessor currentUserAccessor,
     IUserRepository userRepository,
-    IKogdaIgraRepository kogdaIgraRepository
+    IKogdaIgraRepository kogdaIgraRepository,
+    IOptions<KogdaIgraOptions> kogdaIgraOptions
     )
     : IAdminNotificationService
 {
@@ -53,6 +56,7 @@ internal class AdminNotificationServiceImpl(
         }
         var games = await kogdaIgraRepository.GetDataByIds([id]);
         var gameName = games.SingleOrDefault()?.Name ?? $"#{id.Value}";
-        return $"Мастер указал, что игра есть на КогдаИгре: «{gameName}».";
+        var gameUri = new Uri(kogdaIgraOptions.Value.HostName, $"/game/{id.Value}/");
+        return $"Мастер указал, что игра есть на КогдаИгре: «[{gameName}]({gameUri})».";
     }
 }
