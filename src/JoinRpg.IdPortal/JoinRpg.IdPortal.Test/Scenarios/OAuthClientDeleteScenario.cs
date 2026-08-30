@@ -17,7 +17,10 @@ public class OAuthClientDeleteScenario(IdPortalApplicationFactory factory)
         await clientService.CreateClientAsync(
             clientId,
             "Тестовый клиент для удаления",
-            [new Uri("https://example.com/callback")]);
+            [new Uri("https://example.com/callback")],
+            OAuthClientType.Confidential,
+            [OpenIddictConstants.Scopes.OpenId],
+            allowRefreshToken: false);
 
         await clientService.DeleteClientAsync(clientId);
 
