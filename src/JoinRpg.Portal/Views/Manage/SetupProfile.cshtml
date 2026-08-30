@@ -21,6 +21,10 @@
             ManageMessageId.RemoveLoginSuccess => "Соцсеть отвязана",
             _ => "Неизвестная ошибка",
         })
+        @if (Model.Message == ManageMessageId.SocialLoginAlreadyLinked && Model.ConflictingAccountUrl != null)
+        {
+            <text>: <a href="@Model.ConflictingAccountUrl">@Model.ConflictingAccountUrl</a></text>
+        }
 </div>
 }
 
