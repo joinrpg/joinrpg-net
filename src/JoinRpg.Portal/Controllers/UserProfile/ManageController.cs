@@ -150,6 +150,8 @@ public class ManageController(
                 // до перехода на текущий стек авторизации.
                 if (existingOwner?.Id == user.Id)
                 {
+                    logger.LogInformation("Пользователь {userId} повторно привязал уже свой {loginProvider} / {loginProviderKey} — дозаполняем профиль",
+                        userId, loginInfo.LoginProvider, loginInfo.ProviderKey);
                     await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
                     return RedirectToAction("SetupProfile");
                 }
