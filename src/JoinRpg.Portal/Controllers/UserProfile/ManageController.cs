@@ -11,6 +11,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.UserProfile;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -32,12 +33,17 @@ public class ManageController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
+    public async Task<ActionResult> RemoveLogin(string loginProvider, string? providerKey)
     {
         var userId = currentUserAccessor.UserId;
         var user = await userManager.FindByIdAsync(userId.ToString());
         ManageMessageId? message;
-        var result = await userManager.RemoveLoginAsync(user, loginProvider, providerKey);
+        // Пустой providerKey означает, что настоящей привязки (ExternalLogin) нет — это
+        // legacy-контакт без подтверждения (см. UserLoginInfoViewModelBuilder), для него нечего
+        // отвязывать через RemoveLoginAsync, только очистить legacy-поле.
+        var result = string.IsNullOrEmpty(providerKey)
+            ? IdentityResult.Success
+            : await userManager.RemoveLoginAsync(user, loginProvider, providerKey);
         if (result.Succeeded)
         {
             await externalLoginProfileExtractor.CleanAfterLogin(user, loginProvider);

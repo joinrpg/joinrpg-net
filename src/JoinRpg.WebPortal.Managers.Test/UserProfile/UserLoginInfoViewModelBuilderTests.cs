@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.UserProfile;
 
@@ -65,15 +64,34 @@ public class UserLoginInfoViewModelBuilderTests
     }
 
     [Fact]
-    public void GetSocialLogins_ProfileValuePresentButNotVerified_NeedsRelink()
+    public void GetSocialLogins_ProfileValuePresentButNotVerified_NeedsRelinkButCanBeUnlinked()
     {
+        // Непровереннный VK всё равно хранится как ExternalLogin (Id есть), значит его можно
+        // отвязать, не подтверждая — не только предложить повторную привязку.
         var user = BuildUserInfo(vk: new VkSocialLink(123, isVerified: false));
 
         var vk = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Vk);
 
         vk.AllowLink.ShouldBeFalse();
-        vk.AllowUnlink.ShouldBeFalse();
+        vk.AllowUnlink.ShouldBeTrue();
         vk.NeedToReLink.ShouldBeTrue();
+        vk.ProviderKey.ShouldBe("123");
+    }
+
+    [Fact]
+    public void GetSocialLogins_LegacyProfileValueWithoutExternalLogin_NeedsRelinkButCanBeUnlinked()
+    {
+        // Только legacy-поле (PrettyName без числового Id) — ExternalLogin отсутствует, но
+        // сам legacy-контакт всё равно можно удалить (ProviderKey пуст — контроллер очищает
+        // legacy-поле напрямую, не трогая ExternalLogin).
+        var user = BuildUserInfo(vk: new VkSocialLink(null, new PrefferedName("durov")));
+
+        var vk = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Vk);
+
+        vk.AllowLink.ShouldBeFalse();
+        vk.AllowUnlink.ShouldBeTrue();
+        vk.NeedToReLink.ShouldBeTrue();
+        vk.ProviderKey.ShouldBeNull();
     }
 
     [Fact]
