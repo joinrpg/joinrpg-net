@@ -86,9 +86,9 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         {
             character.JsonData = Serialize(update.Fields);
 
-            if (update.Description is MarkdownDbValue description)
+            if (update.Description is MarkdownString description)
             {
-                character.Description = description;
+                character.Description = new MarkdownDbValue(description.Value);
             }
 
             character.CharacterName = update.CharacterName;

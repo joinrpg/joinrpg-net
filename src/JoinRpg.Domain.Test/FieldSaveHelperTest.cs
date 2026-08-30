@@ -605,6 +605,53 @@ public class FieldSaveHelperTest
 
         mock.Character.JsonData.ShouldContain(inactiveVariantId.ToString());
     }
+
+    [Theory]
+    [InlineData("Длинное описание", "Длинное описание")]
+    // Незаполненное поле описания даёт пустую строку, а не null: так же, как её отдают все
+    // читатели Character.Description (они нормализуют `Contents ?? ""`) и доменный CharacterInfo.
+    [InlineData(null, "")]
+    public void DescriptionFieldShouldBeCopiedToCharacterDescription(string? fieldValue, string expected)
+    {
+        _original = new MockedProject();
+        var mock = new MockedProject();
+
+        var descriptionField = mock.AddField(field =>
+        {
+            field.FieldName = "Описание персонажа";
+            field.FieldType = ProjectFieldType.Text;
+            field.FieldBoundTo = FieldBoundTo.Character;
+        });
+        mock.Project.Details.CharacterDescription =
+            mock.Project.ProjectFields.Single(f => f.ProjectFieldId == descriptionField.Id.ProjectFieldId);
+        mock.ReInitProjectInfo();
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Master.UserId,
+            mock.Character,
+            new Dictionary<int, string?> { { descriptionField.Id.ProjectFieldId, fieldValue } },
+            mock.ProjectInfo);
+
+        mock.Character.Description.Contents.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void WithoutDescriptionFieldCharacterDescriptionShouldBeLeftAlone()
+    {
+        _original = new MockedProject();
+        var mock = new MockedProject();
+
+        // В MockedProject поле описания не настроено, поэтому сохранение полей его не трогает.
+        mock.Character.Description = new MarkdownDbValue("Написано руками");
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Master.UserId,
+            mock.Character,
+            new Dictionary<int, string?> { { mock.CharacterFieldInfo.Id.ProjectFieldId, "test" } },
+            mock.ProjectInfo);
+
+        mock.Character.Description.Contents.ShouldBe("Написано руками");
+    }
 }
 
 public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator

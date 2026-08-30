@@ -23,12 +23,12 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     /// Персонаж здесь не меняется: игрок правит ещё не утверждённую заявку.
     /// </summary>
     protected override (CharacterUpdate? Character, FieldLayerContainer? ClaimFields) BuildResult(
-        Dictionary<int, FieldWithValue> fields)
+        FieldLayerContainer working)
     {
         // Character-bound поля, унаследованные от текущего персонажа (не введённые игроком в этой заявке),
         // не должны попадать в Claim.JsonData: иначе при последующем перемещении заявки на другого персонажа
         // и её принятии эти значения перезапишут поля нового персонажа.
-        var fieldsToSave = fields.Values.Where(f =>
+        var fieldsToSave = working.LayerData.Values.Where(f =>
             f.Field.BoundTo == FieldBoundTo.Claim ||
             CharacterFieldLayers.CharacterLayer.LayerData.GetValueOrDefault(f.Field.Id)?.Value != f.Value);
 

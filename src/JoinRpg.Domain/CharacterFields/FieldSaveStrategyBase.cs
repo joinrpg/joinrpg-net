@@ -25,8 +25,12 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     /// Считает, что надо записать. Присваивать сущностям здесь ничего нельзя — это делает
     /// <see cref="FieldSaveHelper"/> по возвращённому результату.
     /// </summary>
+    /// <param name="working">
+    /// Слой со значениями всех полей проекта после присваивания и генерации значений по
+    /// умолчанию — то, что будет сохранено.
+    /// </param>
     protected abstract (CharacterUpdate? Character, FieldLayerContainer? ClaimFields) BuildResult(
-        Dictionary<int, FieldWithValue> fields);
+        FieldLayerContainer working);
 
     /// <summary>Собирает слой из готовых значений полей.</summary>
     protected FieldLayerContainer Layer(IEnumerable<FieldWithValue> values)
@@ -127,7 +131,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
         GenerateDefaultValues(fields);
 
-        var (character, claimFields) = BuildResult(fields);
+        var (character, claimFields) = BuildResult(Layer(fields.Values));
         return new FieldSaveResult(UpdatedFields.Values, character, claimFields);
     }
 }

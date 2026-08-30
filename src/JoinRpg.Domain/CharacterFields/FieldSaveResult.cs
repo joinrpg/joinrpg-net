@@ -22,10 +22,10 @@ public record class FieldSaveResult(
 /// <param name="Fields">Итоговый слой полей персонажа.</param>
 /// <param name="Description">
 /// <c>null</c> — описание не трогать: у проекта не настроено поле описания персонажа.
-/// Обратите внимание, что «описание пустое» — это не <c>null</c>, а <c>MarkdownDbValue(null)</c>.
+/// Пустое описание — это не <c>null</c>, а <see cref="MarkdownString"/> с пустой строкой.
 /// </param>
 public record class CharacterUpdate(
     FieldLayerContainer Fields,
     string CharacterName,
-    MarkdownDbValue? Description,
+    MarkdownString? Description,
     IReadOnlyCollection<CharacterGroupIdentification> ParentGroupIds);

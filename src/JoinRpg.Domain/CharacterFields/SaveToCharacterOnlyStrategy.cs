@@ -20,7 +20,7 @@ internal class SaveToCharacterOnlyStrategy(
     }
 
     /// <summary>Заявки нет — писать поля заявки некуда.</summary>
-    protected override FieldLayerContainer? BuildClaimFields(Dictionary<int, FieldWithValue> fields) => null;
+    protected override FieldLayerContainer? BuildClaimFields(FieldLayerContainer working) => null;
 
     protected override bool FieldIsMandatory(FieldWithValue field) =>
         field.Field.MandatoryStatus == MandatoryStatus.Required

@@ -14,8 +14,8 @@ internal class SaveToCharacterAndClaimStrategy(Claim claim,
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
 
-    protected override FieldLayerContainer? BuildClaimFields(Dictionary<int, FieldWithValue> fields)
-        => Layer(fields.Values.Where(v => v.Field.BoundTo == FieldBoundTo.Claim));
+    protected override FieldLayerContainer? BuildClaimFields(FieldLayerContainer working)
+        => Layer(working.LayerData.Values.Where(v => v.Field.BoundTo == FieldBoundTo.Claim));
 
     protected override string CharacterNameFromPlayer() => Claim.Player.GetDisplayName();
 
