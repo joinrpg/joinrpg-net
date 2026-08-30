@@ -87,6 +87,70 @@ public class FieldLayerContainerTest
         fwv.Field.Type.ShouldBe(ProjectFieldType.String);
     }
 
+    /// <summary>
+    /// Для игрока без доступа к персонажу <c>VisibleFor</c> обязан давать ровно то же, что
+    /// <c>PublicOnly</c>: на этом держится замена одного другим на пути сохранения полей.
+    /// </summary>
+    [Theory]
+    [InlineData(ProjectFieldVisibility.Public, true)]
+    [InlineData(ProjectFieldVisibility.PlayerAndMaster, false)]
+    [InlineData(ProjectFieldVisibility.MasterOnly, false)]
+    public void VisibleForPlayerWithoutCharacterAccessShouldMatchPublicOnly(
+        ProjectFieldVisibility visibility, bool expectedVisible)
+    {
+        var projectInfo = MakeProject(MakeField(1, visibility: visibility));
+        var layer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "значение" } });
+
+        var accessOfPlayerWithoutCharacter = new AccessArguments(
+            MasterAccess: false,
+            PlayerAccessToCharacter: false,
+            PlayerAccesToClaim: true,
+            EditAllowed: true,
+            Published: false,
+            CharacterPublic: false,
+            IsCapitan: false);
+
+        var visible = layer.VisibleFor(accessOfPlayerWithoutCharacter);
+
+        visible.LayerData.Count.ShouldBe(expectedVisible ? 1 : 0);
+        visible.LayerData.Count.ShouldBe(layer.PublicOnly().LayerData.Count);
+    }
+
+    [Fact]
+    public void VisibleForMasterShouldKeepNonPublicFields()
+    {
+        // Отличие от PublicOnly: мастер видит и непубличные поля персонажа.
+        var projectInfo = MakeProject(
+            MakeField(1, visibility: ProjectFieldVisibility.Public),
+            MakeField(2, visibility: ProjectFieldVisibility.PlayerAndMaster),
+            MakeField(3, visibility: ProjectFieldVisibility.MasterOnly));
+        var layer = new FieldLayerContainer(
+            projectInfo,
+            new Dictionary<int, string?> { { 1, "pub" }, { 2, "restricted" }, { 3, "secret" } });
+
+        var visible = layer.VisibleFor(AccessArgumentsMaster);
+
+        visible.LayerData.Count.ShouldBe(3);
+        visible.ShouldBeSameAs(layer);
+        layer.PublicOnly().LayerData.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void VisibleForApprovedPlayerShouldKeepPlayerVisibleFields()
+    {
+        var projectInfo = MakeProject(
+            MakeField(1, visibility: ProjectFieldVisibility.PlayerAndMaster),
+            MakeField(2, visibility: ProjectFieldVisibility.MasterOnly));
+        var layer = new FieldLayerContainer(
+            projectInfo,
+            new Dictionary<int, string?> { { 1, "мне видно" }, { 2, "мастерское" } });
+
+        var visible = layer.VisibleFor(AccessArgumentsPlayer);
+
+        visible.LayerData.ShouldContainKey(new ProjectFieldIdentification(1, 1));
+        visible.LayerData.ShouldNotContainKey(new ProjectFieldIdentification(1, 2));
+    }
+
     [Fact]
     public void PublicOnlyShouldExcludeNonPublicFields()
     {

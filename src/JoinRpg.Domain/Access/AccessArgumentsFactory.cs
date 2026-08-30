@@ -1,6 +1,7 @@
 
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 
@@ -62,6 +63,37 @@ public static class AccessArgumentsFactory
 
     public static AccessArguments Create(CharacterInfo character, ICurrentUserAccessor user)
         => Create(character, user.UserIdentificationOrDefault);
+
+    /// <summary>
+    /// Права при сохранении полей: кроме утверждённой заявки самого агрегата учитывается заявка,
+    /// в которую идёт сохранение.
+    /// </summary>
+    /// <param name="character">Персонаж</param>
+    /// <param name="claim">
+    /// Заявка, в которую сохраняем, или <c>null</c>, если сохранение идёт только в персонажа.
+    /// Она может быть ещё не отражена в агрегате: при принятии заявки мастером статус и
+    /// <c>ApprovedClaimId</c> проставлены в памяти, но в БД их пока нет. Без этого слагаемого
+    /// игрок в этот момент терял бы доступ к своему персонажу.
+    /// </param>
+    /// <param name="user">Пользователь</param>
+    public static AccessArguments Create(CharacterInfo character, CharacterClaimInfo? claim, UserIdentification? user)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var playerOfApprovedClaim =
+            SamePlayerId(user, character.ApprovedClaim?.PlayerId)
+            || (claim is { IsApproved: true } && SamePlayerId(user, claim.PlayerId));
+
+        return new AccessArguments(
+            MasterAccess: character.ProjectInfo.HasMasterAccess(user),
+            PlayerAccessToCharacter: playerOfApprovedClaim,
+            // Доступ к заявке есть у её игрока независимо от того, утверждена ли она.
+            PlayerAccesToClaim: claim is null ? playerOfApprovedClaim : SamePlayerId(user, claim.PlayerId),
+            EditAllowed: character.ProjectInfo.IsActive,
+            Published: character.ProjectInfo.PublishPlot,
+            CharacterPublic: character.IsPublic,
+            IsCapitan: false);
+    }
 
     public static AccessArguments Create(CharacterView character, UserIdentification? user, ProjectInfo projectInfo)
     {

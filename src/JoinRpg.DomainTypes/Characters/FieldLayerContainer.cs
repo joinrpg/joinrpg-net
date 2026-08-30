@@ -53,6 +53,32 @@ public class FieldLayerContainer
     }
 
     /// <summary>
+    /// Копия слоя без полей, которые такому зрителю не видны.
+    /// </summary>
+    /// <remarks>
+    /// Обобщение <see cref="PublicOnly"/>: для игрока без доступа к персонажу даёт ровно тот же
+    /// набор (непубличные character-bound поля отсекаются по <c>AnyAccessToCharacter</c>), но
+    /// правило записано один раз — через <see cref="ProjectFieldInfo.HasViewAccess"/>.
+    ///
+    /// Фильтровать слой нужно осознанно и на месте: <see cref="CharacterInfo.GetFieldLayers"/>
+    /// отдаёт слой персонажа как есть, потому что поверх него считаются в том числе взносы
+    /// (см. <c>FinanceExtensions</c>), а там фильтрация по правам всё сломала бы.
+    /// </remarks>
+    public FieldLayerContainer VisibleFor(AccessArguments accessArguments)
+    {
+        var filtered = LayerData
+            .Where(kvp => kvp.Value.Field.HasViewAccess(accessArguments))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        if (filtered.Count == LayerData.Count)
+        {
+            return this;
+        }
+
+        return new FieldLayerContainer(ProjectInfo, filtered);
+    }
+
+    /// <summary>
     ///   Возвращает копию контейнера только с публичными полями.
     /// </summary>
     public FieldLayerContainer PublicOnly()

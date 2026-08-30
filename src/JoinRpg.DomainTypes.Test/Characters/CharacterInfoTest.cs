@@ -414,6 +414,150 @@ public class CharacterInfoTest
 
     #endregion
 
+    #region Витеры и ForNewCharacter (нужны на пути записи)
+
+    [Fact]
+    public void WithDirectGroupsShouldReplaceGroupsAndKeepEverythingElse()
+    {
+        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
+        var claim = MakeClaim(projectInfo, 1, ClaimStatus.Approved);
+        var character = MakeCharacter(
+            projectInfo, directGroupIds: [], claims: [claim], approvedClaimId: claim.ClaimId);
+
+        var updated = character.WithDirectGroups([GroupId(2)]);
+
+        updated.DirectGroupIds.ShouldBe([GroupId(2)]);
+        updated.ParentGroupIdsToTop.ShouldBe([GroupId(2), GroupId(1)], ignoreOrder: true);
+        updated.Id.ShouldBe(character.Id);
+        updated.ApprovedClaim.ShouldBeSameAs(claim);
+        updated.CharacterFields.ShouldBeSameAs(character.CharacterFields);
+        // Исходный агрегат не изменился.
+        character.DirectGroupIds.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void WithCharacterTypeInfoShouldReplaceTypeAndKeepEverythingElse()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var character = MakeCharacter(projectInfo);
+
+        var updated = character.WithCharacterTypeInfo(
+            new CharacterTypeInfo(CharacterType.NonPlayer, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Private));
+
+        updated.CharacterType.ShouldBe(CharacterType.NonPlayer);
+        updated.IsPublic.ShouldBeFalse();
+        updated.CharacterName.ShouldBe(character.CharacterName);
+    }
+
+    [Fact]
+    public void WithersShouldKeepConstructorInvariants()
+    {
+        // Витер прогоняет основной конструктор, поэтому проверки остаются в одном месте.
+        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>()));
+        var character = MakeCharacter(projectInfo);
+
+        _ = Should.Throw<ArgumentException>(
+            () => character.WithCharacterTypeInfo(
+                new CharacterTypeInfo(CharacterType.NonPlayer, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public)));
+    }
+
+    [Fact]
+    public void ForNewCharacterShouldHaveNoClaims()
+    {
+        var projectInfo = Build(
+            fields: [MakeField(1)],
+            groups: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
+        var createdAt = new DateTime(2026, 8, 30);
+
+        // Персонажа ещё нет в БД, поэтому id отрицательный — ровно то, что видит сохранение полей.
+        var character = CharacterInfo.ForNewCharacter(
+            new CharacterIdentification(ProjectId, -1),
+            projectInfo,
+            "Новый",
+            CharacterTypeInfo.Default(),
+            hidePlayerForCharacter: false,
+            [GroupId(2)],
+            new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "x" } }),
+            DefaultMasterId,
+            createdAt);
+
+        character.Claims.ShouldBeEmpty();
+        character.ApprovedClaim.ShouldBeNull();
+        character.ApprovedClaimId.ShouldBeNull();
+        character.HasActiveClaims.ShouldBeFalse();
+        character.IsActive.ShouldBeTrue();
+        character.Id.CharacterId.ShouldBe(-1);
+        character.ParentGroupIdsToTop.ShouldBe([GroupId(2), GroupId(1)], ignoreOrder: true);
+        character.CreatedAt.ShouldBe(createdAt);
+        character.UpdatedAt.ShouldBe(createdAt);
+    }
+
+    [Fact]
+    public void ForNewCharacterResponsibleMasterShouldComeFromGroups()
+    {
+        // Утверждённой заявки нет, поэтому ответственный выбирается по правилам групп.
+        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>()));
+
+        var character = CharacterInfo.ForNewCharacter(
+            new CharacterIdentification(ProjectId, -1),
+            projectInfo,
+            "Новый",
+            CharacterTypeInfo.Default(),
+            hidePlayerForCharacter: false,
+            [],
+            new FieldLayerContainer(projectInfo, new Dictionary<int, string?>()),
+            DefaultMasterId,
+            new DateTime(2026, 8, 30));
+
+        character.ResponsibleMasterId.ShouldBe(DefaultMasterId);
+    }
+
+    #endregion
+
+    #region GetFieldLayers по объекту заявки
+
+    [Fact]
+    public void GetFieldLayersShouldAcceptClaimThatIsNotAmongClaims()
+    {
+        // Так сохраняются поля ещё не созданной заявки: её нет ни в БД, ни в агрегате.
+        var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
+        var character = MakeCharacter(projectInfo);
+        var unsavedClaim = MakeClaim(projectInfo, -1, fields: new() { { 1, "из новой заявки" } });
+
+        var layers = character.GetFieldLayers(AccessArgumentsMaster, unsavedClaim);
+
+        layers.GetFieldValue(new ProjectFieldIdentification(ProjectId, 1))!.Value.ShouldBe("из новой заявки");
+    }
+
+    [Fact]
+    public void GetFieldLayersWithoutClaimShouldGiveOnlyCharacterLayer()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var character = MakeCharacter(projectInfo);
+
+        var layers = character.GetFieldLayers(AccessArgumentsMaster, claim: null);
+
+        layers.ClaimLayer.ShouldBeNull();
+        layers.CharacterLayer.ShouldBeSameAs(character.CharacterFields);
+    }
+
+    [Fact]
+    public void GetFieldLayersShouldNotFilterCharacterLayerByAccess()
+    {
+        // Поверх этих слоёв считаются взносы (FinanceExtensions), поэтому фильтровать слой
+        // персонажа по правам здесь нельзя — иначе непубличные платные поля пропадут из расчёта.
+        var projectInfo = MakeProject(MakeField(1, visibility: ProjectFieldVisibility.MasterOnly));
+        var character = MakeCharacter(
+            projectInfo,
+            characterFields: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "секрет" } }));
+
+        var layers = character.GetFieldLayers(AccessArgumentsNone, claim: null);
+
+        layers.CharacterLayer.LayerData.Count.ShouldBe(1);
+    }
+
+    #endregion
+
     private static CharacterInfo MakeCharacter(
         ProjectInfo projectInfo,
         CharacterIdentification? id = null,
