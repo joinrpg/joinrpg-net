@@ -1,3 +1,4 @@
+using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.AdminTools;
@@ -8,6 +9,7 @@ using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Impl.Test.Projects;
 using JoinRpg.Services.Interfaces.Projects;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Impl.Test;
 
@@ -23,7 +25,8 @@ public class AdminNotificationServiceImplTest
             fakeNotificationService,
             new FakeCurrentUserAccessor(userId: 2, isAdmin: true),
             fakeUserRepository,
-            fakeKogdaIgraRepository);
+            fakeKogdaIgraRepository,
+            Options.Create(new KogdaIgraOptions { HostName = new Uri("https://kogda-igra.ru") }));
 
     private string QueuedText()
     {
