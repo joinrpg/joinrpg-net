@@ -158,7 +158,7 @@ public class ManageController(
 
                 logger.LogInformation("Пользователь {userId} пытался привязать {loginProvider} / {loginProviderKey}, но этот внешний логин уже привязан к аккаунту {existingOwnerId}",
                     userId, loginInfo.LoginProvider, loginInfo.ProviderKey, existingOwner?.Id);
-                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
+                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked, ConflictUserId = existingOwner?.Id });
             }
             logger.LogError("Unexpected error during linking user to another account: {loginError}", result.Errors.First().Code);
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
@@ -190,7 +190,7 @@ public class ManageController(
         if (u is not null)
         {
             logger.LogWarning("Телеграмм аккаунт {telegramUserId} уже был привязан к пользователю {userName}", telegramUserId, u.UserName);
-            return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
+            return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked, ConflictUserId = u.Id });
         }
 
 
@@ -202,7 +202,7 @@ public class ManageController(
     }
 
     [HttpGet]
-    public async Task<ActionResult> SetupProfile([FromServices] IOptions<TelegramLoginOptions> options, bool checkContactsMessage = false, ManageMessageId? message = null)
+    public async Task<ActionResult> SetupProfile([FromServices] IOptions<TelegramLoginOptions> options, bool checkContactsMessage = false, ManageMessageId? message = null, int? conflictUserId = null)
     {
         _ = await avatarService.EnsureAvatarPresent(currentUserAccessor.UserId);
 
@@ -238,6 +238,7 @@ public class ManageController(
             HasPassword = user.PasswordHash != null,
             Avatars = new UserAvatarListViewModel(user),
             Message = message,
+            ConflictingAccountUrl = conflictUserId is null ? null : Url.Action("Details", "User", new { userId = conflictUserId }),
             TelegramBotName = options.Value.BotName,
             PassportData = user.Extra?.PassportData ?? "",
             RegistrationAddress = user.Extra?.RegistrationAddress ?? "",

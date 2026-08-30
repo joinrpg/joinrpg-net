@@ -60,6 +60,7 @@ public class EditUserProfileViewModel
 
     public UserAvatarListViewModel Avatars { get; set; }
     public ManageMessageId? Message { get; set; }
+    public string? ConflictingAccountUrl { get; set; }
 
     [ReadOnly(true)]
     public string TelegramBotName { get; set; } = null!;
