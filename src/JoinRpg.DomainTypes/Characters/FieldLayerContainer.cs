@@ -24,6 +24,11 @@ public class FieldLayerContainer
     {
     }
 
+    /// <summary>
+    /// Значение поля в этом слое. <c>null</c>, если поля в слое нет или оно не заполнено.
+    /// </summary>
+    public string? GetValue(ProjectFieldInfo field) => LayerData.GetValueOrDefault(field.Id)?.Value;
+
     /// <summary>Пустой слой — «полей нет» / «ничего не меняем».</summary>
     public static FieldLayerContainer Empty(ProjectInfo projectInfo)
         => new(projectInfo, new Dictionary<ProjectFieldIdentification, FieldWithValue>());

@@ -21,9 +21,20 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     private Dictionary<ProjectFieldIdentification, FieldWithPreviousAndNewValue> UpdatedFields { get; } = [];
 
-    protected virtual void Save(Dictionary<int, FieldWithValue> fields) => SerializeFields(fields);
+    /// <summary>
+    /// Считает, что надо записать. Присваивать сущностям здесь ничего нельзя — это делает
+    /// <see cref="FieldSaveHelper"/> по возвращённому результату.
+    /// </summary>
+    /// <param name="working">
+    /// Слой со значениями всех полей проекта после присваивания и генерации значений по
+    /// умолчанию — то, что будет сохранено.
+    /// </param>
+    protected abstract (CharacterUpdate? Character, FieldLayerContainer? ClaimFields) BuildResult(
+        FieldLayerContainer working);
 
-    protected abstract void SerializeFields(Dictionary<int, FieldWithValue> fields);
+    /// <summary>Собирает слой из готовых значений полей.</summary>
+    protected FieldLayerContainer Layer(IEnumerable<FieldWithValue> values)
+        => new(ProjectInfo, values.ToDictionary(v => v.Field.Id));
 
     private void EnsureEditAccess(FieldWithValue field)
     {
@@ -62,8 +73,6 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
-
-    protected abstract void SetCharacterNameFromPlayer();
 
     private void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
     {
@@ -114,7 +123,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     /// сохраняют текущее значение. Пустой слой — не менять ничего (тогда сохранение сводится
     /// к генерации значений по умолчанию и пересчёту спецгрупп).
     /// </param>
-    public IReadOnlyCollection<FieldWithPreviousAndNewValue> PerformSave(FieldLayerContainer fieldsToSet)
+    public FieldSaveResult PerformSave(FieldLayerContainer fieldsToSet)
     {
         var fields = CharacterFieldLayers.GetAllFieldsForEdit().ToDictionary(f => f.Field.Id.ProjectFieldId);
 
@@ -122,7 +131,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
         GenerateDefaultValues(fields);
 
-        Save(fields);
-        return UpdatedFields.Values;
+        var (character, claimFields) = BuildResult(Layer(fields.Values));
+        return new FieldSaveResult(UpdatedFields.Values, character, claimFields);
     }
 }

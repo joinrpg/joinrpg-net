@@ -13,47 +13,64 @@ internal abstract class CharacterExistsStrategyBase(Claim? claim, Character char
 {
     protected new Character Character => base.Character!; //Character should always exists
 
-    protected void UpdateSpecialGroups(Dictionary<int, FieldWithValue> fields)
+    /// <summary>
+    /// Спецгруппы проставляются по значениям полей, обычные — остаются как были.
+    /// </summary>
+    private IReadOnlyCollection<CharacterGroupIdentification> ComputeParentGroupIds(FieldLayerContainer working)
     {
-        var specialGroupIds = fields.Values.SelectMany(v => v.GetSpecialGroupsToApply());
+        var specialGroupIds = working.LayerData.Values.SelectMany(v => v.GetSpecialGroupsToApply());
         var regularGroupIds = Character.GetDirectGroups(ProjectInfo).Where(g => !g.IsSpecial).Select(g => g.Id);
 
-        Character.ParentCharacterGroupIds = [.. regularGroupIds.Union(specialGroupIds).Select(x => x.Id)];
+        return [.. regularGroupIds.Union(specialGroupIds)];
     }
 
-    protected void SetCharacterDescription(Dictionary<int, FieldWithValue> fields)
+    /// <summary>
+    /// Имя и описание персонажа берутся из «специальных» полей проекта, если те настроены.
+    /// </summary>
+    private (string Name, MarkdownString? Description) ComputeNameAndDescription(FieldLayerContainer working)
     {
-        if (ProjectInfo.CharacterDescriptionField is ProjectFieldInfo descField)
-        {
-            Character.Description = new MarkdownDbValue(
-                GetFieldValue(descField));
-        }
+        // Пустое описание — это MarkdownString(""), а не null: null здесь означает
+        // «поле описания в проекте не настроено, не трогать».
+        var description = ProjectInfo.CharacterDescriptionField is ProjectFieldInfo descField
+            ? new MarkdownString(working.GetValue(descField) ?? "")
+            : null;
 
-
+        string name;
         if (ProjectInfo.CharacterNameField is not ProjectFieldInfo nameField)
         {
-            SetCharacterNameFromPlayer();
+            name = CharacterNameFromPlayer();
         }
         else
         {
-            var name = GetFieldValue(nameField);
+            var fromField = working.GetValue(nameField);
 
-            Character.CharacterName = string.IsNullOrWhiteSpace(name) ?
-                "CHAR" + Character.CharacterId
-                : name;
+            name = string.IsNullOrWhiteSpace(fromField)
+                ? "CHAR" + Character.CharacterId
+                : fromField;
         }
 
-        string? GetFieldValue(ProjectFieldInfo field) => fields[field.Id.ProjectFieldId].Value;
+        return (name, description);
     }
 
-    protected override void Save(Dictionary<int, FieldWithValue> fields)
+    /// <summary>Имя персонажа, когда в проекте не настроено поле-имя.</summary>
+    protected abstract string CharacterNameFromPlayer();
+
+    protected override (CharacterUpdate? Character, FieldLayerContainer? ClaimFields) BuildResult(
+        FieldLayerContainer working)
     {
-        base.Save(fields);
+        var (name, description) = ComputeNameAndDescription(working);
 
-        SetCharacterDescription(fields);
+        var characterUpdate = new CharacterUpdate(
+            Layer(working.LayerData.Values.Where(v => v.Field.BoundTo == FieldBoundTo.Character)),
+            name,
+            description,
+            ComputeParentGroupIds(working));
 
-        UpdateSpecialGroups(fields);
+        return (characterUpdate, BuildClaimFields(working));
     }
+
+    /// <summary>Слой полей заявки; <c>null</c>, если заявки нет.</summary>
+    protected abstract FieldLayerContainer? BuildClaimFields(FieldLayerContainer working);
 
     [DoesNotReturn]
     protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, Character.GetId());

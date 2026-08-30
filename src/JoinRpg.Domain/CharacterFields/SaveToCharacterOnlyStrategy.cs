@@ -12,29 +12,15 @@ internal class SaveToCharacterOnlyStrategy(
     generator,
     projectInfo)
 {
-    protected override void Save(Dictionary<int, FieldWithValue> fields)
-    {
-        Character.JsonData = fields.Values
-            .Where(v => v.Field.BoundTo == FieldBoundTo.Character).SerializeFields();
-        SetCharacterDescription(fields);
-
-        UpdateSpecialGroups(fields);
-    }
-
-    protected override void SetCharacterNameFromPlayer()
+    protected override string CharacterNameFromPlayer()
     {
         //TODO: we don't have player yet, but have to set player name from it.
         //M.b. Disallow create characters in this scenarios?
-        Character.CharacterName = Character.CharacterName ?? "PLAYER_NAME";
+        return Character.CharacterName ?? "PLAYER_NAME";
     }
 
-    protected override void SerializeFields(Dictionary<int, FieldWithValue> fields)
-    {
-        Character.JsonData = fields
-            .Values
-            .Where(v => v.Field.BoundTo == FieldBoundTo.Character)
-            .SerializeFields();
-    }
+    /// <summary>Заявки нет — писать поля заявки некуда.</summary>
+    protected override FieldLayerContainer? BuildClaimFields(FieldLayerContainer working) => null;
 
     protected override bool FieldIsMandatory(FieldWithValue field) =>
         field.Field.MandatoryStatus == MandatoryStatus.Required

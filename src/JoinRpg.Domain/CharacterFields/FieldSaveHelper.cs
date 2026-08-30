@@ -68,11 +68,42 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
 
         logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
-        var updatedFields = strategy.PerformSave(fieldsToSet);
+        var result = strategy.PerformSave(fieldsToSet);
 
-        MarkAsUsed(updatedFields, character.Project);
-        return updatedFields;
+        Apply(result, character, claim);
+
+        MarkAsUsed(result.UpdatedFields, character.Project);
+        return result.UpdatedFields;
     }
+
+    /// <summary>
+    /// Переносит результат сохранения в EF-сущности. Единственное место, где слои полей
+    /// превращаются в JSON.
+    /// </summary>
+    private static void Apply(FieldSaveResult result, Character character, Claim? claim)
+    {
+        if (result.Character is CharacterUpdate update)
+        {
+            character.JsonData = Serialize(update.Fields);
+
+            if (update.Description is MarkdownString description)
+            {
+                character.Description = new MarkdownDbValue(description.Value);
+            }
+
+            character.CharacterName = update.CharacterName;
+
+            character.ParentCharacterGroupIds = [.. update.ParentGroupIds.Select(x => x.Id)];
+        }
+
+        if (result.ClaimFields is FieldLayerContainer claimFields)
+        {
+            // ClaimFields не бывает без заявки: его отдают только стратегии, которые в неё пишут.
+            claim!.JsonData = Serialize(claimFields);
+        }
+    }
+
+    private static string Serialize(FieldLayerContainer layer) => layer.LayerData.Values.SerializeFields();
 
 
     private static void MarkUsed(FieldWithValue field, Project project)
