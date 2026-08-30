@@ -2,14 +2,6 @@ namespace JoinRpg.IdPortal.OAuthServer;
 
 public class OAuthServerOptions
 {
-    public class OAuthServerRegistrationOptions
-    {
-        public required string ClientId { get; set; }
-        public required string ClientSecret { get; set; }
-        public string? DisplayName { get; set; }
-        public required Uri[] RedirectUris { get; set; }
-    }
-
     public class OAuthServerCertificateOptions
     {
         public string? Base64 { get; set; }
@@ -22,7 +14,5 @@ public class OAuthServerOptions
         public OAuthServerCertificateOptions? Encryption { get; set; }
     }
 
-    public required OAuthServerRegistrationOptions[] Registrations { get; set; }
     public OAuthServerCertificatesOptions? Certificates { get; set; }
 }
-

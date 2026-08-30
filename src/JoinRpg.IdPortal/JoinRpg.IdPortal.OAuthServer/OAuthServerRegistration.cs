@@ -71,7 +71,8 @@ public static class OAuthServerRegistration
                 options.AllowRefreshTokenFlow();
                 options.SetRefreshTokenLifetime(TimeSpan.FromDays(90));
 
-                options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile, Scopes.OfflineAccess);
+                options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile, Scopes.OfflineAccess,
+                    JoinRpgScopes.Read, JoinRpgScopes.CharactersWrite);
 
                 if (certOptions?.Signing?.Base64 is { } signingBase64)
                 {
@@ -109,7 +110,6 @@ public static class OAuthServerRegistration
                     options.UseAspNetCore();
                 });
 
-        builder.Services.AddHostedService<OAuthRegistrator>();
         builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 
         builder.Services.AddAuthorization(options =>

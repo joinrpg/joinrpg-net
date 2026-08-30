@@ -50,11 +50,63 @@ public class OAuthClientCreateScenario(IdPortalApplicationFactory factory)
         var secret = await clientService.CreateClientAsync(
             newClientId,
             "Тестовый клиент",
-            [new Uri("https://example.com/callback")]);
+            [new Uri("https://example.com/callback")],
+            OAuthClientType.Confidential,
+            [OpenIddictConstants.Scopes.OpenId],
+            allowRefreshToken: false);
 
         secret.ShouldNotBeNullOrEmpty();
         var created = await manager.FindByClientIdAsync(newClientId);
         created.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateClient_Public_DoesNotGenerateSecret()
+    {
+        var newClientId = $"test-public-{Guid.NewGuid():N}";
+        using var scope = factory.Services.CreateScope();
+        var clientService = scope.ServiceProvider.GetRequiredService<IOAuthClientService>();
+        var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+
+        var secret = await clientService.CreateClientAsync(
+            newClientId,
+            "Публичный тестовый клиент",
+            [new Uri("https://example.com/callback")],
+            OAuthClientType.Public,
+            [JoinRpgScopes.Read],
+            allowRefreshToken: true);
+
+        secret.ShouldBeNull();
+        var created = await manager.FindByClientIdAsync(newClientId);
+        created.ShouldNotBeNull();
+        (await manager.GetClientTypeAsync(created)).ShouldBe(OpenIddictConstants.ClientTypes.Public);
+    }
+
+    [Fact]
+    public async Task CreateClient_WithMixedScopes_JoinRpgScopesWinOverOidc()
+    {
+        // Defense in depth: even if a caller mistakenly mixes OIDC and joinrpg.* scopes,
+        // the descriptor never ends up with both — only the joinrpg.* ones survive.
+        var newClientId = $"test-mixed-scopes-{Guid.NewGuid():N}";
+        using var scope = factory.Services.CreateScope();
+        var clientService = scope.ServiceProvider.GetRequiredService<IOAuthClientService>();
+        var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+
+        await clientService.CreateClientAsync(
+            newClientId,
+            "Смешанные scope",
+            [new Uri("https://example.com/callback")],
+            OAuthClientType.Confidential,
+            [OpenIddictConstants.Scopes.OpenId, OpenIddictConstants.Scopes.Email, JoinRpgScopes.Read],
+            allowRefreshToken: false);
+
+        var created = await manager.FindByClientIdAsync(newClientId);
+        created.ShouldNotBeNull();
+        var permissions = await manager.GetPermissionsAsync(created);
+
+        permissions.ShouldContain(OpenIddictConstants.Permissions.Prefixes.Scope + JoinRpgScopes.Read);
+        permissions.ShouldNotContain(OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OpenId);
+        permissions.ShouldNotContain(OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.Email);
     }
 
     [Fact]
@@ -65,8 +117,10 @@ public class OAuthClientCreateScenario(IdPortalApplicationFactory factory)
         var clientService = scope.ServiceProvider.GetRequiredService<IOAuthClientService>();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
-        await clientService.CreateOrUpdateClientAsync(clientId, "secret-v1", null, [new Uri("https://example.com/v1")]);
-        await clientService.CreateOrUpdateClientAsync(clientId, "secret-v2", "Название", [new Uri("https://example.com/v2")]);
+        await clientService.CreateOrUpdateClientAsync(clientId, "secret-v1", null, [new Uri("https://example.com/v1")],
+            OAuthClientType.Confidential, [OpenIddictConstants.Scopes.OpenId], allowRefreshToken: false);
+        await clientService.CreateOrUpdateClientAsync(clientId, "secret-v2", "Название", [new Uri("https://example.com/v2")],
+            OAuthClientType.Confidential, [OpenIddictConstants.Scopes.OpenId], allowRefreshToken: false);
 
         var count = await manager.CountAsync();
         var existing = await manager.FindByClientIdAsync(clientId);

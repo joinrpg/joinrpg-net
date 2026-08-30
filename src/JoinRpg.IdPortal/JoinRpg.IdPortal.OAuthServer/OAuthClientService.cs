@@ -6,19 +6,38 @@ namespace JoinRpg.IdPortal.OAuthServer;
 
 internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAuthClientService
 {
-    public async Task<string> CreateClientAsync(string clientId, string? displayName, IReadOnlyList<Uri> redirectUris, CancellationToken ct = default)
+    public async Task<string?> CreateClientAsync(
+        string clientId,
+        string? displayName,
+        IReadOnlyList<Uri> redirectUris,
+        OAuthClientType clientType,
+        IReadOnlyList<string> scopes,
+        bool allowRefreshToken,
+        CancellationToken ct = default)
     {
-        var secretBytes = new byte[32];
-        RandomNumberGenerator.Fill(secretBytes);
-        var secret = Convert.ToBase64String(secretBytes);
+        string? secret = null;
+        if (clientType == OAuthClientType.Confidential)
+        {
+            var secretBytes = new byte[32];
+            RandomNumberGenerator.Fill(secretBytes);
+            secret = Convert.ToBase64String(secretBytes);
+        }
 
-        await CreateOrUpdateClientAsync(clientId, secret, displayName, redirectUris, ct);
+        await CreateOrUpdateClientAsync(clientId, secret, displayName, redirectUris, clientType, scopes, allowRefreshToken, ct);
         return secret;
     }
 
-    public async Task CreateOrUpdateClientAsync(string clientId, string clientSecret, string? displayName, IReadOnlyList<Uri> redirectUris, CancellationToken ct = default)
+    public async Task CreateOrUpdateClientAsync(
+        string clientId,
+        string? clientSecret,
+        string? displayName,
+        IReadOnlyList<Uri> redirectUris,
+        OAuthClientType clientType,
+        IReadOnlyList<string> scopes,
+        bool allowRefreshToken,
+        CancellationToken ct = default)
     {
-        var descriptor = BuildDescriptor(clientId, clientSecret, displayName, redirectUris);
+        var descriptor = BuildDescriptor(clientId, clientSecret, displayName, redirectUris, clientType, scopes, allowRefreshToken);
 
         var existing = await manager.FindByClientIdAsync(clientId, ct);
         if (existing is null)
@@ -38,28 +57,46 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
         await manager.DeleteAsync(application, ct);
     }
 
-    private static OpenIddictApplicationDescriptor BuildDescriptor(string clientId, string clientSecret, string? displayName, IReadOnlyList<Uri> redirectUris)
+    private static OpenIddictApplicationDescriptor BuildDescriptor(
+        string clientId,
+        string? clientSecret,
+        string? displayName,
+        IReadOnlyList<Uri> redirectUris,
+        OAuthClientType clientType,
+        IReadOnlyList<string> scopes,
+        bool allowRefreshToken)
     {
+        // Defense in depth: a joinrpg.* client never gets OIDC scopes, even if the caller made a mistake.
+        var effectiveScopes = scopes.Any(JoinRpgScopes.IsJoinRpgScope)
+            ? scopes.Where(JoinRpgScopes.IsJoinRpgScope)
+            : scopes;
+
         var descriptor = new OpenIddictApplicationDescriptor
         {
             ClientId = clientId,
             ClientSecret = clientSecret,
             DisplayName = displayName,
-            ClientType = ClientTypes.Confidential,
+            ClientType = clientType == OAuthClientType.Public ? ClientTypes.Public : ClientTypes.Confidential,
             Permissions =
             {
                 Permissions.Endpoints.Authorization,
                 Permissions.Endpoints.Token,
                 Permissions.GrantTypes.AuthorizationCode,
-                Permissions.GrantTypes.RefreshToken,
                 Permissions.ResponseTypes.Code,
-                Permissions.Prefixes.Scope + Scopes.OpenId,
-                Permissions.Prefixes.Scope + Scopes.Email,
-                Permissions.Prefixes.Scope + Scopes.Phone,
-                Permissions.Prefixes.Scope + Scopes.Profile,
-                Permissions.Prefixes.Scope + Scopes.OfflineAccess,
             }
         };
+
+        if (allowRefreshToken)
+        {
+            descriptor.Permissions.Add(Permissions.GrantTypes.RefreshToken);
+            descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.OfflineAccess);
+        }
+
+        foreach (var scope in effectiveScopes)
+        {
+            descriptor.Permissions.Add(Permissions.Prefixes.Scope + scope);
+        }
+
         foreach (var uri in redirectUris)
         {
             descriptor.RedirectUris.Add(uri);

@@ -3,6 +3,7 @@
 @attribute [Authorize]
 @using System.ComponentModel.DataAnnotations
 @using JoinRpg.IdPortal.OAuthServer
+@using OpenIddict.Abstractions
 @inject IOAuthClientService OAuthClientService
 
 <PageTitle>Создать OAuth-клиент — id.joinrpg.ru</PageTitle>
@@ -10,19 +11,29 @@
 <JoinAdminAuthorizeView Roles="@Security.AdminRoleName">
     <h3>Создать OAuth-клиент</h3>
 
-    @if (createdSecret is not null)
+    @if (created)
     {
-        <JoinAlert Variation="VariationStyleEnum.Warning">
-            Сохраните секрет — после закрытия страницы он недоступен.
-        </JoinAlert>
-        <FormHorizontal>
-            <FormRow Label="Client ID">
-                <JoinTextInput Value="@(createdClientId ?? "")" readonly />
-            </FormRow>
-            <FormRow Label="Client Secret">
-                <JoinTextArea Value="@createdSecret" ReadOnly="true" HasCopyButton="true" Rows="2" />
-            </FormRow>
-        </FormHorizontal>
+        @if (createdSecret is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                Сохраните секрет — после закрытия страницы он недоступен.
+            </JoinAlert>
+            <FormHorizontal>
+                <FormRow Label="Client ID">
+                    <JoinTextInput Value="@(createdClientId ?? "")" readonly />
+                </FormRow>
+                <FormRow Label="Client Secret">
+                    <JoinTextArea Value="@createdSecret" ReadOnly="true" HasCopyButton="true" Rows="2" />
+                </FormRow>
+            </FormHorizontal>
+        }
+        else
+        {
+            <JoinAlert Variation="VariationStyleEnum.Info">
+                Клиент «@createdClientId» создан как публичный (без секрета) — авторизация защищена
+                обязательным PKCE.
+            </JoinAlert>
+        }
         <JoinButton Link="/admin/oauthclients" Label="К списку клиентов" />
     }
     else
@@ -45,6 +56,26 @@
                 <FormRowFor For="() => Input.RedirectUris">
                     <JoinTextArea @bind-Value="Input.RedirectUris" Placeholder="https://example.com/callback" />
                 </FormRowFor>
+
+                <FormRowFor For="() => Input.ClientTypeChoice">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Input.ClientTypeChoice" />
+                </FormRowFor>
+
+                <FormRow Label="Scope: вход на сайт (OIDC)">
+                    <label><CheckboxInput @bind-Value="Input.IncludeOpenId" /> openid</label><br />
+                    <label><CheckboxInput @bind-Value="Input.IncludeEmail" /> email</label><br />
+                    <label><CheckboxInput @bind-Value="Input.IncludePhone" /> phone</label><br />
+                    <label><CheckboxInput @bind-Value="Input.IncludeProfile" /> profile</label>
+                </FormRow>
+
+                <FormRow Label="Scope: доступ к данным проектов (MCP)">
+                    <label><CheckboxInput @bind-Value="Input.IncludeJoinRpgRead" /> joinrpg.read — чтение данных проектов</label><br />
+                    <label><CheckboxInput @bind-Value="Input.IncludeJoinRpgCharactersWrite" /> joinrpg.characters.write — создание и правка персонажей</label>
+                </FormRow>
+
+                <FormRow Label="Refresh token">
+                    <label><CheckboxInput @bind-Value="Input.AllowRefreshToken" /> разрешить обновление токена без повторного входа</label>
+                </FormRow>
             </FormHorizontal>
 
             <JoinButton Submit="true" Preset="ButtonPreset.Create" />
@@ -53,7 +84,8 @@
     }
 </JoinAdminAuthorizeView>
 
-@code {
+    @code {
+    private bool created;
     private string? createdSecret;
     private string? createdClientId;
     private string? errorMessage;
@@ -79,9 +111,47 @@
             return;
         }
 
+        var oidcScopes = new List<string>();
+        if (Input.IncludeOpenId) { oidcScopes.Add(OpenIddictConstants.Scopes.OpenId); }
+        if (Input.IncludeEmail) { oidcScopes.Add(OpenIddictConstants.Scopes.Email); }
+        if (Input.IncludePhone) { oidcScopes.Add(OpenIddictConstants.Scopes.Phone); }
+        if (Input.IncludeProfile) { oidcScopes.Add(OpenIddictConstants.Scopes.Profile); }
+
+        var joinRpgScopes = new List<string>();
+        if (Input.IncludeJoinRpgRead) { joinRpgScopes.Add(JoinRpgScopes.Read); }
+        if (Input.IncludeJoinRpgCharactersWrite) { joinRpgScopes.Add(JoinRpgScopes.CharactersWrite); }
+
+        if (oidcScopes.Count == 0 && joinRpgScopes.Count == 0)
+        {
+            errorMessage = "Выберите хотя бы один scope.";
+            return;
+        }
+
+        if (oidcScopes.Count > 0 && joinRpgScopes.Count > 0)
+        {
+            errorMessage = "Нельзя одновременно выдавать scope для входа на сайт (OIDC) и scope для доступа к данным проектов (joinrpg.*) — это разные категории клиентов.";
+            return;
+        }
+
         var displayName = string.IsNullOrWhiteSpace(Input.DisplayName) ? null : Input.DisplayName;
-        createdSecret = await OAuthClientService.CreateClientAsync(Input.ClientId, displayName, parsedUris);
+        var scopes = oidcScopes.Count > 0 ? oidcScopes : joinRpgScopes;
+        var clientType = Input.ClientTypeChoice == ClientTypeChoice.Public ? OAuthClientType.Public : OAuthClientType.Confidential;
+
+        createdSecret = await OAuthClientService.CreateClientAsync(
+            Input.ClientId, displayName, parsedUris, clientType, scopes, Input.AllowRefreshToken);
         createdClientId = Input.ClientId;
+        created = true;
+    }
+
+    // Presentation-only mirror of OAuthClientType: JoinRpg.IdPortal.OAuthServer stays
+    // locale-neutral, so the Russian labels/descriptions live here instead.
+    private enum ClientTypeChoice
+    {
+        [Display(Name = "Confidential", Description = "Клиент может безопасно хранить секрет (веб-сервер)")]
+        Confidential,
+
+        [Display(Name = "Public", Description = "Нативное приложение/CLI без надёжного хранилища секрета — защита PKCE")]
+        Public,
     }
 
     private sealed class InputModel
@@ -98,5 +168,18 @@
         [Required(ErrorMessage = "Укажите хотя бы один Redirect URI")]
         [Display(Name = "Redirect URIs (по одному на строку)")]
         public string RedirectUris { get; set; } = "";
+
+        [Display(Name = "Тип клиента")]
+        public ClientTypeChoice ClientTypeChoice { get; set; } = ClientTypeChoice.Confidential;
+
+        public bool IncludeOpenId { get; set; }
+        public bool IncludeEmail { get; set; }
+        public bool IncludePhone { get; set; }
+        public bool IncludeProfile { get; set; }
+
+        public bool IncludeJoinRpgRead { get; set; }
+        public bool IncludeJoinRpgCharactersWrite { get; set; }
+
+        public bool AllowRefreshToken { get; set; } = true;
     }
 }
