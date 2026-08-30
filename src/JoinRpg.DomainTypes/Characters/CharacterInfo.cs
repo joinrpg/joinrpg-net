@@ -166,6 +166,50 @@ public record class CharacterInfo : IFieldAvailabilityTarget
                 ?? projectInfo.SelectResponsibleMaster(ParentGroupIdsToTop).UserId);
     }
 
+    /// <summary>
+    /// Тот же персонаж с другим набором прямых групп.
+    /// </summary>
+    /// <remarks>
+    /// Нужен на пути записи: там группы меняют до сохранения полей, а загруженный из БД агрегат
+    /// об этом ещё не знает. Прогоняет основной конструктор, поэтому инварианты проверяются
+    /// ровно один раз и здесь тоже.
+    /// </remarks>
+    public CharacterInfo WithDirectGroups(IReadOnlyCollection<CharacterGroupIdentification> directGroupIds)
+        => new(Id, ProjectInfo, CharacterName, CharacterTypeInfo, HidePlayerForCharacter, IsActive,
+            InGame, AutoCreated, Description, OriginalCharacterSlotId, directGroupIds, CharacterFields,
+            Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
+
+    /// <summary>Тот же персонаж с другими настройками типа. См. <see cref="WithDirectGroups"/>.</summary>
+    public CharacterInfo WithCharacterTypeInfo(CharacterTypeInfo characterTypeInfo)
+        => new(Id, ProjectInfo, CharacterName, characterTypeInfo, HidePlayerForCharacter, IsActive,
+            InGame, AutoCreated, Description, OriginalCharacterSlotId, DirectGroupIds, CharacterFields,
+            Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
+
+    /// <summary>
+    /// Агрегат персонажа, которого ещё нет в БД: создание персонажа и создание из слота.
+    /// Заявок у него нет по построению.
+    /// </summary>
+    /// <param name="id">
+    /// Идентификатор ещё не сохранённой сущности (то есть с нулевым или отрицательным
+    /// <c>CharacterId</c>) — как раз то, что видит сохранение полей.
+    /// </param>
+    public static CharacterInfo ForNewCharacter(
+        CharacterIdentification id,
+        ProjectInfo projectInfo,
+        string characterName,
+        CharacterTypeInfo characterTypeInfo,
+        bool hidePlayerForCharacter,
+        IReadOnlyCollection<CharacterGroupIdentification> directGroupIds,
+        FieldLayerContainer characterFields,
+        UserIdentification createdById,
+        DateTime createdAt,
+        bool autoCreated = false,
+        CharacterIdentification? originalCharacterSlotId = null)
+        => new(id, projectInfo, characterName, characterTypeInfo, hidePlayerForCharacter,
+            isActive: true, inGame: false, autoCreated, new MarkdownString(""),
+            originalCharacterSlotId, directGroupIds, characterFields, claims: [],
+            approvedClaimId: null, createdAt, createdById, createdAt, createdById);
+
     public bool IsPublic => CharacterTypeInfo.IsPublic;
 
     public CharacterType CharacterType => CharacterTypeInfo.CharacterType;
@@ -210,10 +254,24 @@ public record class CharacterInfo : IFieldAvailabilityTarget
     /// </param>
     /// <exception cref="KeyNotFoundException">Заявки <paramref name="claimId"/> нет у этого персонажа.</exception>
     public CharacterFieldLayers GetFieldLayers(AccessArguments access, ClaimIdentification? claimId = null)
-    {
-        var claim = claimId is null ? ApprovedClaim : GetClaimById(claimId);
-        return new CharacterFieldLayers(claim?.Fields, CharacterFields, access);
-    }
+        => GetFieldLayers(access, claimId is null ? ApprovedClaim : GetClaimById(claimId));
+
+    /// <summary>
+    /// То же, что <see cref="GetFieldLayers(AccessArguments, ClaimIdentification?)"/>, но заявка
+    /// передаётся объектом.
+    /// </summary>
+    /// <param name="claim">
+    /// Заявка, чей слой кладётся поверх слоя персонажа. В отличие от перегрузки по id, может не
+    /// принадлежать <see cref="Claims"/> — так сохраняются поля ещё не созданной заявки.
+    /// </param>
+    /// <remarks>
+    /// Слой персонажа отдаётся без фильтрации по правам: поверх него считаются в том числе
+    /// взносы (<c>FinanceExtensions</c>), где фильтрация была бы неверна. Если зрителю надо
+    /// показать только доступное — используйте <see cref="FieldLayerContainer.VisibleFor"/>
+    /// явно.
+    /// </remarks>
+    public CharacterFieldLayers GetFieldLayers(AccessArguments access, CharacterClaimInfo? claim)
+        => new(claim?.Fields, CharacterFields, access);
 
     /// <summary>
     /// Полный набор полей — запись для каждого поля проекта, без фильтрации по доступу.
