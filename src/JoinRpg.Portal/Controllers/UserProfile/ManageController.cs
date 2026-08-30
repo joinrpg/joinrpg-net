@@ -142,6 +142,20 @@ public class ManageController(
             if (result.Errors.Any(i => i.Code == "LoginAlreadyAssociated"))
             {
                 var existingOwner = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+
+                // ASP.NET Core Identity считает LoginAlreadyAssociated ошибкой даже когда
+                // привязка уже принадлежит этому же пользователю (не проверяет existingOwner
+                // на совпадение с user). Для нас это не ошибка, а способ добить профиль данными
+                // из соцсети — например, дозаполнить Extra.Vk/VkVerified для привязок, сделанных
+                // до перехода на текущий стек авторизации.
+                if (existingOwner?.Id == user.Id)
+                {
+                    logger.LogInformation("Пользователь {userId} повторно привязал уже свой {loginProvider} / {loginProviderKey} — дозаполняем профиль",
+                        userId, loginInfo.LoginProvider, loginInfo.ProviderKey);
+                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                    return RedirectToAction("SetupProfile");
+                }
+
                 logger.LogInformation("Пользователь {userId} пытался привязать {loginProvider} / {loginProviderKey}, но этот внешний логин уже привязан к аккаунту {existingOwnerId}",
                     userId, loginInfo.LoginProvider, loginInfo.ProviderKey, existingOwner?.Id);
                 return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SocialLoginAlreadyLinked });
