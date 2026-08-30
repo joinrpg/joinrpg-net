@@ -109,3 +109,9 @@ public class ForgotPasswordViewModel
     [Display(Name = "Email")]
     public string Email { get; set; }
 }
+
+public class AccountConflictViewModel
+{
+    public required string LoginProviderDisplayName { get; set; }
+    public required string Email { get; set; }
+}
