@@ -5,11 +5,25 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Users;
 using LinqKit;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubscribeRepository
 {
+    // "Google" — раньше был рабочим провайдером входа, сейчас отключён (не регистрируется
+    // в IdentityConfigurator), но старые привязки в UserExternalLogins остались и это ожидаемо,
+    // в отличие от прочих нераспознанных значений Provider.
+    private const string LegacyGoogleProvider = "Google";
+
+    private static readonly string[] KnownExternalLoginProviders =
+    [
+        UserExternalLogin.TelegramProvider,
+        UserExternalLogin.VkProvider,
+        LegacyGoogleProvider,
+    ];
+
+
     public Task<User> GetById(int id) => ctx.UserSet.FindAsync(id) ?? throw new JoinRpgEntityNotFoundException(id, nameof(User));
     public Task<User> WithProfile(int userId)
     {
@@ -112,8 +126,15 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         var results = await userQuery.ToListAsync();
 
         return [.. results.Select(result => {
-             var telegram = TelegramSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key, PrefferedName.FromOptional(result.Telegram));
-             var vk = VkSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.VkProvider)?.Key, result.Vk, result.VkVerified);
+             var telegram = TelegramSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => string.Equals(x.Provider, UserExternalLogin.TelegramProvider, StringComparison.OrdinalIgnoreCase))?.Key, PrefferedName.FromOptional(result.Telegram));
+             var vk = VkSocialLink.FromUserData(result.ExternalLogins.SingleOrDefault(x => string.Equals(x.Provider, UserExternalLogin.VkProvider, StringComparison.OrdinalIgnoreCase))?.Key, result.Vk, result.VkVerified);
+
+             foreach (var unrecognized in result.ExternalLogins.Where(x => !KnownExternalLoginProviders.Any(known => string.Equals(known, x.Provider, StringComparison.OrdinalIgnoreCase))))
+             {
+                 ctx.Logger?.LogWarning(
+                     "У пользователя {userId} обнаружена внешняя привязка с нераспознанным провайдером {provider} (UserExternalLoginId={loginId})",
+                     result.UserId, unrecognized.Provider, unrecognized.UserExternalLoginId);
+             }
 
         var userFullName =
             new UserFullName(
