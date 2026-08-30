@@ -388,7 +388,11 @@ public class AccountController(
                             var existingOwner = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
                             logger.LogWarning("Не удалось привязать {loginProvider} / {loginProviderKey} к аккаунту {userId} (email {email}), т.к. этот внешний логин уже привязан к аккаунту {existingOwnerId}",
                                 loginInfo.LoginProvider, loginInfo.ProviderKey, user.Id, email, existingOwner?.Id);
-                            return View("Lockout");
+                            return View("AccountConflict", new AccountConflictViewModel
+                            {
+                                LoginProviderDisplayName = loginInfo.ProviderDisplayName ?? loginInfo.LoginProvider,
+                                Email = email,
+                            });
                         }
 
                         logger.LogError("Неожиданная ошибка при привязке {loginProvider} / {loginProviderKey} к аккаунту {userId}: {loginResult}",

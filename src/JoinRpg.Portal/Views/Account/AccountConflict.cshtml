@@ -1,0 +1,19 @@
+@model JoinRpg.Web.Models.AccountConflictViewModel
+@{
+    ViewBag.Title = "Конфликт аккаунтов";
+}
+
+<h2>@ViewBag.Title</h2>
+<div>
+    <p class="alert alert-warning">
+        Вы пытаетесь войти через <b>@Model.LoginProviderDisplayName</b>, но этот аккаунт @Model.LoginProviderDisplayName
+        уже привязан к <b>другому</b> аккаунту на joinrpg.ru — не к тому, что зарегистрирован на почту
+        <b>@Model.Email</b>.
+    </p>
+    <p>
+        Скорее всего, у вас на сайте случайно оказалось два разных аккаунта: один создан на эту почту,
+        а второй давно привязан к вашему @Model.LoginProviderDisplayName. Самостоятельно объединить их
+        нельзя — <a href="mailto:support@joinrpg.ru">обратитесь в техподдержку</a>, укажите оба email,
+        которыми вы пользуетесь на сайте, и мы разберёмся.
+    </p>
+</div>
