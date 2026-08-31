@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using JoinRpg.Markdown;
 
@@ -42,10 +43,13 @@ internal class TelegramSingleHotRoleSender(
             ? string.Empty
             : $" ({WebUtility.HtmlEncode(kogdaIgraGame.MasterGroupName)})";
 
+        var dateRange = new DateRange(kogdaIgraGame.Begin, kogdaIgraGame.End);
+        var dateRangeString = DateRangeFormatter.FormatDisplay(dateRange, CultureInfo.GetCultureInfo("ru-RU"));
+
         var text =
             $"<strong>Горячая роль «{WebUtility.HtmlEncode(characterName)}» на игре «{WebUtility.HtmlEncode(projectName)}»</strong>\n\n" +
             $"{WebUtility.HtmlEncode(kogdaIgraGame.Name)}, {WebUtility.HtmlEncode(kogdaIgraGame.RegionName)}{masterGroupSuffix}\n" +
-            $"{kogdaIgraGame.Begin:dd.MM.yyyy}–{kogdaIgraGame.End:dd.MM.yyyy}\n" +
+            $"{dateRangeString}\n" +
             $"{kogdaIgraCardUri}\n\n" +
             $"<strong>{WebUtility.HtmlEncode(characterName)}</strong>\n\n" +
             $"{characterDescription.ToHtmlString().Value}\n\n" +
