@@ -1,0 +1,128 @@
+@using System.ComponentModel.DataAnnotations
+@using JoinRpg.Common.WebComponents.Dialog
+@inject IUserAdminClient UserAdminClient
+@inject NavigationManager NavigationManager
+@inject ILogger<AdminUserActionsPanel> Logger
+
+@if (isError)
+{
+    <JoinErrorMessage />
+    return;
+}
+
+@if (panel is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<div class="btn-group-vertical" role="group">
+    <a href="#" class="disabled btn btn-default" style="width: 100%">Функции администратора:</a>
+
+    <JoinButton Label="Изменить email" OnClick="OpenChangeEmailDialogAsync" />
+
+    <JoinButton
+        Label="@(panel.IsAdmin ? "Убрать из администраторов" : "Сделать администратором")"
+        AutoConfirm="true"
+        AutoConfirmMessage="@(panel.IsAdmin ? "Действительно убрать права администратора на сайте?" : "Действительно выдать права администратора на сайте?")"
+        OnClick="ToggleAdminAsync" />
+
+    <JoinButton
+        Label="@(panel.IsVerifiedUser ? "Отменить подтверждение профиля" : "Подтвердить профиль")"
+        AutoConfirm="true"
+        AutoConfirmMessage="@(panel.IsVerifiedUser ? "Убрать подтверждение действительности ФИО?" : "Вы действительно проверили ФИО и телефон пользователя?")"
+        OnClick="ToggleVerificationAsync" />
+
+    @if (panel.HasVkLink)
+    {
+        <JoinButton
+            Label="Отвязать ВК"
+            AutoConfirm="true"
+            AutoConfirmMessage="Действительно отвязать ВК у этого пользователя?"
+            OnClick="RemoveVkLinkAsync" />
+    }
+
+    <JoinButton Label="Логи" Title="Посмотреть логи действий пользователя на сайте" Link="@LogLink.AbsoluteUri" />
+</div>
+
+<JoinFormDialog
+    Caption="Изменение email"
+    SubmitButtonPreset="ButtonPreset.Save"
+    Model="@emailModel"
+    FormName="ChangeEmailForm"
+    @ref="changeEmailDialog"
+>
+    <FormRowFor For="@(() => emailModel.NewEmail)">
+        <JoinTextInput @bind-Value="emailModel.NewEmail" />
+    </FormRowFor>
+</JoinFormDialog>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public UserIdentification UserId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public Uri LogLink { get; set; } = null!;
+
+    private UserAdminPanelViewModel? panel;
+    private bool isError;
+
+    private JoinFormDialog<ChangeEmailFormModel> changeEmailDialog = default!;
+    private readonly ChangeEmailFormModel emailModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            panel = await UserAdminClient.GetAdminPanel(UserId);
+        }
+        catch (Exception ex)
+        {
+            isError = true;
+            Logger.LogError(ex, "Ошибка при загрузке панели администратора");
+        }
+    }
+
+    private async Task OpenChangeEmailDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            var result = await changeEmailDialog.ShowModalAsync();
+            if (result is not null)
+            {
+                await UserAdminClient.ChangeEmail(UserId, result.NewEmail);
+                NavigationManager.Refresh(forceReload: true);
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task ToggleAdminAsync(ButtonClickEventArgs args)
+    {
+        await UserAdminClient.SetAdminFlag(UserId, !panel!.IsAdmin);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    private async Task ToggleVerificationAsync(ButtonClickEventArgs args)
+    {
+        await UserAdminClient.SetVerificationFlag(UserId, !panel!.IsVerifiedUser);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    private async Task RemoveVkLinkAsync(ButtonClickEventArgs args)
+    {
+        await UserAdminClient.RemoveVkLink(UserId);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    public class ChangeEmailFormModel
+    {
+        [Required, EmailAddress, Display(Name = "Новый email")]
+        public string NewEmail { get; set; } = "";
+    }
+}

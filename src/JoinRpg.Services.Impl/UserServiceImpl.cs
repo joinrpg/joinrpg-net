@@ -192,10 +192,10 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc />
-    public async Task RemoveVkFromProfile(int userId)
+    public async Task RemoveVkFromProfile(UserIdentification userId)
     {
         logger.LogInformation("About to remove VK link from  user: {userId}", userId);
-        if (CurrentUserId != userId)
+        if (CurrentUserId != userId && !IsCurrentUserAdmin)
         {
             throw new JoinRpgInvalidUserException();
         }
