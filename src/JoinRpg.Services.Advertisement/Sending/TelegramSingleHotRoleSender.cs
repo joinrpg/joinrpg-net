@@ -45,7 +45,7 @@ internal class TelegramSingleHotRoleSender(
         var text =
             $"<strong>Горячая роль «{WebUtility.HtmlEncode(characterName)}» на игре «{WebUtility.HtmlEncode(projectName)}»</strong>\n\n" +
             $"{WebUtility.HtmlEncode(kogdaIgraGame.Name)}, {WebUtility.HtmlEncode(kogdaIgraGame.RegionName)}{masterGroupSuffix}\n" +
-            $"{kogdaIgraGame.Begin:dd.MM.yyyy}–{kogdaIgraGame.End:dd.MM.yyyy}\n" +
+            $"{DateRangeFormatter.Format(kogdaIgraGame.Begin, kogdaIgraGame.End, appendYearWord: true)}\n" +
             $"{kogdaIgraCardUri}\n\n" +
             $"<strong>{WebUtility.HtmlEncode(characterName)}</strong>\n\n" +
             $"{characterDescription.ToHtmlString().Value}\n\n" +
