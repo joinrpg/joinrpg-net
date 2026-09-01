@@ -72,4 +72,68 @@ public class AdvertisementLogScenario(JoinApplicationFactory factory) : IClassFi
             afterOtherInfo.AlreadySentForSchedule.ShouldBeFalse();
         });
     }
+
+    [Fact]
+    public async Task WasProjectAdvertisedAmongLastN_ExpiresAfterEnoughOtherAdvertisements()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectA;
+        ProjectIdentification projectB;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectA = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Проект A для кулдауна");
+            projectB = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Проект B для кулдауна");
+        }
+
+        var scheduleId = new AdvertisementScheduleIdentification(1);
+
+        async Task<CharacterIdentification> AddHotCharacter(ProjectIdentification projectId) =>
+            await factory.Services.RunAsAsync(masterId, async sp =>
+            {
+                var projectService = sp.GetRequiredService<IProjectService>();
+                var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
+                var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
+                await projectService.SetClaimSettings(
+                    projectId,
+                    projectInfo.ClaimSettings with { IsAcceptingClaims = true });
+
+                var characterService = sp.GetRequiredService<ICharacterService>();
+                return await characterService.AddCharacter(new AddCharacterRequest(
+                    projectId,
+                    ParentCharacterGroupIds: [],
+                    new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                    FieldValues: FieldLayerContainer.Empty(projectInfo)));
+            });
+
+        var characterA = await AddHotCharacter(projectA);
+        var characterB = await AddHotCharacter(projectB);
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var logRepository = sp.GetRequiredService<IAdvertisementLogRepository>();
+
+            // 1. Ни один из проектов ещё не рекламировался — кулдаун не действует
+            (await logRepository.WasProjectAdvertisedAmongLastN(scheduleId, projectA, 3)).ShouldBeFalse();
+
+            // 2. Рекламируем проект A — он на кулдауне (последняя реклама — его собственная)
+            await logRepository.RecordAdvertisement(new AdvertisementLogEntryInfo(
+                scheduleId, AdvertisementMethod.SingleHotRole, projectA, characterA, AdvertisementLogStatus.Sent, DateTimeOffset.UtcNow));
+            (await logRepository.WasProjectAdvertisedAmongLastN(scheduleId, projectA, 3)).ShouldBeTrue();
+
+            // 3. Ещё две рекламы проекта B — с прошлого раза для A было 2 чужих рекламы, кулдаун ещё действует
+            for (var i = 0; i < 2; i++)
+            {
+                await logRepository.RecordAdvertisement(new AdvertisementLogEntryInfo(
+                    scheduleId, AdvertisementMethod.SingleHotRole, projectB, characterB, AdvertisementLogStatus.Sent, DateTimeOffset.UtcNow));
+            }
+            (await logRepository.WasProjectAdvertisedAmongLastN(scheduleId, projectA, 3)).ShouldBeTrue();
+
+            // 4. Третья реклама проекта B — с прошлого раза для A было уже 3 чужих рекламы, кулдаун снят
+            await logRepository.RecordAdvertisement(new AdvertisementLogEntryInfo(
+                scheduleId, AdvertisementMethod.SingleHotRole, projectB, characterB, AdvertisementLogStatus.Sent, DateTimeOffset.UtcNow));
+            (await logRepository.WasProjectAdvertisedAmongLastN(scheduleId, projectA, 3)).ShouldBeFalse();
+            (await logRepository.WasProjectAdvertisedAmongLastN(scheduleId, projectB, 3)).ShouldBeTrue();
+        });
+    }
 }

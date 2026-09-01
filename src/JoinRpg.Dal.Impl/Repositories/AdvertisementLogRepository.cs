@@ -45,6 +45,14 @@ internal class AdvertisementLogRepository(MyDbContext ctx) : IAdvertisementLogRe
                 c.AlreadySentForSchedule))];
     }
 
+    public async Task<bool> WasProjectAdvertisedAmongLastN(
+        AdvertisementScheduleIdentification scheduleId, ProjectIdentification projectId, int n) =>
+        await ctx.AdvertisementLogEntriesSet
+            .Where(e => e.ScheduleId == scheduleId.Value && e.Status == (int)AdvertisementLogStatus.Sent)
+            .OrderByDescending(e => e.AdvertisementLogEntryId)
+            .Take(n)
+            .AnyAsync(e => e.ProjectId == projectId.Value);
+
     public async Task RecordAdvertisement(AdvertisementLogEntryInfo entry)
     {
         _ = ctx.AdvertisementLogEntriesSet.Add(new AdvertisementLogEntryEntity
