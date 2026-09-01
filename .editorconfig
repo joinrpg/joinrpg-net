@@ -229,3 +229,7 @@ dotnet_style_qualification_for_method = false:warning
 dotnet_style_qualification_for_event = false:warning
 dotnet_diagnostic.CA1835.severity = warning
 dotnet_diagnostic.CA1862.severity = warning
+# Identification-структуры (ClaimIdentification, CharacterIdentification и т.п.) биндятся через
+# кастомный ProjectEntityIdModelBinder, а не по имени свойства — совпадение имени параметра и
+# свойства безопасно.
+dotnet_diagnostic.MVC1004.severity = none

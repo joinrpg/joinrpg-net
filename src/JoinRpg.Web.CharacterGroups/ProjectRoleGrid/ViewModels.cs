@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;

@@ -1,8 +1,5 @@
-using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Interfaces;

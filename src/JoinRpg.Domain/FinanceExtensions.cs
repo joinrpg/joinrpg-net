@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.DomainTypes.Characters;

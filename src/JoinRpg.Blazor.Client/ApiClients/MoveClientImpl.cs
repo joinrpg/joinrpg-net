@@ -1,5 +1,3 @@
-using JoinRpg.Common.WebComponents;
-
 namespace JoinRpg.Blazor.Client.ApiClients;
 
 internal class MoveClientImpl(

@@ -1,10 +1,8 @@
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Finances;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Domain.Test;
 

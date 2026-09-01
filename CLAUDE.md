@@ -30,7 +30,7 @@ Email в dev-режиме не отправляется — логируется
 ```bash
 dotnet build
 dotnet format                                             # Применить стиль кода (обязательно перед коммитом)
-dotnet format --verify-no-changes --severity error        # Проверка (CI)
+dotnet format --verify-no-changes --severity warn         # Проверка (CI)
 ```
 
 ### Коммиты
