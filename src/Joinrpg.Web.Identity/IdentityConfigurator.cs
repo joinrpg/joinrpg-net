@@ -29,6 +29,7 @@ public static class IdentityConfigurator
             .AddTransient<ICustomLoginStore, MyUserStore>()
             .AddTransient<IAccountEmailService<JoinIdentityUser>, AccountServiceEmailImpl>()
             .AddScoped<JoinUserManager>()
+            .AddScoped<ExternalLoginProfileExtractor>()
             .AddScoped<IUserAdminClient, UserAdminViewService>()
 
             .AddHttpContextAccessor()

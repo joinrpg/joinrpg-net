@@ -1,6 +1,5 @@
 using Autofac;
 using BitArmory.ReCaptcha;
-using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
@@ -24,8 +23,6 @@ internal class JoinRpgPortalModule : Module
 
         _ = builder.RegisterType<ReCaptchaService>().SingleInstance();
         _ = builder.RegisterType<RecaptchaVerificator>().AsImplementedInterfaces();
-
-        _ = builder.RegisterType<ExternalLoginProfileExtractor>();
 
         builder.RegisterDecorator<ProjectMetadataRepositoryCacheDecorator, IProjectMetadataRepository>();
 
