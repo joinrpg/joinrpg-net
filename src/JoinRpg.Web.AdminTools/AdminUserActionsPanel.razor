@@ -16,8 +16,8 @@
     return;
 }
 
-<div class="btn-group-vertical" role="group">
-    <a href="#" class="disabled btn btn-default" style="width: 100%">Функции администратора:</a>
+<JoinButtonGroup Vertical="true">
+    <a href="#" class="disabled btn btn-default">Функции администратора:</a>
 
     <JoinButton Label="Изменить email" OnClick="OpenChangeEmailDialogAsync" />
 
@@ -43,7 +43,7 @@
     }
 
     <JoinButton Label="Логи" Title="Посмотреть логи действий пользователя на сайте" Link="@LogLink.AbsoluteUri" />
-</div>
+</JoinButtonGroup>
 
 <JoinFormDialog
     Caption="Изменение email"

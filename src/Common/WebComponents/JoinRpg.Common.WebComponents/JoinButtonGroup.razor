@@ -3,11 +3,17 @@
     @ChildContent
     return;
 }
-<div class="join-btn-group @BootstrapStyle.Build("btn-group", variationStyle: null, size: Size)">
+<div class="join-btn-group @(Vertical ? "join-btn-group--vertical" : "") @BootstrapStyle.Build(Vertical ? "btn-group-vertical" : "btn-group", variationStyle: null, size: Size)" role="group">
     @ChildContent
 </div>
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Medium;
     [Parameter] public bool SkipGroup { get; set; } = false;
+
+    /// <summary>
+    /// When true, buttons are stacked vertically and stretched to the group's full width
+    /// (works even for buttons wrapped by <see cref="Tooltip"/>, unlike plain Bootstrap 3 btn-group-vertical).
+    /// </summary>
+    [Parameter] public bool Vertical { get; set; } = false;
 }

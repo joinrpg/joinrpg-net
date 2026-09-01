@@ -1,9 +1,7 @@
 using System.Security.Claims;
 using AspNet.Security.OAuth.Vkontakte;
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
 
 namespace Joinrpg.Web.Identity;
 
@@ -14,7 +12,7 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
 {
     /// <summary>
     /// Removes external login and cleans up profile fields populated from it.
-    /// Shared by self-service (<c>ManageController.RemoveLogin</c>) and admin (<c>UserAdminService.RemoveVkLink</c>) unlink paths.
+    /// Shared by self-service (<c>ManageController.RemoveLogin</c>) and admin (<c>UserAdminViewService.RemoveVkLink</c>) unlink paths.
     /// </summary>
     public async Task<IdentityResult> RemoveLogin(JoinIdentityUser user, string loginProvider, string? providerKey)
     {
@@ -26,7 +24,14 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
             : await userManager.RemoveLoginAsync(user, loginProvider, providerKey);
         if (result.Succeeded)
         {
-            await CleanAfterLogin(user, loginProvider);
+            if (loginProvider == UserExternalLogin.VkProvider)
+            {
+                await userService.RemoveVkFromProfile(new UserIdentification(user.Id));
+            }
+            else if (loginProvider == "telegram")
+            {
+                await userService.RemoveTelegramFromProfile(user.Id);
+            }
         }
         return result;
     }
@@ -78,17 +83,5 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
             && long.TryParse(id, out var vkId)
             ? new VkSocialLink(vkId, isVerified: true)
             : null;
-    }
-
-    public async Task CleanAfterLogin(JoinIdentityUser user, string loginProvider)
-    {
-        if (loginProvider == UserExternalLogin.VkProvider)
-        {
-            await userService.RemoveVkFromProfile(new UserIdentification(user.Id));
-        }
-        else if (loginProvider == "telegram")
-        {
-            await userService.RemoveTelegramFromProfile(user.Id);
-        }
     }
 }

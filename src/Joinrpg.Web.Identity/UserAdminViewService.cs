@@ -5,7 +5,7 @@ using JoinRpg.Web.AdminTools;
 
 namespace Joinrpg.Web.Identity;
 
-public class UserAdminService(
+public class UserAdminViewService(
     JoinUserManager userManager,
     IUserService userService,
     IUserRepository userRepository,
