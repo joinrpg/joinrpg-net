@@ -31,8 +31,7 @@ public static class ItemBuilder
                ugItem.CharacterId,
                ugItem.GetBusyStatus(),
                ugItem.CharacterTypeInfo.SlotLimit,
-               ugItem.CharacterTypeInfo.IsHot,
-               ugItem.CharacterTypeInfo.CharacterType == CharacterType.Slot),
+               ugItem.CharacterTypeInfo.IsHot),
            [] // TODO
            );
 

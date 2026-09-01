@@ -2,7 +2,6 @@ using System.Text.Encodings.Web;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Markdown;
@@ -219,8 +218,7 @@ internal static class ProjectRoleGridViewModelBuilder
             character.GetId(),
             character.GetBusyStatus(),
             character.CharacterSlotLimit,
-            character.IsHot,
-            character.CharacterType == CharacterType.Slot);
+            character.IsHot);
 
         var player = character.ApprovedClaim?.Player;
         if (player is null)

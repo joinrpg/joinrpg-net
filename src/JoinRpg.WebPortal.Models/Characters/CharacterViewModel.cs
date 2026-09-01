@@ -16,8 +16,7 @@ public class CharacterViewModel :
 
     public required CharacterApplyViewModel ApplyStatus { get; init; }
 
-    public bool IsAvailable => ApplyStatus.BusyStatus is CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy
-        || (ApplyStatus.IsSlot && ApplyStatus.SlotCount is > 0);
+    public bool IsAvailable => ApplyStatus.IsAvailable;
 
     public required JoinHtmlString Description { get; set; }
 
