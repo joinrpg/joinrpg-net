@@ -1,0 +1,42 @@
+@using JoinRpg.DomainTypes.Advertisement
+
+<JoinBorderedTable Items="Model" Context="schedule">
+    <HeadContent>
+        <tr>
+            <th>Id</th>
+            <th>Канал</th>
+            <th>Способ</th>
+            <th>Дни</th>
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        <tr>
+            <td>@schedule.ScheduleId.Value</td>
+            <td>@schedule.Channel.Name</td>
+            <td>@schedule.Method</td>
+            <td>@DescribeDays(schedule.Days)</td>
+        </tr>
+    </ItemTemplate>
+</JoinBorderedTable>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<AdvertisementScheduleInfo> Model { get; set; } = default!;
+
+    private static readonly Dictionary<DayOfWeek, string> DayNames = new()
+    {
+        [DayOfWeek.Monday] = "Пн",
+        [DayOfWeek.Tuesday] = "Вт",
+        [DayOfWeek.Wednesday] = "Ср",
+        [DayOfWeek.Thursday] = "Чт",
+        [DayOfWeek.Friday] = "Пт",
+        [DayOfWeek.Saturday] = "Сб",
+        [DayOfWeek.Sunday] = "Вс",
+    };
+
+    private static string DescribeDays(IReadOnlySet<DayOfWeek> days) =>
+        days.Count == 7
+            ? "Каждый день"
+            : string.Join(", ", Enum.GetValues<DayOfWeek>().Where(days.Contains).Select(d => DayNames[d]));
+}

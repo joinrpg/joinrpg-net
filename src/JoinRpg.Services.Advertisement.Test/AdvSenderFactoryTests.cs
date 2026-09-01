@@ -7,7 +7,7 @@ public class AdvSenderFactoryTests
     {
         var factory = new AdvSenderFactory(new FakeTelegramNotificationService(), Options.Create(new KogdaIgraOptions { HostName = new Uri("https://kogda-igra.ru") }));
         var channel = new AdvertisementChannelInfo(
-            new AdvertisementChannelIdentification(1), BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(-100)));
+            new AdvertisementChannelIdentification(1), Name: "Test", BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(-100)));
 
         var sender = factory.Create(channel);
 
@@ -20,7 +20,7 @@ public class AdvSenderFactoryTests
     {
         var factory = new AdvSenderFactory(new FakeTelegramNotificationService(), Options.Create(new KogdaIgraOptions { HostName = new Uri("https://kogda-igra.ru") }));
         var channel = new AdvertisementChannelInfo(
-            new AdvertisementChannelIdentification(1), BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(0)));
+            new AdvertisementChannelIdentification(1), Name: "Test", BoundProjectId: null, new TelegramChannelSettings(new TelegramChatId(0)));
 
         factory.Create(channel).ShouldBeNull();
     }
@@ -30,7 +30,7 @@ public class AdvSenderFactoryTests
     {
         var factory = new AdvSenderFactory(new FakeTelegramNotificationService(), Options.Create(new KogdaIgraOptions { HostName = new Uri("https://kogda-igra.ru") }));
         var channel = new AdvertisementChannelInfo(
-            new AdvertisementChannelIdentification(1), BoundProjectId: null, new UnsupportedChannelSettings());
+            new AdvertisementChannelIdentification(1), Name: "Test", BoundProjectId: null, new UnsupportedChannelSettings());
 
         factory.Create(channel).ShouldBeNull();
     }
