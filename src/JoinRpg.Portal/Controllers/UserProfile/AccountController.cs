@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
@@ -215,7 +214,7 @@ public class AccountController(
             {
                 logger.LogWarning("Ошибка при подтверждении email (Code={accountErrorCode}: {description}", err.Code, err.Description);
             }
-            throw new JoinRpgAccountOperationFailedException($"Не удалось подтвердить email ({string.Join(", ", result.Errors.Select(e => e.Code.ToString()))})");
+            return View("ConfirmEmailFailed");
         }
     }
 
