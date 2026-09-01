@@ -904,14 +904,36 @@ internal class ClaimServiceImpl(
 
     private async Task AutoApproveClaimIfNeeded(Claim claim, ProjectInfo projectInfo)
     {
-        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
-        if (claim.Project.Details.AutoAcceptClaims &&
-            (claim.PlayerAllowedSenstiveData || !projectInfo.ProfileRequirementSettings.SensitiveDataRequired))
+        if (!claim.Project.Details.AutoAcceptClaims)
         {
-            var responsibleMaster = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.ResponsibleMasterUserId));
-            impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.IsAdmin);
+            return;
+        }
+
+        var claimId = claim.GetId();
+
+        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
+        if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
+        {
+            logger.LogInformation(
+                "Claim ({claimId}) was not auto-approved: sensitive data access is required but not granted by player",
+                claimId);
+            return;
+        }
+
+        var responsibleMaster = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.ResponsibleMasterUserId));
+        impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.IsAdmin);
+        try
+        {
             //TODO[Localize]
-            await ApproveByMaster(claim.GetId(), "Ваша заявка была принята автоматически");
+            await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Claim ({claimId}) auto-approve failed", claimId);
+            throw;
+        }
+        finally
+        {
             impersonateAccessor.StopImpersonate();
         }
     }
