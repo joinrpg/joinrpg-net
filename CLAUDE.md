@@ -33,6 +33,8 @@ dotnet format                                             # Применить �
 dotnet format --verify-no-changes --severity error        # Проверка (CI)
 ```
 
+`--severity error` не ловит diagnostics уровня warning — например, IDE0005 (неиспользуемые/лишние using, в т.ч. ставшие лишними из-за `GlobalUsings.cs`) в корневом `.editorconfig` намеренно понижен до `warning`. Чтобы реально проверить usings, запускать `dotnet format <проект>.csproj --verify-no-changes` без `--severity error` (или явно с `--severity warn`).
+
 ### Коммиты
 
 При создании коммита всегда открывать редактор, чтобы пользователь мог исправить сообщение:
