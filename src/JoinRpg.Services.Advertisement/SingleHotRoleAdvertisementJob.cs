@@ -15,6 +15,8 @@ internal class SingleHotRoleAdvertisementJob(
     ICharacterUriLocator characterUriLocator,
     ILogger<SingleHotRoleAdvertisementJob> logger) : IDailyJob
 {
+    private const int MinOtherAdvertisementsBetweenRepeats = 3;
+
     public async Task RunOnce(CancellationToken cancellationToken)
     {
         var schedules = await scheduleRepository.GetActiveSchedules();
@@ -113,6 +115,14 @@ internal class SingleHotRoleAdvertisementJob(
             return false;
         }
 
+        if (await logRepository.WasProjectAdvertisedAmongLastN(schedule.ScheduleId, projectId, MinOtherAdvertisementsBetweenRepeats))
+        {
+            logger.LogInformation(
+                "Расписание {scheduleId}: проект {projectId} на кулдауне (рекламировался среди последних {n} реклам в канале), пропускаем",
+                schedule.ScheduleId, projectId, MinOtherAdvertisementsBetweenRepeats);
+            return false;
+        }
+
         var details = await projectMetadataRepository.GetProjectDetails(projectId);
         if (details.NearestFutureKogdaIgraCard is null)
         {
@@ -148,7 +158,7 @@ internal class SingleHotRoleAdvertisementJob(
             "Проект {projectId}: {totalCount} горячих ролей, {candidateCount} ещё не рекламировались по расписанию {scheduleId}",
             projectId, roles.Count, candidates.Count, schedule.ScheduleId);
 
-        return HotRoleSelector.SelectLeastAdvertised(candidates, Random.Shared)?.Character.CharacterId;
+        return HotRoleSelector.SelectLeastAdvertised(candidates)?.Character.CharacterId;
     }
 
     private async Task SendSingleHotRole(

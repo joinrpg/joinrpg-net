@@ -7,7 +7,7 @@ public class HotRoleSelectorTests
     [Fact]
     public void SelectLeastAdvertised_EmptyCandidates_ReturnsNull()
     {
-        var result = HotRoleSelector.SelectLeastAdvertised([], new Random(1));
+        var result = HotRoleSelector.SelectLeastAdvertised([]);
 
         result.ShouldBeNull();
     }
@@ -18,23 +18,21 @@ public class HotRoleSelectorTests
         var leastAdvertised = MakeInfo(1, advertisementCount: 0);
         var mostAdvertised = MakeInfo(2, advertisementCount: 5);
 
-        var result = HotRoleSelector.SelectLeastAdvertised([mostAdvertised, leastAdvertised], new Random(1));
+        var result = HotRoleSelector.SelectLeastAdvertised([mostAdvertised, leastAdvertised]);
 
         result.ShouldBe(leastAdvertised);
     }
 
     [Fact]
-    public void SelectLeastAdvertised_WhenTied_PicksFromTiedCandidatesOnly()
+    public void SelectLeastAdvertised_WhenTied_PicksMostRecentlyCreatedCandidate()
     {
-        var tiedA = MakeInfo(1, advertisementCount: 0);
-        var tiedB = MakeInfo(2, advertisementCount: 0);
+        var older = MakeInfo(1, advertisementCount: 0);
+        var newer = MakeInfo(2, advertisementCount: 0);
         var notTied = MakeInfo(3, advertisementCount: 3);
 
-        for (var seed = 0; seed < 20; seed++)
-        {
-            var result = HotRoleSelector.SelectLeastAdvertised([tiedA, tiedB, notTied], new Random(seed));
-            result.ShouldBeOneOf(tiedA, tiedB);
-        }
+        var result = HotRoleSelector.SelectLeastAdvertised([older, notTied, newer]);
+
+        result.ShouldBe(newer);
     }
 
     private static CharacterAdvertisementInfo MakeInfo(int characterId, int advertisementCount) =>

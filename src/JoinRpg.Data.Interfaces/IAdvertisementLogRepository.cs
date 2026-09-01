@@ -8,6 +8,13 @@ public interface IAdvertisementLogRepository
     Task<IReadOnlyCollection<CharacterAdvertisementInfo>> GetHotCharactersAdvertisementInfo(
         AdvertisementScheduleIdentification scheduleId, ProjectIdentification projectId);
 
+    /// <summary>
+    /// true, если проект встречается среди последних <paramref name="n"/> отправленных реклам
+    /// в рамках расписания — используется для кулдауна повторной рекламы одного проекта в канале.
+    /// </summary>
+    Task<bool> WasProjectAdvertisedAmongLastN(
+        AdvertisementScheduleIdentification scheduleId, ProjectIdentification projectId, int n);
+
     Task RecordAdvertisement(AdvertisementLogEntryInfo entry);
 }
 
