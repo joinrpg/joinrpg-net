@@ -286,6 +286,19 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
+    public void Build_DiscussedCharacter_IsAvailable()
+    {
+        var character = _mock.CreateCharacter("Обсуждаемый");
+        _mock.CreateClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(), [character]);
+
+        var row = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>();
+        row.Player!.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Discussed);
+        row.Player.ApplyStatus.IsAvailable.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Build_SlotCharacter_SlotCountInApplyStatus()
     {
         var character = _mock.CreateCharacter("Шаблон");
@@ -310,6 +323,19 @@ public class ProjectRoleGridViewModelBuilderTests
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player!.ApplyStatus.SlotCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Build_UnlimitedSlot_IsAvailable()
+    {
+        var character = _mock.CreateCharacter("Шаблон");
+        character.CharacterType = CharacterType.Slot;
+        character.CharacterSlotLimit = null;
+
+        var result = BuildGrid(Config(), [character]);
+
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player!.ApplyStatus.IsAvailable.ShouldBeTrue();
     }
 
     [Fact]

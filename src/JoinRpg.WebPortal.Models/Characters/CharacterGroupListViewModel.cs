@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
@@ -109,8 +108,7 @@ public static class CharacterGroupListViewModel
                     arg.GetId(),
                     arg.GetBusyStatus(),
                     arg.CharacterSlotLimit,
-                    arg.IsHot,
-                    arg.CharacterType == CharacterType.Slot),
+                    arg.IsHot),
                 Description = ((MarkdownString?)arg.Description).ToHtmlString(),
                 IsPublic = arg.IsPublic,
                 IsActive = arg.IsActive,
