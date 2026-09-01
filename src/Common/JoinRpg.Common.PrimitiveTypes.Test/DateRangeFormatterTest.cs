@@ -28,8 +28,9 @@ public class DateRangeFormatterTest
     [Fact]
     public void FormatDisplay_WhenHideCurrentYearAndDifferentYear_ShowsYear()
     {
-        var range = new DateRange(new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 5));
-        DateRangeFormatter.FormatDisplay(range, RuCulture, hideCurrentYear: true).ShouldBe("1–5 марта 2026");
+        var otherYear = DateTime.Now.Year - 1;
+        var range = new DateRange(new DateOnly(otherYear, 3, 1), new DateOnly(otherYear, 3, 5));
+        DateRangeFormatter.FormatDisplay(range, RuCulture, hideCurrentYear: true).ShouldBe($"1–5 марта {otherYear}");
     }
 
     [Theory]
