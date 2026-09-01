@@ -8,6 +8,7 @@ public partial record AdvertisementChannelIdentification(int Value);
 
 public record AdvertisementChannelInfo(
     AdvertisementChannelIdentification ChannelId,
+    string Name,
     ProjectIdentification? BoundProjectId, // null = глобальный канал
     AdvertisementChannelSettings Settings);
 

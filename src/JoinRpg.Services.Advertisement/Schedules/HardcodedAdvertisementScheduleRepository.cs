@@ -4,15 +4,22 @@ namespace JoinRpg.Services.Advertisement.Schedules;
 internal class HardcodedAdvertisementScheduleRepository(IAdvertisementChannelRepository channelRepository) : IAdvertisementScheduleRepository
 {
     private static readonly IReadOnlySet<DayOfWeek> EveryDay = Enum.GetValues<DayOfWeek>().ToHashSet();
+    private static readonly IReadOnlySet<DayOfWeek> Wednesdays = new HashSet<DayOfWeek> { DayOfWeek.Wednesday };
 
     public async Task<IReadOnlyCollection<AdvertisementScheduleInfo>> GetActiveSchedules()
     {
-        var channel = await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.HotRoleChannelId);
-        if (channel is null)
+        var schedules = new List<AdvertisementScheduleInfo>();
+
+        if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.HotRoleChannelId) is { } hotRoleChannel)
         {
-            return [];
+            schedules.Add(new(new AdvertisementScheduleIdentification(1), hotRoleChannel, AdvertisementMethod.SingleHotRole, EveryDay));
         }
 
-        return [new(new AdvertisementScheduleIdentification(1), channel, AdvertisementMethod.SingleHotRole, EveryDay)];
+        if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.ZovemChannelId) is { } zovemChannel)
+        {
+            schedules.Add(new(new AdvertisementScheduleIdentification(2), zovemChannel, AdvertisementMethod.SingleHotRole, Wednesdays));
+        }
+
+        return schedules;
     }
 }

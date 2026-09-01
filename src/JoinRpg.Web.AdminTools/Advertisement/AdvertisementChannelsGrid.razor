@@ -1,0 +1,44 @@
+@using JoinRpg.DomainTypes.Advertisement
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IProjectUriLocator ProjectUriLocator
+
+<JoinBorderedTable Items="Model" Context="channel">
+    <HeadContent>
+        <tr>
+            <th>Id</th>
+            <th>Название</th>
+            <th>Игра</th>
+            <th>Настройки</th>
+        </tr>
+    </HeadContent>
+    <ItemTemplate>
+        <tr>
+            <td>@channel.ChannelId.Value</td>
+            <td>@channel.Name</td>
+            <td>
+                @if (channel.BoundProjectId is { } projectId)
+                {
+                    <a href="@ProjectUriLocator.GetRolesListUri(projectId)">Проект #@projectId.Value</a>
+                }
+                else
+                {
+                    @:Общий
+                }
+            </td>
+            <td>@DescribeSettings(channel.Settings)</td>
+        </tr>
+    </ItemTemplate>
+</JoinBorderedTable>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<AdvertisementChannelInfo> Model { get; set; } = default!;
+
+    private static string DescribeSettings(AdvertisementChannelSettings settings) =>
+        settings switch
+        {
+            TelegramChannelSettings telegram => $"Telegram, chat {telegram.ChatId}",
+            _ => settings.GetType().Name,
+        };
+}
