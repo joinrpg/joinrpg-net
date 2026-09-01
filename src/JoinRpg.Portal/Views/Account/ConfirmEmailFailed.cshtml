@@ -1,0 +1,12 @@
+@{
+    ViewBag.Title = "Не удалось подтвердить Email";
+}
+
+<h2>@ViewBag.Title</h2>
+<div>
+    <p>
+        Ссылка для подтверждения email недействительна: она уже была использована или срок её действия истёк.
+        <br />
+        Попробуйте @(Html.ActionLink("войти", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })) — если email всё ещё не подтверждён, мы вышлем новое письмо.
+    </p>
+</div>
