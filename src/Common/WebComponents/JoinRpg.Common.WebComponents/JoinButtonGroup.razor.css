@@ -16,3 +16,26 @@
        поэтому используем 1.4rem, чтобы получить обычные 14px, как у body */
     font-size: 1.4rem;
 }
+
+/*
+ * Bootstrap 3's ".btn-group-vertical > .btn" ожидает, что .btn — прямой потомок группы.
+ * Если кнопка обёрнута в Tooltip (JoinButton с заданным Title), прямым потомком становится
+ * span.join-tooltip-container, и правило не срабатывает — кнопка не растягивается на всю
+ * ширину, в отличие от остальных. Задаём растяжку сами, независимо от обёртки: делаем блочным
+ * любой прямой потомок и растягиваем на 100% сам .btn, даже если он лежит внутри вложенных
+ * inline-span из Tooltip (проценты ширины считаются от ближайшего блочного контейнера, то есть
+ * от этой группы, а не от промежуточных inline-span).
+ *
+ * JoinButton с AutoConfirm рендерит рядом с кнопкой ещё и JoinMessageDialog (нативный <dialog>)
+ * как отдельный прямой потомок — <dialog> скрыт браузером по умолчанию (display: none, пока нет
+ * атрибута open), и наши правила ниже не должны это перебивать, иначе диалог подтверждения будет
+ * всегда виден в потоке страницы. Поэтому везде исключаем dialog из выборки.
+ */
+.join-btn-group.join-btn-group--vertical ::deep > *:not(dialog) {
+    display: block;
+}
+
+.join-btn-group.join-btn-group--vertical ::deep > *:not(dialog).btn,
+.join-btn-group.join-btn-group--vertical ::deep > *:not(dialog) .btn {
+    width: 100%;
+}

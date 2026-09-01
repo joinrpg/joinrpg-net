@@ -8,9 +8,11 @@
         <ProjectReference Include="..\Common\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
         <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
         <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
+        <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
         <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
         <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
         <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
+        <ProjectReference Include="..\JoinRpg.Web.AdminTools\JoinRpg.Web.AdminTools.csproj" />
       <PackageReference Include="AspNet.Security.OAuth.Vkontakte" />
     </ItemGroup>
 </Project>

@@ -21,6 +21,6 @@ public interface IUserService
 
     Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramSocialLink telegram, AvatarInfo? avatarInfo);
 
-    Task RemoveVkFromProfile(int id);
+    Task RemoveVkFromProfile(UserIdentification id);
     Task RemoveTelegramFromProfile(int id);
 }

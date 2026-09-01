@@ -38,8 +38,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             ThisUserProjects = userProjects.ToLinkViewModels().ToList(),
             UserId = user.UserId,
             Details = new UserProfileDetailsViewModel(user, currentUser),
-            IsAdmin = user.IsAdmin,
-            Admin = currentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email), user.IsAdmin) : null,
+            Admin = currentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email)) : null,
         };
 
         if (currentUser != null)

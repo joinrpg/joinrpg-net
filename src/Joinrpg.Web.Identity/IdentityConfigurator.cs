@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Web.AdminTools;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,8 @@ public static class IdentityConfigurator
             .AddTransient<ICustomLoginStore, MyUserStore>()
             .AddTransient<IAccountEmailService<JoinIdentityUser>, AccountServiceEmailImpl>()
             .AddScoped<JoinUserManager>()
+            .AddScoped<ExternalLoginProfileExtractor>()
+            .AddScoped<IUserAdminClient, UserAdminViewService>()
 
             .AddHttpContextAccessor()
             .AddScoped<CurrentUserAccessor>()
