@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.AdminTools;
 
@@ -15,7 +16,7 @@ public class UserAdminViewService(
     {
         var userInfo = await userRepository.GetRequiredUserInfo(userId);
         var hasVkLink = userInfo.Social.Vk is not null;
-        var isVkOnlyLoginMethod = hasVkLink && userInfo.HasSingleLoginMethod;
+        var isVkOnlyLoginMethod = IsVkOnlyLoginMethod(userInfo);
 
         return new UserAdminPanelViewModel(userInfo.IsAdmin, userInfo.VerifiedProfileFlag, hasVkLink, isVkOnlyLoginMethod);
     }
@@ -23,7 +24,7 @@ public class UserAdminViewService(
     public async Task RemoveVkLink(UserIdentification userId)
     {
         var userInfo = await userRepository.GetRequiredUserInfo(userId);
-        if (userInfo.HasSingleLoginMethod)
+        if (IsVkOnlyLoginMethod(userInfo))
         {
             throw new InvalidOperationException("Невозможно удалить единственный способ входа");
         }
@@ -42,6 +43,9 @@ public class UserAdminViewService(
             await userService.RemoveVkFromProfile(userId);
         }
     }
+
+    private static bool IsVkOnlyLoginMethod(UserInfo userInfo)
+        => userInfo.Social.Vk?.CanLogin == true && userInfo.HasSingleLoginMethod;
 
     public async Task SetAdminFlag(UserIdentification userId, bool value)
     {
