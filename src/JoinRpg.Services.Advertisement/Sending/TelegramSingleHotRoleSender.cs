@@ -47,7 +47,7 @@ internal class TelegramSingleHotRoleSender(
         var dateRangeString = DateRangeFormatter.FormatDisplay(dateRange, CultureInfo.GetCultureInfo("ru-RU"));
 
         var vkLine = kogdaIgraGame.VkClub is { } vk
-            ? $"<a href=\"https://vk.com/{vk.Value}\">ВК игры</a>\n"
+            ? $"ВК: <a href=\"https://vk.com/{vk.Value}\">{WebUtility.HtmlEncode(vk.Value)}</a>\n"
             : string.Empty;
 
         var text =
