@@ -16,6 +16,6 @@ public class AdvertisementDashboardModel(
     public async Task OnGetAsync()
     {
         Channels = [.. await channelRepository.GetAllChannels()];
-        Schedules = [.. await scheduleRepository.GetActiveSchedules()];
+        Schedules = [.. await scheduleRepository.GetAllSchedules()];
     }
 }

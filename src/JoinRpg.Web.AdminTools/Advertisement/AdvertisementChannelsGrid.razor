@@ -9,6 +9,7 @@
             <th>Название</th>
             <th>Игра</th>
             <th>Настройки</th>
+            <th>Активен</th>
         </tr>
     </HeadContent>
     <ItemTemplate>
@@ -26,6 +27,7 @@
                 }
             </td>
             <td>@DescribeSettings(channel.Settings)</td>
+            <td>@(channel.IsActive ? "Да" : "Нет")</td>
         </tr>
     </ItemTemplate>
 </JoinBorderedTable>

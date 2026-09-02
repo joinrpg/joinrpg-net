@@ -7,6 +7,7 @@
             <th>Канал</th>
             <th>Способ</th>
             <th>Дни</th>
+            <th>Активно</th>
         </tr>
     </HeadContent>
     <ItemTemplate>
@@ -15,6 +16,7 @@
             <td>@schedule.Channel.Name</td>
             <td>@schedule.Method</td>
             <td>@DescribeDays(schedule.Days)</td>
+            <td>@DescribeActivity(schedule)</td>
         </tr>
     </ItemTemplate>
 </JoinBorderedTable>
@@ -39,4 +41,12 @@
         days.Count == 7
             ? "Каждый день"
             : string.Join(", ", Enum.GetValues<DayOfWeek>().Where(days.Contains).Select(d => DayNames[d]));
+
+    private static string DescribeActivity(AdvertisementScheduleInfo schedule) =>
+        (schedule.IsActive, schedule.Channel.IsActive) switch
+        {
+            (true, true) => "Да",
+            (false, _) => "Нет",
+            (true, false) => "Нет (канал неактивен)",
+        };
 }

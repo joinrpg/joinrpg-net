@@ -6,7 +6,10 @@ internal class HardcodedAdvertisementScheduleRepository(IAdvertisementChannelRep
     private static readonly IReadOnlySet<DayOfWeek> EveryDay = Enum.GetValues<DayOfWeek>().ToHashSet();
     private static readonly IReadOnlySet<DayOfWeek> Wednesdays = new HashSet<DayOfWeek> { DayOfWeek.Wednesday };
 
-    public async Task<IReadOnlyCollection<AdvertisementScheduleInfo>> GetActiveSchedules()
+    public async Task<IReadOnlyCollection<AdvertisementScheduleInfo>> GetActiveSchedules() =>
+        [.. (await GetAllSchedules()).Where(s => s.IsEffectivelyActive)];
+
+    public async Task<IReadOnlyCollection<AdvertisementScheduleInfo>> GetAllSchedules()
     {
         var schedules = new List<AdvertisementScheduleInfo>();
 
