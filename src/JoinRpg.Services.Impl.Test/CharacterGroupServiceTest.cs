@@ -209,4 +209,42 @@ public class CharacterGroupServiceTest
         root.ChildGroupsOrdering.ShouldNotBeNullOrEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task MoveCharacterGroupAfter_SpecialGroup_Throws_AndDoesNotSave()
+    {
+        var root = mock.Project.CharacterGroups.Single(g => g.IsRoot);
+        var special = mock.CreateCharacterGroup();
+        special.IsSpecial = true;
+        special.ParentCharacterGroupIds = [root.CharacterGroupId];
+        var regular = mock.CreateCharacterGroup();
+        regular.ParentCharacterGroupIds = [root.CharacterGroupId];
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<InvalidOperationException>(() => service.MoveCharacterGroupAfter(
+            RootGroupId, GroupId(special), GroupId(regular)));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task MoveCharacterGroupAfter_AfterSpecialGroup_Throws_AndDoesNotSave()
+    {
+        var root = mock.Project.CharacterGroups.Single(g => g.IsRoot);
+        var special = mock.CreateCharacterGroup();
+        special.IsSpecial = true;
+        special.ParentCharacterGroupIds = [root.CharacterGroupId];
+        var regular = mock.CreateCharacterGroup();
+        regular.ParentCharacterGroupIds = [root.CharacterGroupId];
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<InvalidOperationException>(() => service.MoveCharacterGroupAfter(
+            RootGroupId, GroupId(regular), GroupId(special)));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
 }
