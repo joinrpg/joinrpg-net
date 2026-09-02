@@ -13,14 +13,29 @@ public class UserAdminViewService(
 {
     public async Task<UserAdminPanelViewModel> GetAdminPanel(UserIdentification userId)
     {
-        var user = await userRepository.GetRequiredUserInfo(userId);
-        return new UserAdminPanelViewModel(user.IsAdmin, user.VerifiedProfileFlag, user.Social.Vk is not null);
+        var userInfo = await userRepository.GetRequiredUserInfo(userId);
+        var hasVkLink = userInfo.Social.Vk is not null;
+
+        var isVkOnlyLoginMethod = false;
+        if (hasVkLink)
+        {
+            var identityUser = await userManager.FindByIdAsync(userId.Value.ToString());
+            var logins = await userManager.GetLoginsAsync(identityUser);
+            isVkOnlyLoginMethod = await IsVkOnlyLoginMethod(identityUser, logins);
+        }
+
+        return new UserAdminPanelViewModel(userInfo.IsAdmin, userInfo.VerifiedProfileFlag, hasVkLink, isVkOnlyLoginMethod);
     }
 
     public async Task RemoveVkLink(UserIdentification userId)
     {
         var user = await userManager.FindByIdAsync(userId.Value.ToString());
         var logins = await userManager.GetLoginsAsync(user);
+        if (await IsVkOnlyLoginMethod(user, logins))
+        {
+            throw new InvalidOperationException("Невозможно удалить единственный способ входа");
+        }
+
         var vkLogin = logins.FirstOrDefault(l =>
             string.Equals(l.LoginProvider, UserExternalLogin.VkProvider, StringComparison.OrdinalIgnoreCase));
         if (vkLogin is not null)
@@ -32,6 +47,12 @@ public class UserAdminViewService(
             // ВК мог быть привязан без записи в AspNetUserLogins (легаси-данные) — чистим профиль напрямую.
             await userService.RemoveVkFromProfile(userId);
         }
+    }
+
+    private async Task<bool> IsVkOnlyLoginMethod(JoinIdentityUser user, IList<UserLoginInfo> logins)
+    {
+        var hasPassword = await userManager.HasPasswordAsync(user);
+        return !hasPassword && logins.Count <= 1;
     }
 
     public async Task SetAdminFlag(UserIdentification userId, bool value)
