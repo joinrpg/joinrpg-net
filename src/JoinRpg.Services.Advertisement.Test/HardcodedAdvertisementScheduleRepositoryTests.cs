@@ -28,4 +28,14 @@ public class HardcodedAdvertisementScheduleRepositoryTests
         schedule.Method.ShouldBe(AdvertisementMethod.SingleHotRole);
         schedule.Days.ShouldBe([DayOfWeek.Wednesday], ignoreOrder: true);
     }
+
+    [Fact]
+    public async Task GetAllSchedules_ReturnsBothChannelsRegardlessOfActivity()
+    {
+        var repository = new HardcodedAdvertisementScheduleRepository(new HardcodedAdvertisementChannelRepository());
+
+        var schedules = await repository.GetAllSchedules();
+
+        schedules.Count.ShouldBe(2);
+    }
 }

@@ -10,7 +10,8 @@ public record AdvertisementChannelInfo(
     AdvertisementChannelIdentification ChannelId,
     string Name,
     ProjectIdentification? BoundProjectId, // null = глобальный канал
-    AdvertisementChannelSettings Settings);
+    AdvertisementChannelSettings Settings,
+    bool IsActive = true);
 
 [method: JsonConstructor]
 [TypedEntityId(ShortName = "AdvSchedule")]
@@ -25,7 +26,14 @@ public record AdvertisementScheduleInfo(
     AdvertisementScheduleIdentification ScheduleId,
     AdvertisementChannelInfo Channel,
     AdvertisementMethod Method,
-    IReadOnlySet<DayOfWeek> Days);
+    IReadOnlySet<DayOfWeek> Days,
+    bool IsActive = true)
+{
+    /// <summary>
+    /// Расписание фактически активно, только если активно и оно само, и его канал.
+    /// </summary>
+    public bool IsEffectivelyActive => IsActive && Channel.IsActive;
+}
 
 public enum AdvertisementLogStatus
 {
