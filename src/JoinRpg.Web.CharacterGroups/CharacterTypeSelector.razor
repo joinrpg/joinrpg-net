@@ -43,8 +43,13 @@
 
 @if (!HasApprovedClaim && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
 {
-  <FormRow Label="Горячая роль" Description="Горячая роль специальным образом выделяется в ролевке">
-    <CheckboxInput @bind-Value="@isHot" Name="@(Name + ".IsHot")" />
+  <FormRow Label="Горячая роль">
+    <ChildContent>
+      <CheckboxInput @bind-Value="@isHot" Name="@(Name + ".IsHot")" />
+    </ChildContent>
+    <DescriptionFragment>
+      Горячая роль специальным образом выделяется в ролевке. Если ваш проект публичный, горячая роль будет автоматически рекламироваться в канале «Зовем на игру» <a href="https://t.me/zovem_joinrpg" target="_blank" rel="noopener">https://t.me/zovem_joinrpg</a>
+    </DescriptionFragment>
   </FormRow>
 }
 
