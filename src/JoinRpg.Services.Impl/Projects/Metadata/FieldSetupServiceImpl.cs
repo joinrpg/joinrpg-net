@@ -171,6 +171,13 @@ internal class FieldSetupServiceImpl(
                 var field = GetField(ctx.Project, ctx.Request.projectcharacterfieldid);
                 ctx.Project.Details.FieldsOrdering
                     = ctx.Project.GetFieldsContainer().Move(field, ctx.Request.direction).GetStoredOrder();
+
+                if (field.CharacterGroup != null)
+                {
+                    var rootGroup = ctx.Project.RootGroup;
+                    rootGroup.ChildGroupsOrdering = rootGroup.GetCharacterGroupsContainer()
+                        .Move(field.CharacterGroup, ctx.Request.direction).GetStoredOrder();
+                }
             });
     }
 
@@ -191,6 +198,14 @@ internal class FieldSetupServiceImpl(
 
                 var container = field.GetFieldValuesContainer().MoveAfter(variant, afterVariant);
                 field.ValuesOrdering = container.GetStoredOrder();
+
+                if (field.CharacterGroup != null && variant.CharacterGroup != null)
+                {
+                    var afterGroup = afterVariant?.CharacterGroup;
+                    field.CharacterGroup.ChildGroupsOrdering = field.CharacterGroup.GetCharacterGroupsContainer()
+                        .MoveAfter(variant.CharacterGroup, afterGroup).GetStoredOrder();
+                }
+
                 return container.OrderedItems
                     .Select(v => v.GetId())
                     .ToList();
@@ -240,6 +255,15 @@ internal class FieldSetupServiceImpl(
 
                 var container = ctx.Project.GetFieldsContainer().MoveAfter(field, afterField);
                 ctx.Project.Details.FieldsOrdering = container.GetStoredOrder();
+
+                if (field.CharacterGroup != null)
+                {
+                    var rootGroup = ctx.Project.RootGroup;
+                    var afterGroup = afterField?.CharacterGroup;
+                    rootGroup.ChildGroupsOrdering = rootGroup.GetCharacterGroupsContainer()
+                        .MoveAfter(field.CharacterGroup, afterGroup).GetStoredOrder();
+                }
+
                 var pid = new ProjectIdentification(ctx.Project.ProjectId);
                 return container.OrderedItems
                     .Select(f => f.GetId())
@@ -274,6 +298,13 @@ internal class FieldSetupServiceImpl(
                 var container = field.GetFieldValuesContainer();
                 container.SortBy(x => x.Label);
                 field.ValuesOrdering = container.GetStoredOrder();
+
+                if (field.CharacterGroup != null)
+                {
+                    var groupContainer = field.CharacterGroup.GetCharacterGroupsContainer();
+                    groupContainer.SortBy(g => g.CharacterGroupName);
+                    field.CharacterGroup.ChildGroupsOrdering = groupContainer.GetStoredOrder();
+                }
             });
     }
 

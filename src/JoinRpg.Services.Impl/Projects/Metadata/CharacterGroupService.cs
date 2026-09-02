@@ -174,6 +174,15 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
             {
                 var (parentCharacterGroup, _) = ctx.GetCharacterGroupForChange(ctx.Request.parentCharacterGroupId, allowRoot: true);
 
+                if (ctx.ProjectInfo.Groups[ctx.Request.characterGroupId].IsSpecial
+                    || (ctx.Request.afterCharacterGroupId is { } afterId && ctx.ProjectInfo.Groups[afterId].IsSpecial))
+                {
+                    // Специальные группы (привязанные к полям/вариантам) сортируются автоматически
+                    // сервисом FieldSetupServiceImpl вслед за полем/вариантом — вручную их порядок
+                    // менять нельзя.
+                    throw new InvalidOperationException("Нельзя вручную менять порядок специальных групп.");
+                }
+
                 var container = parentCharacterGroup.GetCharacterGroupsContainer()
                     .MoveAfter(ctx.Request.characterGroupId.CharacterGroupId, ctx.Request.afterCharacterGroupId?.CharacterGroupId);
                 parentCharacterGroup.ChildGroupsOrdering = container.GetStoredOrder();
