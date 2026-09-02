@@ -1,4 +1,3 @@
-using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.CharacterGroups.GroupReport;

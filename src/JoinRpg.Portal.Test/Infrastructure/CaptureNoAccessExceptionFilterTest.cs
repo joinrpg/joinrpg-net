@@ -6,7 +6,6 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
-using JoinRpg.Web.Models;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

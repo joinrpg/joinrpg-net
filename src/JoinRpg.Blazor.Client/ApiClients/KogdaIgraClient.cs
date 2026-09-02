@@ -1,4 +1,3 @@
-using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon.KogdaIgra;
 
 namespace JoinRpg.Blazor.Client.ApiClients;

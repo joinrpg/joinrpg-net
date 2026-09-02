@@ -1,5 +1,4 @@
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Helpers;
 
 namespace Joinrpg.AspNetCore.Helpers;

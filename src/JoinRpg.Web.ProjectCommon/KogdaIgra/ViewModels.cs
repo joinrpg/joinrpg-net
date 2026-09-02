@@ -1,5 +1,3 @@
-using JoinRpg.Common.WebComponents;
-
 namespace JoinRpg.Web.ProjectCommon.KogdaIgra;
 
 public record class JoinRpgSyncCandidateViewModel(

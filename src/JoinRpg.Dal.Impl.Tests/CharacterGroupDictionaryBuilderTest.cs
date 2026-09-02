@@ -9,7 +9,6 @@ namespace JoinRpg.Dal.Impl.Tests;
 public class CharacterGroupDictionaryBuilderTest
 {
     private readonly MockedProject _mock = new MockedProject();
-    private readonly ProjectIdentification _projectId = new(1);
 
     [Fact]
     public void Build_ShouldReturnAllGroups()

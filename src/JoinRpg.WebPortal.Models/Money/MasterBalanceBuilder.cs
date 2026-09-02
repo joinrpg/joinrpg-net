@@ -1,7 +1,5 @@
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
-using JoinRpg.DomainTypes.Users;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models;

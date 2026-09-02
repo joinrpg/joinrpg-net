@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;

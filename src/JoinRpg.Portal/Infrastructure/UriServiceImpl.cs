@@ -1,5 +1,4 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
