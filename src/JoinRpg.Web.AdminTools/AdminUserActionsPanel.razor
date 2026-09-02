@@ -39,6 +39,8 @@
             Label="Отвязать ВК"
             AutoConfirm="true"
             AutoConfirmMessage="Действительно отвязать ВК у этого пользователя?"
+            Disabled="@panel.IsVkOnlyLoginMethod"
+            DisabledTitle="Невозможно удалить единственный способ входа"
             OnClick="RemoveVkLinkAsync" />
     }
 
