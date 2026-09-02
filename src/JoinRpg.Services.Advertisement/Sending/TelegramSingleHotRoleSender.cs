@@ -46,11 +46,17 @@ internal class TelegramSingleHotRoleSender(
         var dateRange = new DateRange(kogdaIgraGame.Begin, kogdaIgraGame.End);
         var dateRangeString = DateRangeFormatter.FormatDisplay(dateRange, CultureInfo.GetCultureInfo("ru-RU"));
 
+        var vkLine = kogdaIgraGame.VkClub is { } vk
+            ? $"ВК: <a href=\"https://vk.com/{vk.Value}\">{WebUtility.HtmlEncode(vk.Value)}</a>\n"
+            : string.Empty;
+
         var text =
             $"<strong>Горячая роль «{WebUtility.HtmlEncode(characterName)}» на игре «{WebUtility.HtmlEncode(projectName)}»</strong>\n\n" +
             $"{WebUtility.HtmlEncode(kogdaIgraGame.Name)}, {WebUtility.HtmlEncode(kogdaIgraGame.RegionName)}{masterGroupSuffix}\n" +
             $"{dateRangeString}\n" +
-            $"{kogdaIgraCardUri}\n\n" +
+            $"{kogdaIgraCardUri}\n" +
+            vkLine +
+            "\n" +
             $"<strong>{WebUtility.HtmlEncode(characterName)}</strong>\n\n" +
             $"{characterDescription.ToHtmlString().Value}\n\n" +
             $"<a href=\"{addClaimUri}\">Подать заявку</a>\n\n" +
