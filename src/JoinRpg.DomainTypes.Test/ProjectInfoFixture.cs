@@ -49,6 +49,7 @@ internal static class ProjectInfoFixture
             ProjectProfileRequirementSettings.AllNotRequired,
             new ProjectClaimSettings(null, false, false, false, false),
             [],
+            null,
             groups ?? new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>(),
             responsibleMasterRules ?? []);
 
