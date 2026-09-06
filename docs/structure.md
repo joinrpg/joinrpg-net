@@ -29,7 +29,7 @@
 - `JoinRpg.Markdown` — обработка Markdown (Markdig)
 - `JoinRpg.PrimitiveTypes` — доменные типы-значения: идентификаторы и Value Objects
 - `JoinRpg.Common.EntityFrameworkCore` — generic EF Core ValueConverter для `[TypedEntityId]`-типов, реализующих `IEntityId<TSelf,TValue>` (не составные id)
-- `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, фоновые задачи
+- `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, фоновые задачи, общий OIDC-логин через id.joinrpg.ru для сателлитных сайтов (`AddJoinRpgAuthentication`, приложение-специфичная часть — через `IJoinUserLoginHandler`)
 - `JoinRpg.Common.Telegram` — интеграция с Telegram Bot
 - `JoinRpg.Common.BastiliaRatingClient` — HTTP-клиент к сайту клуба #Бастилия
 - `JoinRpg.Common.KogdaIgraClient` — HTTP-клиент к сервису KogdaIgra (сырые вызовы API)
