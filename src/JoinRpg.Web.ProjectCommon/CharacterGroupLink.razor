@@ -1,4 +1,4 @@
-﻿@inject IUriLocator<CharacterGroupLinkSlimViewModel> linkLocator
+﻿@inject IUriLocator<CharacterGroupIdentification> linkLocator
 <a href="@TargetUri" class="@(Model.IsPublic ? "" : "world-object-hidden")">@Model.Name</a>
 
 @code {
@@ -6,5 +6,5 @@
     [Parameter] [EditorRequired]
     public CharacterGroupLinkSlimViewModel Model { get; set; } = null!;
 
-    public Uri TargetUri => linkLocator.GetUri(Model);
+    public Uri TargetUri => linkLocator.GetUri(Model.CharacterGroupId);
 }

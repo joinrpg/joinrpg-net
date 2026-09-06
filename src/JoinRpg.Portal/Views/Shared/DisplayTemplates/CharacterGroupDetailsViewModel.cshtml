@@ -19,13 +19,6 @@
                 asp-route-charactergroupid="@Model.CharacterGroupId">
                 Группа
             </nav-link>
-            <nav-link
-                asp-controller="GameGroups"
-                asp-action="Index"
-                asp-route-projectid="@Model.ProjectId"
-                asp-route-charactergroupid="@Model.CharacterGroupId">
-                Сетка ролей
-            </nav-link>
         }
         @if (Model.HasMasterAccess)
         {

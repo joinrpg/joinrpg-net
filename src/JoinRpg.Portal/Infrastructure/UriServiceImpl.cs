@@ -18,7 +18,6 @@ internal class UriServiceImpl(
     LinkGenerator linkGenerator,
     IOptions<NotificationsOptions> notificationOptions) : IUriService,
     IUriLocator<UserLinkViewModel>,
-    IUriLocator<CharacterGroupLinkSlimViewModel>,
     IUriLocator<CharacterLinkSlimViewModel>,
     IUriLocator<ProjectIdentification>,
     IProjectUriLocator,
@@ -59,9 +58,6 @@ internal class UriServiceImpl(
                                 "User",
                                 new { UserId = identification }),
             LinkType.ResultCharacterGroup => linkGenerator.GetPathByAction("Details",
-                                "GameGroups",
-                                new { CharacterGroupId = identification, ProjectId = projectId }),
-            LinkType.CharacterGroupRoles => linkGenerator.GetPathByAction("Index",
                                 "GameGroups",
                                 new { CharacterGroupId = identification, ProjectId = projectId }),
             LinkType.ResultCharacter => linkGenerator.GetPathByAction("Details",
@@ -122,8 +118,6 @@ internal class UriServiceImpl(
 
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
         GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.ToString()));
-    Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target) =>
-         GetUri(new Linkable(target.CharacterGroupId));
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
     public Uri GetUri(ProjectIdentification target) => GetUri(new Linkable(target));
@@ -269,7 +263,7 @@ internal class UriServiceImpl(
 
         public Linkable(ProjectIdentification id) : this(LinkType.Project, id.Value, Identification: null) { }
 
-        public Linkable(CharacterGroupIdentification id) : this(LinkType.CharacterGroupRoles, id) { }
+        public Linkable(CharacterGroupIdentification id) : this(LinkType.ResultCharacterGroup, id) { }
 
         public Linkable(PlotFolderIdentification id) : this(LinkType.Plot, id) { }
     }

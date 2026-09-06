@@ -5,7 +5,6 @@ public enum LinkType
 {
     ResultUser,
     ResultCharacterGroup,
-    CharacterGroupRoles,
     ResultCharacter,
     Claim,
     Plot,

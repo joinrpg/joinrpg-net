@@ -1,4 +1,5 @@
 using JoinRpg.Blazor.Client;
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,6 +77,16 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         var server = call(factory.Services.GetRequiredService<IProjectFieldUriLocator>());
         var client = call(_clientServices.GetRequiredService<IProjectFieldUriLocator>());
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    [Fact]
+    public void CharacterGroupLinkShouldPointToDetails()
+    {
+        var server = factory.Services.GetRequiredService<IUriLocator<CharacterGroupIdentification>>().GetUri(GroupId);
+        var client = _clientServices.GetRequiredService<IUriLocator<CharacterGroupIdentification>>().GetUri(GroupId);
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(server).ShouldEndWith("/details", Case.Insensitive);
     }
 
     private static string NormalizePathAndQuery(Uri uri) =>
