@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Logging;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
 using Microsoft.AspNetCore.Authorization;
@@ -29,13 +30,19 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
         }
 
         var userProjects = await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.AllProjectsWithMasterAccess(userId));
+        var activeUserProjects = userProjects.Where(p => p.Active).ToList();
+
+        // Непубличные проекты в профиле видны только администраторам сайта
+        var visibleUserProjects = currentUserAccessor.IsAdmin ? userProjects : userProjects.Where(p => p.IsPublicProject).ToArray();
 
         var currentUser = User.Identity?.IsAuthenticated == true ? await userRepository.GetUserInfo(currentUserAccessor.UserIdentification) : null;
 
         var userProfileViewModel = new UserProfileViewModel()
         {
             DisplayName = user.DisplayName.DisplayName,
-            ThisUserProjects = userProjects.ToLinkViewModels().ToList(),
+            ThisUserProjects = activeUserProjects.ToLinkViewModels().ToList(),
+            ActiveMasterProjects = [.. visibleUserProjects.Where(p => p.Active).Select(p => new ProjectListItemViewModel(p))],
+            ArchivedProjects = visibleUserProjects.Where(p => !p.Active).ToLinkViewModels().ToList(),
             UserId = user.UserId,
             Details = new UserProfileDetailsViewModel(user, currentUser),
             Admin = currentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email)) : null,

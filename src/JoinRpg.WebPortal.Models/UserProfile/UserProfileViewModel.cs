@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Interfaces;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -11,7 +12,16 @@ public class UserProfileViewModel
 {
     public required string DisplayName { get; set; }
 
-    public required IEnumerable<ProjectLinkViewModel> ThisUserProjects { get; set; }
+    /// <summary>
+    /// Активные проекты, где у пользователя есть доступ мастера — используется, чтобы не предлагать
+    /// повторно выдать доступ в <see cref="ProjectsToAdd"/>. Архивные проекты сюда не входят: их и так
+    /// нет в <see cref="CanGrantAccessProjects"/> (доступ выдаётся только в активные проекты).
+    /// </summary>
+    public required IReadOnlyCollection<ProjectLinkViewModel> ThisUserProjects { get; set; }
+
+    public required IReadOnlyCollection<ProjectListItemViewModel> ActiveMasterProjects { get; set; }
+
+    public required IReadOnlyCollection<ProjectLinkViewModel> ArchivedProjects { get; set; }
 
     [ReadOnly(true)]
     public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = [];
