@@ -25,6 +25,11 @@ dotnet run --project src/JoinRpg.IdPortal/JoinRpg.IdPortal  # Портал ак�
 Первый вошедший пользователь автоматически получает подтверждённый email и роль администратора.
 Email в dev-режиме не отправляется — логируется. OAuth требует ключей в `appsettings.json`.
 
+Для тестовых пользователей (`admin@example.com`, `master@example.com`, `player@example.com`,
+пароль `Test12345!`) и тестового проекта «Тестовая песочница» в локальной БД есть отдельный
+скрипт — см. [docs/local-dev-test-users.md](docs/local-dev-test-users.md). Если их нет в локальной
+БД и они нужны для тестирования — запусти `dotnet run --project src/JoinRpg.Tools.SeedTestUsers`.
+
 ### Сборка и форматирование
 
 ```bash
