@@ -26,6 +26,7 @@
     <Project Path="src/JoinRpg.Dal.Notifications/JoinRpg.Dal.Notifications.csproj" />
     <Project Path="src/JoinRpg.Data.Interfaces/JoinRpg.Data.Interfaces.csproj" />
     <Project Path="src/JoinRpg.Data.Write.Interfaces/JoinRpg.Data.Write.Interfaces.csproj" />
+    <Project Path="src/JoinRpg.Tools.SeedTestUsers/JoinRpg.Tools.SeedTestUsers.csproj" />
   </Folder>
   <Folder Name="/IdPortal/">
     <Project Path="src/JoinRpg.IdPortal/JoinRpg.IdPortal.Client/JoinRpg.IdPortal.Client.csproj" />
