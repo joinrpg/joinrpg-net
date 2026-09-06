@@ -1,6 +1,6 @@
 # JoinRpg.Common.WebInfrastructure
 
-Общая веб-инфраструктура для ASP.NET Core приложений JoinRpg: логирование (Serilog), OpenTelemetry, Data Protection, кеширование, health checks, поддержка PostgreSQL.
+Общая веб-инфраструктура для ASP.NET Core приложений JoinRpg: логирование (Serilog), OpenTelemetry, Data Protection, кеширование, health checks, поддержка PostgreSQL, логин через id.joinrpg.ru.
 
 ## Подключение
 
@@ -52,7 +52,49 @@ services.RegisterMigrator<MyDbContext>(
 );
 ```
 
-### 4. Middleware pipeline
+### 4. Логин через id.joinrpg.ru (OpenIddict client)
+
+Для сателлитных сайтов, авторизующих пользователей через id.joinrpg.ru (authorization code flow):
+
+```csharp
+services.AddJoinRpgAuthentication<MyDbContext>(Configuration);
+services.AddScoped<IJoinUserLoginHandler, MyUserLoginHandler>();
+```
+
+`MyDbContext` — контекст, в котором OpenIddict хранит своё состояние (authorization/token records). В его `OnModelCreating` нужно вызвать `modelBuilder.UseOpenIddict()` (пакет `OpenIddict.EntityFrameworkCore`).
+
+`IJoinUserLoginHandler` — приложение-специфичная часть логина: получив `UserIdentification` и внешний `ClaimsPrincipal` от id.joinrpg.ru, реализация должна создать/обновить локального пользователя и дополнить список `claims`, с которыми он будет залогинен по cookie-схеме:
+
+```csharp
+internal class MyUserLoginHandler(MyDbContext dbContext) : IJoinUserLoginHandler
+{
+    public async Task HandleLoginAsync(UserIdentification userId, ClaimsPrincipal externalPrincipal, List<Claim> claims, CancellationToken cancellationToken)
+    {
+        // найти/создать локального пользователя по userId, дополнить claims
+    }
+}
+```
+
+В pipeline замаппить эндпойнты `/login`, `/signin-joinrpg`, `/logout`:
+
+```csharp
+app.MapAuthEndpoints();
+```
+
+Конфигурация (секция `JoinRpgOidc`). `Issuer` по умолчанию — `https://id.joinrpg.ru/`, указывать нужно только для отличного от прода окружения (dev/staging):
+
+```json
+{
+  "JoinRpgOidc": {
+    "ClientId": "my-app",
+    "ClientSecret": "..."
+  }
+}
+```
+
+Получить id пользователя из текущего `ClaimsPrincipal`: `user.GetJoinrpgUserId()`.
+
+### 5. Middleware pipeline
 
 ```csharp
 app.UseForwardedHeaders();           // Должен быть первым — обрабатывает X-Forwarded-* заголовки
@@ -64,7 +106,7 @@ app.UseJoinRequestLogging();         // Логирование HTTP-запрос
 app.MapJoinHealthChecks();           // Эндпойнты /health, /health/ready, /health/live
 ```
 
-### 5. MVC/Razor Pages фильтры (опционально)
+### 6. MVC/Razor Pages фильтры (опционально)
 
 Для обогащения логов данными из MVC/Razor Pages контекста:
 
@@ -87,6 +129,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | **Forwarded Headers** | `UseForwardedHeaders()` / `ConfigureForwardedHeaders()` | Обработка X-Forwarded-Proto и X-Forwarded-For от reverse proxy |
 | **DbContext** | `AddJoinEfCoreDbContext<T>()` | PostgreSQL + EntityFramework.Exceptions + health check для каждого контекста |
 | **Миграции** | `RegisterMigrator<T>()` | Регистрация DbContext + `IMigratorService` для применения миграций |
+| **Логин через id.joinrpg.ru** | `AddJoinRpgAuthentication<T>()`, `MapAuthEndpoints()`, `IJoinUserLoginHandler` | OpenIddict client (authorization code flow), cookie-схема, эндпойнты `/login`, `/signin-joinrpg`, `/logout` |
 | **Конфигурация хостов** | `JoinRpgHostNamesOptions` | Имена хостов всех сервисов JoinRpg (основной сайт, IdPortal, KogdaIgra, рейтинг) |
 | **MVC фильтры** | `SerilogMvcFilter`, `SerilogRazorPagesFilter` | Обогащение логов данными из HTTP-контекста для MVC и Razor Pages |
 
