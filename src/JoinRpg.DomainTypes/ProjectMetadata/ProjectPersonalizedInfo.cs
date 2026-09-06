@@ -11,7 +11,8 @@ public record ProjectPersonalizedInfo(
     int ActiveClaimsCount,
     bool HasMyClaims,
     bool HasMyMasterAccess,
-    KogdaIgraIdentification? LastKogdaIgraId)
+    KogdaIgraIdentification? LastKogdaIgraId,
+    bool IsPublicProject)
 {
     public bool Active => ProjectLifecycleStatus != ProjectLifecycleStatus.Archived;
 

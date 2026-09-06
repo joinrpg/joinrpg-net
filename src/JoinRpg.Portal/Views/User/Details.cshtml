@@ -12,35 +12,43 @@
     
   <partial  name="_UserDetailsPanel" model="@Model.Details"/>
 
-    @if (Model.ThisUserProjects.Any())
+    @if (Model.HasAdminAccess)
     {
-        <div class="col-md-4">
-            <h4>Проекты этого пользователя </h4>
-            <ul>
-                @foreach (var master in Model.ThisUserProjects)
-                {
-                    <li>
-                        @Html.ActionLink(@master.ProjectName, "Details", "Game", new {ProjectId = master.ProjectId.Value}, null)
-                    </li>
-                }
-
-            </ul>
-        </div>
+        <component type="typeof(AdminUserActionsPanel)"
+                   render-mode="WebAssemblyPrerendered"
+                   param-UserId="new UserIdentification(Model.UserId)"
+                   param-LogLink="Model.Admin!.LogLink" />
     }
-           @if (Model.HasAdminAccess)
-           {
-               <component type="typeof(AdminUserActionsPanel)"
-                          render-mode="WebAssemblyPrerendered"
-                          param-UserId="new UserIdentification(Model.UserId)"
-                          param-LogLink="Model.Admin!.LogLink" />
-           }
+
+    <div class="clearfix"></div>
+
+    <component type="typeof(JoinRpg.Web.Games.Projects.ProjectCards)"
+               param-Projects="@Model.ActiveMasterProjects"
+               param-Header="@("Текущие проекты")"
+               render-mode="Static" />
+
+
 
         
     @if (Model.Claims != null && Model.Claims.Items.Any())
     {
         @await Html.PartialAsync("..\\ClaimList\\_MyClaimsList", Model.Claims)
     }
-    
+
+    @if (Model.ArchivedProjects.Any())
+    {
+        <div class="col-md-4">
+            <h4>Архивные проекты пользователя</h4>
+            <ul>
+                @foreach (var project in Model.ArchivedProjects)
+                {
+                    <li>
+                        @Html.ActionLink(@project.ProjectName, "Details", "Game", new { ProjectId = project.ProjectId.Value }, null)
+                    </li>
+                }
+            </ul>
+        </div>
+    }
 
     @if (Model.ProjectsToAdd.Any())
     {
