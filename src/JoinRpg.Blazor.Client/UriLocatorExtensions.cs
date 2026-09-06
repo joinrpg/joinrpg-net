@@ -5,8 +5,9 @@ namespace JoinRpg.Blazor.Client;
 public static class UriLocatorExtensions
 {
     private class UriLocator :
-        IUriLocator<UserLinkViewModel>, IUriLocator<CharacterGroupLinkSlimViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
+        IUriLocator<UserLinkViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
+        IUriLocator<CharacterGroupIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
@@ -26,9 +27,10 @@ public static class UriLocatorExtensions
             return new($"/user/{target.UserId}", UriKind.Relative);
         }
 
-        Uri IUriLocator<CharacterGroupLinkSlimViewModel>.GetUri(CharacterGroupLinkSlimViewModel target)
-            => new($"/{target.CharacterGroupId.ProjectId.Value}/roles/{target.CharacterGroupId.CharacterGroupId}", UriKind.Relative);
         Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => GetUri(target.CharacterId);
+
+        Uri IUriLocator<CharacterGroupIdentification>.GetUri(CharacterGroupIdentification target)
+            => new($"/{target.ProjectId.Value}/roles/{target.CharacterGroupId}/details", UriKind.Relative);
 
         Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 
@@ -74,9 +76,9 @@ public static class UriLocatorExtensions
         return serviceCollection
             .AddSingleton<IUriLocator<UserLinkViewModel>>(locator)
             .AddSingleton<IUriLocator<ProjectIdentification>>(locator)
-            .AddSingleton<IUriLocator<CharacterGroupLinkSlimViewModel>>(locator)
             .AddSingleton<IUriLocator<ClaimIdentification>>(locator)
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
+            .AddSingleton<IUriLocator<CharacterGroupIdentification>>(locator)
             .AddSingleton<ICharacterUriLocator>(locator)
             .AddSingleton<ICharacterGroupUriLocator>(locator)
             .AddSingleton<IProjectFieldUriLocator>(locator)
