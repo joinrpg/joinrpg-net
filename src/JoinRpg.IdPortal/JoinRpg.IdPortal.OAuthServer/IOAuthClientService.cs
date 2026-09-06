@@ -61,4 +61,39 @@ public interface IOAuthClientService
     /// <param name="ct">Cancellation token.</param>
     /// <exception cref="InvalidOperationException">Thrown when the client is not found.</exception>
     Task DeleteClientAsync(string clientId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Updates an existing OAuth client's metadata (display name, redirect URIs, client type,
+    /// scopes, refresh token support) while leaving its client secret untouched. Use
+    /// <see cref="RegenerateSecretAsync"/> to rotate the secret separately.
+    /// </summary>
+    /// <param name="clientId">Unique client identifier of the client to update.</param>
+    /// <param name="displayName">Human-readable name shown in consent screens. Can be <c>null</c>.</param>
+    /// <param name="redirectUris">Allowed redirect URIs for the authorization code flow. Must contain at least one entry.</param>
+    /// <param name="clientType">Whether the client can hold a secret securely.</param>
+    /// <param name="scopes">Scopes the client is allowed to request — see <see cref="CreateClientAsync"/>.</param>
+    /// <param name="allowRefreshToken">Whether the client may use the refresh token grant (<c>offline_access</c>).</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>
+    /// The newly generated secret when the client is confidential and did not previously have one
+    /// (e.g. it is being switched from public to confidential); otherwise <c>null</c>.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">Thrown when the client is not found.</exception>
+    Task<string?> UpdateClientAsync(
+        string clientId,
+        string? displayName,
+        IReadOnlyList<Uri> redirectUris,
+        OAuthClientType clientType,
+        IReadOnlyList<string> scopes,
+        bool allowRefreshToken,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Generates a new client secret for an existing confidential OAuth client, invalidating the old one.
+    /// </summary>
+    /// <param name="clientId">Unique client identifier of the client to rotate the secret for.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The newly generated secret. Shown only once — it is stored hashed and cannot be retrieved later.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the client is not found or is not confidential.</exception>
+    Task<string> RegenerateSecretAsync(string clientId, CancellationToken ct = default);
 }

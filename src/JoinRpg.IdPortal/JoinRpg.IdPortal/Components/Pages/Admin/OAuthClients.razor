@@ -48,6 +48,7 @@
                         </ul>
                     </td>
                     <td>
+                        <JoinButton Link="@($"/admin/oauthclients/{client.ClientId}/edit")" Preset="ButtonPreset.Edit" />
                         <JoinButton Preset="ButtonPreset.Delete"
                                    AutoConfirm="true"
                                    AutoConfirmMessage="@($"Вы уверены, что хотите удалить OAuth-клиента «{client.DisplayName}»?")"
