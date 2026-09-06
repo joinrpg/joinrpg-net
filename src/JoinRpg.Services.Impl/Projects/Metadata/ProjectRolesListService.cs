@@ -29,6 +29,15 @@ internal class ProjectRolesListService(
                 var entity = CreateEntity(ctx.Request);
                 UpdateEntity(entity, ctx.Request);
                 ctx.Project.ProjectRolesLists.Add(entity);
+
+                // Первая сетка ролей проекта становится сеткой по умолчанию (например, создание
+                // проекта может сразу добавить несколько сеток — по умолчанию становится первая из них).
+                // Навигационное свойство, а не Id: сущность ещё не сохранена, EF проставит FK при SaveChanges.
+                if (ctx.Project.Details.DefaultProjectRolesListId is null)
+                {
+                    ctx.Project.Details.DefaultProjectRolesList = entity;
+                }
+
                 return entity;
             });
 
@@ -72,6 +81,11 @@ internal class ProjectRolesListService(
             {
                 var (entity, _) = ctx.GetProjectRolesListForChange(ctx.Request);
 
+                if (ctx.Project.Details.DefaultProjectRolesListId == entity.ProjectRolesListId)
+                {
+                    throw new InvalidOperationException("Нельзя удалить сетку ролей по умолчанию");
+                }
+
                 logger.LogInformation("Удаляем сетку ролей {ProjectRolesListId} (проект {ProjectId}) с именем {Name}",
                     entity.ProjectRolesListId, entity.ProjectId, entity.Name);
 
@@ -79,6 +93,24 @@ internal class ProjectRolesListService(
             });
 
         logger.LogInformation("Удалена сетка ролей {ProjectRolesListId}", id.ProjectRolesListId);
+    }
+
+    public async Task SetDefaultAsync(ProjectRolesListIdentification id)
+    {
+        await projectPropsService.ChangeProjectProperties(
+            id.ProjectId,
+            Permission.CanManageClaims,
+            ProjectActiveRequirement.MustBeActive,
+            id,
+            ctx =>
+            {
+                var (entity, _) = ctx.GetProjectRolesListForChange(ctx.Request);
+
+                logger.LogInformation("Делаем сетку ролей {ProjectRolesListId} (проект {ProjectId}) сеткой по умолчанию",
+                    entity.ProjectRolesListId, entity.ProjectId);
+
+                ctx.Project.Details.DefaultProjectRolesListId = entity.ProjectRolesListId;
+            });
     }
 
     public async Task<ProjectRolesList> GetByIdAsync(ProjectRolesListIdentification id)

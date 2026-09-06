@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 
-public record ProjectRolesListItemViewModel(ProjectRolesList RolesList, string? CharacterGroupName);
+public record ProjectRolesListItemViewModel(ProjectRolesList RolesList, CharacterGroupLinkSlimViewModel? CharacterGroup, bool IsDefault);
 
 public record ProjectRolesListViewModel(List<ProjectRolesListItemViewModel> Items, bool HasEditAccess);
 

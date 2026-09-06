@@ -380,7 +380,14 @@ internal class CloneProjectHelper(
                     Fields = newFields,
                 };
 
-                await projectRolesListService.CreateAsync(newModel);
+                var created = await projectRolesListService.CreateAsync(newModel);
+
+                // CreateAsync сам делает первую сохранённую сетку сеткой по умолчанию, но выбор
+                // мастера в исходном проекте мог быть не первой по порядку сеткой — переносим явно.
+                if (originalList.ProjectRolesListId == original.DefaultRolesListId)
+                {
+                    await projectRolesListService.SetDefaultAsync(created.ProjectRolesListId!);
+                }
             }
             catch (DbEntityValidationException ex)
             {

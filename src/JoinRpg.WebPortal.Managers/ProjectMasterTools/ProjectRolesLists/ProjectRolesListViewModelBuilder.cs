@@ -1,4 +1,5 @@
 using JoinRpg.Interfaces;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
@@ -9,9 +10,9 @@ internal static class ProjectRolesListViewModelBuilder
         IReadOnlyCollection<ProjectRolesList> domainItems,
         ProjectInfo projectInfo,
         ICurrentUserAccessor currentUserAccessor,
-        IReadOnlyDictionary<CharacterGroupIdentification, string>? characterGroupNames = null)
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupLinkSlimViewModel>? characterGroups = null)
     {
-        var items = domainItems.Select(item => BuildListItem(item, characterGroupNames)).ToList();
+        var items = domainItems.Select(item => BuildListItem(item, characterGroups, projectInfo.DefaultRolesListId)).ToList();
 
         var hasEditAccess = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentification);
 
@@ -20,14 +21,15 @@ internal static class ProjectRolesListViewModelBuilder
 
     private static ProjectRolesListItemViewModel BuildListItem(
         ProjectRolesList domainItem,
-        IReadOnlyDictionary<CharacterGroupIdentification, string>? characterGroupNames)
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupLinkSlimViewModel>? characterGroups,
+        ProjectRolesListIdentification? defaultRolesListId)
     {
-        string? groupName = null;
-        if (domainItem.CharacterGroupId != null && characterGroupNames != null)
+        CharacterGroupLinkSlimViewModel? group = null;
+        if (domainItem.CharacterGroupId != null && characterGroups != null)
         {
-            characterGroupNames.TryGetValue(domainItem.CharacterGroupId, out groupName);
+            characterGroups.TryGetValue(domainItem.CharacterGroupId, out group);
         }
 
-        return new ProjectRolesListItemViewModel(domainItem, groupName);
+        return new ProjectRolesListItemViewModel(domainItem, group, domainItem.ProjectRolesListId == defaultRolesListId);
     }
 }

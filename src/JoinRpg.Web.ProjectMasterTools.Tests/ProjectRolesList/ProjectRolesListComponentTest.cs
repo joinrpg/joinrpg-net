@@ -114,5 +114,10 @@ public class ProjectRolesListComponentTest : BunitContext
         {
             return Task.CompletedTask;
         }
+
+        public Task<ProjectRolesListViewModel> SetDefault(JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesListIdentification id)
+        {
+            return Task.FromResult(NextGetListResult ?? new ProjectRolesListViewModel([], HasEditAccess: true));
+        }
     }
 }

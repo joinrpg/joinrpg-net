@@ -101,6 +101,14 @@ public class MockedProject
             acl.User ??= new User { UserId = acl.UserId, PrefferedName = $"User{acl.UserId}", Email = $"user{acl.UserId}@example.com", Claims = [] };
         }
 
+        // Имитация relationship fixup EF6: если дефолтная сетка ролей проставлена только
+        // навигационным свойством (сущность добавлена в рамках текущей мутации и ещё не имела Id),
+        // подтягиваем сгенерированный Id в FK-свойство — как это делает реальный DbContext при SaveChanges.
+        if (Project.Details.DefaultProjectRolesList is { } defaultRolesList)
+        {
+            Project.Details.DefaultProjectRolesListId = defaultRolesList.ProjectRolesListId;
+        }
+
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
     }
 

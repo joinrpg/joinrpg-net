@@ -37,6 +37,25 @@ internal class ProjectRolesListClientImpl(
         }
     }
 
+    public async Task<ProjectRolesListViewModel> SetDefault(ProjectRolesListIdentification id)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/setdefault?projectId={id.ProjectId.Value}", id);
+            return await response
+                .EnsureSuccessStatusCode()
+                .Content
+                .ReadFromJsonAsync<ProjectRolesListViewModel>()
+                ?? throw new Exception("Empty");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during access");
+            throw;
+        }
+    }
+
     public async Task<ProjectRolesListViewModel> Create(ProjectIdentification projectId, AddProjectRolesListViewModel model)
     {
         try

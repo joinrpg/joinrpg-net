@@ -48,6 +48,11 @@ public class ProjectDetails : IValidatableObject
 
     public virtual Character? DefaultTemplateCharacter { get; set; }
 
+    [ForeignKey(nameof(DefaultProjectRolesList))]
+    public int? DefaultProjectRolesListId { get; set; }
+
+    public virtual ProjectRolesList? DefaultProjectRolesList { get; set; }
+
     public int? ClonedFromProjectId { get; set; }
 
     public Project? ClonedFromProject { get; set; }

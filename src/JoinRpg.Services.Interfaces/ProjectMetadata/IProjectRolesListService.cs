@@ -6,4 +6,5 @@ public interface IProjectRolesListService
     Task<ProjectRolesList> UpdateAsync(ProjectRolesList model);
     Task RemoveAsync(ProjectRolesListIdentification id);
     Task<ProjectRolesList> GetByIdAsync(ProjectRolesListIdentification id);
+    Task SetDefaultAsync(ProjectRolesListIdentification id);
 }

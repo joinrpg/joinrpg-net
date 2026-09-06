@@ -59,6 +59,10 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             {
                 _ = mock.Project.ProjectAcls.Remove(acl);
             }
+            if (entity is DataModel.ProjectRolesList rolesList)
+            {
+                _ = mock.Project.ProjectRolesLists.Remove(rolesList);
+            }
         }
     }
 }

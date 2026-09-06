@@ -26,6 +26,7 @@
     <ProjectRolesListRow
       Model="@context"
       OnRemoveCallback="OnRemoveRow"
+      OnSetDefaultCallback="OnSetDefaultRow"
       HasEditAccess="@_model.HasEditAccess"
       @key="@context.RolesList" />
   </ItemTemplate>
@@ -67,6 +68,18 @@
         {
             logger.LogError(exc, "Ошибка при удалении сетки ролей");
             items.Insert(idx, item);
+        }
+    }
+
+    async Task OnSetDefaultRow(ProjectRolesListItemViewModel item)
+    {
+        try
+        {
+            _model = await Client.SetDefault(item.RolesList.ProjectRolesListId!);
+        }
+        catch (Exception exc)
+        {
+            logger.LogError(exc, "Ошибка при переключении сетки ролей по умолчанию");
         }
     }
 }

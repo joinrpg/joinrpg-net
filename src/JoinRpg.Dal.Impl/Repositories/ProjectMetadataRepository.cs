@@ -91,6 +91,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 IsPublicProject: project.Details.IsPublicProject
                 ),
             projectRolesLists: CreateRolesLists(project),
+            defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),
             groups: groups,
             responsibleMasterRules: responsibleMasterRules);
 

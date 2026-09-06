@@ -36,6 +36,12 @@ public class GameGroupsController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var explicitGroupId = CharacterGroupIdentification.FromOptional(projectId, characterGroupId);
+
+        if (explicitGroupId is null && projectInfo.DefaultRolesListId is { } defaultRolesListId)
+        {
+            return Redirect($"/{projectId.Value}/roleslist/{defaultRolesListId.ProjectRolesListId}");
+        }
+
         var characterGroupId2 = explicitGroupId ?? projectInfo.RootCharacterGroupId;
         var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
         if (charGroupFullInfo is null)
