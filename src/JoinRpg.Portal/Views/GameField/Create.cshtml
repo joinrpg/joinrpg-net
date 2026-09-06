@@ -8,6 +8,8 @@
 
 @await Html.PartialAsync("_FieldNavigation", Model.Navigation)
 
+<component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.FieldPersonalDataWarning)" render-mode="Static" />
+
 @using (Html.BeginForm())
 {
   @Html.AntiForgeryToken()
