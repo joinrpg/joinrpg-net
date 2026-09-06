@@ -2,10 +2,10 @@
 <div class="rule-list-row">
 
   <div>
-    <h5>@Model.RolesList.Name</h5>
-    @if (Model.CharacterGroupName != null)
+    <h5>@Model.RolesList.Name @if (Model.IsDefault) { <text>&nbsp;</text><JoinBadge Variation="VariationStyleEnum.Info">По умолчанию</JoinBadge> }</h5>
+    @if (Model.CharacterGroup != null)
     {
-      <p>Группа: @Model.CharacterGroupName</p>
+      <p>Группа: <CharacterGroupLink Model="Model.CharacterGroup" /></p>
     }
   </div>
   <div class="filler">
@@ -22,11 +22,17 @@
       DisabledTitle="Для управления сетками ролей нужны права редактировать ролевку"
       Disabled="!HasEditAccess"
       />
-    <JoinButton Preset="ButtonPreset.Delete" 
+    <JoinButton Preset="ButtonPreset.None"
+      OnClick="() => OnSetDefaultCallback.InvokeAsync(Model)"
+      Label="Сделать сеткой ролей по умолчанию"
+      DisabledTitle="@(!HasEditAccess ? "Для управления сетками ролей нужны права редактировать ролевку" : "Эта сетка уже является сеткой ролей по умолчанию")"
+      Disabled="!HasEditAccess || Model.IsDefault"
+      />
+    <JoinButton Preset="ButtonPreset.Delete"
       OnClick="() => OnRemoveCallback.InvokeAsync(Model)"
       Label="Удалить сетку"
-      DisabledTitle="Для управления сетками ролей нужны права редактировать ролевку"
-      Disabled="!HasEditAccess"
+      DisabledTitle="@(!HasEditAccess ? "Для управления сетками ролей нужны права редактировать ролевку" : "Нельзя удалить сетку ролей по умолчанию")"
+      Disabled="!HasEditAccess || Model.IsDefault"
       />
   </div>
 </div>
@@ -37,6 +43,9 @@
 
     [Parameter]
     public EventCallback<ProjectRolesListItemViewModel> OnRemoveCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectRolesListItemViewModel> OnSetDefaultCallback { get; set; }
 
     [Parameter]
     public bool HasEditAccess { get; set; }

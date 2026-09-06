@@ -22,6 +22,7 @@ internal partial class CreateProjectService
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
 
+        // Первая созданная сетка ролей будет дефолтной
         await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Мероприятия", [description], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
     }
 
@@ -55,6 +56,7 @@ internal partial class CreateProjectService
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Required });
 
+        // Первая созданная сетка ролей будет дефолтной
         await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Участники", [], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
     }
 
@@ -70,6 +72,7 @@ internal partial class CreateProjectService
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
 
+        // Первая созданная сетка ролей будет дефолтной
         await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Все роли", [description], RolesGridGroupsViewMode.Tree, ShowRolesFilter.All));
         await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Горячие роли", [description], RolesGridGroupsViewMode.None, ShowRolesFilter.HotOnly));
         await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Вакантные роли", [description], RolesGridGroupsViewMode.None, ShowRolesFilter.VacantOnly));

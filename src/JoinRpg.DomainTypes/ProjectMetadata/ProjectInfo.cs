@@ -48,6 +48,8 @@ public record class ProjectInfo
     public ProjectClaimSettings ClaimSettings { get; }
     public IReadOnlyCollection<ProjectRolesList> ProjectRolesLists { get; }
 
+    public ProjectRolesListIdentification? DefaultRolesListId { get; }
+
     public IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> Groups { get; }
 
     public IReadOnlyList<CharacterGroupInfo> ResponsibleMasterRules { get; }
@@ -72,6 +74,7 @@ public record class ProjectInfo
         ProjectProfileRequirementSettings profileRequirementSettings,
         ProjectClaimSettings projectClaimSettings,
         IReadOnlyCollection<ProjectRolesList> projectRolesLists,
+        ProjectRolesListIdentification? defaultRolesListId,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> groups,
         IReadOnlyList<CharacterGroupInfo> responsibleMasterRules)
     {
@@ -103,6 +106,7 @@ public record class ProjectInfo
         ProfileRequirementSettings = profileRequirementSettings;
         ClaimSettings = projectClaimSettings;
         ProjectRolesLists = projectRolesLists;
+        DefaultRolesListId = defaultRolesListId;
         Groups = groups;
         ResponsibleMasterRules = responsibleMasterRules;
     }
@@ -148,7 +152,7 @@ public record class ProjectInfo
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, AllowToSetGroups,
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
     }
 
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
@@ -159,7 +163,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
     }
 
     internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
@@ -170,7 +174,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
-            ProjectRolesLists, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
     }
 
     internal ProjectInfo WithProfileRequirementSettings(ProjectProfileRequirementSettings profileRequirementSettings)
@@ -181,7 +185,7 @@ public record class ProjectInfo
             RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, profileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
     }
 
     public CharacterGroupInfo GetGroupById(int id)

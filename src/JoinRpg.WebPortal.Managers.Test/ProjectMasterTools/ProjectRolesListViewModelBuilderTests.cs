@@ -1,6 +1,7 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.Interfaces;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
 
 namespace JoinRpg.WebPortal.Managers.Test.ProjectMasterTools;
@@ -115,19 +116,19 @@ public class ProjectRolesListViewModelBuilderTests
             GroupsViewMode: RolesGridGroupsViewMode.None,
             ShowRolesFilter: ShowRolesFilter.All);
 
-        var characterGroupNames = new Dictionary<CharacterGroupIdentification, string>
+        var characterGroups = new Dictionary<CharacterGroupIdentification, CharacterGroupLinkSlimViewModel>
         {
-            [groupId] = "Test Group",
+            [groupId] = new CharacterGroupLinkSlimViewModel(groupId, "Test Group", IsPublic: true, IsActive: true),
         };
 
         var result = ProjectRolesListViewModelBuilder.Build(
             [domainItem],
             _projectInfo,
             _currentUserAccessor,
-            characterGroupNames);
+            characterGroups);
 
         var item = result.Items.ShouldHaveSingleItem();
-        item.CharacterGroupName.ShouldBe("Test Group");
+        item.CharacterGroup.ShouldNotBeNull().Name.ShouldBe("Test Group");
     }
 
     [Fact]
@@ -149,10 +150,10 @@ public class ProjectRolesListViewModelBuilderTests
             [domainItem],
             _projectInfo,
             _currentUserAccessor,
-            characterGroupNames: null);
+            characterGroups: null);
 
         var item = result.Items.ShouldHaveSingleItem();
-        item.CharacterGroupName.ShouldBeNull();
+        item.CharacterGroup.ShouldBeNull();
     }
 
     private class FakeCurrentUserAccessor : ICurrentUserAccessor

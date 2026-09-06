@@ -30,6 +30,17 @@ public class ProjectRolesListController(IProjectRolesListClient client) : Contro
 
     [HttpPost]
     [RequireMaster(Permission.CanEditRoles)]
+    public async Task<ActionResult<ProjectRolesListViewModel>> SetDefault([FromQuery] ProjectIdentification projectId, [FromBody] ProjectRolesListIdentification id)
+    {
+        if (id.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+        return Ok(await client.SetDefault(id));
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanEditRoles)]
     public async Task<ActionResult<ProjectRolesListViewModel>> Create([FromQuery] ProjectIdentification projectId, [FromBody] AddProjectRolesListViewModel model)
     {
         return Ok(await client.Create(projectId, model));

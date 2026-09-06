@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
@@ -24,18 +25,18 @@ internal class ProjectRolesListViewService(
             .Distinct()
             .ToList();
 
-        IReadOnlyDictionary<CharacterGroupIdentification, string>? groupNames = null;
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupLinkSlimViewModel>? characterGroups = null;
         if (groupIdentifications.Count > 0)
         {
-            groupNames = projectInfo.GetGroupsById(groupIdentifications)
-                .ToDictionary(g => g.Id, g => g.Name);
+            characterGroups = projectInfo.GetGroupsById(groupIdentifications)
+                .ToDictionary(g => g.Id, g => new CharacterGroupLinkSlimViewModel(g));
         }
 
         return ProjectRolesListViewModelBuilder.Build(
             domainItems,
             projectInfo,
             currentUserAccessor,
-            groupNames);
+            characterGroups);
     }
 
     public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification id)
@@ -46,6 +47,12 @@ internal class ProjectRolesListViewService(
     public async Task Remove(ProjectRolesListIdentification id)
     {
         await service.RemoveAsync(id);
+    }
+
+    public async Task<ProjectRolesListViewModel> SetDefault(ProjectRolesListIdentification id)
+    {
+        await service.SetDefaultAsync(id);
+        return await GetList(id.ProjectId);
     }
 
     public async Task<ProjectRolesListViewModel> Create(ProjectIdentification projectId, AddProjectRolesListViewModel model)
