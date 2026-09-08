@@ -35,7 +35,6 @@ public static class Services
         yield return typeof(AccommodationServiceImpl);
         yield return typeof(CharacterServiceImpl);
         yield return typeof(GameSubscribeService);
-        yield return typeof(RespMasterRuleService);
 
         yield return typeof(CloneProjectHelperFactory);
 
@@ -56,6 +55,7 @@ public static class Services
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
             .AddTransient<IProjectAccessService, ProjectAccessService>()
+            .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()

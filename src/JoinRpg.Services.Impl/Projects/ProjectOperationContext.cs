@@ -72,8 +72,7 @@ internal static class ProjectOperationContextExtensions
     public static (CharacterGroup Group, CharacterGroupInfo GroupInfo) GetCharacterGroupForChange(
         this ProjectMutationContext ctx, CharacterGroupIdentification id, bool allowSpecialToValue = false, bool allowRoot = false)
     {
-        var group = ctx.Project.CharacterGroups.Single(g => g.CharacterGroupId == id.CharacterGroupId);
-        var groupInfo = ctx.ProjectInfo.Groups[id];
+        var (group, groupInfo) = ctx.GetAnyCharacterGroupForChange(id);
         var allowed = groupInfo.GroupType == CharacterGroupType.Regular
             || (allowSpecialToValue && groupInfo.GroupType == CharacterGroupType.SpecialToValue)
             || (allowRoot && groupInfo.GroupType == CharacterGroupType.Root);
@@ -81,6 +80,22 @@ internal static class ProjectOperationContextExtensions
         {
             throw new InvalidOperationException();
         }
+        return (group, groupInfo);
+    }
+
+    /// <summary>
+    /// Резолвит группу для изменения без ограничений по типу и помечает её изменённой. Нужно для
+    /// операций, которые не трогают саму группу как элемент дерева, а вешают на неё настройку,
+    /// допустимую для любой группы — например правило ответственного мастера
+    /// (<see cref="CharacterGroup.ResponsibleMasterUserId"/>). В остальных случаях используйте
+    /// <see cref="GetCharacterGroupForChange"/>, который проверяет тип группы.
+    /// </summary>
+    public static (CharacterGroup Group, CharacterGroupInfo GroupInfo) GetAnyCharacterGroupForChange(
+        this ProjectMutationContext ctx, CharacterGroupIdentification id)
+    {
+        var group = ctx.Project.CharacterGroups.SingleOrDefault(g => g.CharacterGroupId == id.CharacterGroupId)
+            ?? throw new JoinRpgEntityNotFoundException(id.CharacterGroupId, nameof(CharacterGroup));
+        var groupInfo = ctx.ProjectInfo.Groups[id];
         ctx.MarkChanged(group);
         return (group, groupInfo);
     }
