@@ -26,7 +26,6 @@ public record class ProjectInfo
     public ProjectFinanceSettings ProjectFinanceSettings { get; }
     public bool AccomodationEnabled { get; }
 
-    public CharacterIdentification? DefaultTemplateCharacter { get; }
     public bool AllowToSetGroups { get; }
 
     public CharacterGroupIdentification RootCharacterGroupId { get; }
