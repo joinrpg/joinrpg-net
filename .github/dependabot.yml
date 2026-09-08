@@ -49,6 +49,6 @@ updates:
           - "AWSSDK.*"
 
   - package-ecosystem: "github-actions"
-    directory: "/" 
+    directory: "/"
     schedule:
       interval: "daily"
