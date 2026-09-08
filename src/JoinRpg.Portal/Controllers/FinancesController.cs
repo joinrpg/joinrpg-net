@@ -6,6 +6,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using JoinRpg.Web.Models.Money;
@@ -20,6 +21,7 @@ public class FinancesController(
     IProjectRepository projectRepository,
     IExportDataService exportDataService,
     IFinanceService financeService,
+    IProjectFinanceSettingsService financeSettingsService,
     IUriService uriService,
     IFinanceReportRepository financeReportRepository,
     IUserRepository userRepository,
@@ -113,11 +115,11 @@ public class FinancesController(
         {
             if (data.PaymentTypeId > 0)
             {
-                await financeService.TogglePaymentActiveness(data.ProjectId, data.PaymentTypeId.Value);
+                await financeSettingsService.TogglePaymentActiveness(new(data.ProjectId), data.PaymentTypeId.Value);
             }
             else
             {
-                await financeService.CreatePaymentType(new CreatePaymentTypeRequest
+                await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
                 {
                     ProjectId = data.ProjectId,
                     TargetMasterId = data.MasterId,
@@ -143,7 +145,7 @@ public class FinancesController(
     {
         try
         {
-            await financeService.CreatePaymentType(new CreatePaymentTypeRequest
+            await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
             {
                 ProjectId = viewModel.ProjectId,
                 TargetMasterId = viewModel.UserId,
@@ -192,7 +194,7 @@ public class FinancesController(
 
         try
         {
-            await financeService.EditCustomPaymentType(viewModel.ProjectId, viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
+            await financeSettingsService.EditCustomPaymentType(new(viewModel.ProjectId), viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
         catch (Exception exc)
@@ -208,7 +210,7 @@ public class FinancesController(
     {
         try
         {
-            await financeService.CreateFeeSetting(new CreateFeeSettingRequest()
+            await financeSettingsService.CreateFeeSetting(new CreateFeeSettingRequest()
             {
                 ProjectId = viewModel.ProjectId,
                 Fee = viewModel.Fee,
@@ -231,7 +233,7 @@ public class FinancesController(
     {
         try
         {
-            await financeService.DeleteFeeSetting(projectid, projectFeeSettingId);
+            await financeSettingsService.DeleteFeeSetting(new(projectid), projectFeeSettingId);
             return RedirectToAction("Setup", new { projectid });
         }
         catch (Exception ex)
@@ -278,7 +280,7 @@ public class FinancesController(
     {
         try
         {
-            await financeService.SaveGlobalSettings(new SetFinanceSettingsRequest
+            await financeSettingsService.SaveGlobalSettings(new SetFinanceSettingsRequest
             {
                 ProjectId = viewModel.ProjectId,
                 WarnOnOverPayment = viewModel.WarnOnOverPayment,

@@ -56,6 +56,7 @@ public static class Services
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
             .AddTransient<IProjectAccessService, ProjectAccessService>()
             .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
+            .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
