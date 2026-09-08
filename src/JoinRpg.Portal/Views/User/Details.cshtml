@@ -10,7 +10,16 @@
 
 <div class="container">
     
-  <partial  name="_UserDetailsPanel" model="@Model.Details"/>
+  <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1em">
+    <partial name="_UserDetailsPanel" model="@Model.Details"/>
+
+    @if (Model.ProjectsToAdd.Any())
+    {
+        <component type="typeof(JoinRpg.Web.ProjectMasterTools.Acl.AddToProjectButton)"
+                   render-mode="Static"
+                   param-Items="@Model.ProjectsToAdd.ToArray()"
+                   param-UserId="new UserIdentification(Model.UserId)" />
+    }
 
     @if (Model.HasAdminAccess)
     {
@@ -19,6 +28,7 @@
                    param-UserId="new UserIdentification(Model.UserId)"
                    param-LogLink="Model.Admin!.LogLink" />
     }
+  </div>
 
     <div class="clearfix"></div>
 
@@ -50,10 +60,4 @@
         </div>
     }
 
-    @if (Model.ProjectsToAdd.Any())
-    {
-      <div class="col-md-12">
-        @await Html.PartialAsync("AddToProject", Model)
-      </div>
-    }
     </div>

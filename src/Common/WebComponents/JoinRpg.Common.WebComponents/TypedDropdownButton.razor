@@ -1,0 +1,126 @@
+@typeparam TKey where TKey : notnull
+@typeparam TItem
+@using JoinRpg.Common.WebComponents.Dialog
+
+@if (Items is null)
+{
+    <JoinLoadingMessage />
+}
+else if (Items.Length > 0)
+{
+    <span class="dropdown">
+        <button class="@ButtonClass dropdown-toggle" type="button" id="@_menuId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            @Label
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="@_menuId">
+            @foreach (var item in Items)
+            {
+                var val = ToListItem(item);
+                if (val.Disabled)
+                {
+                    <li class="disabled"><a href="#">@val.Text</a></li>
+                }
+                else if (ToLink is not null)
+                {
+                    <li><a href="@ToLink(item)">@val.Text</a></li>
+                }
+                else
+                {
+                    <li><a href="#" @onclick="() => ItemClicked(item)" @onclick:preventDefault>@val.Text</a></li>
+                }
+            }
+        </ul>
+    </span>
+}
+
+@if (AutoConfirm)
+{
+    <JoinMessageDialog
+        @ref="_confirmDialogRef"
+        Type="@MessageDialogType.Confirmation"
+        Buttons="@(new DialogButton[] { new(ButtonPreset.Yes), new(ButtonPreset.Cancel) })"
+    >
+        @ActualConfirmMessage
+    </JoinMessageDialog>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = null!;
+
+    [Parameter, EditorRequired] public TItem[]? Items { get; set; }
+
+    [Parameter, EditorRequired] public Func<TItem, TypedSelectListItem<TKey>> ToListItem { get; set; } = null!;
+
+    [Parameter] public EventCallback<TItem> OnClick { get; set; }
+
+    /// <summary>
+    /// When set, menu items are rendered as plain links (<c>&lt;a href&gt;</c>) instead of using <see cref="OnClick"/>.
+    /// Does not require an interactive render mode, but is incompatible with <see cref="AutoConfirm"/>.
+    /// </summary>
+    [Parameter] public Func<TItem, string>? ToLink { get; set; }
+
+    [Parameter] public VariationStyleEnum? Style { get; set; }
+
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+
+    /// <summary>
+    /// When true, the confirmation dialog appears when user clicks a menu item. Requires <see cref="OnClick"/>.
+    /// </summary>
+    [Parameter] public bool AutoConfirm { get; set; }
+
+    /// <summary>
+    /// Automatic confirmation dialog message. Required when <see cref="AutoConfirm"/> is true.
+    /// Supports the <c>{name}</c> placeholder, which is replaced with the label of the clicked item.
+    /// </summary>
+    [Parameter] public string? AutoConfirmMessage { get; set; }
+
+    private readonly string _menuId = $"typed-dropdown-button-{Guid.NewGuid():N}";
+
+    private string ButtonClass => BootstrapStyle.Build("btn", Style, Size);
+
+    private JoinMessageDialog? _confirmDialogRef;
+    private TItem? _pendingItem;
+
+    private string? ActualConfirmMessage =>
+        _pendingItem is null ? null : AutoConfirmMessage?.Replace("{name}", ToListItem(_pendingItem).Text);
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (ToLink is null == !OnClick.HasDelegate)
+        {
+            throw new InvalidOperationException($"Exactly one of {nameof(ToLink)} and {nameof(OnClick)} must be set");
+        }
+
+        if (AutoConfirm)
+        {
+            if (ToLink is not null)
+            {
+                throw new InvalidOperationException($"{nameof(AutoConfirm)} can not be used together with {nameof(ToLink)}");
+            }
+
+            if (string.IsNullOrWhiteSpace(AutoConfirmMessage))
+            {
+                throw new InvalidOperationException($"The {nameof(AutoConfirmMessage)} is required when {nameof(AutoConfirm)} is true");
+            }
+        }
+    }
+
+    private async Task ItemClicked(TItem item)
+    {
+        _pendingItem = item;
+
+        var confirmed = true;
+        if (AutoConfirm)
+        {
+            confirmed = await _confirmDialogRef!.ShowBoolModalAsync();
+        }
+
+        if (confirmed)
+        {
+            await OnClick.InvokeAsync(item);
+        }
+    }
+}

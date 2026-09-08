@@ -1,0 +1,13 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+
+<TypedDropdownButton TKey="ProjectIdentification" TItem="ProjectLinkViewModel"
+    Label="Поставить доступ в проект"
+    Items="Items"
+    ToListItem="@(p => TypedSelectList.CreateItem(Value: p.ProjectId, Text: p.ProjectName))"
+    ToLink="@(p => $"/{p.ProjectId.Value}/masters/add/{UserId.Value}")" />
+
+@code {
+    [Parameter, EditorRequired] public ProjectLinkViewModel[] Items { get; set; } = null!;
+
+    [Parameter, EditorRequired] public UserIdentification UserId { get; set; } = null!;
+}
