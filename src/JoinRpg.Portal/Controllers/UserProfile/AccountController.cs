@@ -418,7 +418,11 @@ public class AccountController(
 
         if (result.Succeeded)
         {
-            // TODO Обновлять профиль пользователя при логине
+            var loggedInUser = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+            if (loggedInUser is not null)
+            {
+                await externalLoginProfileExtractor.TryExtractProfile(loggedInUser, loginInfo);
+            }
             return RedirectToLocal(returnUrl);
         }
 
