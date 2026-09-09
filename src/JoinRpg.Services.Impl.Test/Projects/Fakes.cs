@@ -63,6 +63,10 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             {
                 _ = mock.Project.ProjectRolesLists.Remove(rolesList);
             }
+            if (entity is ProjectFeeSetting feeSetting)
+            {
+                _ = mock.Project.ProjectFeeSettings.Remove(feeSetting);
+            }
         }
     }
 }
@@ -141,7 +145,7 @@ internal sealed class FakeNotificationService : INotificationService
 
 internal sealed class FakeVirtualUsersService : IVirtualUsersService
 {
-    public User PaymentsUser => throw new NotSupportedException();
+    public User PaymentsUser { get; } = new User { UserId = 1000, PrefferedName = "Payments", Email = "payments@example.com", Claims = [] };
     public User RobotUser => throw new NotSupportedException();
     public UserIdentification RobotUserId => new(int.MaxValue);
 }

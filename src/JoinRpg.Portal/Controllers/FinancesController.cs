@@ -6,6 +6,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using JoinRpg.Web.Models.Money;
@@ -20,6 +21,7 @@ public class FinancesController(
     IProjectRepository projectRepository,
     IExportDataService exportDataService,
     IFinanceService financeService,
+    IProjectFinanceSettingsService financeSettingsService,
     IUriService uriService,
     IFinanceReportRepository financeReportRepository,
     IUserRepository userRepository,
@@ -113,13 +115,13 @@ public class FinancesController(
         {
             if (data.PaymentTypeId > 0)
             {
-                await financeService.TogglePaymentActiveness(data.ProjectId, data.PaymentTypeId.Value);
+                await financeSettingsService.TogglePaymentActiveness(new PaymentTypeIdentification(data.ProjectId, data.PaymentTypeId.Value));
             }
             else
             {
-                await financeService.CreatePaymentType(new CreatePaymentTypeRequest
+                await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
                 {
-                    ProjectId = data.ProjectId,
+                    ProjectId = new(data.ProjectId),
                     TargetMasterId = data.MasterId,
                     Name = null, // У них специальное имя
                     TypeKind = (PaymentTypeKind)data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
@@ -143,9 +145,9 @@ public class FinancesController(
     {
         try
         {
-            await financeService.CreatePaymentType(new CreatePaymentTypeRequest
+            await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
             {
-                ProjectId = viewModel.ProjectId,
+                ProjectId = new(viewModel.ProjectId),
                 TargetMasterId = viewModel.UserId,
                 TypeKind = PaymentTypeKind.Custom,
                 Name = viewModel.Name,
@@ -192,7 +194,7 @@ public class FinancesController(
 
         try
         {
-            await financeService.EditCustomPaymentType(viewModel.ProjectId, viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
+            await financeSettingsService.EditCustomPaymentType(new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId), viewModel.Name, viewModel.IsDefault);
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
         catch (Exception exc)
@@ -208,9 +210,9 @@ public class FinancesController(
     {
         try
         {
-            await financeService.CreateFeeSetting(new CreateFeeSettingRequest()
+            await financeSettingsService.CreateFeeSetting(new CreateFeeSettingRequest()
             {
-                ProjectId = viewModel.ProjectId,
+                ProjectId = new(viewModel.ProjectId),
                 Fee = viewModel.Fee,
                 PreferentialFee = viewModel.PreferentialFee,
                 StartDate = viewModel.StartDate.ToDateTime(TimeOnly.MinValue),
@@ -231,7 +233,7 @@ public class FinancesController(
     {
         try
         {
-            await financeService.DeleteFeeSetting(projectid, projectFeeSettingId);
+            await financeSettingsService.DeleteFeeSetting(new(projectid), projectFeeSettingId);
             return RedirectToAction("Setup", new { projectid });
         }
         catch (Exception ex)
@@ -278,9 +280,9 @@ public class FinancesController(
     {
         try
         {
-            await financeService.SaveGlobalSettings(new SetFinanceSettingsRequest
+            await financeSettingsService.SaveGlobalSettings(new SetFinanceSettingsRequest
             {
-                ProjectId = viewModel.ProjectId,
+                ProjectId = new(viewModel.ProjectId),
                 WarnOnOverPayment = viewModel.WarnOnOverPayment,
                 PreferentialFeeEnabled = viewModel.PreferentialFeeEnabled,
                 PreferentialFeeConditions = viewModel.PreferentialFeeConditions,

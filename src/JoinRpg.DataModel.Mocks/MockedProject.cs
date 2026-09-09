@@ -101,6 +101,12 @@ public class MockedProject
             acl.User ??= new User { UserId = acl.UserId, PrefferedName = $"User{acl.UserId}", Email = $"user{acl.UserId}@example.com", Claims = [] };
         }
 
+        foreach (var paymentType in Project.PaymentTypes)
+        {
+            paymentType.User ??= Project.ProjectAcls.FirstOrDefault(a => a.UserId == paymentType.UserId)?.User
+                ?? new User { UserId = paymentType.UserId, PrefferedName = $"User{paymentType.UserId}", Email = $"user{paymentType.UserId}@example.com", Claims = [] };
+        }
+
         // Имитация relationship fixup EF6: если дефолтная сетка ролей проставлена только
         // навигационным свойством (сущность добавлена в рамках текущей мутации и ещё не имела Id),
         // подтягиваем сгенерированный Id в FK-свойство — как это делает реальный DbContext при SaveChanges.

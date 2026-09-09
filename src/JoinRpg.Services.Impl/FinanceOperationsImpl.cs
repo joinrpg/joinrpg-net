@@ -1,4 +1,3 @@
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
@@ -6,7 +5,6 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -15,7 +13,6 @@ namespace JoinRpg.Services.Impl;
 internal class FinanceOperationsImpl(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
-    IVirtualUsersService vpu,
     ICurrentUserAccessor currentUserAccessor,
     ClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
@@ -39,186 +36,7 @@ internal class FinanceOperationsImpl(
         await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
     }
 
-    #region Payment type
-
-    /// <inheritdoc />
-    public async Task CreatePaymentType(CreatePaymentTypeRequest request)
-    {
-        // Loading project
-        var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-
-        // Checking access rights of the current user
-        if (!IsCurrentUserAdmin)
-        {
-            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-        }
-
-        // Preparing master Id and checking if the same payment type already created
-        int masterId;
-        if (!request.TypeKind.IsOnline())
-        {
-            _ = project.RequestMasterAccess(request.TargetMasterId);
-
-            // Cash payment could be only one
-            if (request.TypeKind == PaymentTypeKind.Cash
-                && project.PaymentTypes.Any(pt => pt.UserId == request.TargetMasterId && pt.TypeKind == PaymentTypeKind.Cash))
-            {
-                throw new JoinRpgInvalidUserException($@"Payment of type ${request.TypeKind.GetDisplayName()} is already created for the user ${request.TargetMasterId}");
-            }
-
-            masterId = request.TargetMasterId.Value;
-        }
-        else
-        {
-            if (project.PaymentTypes.Any(pt => pt.TypeKind == request.TypeKind))
-            {
-                throw new DataException($"Can't create more than one {request.TypeKind} payment type");
-            }
-
-            masterId = vpu.PaymentsUser.UserId;
-        }
-
-        // Creating payment type
-        var result = new PaymentType(request.TypeKind, request.ProjectId, masterId);
-
-        // Configuring payment type
-        if (result.TypeKind == PaymentTypeKind.Custom)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
-            // Checking custom payment type name
-            result.Name = request.Name.Trim();
-        }
-
-        // Saving
-        project.PaymentTypes.Add(result);
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    /// <inheritdoc />
-    public async Task TogglePaymentActiveness(int projectId, int paymentTypeId)
-    {
-        var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-        var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
-
-        switch (paymentType.TypeKind)
-        {
-            case PaymentTypeKind.Custom:
-            case PaymentTypeKind.Cash:
-                if (!IsCurrentUserAdmin)
-                {
-                    _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-                }
-
-                break;
-            case PaymentTypeKind.Online:
-            case PaymentTypeKind.OnlineSubscription:
-                if (!IsCurrentUserAdmin)
-                {
-                    // Regular master with finance management permissions can disable online payments
-                    if (paymentType.IsActive)
-                    {
-                        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-                    }
-                    // ...but to enable them back he must have admin permissions
-                    else
-                    {
-                        throw new MustBeAdminException();
-                    }
-                }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(paymentType.TypeKind), paymentType.TypeKind, null);
-        }
-
-        if (paymentType.IsActive)
-        {
-            _ = SmartDelete(paymentType);
-        }
-        else
-        {
-            paymentType.IsActive = true;
-        }
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task EditCustomPaymentType(int projectId,
-        int paymentTypeId,
-        string name,
-        bool isDefault)
-    {
-        var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-
-        var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
-
-        paymentType.IsActive = true;
-        paymentType.Name = Required(name);
-
-        if (isDefault && !paymentType.IsDefault)
-        {
-            foreach (var oldDefault in project.PaymentTypes.Where(pt => pt.IsDefault))
-            {
-                oldDefault.IsDefault = false;
-            }
-        }
-
-        paymentType.IsDefault = isDefault;
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    #endregion
-
-    #region Fee options
-
-    public async Task CreateFeeSetting(CreateFeeSettingRequest request)
-    {
-        var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-
-        if (request.StartDate < DateTime.UtcNow.Date.AddDays(-1))
-        {
-            throw new CannotPerformOperationInPast();
-        }
-
-        if (!project.Details.PreferentialFeeEnabled && request.PreferentialFee != null)
-        {
-            throw new PreferentialFeeNotEnabled();
-        }
-
-        project.ProjectFeeSettings.Add(new ProjectFeeSetting()
-        {
-            Fee = request.Fee,
-            StartDate = request.StartDate,
-            ProjectId = request.ProjectId,
-            PreferentialFee = request.PreferentialFee,
-        });
-
-        var firstFee = project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
-        firstFee.StartDate = project.CreatedDate;
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
-    {
-        var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-
-        var feeSetting =
-            project.ProjectFeeSettings.Single(pt =>
-                pt.ProjectFeeSettingId == projectFeeSettingId);
-
-        if (feeSetting.StartDate < DateTime.UtcNow)
-        {
-            throw new CannotPerformOperationInPast();
-        }
-
-        _ = UnitOfWork.GetDbSet<ProjectFeeSetting>().Remove(feeSetting);
-
-        await UnitOfWork.SaveChangesAsync();
-    }
+    #region Fee
 
     public async Task ChangeFee(ClaimIdentification claimId, int feeValue)
     {
@@ -235,22 +53,6 @@ internal class FinanceOperationsImpl(
 
     #endregion
 
-    #region Finance settings
-
-    public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
-    {
-        var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
-
-        project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
-        project.Details.PreferentialFeeEnabled = request.PreferentialFeeEnabled;
-        project.Details.PreferentialFeeConditions =
-            new MarkdownDbValue(request.PreferentialFeeConditions);
-
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    #endregion
 
     #region Finance Operations
 

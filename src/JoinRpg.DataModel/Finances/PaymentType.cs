@@ -36,7 +36,12 @@ public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEnti
     public virtual ICollection<FinanceOperation> Operations { get; set; }
 
     #region interface implementations
-    public bool CanBePermanentlyDeleted => !Operations.Any();
+    /// <summary>
+    /// Тип оплаты не удаляется физически никогда — только soft-delete (<see cref="IsActive"/>).
+    /// Иначе пришлось бы всюду, где тип оплаты выключают, тянуть за собой его
+    /// <see cref="Operations"/> только ради этой проверки.
+    /// </summary>
+    public bool CanBePermanentlyDeleted => false;
     int IOrderableEntity.Id => ProjectId;
     #endregion
 
