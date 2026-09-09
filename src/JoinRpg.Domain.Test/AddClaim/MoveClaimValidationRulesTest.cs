@@ -56,5 +56,5 @@ public class MoveClaimValidationRulesTest
     private void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBeEmpty();
 
     private void ShouldDisAllowMove(Claim claim, Character character, AddClaimForbideReason reason)
-        => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBe([reason]);
+        => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).Kinds().ShouldBe([reason]);
 }

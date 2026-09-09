@@ -118,7 +118,7 @@ public class AddClaimValidationRulesTest
         {
             Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: false) },
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo)
+        Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo).Kinds()
             .ShouldContain(AddClaimForbideReason.VkontakteMissing);
     }
 
@@ -139,6 +139,6 @@ public class AddClaimValidationRulesTest
 
     private void ShouldBeNotAllowed(Character claimSource, AddClaimForbideReason reason, ProjectInfo projectInfo)
     {
-        claimSource.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).ShouldContain(reason);
+        claimSource.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).Kinds().ShouldContain(reason);
     }
 }
