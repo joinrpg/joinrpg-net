@@ -66,6 +66,16 @@
             <br /><JoinProfileButton />
     </JoinAlert>
         break;
+    case AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Утверждённую заявку нельзя перенести в слот «@CharacterName». Выберите конкретного персонажа.
+        </JoinAlert>
+        break;
+    case AddClaimForbideReason.CheckedInClaimCantBeMoved:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Заявка уже отмечена как «Заехал», перенести её на другого персонажа нельзя.
+        </JoinAlert>
+        break;
     default:
         throw new ArgumentOutOfRangeException();
 }
