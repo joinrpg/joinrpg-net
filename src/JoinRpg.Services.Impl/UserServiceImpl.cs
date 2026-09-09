@@ -93,13 +93,13 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc />
-    public async Task SetBirthDate(int userId, DateOnly? birthDate)
+    public async Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
     {
         if (!IsCurrentUserAdmin)
         {
             throw new MustBeAdminException();
         }
-        var user = await UserRepository.WithProfile(userId);
+        var user = await UserRepository.WithProfile(userId.Value);
         user.Extra ??= new UserExtra();
         user.Extra.BirthDate = birthDate?.ToDateTime(TimeOnly.MinValue);
         await UnitOfWork.SaveChangesAsync();
@@ -142,9 +142,9 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc />
-    public async Task SetBirthDateIfNotSetWithoutAccessChecks(int userId, DateOnly birthDate)
+    public async Task SetBirthDateIfNotSetWithoutAccessChecks(UserIdentification userId, DateOnly birthDate)
     {
-        var user = await UserRepository.WithProfile(userId);
+        var user = await UserRepository.WithProfile(userId.Value);
 
         user.Extra ??= new UserExtra();
         user.Extra.BirthDate ??= birthDate.ToDateTime(TimeOnly.MinValue);

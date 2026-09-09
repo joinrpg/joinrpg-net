@@ -69,5 +69,5 @@ public class UserAdminViewService(
     }
 
     public Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
-        => userService.SetBirthDate(userId.Value, birthDate);
+        => userService.SetBirthDate(userId, birthDate);
 }

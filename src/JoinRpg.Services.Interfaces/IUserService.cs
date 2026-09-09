@@ -21,12 +21,12 @@ public interface IUserService
     /// <summary>
     /// Set birth date if not set already (e.g. pulled from VK on login). Never overwrites an already-set value.
     /// </summary>
-    Task SetBirthDateIfNotSetWithoutAccessChecks(int userId, DateOnly birthDate);
+    Task SetBirthDateIfNotSetWithoutAccessChecks(UserIdentification userId, DateOnly birthDate);
 
     /// <summary>
     /// Admin-only: set or clear birth date, bypassing the "already set" lock.
     /// </summary>
-    Task SetBirthDate(int userId, DateOnly? birthDate);
+    Task SetBirthDate(UserIdentification userId, DateOnly? birthDate);
 
 
     Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramSocialLink telegram, AvatarInfo? avatarInfo);

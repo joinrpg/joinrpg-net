@@ -28,10 +28,12 @@ public class UserInfoAgeTest
     }
 
     [Fact]
-    public void BirthdayIsToday_AgeIncreasesToday()
+    public void BirthdayIsToday_AgeNotYetIncreased()
     {
+        // По российской правовой традиции в день рождения человеку ещё не хватает года —
+        // возраст считается наступившим с 00:00 следующих суток (см. GetAgeOn).
         var user = BuildUserInfo(new DateOnly(2008, 6, 15));
-        user.GetAgeOn(new DateOnly(2026, 6, 15)).ShouldBe(18);
+        user.GetAgeOn(new DateOnly(2026, 6, 15)).ShouldBe(17);
     }
 
     [Fact]

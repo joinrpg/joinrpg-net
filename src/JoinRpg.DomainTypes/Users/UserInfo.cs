@@ -27,6 +27,13 @@ public record class UserInfo(
     /// <summary>
     /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.
     /// </summary>
+    /// <remarks>
+    /// В день самого рождения человеку ещё не хватает года: по российской правовой традиции
+    /// возраст считается наступившим с 00:00 суток, следующих за днём рождения (см. п. 7
+    /// Постановления Пленума Верховного Суда РФ от 01.02.2011 № 1 — в отношении 14/16/18 лет,
+    /// но правило общеупотребимо и для иного возраста). Поэтому дата годовщины считается ещё
+    /// не наступившей, если она совпадает с <paramref name="today"/>, а не только если она позже.
+    /// </remarks>
     public int? GetAgeOn(DateOnly today)
     {
         if (BirthDate is not DateOnly birthDate)
@@ -34,7 +41,7 @@ public record class UserInfo(
             return null;
         }
         var age = today.Year - birthDate.Year;
-        if (birthDate > today.AddYears(-age))
+        if (birthDate.AddYears(age) >= today)
         {
             age--;
         }

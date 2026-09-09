@@ -109,7 +109,7 @@ public class UserProfileDetailsViewModel
             IsVerifiedUser = user.VerifiedProfileFlag;
             if (user.GetAgeOn(DateOnly.FromDateTime(DateTime.UtcNow)) is int age)
             {
-                AgeMarker = age >= 18 ? "Совершеннолетний" : $"{age} {PluralizeYears(age)}";
+                AgeMarker = age >= 18 ? "Совершеннолетний" : CountHelper.DisplayCount(age, "год", "года", "лет");
             }
         }
         if (Reason != AccessReasonView.NoAccess || user.Social.SocialNetworksAccess == ContactsAccessType.Public)
@@ -125,22 +125,6 @@ public class UserProfileDetailsViewModel
     }
 
     public bool HasSocialAccess { get; }
-
-    private static string PluralizeYears(int age)
-    {
-        var lastTwoDigits = age % 100;
-        var lastDigit = age % 10;
-        if (lastTwoDigits is >= 11 and <= 14)
-        {
-            return "лет";
-        }
-        return lastDigit switch
-        {
-            1 => "год",
-            >= 2 and <= 4 => "года",
-            _ => "лет",
-        };
-    }
 }
 
 public enum AccessReasonView

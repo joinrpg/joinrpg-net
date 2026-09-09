@@ -50,7 +50,7 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
 
             if (VkBirthDateParser.TryParse(loginInfo.Principal.FindFirstValue(IdentityConfigurator.VkBirthDateClaimType), out var birthDate))
             {
-                await userService.SetBirthDateIfNotSetWithoutAccessChecks(user.Id, birthDate);
+                await userService.SetBirthDateIfNotSetWithoutAccessChecks(new UserIdentification(user.Id), birthDate);
             }
         }
     }

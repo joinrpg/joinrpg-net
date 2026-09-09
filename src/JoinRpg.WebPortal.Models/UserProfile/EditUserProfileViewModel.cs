@@ -50,7 +50,7 @@ public class EditUserProfileViewModel
     [Display(Name = "Публичность соцсетей")]
     public ContactsAccessTypeView SocialNetworkAccess { get; set; }
 
-    [Display(Name = "Дата рождения", Description = "После сохранения дату нельзя будет изменить самостоятельно.")]
+    [Display(Name = "Дата рождения", Description = "Указание даты рождения подтверждает мастерам, что вы совершеннолетний (или несовершеннолетний). Для совершеннолетних дата не показывается мастерам.")]
     public DateOnly? BirthDate { get; set; }
 
     public IList<UserLoginInfoViewModel> SocialLoginStatus { get; set; }
