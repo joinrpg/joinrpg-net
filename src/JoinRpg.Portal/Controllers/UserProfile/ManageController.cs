@@ -224,6 +224,7 @@ public class ManageController(
             PrefferedName = user.GetDisplayName(),
             //Gender = user.Extra.Gender,
             BirthDate = user.Extra?.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null,
+            AgeMarker = UserProfileDetailsViewModel.FormatAgeMarker(userInfo, DateOnly.FromDateTime(DateTime.UtcNow)),
             PhoneNumber = user.Extra?.PhoneNumber ?? "",
             Nicknames = user.Extra?.Nicknames ?? "",
             GroupNames = user.Extra?.GroupNames ?? "",

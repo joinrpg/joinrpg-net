@@ -53,6 +53,13 @@ public class EditUserProfileViewModel
     [Display(Name = "Дата рождения", Description = "Указание даты рождения подтверждает мастерам, что вы совершеннолетний (или несовершеннолетний). Для совершеннолетних дата не показывается мастерам.")]
     public DateOnly? BirthDate { get; set; }
 
+    /// <summary>
+    /// То же самое, что видят мастера в профиле — «Совершеннолетний» или точный возраст.
+    /// Показывается пользователю после того, как дата рождения уже установлена.
+    /// </summary>
+    [ReadOnly(true)]
+    public string? AgeMarker { get; set; }
+
     public IList<UserLoginInfoViewModel> SocialLoginStatus { get; set; }
 
     public string Email { get; set; }

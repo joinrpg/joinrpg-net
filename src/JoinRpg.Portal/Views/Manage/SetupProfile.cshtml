@@ -165,7 +165,10 @@
                 @if (Model.BirthDate.HasValue)
                 {
                     <p class="form-control-static">@Model.BirthDate.Value.ToString("dd.MM.yyyy")</p>
-                    <span class="help-block">Дату нельзя изменить самостоятельно, обратитесь в техподдержку.</span>
+                    <span class="help-block">
+                        Дату нельзя изменить самостоятельно, обратитесь в техподдержку.
+                        Мастера видят о вас только: @Model.AgeMarker.
+                    </span>
                 }
                 else
                 {

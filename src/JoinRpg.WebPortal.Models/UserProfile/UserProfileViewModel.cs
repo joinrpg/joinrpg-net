@@ -107,10 +107,7 @@ public class UserProfileDetailsViewModel
             FullName = user.UserFullName.FullName;
             PhoneNumber = PhoneNumber.FromOptional(user.PhoneNumber);
             IsVerifiedUser = user.VerifiedProfileFlag;
-            if (user.GetAgeOn(DateOnly.FromDateTime(DateTime.UtcNow)) is int age)
-            {
-                AgeMarker = age >= 18 ? "Совершеннолетний" : CountHelper.DisplayCount(age, "год", "года", "лет");
-            }
+            AgeMarker = FormatAgeMarker(user, DateOnly.FromDateTime(DateTime.UtcNow));
         }
         if (Reason != AccessReasonView.NoAccess || user.Social.SocialNetworksAccess == ContactsAccessType.Public)
         {
@@ -125,6 +122,19 @@ public class UserProfileDetailsViewModel
     }
 
     public bool HasSocialAccess { get; }
+
+    /// <summary>
+    /// «Совершеннолетний» или точный возраст — то же самое, что видят мастера в профиле игрока.
+    /// Используется и здесь, и на странице настроек профиля, чтобы пользователь видел ту же пометку.
+    /// </summary>
+    public static string? FormatAgeMarker(UserInfo user, DateOnly today)
+    {
+        if (user.GetAgeOn(today) is not int age)
+        {
+            return null;
+        }
+        return age >= 18 ? "Совершеннолетний" : CountHelper.DisplayCount(age, "год", "года", "лет");
+    }
 }
 
 public enum AccessReasonView
