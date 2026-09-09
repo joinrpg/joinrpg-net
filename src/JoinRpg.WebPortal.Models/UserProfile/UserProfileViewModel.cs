@@ -25,6 +25,10 @@ public class UserProfileViewModel
 
     [ReadOnly(true)]
     public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = [];
+
+    [ReadOnly(true)]
+    public IEnumerable<ProjectLinkViewModel> CanInviteProjects { get; set; } = [];
+
     public int UserId { get; set; }
 
     public IEnumerable<ProjectLinkViewModel> ProjectsToAdd => CanGrantAccessProjects.Except(ThisUserProjects);

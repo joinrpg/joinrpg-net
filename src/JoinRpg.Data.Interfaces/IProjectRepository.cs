@@ -69,6 +69,9 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
 
     public static PersonalizedProjectListSpecification ActiveProjectsWithGrantMasterAccess(UserIdentification userId)
         => new(ProjectListCriteria.MasterGrantAccess, LoadArchived: false, userId);
+
+    public static PersonalizedProjectListSpecification ActiveProjectsWithManageClaimsAccess(UserIdentification userId)
+        => new(ProjectListCriteria.MasterManageClaimsAccess, LoadArchived: false, userId);
     public static PersonalizedProjectListSpecification MyActiveProjects(UserIdentification userId)
         => new(ProjectListCriteria.MasterOrActiveClaim, LoadArchived: false, userId);
 
@@ -86,4 +89,4 @@ public record PersonalizedProjectListSpecification(ProjectListCriteria Criteria,
 
 }
 
-public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, All, Public };
+public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, MasterManageClaimsAccess, All, Public };

@@ -56,6 +56,9 @@
     [Parameter]
     public CharacterIdentification? PreselectedCharacterId { get; set; }
 
+    [Parameter]
+    public string? PreselectedUserLink { get; set; }
+
     private InvitePlayerViewModel model = new();
     private bool loading = false;
     private string? errorMessage = null;
@@ -102,6 +105,10 @@
         if (PreselectedCharacterId is not null && PreselectedCharacterId.ProjectId == ProjectId)
         {
             model.CharacterId = PreselectedCharacterId.CharacterId;
+        }
+        if (!string.IsNullOrEmpty(PreselectedUserLink))
+        {
+            model.UserLinks = [PreselectedUserLink];
         }
         base.OnInitialized();
     }
