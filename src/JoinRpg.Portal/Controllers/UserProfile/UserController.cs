@@ -54,6 +54,10 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
 
             userProfileViewModel.CanGrantAccessProjects = canGrantProjects.ToLinkViewModels().ToList();
 
+            var canInviteProjects = await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.ActiveProjectsWithManageClaimsAccess(currentUserAccessor.UserIdentification));
+
+            userProfileViewModel.CanInviteProjects = canInviteProjects.ToLinkViewModels().ToList();
+
             var claims = await claimsRepository.GetClaimsForPlayer(userId, ClaimStatusSpec.Any);
 
             userProfileViewModel.Claims = new MyClaimListViewModel(

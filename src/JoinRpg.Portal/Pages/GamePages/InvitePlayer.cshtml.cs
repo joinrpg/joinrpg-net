@@ -17,4 +17,7 @@ public class InvitePlayerModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public int? CharacterId { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public int? UserId { get; set; }
 }

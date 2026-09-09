@@ -21,6 +21,14 @@
                    param-UserId="new UserIdentification(Model.UserId)" />
     }
 
+    @if (Model.CanInviteProjects.Any())
+    {
+        <component type="typeof(JoinRpg.Web.ProjectMasterTools.Acl.InvitePlayerButton)"
+                   render-mode="Static"
+                   param-Items="@Model.CanInviteProjects.ToArray()"
+                   param-UserId="new UserIdentification(Model.UserId)" />
+    }
+
     @if (Model.HasAdminAccess)
     {
         <component type="typeof(AdminUserActionsPanel)"

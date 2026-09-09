@@ -50,6 +50,7 @@ internal static class ProjectPredicates
                 => predicate.And(ForCloning(userId)),
             { Criteria: ProjectListCriteria.HasSchedule } => predicate.And(project => project.Details.ScheduleEnabled),
             PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterGrantAccess, UserId: var userId } => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userId.Value && projectAcl.CanGrantRights)),
+            PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterManageClaimsAccess, UserId: var userId } => predicate.And(project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userId.Value && projectAcl.CanManageClaims)),
             _ => throw new NotImplementedException(),
         };
         return predicate;
