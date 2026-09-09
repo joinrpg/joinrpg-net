@@ -4,26 +4,29 @@ namespace JoinRpg.Services.Interfaces.Projects;
 
 public class SetFinanceSettingsRequest
 {
-    public int ProjectId { get; set; }
-    public bool WarnOnOverPayment { get; set; }
-    public bool PreferentialFeeEnabled { get; set; }
-    public required string? PreferentialFeeConditions { get; set; }
+    public required ProjectIdentification ProjectId { get; init; }
+    public required bool WarnOnOverPayment { get; init; }
+    public required bool PreferentialFeeEnabled { get; init; }
+    public required string? PreferentialFeeConditions { get; init; }
 }
 
 public class CreateFeeSettingRequest
 {
-    public int ProjectId { get; set; }
-    public int Fee { get; set; }
-    public int? PreferentialFee { get; set; }
-    public DateTime StartDate { get; set; }
+    public required ProjectIdentification ProjectId { get; init; }
+    public required int Fee { get; init; }
+    /// <summary><c>null</c>, если льготный взнос не задан.</summary>
+    public required int? PreferentialFee { get; init; }
+    public required DateTime StartDate { get; init; }
 }
 
 public class CreatePaymentTypeRequest
 {
-    public int ProjectId { get; set; }
-    public UserIdentification? TargetMasterId { get; set; }
-    public PaymentTypeKind TypeKind { get; set; }
-    public required string? Name { get; set; }
+    public required ProjectIdentification ProjectId { get; init; }
+    /// <summary>Ответственный мастер. <c>null</c> для онлайн-оплаты — она не привязана к мастеру.</summary>
+    public required UserIdentification? TargetMasterId { get; init; }
+    public required PaymentTypeKind TypeKind { get; init; }
+    /// <summary>Имя нужно только для <see cref="PaymentTypeKind.Custom"/>, у остальных оно своё.</summary>
+    public required string? Name { get; init; }
 }
 
 /// <summary>

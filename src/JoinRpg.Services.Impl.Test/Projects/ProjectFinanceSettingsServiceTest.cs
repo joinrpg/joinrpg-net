@@ -46,7 +46,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
 
     private SetFinanceSettingsRequest GlobalSettings(bool preferentialFeeEnabled) => new()
     {
-        ProjectId = ProjectId.Value,
+        ProjectId = ProjectId,
         WarnOnOverPayment = true,
         PreferentialFeeEnabled = preferentialFeeEnabled,
         PreferentialFeeConditions = "Условия",
@@ -91,8 +91,9 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
 
         await CreateService().CreateFeeSetting(new CreateFeeSettingRequest
         {
-            ProjectId = ProjectId.Value,
+            ProjectId = ProjectId,
             Fee = 500,
+            PreferentialFee = null,
             StartDate = startDate,
         });
 
@@ -108,8 +109,8 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         var service = CreateService();
         var startDate = DateTime.UtcNow.Date.AddDays(10);
 
-        await service.CreateFeeSetting(new CreateFeeSettingRequest { ProjectId = ProjectId.Value, Fee = 500, StartDate = DateTime.UtcNow.Date });
-        await service.CreateFeeSetting(new CreateFeeSettingRequest { ProjectId = ProjectId.Value, Fee = 700, StartDate = startDate });
+        await service.CreateFeeSetting(new CreateFeeSettingRequest { ProjectId = ProjectId, Fee = 500, PreferentialFee = null, StartDate = DateTime.UtcNow.Date });
+        await service.CreateFeeSetting(new CreateFeeSettingRequest { ProjectId = ProjectId, Fee = 700, PreferentialFee = null, StartDate = startDate });
 
         FinanceSettings.FeeSchedule.Count.ShouldBe(2);
         FinanceSettings.GetFeeForDate(startDate, preferential: false).ShouldBe(700);
@@ -120,8 +121,9 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         => _ = await Should.ThrowAsync<CannotPerformOperationInPast>(
             () => CreateService().CreateFeeSetting(new CreateFeeSettingRequest
             {
-                ProjectId = ProjectId.Value,
+                ProjectId = ProjectId,
                 Fee = 500,
+                PreferentialFee = null,
                 StartDate = DateTime.UtcNow.Date.AddDays(-10),
             }));
 
@@ -130,7 +132,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         => _ = await Should.ThrowAsync<PreferentialFeeNotEnabled>(
             () => CreateService().CreateFeeSetting(new CreateFeeSettingRequest
             {
-                ProjectId = ProjectId.Value,
+                ProjectId = ProjectId,
                 Fee = 500,
                 PreferentialFee = 100,
                 StartDate = DateTime.UtcNow.Date.AddDays(10),
@@ -144,7 +146,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
 
         await service.CreateFeeSetting(new CreateFeeSettingRequest
         {
-            ProjectId = ProjectId.Value,
+            ProjectId = ProjectId,
             Fee = 500,
             PreferentialFee = 100,
             StartDate = DateTime.UtcNow.Date.AddDays(10),
@@ -181,7 +183,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
     {
         await CreateService().CreatePaymentType(new CreatePaymentTypeRequest
         {
-            ProjectId = ProjectId.Value,
+            ProjectId = ProjectId,
             TargetMasterId = new UserIdentification(mock.Master.UserId),
             TypeKind = PaymentTypeKind.Cash,
             Name = null,
@@ -201,7 +203,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         _ = await Should.ThrowAsync<JoinRpgInvalidUserException>(
             () => CreateService().CreatePaymentType(new CreatePaymentTypeRequest
             {
-                ProjectId = ProjectId.Value,
+                ProjectId = ProjectId,
                 TargetMasterId = new UserIdentification(mock.Master.UserId),
                 TypeKind = PaymentTypeKind.Cash,
                 Name = null,
@@ -213,7 +215,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         => _ = await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService().CreatePaymentType(new CreatePaymentTypeRequest
             {
-                ProjectId = ProjectId.Value,
+                ProjectId = ProjectId,
                 TargetMasterId = new UserIdentification(mock.Player.UserId),
                 TypeKind = PaymentTypeKind.Cash,
                 Name = null,

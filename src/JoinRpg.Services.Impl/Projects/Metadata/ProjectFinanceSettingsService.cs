@@ -19,7 +19,7 @@ internal class ProjectFinanceSettingsService(
     /// <inheritdoc />
     public Task CreatePaymentType(CreatePaymentTypeRequest request)
         => projectPropsService.ChangeProjectProperties(
-            new ProjectIdentification(request.ProjectId),
+            request.ProjectId,
             Permission.CanManageMoney,
             ProjectActiveRequirement.MustBeActive,
             request,
@@ -53,7 +53,7 @@ internal class ProjectFinanceSettingsService(
                 }
 
                 // Creating payment type
-                var result = new PaymentType(ctx.Request.TypeKind, ctx.Request.ProjectId, masterId);
+                var result = new PaymentType(ctx.Request.TypeKind, ctx.Request.ProjectId.Value, masterId);
 
                 // Configuring payment type
                 if (result.TypeKind == PaymentTypeKind.Custom)
@@ -146,7 +146,7 @@ internal class ProjectFinanceSettingsService(
     /// <inheritdoc />
     public Task CreateFeeSetting(CreateFeeSettingRequest request)
         => projectPropsService.ChangeProjectProperties(
-            new ProjectIdentification(request.ProjectId),
+            request.ProjectId,
             Permission.CanManageMoney,
             ProjectActiveRequirement.MustBeActive,
             request,
@@ -166,7 +166,7 @@ internal class ProjectFinanceSettingsService(
                 {
                     Fee = ctx.Request.Fee,
                     StartDate = ctx.Request.StartDate,
-                    ProjectId = ctx.Request.ProjectId,
+                    ProjectId = ctx.Request.ProjectId.Value,
                     PreferentialFee = ctx.Request.PreferentialFee,
                 });
 
@@ -201,7 +201,7 @@ internal class ProjectFinanceSettingsService(
     /// <inheritdoc />
     public Task SaveGlobalSettings(SetFinanceSettingsRequest request)
         => projectPropsService.ChangeProjectProperties(
-            new ProjectIdentification(request.ProjectId),
+            request.ProjectId,
             Permission.CanManageMoney,
             ProjectActiveRequirement.MustBeActive,
             request,

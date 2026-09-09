@@ -121,7 +121,7 @@ public class FinancesController(
             {
                 await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
                 {
-                    ProjectId = data.ProjectId,
+                    ProjectId = new(data.ProjectId),
                     TargetMasterId = data.MasterId,
                     Name = null, // У них специальное имя
                     TypeKind = (PaymentTypeKind)data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
@@ -147,7 +147,7 @@ public class FinancesController(
         {
             await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
             {
-                ProjectId = viewModel.ProjectId,
+                ProjectId = new(viewModel.ProjectId),
                 TargetMasterId = viewModel.UserId,
                 TypeKind = PaymentTypeKind.Custom,
                 Name = viewModel.Name,
@@ -212,7 +212,7 @@ public class FinancesController(
         {
             await financeSettingsService.CreateFeeSetting(new CreateFeeSettingRequest()
             {
-                ProjectId = viewModel.ProjectId,
+                ProjectId = new(viewModel.ProjectId),
                 Fee = viewModel.Fee,
                 PreferentialFee = viewModel.PreferentialFee,
                 StartDate = viewModel.StartDate.ToDateTime(TimeOnly.MinValue),
@@ -282,7 +282,7 @@ public class FinancesController(
         {
             await financeSettingsService.SaveGlobalSettings(new SetFinanceSettingsRequest
             {
-                ProjectId = viewModel.ProjectId,
+                ProjectId = new(viewModel.ProjectId),
                 WarnOnOverPayment = viewModel.WarnOnOverPayment,
                 PreferentialFeeEnabled = viewModel.PreferentialFeeEnabled,
                 PreferentialFeeConditions = viewModel.PreferentialFeeConditions,
