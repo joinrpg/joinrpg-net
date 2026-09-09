@@ -39,4 +39,13 @@ public class UserAdminHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTo
 
         response.EnsureSuccessStatusCode();
     }
+
+    public async Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var query = birthDate is null ? "" : $"&birthDate={birthDate.Value:yyyy-MM-dd}";
+        var response = await httpClient.PostAsync($"webapi/UserAdmin/SetBirthDate?userId={userId.Value}{query}", content: null);
+
+        response.EnsureSuccessStatusCode();
+    }
 }

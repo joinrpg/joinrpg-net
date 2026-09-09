@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AspNet.Security.OAuth.Vkontakte;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
 namespace Joinrpg.Web.Identity;
@@ -46,6 +47,11 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
             var avatar = AvatarInfo.FromOptional(loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl));
 
             await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vk, avatar);
+
+            if (VkBirthDateParser.TryParse(loginInfo.Principal.FindFirstValue(IdentityConfigurator.VkBirthDateClaimType), out var birthDate))
+            {
+                await userService.SetBirthDateIfNotSetWithoutAccessChecks(new UserIdentification(user.Id), birthDate);
+            }
         }
     }
 

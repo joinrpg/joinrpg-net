@@ -26,7 +26,8 @@ public static class UserExtensions
             user.ExtractFullName(),
             user.VerifiedProfileFlag,
             user.Extra?.PhoneNumber,
-            user.PasswordHash != null
+            user.PasswordHash != null,
+            user.Extra?.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null
             );
     }
 

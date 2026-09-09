@@ -7,4 +7,5 @@ public interface IUserAdminClient
     Task SetAdminFlag(UserIdentification userId, bool value);
     Task SetVerificationFlag(UserIdentification userId, bool value);
     Task ChangeEmail(UserIdentification userId, string newEmail);
+    Task SetBirthDate(UserIdentification userId, DateOnly? birthDate);
 }

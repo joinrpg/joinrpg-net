@@ -223,7 +223,8 @@ public class ManageController(
             BornName = user.BornName ?? "",
             PrefferedName = user.GetDisplayName(),
             //Gender = user.Extra.Gender,
-            //BirthDate = user.Extra.BirthDate,
+            BirthDate = user.Extra?.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null,
+            AgeMarker = UserProfileDetailsViewModel.FormatAgeMarker(userInfo, DateOnly.FromDateTime(DateTime.UtcNow)),
             PhoneNumber = user.Extra?.PhoneNumber ?? "",
             Nicknames = user.Extra?.Nicknames ?? "",
             GroupNames = user.Extra?.GroupNames ?? "",
@@ -260,7 +261,7 @@ public class ManageController(
                     new FatherName(viewModel.FatherName)),
                 viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
                 viewModel.GroupNames, viewModel.Livejournal, (ContactsAccessType)viewModel.SocialNetworkAccess,
-                viewModel.PassportData, viewModel.RegistrationAddress);
+                viewModel.PassportData, viewModel.RegistrationAddress, viewModel.BirthDate);
             var userId = currentUserAccessor.UserId;
             var user = await userManager.FindByIdAsync(userId.ToString());
             await signInManager.RefreshSignInAsync(user);

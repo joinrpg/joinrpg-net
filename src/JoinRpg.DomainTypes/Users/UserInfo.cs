@@ -16,12 +16,37 @@ public record class UserInfo(
     UserFullName UserFullName,
     bool VerifiedProfileFlag,
     string? PhoneNumber,
-    bool HasPassword)
+    bool HasPassword,
+    DateOnly? BirthDate = null)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 
     // Не реализовано
     public bool PhoneNumberConfirmed { get; } = false;
+
+    /// <summary>
+    /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.
+    /// </summary>
+    /// <remarks>
+    /// В день самого рождения человеку ещё не хватает года: по российской правовой традиции
+    /// возраст считается наступившим с 00:00 суток, следующих за днём рождения (см. п. 7
+    /// Постановления Пленума Верховного Суда РФ от 01.02.2011 № 1 — в отношении 14/16/18 лет,
+    /// но правило общеупотребимо и для иного возраста). Поэтому дата годовщины считается ещё
+    /// не наступившей, если она совпадает с <paramref name="today"/>, а не только если она позже.
+    /// </remarks>
+    public int? GetAgeOn(DateOnly today)
+    {
+        if (BirthDate is not DateOnly birthDate)
+        {
+            return null;
+        }
+        var age = today.Year - birthDate.Year;
+        if (birthDate.AddYears(age) >= today)
+        {
+            age--;
+        }
+        return age;
+    }
 
     /// <summary>
     /// Есть ровно один способ войти в аккаунт. Привязка Telegram в расчёт не идёт — виджет

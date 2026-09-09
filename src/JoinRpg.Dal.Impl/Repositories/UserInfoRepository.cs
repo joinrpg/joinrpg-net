@@ -120,6 +120,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Extra.PhoneNumber,
                 user.Auth.EmailConfirmed,
                 HasPassword = user.PasswordHash != null,
+                user.Extra.BirthDate,
             };
 
 
@@ -155,7 +156,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             userFullName,
             result.VerifiedProfileFlag,
             result.PhoneNumber,
-            result.HasPassword
+            result.HasPassword,
+            result.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null
             );
         })];
     }

@@ -26,6 +26,10 @@
             {
                 <br /><component type="typeof(PhoneLink)" render-mode="Static" param-Contact="@Model.PhoneNumber" />
             }
+            @if (Model.AgeMarker is not null)
+            {
+                <br /><span>@Model.AgeMarker</span>
+            }
             @if (Model.ViewAsAdmin && !Model.HasPassword)
             {
                 <br />
