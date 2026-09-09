@@ -171,6 +171,7 @@ public class MockedProject
     {
         var claim = new Claim
         {
+            ClaimId = Project.Claims.GetNextId(),
             Project = Project,
             Character = mockCharacter,
             CharacterId = mockCharacter.CharacterId,
