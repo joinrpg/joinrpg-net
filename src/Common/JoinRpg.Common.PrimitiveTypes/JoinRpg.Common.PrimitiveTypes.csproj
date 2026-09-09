@@ -17,6 +17,7 @@
   <ItemGroup>
     <!-- Using NuGet package instead of ProjectReference to avoid recompilation issues with language server -->
     <PackageReference Include="JoinRpg.Common.PrimitiveTypes.SourceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Microsoft.Build.Tasks.Git" />
   </ItemGroup>
 
   <ItemGroup>
