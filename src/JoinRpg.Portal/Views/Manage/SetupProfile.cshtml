@@ -160,6 +160,27 @@
         }
 
         <div class="form-group">
+            @Html.LabelFor(model => model.BirthDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-7">
+                @if (Model.BirthDate.HasValue)
+                {
+                    <p class="form-control-static">@Model.BirthDate.Value.ToString("dd.MM.yyyy")</p>
+                    <span class="help-block">Дату нельзя изменить самостоятельно, обратитесь в техподдержку.</span>
+                }
+                else
+                {
+                    <component type="typeof(JoinRpg.Common.WebComponents.JoinRpgDatePicker)"
+                               param-Name="nameof(Model.BirthDate)"
+                               param-Value="Model.BirthDate"
+                               param-Max="DateOnly.FromDateTime(DateTime.Today)"
+                               render-mode="Static" />
+                    @Html.DescriptionFor(model => model.BirthDate)
+                }
+                @Html.ValidationMessageFor(model => model.BirthDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
             @Html.LabelFor(model => model.Livejournal, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-7">
                 <div class="input-group">

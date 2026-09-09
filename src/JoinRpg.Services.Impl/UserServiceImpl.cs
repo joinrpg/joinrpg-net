@@ -26,7 +26,7 @@ public class UserServiceImpl(
         string groupNames,
         string livejournal,
         ContactsAccessType socialAccessType,
-        string passportData, string registrationAddress)
+        string passportData, string registrationAddress, DateOnly? birthDate)
     {
         if (CurrentUserId != userId)
         {
@@ -61,6 +61,8 @@ public class UserServiceImpl(
 
         user.Extra.SocialNetworksAccess = socialAccessType;
 
+        user.Extra.BirthDate ??= birthDate?.ToDateTime(TimeOnly.MinValue);
+
         await UnitOfWork.SaveChangesAsync();
     }
 
@@ -87,6 +89,19 @@ public class UserServiceImpl(
         }
         user.VerifiedProfileFlag = verificationFlag;
         //TODO: Send email
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task SetBirthDate(int userId, DateOnly? birthDate)
+    {
+        if (!IsCurrentUserAdmin)
+        {
+            throw new MustBeAdminException();
+        }
+        var user = await UserRepository.WithProfile(userId);
+        user.Extra ??= new UserExtra();
+        user.Extra.BirthDate = birthDate?.ToDateTime(TimeOnly.MinValue);
         await UnitOfWork.SaveChangesAsync();
     }
 
@@ -122,6 +137,17 @@ public class UserServiceImpl(
         user.Extra.VkVerified = true;
 
         await TryAddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte");
+
+        await UnitOfWork.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task SetBirthDateIfNotSetWithoutAccessChecks(int userId, DateOnly birthDate)
+    {
+        var user = await UserRepository.WithProfile(userId);
+
+        user.Extra ??= new UserExtra();
+        user.Extra.BirthDate ??= birthDate.ToDateTime(TimeOnly.MinValue);
 
         await UnitOfWork.SaveChangesAsync();
     }

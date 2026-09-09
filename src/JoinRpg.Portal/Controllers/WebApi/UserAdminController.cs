@@ -39,4 +39,11 @@ public class UserAdminController(IUserAdminClient userAdminClient) : ControllerB
         await userAdminClient.ChangeEmail(userId, newEmail);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task<ActionResult> SetBirthDate([FromQuery] UserIdentification userId, [FromQuery] DateOnly? birthDate)
+    {
+        await userAdminClient.SetBirthDate(userId, birthDate);
+        return Ok();
+    }
 }

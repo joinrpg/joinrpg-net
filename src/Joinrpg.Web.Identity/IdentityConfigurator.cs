@@ -1,6 +1,7 @@
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Web.AdminTools;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,8 @@ namespace Joinrpg.Web.Identity;
 
 public static class IdentityConfigurator
 {
+    public const string VkBirthDateClaimType = "urn:vkontakte:bdate";
+
     public static IServiceCollection AddJoinIdentity(this IServiceCollection services)
     {
 
@@ -61,6 +64,8 @@ public static class IdentityConfigurator
             _ = authBuilder.AddVkontakte(options =>
             {
                 options.Scope.Add("email");
+                options.Fields.Add("bdate");
+                options.ClaimActions.MapJsonKey(VkBirthDateClaimType, "bdate");
 
                 SetCommonProperties(options, vkConfig);
             });

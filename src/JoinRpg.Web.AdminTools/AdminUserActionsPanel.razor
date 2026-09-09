@@ -44,6 +44,21 @@
             OnClick="RemoveVkLinkAsync" />
     }
 
+    <a href="#" class="disabled btn btn-default">
+        Дата рождения: @(panel.BirthDate is null ? "не указана" : panel.BirthDate.Value.ToString("dd.MM.yyyy"))
+    </a>
+
+    <JoinButton Label="@(panel.BirthDate is null ? "Указать дату рождения" : "Изменить дату рождения")" OnClick="OpenBirthDateDialogAsync" />
+
+    @if (panel.BirthDate is not null)
+    {
+        <JoinButton
+            Label="Очистить дату рождения"
+            AutoConfirm="true"
+            AutoConfirmMessage="Действительно очистить дату рождения этого пользователя?"
+            OnClick="ClearBirthDateAsync" />
+    }
+
     <JoinButton Label="Логи" Title="Посмотреть логи действий пользователя на сайте" Link="@LogLink.AbsoluteUri" />
 </JoinButtonGroup>
 
@@ -56,6 +71,18 @@
 >
     <FormRowFor For="@(() => emailModel.NewEmail)">
         <JoinTextInput @bind-Value="emailModel.NewEmail" />
+    </FormRowFor>
+</JoinFormDialog>
+
+<JoinFormDialog
+    Caption="Дата рождения"
+    SubmitButtonPreset="ButtonPreset.Save"
+    Model="@birthDateModel"
+    FormName="BirthDateForm"
+    @ref="birthDateDialog"
+>
+    <FormRowFor For="@(() => birthDateModel.Value)">
+        <JoinRpgDatePicker Name="@nameof(birthDateModel.Value)" @bind-Value="birthDateModel.Value" Max="@DateOnly.FromDateTime(DateTime.Today)" />
     </FormRowFor>
 </JoinFormDialog>
 
@@ -73,6 +100,9 @@
 
     private JoinFormDialog<ChangeEmailFormModel> changeEmailDialog = default!;
     private readonly ChangeEmailFormModel emailModel = new();
+
+    private JoinFormDialog<BirthDateFormModel> birthDateDialog = default!;
+    private readonly BirthDateFormModel birthDateModel = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -122,9 +152,39 @@
         NavigationManager.Refresh(forceReload: true);
     }
 
+    private async Task OpenBirthDateDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            birthDateModel.Value = panel!.BirthDate;
+            var result = await birthDateDialog.ShowModalAsync();
+            if (result is not null)
+            {
+                await UserAdminClient.SetBirthDate(UserId, result.Value);
+                NavigationManager.Refresh(forceReload: true);
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task ClearBirthDateAsync(ButtonClickEventArgs args)
+    {
+        await UserAdminClient.SetBirthDate(UserId, null);
+        NavigationManager.Refresh(forceReload: true);
+    }
+
     public class ChangeEmailFormModel
     {
         [Required, EmailAddress, Display(Name = "Новый email")]
         public string NewEmail { get; set; } = "";
+    }
+
+    public class BirthDateFormModel
+    {
+        [Display(Name = "Дата рождения")]
+        public DateOnly? Value { get; set; }
     }
 }

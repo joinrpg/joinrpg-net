@@ -16,12 +16,30 @@ public record class UserInfo(
     UserFullName UserFullName,
     bool VerifiedProfileFlag,
     string? PhoneNumber,
-    bool HasPassword)
+    bool HasPassword,
+    DateOnly? BirthDate = null)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 
     // Не реализовано
     public bool PhoneNumberConfirmed { get; } = false;
+
+    /// <summary>
+    /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.
+    /// </summary>
+    public int? GetAgeOn(DateOnly today)
+    {
+        if (BirthDate is not DateOnly birthDate)
+        {
+            return null;
+        }
+        var age = today.Year - birthDate.Year;
+        if (birthDate > today.AddYears(-age))
+        {
+            age--;
+        }
+        return age;
+    }
 
     /// <summary>
     /// Есть ровно один способ войти в аккаунт. Привязка Telegram в расчёт не идёт — виджет

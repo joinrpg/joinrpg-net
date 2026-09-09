@@ -18,7 +18,7 @@ public class UserAdminViewService(
         var hasVkLink = userInfo.Social.Vk is not null;
         var isVkOnlyLoginMethod = IsVkOnlyLoginMethod(userInfo);
 
-        return new UserAdminPanelViewModel(userInfo.IsAdmin, userInfo.VerifiedProfileFlag, hasVkLink, isVkOnlyLoginMethod);
+        return new UserAdminPanelViewModel(userInfo.IsAdmin, userInfo.VerifiedProfileFlag, hasVkLink, isVkOnlyLoginMethod, userInfo.BirthDate);
     }
 
     public async Task RemoveVkLink(UserIdentification userId)
@@ -67,4 +67,7 @@ public class UserAdminViewService(
             throw new InvalidOperationException($"Не удалось изменить email: {result}");
         }
     }
+
+    public Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
+        => userService.SetBirthDate(userId.Value, birthDate);
 }
