@@ -46,9 +46,9 @@ public interface IProjectFinanceSettingsService
     /// Включает или выключает тип оплаты. Выключение — всегда soft-delete
     /// (<c>PaymentType.IsActive = false</c>), физически тип оплаты не удаляется.
     /// </summary>
-    Task TogglePaymentActiveness(ProjectIdentification projectId, int paymentTypeId);
+    Task TogglePaymentActiveness(PaymentTypeIdentification paymentTypeId);
 
-    Task EditCustomPaymentType(ProjectIdentification projectId, int paymentTypeId, string name, bool isDefault);
+    Task EditCustomPaymentType(PaymentTypeIdentification paymentTypeId, string name, bool isDefault);
 
     Task CreateFeeSetting(CreateFeeSettingRequest request);
 

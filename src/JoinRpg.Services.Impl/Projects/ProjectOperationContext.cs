@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Services.Impl.Projects;
 
@@ -120,9 +121,9 @@ internal static class ProjectOperationContextExtensions
     /// Резолвит тип оплаты для изменения. Аудит-полей <see cref="PaymentType"/> не несёт, поэтому
     /// (как и <see cref="GetProjectRolesListForChange"/>) не помечает сущность изменённой.
     /// </summary>
-    public static PaymentType GetPaymentTypeForChange(this ProjectMutationContext ctx, int paymentTypeId)
-        => ctx.Project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == paymentTypeId)
-            ?? throw new JoinRpgEntityNotFoundException(paymentTypeId, nameof(PaymentType));
+    public static PaymentType GetPaymentTypeForChange(this ProjectMutationContext ctx, PaymentTypeIdentification id)
+        => ctx.Project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == id.PaymentTypeId)
+            ?? throw new JoinRpgEntityNotFoundException(id.PaymentTypeId, nameof(PaymentType));
 
     /// <summary>
     /// Проверяет право <see cref="Permission.CanManageMoney"/> внутри мутации. Нужно операциям, у

@@ -29,6 +29,9 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         return paymentType;
     }
 
+    private PaymentTypeIdentification PaymentTypeId(PaymentType paymentType)
+        => new(ProjectId, paymentType.PaymentTypeId);
+
     /// <summary>Добавляет строку расписания взносов прямо в мок, минуя сервис.</summary>
     private ProjectFeeSetting AddFeeSetting(DateTime startDate)
     {
@@ -226,7 +229,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
     {
         var paymentType = AddPaymentType(PaymentTypeKind.Custom);
 
-        await CreateService().EditCustomPaymentType(ProjectId, paymentType.PaymentTypeId, "Перевод на карту", isDefault: true);
+        await CreateService().EditCustomPaymentType(PaymentTypeId(paymentType), "Перевод на карту", isDefault: true);
 
         var result = FinanceSettings.PaymentTypes.ShouldHaveSingleItem();
         result.Name.ShouldBe("Перевод на карту");
@@ -242,7 +245,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
     {
         var paymentType = AddPaymentType(PaymentTypeKind.Custom);
 
-        await CreateService().TogglePaymentActiveness(ProjectId, paymentType.PaymentTypeId);
+        await CreateService().TogglePaymentActiveness(PaymentTypeId(paymentType));
 
         paymentType.IsActive.ShouldBeFalse();
         mock.Project.PaymentTypes.ShouldContain(paymentType);
@@ -254,7 +257,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
     {
         var paymentType = AddPaymentType(PaymentTypeKind.Online, userId: vpu.PaymentsUser.UserId);
 
-        await CreateService().TogglePaymentActiveness(ProjectId, paymentType.PaymentTypeId);
+        await CreateService().TogglePaymentActiveness(PaymentTypeId(paymentType));
 
         FinanceSettings.PaymentTypes.ShouldHaveSingleItem().Enabled.ShouldBeFalse();
     }
@@ -265,7 +268,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         var paymentType = AddPaymentType(PaymentTypeKind.Online, isActive: false, userId: vpu.PaymentsUser.UserId);
 
         _ = await Should.ThrowAsync<MustBeAdminException>(
-            () => CreateService().TogglePaymentActiveness(ProjectId, paymentType.PaymentTypeId));
+            () => CreateService().TogglePaymentActiveness(PaymentTypeId(paymentType)));
     }
 
     [Fact]
@@ -274,7 +277,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
         var paymentType = AddPaymentType(PaymentTypeKind.Online, isActive: false, userId: vpu.PaymentsUser.UserId);
 
         await CreateService(currentUserId: mock.Player.UserId, isAdmin: true)
-            .TogglePaymentActiveness(ProjectId, paymentType.PaymentTypeId);
+            .TogglePaymentActiveness(PaymentTypeId(paymentType));
 
         FinanceSettings.PaymentTypes.ShouldHaveSingleItem().Enabled.ShouldBeTrue();
     }
@@ -286,7 +289,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService(currentUserId: mock.Player.UserId)
-                .TogglePaymentActiveness(ProjectId, paymentType.PaymentTypeId));
+                .TogglePaymentActiveness(PaymentTypeId(paymentType)));
     }
 
     #endregion

@@ -67,11 +67,11 @@ internal class ProjectFinanceSettingsService(
             });
 
     /// <inheritdoc />
-    public Task TogglePaymentActiveness(ProjectIdentification projectId, int paymentTypeId)
+    public Task TogglePaymentActiveness(PaymentTypeIdentification paymentTypeId)
         // Право проверяется внутри мутации: оно зависит от вида платежа и от того, включаем мы его
         // или выключаем (включить онлайн-оплату может только админ).
         => projectPropsService.ChangeProjectProperties(
-            projectId,
+            paymentTypeId.ProjectId,
             Permission.None,
             ProjectActiveRequirement.MustBeActive,
             paymentTypeId,
@@ -116,12 +116,11 @@ internal class ProjectFinanceSettingsService(
             });
 
     /// <inheritdoc />
-    public Task EditCustomPaymentType(ProjectIdentification projectId,
-        int paymentTypeId,
+    public Task EditCustomPaymentType(PaymentTypeIdentification paymentTypeId,
         string name,
         bool isDefault)
         => projectPropsService.ChangeProjectProperties(
-            projectId,
+            paymentTypeId.ProjectId,
             Permission.CanManageMoney,
             ProjectActiveRequirement.MustBeActive,
             (paymentTypeId, name, isDefault),

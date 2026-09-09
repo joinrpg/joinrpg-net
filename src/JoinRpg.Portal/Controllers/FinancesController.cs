@@ -115,7 +115,7 @@ public class FinancesController(
         {
             if (data.PaymentTypeId > 0)
             {
-                await financeSettingsService.TogglePaymentActiveness(new(data.ProjectId), data.PaymentTypeId.Value);
+                await financeSettingsService.TogglePaymentActiveness(new PaymentTypeIdentification(data.ProjectId, data.PaymentTypeId.Value));
             }
             else
             {
@@ -194,7 +194,7 @@ public class FinancesController(
 
         try
         {
-            await financeSettingsService.EditCustomPaymentType(new(viewModel.ProjectId), viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
+            await financeSettingsService.EditCustomPaymentType(new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId), viewModel.Name, viewModel.IsDefault);
             return RedirectToAction("Setup", new { viewModel.ProjectId });
         }
         catch (Exception exc)
