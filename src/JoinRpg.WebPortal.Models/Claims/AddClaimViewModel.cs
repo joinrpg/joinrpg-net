@@ -25,7 +25,7 @@ public class AddClaimViewModel : IProjectIdAware
 
     public bool IsSlot { get; set; }
 
-    public IReadOnlyCollection<AddClaimForbideReason> ValidationStatus
+    public IReadOnlyCollection<ClaimForbiddenReason> ValidationStatus
     {
         get;
         private set;
@@ -53,14 +53,11 @@ public class AddClaimViewModel : IProjectIdAware
 
     public AddClaimViewModel Fill(Character claimSource, UserInfo userInfo, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
-        var disallowReasons = claimSource.ValidateIfCanAddClaim(userInfo, projectInfo).ToList();
+        var disallowReasons = claimSource.ValidateIfCanAddClaim(userInfo, projectInfo);
 
-        IsProjectRelatedReason = disallowReasons.Intersect(
-            [
-                AddClaimForbideReason.ProjectClaimsClosed,
-                AddClaimForbideReason.ProjectNotActive,
-            ])
-            .Any();
+        // Фатальная причина означает, что заявку тут не подать в принципе (проект в архиве или
+        // приём заявок закрыт) — форму показывать незачем.
+        IsProjectRelatedReason = disallowReasons.Any(r => r.IsFatal);
 
         ProjectLifecycleStatus = projectInfo.ProjectStatus;
 

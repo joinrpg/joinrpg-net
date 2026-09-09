@@ -15,6 +15,6 @@ public class ExceptionTranslationTest
     {
         var claim = new Claim();
         var projectInfo = new MockedProject().ProjectInfo;
-        _ = Should.Throw<JoinRpgBaseException>(() => ClaimAcceptOrMoveValidationExtensions.ThrowForReason(reason, claim, projectInfo));
+        _ = Should.Throw<JoinRpgBaseException>(() => ClaimAcceptOrMoveValidationExtensions.ThrowForReason(ClaimForbiddenReason.For(reason), claim, projectInfo));
     }
 }

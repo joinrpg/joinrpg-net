@@ -10,13 +10,13 @@ public static class ClaimAcceptOrMoveValidationExtensions
     public static bool IsAcceptingClaims(this Character character, ProjectInfo projectInfo)
         => !ValidateIfCanAddClaim(character, userInfo: null, projectInfo).Any();
 
-    public static IEnumerable<AddClaimForbideReason> ValidateIfCanAddClaim(
+    public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanAddClaim(
         this Character claimSource,
         UserInfo? userInfo, ProjectInfo projectInfo)
-        => ValidateImpl(claimSource, userInfo, existingClaim: null, projectInfo).ToList();
+        => Validate(claimSource, userInfo, existingClaim: null, projectInfo);
 
-    public static IEnumerable<AddClaimForbideReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
-        => ValidateImpl(claimSource, userInfo, claim, projectInfo);
+    public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
+        => Validate(claimSource, userInfo, claim, projectInfo);
 
     public static void EnsureCanAddClaim([NotNull] this Character claimSource, UserInfo userInfo, ProjectInfo projectInfo)
     {
@@ -31,19 +31,19 @@ public static class ClaimAcceptOrMoveValidationExtensions
     }
 
     private static void ThrowIfValidationFailed(
-        IEnumerable<AddClaimForbideReason> validation,
+        IReadOnlyCollection<ClaimForbiddenReason> validation,
         Claim? claim,
         ProjectInfo projectInfo)
     {
-        if (validation.Any())
+        if (validation.Count > 0)
         {
             ThrowForReason(validation.First(), claim, projectInfo);
         }
     }
 
-    internal static void ThrowForReason(AddClaimForbideReason reason, Claim? claim, ProjectInfo projectInfo)
+    internal static void ThrowForReason(ClaimForbiddenReason reason, Claim? claim, ProjectInfo projectInfo)
     {
-        throw reason switch
+        throw reason.Kind switch
         {
             AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(projectInfo.ProjectId),
 
@@ -56,9 +56,28 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
             AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot or AddClaimForbideReason.CheckedInClaimCantBeMoved => new ClaimWrongStatusException(claim!),
             AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
-            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => throw new InsufficientContactsException(),
-            _ => new ArgumentOutOfRangeException(nameof(reason), reason, message: null),
+            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => new InsufficientContactsException(),
+            _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
         };
+    }
+
+    /// <summary>
+    /// Считает все причины запрета и отбрасывает те, которые не надо показывать.
+    /// </summary>
+    /// <remarks>
+    /// Если есть хотя бы одна фатальная причина (проект в архиве, приём заявок закрыт), остальные
+    /// не отдаём: пока проект в таком состоянии, разбираться с занятостью роли или контактами
+    /// игрока бессмысленно.
+    /// </remarks>
+    private static List<ClaimForbiddenReason> Validate(
+        Character character, UserInfo? userInfo, Claim? existingClaim, ProjectInfo projectInfo)
+    {
+        var reasons = ValidateImpl(character, userInfo, existingClaim, projectInfo)
+            .Select(ClaimForbiddenReason.For)
+            .ToList();
+
+        var fatal = reasons.Where(r => r.IsFatal).ToList();
+        return fatal.Count > 0 ? fatal : reasons;
     }
 
     /// <summary>
@@ -76,7 +95,6 @@ public static class ClaimAcceptOrMoveValidationExtensions
         if (ValidateProjectImpl(projectInfo) is AddClaimForbideReason projectReason)
         {
             yield return projectReason;
-            yield break;
         }
 
         if (character.ApprovedClaimId != null)
