@@ -191,6 +191,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             {
                 p.ProjectId,
                 ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
+                    e.ProjectId == p.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
             });
 
         var result = await query.ToListAsync();
@@ -198,7 +200,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return [.. result.Select(x => new ProjectAdvertisementCandidate(
             new ProjectIdentification(x.ProjectId),
             x.ActiveClaimsCount,
-            AdvertisementCount: 0 /* TODO: считать по таблице AdvertisementLog, когда она появится (ADR010 §4) */))];
+            x.AdvertisementCount))];
     }
 
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)
