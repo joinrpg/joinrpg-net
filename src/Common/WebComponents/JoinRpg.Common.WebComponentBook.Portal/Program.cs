@@ -4,10 +4,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 builder.Services.ConfigureForwardedHeaders();
+builder.Host.UseJoinSerilog("ComponentBook");
 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+
+app.UseJoinRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
