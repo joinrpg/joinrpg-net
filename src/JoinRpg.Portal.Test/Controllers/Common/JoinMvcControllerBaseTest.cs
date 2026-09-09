@@ -1,5 +1,6 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Portal.Controllers.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +55,29 @@ public class JoinMvcControllerBaseTest
         controller.ModelState.IsValid.ShouldBeFalse();
         var error = controller.ModelState[""]!.Errors.ShouldHaveSingleItem();
         error.ErrorMessage.ShouldBe("Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
+        logger.ErrorCount.ShouldBe(0);
+    }
+
+    // Регрессия: InsufficientContactsException (мастера требуют заполнить контакты, а игрок их не
+    // заполнил — ожидаемая бизнес-ситуация) не была разобрана в AddModelException и проваливалась
+    // в default-ветку: игрок вместо объяснения видел "Неожиданная ошибка, обратитесь в техподдержку".
+    [Fact]
+    public void AddModelException_InsufficientContactsException_ShouldAddFriendlyErrorWithoutLoggingError()
+    {
+        var logger = new RecordingLogger();
+        var controller = new TestController
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = CreateHttpContext(logger),
+            },
+        };
+
+        controller.CallAddModelException(new InsufficientContactsException());
+
+        controller.ModelState.IsValid.ShouldBeFalse();
+        var error = controller.ModelState[""]!.Errors.ShouldHaveSingleItem();
+        error.ErrorMessage.ShouldBe("Для отправки заявки необходимы контакты");
         logger.ErrorCount.ShouldBe(0);
     }
 

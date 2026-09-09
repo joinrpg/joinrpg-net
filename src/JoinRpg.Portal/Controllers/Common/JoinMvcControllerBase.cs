@@ -1,5 +1,6 @@
 using System.Data.Entity.Validation;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters.Claims;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.Common;
@@ -57,6 +58,7 @@ public abstract class JoinMvcControllerBase : Controller
             case ProjectDeactivatedException _:
             case ClaimAlreadyPresentException _:
             case ClaimTargetIsNotAcceptingClaims _:
+            case InsufficientContactsException _:
             case MasterHasResponsibleException _:
                 ModelState.AddModelError("", exception.Message);
                 return;
