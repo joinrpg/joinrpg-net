@@ -3,5 +3,6 @@
     <LangVersion>13</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Tasks.Git" />
   </ItemGroup>
 </Project>
