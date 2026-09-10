@@ -166,11 +166,11 @@ public static class ClaimAcceptOrMoveValidationExtensions
         {
             yield return AddClaimForbideReason.TelegramMissing;
         }
-        if (projectInfo.ProfileRequirementSettings.RequireRealName == MandatoryStatus.Required && userInfo.UserFullName.FullName?.Length < 5)
+        if (projectInfo.ProfileRequirementSettings.RequireRealName == MandatoryStatus.Required && (userInfo.UserFullName.FullName?.Length ?? 0) < 5)
         {
             yield return AddClaimForbideReason.RealNameMissing;
         }
-        if (projectInfo.ProfileRequirementSettings.RequirePhone == MandatoryStatus.Required && userInfo.PhoneNumber?.Length < 5)
+        if (projectInfo.ProfileRequirementSettings.RequirePhone == MandatoryStatus.Required && (userInfo.PhoneNumber?.Length ?? 0) < 5)
         {
             yield return AddClaimForbideReason.PhoneMissing;
         }
