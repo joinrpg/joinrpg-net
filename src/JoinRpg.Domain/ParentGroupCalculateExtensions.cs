@@ -12,13 +12,4 @@ public static class ParentGroupCalculateExtensions
                    .Distinct() ?? [];
     }
 
-    [Obsolete("Pass ProjectInfo")]
-    public static IReadOnlyCollection<CharacterGroupIdentification> GetParentGroupIdsToTop(this Character? target)
-    {
-        if (target == null)
-        {
-            return [];
-        }
-        return [.. target.Groups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)).Select(x => x.GetId()).Order().Distinct()];
-    }
 }

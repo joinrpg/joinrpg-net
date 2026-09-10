@@ -26,13 +26,6 @@ public static class ClaimExtensions
         return claim.Character.Claims.Any(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive());
     }
 
-    [Obsolete]
-    public static bool IsPartOfGroup(this Character character, int characterGroupId)
-    {
-        //TODO we can do faster than this
-        return character.GetParentGroupIdsToTop().Any(g => g.CharacterGroupId == characterGroupId);
-    }
-
     public static void EnsureStatus(this Claim claim, params ClaimStatus[] possibleStatus)
     {
         if (!possibleStatus.Contains(claim.ClaimStatus))
