@@ -1,5 +1,7 @@
+using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -183,7 +186,11 @@ public static class OAuthServerRegistration
         return TypedResults.Ok(claims);
     }
 
-    private async static Task<Results<ChallengeHttpResult, SignInHttpResult>> AuthorizeMethod(HttpContext context, IOpenIddictApplicationManager applicationManager, ICurrentUserAccessor currentUserAccessor)
+    private async static Task<Results<ChallengeHttpResult, RedirectHttpResult, SignInHttpResult>> AuthorizeMethod(
+        HttpContext context,
+        IOpenIddictApplicationManager applicationManager,
+        IOpenIddictAuthorizationManager authorizationManager,
+        ICurrentUserAccessor currentUserAccessor)
     {
 
         var principal = (await context.AuthenticateAsync())?.Principal;
@@ -198,33 +205,139 @@ public static class OAuthServerRegistration
         }
 
         var request = context.GetOpenIddictServerRequest();
-        if (request?.IsAuthorizationCodeFlow() == true && request.ClientId is not null)
+        if (request?.IsAuthorizationCodeFlow() != true || request.ClientId is null)
         {
-            // Note: the client credentials are automatically validated by OpenIddict:
-            // if client_id or client_secret are invalid, this action won't be invoked.
-
-            var application = await applicationManager.FindByClientIdAsync(request.ClientId) ??
-                throw new InvalidOperationException("The application cannot be found.");
-
-            // Create a new ClaimsIdentity containing the claims that
-            // will be used to create an id_token, a token or a code.
-            var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType, Claims.Name, Claims.Role);
-
-            identity.SetClaim(Claims.Subject, currentUserAccessor.UserIdentification.ToString());
-
-            identity.SetScopes(request.GetScopes());
-
-            identity.SetDestinations(static claim => claim.Type switch
-            {
-                Claims.Subject
-                    => [Destinations.AccessToken, Destinations.IdentityToken],
-                Claims.Name when claim.Subject.HasScope(Scopes.Profile)
-                    => [Destinations.AccessToken, Destinations.IdentityToken],
-                _ => [Destinations.AccessToken]
-            });
-
-            return TypedResults.SignIn(new ClaimsPrincipal(identity), authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            throw new NotImplementedException("The specified grant is not implemented.");
         }
-        else { throw new NotImplementedException("The specified grant is not implemented."); }
+
+        // Note: the client credentials are automatically validated by OpenIddict:
+        // if client_id or client_secret are invalid, this action won't be invoked.
+        var application = await applicationManager.FindByClientIdAsync(request.ClientId) ??
+            throw new InvalidOperationException("The application cannot be found.");
+        var applicationId = await applicationManager.GetIdAsync(application) ??
+            throw new InvalidOperationException("The application has no id.");
+
+        var subject = currentUserAccessor.UserIdentification.ToString();
+        var requestedScopes = request.GetScopes();
+
+        // Only joinrpg.* (MCP) scopes go through explicit consent (ADR012 §4) — the site's own
+        // OIDC login (openid/email/profile/...) keeps behaving exactly as before this change.
+        var requiresConsent = requestedScopes.Any(JoinRpgScopes.IsJoinRpgScope);
+
+        IReadOnlyList<int> grantedProjectIds = [];
+        if (requiresConsent)
+        {
+            if (context.Request.Query[OAuthConsent.ConsentParameter] == OAuthConsent.Denied)
+            {
+                return TypedResults.Redirect(BuildAccessDeniedRedirectUri(request));
+            }
+
+            if (context.Request.Query[OAuthConsent.ConsentParameter] == OAuthConsent.Granted)
+            {
+                // The user just came back from the consent page: persist the decision as a
+                // permanent authorization, so subsequent sign-ins skip the consent screen.
+                grantedProjectIds = OAuthConsent.ParseProjectIds(context.Request.Query[OAuthConsent.ProjectsParameter]);
+
+                var descriptor = new OpenIddictAuthorizationDescriptor
+                {
+                    ApplicationId = applicationId,
+                    Subject = subject,
+                    Type = AuthorizationTypes.Permanent,
+                    Status = Statuses.Valid,
+                };
+                foreach (var scope in requestedScopes)
+                {
+                    descriptor.Scopes.Add(scope);
+                }
+                StoreGrantedProjects(descriptor.Properties, grantedProjectIds);
+
+                _ = await authorizationManager.CreateAsync(descriptor);
+            }
+            else
+            {
+                var existingAuthorization = await FindMatchingAuthorizationAsync(
+                    authorizationManager, subject, applicationId, requestedScopes);
+
+                if (existingAuthorization is null)
+                {
+                    // No consent on file yet for this client/scope combination — ask the user.
+                    return TypedResults.Redirect($"/oauth/consent{context.Request.QueryString}");
+                }
+
+                grantedProjectIds = ReadGrantedProjects(await authorizationManager.GetPropertiesAsync(existingAuthorization));
+            }
+        }
+
+        // Create a new ClaimsIdentity containing the claims that
+        // will be used to create an id_token, a token or a code.
+        var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType, Claims.Name, Claims.Role);
+
+        identity.SetClaim(Claims.Subject, subject);
+        identity.SetScopes(requestedScopes);
+
+        if (grantedProjectIds.Count > 0)
+        {
+            identity.SetClaim(OAuthConsent.ProjectsClaimType, OAuthConsent.FormatProjectIds(grantedProjectIds));
+        }
+
+        identity.SetDestinations(static claim => claim.Type switch
+        {
+            Claims.Subject
+                => [Destinations.AccessToken, Destinations.IdentityToken],
+            Claims.Name when claim.Subject.HasScope(Scopes.Profile)
+                => [Destinations.AccessToken, Destinations.IdentityToken],
+            OAuthConsent.ProjectsClaimType
+                => [Destinations.AccessToken],
+            _ => [Destinations.AccessToken]
+        });
+
+        return TypedResults.SignIn(new ClaimsPrincipal(identity), authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
+
+    private static string BuildAccessDeniedRedirectUri(OpenIddictRequest request)
+    {
+        var redirectUri = request.RedirectUri ?? throw new InvalidOperationException("The authorization request has no redirect_uri.");
+        var parameters = new Dictionary<string, string?> { ["error"] = Errors.AccessDenied };
+        if (request.State is { } state)
+        {
+            parameters["state"] = state;
+        }
+        return QueryHelpers.AddQueryString(redirectUri, parameters);
+    }
+
+    private async static Task<object?> FindMatchingAuthorizationAsync(
+        IOpenIddictAuthorizationManager authorizationManager,
+        string subject,
+        string applicationId,
+        ImmutableArray<string> requestedScopes)
+    {
+        await foreach (var authorization in authorizationManager.FindAsync(
+            subject: subject,
+            client: applicationId,
+            status: Statuses.Valid,
+            type: AuthorizationTypes.Permanent,
+            scopes: null))
+        {
+            var grantedScopes = await authorizationManager.GetScopesAsync(authorization);
+            if (requestedScopes.All(grantedScopes.Contains))
+            {
+                return authorization;
+            }
+        }
+
+        return null;
+    }
+
+    private static void StoreGrantedProjects(IDictionary<string, JsonElement> properties, IReadOnlyList<int> projectIds)
+    {
+        if (projectIds.Count > 0)
+        {
+            properties[OAuthConsent.ProjectsClaimType] = JsonSerializer.SerializeToElement(projectIds);
+        }
+    }
+
+    private static IReadOnlyList<int> ReadGrantedProjects(ImmutableDictionary<string, JsonElement> properties)
+        => properties.TryGetValue(OAuthConsent.ProjectsClaimType, out var element)
+            ? element.Deserialize<int[]>() ?? []
+            : [];
 }

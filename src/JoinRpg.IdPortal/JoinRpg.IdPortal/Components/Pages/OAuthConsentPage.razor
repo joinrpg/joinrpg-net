@@ -1,0 +1,126 @@
+@page "/oauth/consent"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using JoinRpg.Data.Interfaces
+@using JoinRpg.IdPortal.OAuthServer
+@using JoinRpg.Interfaces
+@using Microsoft.AspNetCore.WebUtilities
+@using OpenIddict.Abstractions
+@inject IOpenIddictApplicationManager ApplicationManager
+@inject IProjectRepository ProjectRepository
+@inject ICurrentUserAccessor CurrentUserAccessor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Запрос доступа — id.joinrpg.ru</PageTitle>
+
+@if (notFound)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">Приложение не найдено.</JoinAlert>
+}
+else
+{
+    <h3>«@clientDisplayName» запрашивает доступ</h3>
+
+    <p>Запрошенные права:</p>
+    <ul>
+        @if (requestsRead)
+        {
+            <li>Чтение данных ваших проектов (список проектов, персонажи, группы, поля)</li>
+        }
+        @if (requestsCharactersWrite)
+        {
+            <li>Создание и правка персонажей в выбранных проектах</li>
+        }
+    </ul>
+
+    @if (requestsRead)
+    {
+        <p>Выберите проекты, к которым приложение получит доступ:</p>
+        @if (projects.Count == 0)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                У вас нет проектов с правами мастера — доступ открывать не к чему.
+            </JoinAlert>
+        }
+        else
+        {
+            @foreach (var project in projects)
+            {
+                <div class="checkbox">
+                    <label><CheckboxInput @bind-Value="project.Selected" /> @project.Name.Value</label>
+                </div>
+            }
+        }
+    }
+
+    <p>
+        <JoinButton Label="Разрешить" OnClick="() => Submit(grant: true)" Preset="ButtonPreset.Save" />
+        <JoinButton Label="Отклонить" OnClick="() => Submit(grant: false)" Preset="ButtonPreset.Cancel" />
+    </p>
+}
+
+@code {
+    private bool notFound;
+    private string clientDisplayName = "";
+    private bool requestsRead;
+    private bool requestsCharactersWrite;
+    private readonly List<ProjectChoice> projects = [];
+    private string originalQueryString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+        originalQueryString = uri.Query;
+
+        var clientId = query.TryGetValue("client_id", out var clientIdValues) ? clientIdValues.ToString() : null;
+        var application = clientId is null ? null : await ApplicationManager.FindByClientIdAsync(clientId);
+        if (application is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        clientDisplayName = await ApplicationManager.GetDisplayNameAsync(application) ?? clientId!;
+
+        var scopeValue = query.TryGetValue("scope", out var scopeValues) ? scopeValues.ToString() : "";
+        var scopes = scopeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        requestsRead = scopes.Contains(JoinRpgScopes.Read);
+        requestsCharactersWrite = scopes.Contains(JoinRpgScopes.CharactersWrite);
+
+        if (requestsRead)
+        {
+            var myProjects = await ProjectRepository.GetPersonalizedProjectsBySpecification(
+                ProjectListSpecification.ActiveWithMyMasterAccess(CurrentUserAccessor.UserIdentification));
+
+            projects.AddRange(myProjects
+                .Where(p => p.HasMyMasterAccess)
+                .Select(p => new ProjectChoice(p.ProjectId.Value, p.ProjectName)));
+        }
+    }
+
+    private void Submit(bool grant)
+    {
+        if (!grant)
+        {
+            NavigationManager.NavigateTo(
+                $"/connect/authorize{originalQueryString}&{OAuthConsent.ConsentParameter}={OAuthConsent.Denied}",
+                forceLoad: true);
+            return;
+        }
+
+        var selectedProjectIds = projects.Where(p => p.Selected).Select(p => p.ProjectId).ToList();
+        var redirectUri = $"/connect/authorize{originalQueryString}" +
+            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}" +
+            $"&{OAuthConsent.ProjectsParameter}={Uri.EscapeDataString(OAuthConsent.FormatProjectIds(selectedProjectIds))}";
+
+        NavigationManager.NavigateTo(redirectUri, forceLoad: true);
+    }
+
+    private sealed class ProjectChoice(int projectId, JoinRpg.DomainTypes.ProjectMetadata.ProjectName name)
+    {
+        public int ProjectId { get; } = projectId;
+        public JoinRpg.DomainTypes.ProjectMetadata.ProjectName Name { get; } = name;
+        public bool Selected { get; set; }
+    }
+}
