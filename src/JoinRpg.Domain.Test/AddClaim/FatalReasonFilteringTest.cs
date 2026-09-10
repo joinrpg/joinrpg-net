@@ -18,13 +18,13 @@ public class FatalReasonFilteringTest
     {
         // Персонаж занят — сам по себе это нефатальная причина...
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Master);
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.Busy);
 
         // ...но если проект вдобавок не принимает заявки, остаётся только это.
         var closedProject = Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.ActiveClaimsClosed);
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, closedProject).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, closedProject, ClaimOperation.AddByPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectClaimsClosed]);
     }
 
@@ -34,7 +34,7 @@ public class FatalReasonFilteringTest
         Mock.Character.CharacterType = CharacterType.NonPlayer;
         var archived = Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.Archived);
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, archived).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, archived, ClaimOperation.AddByPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectNotActive]);
     }
 
@@ -44,7 +44,7 @@ public class FatalReasonFilteringTest
         Mock.Character.CharacterType = CharacterType.NonPlayer;
         Mock.Character.IsActive = false;
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldBe(
                 [
                     AddClaimForbideReason.CharacterInactive,
