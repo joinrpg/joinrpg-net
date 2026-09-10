@@ -21,7 +21,7 @@ public class AddClaimValidationRulesTest
     }
 
     [Fact]
-    public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(userInfo: null, Mock.ProjectInfo).ShouldBeEmpty();
+    public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(userInfo: null, Mock.ProjectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
 
     [Fact]
     public void CantSendClaimIfProjectClaimsClosed()
@@ -118,7 +118,7 @@ public class AddClaimValidationRulesTest
         {
             Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: false) },
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.VkontakteMissing);
     }
 
@@ -131,7 +131,7 @@ public class AddClaimValidationRulesTest
         {
             Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: true) },
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithVerifiedVk, projectInfo).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(playerWithVerifiedVk, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class AddClaimValidationRulesTest
     {
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.PhoneMissing);
     }
 
@@ -149,7 +149,7 @@ public class AddClaimValidationRulesTest
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
         var playerWithPhone = Mock.PlayerInfo with { PhoneNumber = "+79991234567" };
-        Mock.Character.ValidateIfCanAddClaim(playerWithPhone, projectInfo).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(playerWithPhone, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class AddClaimValidationRulesTest
     {
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequireRealName = MandatoryStatus.Required });
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.RealNameMissing);
     }
 
@@ -170,14 +170,14 @@ public class AddClaimValidationRulesTest
         {
             UserFullName = new UserFullName(new PrefferedName("Player"), new BornName("Иван"), new SurName("Иванов"), null),
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithRealName, projectInfo).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(playerWithRealName, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
     private void ShouldBeAllowed(Character mockCharacter, ProjectInfo projectInfo)
-        => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).ShouldBeEmpty();
+        => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
 
     private void ShouldBeNotAllowed(Character claimSource, AddClaimForbideReason reason, ProjectInfo projectInfo)
     {
-        claimSource.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).Kinds().ShouldContain(reason);
+        claimSource.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds().ShouldContain(reason);
     }
 }

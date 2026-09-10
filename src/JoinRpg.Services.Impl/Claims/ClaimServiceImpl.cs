@@ -152,7 +152,7 @@ internal class ClaimServiceImpl(
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
         var user = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
 
-        source.EnsureCanAddClaim(user, projectInfo);
+        source.EnsureCanAddClaim(user, projectInfo, ClaimOperation.AddByPlayer);
 
         User responsibleMaster = source.GetResponsibleMaster();
 
@@ -991,9 +991,10 @@ internal class ClaimServiceImpl(
         // Проверяем, что текущий пользователь (мастер) имеет право управлять заявками
         projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
 
-        // Проверяем, что персонаж может принимать заявки (пока со всеми проверками, включая ProjectClaimsClosed и ValidateContacts)
-        // TODO: Придумать способ, чтобы разрешить посылать приглашения, даже если заявки закрыты.
-        source.EnsureCanAddClaim(playerUser, projectInfo);
+        // Проверяем, что персонаж может принимать заявки. Приглашение от мастера проходит мимо
+        // причин с MasterCanOverride: закрытый приём заявок и незаполненные контакты игрока
+        // мастера не останавливают — контакты игрок дозаполнит позже.
+        source.EnsureCanAddClaim(playerUser, projectInfo, ClaimOperation.AddByMaster);
 
         User responsibleMaster = source.GetResponsibleMaster();
 

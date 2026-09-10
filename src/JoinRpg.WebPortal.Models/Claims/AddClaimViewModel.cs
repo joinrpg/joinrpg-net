@@ -53,7 +53,7 @@ public class AddClaimViewModel : IProjectIdAware
 
     public AddClaimViewModel Fill(Character claimSource, UserInfo userInfo, ProjectInfo projectInfo, Dictionary<int, string?>? overrideValues = null)
     {
-        var disallowReasons = claimSource.ValidateIfCanAddClaim(userInfo, projectInfo);
+        var disallowReasons = claimSource.ValidateIfCanAddClaim(userInfo, projectInfo, ClaimOperation.DisplayForPlayer);
 
         // Фатальная причина означает, что заявку тут не подать в принципе (проект в архиве или
         // приём заявок закрыт) — форму показывать незачем.

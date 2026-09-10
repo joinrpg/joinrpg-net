@@ -8,20 +8,38 @@ namespace JoinRpg.Domain;
 public static class ClaimAcceptOrMoveValidationExtensions
 {
     public static bool IsAcceptingClaims(this Character character, ProjectInfo projectInfo)
-        => !ValidateIfCanAddClaim(character, userInfo: null, projectInfo).Any();
+        => !ValidateIfCanAddClaim(character, userInfo: null, projectInfo, ClaimOperation.DisplayForPlayer).Any();
 
+    /// <summary>
+    /// Причины, по которым нельзя создать заявку на этого персонажа.
+    /// </summary>
+    /// <param name="userInfo">
+    /// Игрок, на которого оформляется заявка; <c>null</c> — если он неизвестен (тогда правила про
+    /// контакты и уже поданные заявки не считаются).
+    /// </param>
+    /// <param name="operation">
+    /// Для <see cref="ClaimOperation.DisplayForPlayer"/> мастерских послаблений нет: страница
+    /// показывает положение дел глазами игрока, кто бы её ни открыл.
+    /// </param>
     public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanAddClaim(
         this Character claimSource,
-        UserInfo? userInfo, ProjectInfo projectInfo)
-        => Validate(claimSource, userInfo, existingClaim: null, projectInfo);
+        UserInfo? userInfo, ProjectInfo projectInfo, ClaimOperation operation)
+        => Validate(claimSource, userInfo, existingClaim: null, projectInfo, operation);
 
     public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
-        => Validate(claimSource, userInfo, claim, projectInfo);
+        => Validate(claimSource, userInfo, claim, projectInfo, ClaimOperation.MoveByMaster);
 
-    public static void EnsureCanAddClaim([NotNull] this Character claimSource, UserInfo userInfo, ProjectInfo projectInfo)
+    /// <param name="userInfo">
+    /// Игрок, на которого оформляется заявка. При <see cref="ClaimOperation.AddByMaster"/> это не
+    /// тот, кто выполняет операцию: правила про контакты и уже поданные заявки относятся к игроку.
+    /// </param>
+    public static void EnsureCanAddClaim([NotNull] this Character claimSource, UserInfo userInfo, ProjectInfo projectInfo, ClaimOperation operation)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
-        ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(userInfo, projectInfo), claim: null, projectInfo);
+        ThrowIfValidationFailed(
+            claimSource.ValidateIfCanAddClaim(userInfo, projectInfo, operation),
+            claim: null,
+            projectInfo);
     }
 
     public static void EnsureCanMoveClaim([NotNull] this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
@@ -62,18 +80,29 @@ public static class ClaimAcceptOrMoveValidationExtensions
     }
 
     /// <summary>
-    /// Считает все причины запрета и отбрасывает те, которые не надо показывать.
+    /// Считает все причины запрета и отбрасывает те, которые не мешают этой операции.
     /// </summary>
     /// <remarks>
-    /// Если есть хотя бы одна фатальная причина (проект в архиве, приём заявок закрыт), остальные
-    /// не отдаём: пока проект в таком состоянии, разбираться с занятостью роли или контактами
-    /// игрока бессмысленно.
+    /// <para>
+    /// Сначала выбрасываются причины, которые мастер вправе обойти, и только потом применяется
+    /// фатальность. Порядок принципиален: если сделать наоборот, мастер, приглашающий игрока в
+    /// проект с закрытым приёмом заявок, увидел бы пустой список — фатальный
+    /// <c>ProjectClaimsClosed</c> вытеснил бы <c>Busy</c> и <c>Npc</c>, а потом ушёл бы сам,
+    /// и вместе с ним молча ушли бы все остальные проверки.
+    /// </para>
+    /// <para>
+    /// Фатальная причина (проект в архиве, приём заявок закрыт) вытесняет остальные: пока проект
+    /// в таком состоянии, разбираться с занятостью роли или контактами игрока бессмысленно.
+    /// </para>
     /// </remarks>
     private static List<ClaimForbiddenReason> Validate(
-        Character character, UserInfo? userInfo, Claim? existingClaim, ProjectInfo projectInfo)
+        Character character, UserInfo? userInfo, Claim? existingClaim, ProjectInfo projectInfo, ClaimOperation operation)
     {
-        var reasons = ValidateImpl(character, userInfo, existingClaim, projectInfo)
+        var byMaster = operation.PerformedByMaster();
+
+        var reasons = ValidateImpl(character, userInfo, existingClaim, projectInfo, operation)
             .Select(ClaimForbiddenReason.For)
+            .Where(r => !(byMaster && r.MasterCanOverride))
             .ToList();
 
         var fatal = reasons.Where(r => r.IsFatal).ToList();
@@ -88,7 +117,8 @@ public static class ClaimAcceptOrMoveValidationExtensions
     /// <param name="existingClaim">If we already have claim (move), that's it</param>
     /// <returns></returns>
     /// <param name="projectInfo"></param>
-    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, UserInfo? playerUserId, Claim? existingClaim, ProjectInfo projectInfo)
+    /// <param name="operation">Операция, ради которой считаются правила.</param>
+    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, UserInfo? playerUserId, Claim? existingClaim, ProjectInfo projectInfo, ClaimOperation operation)
     {
         var project = character.Project;
 
@@ -124,15 +154,17 @@ public static class ClaimAcceptOrMoveValidationExtensions
                 break;
         }
 
-        if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
+        if (operation.IsMove())
         {
-            yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
-        }
+            if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
+            {
+                yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
+            }
 
-
-        if (existingClaim?.ClaimStatus == ClaimStatus.CheckedIn)
-        {
-            yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
+            if (existingClaim?.ClaimStatus == ClaimStatus.CheckedIn)
+            {
+                yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
+            }
         }
 
         if (playerUserId is UserInfo userInfo)
