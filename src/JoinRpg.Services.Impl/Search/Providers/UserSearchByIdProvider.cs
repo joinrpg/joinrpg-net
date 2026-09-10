@@ -35,7 +35,6 @@ internal class UserSearchByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
         {
             predicateBuilder = predicateBuilder.Or(user => user.Extra != null && user.Extra!.Vk == "id" + idToFind);
             predicateBuilder = predicateBuilder.Or(user => user.ExternalLogins.Any(el => el.Key == idToFind.ToString()));
-            predicateBuilder = predicateBuilder.Or(user => user.Extra != null && user.Extra.Vk! == "id" + idToFind);
         }
 
         var results = await unitOfWork
