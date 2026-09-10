@@ -1,5 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Dal.Impl.Repositories;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
@@ -187,6 +189,62 @@ public class MockedProject
         ReInitProjectInfo();
         return ProjectInfo.GetFieldById(new ProjectFieldIdentification(new ProjectIdentification(Project.ProjectId), field.ProjectFieldId));
     }
+
+    /// <summary>
+    /// Доменный агрегат (ADR013) для персонажа мока — зеркало <c>CharacterInfoMapper</c>.
+    /// </summary>
+    /// <remarks>
+    /// Именно фабрика, кешировать нельзя: <see cref="ReInitProjectInfo"/> и
+    /// <see cref="CreateField"/> подменяют экземпляр <see cref="ProjectInfo"/>, а конструктор
+    /// <see cref="CharacterInfo"/> требует, чтобы слои полей были привязаны ровно к тому же
+    /// экземпляру. По той же причине вызывать надо после того, как все поля проекта заведены.
+    /// </remarks>
+    public CharacterInfo GetCharacterInfo(Character character)
+    {
+        var projectId = ProjectInfo.ProjectId;
+
+        return new CharacterInfo(
+            new CharacterIdentification(projectId, character.CharacterId),
+            ProjectInfo,
+            character.CharacterName,
+            character.ToCharacterTypeInfo(),
+            character.HidePlayerForCharacter,
+            character.IsActive,
+            character.InGame,
+            character.AutoCreated,
+            new MarkdownString(character.Description?.Contents ?? ""),
+            originalCharacterSlotId: null,
+            [.. character.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))],
+            FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, character.JsonData),
+            [.. character.Claims.Select(GetClaimInfo)],
+            ClaimIdentification.FromOptional(projectId, character.ApprovedClaimId),
+            character.CreatedAt,
+            new UserIdentification(Master.UserId),
+            character.UpdatedAt,
+            new UserIdentification(Master.UserId));
+    }
+
+    private CharacterClaimInfo GetClaimInfo(Claim claim)
+        => new(
+            claim.GetId(),
+            new UserInfoHeader(
+                new UserIdentification(claim.PlayerUserId),
+                new UserDisplayName(new PrefferedName(claim.Player.PrefferedName), new Email(claim.Player.Email))),
+            claim.ClaimStatus,
+            claim.ClaimDenialStatus,
+            // В моке ответственный мастер обычно не проставлен, а UserIdentification нулю не рад.
+            new UserIdentification(claim.ResponsibleMasterUserId == 0 ? Master.UserId : claim.ResponsibleMasterUserId),
+            claim.CreateDate,
+            claim.LastUpdateDateTime,
+            claim.CheckInDate,
+            claim.LastPlayerCommentAt,
+            claim.LastMasterCommentAt,
+            claim.LastVisibleMasterCommentAt,
+            claim.CurrentFee,
+            claim.PreferentialFeeUser,
+            FeePaid: 0,
+            AccommodationFee: 0,
+            FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, claim.JsonData));
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)
     {

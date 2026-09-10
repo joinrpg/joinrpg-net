@@ -1,10 +1,18 @@
 using System.Diagnostics.CodeAnalysis;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain;
 
+/// <summary>
+/// Правила заявки поверх EF-сущности <see cref="Character"/>: тонкая обёртка над
+/// <see cref="ClaimValidator"/> плюс трансляция причин в исключения.
+/// </summary>
+/// <remarks>
+/// Сами правила живут в <c>JoinRpg.DomainTypes</c>. Здесь остаётся только то, что без EF не
+/// работает: адаптер <see cref="LegacyClaimTarget"/> и <see cref="ThrowForReason"/>, которому для
+/// <see cref="ClaimWrongStatusException"/> нужна сущность заявки.
+/// </remarks>
 public static class ClaimAcceptOrMoveValidationExtensions
 {
     public static bool IsAcceptingClaims(this Character character, ProjectInfo projectInfo)
@@ -24,10 +32,10 @@ public static class ClaimAcceptOrMoveValidationExtensions
     public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanAddClaim(
         this Character claimSource,
         UserInfo? userInfo, ProjectInfo projectInfo, ClaimOperation operation)
-        => Validate(claimSource, userInfo, existingClaim: null, projectInfo, operation);
+        => Validate(claimSource, userInfo, movedClaim: null, projectInfo, operation);
 
     public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanMoveClaim(this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
-        => Validate(claimSource, userInfo, claim, projectInfo, ClaimOperation.MoveByMaster);
+        => Validate(claimSource, userInfo, ToMovedClaim(claim), projectInfo, ClaimOperation.MoveByMaster);
 
     /// <param name="userInfo">
     /// Игрок, на которого оформляется заявка. При <see cref="ClaimOperation.AddByMaster"/> это не
@@ -47,6 +55,14 @@ public static class ClaimAcceptOrMoveValidationExtensions
         ArgumentNullException.ThrowIfNull(claimSource);
         ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim, userInfo, projectInfo), claim, projectInfo);
     }
+
+#pragma warning disable CS0618 // Пока часть вызывающего кода живёт на EF-сущности, см. LegacyClaimTarget
+    private static IReadOnlyCollection<ClaimForbiddenReason> Validate(
+        Character character, UserInfo? userInfo, UserClaimInfo? movedClaim, ProjectInfo projectInfo, ClaimOperation operation)
+        => ClaimValidator.Validate(new LegacyClaimTarget(character), userInfo, movedClaim, projectInfo, operation);
+#pragma warning restore CS0618
+
+    private static UserClaimInfo ToMovedClaim(Claim claim) => new(claim.GetId(), claim.ClaimStatus);
 
     private static void ThrowIfValidationFailed(
         IReadOnlyCollection<ClaimForbiddenReason> validation,
@@ -76,159 +92,6 @@ public static class ClaimAcceptOrMoveValidationExtensions
             AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
             AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => new InsufficientContactsException(),
             _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
-        };
-    }
-
-    /// <summary>
-    /// Считает все причины запрета и отбрасывает те, которые не мешают этой операции.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Сначала выбрасываются причины, которые мастер вправе обойти, и только потом применяется
-    /// фатальность. Порядок принципиален: если сделать наоборот, мастер, приглашающий игрока в
-    /// проект с закрытым приёмом заявок, увидел бы пустой список — фатальный
-    /// <c>ProjectClaimsClosed</c> вытеснил бы <c>Busy</c> и <c>Npc</c>, а потом ушёл бы сам,
-    /// и вместе с ним молча ушли бы все остальные проверки.
-    /// </para>
-    /// <para>
-    /// Фатальная причина (проект в архиве, приём заявок закрыт) вытесняет остальные: пока проект
-    /// в таком состоянии, разбираться с занятостью роли или контактами игрока бессмысленно.
-    /// </para>
-    /// </remarks>
-    private static List<ClaimForbiddenReason> Validate(
-        Character character, UserInfo? userInfo, Claim? existingClaim, ProjectInfo projectInfo, ClaimOperation operation)
-    {
-        var byMaster = operation.PerformedByMaster();
-
-        var reasons = ValidateImpl(character, userInfo, existingClaim, projectInfo, operation)
-            .Select(ClaimForbiddenReason.For)
-            .Where(r => !(byMaster && r.MasterCanOverride))
-            .ToList();
-
-        var fatal = reasons.Where(r => r.IsFatal).ToList();
-        return fatal.Count > 0 ? fatal : reasons;
-    }
-
-    /// <summary>
-    /// Perform real validation
-    /// </summary>
-    /// <param name="character">Where we are trying to add/move claim</param>
-    /// <param name="playerUserId">User</param>
-    /// <param name="existingClaim">If we already have claim (move), that's it</param>
-    /// <returns></returns>
-    /// <param name="projectInfo"></param>
-    /// <param name="operation">Операция, ради которой считаются правила.</param>
-    private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, UserInfo? playerUserId, Claim? existingClaim, ProjectInfo projectInfo, ClaimOperation operation)
-    {
-        if (ValidateProjectImpl(projectInfo) is AddClaimForbideReason projectReason)
-        {
-            yield return projectReason;
-        }
-
-        if (character.ApprovedClaimId != null)
-        {
-            yield return AddClaimForbideReason.Busy;
-        }
-
-        if (!character.IsActive)
-        {
-            yield return AddClaimForbideReason.CharacterInactive;
-        }
-
-        switch (character.CharacterType)
-        {
-            case CharacterType.Player:
-                break;
-            case CharacterType.NonPlayer:
-                yield return AddClaimForbideReason.Npc;
-                break;
-            case CharacterType.Slot:
-                if (character.CharacterSlotLimit == 0)
-                {
-                    yield return AddClaimForbideReason.SlotsExhausted;
-                }
-
-
-                break;
-        }
-
-        if (operation.IsMove())
-        {
-            if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
-            {
-                yield return AddClaimForbideReason.ApprovedClaimMovedToSlot;
-            }
-
-            if (existingClaim?.ClaimStatus == ClaimStatus.CheckedIn)
-            {
-                yield return AddClaimForbideReason.CheckedInClaimCantBeMoved;
-            }
-        }
-
-        if (playerUserId is UserInfo userInfo)
-        {
-            if (character.Claims.OfUserActive(userInfo.UserId.Value).Any())
-            {
-                yield return AddClaimForbideReason.AlreadySent;
-            }
-
-            if (projectInfo.ClaimSettings.StrictlyOneCharacter && HasOtherApprovedClaim(userInfo, projectInfo, existingClaim))
-            {
-                yield return AddClaimForbideReason.OnlyOneCharacter;
-            }
-
-            foreach (var r in ValidateContacts(projectInfo, userInfo))
-            {
-                yield return r;
-            }
-        }
-    }
-
-    /// <summary>
-    /// У игрока уже есть утверждённая заявка в этом проекте — не считая той, которую переносим.
-    /// </summary>
-    /// <remarks>
-    /// Считается по <see cref="UserInfo.ActiveClaims"/>, а не по заявкам всего проекта из EF-графа:
-    /// правилам не нужны чужие заявки, а поднимать ради этого весь граф дорого.
-    /// </remarks>
-    private static bool HasOtherApprovedClaim(UserInfo userInfo, ProjectInfo projectInfo, Claim? existingClaim)
-    {
-        var existingClaimId = existingClaim?.GetId();
-
-        return userInfo.ActiveClaims.Any(claim =>
-            claim.ProjectId == projectInfo.ProjectId
-            && claim.IsApproved
-            && claim.ClaimId != existingClaimId);
-    }
-
-    private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
-    {
-        var problems = UserProfileProblemsCalculator.GetProblems(userInfo, projectInfo.ProfileRequirementSettings);
-
-        // Заявку блокируют только обязательные (Required => Warning) требования — Recommended (Hint) не мешает подать заявку.
-        foreach (var problem in problems.Where(p => p.Severity == ProblemSeverity.Warning))
-        {
-            yield return ToAddClaimForbideReason(problem.ItemType);
-        }
-    }
-
-    internal static AddClaimForbideReason ToAddClaimForbideReason(UserProfileItemType itemType) => itemType switch
-    {
-        UserProfileItemType.Telegram => AddClaimForbideReason.TelegramMissing,
-        UserProfileItemType.Vkontakte => AddClaimForbideReason.VkontakteMissing,
-        UserProfileItemType.Phone => AddClaimForbideReason.PhoneMissing,
-        UserProfileItemType.RealName => AddClaimForbideReason.RealNameMissing,
-        _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
-    };
-
-    private static AddClaimForbideReason? ValidateProjectImpl(ProjectInfo project)
-    {
-        return project.ProjectStatus switch
-        {
-            ProjectLifecycleStatus.ActiveClaimsOpen => null,
-            ProjectLifecycleStatus.Archived => AddClaimForbideReason.ProjectNotActive,
-            ProjectLifecycleStatus.ActiveClaimsClosed => AddClaimForbideReason.ProjectClaimsClosed,
-            _ => throw new NotImplementedException(),
         };
     }
 }
