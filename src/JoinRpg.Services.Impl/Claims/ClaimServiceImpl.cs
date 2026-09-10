@@ -5,6 +5,7 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.CharacterFields;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
@@ -12,7 +13,7 @@ namespace JoinRpg.Services.Impl.Claims;
 internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
-    FieldSaveHelper fieldSaveHelper,
+    CharacterFieldsSaveService fieldSaveService,
     IAccommodationInviteService accommodationInviteService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
@@ -130,7 +131,7 @@ internal class ClaimServiceImpl(
 
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
+        _ = await fieldSaveService.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -174,7 +175,7 @@ internal class ClaimServiceImpl(
         };
 
         // Т.к. CreateClaimCommentWithNotification ожидает, что комментарий уже существует
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
+        _ = await fieldSaveService.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
         await UnitOfWork.SaveChangesAsync();
 
@@ -331,7 +332,7 @@ internal class ClaimServiceImpl(
         // 2. M.b. we need to move some field values from Claim to Characters
         // 3. (2) Could activate changing of special groups
         // we don't need send to show updated fields in email here, so ignore return result. 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
+        _ = await fieldSaveService.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
 
         await UnitOfWork.SaveChangesAsync();
 
@@ -787,7 +788,7 @@ internal class ClaimServiceImpl(
     {
         var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.None, ExtraAccessReason.Player);
 
-        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fieldsToSet, projectInfo);
+        var updatedFields = await fieldSaveService.SaveCharacterFields(CurrentUserId, claim, fieldsToSet, projectInfo);
         if (updatedFields.Any(f => f.Field.BoundTo == FieldBoundTo.Character) && claim.Character != null)
         {
             MarkChanged(claim.Character);
@@ -1015,7 +1016,7 @@ internal class ClaimServiceImpl(
             CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
         };
 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
+        _ = await fieldSaveService.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
         _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
         await UnitOfWork.SaveChangesAsync();
 

@@ -6,6 +6,13 @@ namespace JoinRpg.Domain.CharacterFields;
 /// <summary>
 /// Saves fields either to character or to claim
 /// </summary>
+/// <remarks>
+/// Помимо самих значений, сохранение полей меняет и метаданные проекта: впервые заполненное поле
+/// надо отметить как использованное (<c>WasEverUsed</c>). Такие изменения делаются только через
+/// <c>IProjectPropsService</c> (ADR009), который лежит в сервисном слое и отсюда недоступен, —
+/// поэтому сервисы вызывают не этот класс напрямую, а обёртку
+/// <c>JoinRpg.Services.Impl.CharacterFields.CharacterFieldsSaveService</c>.
+/// </remarks>
 public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<FieldSaveHelper> logger)
 {
 
@@ -72,7 +79,6 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
 
         Apply(result, character, claim);
 
-        MarkAsUsed(result.UpdatedFields, character.Project);
         return result.UpdatedFields;
     }
 
@@ -105,28 +111,6 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
 
     private static string Serialize(FieldLayerContainer layer) => layer.LayerData.Values.SerializeFields();
 
-
-    private static void MarkUsed(FieldWithValue field, Project project)
-    {
-        var entityField = project.ProjectFields.Single(f => f.ProjectFieldId == field.Field.Id.ProjectFieldId);
-        entityField.WasEverUsed = true;
-
-        if (field.Field.HasValueList)
-        {
-            foreach (var val in field.GetDropdownValues())
-            {
-                entityField.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == val.Id.ProjectFieldVariantId).WasEverUsed = true;
-            }
-        }
-    }
-
-    protected virtual void MarkAsUsed(IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields, Project project)
-    {
-        foreach (var field in updatedFields)
-        {
-            MarkUsed(field.New, project);
-        }
-    }
 
     private FieldSaveStrategyBase CreateStrategy(UserIdentification currentUserId, Character character, Claim? claim, ProjectInfo projectInfo)
     {
