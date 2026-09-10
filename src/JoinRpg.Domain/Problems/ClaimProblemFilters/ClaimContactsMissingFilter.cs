@@ -8,6 +8,10 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
 {
     public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
     {
+        // TODO этот фильтр работает напрямую с EF-сущностью Claim, а не с UserInfo (его сборка
+        // через claim.Player.GetUserInfo() неэффективна — тянет Claims/ProjectAcls). Когда
+        // ProblemValidator/фильтры проблем заявки научатся работать с UserInfo, убрать этот
+        // ручной вызов GetMissingItems и перейти на UserProfileProblemsCalculator.GetProblems(userInfo, ...).
         var missingItems = UserProfileItemsCalculator.GetMissingItems(
             hasTelegram: !string.IsNullOrWhiteSpace(claim.Player.Extra?.Telegram),
             hasVerifiedVkontakte: claim.Player.Extra?.VkVerified == true && !string.IsNullOrWhiteSpace(claim.Player.Extra.Vk),
@@ -23,15 +27,20 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
     }
 
     private static ProfileRelatedProblem ToClaimProblem(UserProfileProjectProblem problem)
-        => new(problem.ItemType switch
-        {
-            UserProfileItemType.Telegram => ClaimProblemType.MissingTelegram,
-            UserProfileItemType.Vkontakte => ClaimProblemType.MissingVkontakte,
-            UserProfileItemType.Phone => ClaimProblemType.MissingPhone,
-            UserProfileItemType.RealName => ClaimProblemType.MissingRealname,
-            _ => throw new ArgumentOutOfRangeException(nameof(problem)),
-        }, problem.Severity);
+        => new(ToClaimProblemType(problem.ItemType), problem.Severity);
 
+    internal static ClaimProblemType ToClaimProblemType(UserProfileItemType itemType) => itemType switch
+    {
+        UserProfileItemType.Telegram => ClaimProblemType.MissingTelegram,
+        UserProfileItemType.Vkontakte => ClaimProblemType.MissingVkontakte,
+        UserProfileItemType.Phone => ClaimProblemType.MissingPhone,
+        UserProfileItemType.RealName => ClaimProblemType.MissingRealname,
+        _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
+    };
+
+    // TODO(#4763) паспорт/адрес регистрации ещё не переведены на UserProfileItemType +
+    // UserProfileProblemsCalculator — они не входят в UserInfo и дополнительно зависят от
+    // claim.PlayerAllowedSenstiveData (факт про заявку, а не про профиль пользователя).
     private static IEnumerable<ClaimProblem?> CheckSensitiveDataAccess(Claim claim, ProjectInfo projectInfo)
     {
         if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
@@ -51,16 +60,13 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
 
     private static ProfileRelatedProblem? CheckContact(string? contact, MandatoryStatus requirement, ClaimProblemType problemType)
     {
-        if (string.IsNullOrWhiteSpace(contact))
+        if (!string.IsNullOrWhiteSpace(contact))
         {
-            return requirement switch
-            {
-                MandatoryStatus.Optional => null,
-                MandatoryStatus.Recommended => new ProfileRelatedProblem(problemType, ProblemSeverity.Hint),
-                MandatoryStatus.Required => new ProfileRelatedProblem(problemType, ProblemSeverity.Warning),
-                _ => throw new ArgumentOutOfRangeException(nameof(requirement)),
-            };
+            return null;
         }
-        return null;
+
+        return UserProfileProblemsCalculator.ToSeverity(requirement) is { } severity
+            ? new ProfileRelatedProblem(problemType, severity)
+            : null;
     }
 }

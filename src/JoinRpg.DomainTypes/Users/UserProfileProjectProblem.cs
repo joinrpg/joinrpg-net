@@ -18,6 +18,11 @@ public record UserProfileProjectProblem(UserProfileItemType ItemType, ProblemSev
 public static class UserProfileProblemsCalculator
 {
     public static IReadOnlyCollection<UserProfileProjectProblem> GetProblems(
+        UserInfo userInfo,
+        ProjectProfileRequirementSettings requirementSettings)
+        => GetProblems(userInfo.GetMissingItems(), requirementSettings);
+
+    public static IReadOnlyCollection<UserProfileProjectProblem> GetProblems(
         IReadOnlyCollection<UserProfileItemType> missingItems,
         ProjectProfileRequirementSettings requirementSettings)
     {
@@ -37,18 +42,18 @@ public static class UserProfileProblemsCalculator
                 return;
             }
 
-            var severity = requirement switch
+            if (ToSeverity(requirement) is { } severity)
             {
-                MandatoryStatus.Optional => (ProblemSeverity?)null,
-                MandatoryStatus.Recommended => ProblemSeverity.Hint,
-                MandatoryStatus.Required => ProblemSeverity.Warning,
-                _ => throw new ArgumentOutOfRangeException(nameof(requirement)),
-            };
-
-            if (severity is { } notNullSeverity)
-            {
-                problems.Add(new UserProfileProjectProblem(itemType, notNullSeverity));
+                problems.Add(new UserProfileProjectProblem(itemType, severity));
             }
         }
     }
+
+    public static ProblemSeverity? ToSeverity(MandatoryStatus requirement) => requirement switch
+    {
+        MandatoryStatus.Optional => null,
+        MandatoryStatus.Recommended => ProblemSeverity.Hint,
+        MandatoryStatus.Required => ProblemSeverity.Warning,
+        _ => throw new ArgumentOutOfRangeException(nameof(requirement)),
+    };
 }

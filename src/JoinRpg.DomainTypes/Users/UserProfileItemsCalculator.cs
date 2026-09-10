@@ -15,6 +15,12 @@ public static class UserProfileItemsCalculator
 
     public static bool IsCorrectContact(string? value) => (value?.Length ?? 0) >= MinContactLength;
 
+    /// <summary>
+    /// Перегрузка на "сырых" фактах — нужна тем потребителям, которые не могут дёшево собрать
+    /// полноценный <see cref="UserInfo"/> (напр. фильтры проблем заявки, работающие напрямую с
+    /// EF-сущностями, минуя UserInfo). Когда такие потребители переедут на UserInfo, этот
+    /// оверлоад можно будет убрать и оставить только <see cref="UserInfo.GetMissingItems"/>.
+    /// </summary>
     public static IReadOnlyCollection<UserProfileItemType> GetMissingItems(
         bool hasTelegram,
         bool hasVerifiedVkontakte,

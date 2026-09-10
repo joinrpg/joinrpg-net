@@ -11,7 +11,4 @@
     <PackageReference Include="Autofac" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="JoinRpg.Domain.Test" />
-  </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.Problems.ClaimProblemFilters;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Test.Problems;
 
@@ -9,6 +10,15 @@ public class ClaimContactsMissingFilterTest
 {
     private MockedProject Mock { get; } = new MockedProject();
     private ClaimContactsMissingFilter Filter { get; } = new ClaimContactsMissingFilter();
+
+    [Fact]
+    public void ToClaimProblemTypeIsDefinedForEveryUserProfileItemType()
+    {
+        foreach (var itemType in Enum.GetValues<UserProfileItemType>())
+        {
+            Should.NotThrow(() => ClaimContactsMissingFilter.ToClaimProblemType(itemType));
+        }
+    }
 
     [Fact]
     public void PhoneMissingWhenNotFilledAtAll()

@@ -158,21 +158,23 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
     private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
     {
-        var problems = UserProfileProblemsCalculator.GetProblems(userInfo.GetMissingItems(), projectInfo.ProfileRequirementSettings);
+        var problems = UserProfileProblemsCalculator.GetProblems(userInfo, projectInfo.ProfileRequirementSettings);
 
         // Заявку блокируют только обязательные (Required => Warning) требования — Recommended (Hint) не мешает подать заявку.
         foreach (var problem in problems.Where(p => p.Severity == ProblemSeverity.Warning))
         {
-            yield return problem.ItemType switch
-            {
-                UserProfileItemType.Telegram => AddClaimForbideReason.TelegramMissing,
-                UserProfileItemType.Vkontakte => AddClaimForbideReason.VkontakteMissing,
-                UserProfileItemType.Phone => AddClaimForbideReason.PhoneMissing,
-                UserProfileItemType.RealName => AddClaimForbideReason.RealNameMissing,
-                _ => throw new ArgumentOutOfRangeException(nameof(problem)),
-            };
+            yield return ToAddClaimForbideReason(problem.ItemType);
         }
     }
+
+    internal static AddClaimForbideReason ToAddClaimForbideReason(UserProfileItemType itemType) => itemType switch
+    {
+        UserProfileItemType.Telegram => AddClaimForbideReason.TelegramMissing,
+        UserProfileItemType.Vkontakte => AddClaimForbideReason.VkontakteMissing,
+        UserProfileItemType.Phone => AddClaimForbideReason.PhoneMissing,
+        UserProfileItemType.RealName => AddClaimForbideReason.RealNameMissing,
+        _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
+    };
 
     private static AddClaimForbideReason? ValidateProjectImpl(ProjectInfo project)
     {
