@@ -28,13 +28,13 @@ public class MoveClaimValidationRulesTest
     }
 
     [Fact]
-    public void CantMoveApprovedClaimFromCharacterToGroup()
+    public void CantMoveApprovedClaimFromCharacterToSlot()
     {
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
         var another = Mock.CreateCharacter("another");
         another.CharacterType = CharacterType.Slot;
         another.CharacterSlotLimit = null;
-        ShouldDisAllowMove(claim, another, AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot);
+        ShouldDisAllowMove(claim, another, AddClaimForbideReason.ApprovedClaimMovedToSlot);
     }
 
 
@@ -101,7 +101,7 @@ public class MoveClaimValidationRulesTest
         slot.CharacterSlotLimit = null;
 
         slot.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
-            .ShouldNotContain(AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot);
+            .ShouldNotContain(AddClaimForbideReason.ApprovedClaimMovedToSlot);
     }
 
     private void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBeEmpty();
