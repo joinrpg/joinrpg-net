@@ -1,13 +1,12 @@
-using JoinRpg.Data.Interfaces;
-using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.WebPortal.Managers.Projects;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/metadata"), XGameMasterAuthorize]
-public class MetaDataApiController(IProjectMetadataRepository projectMetadataRepository) : XGameApiController
+public class MetaDataApiController(IProjectApiViewService projectApiViewService) : XGameApiController
 {
 
     /// <summary>
@@ -17,32 +16,6 @@ public class MetaDataApiController(IProjectMetadataRepository projectMetadataRep
     [Route("fields")]
     public async Task<ProjectFieldsMetadata> GetFieldsList(int projectId)
     {
-        var project = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return
-            new ProjectFieldsMetadata
-            {
-                ProjectId = project.ProjectId,
-                ProjectName = project.ProjectName,
-                Fields = project.SortedFields.Select(field =>
-                    new JoinRpg.XGameApi.Contract.ProjectFieldInfo
-                    {
-                        FieldName = field.Name,
-                        ProjectFieldId = field.Id.ProjectFieldId,
-                        IsActive = field.IsActive,
-                        FieldType = field.Type.ToString(),
-                        ProgrammaticValue = field.ProgrammaticValue,
-                        ValueList = field.SortedVariants.Select(variant =>
-                            new JoinRpg.XGameApi.Contract.ProjectFieldVariant
-                            {
-                                ProjectFieldVariantId = variant.Id.ProjectFieldVariantId,
-                                Label = variant.Label,
-                                IsActive = variant.IsActive,
-                                Description = variant.Description.ToHtmlString().Value,
-                                MasterDescription =
-                                    variant.MasterDescription.ToHtmlString().Value,
-                                ProgrammaticValue = variant.ProgrammaticValue,
-                            }),
-                    }),
-            };
+        return await projectApiViewService.GetFieldsMetadata(new ProjectIdentification(projectId));
     }
 }

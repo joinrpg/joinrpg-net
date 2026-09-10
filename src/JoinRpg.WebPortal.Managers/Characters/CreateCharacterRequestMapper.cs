@@ -1,7 +1,7 @@
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.XGameApi.Contract;
 
-namespace JoinRpg.Portal.Controllers.XGameApi;
+namespace JoinRpg.WebPortal.Managers.Characters;
 
 public static class CreateCharacterRequestMapper
 {

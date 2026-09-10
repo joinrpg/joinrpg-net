@@ -2,6 +2,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.XApi;
 using JoinRpg.Services.Interfaces.Avatars;
+using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 

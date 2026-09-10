@@ -1,7 +1,7 @@
 using System.Text.Json;
-using JoinRpg.Portal.Controllers.XGameApi;
+using JoinRpg.WebPortal.Managers.Characters;
 
-namespace JoinRpg.Portal.Test.XGameApi;
+namespace JoinRpg.WebPortal.Managers.Test.Characters;
 
 public class FieldValueConverterTest
 {
