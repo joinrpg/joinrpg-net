@@ -328,7 +328,7 @@ public static class OAuthServerRegistration
         return null;
     }
 
-    private static void StoreGrantedProjects(IDictionary<string, JsonElement> properties, IReadOnlyList<int> projectIds)
+    private static void StoreGrantedProjects(Dictionary<string, JsonElement> properties, IReadOnlyList<int> projectIds)
     {
         if (projectIds.Count > 0)
         {
@@ -336,7 +336,7 @@ public static class OAuthServerRegistration
         }
     }
 
-    private static IReadOnlyList<int> ReadGrantedProjects(ImmutableDictionary<string, JsonElement> properties)
+    private static int[] ReadGrantedProjects(ImmutableDictionary<string, JsonElement> properties)
         => properties.TryGetValue(OAuthConsent.ProjectsClaimType, out var element)
             ? element.Deserialize<int[]>() ?? []
             : [];
