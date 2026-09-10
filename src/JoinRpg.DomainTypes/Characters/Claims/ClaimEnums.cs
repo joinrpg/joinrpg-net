@@ -33,7 +33,7 @@ public enum AddClaimForbideReason
     Busy,
     AlreadySent,
     OnlyOneCharacter,
-    ApprovedClaimMovedToGroupOrSlot,
+    ApprovedClaimMovedToSlot,
     CheckedInClaimCantBeMoved,
     CharacterInactive,
     RealNameMissing,

@@ -72,7 +72,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
             AddClaimForbideReason.AlreadySent => new ClaimAlreadyPresentException(),
             AddClaimForbideReason.OnlyOneCharacter => new OnlyOneApprovedClaimException(),
 
-            AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot or AddClaimForbideReason.CheckedInClaimCantBeMoved => new ClaimWrongStatusException(claim!),
+            AddClaimForbideReason.ApprovedClaimMovedToSlot or AddClaimForbideReason.CheckedInClaimCantBeMoved => new ClaimWrongStatusException(claim!),
             AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
             AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => new InsufficientContactsException(),
             _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
@@ -158,7 +158,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
         {
             if (existingClaim?.IsApproved == true && character.CharacterType == CharacterType.Slot)
             {
-                yield return AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot;
+                yield return AddClaimForbideReason.ApprovedClaimMovedToSlot;
             }
 
             if (existingClaim?.ClaimStatus == ClaimStatus.CheckedIn)

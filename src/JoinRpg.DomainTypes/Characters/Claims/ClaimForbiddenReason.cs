@@ -52,7 +52,7 @@ public record class ClaimForbiddenReason(
             => new(kind, MasterCanOverride: false, ProblemSeverity.Error),
 
         // Ограничения переноса заявки.
-        AddClaimForbideReason.ApprovedClaimMovedToGroupOrSlot
+        AddClaimForbideReason.ApprovedClaimMovedToSlot
             or AddClaimForbideReason.CheckedInClaimCantBeMoved
             => new(kind, MasterCanOverride: false, ProblemSeverity.Error),
 
