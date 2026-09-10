@@ -4,6 +4,7 @@ public class VkBirthDateParserTest
 {
     [Theory]
     [InlineData("15.06.1990", true, "1990-06-15")]
+    [InlineData("12.6.1985", true, "1985-06-12")]
     [InlineData("15.06", false, null)]
     [InlineData("", false, null)]
     [InlineData(null, false, null)]
