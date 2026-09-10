@@ -28,6 +28,8 @@ public class AccommodationListViewModel
 
     public bool IsInfinite { get; set; }
 
+    public string TotalUnsettledTooltip { get; }
+
     public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
         ICurrentUserAccessor userId)
@@ -36,7 +38,7 @@ public class AccommodationListViewModel
         ProjectName = project.ProjectName;
         CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
         CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
-        RoomTypes = roomTypes.Select(rt => new RoomTypeListItemViewModel(rt, userId)).ToList();
+        RoomTypes = roomTypes.Select(rt => new RoomTypeListItemViewModel(rt, userId, project)).ToList();
 
         IsInfinite = RoomTypes.Any(rt => rt.IsInfinite);
 
@@ -46,6 +48,10 @@ public class AccommodationListViewModel
 
         TotalOccupied = RoomTypes.Sum(x => x.Occupied);
         TotalPending = RoomTypes.Sum(x => x.PendingRequests);
+
+        TotalUnsettledTooltip = RoomTypeListItemViewModel.BuildUnsettledTooltip(
+            RoomTypes.Sum(rt => rt.PaidCount),
+            RoomTypes.Sum(rt => rt.AcceptedNotPaidCount));
     }
 }
 
@@ -58,7 +64,16 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
 
     public override int RoomsCount { get; }
 
-    public RoomTypeListItemViewModel(RoomTypeInfoRow row, ICurrentUserAccessor userId)
+    public int FullyFreeRoomsCount { get; }
+    public int FullyOccupiedRoomsCount { get; }
+    public int PartialRoomsCount { get; }
+    public int PartialFreeSeats { get; }
+    public int PartialOccupiedSeats { get; }
+
+    public int PaidCount { get; }
+    public int AcceptedNotPaidCount { get; }
+
+    public RoomTypeListItemViewModel(RoomTypeInfoRow row, ICurrentUserAccessor userId, ProjectInfo projectInfo)
     {
         var entity = row.RoomType;
         var project = row.RoomType.Project;
@@ -85,8 +100,52 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
 
         FreeCapacity = TotalCapacity - Occupied;
         PendingRequests = ApprovedClaims - Occupied;
+
+        FullyFreeRoomsCount = row.FullyFreeRoomsCount;
+        FullyOccupiedRoomsCount = row.FullyOccupiedRoomsCount;
+        PartialRoomsCount = RoomsCount - FullyFreeRoomsCount - FullyOccupiedRoomsCount;
+        PartialFreeSeats = FreeCapacity - (Capacity * FullyFreeRoomsCount);
+        PartialOccupiedSeats = Occupied - (Capacity * FullyOccupiedRoomsCount);
+
+        var unsettledClaims = entity.Desirous
+            .Where(ar => ar.AccommodationId == null)
+            .SelectMany(ar => ar.Subjects);
+
+        PaidCount = unsettledClaims.Count(claim =>
+        {
+            var balance = claim.CalculateClaimBalance(projectInfo);
+            var status = FinanceExtensions.GetClaimPaymentStatus(balance.TotalFee, balance.FeePaid);
+            return status is ClaimPaymentStatus.Paid or ClaimPaymentStatus.Overpaid;
+        });
+        AcceptedNotPaidCount = PendingRequests - PaidCount;
     }
 
     public int ApprovedClaims { get; set; }
     public int FreeCapacity { get; }
+
+    public string FreeTooltip
+        => PartialRoomsCount > 0
+            ? $"{Capacity} (это вместимость номера) х {FullyFreeRoomsCount} (это кол-во полностью свободных номеров) + {PartialFreeSeats} (количество свободных мест в частично занятых номерах) = {FreeCapacity} (всего свободных мест в этой категории)"
+            : $"{Capacity} (это вместимость номера) х {FullyFreeRoomsCount} (это кол-во полностью свободных номеров) = {FreeCapacity} (всего свободных мест в этой категории)";
+
+    public string OccupiedTooltip
+        => PartialRoomsCount > 0
+            ? $"{Capacity} (это вместимость номера) х {FullyOccupiedRoomsCount} (это кол-во полностью занятых номеров) + {PartialOccupiedSeats} (количество занятых мест в частично занятых номерах) = {Occupied} (всего занятых мест в этой категории)"
+            : $"{Capacity} (это вместимость номера) х {FullyOccupiedRoomsCount} (это кол-во полностью занятых номеров) = {Occupied} (всего занятых мест в этой категории)";
+
+    public string UnsettledTooltip => BuildUnsettledTooltip(PaidCount, AcceptedNotPaidCount);
+
+    public static string BuildUnsettledTooltip(int paidCount, int acceptedNotPaidCount)
+    {
+        var parts = new List<string>();
+        if (paidCount != 0 || acceptedNotPaidCount == 0)
+        {
+            parts.Add($"{paidCount} (оплаченных)");
+        }
+        if (acceptedNotPaidCount != 0)
+        {
+            parts.Add($"{acceptedNotPaidCount} (принятых, не оплаченных)");
+        }
+        return $"{string.Join(" + ", parts)} = {paidCount + acceptedNotPaidCount} (всего)";
+    }
 }

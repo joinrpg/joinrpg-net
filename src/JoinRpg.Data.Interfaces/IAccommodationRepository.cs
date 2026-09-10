@@ -19,6 +19,16 @@ public class RoomTypeInfoRow
     public int Occupied { get; set; }
     public int RoomsCount { get; set; }
     public int ApprovedClaims { get; set; }
+
+    /// <summary>
+    /// Number of rooms of this type that have nobody living in them
+    /// </summary>
+    public int FullyFreeRoomsCount { get; set; }
+
+    /// <summary>
+    /// Number of rooms of this type that are filled to capacity
+    /// </summary>
+    public int FullyOccupiedRoomsCount { get; set; }
 }
 
 public class ClaimAccommodationInfoRow

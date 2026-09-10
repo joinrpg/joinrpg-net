@@ -39,9 +39,8 @@
       <th>Название</th>
       <th class="visible-lg">Описание</th>
       <th class="price-table" style="min-width: 10em; width: 10em;">Цена</th>
-      <th class="price-table">Мест</th>
-      <th class="price-table">Свободных</th>
-      <th class="price-table">Заявки<br />(не&nbsp;заселено&nbsp;/&nbsp;заселено)</th>
+      <th class="price-table">Места</th>
+      <th class="price-table">Нерасселено</th>
       <th>Флаги</th>
       <th style="min-width: 9em; width: 9em;"></th>
     </tr>
@@ -73,9 +72,12 @@
       {
         <td class="price-value">∞</td>
       }
-      <td class="price-value">@(Model.FreeCapacity)</td>
       <td class="price-value">
-        @(Model.TotalPending) / @(Model.TotalOccupied)
+        <div>Свободно: @(Model.FreeCapacity)</div>
+        <div>Занято: @(Model.TotalOccupied)</div>
+      </td>
+      <td class="price-value">
+        <span title="@Model.TotalUnsettledTooltip">@(Model.TotalPending)</span>
         <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>
       </td>
       <td colspan="2">

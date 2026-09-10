@@ -16,15 +16,20 @@
         <td class="price-value">@(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = Model.Cost }))</td>
         @if (Model.IsInfinite)
         {
-            <td class="price-value">@Model.Capacity &#x2715; ∞ = ∞</td>
+            <td class="price-value">
+                <div>@Model.Capacity &#x2715; ∞ = ∞</div>
+                <div><span title="@Model.OccupiedTooltip">Занято: @(Model.Occupied)</span></div>
+            </td>
         }
         else
         {
-            <td class="price-value">@Model.Capacity &#x2715; @Model.RoomsCount = @Model.TotalCapacity</td>
+            <td class="price-value">
+                <div><span title="@Model.FreeTooltip">Свободно: @(Model.FreeCapacity)</span></div>
+                <div><span title="@Model.OccupiedTooltip">Занято: @(Model.Occupied)</span></div>
+            </td>
         }
-        <td class="price-value">@(Model.FreeCapacity)</td>
         <td class="price-value">
-            @(Model.PendingRequests) / @(Model.Occupied)
+            <span title="@Model.UnsettledTooltip">@(Model.PendingRequests)</span>
             <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-sm btn-default" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"><join-icon icon="MenuHorizontal" /></a>
         </td>
         <td>
