@@ -120,8 +120,6 @@ public static class ClaimAcceptOrMoveValidationExtensions
     /// <param name="operation">Операция, ради которой считаются правила.</param>
     private static IEnumerable<AddClaimForbideReason> ValidateImpl(this Character character, UserInfo? playerUserId, Claim? existingClaim, ProjectInfo projectInfo, ClaimOperation operation)
     {
-        var project = character.Project;
-
         if (ValidateProjectImpl(projectInfo) is AddClaimForbideReason projectReason)
         {
             yield return projectReason;
@@ -174,9 +172,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
                 yield return AddClaimForbideReason.AlreadySent;
             }
 
-            // TODO вот здесь бы проверять по UserInfo
-            if (projectInfo.ClaimSettings.StrictlyOneCharacter &&
-                project.Claims.OfUserApproved(userInfo.UserId.Value).Except([existingClaim]).Any())
+            if (projectInfo.ClaimSettings.StrictlyOneCharacter && HasOtherApprovedClaim(userInfo, projectInfo, existingClaim))
             {
                 yield return AddClaimForbideReason.OnlyOneCharacter;
             }
@@ -186,6 +182,23 @@ public static class ClaimAcceptOrMoveValidationExtensions
                 yield return r;
             }
         }
+    }
+
+    /// <summary>
+    /// У игрока уже есть утверждённая заявка в этом проекте — не считая той, которую переносим.
+    /// </summary>
+    /// <remarks>
+    /// Считается по <see cref="UserInfo.ActiveClaims"/>, а не по заявкам всего проекта из EF-графа:
+    /// правилам не нужны чужие заявки, а поднимать ради этого весь граф дорого.
+    /// </remarks>
+    private static bool HasOtherApprovedClaim(UserInfo userInfo, ProjectInfo projectInfo, Claim? existingClaim)
+    {
+        var existingClaimId = existingClaim?.GetId();
+
+        return userInfo.ActiveClaims.Any(claim =>
+            claim.ProjectId == projectInfo.ProjectId
+            && claim.IsApproved
+            && claim.ClaimId != existingClaimId);
     }
 
     private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)

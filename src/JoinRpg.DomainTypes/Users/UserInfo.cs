@@ -6,7 +6,7 @@ namespace JoinRpg.DomainTypes.Users;
 public record class UserInfo(
     UserIdentification UserId,
     UserSocialNetworks Social,
-    IReadOnlyCollection<ClaimIdentification> ActiveClaims, // Для заявок хорошо бы иметь статусы
+    IReadOnlyCollection<UserClaimInfo> ActiveClaims,
     IReadOnlyCollection<ProjectIdentification> ActiveProjects,
     IReadOnlyCollection<ProjectIdentification> AllProjects,
     bool IsAdmin,
