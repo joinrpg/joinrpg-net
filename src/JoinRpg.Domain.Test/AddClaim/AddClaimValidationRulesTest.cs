@@ -134,6 +134,45 @@ public class AddClaimValidationRulesTest
         Mock.Character.ValidateIfCanAddClaim(playerWithVerifiedVk, projectInfo).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void CantSendClaimIfPhoneRequiredButMissing()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).Kinds()
+            .ShouldContain(AddClaimForbideReason.PhoneMissing);
+    }
+
+    [Fact]
+    public void CanSendClaimIfPhoneRequiredAndFilled()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
+        var playerWithPhone = Mock.PlayerInfo with { PhoneNumber = "+79991234567" };
+        Mock.Character.ValidateIfCanAddClaim(playerWithPhone, projectInfo).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CantSendClaimIfRealNameRequiredButMissing()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireRealName = MandatoryStatus.Required });
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).Kinds()
+            .ShouldContain(AddClaimForbideReason.RealNameMissing);
+    }
+
+    [Fact]
+    public void CanSendClaimIfRealNameRequiredAndFilled()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireRealName = MandatoryStatus.Required });
+        var playerWithRealName = Mock.PlayerInfo with
+        {
+            UserFullName = new UserFullName(new PrefferedName("Player"), new BornName("Иван"), new SurName("Иванов"), null),
+        };
+        Mock.Character.ValidateIfCanAddClaim(playerWithRealName, projectInfo).ShouldBeEmpty();
+    }
+
     private void ShouldBeAllowed(Character mockCharacter, ProjectInfo projectInfo)
         => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo).ShouldBeEmpty();
 

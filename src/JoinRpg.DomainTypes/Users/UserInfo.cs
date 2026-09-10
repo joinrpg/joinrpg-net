@@ -25,6 +25,17 @@ public record class UserInfo(
     public bool PhoneNumberConfirmed { get; } = false;
 
     /// <summary>
+    /// Какие элементы профиля не заполнены (без учёта требований конкретного проекта — см.
+    /// <see cref="UserProfileProblemsCalculator"/> для сопоставления с проектными настройками).
+    /// </summary>
+    public IReadOnlyCollection<UserProfileItemType> GetMissingItems()
+        => UserProfileItemsCalculator.GetMissingItems(
+            hasTelegram: Social.Telegram is not null,
+            hasVerifiedVkontakte: Social.Vk?.IsVerified == true,
+            PhoneNumber,
+            UserFullName.FullName);
+
+    /// <summary>
     /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.
     /// </summary>
     /// <remarks>
