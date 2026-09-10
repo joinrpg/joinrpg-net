@@ -97,7 +97,7 @@ public class ForumController(
         var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var isPlayer = forumThread.IsVisibleToPlayer &&
                        (await claimsRepository.GetClaimsForPlayer(projectid, currentUserAccessor.UserIdentification, ClaimStatusSpec.Approved)).Any(
-                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
+                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId, projectInfo));
 
         if (!isMaster && !isPlayer)
         {
@@ -110,7 +110,8 @@ public class ForumController(
     public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
     {
         CommentDiscussion discussion = await forumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
-        discussion.RequestAnyAccess(currentUserAccessor.UserIdentification);
+        var discussionProjectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+        discussion.RequestAnyAccess(currentUserAccessor.UserIdentification, discussionProjectInfo);
 
         if (discussion == null)
         {
@@ -188,7 +189,7 @@ public class ForumController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
         var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var threads = await forumRepository.GetThreads(projectid.Value, isMaster, new[] { characterGroupId });
-        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, charGroupFullInfo, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentification)), currentUserAccessor.UserIdentification);
+        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, charGroupFullInfo, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentification, projectInfo)), currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
 

@@ -5,6 +5,9 @@ public static class CharacterParentGroupExtensions
     public static IEnumerable<CharacterGroupIdentification> GetParentGroupIdsToTop(this Character target, ProjectInfo projectInfo)
         => projectInfo.GetParentGroupIdsIncludingThis(target.GetDirectGroupIds());
 
+    public static bool IsPartOfGroup(this Character character, int characterGroupId, ProjectInfo projectInfo)
+        => character.GetParentGroupIdsToTop(projectInfo).Any(g => g.CharacterGroupId == characterGroupId);
+
     public static IEnumerable<CharacterGroupIdentification> GetDirectGroupIds(this Character target)
         => CharacterGroupIdentification.FromList(target.ParentCharacterGroupIds, new(target.ProjectId));
 

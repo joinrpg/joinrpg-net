@@ -110,7 +110,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var isPlayer = forumThread.IsVisibleToPlayer &&
                        (await ClaimsRepository.GetClaimsForPlayer(forumThreadId.ProjectId, ClaimStatusSpec.Approved, CurrentUserId)).Any(
-                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId));
+                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId, projectInfo));
 
         if (!isMaster && !isPlayer)
         {

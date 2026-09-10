@@ -133,19 +133,19 @@ public static class ProjectEntityExtensions
   where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException(entity.ProjectIdentification) : entity;
 
     [Obsolete]
-    public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
+    public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId, ProjectInfo projectInfo)
     {
-        if (!discussion.HasAnyAccess(currentUserId))
+        if (!discussion.HasAnyAccess(currentUserId, projectInfo))
         {
-            throw new NoAccessToProjectException(discussion, currentUserId);
+            throw new NoAccessToProjectException(projectInfo, currentUserId);
         }
     }
 
     [Obsolete]
-    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId);
+    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId, ProjectInfo projectInfo) => discussion.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId, projectInfo);
 
     [Obsolete]
-    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
+    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId, ProjectInfo projectInfo)
     {
         var forumThread =
           commentDiscussion.GetForumThread();
@@ -154,7 +154,7 @@ public static class ProjectEntityExtensions
           commentDiscussion.GetClaim();
         if (forumThread != null)
         {
-            return forumThread.HasPlayerAccess(currentUserId);
+            return forumThread.HasPlayerAccess(currentUserId, projectInfo);
         }
         if (claim != null)
         {
@@ -164,22 +164,22 @@ public static class ProjectEntityExtensions
     }
 
     [Pure]
-    public static bool HasPlayerAccess(this IForumThread forumThread, int? currentUserId)
+    public static bool HasPlayerAccess(this IForumThread forumThread, int? currentUserId, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(forumThread);
 
         return currentUserId != null && forumThread.IsVisibleToPlayer &&
                forumThread.Project.Claims.OfUserApproved((int)currentUserId)
-                 .Any(c => c.Character.IsPartOfGroup(forumThread.CharacterGroupId));
+                 .Any(c => c.Character.IsPartOfGroup(forumThread.CharacterGroupId, projectInfo));
     }
 
     [Pure]
     [Obsolete]
-    public static bool HasAnyAccess(this IForumThread forumThread, int? currentUserId)
+    public static bool HasAnyAccess(this IForumThread forumThread, int? currentUserId, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(forumThread);
 
-        return forumThread.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId);
+        return forumThread.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId, projectInfo);
     }
 
     [Pure]

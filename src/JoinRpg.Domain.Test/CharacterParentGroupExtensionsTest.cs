@@ -23,10 +23,8 @@ public class CharacterParentGroupExtensionsTest
     }
 
     [Fact]
-    public void ParentGroupIdsToTop_ByProjectInfo_MatchesEntityWalk()
+    public void GetParentGroupIdsToTop_ByProjectInfo_ReturnsAllAncestorsIncludingInactive()
     {
-        // Обход ленивых EF-навигаций и выборка по ProjectInfo должны давать одно и то же:
-        // на этом держится переход CustomFieldsViewModel на версию с ProjectInfo.
         var mock = new MockedProject();
         var rootGroup = mock.Project.CharacterGroups.Single(g => g.IsRoot);
 
@@ -44,15 +42,8 @@ public class CharacterParentGroupExtensionsTest
         mock.Character.ParentCharacterGroupIds = [leafGroup.CharacterGroupId, inactiveGroup.CharacterGroupId];
         mock.ReInitProjectInfo();
 
-#pragma warning disable CS0618 // сравниваем именно с устаревшей реализацией
-        var byEntityWalk = mock.Character.GetParentGroupIdsToTop();
-#pragma warning restore CS0618
-
         mock.Character.GetParentGroupIdsToTop(mock.ProjectInfo)
-            .ShouldBe(byEntityWalk, ignoreOrder: true);
-
-        // Страж от вырожденного сравнения: набор должен быть непустым и содержать предков.
-        byEntityWalk.Select(g => g.CharacterGroupId)
+            .Select(g => g.CharacterGroupId)
             .ShouldBe(
                 [rootGroup.CharacterGroupId, midGroup.CharacterGroupId, leafGroup.CharacterGroupId, inactiveGroup.CharacterGroupId],
                 ignoreOrder: true);

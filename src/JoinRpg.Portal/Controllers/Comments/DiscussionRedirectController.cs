@@ -21,10 +21,10 @@ public class DiscussionRedirectController(
     public async Task<ActionResult> ToDiscussion(ProjectIdentification projectId, int commentDiscussionId)
     {
         CommentDiscussion discussion = await forumRepository.GetDiscussion(projectId, commentDiscussionId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        if (!discussion.HasAnyAccess(currentUserAccessor.UserId))
+        if (!discussion.HasAnyAccess(currentUserAccessor.UserId, projectInfo))
         {
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
             return NoAccesToProjectView(projectInfo, currentUserAccessor);
         }
 
@@ -36,10 +36,10 @@ public class DiscussionRedirectController(
     public async Task<ActionResult> ToComment(ProjectIdentification projectId, int commentid)
     {
         CommentDiscussion discussion = await forumRepository.GetDiscussionByComment(projectId, commentid);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        if (!discussion.HasAnyAccess(currentUserAccessor.UserId))
+        if (!discussion.HasAnyAccess(currentUserAccessor.UserId, projectInfo))
         {
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
             return NoAccesToProjectView(projectInfo, currentUserAccessor);
         }
 
@@ -53,10 +53,10 @@ public class DiscussionRedirectController(
         // Первичный ключ FinanceOperation — это CommentId связанного комментария,
         // поэтому financeOperationId совпадает с id комментария операции.
         CommentDiscussion discussion = await forumRepository.GetDiscussionByComment(projectId, financeOperationId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        if (!discussion.HasAnyAccess(currentUserAccessor.UserId))
+        if (!discussion.HasAnyAccess(currentUserAccessor.UserId, projectInfo))
         {
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
             return NoAccesToProjectView(projectInfo, currentUserAccessor);
         }
 
