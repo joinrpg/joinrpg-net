@@ -19,8 +19,6 @@ public class FieldSaveHelperTest
 
     private class MockedFieldSaveHelper(ITestOutputHelper testOutputHelper) : FieldSaveHelper(new MockedFieldDefaultValueGenerator(), new XUnitLogger<FieldSaveHelper>(testOutputHelper))
     {
-        protected override void MarkAsUsed(IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields, Project project) { }
-
         // Тестам удобно задавать поля словарём — в проде его превращает в слой граница
         // (форма портала, XGameApi). Перегрузки держат тесты неизменными, чтобы они остались
         // честным оракулом поведения при переходе на FieldLayerContainer.

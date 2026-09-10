@@ -62,6 +62,33 @@ internal interface IProjectPropsService
         [CallerMemberName] string operationName = "");
 
     /// <summary>
+    /// Изменяет метаданные проекта как побочный эффект операции, права на которую вызывающий
+    /// проверил сам (сейчас — отметка <c>WasEverUsed</c> при сохранении полей заявки или персонажа).
+    /// Мастерские права здесь НЕ проверяются: отметку ставит тот, кто заполнил поле, — в том числе
+    /// игрок в своей заявке, а мастерских прав у него нет. Всё остальное — как в
+    /// <see cref="ChangeProjectProperties{TArgs}"/>: своя <c>SaveChanges</c>, пересборка
+    /// <see cref="ProjectInfo"/>, обновление кэша и логирование.
+    /// </summary>
+    /// <remarks>
+    /// Обратная сторона собственной <c>SaveChanges</c>: репозитории работают с тем же
+    /// <c>DbContext</c>, что и вызывающий сценарий, поэтому вызов досрочно сбрасывает в БД и его
+    /// незакоммиченные изменения. Поэтому вызывать только тогда, когда менять действительно есть
+    /// что — см. <c>FieldSaveHelper.MarkAsUsed</c>.
+    /// </remarks>
+    /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
+    /// <param name="projectId">Проект, метаданные которого меняются.</param>
+    /// <param name="activeRequirement">Допустима ли операция над неактивным проектом.</param>
+    /// <param name="arguments">Аргументы операции; передаются в <paramref name="action"/> и логируются.</param>
+    /// <param name="action">Мутация EF-сущности проекта. Второй параметр — снимок метаданных ДО изменения.</param>
+    /// <param name="operationName">Имя операции для лога; по умолчанию — имя вызывающего метода.</param>
+    Task ChangeProjectPropertiesAsSideEffect<TArgs>(
+        ProjectIdentification projectId,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Action<ProjectMutationContext<TArgs>> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
     /// Создаёт новый проект: <paramref name="factory"/> строит EF-сущность <see cref="Project"/>
     /// (используя <see cref="ProjectCreationContext{TArgs}"/> для аудита), сервис добавляет её в БД
     /// и сохраняет. Единственная точка создания <see cref="Project"/>.
