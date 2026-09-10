@@ -37,7 +37,7 @@ public static class ClaimExtensions
     {
         if (!possibleStatus.Contains(claim.ClaimStatus))
         {
-            throw new ClaimWrongStatusException(claim, possibleStatus);
+            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus, possibleStatus);
         }
     }
 
@@ -83,7 +83,7 @@ public static class ClaimExtensions
     {
         if (!claim.ClaimStatus.CanChangeTo(targetStatus))
         {
-            throw new ClaimWrongStatusException(claim);
+            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
         }
     }
 

@@ -1,4 +1,3 @@
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 
@@ -124,19 +123,6 @@ public class ProjectEntityDeactivatedException : JoinRpgProjectEntityException
     public ProjectEntityDeactivatedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity")
     {
 
-    }
-}
-
-public class ClaimWrongStatusException : JoinRpgProjectEntityException
-{
-    public ClaimWrongStatusException(Claim entity, IEnumerable<ClaimStatus> possible)
-      : base(entity, $"This operation can be performed only on claims with status {string.Join(", ", possible.Select(s => s.ToString()))}, but current status is {entity.ClaimStatus}")
-    {
-    }
-
-    public ClaimWrongStatusException(Claim entity)
-      : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}.")
-    {
     }
 }
 

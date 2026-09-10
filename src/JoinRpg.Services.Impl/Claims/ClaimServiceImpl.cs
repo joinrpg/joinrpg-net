@@ -32,7 +32,7 @@ internal class ClaimServiceImpl(
         var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
         if (!validator.CanCheckInInPrinciple)
         {
-            throw new ClaimWrongStatusException(claim);
+            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
         }
 
         ClaimSimpleChangedNotification? financeEmail = null;
@@ -50,7 +50,7 @@ internal class ClaimServiceImpl(
 
         if (!validator.CanCheckInNow)
         {
-            throw new ClaimWrongStatusException(claim);
+            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
         }
 
         claim.ClaimStatus = ClaimStatus.CheckedIn;
@@ -283,7 +283,7 @@ internal class ClaimServiceImpl(
 
         if (claim.ClaimStatus == ClaimStatus.CheckedIn)
         {
-            throw new ClaimWrongStatusException(claim);
+            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
         }
 
         commentText ??= "";
@@ -880,7 +880,7 @@ internal class ClaimServiceImpl(
         // Принять можно только приглашение от мастера
         if (claim.ClaimStatus != ClaimStatus.AddedByMaster)
         {
-            throw new ClaimWrongStatusException(claim);
+            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
         }
 
         claim.PlayerAllowedSenstiveData = sensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
