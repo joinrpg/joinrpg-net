@@ -158,21 +158,19 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
     private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
     {
-        if (projectInfo.ProfileRequirementSettings.RequireVkontakte == MandatoryStatus.Required && userInfo.Social.Vk?.IsVerified != true)
+        var problems = UserProfileProblemsCalculator.GetProblems(userInfo.GetMissingItems(), projectInfo.ProfileRequirementSettings);
+
+        // Заявку блокируют только обязательные (Required => Warning) требования — Recommended (Hint) не мешает подать заявку.
+        foreach (var problem in problems.Where(p => p.Severity == ProblemSeverity.Warning))
         {
-            yield return AddClaimForbideReason.VkontakteMissing;
-        }
-        if (projectInfo.ProfileRequirementSettings.RequireTelegram == MandatoryStatus.Required && userInfo.Social.Telegram is null)
-        {
-            yield return AddClaimForbideReason.TelegramMissing;
-        }
-        if (projectInfo.ProfileRequirementSettings.RequireRealName == MandatoryStatus.Required && !userInfo.HasCorrectRealName)
-        {
-            yield return AddClaimForbideReason.RealNameMissing;
-        }
-        if (projectInfo.ProfileRequirementSettings.RequirePhone == MandatoryStatus.Required && !userInfo.HasCorrectPhone)
-        {
-            yield return AddClaimForbideReason.PhoneMissing;
+            yield return problem.ItemType switch
+            {
+                UserProfileItemType.Telegram => AddClaimForbideReason.TelegramMissing,
+                UserProfileItemType.Vkontakte => AddClaimForbideReason.VkontakteMissing,
+                UserProfileItemType.Phone => AddClaimForbideReason.PhoneMissing,
+                UserProfileItemType.RealName => AddClaimForbideReason.RealNameMissing,
+                _ => throw new ArgumentOutOfRangeException(nameof(problem)),
+            };
         }
     }
 

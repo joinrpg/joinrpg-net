@@ -25,21 +25,15 @@ public record class UserInfo(
     public bool PhoneNumberConfirmed { get; } = false;
 
     /// <summary>
-    /// Телефон заполнен и не является заведомо неполным (короче <see cref="MinContactLength"/> символов).
+    /// Какие элементы профиля не заполнены (без учёта требований конкретного проекта — см.
+    /// <see cref="UserProfileProblemsCalculator"/> для сопоставления с проектными настройками).
     /// </summary>
-    public bool HasCorrectPhone => IsCorrectContact(PhoneNumber);
-
-    /// <summary>
-    /// ФИО заполнено и не является заведомо неполным (короче <see cref="MinContactLength"/> символов).
-    /// </summary>
-    public bool HasCorrectRealName => IsCorrectContact(UserFullName.FullName);
-
-    /// <summary>
-    /// Минимальная длина значения телефона/ФИО, при которой оно считается заполненным.
-    /// </summary>
-    public const int MinContactLength = 5;
-
-    public static bool IsCorrectContact(string? value) => (value?.Length ?? 0) >= MinContactLength;
+    public IReadOnlyCollection<UserProfileItemType> GetMissingItems()
+        => UserProfileItemsCalculator.GetMissingItems(
+            hasTelegram: Social.Telegram is not null,
+            hasVerifiedVkontakte: Social.Vk?.IsVerified == true,
+            PhoneNumber,
+            UserFullName.FullName);
 
     /// <summary>
     /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.

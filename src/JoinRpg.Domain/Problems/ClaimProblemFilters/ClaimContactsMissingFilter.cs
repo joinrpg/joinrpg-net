@@ -8,16 +8,29 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
 {
     public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
     {
-        return new[]{
-            CheckContact(claim.Player.Extra?.Telegram, projectInfo.ProfileRequirementSettings.RequireTelegram, ClaimProblemType.MissingTelegram),
-            CheckContact(claim.Player.Extra?.VkVerified == true ? claim.Player.Extra.Vk : null, projectInfo.ProfileRequirementSettings.RequireVkontakte, ClaimProblemType.MissingVkontakte),
-            CheckContact(claim.Player.Extra?.PhoneNumber, isMissing: value => !UserInfo.IsCorrectContact(value), projectInfo.ProfileRequirementSettings.RequirePhone, ClaimProblemType.MissingPhone),
-            CheckContact(claim.Player.FullName, isMissing: value => !UserInfo.IsCorrectContact(value), projectInfo.ProfileRequirementSettings.RequireRealName, ClaimProblemType.MissingRealname),
+        var missingItems = UserProfileItemsCalculator.GetMissingItems(
+            hasTelegram: !string.IsNullOrWhiteSpace(claim.Player.Extra?.Telegram),
+            hasVerifiedVkontakte: claim.Player.Extra?.VkVerified == true && !string.IsNullOrWhiteSpace(claim.Player.Extra.Vk),
+            claim.Player.Extra?.PhoneNumber,
+            claim.Player.FullName);
 
-        }
-        .Union(CheckSensitiveDataAccess(claim, projectInfo))
-        .WhereNotNull();
+        var contactProblems = UserProfileProblemsCalculator.GetProblems(missingItems, projectInfo.ProfileRequirementSettings)
+            .Select(ToClaimProblem);
+
+        return contactProblems
+            .Union(CheckSensitiveDataAccess(claim, projectInfo))
+            .WhereNotNull();
     }
+
+    private static ProfileRelatedProblem ToClaimProblem(UserProfileProjectProblem problem)
+        => new(problem.ItemType switch
+        {
+            UserProfileItemType.Telegram => ClaimProblemType.MissingTelegram,
+            UserProfileItemType.Vkontakte => ClaimProblemType.MissingVkontakte,
+            UserProfileItemType.Phone => ClaimProblemType.MissingPhone,
+            UserProfileItemType.RealName => ClaimProblemType.MissingRealname,
+            _ => throw new ArgumentOutOfRangeException(nameof(problem)),
+        }, problem.Severity);
 
     private static IEnumerable<ClaimProblem?> CheckSensitiveDataAccess(Claim claim, ProjectInfo projectInfo)
     {
@@ -37,11 +50,8 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
     }
 
     private static ProfileRelatedProblem? CheckContact(string? contact, MandatoryStatus requirement, ClaimProblemType problemType)
-        => CheckContact(contact, isMissing: string.IsNullOrWhiteSpace, requirement, problemType);
-
-    private static ProfileRelatedProblem? CheckContact(string? contact, Func<string?, bool> isMissing, MandatoryStatus requirement, ClaimProblemType problemType)
     {
-        if (isMissing(contact))
+        if (string.IsNullOrWhiteSpace(contact))
         {
             return requirement switch
             {
