@@ -83,7 +83,22 @@ Yandex Cloud AI Studio MCP Hub подключает внешние MCP-серв�
 `environment.IsDevelopment()`); в production она не попадает. Интеграционные тесты
 авторизуются через существующий `ImpersonationHelpers`, без браузерного флоу.
 
-### 3. Регистрация клиентов: CIMD основной, pre-registration запасной, DCR не реализуем
+### 3. Регистрация клиентов: сегодня admin UI, целевое решение — CIMD, DCR не реализуем
+
+**Текущее состояние.** Регистрация клиентов сделана через admin-панель IdPortal:
+`Components/Pages/Admin/OAuthClientCreate.razor` / `OAuthClientEdit.razor` /
+`OAuthClients.razor`, поверх `IOAuthClientService` и `IOpenIddictApplicationManager`.
+Администратор вручную заводит `client_id`, `client_name` (`DisplayName`, он же уходит
+на экран согласия), `redirect_uris`, тип клиента (Public/Confidential) и явный список
+разрешённых scope (`joinrpg.*` и OIDC-scope взаимоисключающи в форме создания). Записи
+хранятся в БД IdPortal (`IdPortalDbContext`) через стандартные таблицы OpenIddict.
+
+Ранее в этом разделе был описан отдельный config-based механизм pre-registration
+(`OAuthServer:Clients[]` + `OAuthRegistrator`) — он был реализован, а затем удалён
+(коммит `e3973a894` «удалить pre-registration OAuth-клиентов, добавить joinrpg.* scope
+и per-client permissions») в пользу admin UI. Секции `OAuthServer:Clients[]` и класса
+`OAuthRegistrator` в коде больше нет. CIMD, описанный ниже, остаётся нереализованным —
+раздел фиксирует его как целевое решение, а не как факт.
 
 Спецификация определяет три механизма: Client ID Metadata Documents (**SHOULD**),
 pre-registration и Dynamic Client Registration (**MAY**, помечена deprecated —
@@ -120,9 +135,10 @@ CIMD покрывает VS Code, Claude Code и ChatGPT; pre-registration доб
 Опасение про спам регистраций не теоретическое: у Cursor известен баг с новым DCR-вызовом
 на каждом переподключении.
 
-**Реализация CIMD.** В OpenIddict не поддержана, поэтому вклиниваемся в разрешение клиента
+**Реализация CIMD (план, не реализовано).** В OpenIddict не поддержана, поэтому нужно
+вклиниться в разрешение клиента
 на authorize- и token-эндпоинтах: если `client_id` — HTTPS URL с path-компонентом,
-забираем по нему JSON и валидируем. Обязательно целиком:
+забрать по нему JSON и провалидировать. Обязательно целиком:
 
 - `client_id` в документе совпадает с URL, по которому он получен;
 - `redirect_uri` из запроса присутствует в `redirect_uris` документа;
@@ -135,11 +151,12 @@ CIMD покрывает VS Code, Claude Code и ChatGPT; pre-registration доб
   отмечает, что CIMD сам по себе не защищает от подмены localhost);
 - `client_id_metadata_document_supported: true` в метаданных AS.
 
-**Pre-registration** — через существующий механизм IdPortal: секция `OAuthServer:Clients[]`,
-применяется `OAuthRegistrator`. Для каждого клиента фиксируются точные `redirect_uris`,
-grant types (`authorization_code`, `refresh_token`) и явный список разрешённых scope.
-У Cursor два callback'а: `https://www.cursor.com/agents/mcp/oauth/callback`
-и `http://localhost:8787/callback` — регистрировать оба.
+**Pre-registration** для клиентов без CIMD (Cursor, OpenCode) — через уже существующий
+admin UI (см. «Текущее состояние» выше), а не через отдельный config-based механизм.
+Для каждого такого клиента фиксируются точные `redirect_uris`, grant types
+(`authorization_code`, `refresh_token`) и явный список разрешённых scope. У Cursor два
+callback'а: `https://www.cursor.com/agents/mcp/oauth/callback` и
+`http://localhost:8787/callback` — регистрировать оба.
 
 `registration_endpoint` **не публикуется**. В OpenIddict 7.6 DCR всё равно не реализована
 ([openiddict-core#2404](https://github.com/openiddict/openiddict-core/issues/2404)),
