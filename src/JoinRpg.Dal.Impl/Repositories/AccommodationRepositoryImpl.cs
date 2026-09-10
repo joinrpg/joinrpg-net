@@ -43,6 +43,7 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
 
         return await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
             .Include(x => x.Project)
+            .Include(x => x.Desirous.Select(ar => ar.Subjects.Select(c => c.FinanceOperations)))
             .Select(x => new RoomTypeInfoRow()
             {
                 RoomType = x,
@@ -50,6 +51,8 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
                 Occupied = x.ProjectAccommodations.Sum(room => room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count)) ?? 0,
                 RoomsCount = x.ProjectAccommodations.Count,
                 ApprovedClaims = x.Desirous.Sum(ar => (int?)ar.Subjects.Count) ?? 0,
+                FullyFreeRoomsCount = x.ProjectAccommodations.Count(room => (room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count) ?? 0) == 0),
+                FullyOccupiedRoomsCount = x.ProjectAccommodations.Count(room => (room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count) ?? 0) == x.Capacity),
             })
             .ToListAsync()
             .ConfigureAwait(false);

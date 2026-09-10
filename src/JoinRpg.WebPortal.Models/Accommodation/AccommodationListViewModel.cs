@@ -28,6 +28,10 @@ public class AccommodationListViewModel
 
     public bool IsInfinite { get; set; }
 
+    public int TotalPaid { get; }
+
+    public int TotalAcceptedNotPaid { get; }
+
     public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
         ICurrentUserAccessor userId)
@@ -36,7 +40,7 @@ public class AccommodationListViewModel
         ProjectName = project.ProjectName;
         CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
         CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
-        RoomTypes = roomTypes.Select(rt => new RoomTypeListItemViewModel(rt, userId)).ToList();
+        RoomTypes = roomTypes.Select(rt => new RoomTypeListItemViewModel(rt, userId, project)).ToList();
 
         IsInfinite = RoomTypes.Any(rt => rt.IsInfinite);
 
@@ -46,6 +50,9 @@ public class AccommodationListViewModel
 
         TotalOccupied = RoomTypes.Sum(x => x.Occupied);
         TotalPending = RoomTypes.Sum(x => x.PendingRequests);
+
+        TotalPaid = RoomTypes.Sum(rt => rt.PaidCount);
+        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.AcceptedNotPaidCount);
     }
 }
 
@@ -58,7 +65,16 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
 
     public override int RoomsCount { get; }
 
-    public RoomTypeListItemViewModel(RoomTypeInfoRow row, ICurrentUserAccessor userId)
+    public int FullyFreeRoomsCount { get; }
+    public int FullyOccupiedRoomsCount { get; }
+    public int PartialRoomsCount { get; }
+    public int PartialFreeSeats { get; }
+    public int PartialOccupiedSeats { get; }
+
+    public int PaidCount { get; }
+    public int AcceptedNotPaidCount { get; }
+
+    public RoomTypeListItemViewModel(RoomTypeInfoRow row, ICurrentUserAccessor userId, ProjectInfo projectInfo)
     {
         var entity = row.RoomType;
         var project = row.RoomType.Project;
@@ -85,8 +101,38 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
 
         FreeCapacity = TotalCapacity - Occupied;
         PendingRequests = ApprovedClaims - Occupied;
+
+        FullyFreeRoomsCount = row.FullyFreeRoomsCount;
+        FullyOccupiedRoomsCount = row.FullyOccupiedRoomsCount;
+        PartialRoomsCount = RoomsCount - FullyFreeRoomsCount - FullyOccupiedRoomsCount;
+        PartialFreeSeats = FreeCapacity - (Capacity * FullyFreeRoomsCount);
+        PartialOccupiedSeats = Occupied - (Capacity * FullyOccupiedRoomsCount);
+
+        var unsettledClaims = entity.Desirous
+            .Where(ar => ar.AccommodationId == null)
+            .SelectMany(ar => ar.Subjects);
+
+        PaidCount = unsettledClaims.Count(claim =>
+        {
+            var balance = claim.CalculateClaimBalance(projectInfo);
+            var status = FinanceExtensions.GetClaimPaymentStatus(balance.TotalFee, balance.FeePaid);
+            return status is ClaimPaymentStatus.Paid or ClaimPaymentStatus.Overpaid;
+        });
+        AcceptedNotPaidCount = PendingRequests - PaidCount;
     }
 
     public int ApprovedClaims { get; set; }
     public int FreeCapacity { get; }
+
+    // Подписи для tooltip-ов над отдельными цифрами формул в разметке (Index.cshtml, _RoomTypeDetails.cshtml)
+    public const string CapacityTooltip = "это вместимость номера";
+    public const string FullyFreeRoomsTooltip = "это кол-во полностью свободных номеров";
+    public const string PartialFreeSeatsTooltip = "количество свободных мест в частично занятых номерах";
+    public const string TotalFreeTooltip = "всего свободных мест в этой категории";
+    public const string FullyOccupiedRoomsTooltip = "это кол-во полностью занятых номеров";
+    public const string PartialOccupiedSeatsTooltip = "количество занятых мест в частично занятых номерах";
+    public const string TotalOccupiedTooltip = "всего занятых мест в этой категории";
+    public const string PaidTooltip = "оплаченных";
+    public const string AcceptedNotPaidTooltip = "принятых, не оплаченных";
+    public const string TotalUnsettledTooltip = "всего";
 }
