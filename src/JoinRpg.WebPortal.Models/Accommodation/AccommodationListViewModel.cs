@@ -28,7 +28,9 @@ public class AccommodationListViewModel
 
     public bool IsInfinite { get; set; }
 
-    public string TotalUnsettledTooltip { get; }
+    public int TotalPaid { get; }
+
+    public int TotalAcceptedNotPaid { get; }
 
     public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
@@ -49,9 +51,8 @@ public class AccommodationListViewModel
         TotalOccupied = RoomTypes.Sum(x => x.Occupied);
         TotalPending = RoomTypes.Sum(x => x.PendingRequests);
 
-        TotalUnsettledTooltip = RoomTypeListItemViewModel.BuildUnsettledTooltip(
-            RoomTypes.Sum(rt => rt.PaidCount),
-            RoomTypes.Sum(rt => rt.AcceptedNotPaidCount));
+        TotalPaid = RoomTypes.Sum(rt => rt.PaidCount);
+        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.AcceptedNotPaidCount);
     }
 }
 
@@ -123,29 +124,15 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
     public int ApprovedClaims { get; set; }
     public int FreeCapacity { get; }
 
-    public string FreeTooltip
-        => PartialRoomsCount > 0
-            ? $"{Capacity} (это вместимость номера) х {FullyFreeRoomsCount} (это кол-во полностью свободных номеров) + {PartialFreeSeats} (количество свободных мест в частично занятых номерах) = {FreeCapacity} (всего свободных мест в этой категории)"
-            : $"{Capacity} (это вместимость номера) х {FullyFreeRoomsCount} (это кол-во полностью свободных номеров) = {FreeCapacity} (всего свободных мест в этой категории)";
-
-    public string OccupiedTooltip
-        => PartialRoomsCount > 0
-            ? $"{Capacity} (это вместимость номера) х {FullyOccupiedRoomsCount} (это кол-во полностью занятых номеров) + {PartialOccupiedSeats} (количество занятых мест в частично занятых номерах) = {Occupied} (всего занятых мест в этой категории)"
-            : $"{Capacity} (это вместимость номера) х {FullyOccupiedRoomsCount} (это кол-во полностью занятых номеров) = {Occupied} (всего занятых мест в этой категории)";
-
-    public string UnsettledTooltip => BuildUnsettledTooltip(PaidCount, AcceptedNotPaidCount);
-
-    public static string BuildUnsettledTooltip(int paidCount, int acceptedNotPaidCount)
-    {
-        var parts = new List<string>();
-        if (paidCount != 0 || acceptedNotPaidCount == 0)
-        {
-            parts.Add($"{paidCount} (оплаченных)");
-        }
-        if (acceptedNotPaidCount != 0)
-        {
-            parts.Add($"{acceptedNotPaidCount} (принятых, не оплаченных)");
-        }
-        return $"{string.Join(" + ", parts)} = {paidCount + acceptedNotPaidCount} (всего)";
-    }
+    // Подписи для tooltip-ов над отдельными цифрами формул в разметке (Index.cshtml, _RoomTypeDetails.cshtml)
+    public const string CapacityTooltip = "это вместимость номера";
+    public const string FullyFreeRoomsTooltip = "это кол-во полностью свободных номеров";
+    public const string PartialFreeSeatsTooltip = "количество свободных мест в частично занятых номерах";
+    public const string TotalFreeTooltip = "всего свободных мест в этой категории";
+    public const string FullyOccupiedRoomsTooltip = "это кол-во полностью занятых номеров";
+    public const string PartialOccupiedSeatsTooltip = "количество занятых мест в частично занятых номерах";
+    public const string TotalOccupiedTooltip = "всего занятых мест в этой категории";
+    public const string PaidTooltip = "оплаченных";
+    public const string AcceptedNotPaidTooltip = "принятых, не оплаченных";
+    public const string TotalUnsettledTooltip = "всего";
 }

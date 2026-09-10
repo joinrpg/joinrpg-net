@@ -58,26 +58,24 @@
       <td>Итого</td>
       <td class="visible-lg">&nbsp;</td>
       <td class="price-value">&nbsp;</td>
-      @if (Model.TotalCapacity != null)
-      {
-        <td class="price-value">
-          @Model.TotalCapacity
-          @if (Model.IsInfinite)
-          {
-            <text> + ∞</text>
-          }
-        </td>
-      }
-      else
-      {
-        <td class="price-value">∞</td>
-      }
       <td class="price-value">
         <div>Свободно: @(Model.FreeCapacity)</div>
         <div>Занято: @(Model.TotalOccupied)</div>
       </td>
       <td class="price-value">
-        <span title="@Model.TotalUnsettledTooltip">@(Model.TotalPending)</span>
+        @if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
+        {
+          <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.TotalPaid</span>
+        }
+        @if (Model.TotalAcceptedNotPaid != 0)
+        {
+          @if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
+          {
+            <text>+</text>
+          }
+          <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.TotalAcceptedNotPaid</span>
+        }
+        = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@(Model.TotalPending)</span>
         <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>
       </td>
       <td colspan="2">
