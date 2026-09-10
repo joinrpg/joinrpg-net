@@ -3,13 +3,14 @@ using AspNet.Security.OAuth.Vkontakte;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Joinrpg.Web.Identity;
 
 /// <summary>
 /// Task of this class is to extract useful data from social logins
 /// </summary>
-public class ExternalLoginProfileExtractor(IUserService userService, JoinUserManager userManager)
+public class ExternalLoginProfileExtractor(IUserService userService, JoinUserManager userManager, ILogger<ExternalLoginProfileExtractor> logger)
 {
     /// <summary>
     /// Removes external login and cleans up profile fields populated from it.
@@ -39,6 +40,8 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
 
     public async Task TryExtractProfile(JoinIdentityUser user, ExternalLoginInfo loginInfo)
     {
+        logger.LogInformation("TryExtractProfile для {userId} по логину {loginProvider}", user.Id, loginInfo.LoginProvider);
+
         UserFullName userFullName = TryGetUserName(loginInfo);
         await userService.SetNameIfNotSetWithoutAccessChecks(user.Id, userFullName);
 
@@ -48,9 +51,15 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
 
             await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vk, avatar);
 
-            if (VkBirthDateParser.TryParse(loginInfo.Principal.FindFirstValue(IdentityConfigurator.VkBirthDateClaimType), out var birthDate))
+            var rawBirthDate = loginInfo.Principal.FindFirstValue(IdentityConfigurator.VkBirthDateClaimType);
+            if (VkBirthDateParser.TryParse(rawBirthDate, out var birthDate))
             {
                 await userService.SetBirthDateIfNotSetWithoutAccessChecks(new UserIdentification(user.Id), birthDate);
+            }
+            else
+            {
+                logger.LogInformation("Не удалось получить дату рождения из ВК для {userId}: claim {claimType} = {rawBirthDate}",
+                    user.Id, IdentityConfigurator.VkBirthDateClaimType, rawBirthDate ?? "<null>");
             }
         }
     }

@@ -147,7 +147,15 @@ public class UserServiceImpl(
         var user = await UserRepository.WithProfile(userId.Value);
 
         user.Extra ??= new UserExtra();
-        user.Extra.BirthDate ??= birthDate.ToDateTime(TimeOnly.MinValue);
+
+        if (user.Extra.BirthDate is DateTime existing)
+        {
+            logger.LogInformation("Birth date for {userId} already set to {existing}, skipping value {birthDate} from external login", userId, existing, birthDate);
+            return;
+        }
+
+        logger.LogInformation("Setting birth date for {userId} to {birthDate} from external login", userId, birthDate);
+        user.Extra.BirthDate = birthDate.ToDateTime(TimeOnly.MinValue);
 
         await UnitOfWork.SaveChangesAsync();
     }
