@@ -65,7 +65,7 @@
     private string? successMessage = null;
 
     private CharacterListType characterListType =>
-        HasMultiplePlayers(model.UserLinks) ? CharacterListType.AvailableTemplates : CharacterListType.Available;
+        HasMultiplePlayers(model.UserLinks) ? CharacterListType.AvailableTemplatesForMaster : CharacterListType.AvailableForMaster;
 
     private static bool HasMultiplePlayers(List<string> userLinks) => userLinks.Count(l => !string.IsNullOrWhiteSpace(l)) > 1;
 

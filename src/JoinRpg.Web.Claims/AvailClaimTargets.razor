@@ -1,12 +1,22 @@
 <FormHorizontal>
     <FormRow Label="Переместить заявку">
-        <SingleCharacterSelector Name="characterId" ProjectId="@ProjectId" ListType="@CharacterListType.Available" AllowEmpty="false" ExcludeCharacterIds="@excludeCharacterIds" />
+        <SingleCharacterSelector Name="characterId" ProjectId="@ProjectId" ListType="@listType" AllowEmpty="false" ExcludeCharacterIds="@excludeCharacterIds" />
     </FormRow>
 </FormHorizontal>
 
 @code {
     [Parameter, EditorRequired] public ProjectIdentification ProjectId { get; set; }
     [Parameter, EditorRequired] public CharacterIdentification CurrentCharacterId { get; set; }
+
+    /// <summary>
+    /// Утверждённую заявку нельзя перенести в слот, поэтому слоты в список не попадают.
+    /// См. AddClaimForbideReason.ApprovedClaimMovedToSlot.
+    /// </summary>
+    [Parameter] public bool ClaimIsApproved { get; set; }
+
+    private CharacterListType listType => ClaimIsApproved
+        ? CharacterListType.AvailableNonSlotsForMaster
+        : CharacterListType.AvailableForMaster;
 
     private CharacterIdentification[] excludeCharacterIds => [CurrentCharacterId];
 }

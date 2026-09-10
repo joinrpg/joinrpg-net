@@ -27,7 +27,7 @@
         <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterSelector)"
                    param-Name="nameof(Model.CharacterId)"
                    param-ProjectId="new JoinRpg.DomainTypes.ProjectIdentification(Model.ProjectId)"
-                   param-ListType="JoinRpg.Web.ProjectCommon.CharacterListType.Available"
+                   param-ListType="JoinRpg.Web.ProjectCommon.CharacterListType.AvailableForMaster"
                    param-Multiple="false"
                    render-mode="Static" />
         @Html.ValidationMessageFor(model => model.CharacterId, "", new {@class = "text-danger"})

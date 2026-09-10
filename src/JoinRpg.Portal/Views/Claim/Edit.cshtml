@@ -329,9 +329,11 @@ new { Model.ProjectId, Model.Player.UserId }, null).
 new { Model.CharacterId, Model.ProjectId }, null)
                                 Вам необходимо выбрать, куда перенести эту заявку.
                             </div>
+                            @* RestoreByMaster переводит заявку в AddedByMaster, так что она не утверждена и слоты допустимы. *@
                             @(await Html.RenderComponentAsync<AvailClaimTargets>(RenderMode.WebAssembly, new {
                                 ProjectId = new ProjectIdentification(Model.ProjectId),
                                 CurrentCharacterId = new CharacterIdentification(Model.ProjectId, Model.CharacterId),
+                                ClaimIsApproved = false,
                             }))
                         }
                         else
