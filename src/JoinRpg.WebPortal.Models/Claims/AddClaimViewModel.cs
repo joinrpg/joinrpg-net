@@ -61,7 +61,7 @@ public class AddClaimViewModel : IProjectIdAware
 
         ProjectLifecycleStatus = projectInfo.ProjectStatus;
 
-        WarnForAnotherClaim = claimSource.Project.Claims.OfUserActive(userInfo.UserId.Value).Any();
+        WarnForAnotherClaim = userInfo.ActiveClaims.Any(claim => claim.ProjectId == projectInfo.ProjectId);
 
         ValidationStatus = disallowReasons;
         ProjectAllowsMultipleCharacters = !projectInfo.ClaimSettings.StrictlyOneCharacter;

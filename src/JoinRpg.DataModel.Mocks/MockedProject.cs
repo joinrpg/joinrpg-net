@@ -14,7 +14,22 @@ public class MockedProject
     public Project Project { get; }
     public CharacterGroup Group { get; }
     public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>() };
-    public UserInfo PlayerInfo = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("player@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Player"), null, null, null), false, null, HasPassword: false);
+    private UserInfo PlayerInfoTemplate { get; } = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("player@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Player"), null, null, null), false, null, HasPassword: false);
+
+    /// <summary>
+    /// <see cref="UserInfo"/> игрока, согласованный с заявками мока.
+    /// </summary>
+    /// <remarks>
+    /// Именно свойство, а не поле: правила заявки читают <see cref="UserInfo.ActiveClaims"/>, и
+    /// если зафиксировать его на момент создания мока, заявки, созданные тестом позже, туда не
+    /// попадут — а правила молча решат, что заявок у игрока нет.
+    /// </remarks>
+    public UserInfo PlayerInfo => PlayerInfoTemplate with
+    {
+        ActiveClaims = [.. Player.Claims
+            .Where(claim => claim.ClaimStatus.IsActive())
+            .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
+    };
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
 
     public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }

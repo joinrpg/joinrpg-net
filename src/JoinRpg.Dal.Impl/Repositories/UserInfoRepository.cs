@@ -107,7 +107,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Email,
                 user.ExternalLogins,
                 user.Extra.Telegram,
-                Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId }),
+                Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId, claim.ClaimStatus }),
                 Projects = user.ProjectAcls.Select(acl => new { acl.ProjectId, acl.Project.Active }),
                 user.Auth.IsAdmin,
                 user.Extra!.Livejournal,
@@ -146,7 +146,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         return new UserInfo(
             new UserIdentification(result.UserId),
             new UserSocialNetworks(telegram, result.Livejournal, result.AllRpgInfoId, vk, result.SocialNetworksAccess),
-            result.Claims.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).ToList(),
+            result.Claims.Select(c => new UserClaimInfo(new ClaimIdentification(c.ProjectId, c.ClaimId), c.ClaimStatus)).ToList(),
             result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.IsAdmin,
