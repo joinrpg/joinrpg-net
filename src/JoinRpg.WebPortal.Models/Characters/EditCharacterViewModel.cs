@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -23,11 +24,11 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
     [ReadOnly(true)]
     public bool IsDefaultTemplate { get; private set; }
 
-    public EditCharacterViewModel Fill(Character field, UserIdentification currentUserId, ProjectInfo projectInfo)
+    public EditCharacterViewModel Fill(Character field, CharacterInfo characterInfo, UserIdentification currentUserId, ProjectInfo projectInfo)
     {
-        Navigation = CharacterNavigationViewModel.FromCharacter(field,
+        Navigation = CharacterNavigationViewModel.FromCharacter(characterInfo,
             CharacterNavigationPage.Editing,
-            currentUserId, projectInfo);
+            currentUserId);
         FillFields(field, currentUserId, projectInfo);
 
         ActiveClaimsCount = field.Claims.Count(claim => claim.ClaimStatus.IsActive());

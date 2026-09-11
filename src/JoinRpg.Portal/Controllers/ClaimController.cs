@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -25,6 +26,7 @@ public class ClaimController(
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IUserRepository UserRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
@@ -116,6 +118,7 @@ public class ClaimController(
 
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
+            await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId()),
             plots,
             projectInfo,
             claimValidator,

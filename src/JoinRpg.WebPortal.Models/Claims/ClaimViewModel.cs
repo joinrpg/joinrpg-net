@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
@@ -92,6 +93,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
+      CharacterInfo characterInfo,
       IReadOnlyCollection<PlotTextDto> plotElements,
       ProjectInfo projectInfo,
       IProblemValidator<Claim> problemValidator,
@@ -131,9 +133,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ResponsibleMaster = claim.ResponsibleMasterUser;
         Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo);
         Navigation =
-            CharacterNavigationViewModel.FromClaim(claim,
+            CharacterNavigationViewModel.FromClaim(characterInfo,
+                claim.GetId(),
                 currentUser.UserIdentification,
-                CharacterNavigationPage.Claim, projectInfo);
+                CharacterNavigationPage.Claim);
         Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
         PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUser);
         ProjectActive = claim.Project.Active;

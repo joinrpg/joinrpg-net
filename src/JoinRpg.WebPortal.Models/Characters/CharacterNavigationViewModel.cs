@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -9,81 +7,83 @@ using JoinRpg.Web.Models.UserProfile;
 namespace JoinRpg.Web.Models.Characters;
 
 /// <summary>
-/// TODO: LEO describe the meaning of this tricky class properly
+/// Шапка страниц персонажа и заявки: кто это, что с ним можно сделать и на какую из заявок
+/// переключиться.
 /// </summary>
-public class CharacterNavigationViewModel(Character character, UserIdentification? currentUserId, ProjectInfo projectInfo)
+public class CharacterNavigationViewModel
 {
+    private readonly CharacterInfo character;
+
+    private CharacterNavigationViewModel(CharacterInfo character, UserIdentification? currentUserId)
+    {
+        this.character = character;
+        var projectInfo = character.ProjectInfo;
+
+        AccessArguments = AccessArgumentsFactory.Create(character, currentUserId);
+        CanEditRoles = projectInfo.HasEditRolesAccess(currentUserId);
+        CanManageClaims = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageClaims);
+        CharacterId = character.Id.CharacterId;
+        ProjectId = character.Id.ProjectId.Value;
+        Name = character.CharacterName;
+        IsActive = character.IsActive;
+
+        DiscussedClaims = SelectClaims(claim => claim.IsInDiscussion, currentUserId);
+        RejectedClaims = SelectClaims(claim => !claim.IsActive, currentUserId);
+    }
+
     public CharacterNavigationPage Page { get; private set; }
-    private AccessArguments AccessArguments { get; } = AccessArgumentsFactory.Create(character, currentUserId, projectInfo);
+    private AccessArguments AccessArguments { get; }
     public bool HasMasterAccess => AccessArguments.MasterAccess;
-    public bool CanEditRoles { get; } = projectInfo.HasEditRolesAccess(currentUserId);
-    public bool CanManageClaims { get; } = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageClaims);
+    public bool CanEditRoles { get; }
+    public bool CanManageClaims { get; }
 
     public bool CanAddClaim { get; private set; }
     public int? ClaimId { get; private set; }
-    public int CharacterId { get; } = character.CharacterId;
-    public int ProjectId { get; } = character.ProjectId;
+    public int CharacterId { get; }
+    public int ProjectId { get; }
 
-    public string Name { get; } = character.CharacterName;
+    public string Name { get; }
 
-    public bool IsActive { get; } = character.IsActive;
+    public bool IsActive { get; }
 
-    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => claim.IsInDiscussion, projectInfo);
-    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; } = LoadClaimsWithCondition(character, currentUserId, claim => !claim.ClaimStatus.IsActive(), projectInfo);
+    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; }
+    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; }
 
-    public static CharacterNavigationViewModel FromCharacter(Character character,
+    public static CharacterNavigationViewModel FromCharacter(
+        CharacterInfo character,
         CharacterNavigationPage page,
-        UserIdentification? currentUserId, ProjectInfo projectInfo)
+        UserIdentification? currentUserId)
     {
-        int? claimId;
+        ArgumentNullException.ThrowIfNull(character);
 
-        if (currentUserId is null)
+        return new CharacterNavigationViewModel(character, currentUserId)
         {
-            claimId = null;
-        }
-        else if (character.ApprovedClaim?.HasAccess(currentUserId, Permission.None, ExtraAccessReason.Player) == true
-        ) //If Approved Claim exists and we have access to it, so be it.
-        {
-            claimId = character.ApprovedClaim.ClaimId;
-        }
-        else // if we have My claims, try select single one. We may fail to do so.
-        {
-            claimId = character.Claims.Where(c => c.PlayerUserId == currentUserId).ToList()
-                .TrySelectSingleClaim()?.ClaimId;
-        }
-
-        var vm = new CharacterNavigationViewModel(character, currentUserId, projectInfo)
-        {
-            CanAddClaim = character.IsAcceptingClaims(projectInfo),
-            ClaimId = claimId,
+            // Показ считается глазами игрока, кто бы страницу ни открыл: мастерские послабления
+            // здесь дали бы «заявиться можно» в проекте с закрытым приёмом заявок.
+            CanAddClaim = ClaimValidator
+                .Validate(character, userInfo: null, movedClaim: null, character.ProjectInfo, ClaimOperation.DisplayForPlayer)
+                .Count == 0,
+            ClaimId = SelectClaimToShow(character, currentUserId)?.ClaimId.ClaimId,
             Page = page,
         };
-
-        return vm;
-    }
-
-    private static IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, UserIdentification? currentUserId,
-        Func<Claim, bool> predicate, ProjectInfo projectInfo)
-    {
-        return projectInfo.HasMasterAccess(currentUserId)
-            ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim.Character.CharacterName, claim.GetId(), UserLinks.Create(claim.Player.ToUserInfoHeader())))
-            : [];
     }
 
     public static CharacterNavigationViewModel FromClaim(
-        Claim claim,
+        CharacterInfo character,
+        ClaimIdentification claimId,
         UserIdentification currentUserId,
-        CharacterNavigationPage characterNavigationPage, ProjectInfo projectInfo)
+        CharacterNavigationPage characterNavigationPage)
     {
-        ArgumentNullException.ThrowIfNull(claim);
+        ArgumentNullException.ThrowIfNull(character);
 
-        var vm = new CharacterNavigationViewModel(claim.Character, currentUserId, projectInfo)
+        var vm = new CharacterNavigationViewModel(character, currentUserId)
         {
             CanAddClaim = false,
-            ClaimId = claim.ClaimId,
+            ClaimId = claimId.ClaimId,
             Page = characterNavigationPage,
         };
-        if (vm.RejectedClaims.Any(c => c.ClaimId == claim.ClaimId))
+
+        if (vm.RejectedClaims.Any(c => c.ClaimId == claimId.ClaimId))
         {
             vm.Page = CharacterNavigationPage.RejectedClaim;
             vm.ClaimId = null;
@@ -91,4 +91,39 @@ public class CharacterNavigationViewModel(Character character, UserIdentificatio
 
         return vm;
     }
+
+    /// <summary>
+    /// На какую заявку вести с карточки персонажа: на утверждённую, если она видна этому
+    /// пользователю, иначе на его собственную — если её удаётся выбрать однозначно.
+    /// </summary>
+    private static CharacterClaimInfo? SelectClaimToShow(CharacterInfo character, UserIdentification? currentUserId)
+    {
+        if (currentUserId is null)
+        {
+            return null;
+        }
+
+        if (character.ApprovedClaim is { } approvedClaim && HasAccessToClaim(approvedClaim, character, currentUserId))
+        {
+            return approvedClaim;
+        }
+
+        return character.Claims.Where(c => c.PlayerId == currentUserId).ToList().TrySelectSingleClaim();
+    }
+
+    /// <summary>
+    /// Эквивалент <c>ClaimAcccessExtensions.HasAccess(claim, userId, Permission.None,
+    /// ExtraAccessReason.Player)</c> для агрегата: свою заявку игрок видит всегда, чужую — только
+    /// с мастерским доступом.
+    /// </summary>
+    private static bool HasAccessToClaim(CharacterClaimInfo claim, CharacterInfo character, UserIdentification currentUserId)
+        => claim.PlayerId == currentUserId || character.ProjectInfo.HasMasterAccess(currentUserId);
+
+    private IEnumerable<ClaimShortListItemViewModel> SelectClaims(
+        Func<CharacterClaimInfo, bool> predicate,
+        UserIdentification? currentUserId)
+        => character.ProjectInfo.HasMasterAccess(currentUserId)
+            ? [.. character.Claims.Where(predicate).Select(claim =>
+                new ClaimShortListItemViewModel(character.CharacterName, claim.ClaimId, UserLinks.Create(claim.Player)))]
+            : [];
 }

@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -20,6 +21,7 @@ namespace JoinRpg.Portal.Controllers;
 public class CheckInController(
     IProjectService projectService,
     IClaimsRepository claimsRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IClaimService claimService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
@@ -89,6 +91,7 @@ public class CheckInController(
 
         return View("CheckIn",
             new CheckInClaimModel(claim,
+            await characterInfoRepository.GetCharacterInfo(characterId),
             await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
             handouts[characterId],
             claimValidator,
@@ -143,7 +146,12 @@ public class CheckInController(
 
         var playerUserInfo = await userRepository.GetRequiredUserInfo(claim.GetPlayerId());
 
-        return View(new SecondRoleViewModel(claim, currentUserAccessor, projectInfo, playerUserInfo));
+        return View(new SecondRoleViewModel(
+            claim,
+            await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId()),
+            currentUserAccessor,
+            projectInfo,
+            playerUserInfo));
     }
 
     [ValidateAntiForgeryToken]
