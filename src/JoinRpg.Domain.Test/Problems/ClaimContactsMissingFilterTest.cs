@@ -73,4 +73,67 @@ public class ClaimContactsMissingFilterTest
 
         Filter.GetProblems(claim, projectInfo).ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingRealname);
     }
+
+    [Fact]
+    public void PassportMissingWhenAllowedButNotFilled()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Required });
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+
+        Filter.GetProblems(claim, projectInfo).ShouldContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
+    }
+
+    [Fact]
+    public void PassportNotMissingWhenAllowedAndFilled()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Required });
+        Mock.Player.Extra = new UserExtra { PassportData = "1234 567890" };
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+
+        Filter.GetProblems(claim, projectInfo).ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
+    }
+
+    [Fact]
+    public void RegistrationAddressMissingWhenAllowedButNotFilled()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireRegistrationAddress = MandatoryStatus.Required });
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+
+        Filter.GetProblems(claim, projectInfo).ShouldContain(p => p.ProblemType == ClaimProblemType.MissingRegistrationAddress);
+    }
+
+    [Fact]
+    public void SensitiveDataNotAllowedWhenConsentNotGiven()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Required });
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = false;
+
+        var problems = Filter.GetProblems(claim, projectInfo);
+
+        problems.ShouldContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed);
+        problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
+        problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingRegistrationAddress);
+    }
+
+    [Fact]
+    public void NoSensitiveDataProblemsWhenNotRequiredAtAllRegardlessOfConsent()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(ProjectProfileRequirementSettings.AllNotRequired);
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = false;
+
+        var problems = Filter.GetProblems(claim, projectInfo);
+
+        problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed);
+        problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
+        problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingRegistrationAddress);
+    }
 }

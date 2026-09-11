@@ -19,12 +19,21 @@ public static class UserProfileProblemsCalculator
 {
     public static IReadOnlyCollection<UserProfileProjectProblem> GetProblems(
         UserInfo userInfo,
-        ProjectProfileRequirementSettings requirementSettings)
-        => GetProblems(userInfo.GetMissingItems(), requirementSettings);
+        ProjectProfileRequirementSettings requirementSettings,
+        bool sensitiveDataAccessAllowed = true)
+        => GetProblems(userInfo.GetMissingItems(), requirementSettings, sensitiveDataAccessAllowed);
 
+    /// <param name="sensitiveDataAccessAllowed">
+    /// Разрешён ли доступ к паспорту/адресу регистрации — это факт о заявке
+    /// (<c>claim.PlayerAllowedSenstiveData</c>), а не о профиле, поэтому не входит в
+    /// <see cref="UserProfileItemType"/> и передаётся отдельно. Пока доступа нет, паспорт/адрес
+    /// не считаются недостающими — вызывающая сторона показывает вместо этого отдельную проблему
+    /// про отсутствие доступа (см. <c>ClaimContactsMissingFilter</c>).
+    /// </param>
     public static IReadOnlyCollection<UserProfileProjectProblem> GetProblems(
         IReadOnlyCollection<UserProfileItemType> missingItems,
-        ProjectProfileRequirementSettings requirementSettings)
+        ProjectProfileRequirementSettings requirementSettings,
+        bool sensitiveDataAccessAllowed = true)
     {
         List<UserProfileProjectProblem> problems = [];
 
@@ -32,6 +41,12 @@ public static class UserProfileProblemsCalculator
         AddIfMissing(UserProfileItemType.Vkontakte, requirementSettings.RequireVkontakte);
         AddIfMissing(UserProfileItemType.Phone, requirementSettings.RequirePhone);
         AddIfMissing(UserProfileItemType.RealName, requirementSettings.RequireRealName);
+
+        if (sensitiveDataAccessAllowed)
+        {
+            AddIfMissing(UserProfileItemType.Passport, requirementSettings.RequirePassport);
+            AddIfMissing(UserProfileItemType.RegistrationAddress, requirementSettings.RequireRegistrationAddress);
+        }
 
         return problems;
 
