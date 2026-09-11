@@ -1,5 +1,6 @@
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
@@ -20,6 +21,7 @@ namespace JoinRpg.Portal.Controllers;
 public class CharacterController(
     IProjectRepository projectRepository,
     ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
@@ -53,6 +55,7 @@ public class CharacterController(
         return View("Details",
             new CharacterDetailsViewModel(currentUser,
                 character,
+                await characterInfoRepository.GetCharacterInfo(character.GetId()),
                 plots,
                 projectInfo));
     }
@@ -71,7 +74,7 @@ public class CharacterController(
             CharacterTypeInfo = view.CharacterTypeInfo,
             Name = field.CharacterName,
             ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
-        }.Fill(field, currentUser.UserIdentification, projectInfo));
+        }.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
@@ -85,7 +88,7 @@ public class CharacterController(
         {
             if (!ModelState.IsValid)
             {
-                return View(viewModel.Fill(field, currentUser.UserIdentification, projectInfo));
+                return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo));
             }
 
             await characterService.EditCharacter(
@@ -102,7 +105,7 @@ public class CharacterController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            return View(viewModel.Fill(field, currentUser.UserIdentification, projectInfo));
+            return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo));
         }
     }
 

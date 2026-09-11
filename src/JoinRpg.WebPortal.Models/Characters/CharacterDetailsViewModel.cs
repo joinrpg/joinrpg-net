@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.Plot;
 
@@ -46,6 +47,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
     public CharacterDetailsViewModel(
         ICurrentUserAccessor currentUserId,
         Character character,
+        CharacterInfo characterInfo,
         IReadOnlyCollection<PlotTextDto> plots,
         ProjectInfo projectInfo)
     {
@@ -56,8 +58,8 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
 
         ParentGroups = new CharacterParentGroupsViewModel(character, accessArguments.MasterAccess, projectInfo);
         Navigation =
-          CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
-            currentUserId.UserIdentificationOrDefault, projectInfo);
+          CharacterNavigationViewModel.FromCharacter(characterInfo, CharacterNavigationPage.Character,
+            currentUserId.UserIdentificationOrDefault);
 
         Fields = new CustomFieldsViewModel(
             character,

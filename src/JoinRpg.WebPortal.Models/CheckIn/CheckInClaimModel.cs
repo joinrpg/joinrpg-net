@@ -13,6 +13,7 @@ namespace JoinRpg.Web.Models.CheckIn;
 public class CheckInClaimModel : IProjectIdAware
 {
     public CheckInClaimModel(Claim claim,
+        CharacterInfo characterInfo,
         UserInfo currentUser,
         IReadOnlyCollection<PlotTextDto> plotElements,
         IProblemValidator<Claim> claimValidator,
@@ -28,7 +29,7 @@ public class CheckInClaimModel : IProjectIdAware
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
         PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUserAccessor);
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUserAccessor.UserIdentification, CharacterNavigationPage.None, projectInfo);
+        Navigation = CharacterNavigationViewModel.FromClaim(characterInfo, claim.GetId(), currentUserAccessor.UserIdentification, CharacterNavigationPage.None);
 
         CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUserAccessor.UserIdentification);
         ClaimId = claim.ClaimId;
