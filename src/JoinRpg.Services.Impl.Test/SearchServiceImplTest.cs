@@ -6,9 +6,19 @@ namespace JoinRpg.Services.Impl.Test;
 
 public class SearchServiceImplTest
 {
-    private sealed class FakeSearchProvider(params SearchResult[] results) : ISearchProvider
+    private sealed class FakeSearchProvider(LinkType linkType = LinkType.ResultUser, params SearchResult[] results) : ISearchProvider
     {
+        public LinkType LinkType => linkType;
+
         public Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
+            => Task.FromResult<IReadOnlyCollection<SearchResult>>(results);
+    }
+
+    private sealed class FakeProjectScopedSearchProvider(LinkType linkType, params SearchResult[] results) : IProjectScopedSearchProvider
+    {
+        public LinkType LinkType => linkType;
+
+        public Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString, ProjectIdentification? projectId)
             => Task.FromResult<IReadOnlyCollection<SearchResult>>(results);
     }
 
@@ -24,6 +34,17 @@ public class SearchServiceImplTest
         IsPerfectMatch = isPerfectMatch,
     };
 
+    private static SearchResult CharacterResult(int characterId, string description) => new()
+    {
+        LinkType = LinkType.ResultCharacter,
+        Name = "Test Character",
+        Description = new MarkdownDbValue(description),
+        Identification = characterId.ToString(),
+        ProjectId = null,
+        IsPublic = true,
+        IsActive = true,
+    };
+
     [Fact]
     public async Task SameUserFoundByTwoProviders_IsReturnedOnce()
     {
@@ -32,8 +53,8 @@ public class SearchServiceImplTest
         // (с разным Description), которые Distinct() не считал дубликатами.
         var service = new SearchServiceImpl(
         [
-            new FakeSearchProvider(UserResult(42, "ID: 42")),
-            new FakeSearchProvider(UserResult(42, "")),
+            new FakeSearchProvider(results: [UserResult(42, "ID: 42")]),
+            new FakeSearchProvider(results: [UserResult(42, "")]),
         ]);
 
         var results = await service.SearchAsync(currentUserId: null, "id42");
@@ -46,8 +67,8 @@ public class SearchServiceImplTest
     {
         var service = new SearchServiceImpl(
         [
-            new FakeSearchProvider(UserResult(42, "ID: 42")),
-            new FakeSearchProvider(UserResult(42, "Найден в контактах")),
+            new FakeSearchProvider(results: [UserResult(42, "ID: 42")]),
+            new FakeSearchProvider(results: [UserResult(42, "Найден в контактах")]),
         ]);
 
         var results = await service.SearchAsync(currentUserId: null, "id42");
@@ -61,8 +82,8 @@ public class SearchServiceImplTest
     {
         var service = new SearchServiceImpl(
         [
-            new FakeSearchProvider(UserResult(42, "ID: 42")),
-            new FakeSearchProvider(UserResult(42, "ID: 42")),
+            new FakeSearchProvider(results: [UserResult(42, "ID: 42")]),
+            new FakeSearchProvider(results: [UserResult(42, "ID: 42")]),
         ]);
 
         var results = await service.SearchAsync(currentUserId: null, "id42");
@@ -76,12 +97,42 @@ public class SearchServiceImplTest
     {
         var service = new SearchServiceImpl(
         [
-            new FakeSearchProvider(UserResult(1, "ID: 1")),
-            new FakeSearchProvider(UserResult(2, "ID: 2")),
+            new FakeSearchProvider(results: [UserResult(1, "ID: 1")]),
+            new FakeSearchProvider(results: [UserResult(2, "ID: 2")]),
         ]);
 
         var results = await service.SearchAsync(currentUserId: null, "test");
 
         results.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task LinkTypesFilter_OnlyMatchingProvidersAreCalled()
+    {
+        var service = new SearchServiceImpl(
+        [
+            new FakeSearchProvider(linkType: LinkType.ResultUser, results: [UserResult(1, "ID: 1")]),
+            new FakeSearchProvider(linkType: LinkType.ResultCharacter, results: [CharacterResult(2, "ID: 2")]),
+        ]);
+
+        var results = await service.SearchAsync(currentUserId: null, "test", linkTypes: [LinkType.ResultCharacter]);
+
+        var result = results.ShouldHaveSingleItem();
+        result.LinkType.ShouldBe(LinkType.ResultCharacter);
+    }
+
+    [Fact]
+    public async Task ProjectIdFilter_NonProjectScopedProvidersAreNotCalled()
+    {
+        var service = new SearchServiceImpl(
+        [
+            new FakeSearchProvider(linkType: LinkType.ResultUser, results: [UserResult(1, "ID: 1")]),
+            new FakeProjectScopedSearchProvider(linkType: LinkType.ResultCharacter, results: [CharacterResult(2, "ID: 2")]),
+        ]);
+
+        var results = await service.SearchAsync(currentUserId: null, "test", projectId: new ProjectIdentification(1));
+
+        var result = results.ShouldHaveSingleItem();
+        result.LinkType.ShouldBe(LinkType.ResultCharacter);
     }
 }

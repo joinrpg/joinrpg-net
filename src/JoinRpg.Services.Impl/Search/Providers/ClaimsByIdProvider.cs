@@ -7,12 +7,14 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
+internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : IProjectScopedSearchProvider
 {
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%заявка", "заявка",];
 
-    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public LinkType LinkType => LinkType.Claim;
+
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString, ProjectIdentification? projectId)
     {
         (var idToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
@@ -25,7 +27,7 @@ internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
         var results =
           await
             unitOfWork.GetDbSet<Claim>()
-              .Where(claim => claim.ClaimId == idToFind)
+              .Where(claim => claim.ClaimId == idToFind && (projectId == null || claim.ProjectId == projectId.Value))
               .ToListAsync();
 
         return results

@@ -5,7 +5,7 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
-internal class CharacterGroupsProvider : WorldObjectProviderBase, ISearchProvider
+internal class CharacterGroupsProvider : WorldObjectProviderBase, IProjectScopedSearchProvider
 {
     private readonly IUnitOfWork unitOfWork;
 
@@ -14,7 +14,9 @@ internal class CharacterGroupsProvider : WorldObjectProviderBase, ISearchProvide
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public LinkType LinkType => LinkType.ResultCharacterGroup;
+
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString, ProjectIdentification? projectId)
     {
         int? characterGroupIdToFind = int.TryParse(searchString.Trim(), out var parsedValue) ? parsedValue : null;
 
@@ -26,6 +28,7 @@ internal class CharacterGroupsProvider : WorldObjectProviderBase, ISearchProvide
                 || cg.CharacterGroupName.Contains(searchString)
                 || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
                 && cg.IsActive && !cg.IsRoot
+                && (projectId == null || cg.ProjectId == projectId.Value)
               )
               .OrderByDescending(cg => cg.CharacterGroupName.Contains(searchString))
               .ToListAsync();

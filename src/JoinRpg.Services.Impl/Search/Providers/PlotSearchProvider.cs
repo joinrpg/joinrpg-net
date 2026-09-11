@@ -5,9 +5,11 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
-internal class PlotSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
+internal class PlotSearchProvider(IUnitOfWork unitOfWork) : IProjectScopedSearchProvider
 {
-    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public LinkType LinkType => LinkType.Plot;
+
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString, ProjectIdentification? projectId)
     {
         if (searchString.Length < 3)
         {
@@ -19,6 +21,7 @@ internal class PlotSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
             unitOfWork.GetDbSet<PlotFolder>()
              .Where(p =>
                p.IsActive && p.Project.ProjectAcls.Any(acl => acl.UserId == currentUserId) && p.MasterTitle.Contains(searchString)
+               && (projectId == null || p.ProjectId == projectId.Value)
              )
              .ToListAsync();
 

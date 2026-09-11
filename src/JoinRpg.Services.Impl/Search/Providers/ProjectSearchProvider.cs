@@ -7,6 +7,8 @@ namespace JoinRpg.Services.Impl.Search.Providers;
 
 internal class ProjectSearchProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
+    public LinkType LinkType => LinkType.Project;
+
     public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         if (searchString.Length < 3)

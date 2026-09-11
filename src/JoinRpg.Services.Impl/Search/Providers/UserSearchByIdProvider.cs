@@ -11,6 +11,8 @@ internal class UserSearchByIdProvider(IUnitOfWork unitOfWork) : ISearchProvider
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%контакты", "контакты", "%игрок", "игрок",];
 
+    public LinkType LinkType => LinkType.ResultUser;
+
     public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         searchString = searchString.Trim();
