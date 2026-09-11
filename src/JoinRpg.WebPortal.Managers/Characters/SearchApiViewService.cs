@@ -17,12 +17,13 @@ internal class SearchApiViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         _ = projectInfo.RequestMasterAccess(currentUserAccessor);
 
-        // TODO ISearchService.SearchAsync не умеет сузить скоуп по LinkType/ProjectId — ищет по
-        // всем провайдерам и проектам, а мы выкидываем лишнее уже здесь. См. #4797.
-        var results = await searchService.SearchAsync(currentUserAccessor.UserIdOrDefault, query);
+        var results = await searchService.SearchAsync(
+            currentUserAccessor.UserIdOrDefault,
+            query,
+            linkTypes: [LinkType.ResultCharacter],
+            projectId: projectId);
 
         return [.. results
-            .Where(r => r.LinkType == LinkType.ResultCharacter && r.ProjectId == projectId.Value)
             .Select(r => new CharacterSearchResult
             {
                 CharacterId = int.Parse(r.Identification),
