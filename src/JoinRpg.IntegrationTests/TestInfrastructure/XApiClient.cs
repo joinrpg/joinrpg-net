@@ -79,6 +79,21 @@ public class XApiClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<ClaimInfo>())!;
     }
 
+    /// <summary>GET /x-api/users/{userId}/ — player info by user id (site admin only)</summary>
+    public async Task<PlayerInfo> GetUserInfoAsync(int userId)
+    {
+        var response = await httpClient.GetAsync($"/x-api/users/{userId}/");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PlayerInfo>())!;
+    }
+
+    /// <summary>Like GetUserInfoAsync but returns the HTTP status code instead of throwing</summary>
+    public async Task<System.Net.HttpStatusCode> GetUserInfoRawAsync(int userId)
+    {
+        var response = await httpClient.GetAsync($"/x-api/users/{userId}/");
+        return response.StatusCode;
+    }
+
     /// <summary>POST /x-game-api/{projectId}/characters — create new character</summary>
     public async Task<CharacterHeader> CreateCharacterAsync(int projectId, CreateCharacterRequest request)
     {
