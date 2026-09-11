@@ -7,7 +7,7 @@ using JoinRpg.XGameApi.Contract;
 // Доменный агрегат (ADR013) и DTO внешнего API называются одинаково — разводим псевдонимом.
 using DomainCharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
 
-namespace JoinRpg.Portal.Controllers.XGameApi;
+namespace JoinRpg.WebPortal.Managers.Characters;
 
 public class ApiInfoBuilder
 {

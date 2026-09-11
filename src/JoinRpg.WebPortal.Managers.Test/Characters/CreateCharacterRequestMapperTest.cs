@@ -1,8 +1,8 @@
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.Portal.Controllers.XGameApi;
+using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.XGameApi.Contract;
 
-namespace JoinRpg.Portal.Test.XGameApi;
+namespace JoinRpg.WebPortal.Managers.Test.Characters;
 
 public class CreateCharacterRequestMapperTest
 {

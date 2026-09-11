@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 

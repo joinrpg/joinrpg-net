@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace JoinRpg.Portal.Controllers.XGameApi;
+namespace JoinRpg.WebPortal.Managers.Characters;
 
 public static class FieldValueConverter
 {

@@ -20,6 +20,7 @@ using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Claims;
 using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
@@ -67,6 +68,8 @@ public static class Registration
         .AddScoped<IMoveClient, MoveViewService>()
         .AddScoped<IProjectFieldOperationsClient, Fields.ProjectFieldOperationsViewService>()
         .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()
+        .AddScoped<ICharacterApiViewService, CharacterApiViewService>()
+        .AddScoped<IProjectApiViewService, ProjectApiViewService>()
 
         ;
     }
