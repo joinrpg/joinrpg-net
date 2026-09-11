@@ -70,6 +70,7 @@ public static class Registration
         .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()
         .AddScoped<ICharacterApiViewService, CharacterApiViewService>()
         .AddScoped<IProjectApiViewService, ProjectApiViewService>()
+        .AddScoped<ISearchApiViewService, SearchApiViewService>()
 
         ;
     }
