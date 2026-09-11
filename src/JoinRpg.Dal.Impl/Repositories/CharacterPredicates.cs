@@ -11,7 +11,10 @@ internal static class CharacterPredicates
 
     internal static Expression<Func<Character, bool>> IsAvailable(ProjectIdentification projectId)
         => character => character.ProjectId == projectId.Value
-            && character.IsAcceptingClaims
+            // Не character.IsAcceptingClaims ([Obsolete]-легаси-колонка): у старых записей она
+            // может разъехаться с CharacterType (см. issue #4766). CharacterType — источник истины,
+            // с ним же сверяется CharacterTypeInfo.IsAcceptingClaims в доменных правилах.
+            && character.CharacterType != CharacterType.NonPlayer
             && character.IsActive
             && !character.Project.Claims.Any(claim =>
                 (claim.ClaimStatus == ClaimStatus.Approved || claim.ClaimStatus == ClaimStatus.CheckedIn)
