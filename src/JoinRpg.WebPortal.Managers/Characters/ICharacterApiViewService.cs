@@ -13,6 +13,14 @@ public interface ICharacterApiViewService
 
     Task<CharacterInfo> GetCharacterInfo(CharacterIdentification characterId);
 
+    // TODO пробросить в x-game-api (сейчас вызывается только будущим MCP-слоем). См. #4798.
+
+    /// <summary>Персонажи по конкретным id одного проекта — не выгрузка всех подряд.</summary>
+    Task<IReadOnlyCollection<CharacterInfo>> GetCharactersByIds(ProjectIdentification projectId, IReadOnlyCollection<int> characterIds);
+
+    /// <summary>Персонажи группы, включая вложенные подгруппы (в т.ч. спецгруппы вариантов полей).</summary>
+    Task<IReadOnlyCollection<CharacterInfo>> ListCharactersByGroup(CharacterGroupIdentification groupId);
+
     Task<CharacterHeader> CreateCharacter(ProjectIdentification projectId, CreateCharacterRequest request);
 
     Task SetCharacterFields(CharacterIdentification characterId, Dictionary<int, JsonElement> fieldValues);

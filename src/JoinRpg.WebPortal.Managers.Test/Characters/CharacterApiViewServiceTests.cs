@@ -64,6 +64,24 @@ public class CharacterApiViewServiceTests
         await Should.ThrowAsync<NoAccessToProjectException>(() => service.GetCharacterInfo(characterId));
     }
 
+    [Fact]
+    public async Task GetCharactersByIds_NonMaster_ThrowsBeforeLoadingCharacters()
+    {
+        var service = CreateService(userId: 12345);
+
+        await Should.ThrowAsync<NoAccessToProjectException>(
+            () => service.GetCharactersByIds(Mock.ProjectInfo.ProjectId, [Mock.Character.CharacterId]));
+    }
+
+    [Fact]
+    public async Task ListCharactersByGroup_NonMaster_ThrowsBeforeLoadingCharacters()
+    {
+        var service = CreateService(userId: 12345);
+        var groupId = new CharacterGroupIdentification(Mock.ProjectInfo.ProjectId, Mock.Group.CharacterGroupId);
+
+        await Should.ThrowAsync<NoAccessToProjectException>(() => service.ListCharactersByGroup(groupId));
+    }
+
     private sealed class FakeCharacterRepository(MockedProject mock) : ICharacterRepository
     {
         public Task<IReadOnlyCollection<JoinRpg.Data.Interfaces.CharacterHeader>> GetCharacterHeaders(int projectId, DateTime? modifiedSince) =>

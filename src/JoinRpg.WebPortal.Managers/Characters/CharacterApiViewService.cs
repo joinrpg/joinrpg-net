@@ -49,7 +49,34 @@ internal class CharacterApiViewService(
         _ = projectInfo.RequestMasterAccess(currentUserAccessor);
 
         var character = await characterInfoRepository.GetCharacterInfo(characterId);
+        return await MapToDto(character);
+    }
 
+    public async Task<IReadOnlyCollection<CharacterInfo>> GetCharactersByIds(ProjectIdentification projectId, IReadOnlyCollection<int> characterIds)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor);
+
+        var characters = await characterInfoRepository.GetCharacterInfos(
+            [.. characterIds.Select(id => new CharacterIdentification(projectId, id))]);
+        return await MapAllToDto(characters);
+    }
+
+    public async Task<IReadOnlyCollection<CharacterInfo>> ListCharactersByGroup(CharacterGroupIdentification groupId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor);
+
+        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(groupId);
+        var characters = await characterInfoRepository.GetCharacterInfosByGroups(groupId.ProjectId, groupIds);
+        return await MapAllToDto(characters);
+    }
+
+    private async Task<IReadOnlyCollection<CharacterInfo>> MapAllToDto(IReadOnlyCollection<DomainCharacterInfo> characters)
+        => await Task.WhenAll(characters.Select(MapToDto));
+
+    private async Task<CharacterInfo> MapToDto(DomainCharacterInfo character)
+    {
         // ProjectInfo несёт сам агрегат — отдельный запрос метаданных не нужен.
         var access = AccessArgumentsFactory.Create(character, currentUserAccessor);
         var fields = character.GetFieldLayers(access);

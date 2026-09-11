@@ -34,4 +34,10 @@ public class ProjectFieldInfo
     /// Programmatic Value. Ignored by Joinrpg, to use by external system
     /// </summary>
     public string? ProgrammaticValue { get; set; }
+
+    /// <summary>
+    /// Спецгруппа персонажей, в которую попадает персонаж при заполнении этого поля
+    /// (см. <see cref="ProjectOverviewGroup"/>). Null, если у поля нет спецгруппы.
+    /// </summary>
+    public int? SpecialGroupId { get; set; }
 }

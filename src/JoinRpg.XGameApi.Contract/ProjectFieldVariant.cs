@@ -29,4 +29,10 @@ public class ProjectFieldVariant
     /// Programmatic Value. Ignored by Joinrpg, to use by external system
     /// </summary>
     public string? ProgrammaticValue { get; set; }
+
+    /// <summary>
+    /// Спецгруппа персонажей, в которую попадает персонаж при выборе этого варианта
+    /// (см. <see cref="ProjectOverviewGroup"/>). Null, если у варианта нет спецгруппы.
+    /// </summary>
+    public int? CharacterGroupId { get; set; }
 }
