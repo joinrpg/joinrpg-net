@@ -56,8 +56,9 @@ public class AddClaimValidationRulesTest
     [Fact]
     public void CantSendClaimIfCharacterHasApprovedClaim()
     {
-        Mock.Character.ApprovedClaim = new Claim();
-        Mock.Character.ApprovedClaimId = -1;
+        // Именно настоящая заявка, а не ApprovedClaimId = -1: минус первый — это сентинел
+        // «заявки нет» (см. ClaimIdentification.FromOptional), то есть ровно обратный смысл.
+        _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Master);
         ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.Busy, Mock.ProjectInfo);
     }
 

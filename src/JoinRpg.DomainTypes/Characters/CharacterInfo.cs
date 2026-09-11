@@ -21,7 +21,7 @@ namespace JoinRpg.DomainTypes.Characters;
 /// Полных данных о комментариях и о сюжетах здесь нет — это отдельные агрегаты.
 /// </para>
 /// </remarks>
-public record class CharacterInfo : IFieldAvailabilityTarget
+public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
 {
     private readonly Lazy<IReadOnlyCollection<CharacterGroupIdentification>> parentGroupIdsToTop;
     private readonly Lazy<int> activeClaimsCount;
@@ -222,6 +222,10 @@ public record class CharacterInfo : IFieldAvailabilityTarget
     public int ActiveClaimsCount => activeClaimsCount.Value;
 
     public bool HasActiveClaims => ActiveClaimsCount > 0;
+
+    /// <inheritdoc />
+    public bool HasActiveClaimOf(UserIdentification userId)
+        => Claims.Any(claim => claim.PlayerId == userId && claim.IsActive);
 
     /// <summary>Все группы персонажа вверх до корня, включая прямые.</summary>
     public IReadOnlyCollection<CharacterGroupIdentification> ParentGroupIdsToTop => parentGroupIdsToTop.Value;

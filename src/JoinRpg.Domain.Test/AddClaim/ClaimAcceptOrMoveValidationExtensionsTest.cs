@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Test.AddClaim;
@@ -9,7 +10,7 @@ public class ClaimAcceptOrMoveValidationExtensionsTest
     {
         foreach (var itemType in Enum.GetValues<UserProfileItemType>())
         {
-            Should.NotThrow(() => ClaimAcceptOrMoveValidationExtensions.ToAddClaimForbideReason(itemType));
+            Should.NotThrow(() => ClaimValidator.ToAddClaimForbideReason(itemType));
         }
     }
 }
