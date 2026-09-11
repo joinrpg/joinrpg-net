@@ -60,6 +60,7 @@ public record class ClaimForbiddenReason(
         // профиль потом.
         AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing
             or AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing
+            or AddClaimForbideReason.PassportMissing or AddClaimForbideReason.RegistrationAddressMissing
             => new(kind, MasterCanOverride: true, ProblemSeverity.Warning),
 
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, message: null),

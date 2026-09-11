@@ -40,6 +40,8 @@ public enum AddClaimForbideReason
     PhoneMissing,
     TelegramMissing,
     VkontakteMissing,
+    PassportMissing,
+    RegistrationAddressMissing,
 }
 
 // Более широкий вариант статуса, подразумевает комбинацию нескольких статусов.

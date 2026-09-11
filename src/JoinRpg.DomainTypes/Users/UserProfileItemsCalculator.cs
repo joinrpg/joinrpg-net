@@ -25,7 +25,9 @@ public static class UserProfileItemsCalculator
         bool hasTelegram,
         bool hasVerifiedVkontakte,
         string? phoneNumber,
-        string? fullName)
+        string? fullName,
+        string? passportData = null,
+        string? registrationAddress = null)
     {
         List<UserProfileItemType> missing = [];
 
@@ -44,6 +46,14 @@ public static class UserProfileItemsCalculator
         if (!IsCorrectContact(fullName))
         {
             missing.Add(UserProfileItemType.RealName);
+        }
+        if (!IsCorrectContact(passportData))
+        {
+            missing.Add(UserProfileItemType.Passport);
+        }
+        if (!IsCorrectContact(registrationAddress))
+        {
+            missing.Add(UserProfileItemType.RegistrationAddress);
         }
 
         return missing;

@@ -127,7 +127,13 @@ public static class ClaimValidator
 
     private static IEnumerable<AddClaimForbideReason> ValidateContacts(ProjectInfo projectInfo, UserInfo userInfo)
     {
-        var problems = UserProfileProblemsCalculator.GetProblems(userInfo, projectInfo.ProfileRequirementSettings);
+        // На этапе подачи/переноса заявки согласия на чувствительные данные ещё не существует —
+        // claim.PlayerAllowedSenstiveData появляется только у уже созданной заявки, а спрашивать
+        // его на этом шаге не у чего. Поэтому паспорт/адрес регистрации здесь не проверяются
+        // (sensitiveDataAccessAllowed: false) — это не факт "доступа нет", а факт "вопрос ещё не
+        // задавался". Missing-паспорт может заблокировать отображение уже поданной заявки
+        // (см. ClaimContactsMissingFilter), но не подачу новой.
+        var problems = UserProfileProblemsCalculator.GetProblems(userInfo, projectInfo.ProfileRequirementSettings, sensitiveDataAccessAllowed: false);
 
         // Заявку блокируют только обязательные (Required => Warning) требования — Recommended (Hint) не мешает подать заявку.
         foreach (var problem in problems.Where(p => p.Severity == ProblemSeverity.Warning))
@@ -136,12 +142,19 @@ public static class ClaimValidator
         }
     }
 
+    // Passport/RegistrationAddress сюда на практике не долетают — ValidateContacts зовёт
+    // GetProblems с sensitiveDataAccessAllowed: false, так что эти два варианта недостижимы.
+    // Ветки оставлены ради полноты (см. тест ...IsDefinedForEveryUserProfileItemType) — как и
+    // остальные exhaustive-switch'и в этом файле, на случай если UserProfileItemType когда-нибудь
+    // будет собираться откуда-то ещё.
     internal static AddClaimForbideReason ToAddClaimForbideReason(UserProfileItemType itemType) => itemType switch
     {
         UserProfileItemType.Telegram => AddClaimForbideReason.TelegramMissing,
         UserProfileItemType.Vkontakte => AddClaimForbideReason.VkontakteMissing,
         UserProfileItemType.Phone => AddClaimForbideReason.PhoneMissing,
         UserProfileItemType.RealName => AddClaimForbideReason.RealNameMissing,
+        UserProfileItemType.Passport => AddClaimForbideReason.PassportMissing,
+        UserProfileItemType.RegistrationAddress => AddClaimForbideReason.RegistrationAddressMissing,
         _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
     };
 
@@ -177,7 +190,8 @@ public static class ClaimValidator
                 => new ClaimWrongStatusException(claim!.ClaimId, claim.Status),
 
             AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
-            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => new InsufficientContactsException(),
+            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing or
+            AddClaimForbideReason.PassportMissing or AddClaimForbideReason.RegistrationAddressMissing => new InsufficientContactsException(),
 
             _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
         };

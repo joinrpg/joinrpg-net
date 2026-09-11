@@ -29,7 +29,9 @@ public static class UserExtensions
             user.VerifiedProfileFlag,
             user.Extra?.PhoneNumber,
             user.PasswordHash != null,
-            user.Extra?.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null
+            user.Extra?.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null,
+            user.Extra?.PassportData,
+            user.Extra?.RegistrationAddress
             );
     }
 

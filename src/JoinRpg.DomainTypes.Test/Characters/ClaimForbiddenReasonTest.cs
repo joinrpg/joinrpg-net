@@ -33,6 +33,8 @@ public class ClaimForbiddenReasonTest
                 AddClaimForbideReason.PhoneMissing,
                 AddClaimForbideReason.TelegramMissing,
                 AddClaimForbideReason.VkontakteMissing,
+                AddClaimForbideReason.PassportMissing,
+                AddClaimForbideReason.RegistrationAddressMissing,
             ],
             ignoreOrder: true);
     }

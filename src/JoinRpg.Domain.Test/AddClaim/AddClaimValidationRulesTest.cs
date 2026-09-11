@@ -174,6 +174,20 @@ public class AddClaimValidationRulesTest
         Mock.Character.ValidateIfCanAddClaim(playerWithRealName, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// На момент подачи заявки согласия на чувствительные данные ещё не существует
+    /// (claim.PlayerAllowedSenstiveData — факт уже созданной заявки, а не профиля), поэтому
+    /// паспорт/адрес регистрации не должны блокировать подачу заявки — их спрашивают уже после,
+    /// см. ClaimContactsMissingFilter.
+    /// </summary>
+    [Fact]
+    public void CanSendClaimEvenIfPassportRequiredAndMissing()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Required });
+        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+    }
+
     private void ShouldBeAllowed(Character mockCharacter, ProjectInfo projectInfo)
         => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
 

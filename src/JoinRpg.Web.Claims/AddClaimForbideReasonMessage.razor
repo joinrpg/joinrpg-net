@@ -66,6 +66,18 @@
             <br /><JoinProfileButton />
     </JoinAlert>
         break;
+    case AddClaimForbideReason.PassportMissing:
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+            Мастера требуют заполнить паспортные данные, чтобы подать заявку на проект.
+            <br /><JoinProfileButton />
+    </JoinAlert>
+        break;
+    case AddClaimForbideReason.RegistrationAddressMissing:
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+            Мастера требуют заполнить адрес регистрации, чтобы подать заявку на проект.
+            <br /><JoinProfileButton />
+    </JoinAlert>
+        break;
     case AddClaimForbideReason.ApprovedClaimMovedToSlot:
         <JoinAlert Variation="VariationStyleEnum.Warning">
             Утверждённую заявку нельзя перенести в слот «@CharacterName». Выберите конкретного персонажа.

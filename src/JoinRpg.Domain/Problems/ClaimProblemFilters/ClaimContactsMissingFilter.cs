@@ -1,6 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
-using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
@@ -16,14 +15,29 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
             hasTelegram: !string.IsNullOrWhiteSpace(claim.Player.Extra?.Telegram),
             hasVerifiedVkontakte: claim.Player.Extra?.VkVerified == true && !string.IsNullOrWhiteSpace(claim.Player.Extra.Vk),
             claim.Player.Extra?.PhoneNumber,
-            claim.Player.FullName);
+            claim.Player.FullName,
+            claim.Player.Extra?.PassportData,
+            claim.Player.Extra?.RegistrationAddress);
 
-        var contactProblems = UserProfileProblemsCalculator.GetProblems(missingItems, projectInfo.ProfileRequirementSettings)
+        // Доступ к паспорту/адресу — согласие на уровне заявки (claim.PlayerAllowedSenstiveData),
+        // а не факт о профиле, поэтому не входит в UserProfileItemType и передаётся в калькулятор
+        // отдельно: пока доступа нет, он не считает паспорт/адрес недостающими.
+        var sensitiveDataAllowed = !projectInfo.ProfileRequirementSettings.SensitiveDataRequired
+            || claim.PlayerAllowedSenstiveData;
+
+        var problems = UserProfileProblemsCalculator
+            .GetProblems(missingItems, projectInfo.ProfileRequirementSettings, sensitiveDataAllowed)
             .Select(ToClaimProblem);
 
-        return contactProblems
-            .Union(CheckSensitiveDataAccess(claim, projectInfo))
-            .WhereNotNull();
+        if (!sensitiveDataAllowed)
+        {
+            // ClaimProblemType.SensitiveDataNotAllowed не привязан к UserProfileItemType (это не
+            // поле профиля, а отказ в доступе), поэтому калькулятор его не производит — добавляем
+            // здесь, единственном месте, знающем про ClaimProblemType.
+            problems = problems.Append(new ProfileRelatedProblem(ClaimProblemType.SensitiveDataNotAllowed, ProblemSeverity.Warning));
+        }
+
+        return problems;
     }
 
     private static ProfileRelatedProblem ToClaimProblem(UserProfileProjectProblem problem)
@@ -35,38 +49,8 @@ internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
         UserProfileItemType.Vkontakte => ClaimProblemType.MissingVkontakte,
         UserProfileItemType.Phone => ClaimProblemType.MissingPhone,
         UserProfileItemType.RealName => ClaimProblemType.MissingRealname,
+        UserProfileItemType.Passport => ClaimProblemType.MissingPassport,
+        UserProfileItemType.RegistrationAddress => ClaimProblemType.MissingRegistrationAddress,
         _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
     };
-
-    // TODO(#4763) паспорт/адрес регистрации ещё не переведены на UserProfileItemType +
-    // UserProfileProblemsCalculator — они не входят в UserInfo и дополнительно зависят от
-    // claim.PlayerAllowedSenstiveData (факт про заявку, а не про профиль пользователя).
-    private static IEnumerable<ClaimProblem?> CheckSensitiveDataAccess(Claim claim, ProjectInfo projectInfo)
-    {
-        if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
-        {
-            if (claim.PlayerAllowedSenstiveData)
-            {
-                yield return CheckContact(claim.Player.Extra?.PassportData, projectInfo.ProfileRequirementSettings.RequirePassport, ClaimProblemType.MissingPassport);
-                yield return CheckContact(claim.Player.Extra?.RegistrationAddress, projectInfo.ProfileRequirementSettings.RequireRegistrationAddress, ClaimProblemType.MissingRegistrationAddress);
-
-            }
-            else
-            {
-                yield return new ProfileRelatedProblem(ClaimProblemType.SensitiveDataNotAllowed, ProblemSeverity.Warning);
-            }
-        }
-    }
-
-    private static ProfileRelatedProblem? CheckContact(string? contact, MandatoryStatus requirement, ClaimProblemType problemType)
-    {
-        if (!string.IsNullOrWhiteSpace(contact))
-        {
-            return null;
-        }
-
-        return UserProfileProblemsCalculator.ToSeverity(requirement) is { } severity
-            ? new ProfileRelatedProblem(problemType, severity)
-            : null;
-    }
 }

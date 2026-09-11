@@ -9,4 +9,6 @@ public enum UserProfileItemType
     Vkontakte,
     Phone,
     RealName,
+    Passport,
+    RegistrationAddress,
 }

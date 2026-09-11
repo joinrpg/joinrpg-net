@@ -17,7 +17,9 @@ public record class UserInfo(
     bool VerifiedProfileFlag,
     string? PhoneNumber,
     bool HasPassword,
-    DateOnly? BirthDate = null)
+    DateOnly? BirthDate = null,
+    string? PassportData = null,
+    string? RegistrationAddress = null)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
 
@@ -33,7 +35,9 @@ public record class UserInfo(
             hasTelegram: Social.Telegram is not null,
             hasVerifiedVkontakte: Social.Vk?.IsVerified == true,
             PhoneNumber,
-            UserFullName.FullName);
+            UserFullName.FullName,
+            PassportData,
+            RegistrationAddress);
 
     /// <summary>
     /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.
