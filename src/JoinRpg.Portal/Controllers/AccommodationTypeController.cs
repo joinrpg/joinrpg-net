@@ -1,4 +1,6 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -12,6 +14,7 @@ namespace JoinRpg.Portal.Controllers;
 public class AccommodationTypeController(
     IAccommodationService accommodationService,
     IAccommodationRepository accommodationRepository,
+    IClaimsRepository claimsRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor) : Common.JoinControllerGameBase
 {
@@ -35,6 +38,7 @@ public class AccommodationTypeController(
 
         return View(new AccommodationListViewModel(project,
             await accommodationRepository.GetRoomTypesForProject(projectId),
+            await claimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId: null),
             currentUserAccessor));
     }
 

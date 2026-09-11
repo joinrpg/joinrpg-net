@@ -1,0 +1,28 @@
+
+@using JoinRpg.Web.Models.Accommodation
+@model UnassignedClaimsRowViewModel
+
+<tr>
+    <td>Игроки с невыбранным типом поселения</td>
+    <td class="visible-lg">&nbsp;</td>
+    <td class="price-value">&nbsp;</td>
+    <td class="price-value">&nbsp;</td>
+    <td class="price-value">
+        @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+        {
+            <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
+        }
+        @if (Model.AcceptedNotPaidCount != 0)
+        {
+            @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+            {
+                <text>+</text>
+            }
+            <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+        }
+        = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
+        <a title="Показать список заявок с невыбранным типом поселения" class="btn btn-sm btn-default" href="@Url.Action("ListWithoutRoomType", "ClaimList", new { Model.ProjectId })"><join-icon icon="MenuHorizontal" /></a>
+    </td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
