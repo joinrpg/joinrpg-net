@@ -73,6 +73,7 @@
     <Project Path="src/JoinRpg.Integrations.KogdaIgra.Test/JoinRpg.Common.KogdaIgraClient.Test.csproj" />
     <Project Path="src/JoinRpg.IntegrationTests/JoinRpg.IntegrationTest.csproj" />
     <Project Path="src/JoinRpg.Markdown.Test/JoinRpg.Markdown.Test.csproj" />
+    <Project Path="src/JoinRpg.Mcp.Test/JoinRpg.Mcp.Test.csproj" />
     <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Advertisement.Test/JoinRpg.Services.Advertisement.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Export.Test/JoinRpg.Services.Export.Test.csproj" />
@@ -94,6 +95,7 @@
     <Project Path="src/JoinRpg.Web.Accommodation/JoinRpg.Web.Accommodation.csproj" />
     <Project Path="src/JoinRpg.Web.Claims/JoinRpg.Web.Claims.csproj" />
     <Project Path="src/JoinRpg.Web.Games/JoinRpg.Web.Games.csproj" />
+    <Project Path="src/JoinRpg.Mcp/JoinRpg.Mcp.csproj" />
     <Project Path="src/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectCommon/JoinRpg.Web.ProjectCommon.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectMasterTools/JoinRpg.Web.ProjectMasterTools.csproj" />

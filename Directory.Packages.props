@@ -52,6 +52,8 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.7" />
+        <PackageVersion Include="ModelContextProtocol" Version="2.2.0" />
+        <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
         
         <PackageVersion Include="morelinq" Version="4.4.0" />
@@ -61,6 +63,8 @@
         <PackageVersion Include="OpenIddict.Client.AspNetCore" Version="7.7.0" />
         <PackageVersion Include="OpenIddict.Client.SystemNetHttp" Version="7.7.0" />
         <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.7.0" />
+        <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="7.7.0" />
+        <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="7.7.0" />
         <PackageVersion Include="OpenTelemetry.Api" Version="1.18.0" />
         <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
         <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0" />

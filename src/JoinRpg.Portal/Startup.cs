@@ -12,6 +12,7 @@ using JoinRpg.Domain;
 using JoinRpg.Integrations.KogdaIgra;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
+using JoinRpg.Mcp;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
@@ -116,6 +117,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             Configuration.GetSection("Authentication"))
             .AddJoinXApiSwagger();
 
+        services.AddJoinMcp(Configuration);
+
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
                 Configuration["ConnectionStrings:DefaultConnection"],
@@ -197,6 +200,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = app.MapRazorComponents<JoinRpg.Blazor.Client.Components.App>().AddInteractiveWebAssemblyRenderMode();
 
         _ = app.MapControllers().WithStaticAssets();
+        app.MapJoinMcp();
         _ = app.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
         _ = app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
         _ = app.MapRazorPages().WithStaticAssets();

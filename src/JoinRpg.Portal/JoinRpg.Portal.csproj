@@ -39,6 +39,7 @@
     <ProjectReference Include="..\Common\JoinRpg.Common.BastiliaRatingClient\JoinRpg.Common.BastiliaRatingClient.csproj" />
     <ProjectReference Include="..\Common\JoinRpg.Common.Telegram\JoinRpg.Common.Telegram.csproj" />
     <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
+    <ProjectReference Include="..\JoinRpg.Mcp\JoinRpg.Mcp.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.JobService\JoinRpg.Dal.JobService.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Notifications\JoinRpg.Dal.Notifications.csproj" />
     <ProjectReference Include="..\JoinRpg.Integrations.KogdaIgra\JoinRpg.Integrations.KogdaIgra.csproj" />
