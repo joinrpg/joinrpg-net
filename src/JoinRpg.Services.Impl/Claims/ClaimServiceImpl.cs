@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -16,6 +17,7 @@ internal class ClaimServiceImpl(
     IAccommodationInviteService accommodationInviteService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
     ClaimNotificationService claimNotificationService,
@@ -152,7 +154,8 @@ internal class ClaimServiceImpl(
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
         var user = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
 
-        source.EnsureCanAddClaim(user, projectInfo, ClaimOperation.AddByPlayer);
+        ClaimValidator.EnsureCanAddClaim(
+            await characterInfoRepository.GetCharacterInfo(characterId), user, projectInfo, ClaimOperation.AddByPlayer);
 
         User responsibleMaster = source.GetResponsibleMaster();
 
@@ -688,7 +691,11 @@ internal class ClaimServiceImpl(
 
         var oldCharacterId = claim.GetCharacterId(); // Сохраняем, так как он изменится
 
-        source.EnsureCanMoveClaim(claim, userInfo, projectInfo);
+        ClaimValidator.EnsureCanMoveClaim(
+            await characterInfoRepository.GetCharacterInfo(characterId),
+            new UserClaimInfo(claim.GetId(), claim.ClaimStatus),
+            userInfo,
+            projectInfo);
 
         MarkCharacterChangedIfApproved(claim); // before move
 
@@ -994,7 +1001,8 @@ internal class ClaimServiceImpl(
         // Проверяем, что персонаж может принимать заявки. Приглашение от мастера проходит мимо
         // причин с MasterCanOverride: закрытый приём заявок и незаполненные контакты игрока
         // мастера не останавливают — контакты игрок дозаполнит позже.
-        source.EnsureCanAddClaim(playerUser, projectInfo, ClaimOperation.AddByMaster);
+        ClaimValidator.EnsureCanAddClaim(
+            await characterInfoRepository.GetCharacterInfo(characterId), playerUser, projectInfo, ClaimOperation.AddByMaster);
 
         User responsibleMaster = source.GetResponsibleMaster();
 

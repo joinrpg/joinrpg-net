@@ -102,7 +102,9 @@ public class MasterBypassTest
         => Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, ClaimsClosed, ClaimOperation.DisplayForPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectClaimsClosed]);
 
+    // Тот же показ, но без известного игрока — как при построении списков доступных персонажей.
     [Fact]
-    public void IsAcceptingClaimsNeverBypasses()
-        => Mock.Character.IsAcceptingClaims(ClaimsClosed).ShouldBeFalse();
+    public void DisplayWithoutUserNeverBypasses()
+        => Mock.Character.ValidateIfCanAddClaim(userInfo: null, ClaimsClosed, ClaimOperation.DisplayForPlayer).Kinds()
+            .ShouldBe([AddClaimForbideReason.ProjectClaimsClosed]);
 }
