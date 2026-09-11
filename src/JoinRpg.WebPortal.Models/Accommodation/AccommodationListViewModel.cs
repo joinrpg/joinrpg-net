@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
@@ -32,8 +33,11 @@ public class AccommodationListViewModel
 
     public int TotalAcceptedNotPaid { get; }
 
+    public UnassignedClaimsRowViewModel UnassignedClaims { get; set; }
+
     public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
+        IReadOnlyCollection<Claim> claimsWithoutRoomType,
         ICurrentUserAccessor userId)
     {
         ProjectId = project.ProjectId;
@@ -49,10 +53,43 @@ public class AccommodationListViewModel
         FreeCapacity = allInfinite ? (int?)null : RoomTypes.Sum(rt => rt.FreeCapacity);
 
         TotalOccupied = RoomTypes.Sum(x => x.Occupied);
-        TotalPending = RoomTypes.Sum(x => x.PendingRequests);
 
-        TotalPaid = RoomTypes.Sum(rt => rt.PaidCount);
-        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.AcceptedNotPaidCount);
+        UnassignedClaims = new UnassignedClaimsRowViewModel(claimsWithoutRoomType, project)
+        {
+            ProjectId = project.ProjectId,
+        };
+
+        TotalPending = RoomTypes.Sum(x => x.PendingRequests) + UnassignedClaims.PendingRequests;
+
+        TotalPaid = RoomTypes.Sum(rt => rt.PaidCount) + UnassignedClaims.PaidCount;
+        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.AcceptedNotPaidCount) + UnassignedClaims.AcceptedNotPaidCount;
+    }
+}
+
+/// <summary>
+/// Виртуальная строка для игроков, у которых не выбран тип поселения
+/// </summary>
+public class UnassignedClaimsRowViewModel
+{
+    public int ProjectId { get; set; }
+
+    public int PendingRequests { get; }
+
+    public int PaidCount { get; }
+
+    public int AcceptedNotPaidCount { get; }
+
+    public UnassignedClaimsRowViewModel(IReadOnlyCollection<Claim> claimsWithoutRoomType, ProjectInfo projectInfo)
+    {
+        PendingRequests = claimsWithoutRoomType.Count;
+
+        PaidCount = claimsWithoutRoomType.Count(claim =>
+        {
+            var balance = claim.CalculateClaimBalance(projectInfo);
+            var status = FinanceExtensions.GetClaimPaymentStatus(balance.TotalFee, balance.FeePaid);
+            return status is ClaimPaymentStatus.Paid or ClaimPaymentStatus.Overpaid;
+        });
+        AcceptedNotPaidCount = PendingRequests - PaidCount;
     }
 }
 
