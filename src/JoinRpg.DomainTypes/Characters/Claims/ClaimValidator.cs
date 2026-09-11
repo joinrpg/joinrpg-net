@@ -6,10 +6,6 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// <summary>
 /// Правила, по которым заявку можно или нельзя создать на персонажа либо перенести на него.
 /// </summary>
-/// <remarks>
-/// Трансляция причин в исключения живёт снаружи (<c>JoinRpg.Domain</c>): ей нужна EF-сущность
-/// заявки, а сюда EF не заходит.
-/// </remarks>
 public static class ClaimValidator
 {
     /// <summary>
@@ -22,20 +18,6 @@ public static class ClaimValidator
     /// про игрока не считаются.
     /// </param>
     /// <param name="movedClaim">Переносимая заявка — только для операций переноса.</param>
-    /// <remarks>
-    /// <para>
-    /// Сначала выбрасываются причины, которые мастер вправе обойти, и только потом применяется
-    /// фатальность. Порядок принципиален: если сделать наоборот, мастер, приглашающий игрока в
-    /// проект с закрытым приёмом заявок, увидел бы пустой список — фатальный
-    /// <see cref="AddClaimForbideReason.ProjectClaimsClosed"/> вытеснил бы
-    /// <see cref="AddClaimForbideReason.Busy"/> и <see cref="AddClaimForbideReason.Npc"/>, а потом
-    /// ушёл бы сам, и вместе с ним молча ушли бы все остальные проверки.
-    /// </para>
-    /// <para>
-    /// Фатальная причина (проект в архиве, приём заявок закрыт) вытесняет остальные: пока проект
-    /// в таком состоянии, разбираться с занятостью роли или контактами игрока бессмысленно.
-    /// </para>
-    /// </remarks>
     public static IReadOnlyCollection<ClaimForbiddenReason> Validate(
         IClaimTarget target,
         UserInfo? userInfo,
@@ -48,11 +30,16 @@ public static class ClaimValidator
 
         var byMaster = operation.PerformedByMaster();
 
+        // Обходимые мастером причины выбрасываются ДО фильтра по фатальности. Наоборот нельзя:
+        // фатальный ProjectClaimsClosed сначала вытеснил бы Busy и Npc, а потом ушёл бы сам как
+        // обходимый — и мастер смог бы пригласить игрока на занятую роль.
         var reasons = ValidateImpl(target, userInfo, movedClaim, projectInfo, operation)
             .Select(ClaimForbiddenReason.For)
             .Where(reason => !(byMaster && reason.MasterCanOverride))
             .ToList();
 
+        // Пока проект в архиве или не принимает заявки, разбираться с занятостью роли и
+        // контактами игрока бессмысленно — показываем только фатальное.
         var fatal = reasons.Where(reason => reason.IsFatal).ToList();
         return fatal.Count > 0 ? fatal : reasons;
     }
@@ -166,4 +153,33 @@ public static class ClaimValidator
             ProjectLifecycleStatus.ActiveClaimsClosed => AddClaimForbideReason.ProjectClaimsClosed,
             _ => throw new NotImplementedException(),
         };
+
+    /// <summary>
+    /// Бросает исключение, соответствующее причине запрета.
+    /// </summary>
+    /// <param name="claim">
+    /// Переносимая заявка — нужна только для <see cref="ClaimWrongStatusException"/>.
+    /// </param>
+    public static void ThrowForReason(ClaimForbiddenReason reason, UserClaimInfo? claim, ProjectInfo projectInfo)
+    {
+        throw reason.Kind switch
+        {
+            AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(projectInfo.ProjectId),
+
+            AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted
+                or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive
+                    => new ClaimTargetIsNotAcceptingClaims(),
+
+            AddClaimForbideReason.AlreadySent => new ClaimAlreadyPresentException(),
+            AddClaimForbideReason.OnlyOneCharacter => new OnlyOneApprovedClaimException(),
+
+            AddClaimForbideReason.ApprovedClaimMovedToSlot or AddClaimForbideReason.CheckedInClaimCantBeMoved
+                => new ClaimWrongStatusException(claim!.ClaimId, claim.Status),
+
+            AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
+            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => new InsufficientContactsException(),
+
+            _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
+        };
+    }
 }

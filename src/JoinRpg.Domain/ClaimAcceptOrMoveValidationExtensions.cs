@@ -6,12 +6,12 @@ namespace JoinRpg.Domain;
 
 /// <summary>
 /// Правила заявки поверх EF-сущности <see cref="Character"/>: тонкая обёртка над
-/// <see cref="ClaimValidator"/> плюс трансляция причин в исключения.
+/// <see cref="ClaimValidator"/>.
 /// </summary>
 /// <remarks>
-/// Сами правила живут в <c>JoinRpg.DomainTypes</c>. Здесь остаётся только то, что без EF не
-/// работает: адаптер <see cref="LegacyClaimTarget"/> и <see cref="ThrowForReason"/>, которому для
-/// <see cref="ClaimWrongStatusException"/> нужна сущность заявки.
+/// Сами правила и трансляция причин в исключения живут в <c>JoinRpg.DomainTypes</c>
+/// (<see cref="ClaimValidator"/>). Здесь остаётся только то, что без EF не работает: адаптер
+/// <see cref="LegacyClaimTarget"/> и преобразование EF-<see cref="Claim"/> в <see cref="UserClaimInfo"/>.
 /// </remarks>
 public static class ClaimAcceptOrMoveValidationExtensions
 {
@@ -53,7 +53,7 @@ public static class ClaimAcceptOrMoveValidationExtensions
     public static void EnsureCanMoveClaim([NotNull] this Character claimSource, Claim claim, UserInfo userInfo, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claimSource);
-        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim, userInfo, projectInfo), claim, projectInfo);
+        ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim, userInfo, projectInfo), ToMovedClaim(claim), projectInfo);
     }
 
 #pragma warning disable CS0618 // Пока часть вызывающего кода живёт на EF-сущности, см. LegacyClaimTarget
@@ -66,32 +66,12 @@ public static class ClaimAcceptOrMoveValidationExtensions
 
     private static void ThrowIfValidationFailed(
         IReadOnlyCollection<ClaimForbiddenReason> validation,
-        Claim? claim,
+        UserClaimInfo? claim,
         ProjectInfo projectInfo)
     {
         if (validation.Count > 0)
         {
-            ThrowForReason(validation.First(), claim, projectInfo);
+            ClaimValidator.ThrowForReason(validation.First(), claim, projectInfo);
         }
-    }
-
-    internal static void ThrowForReason(ClaimForbiddenReason reason, Claim? claim, ProjectInfo projectInfo)
-    {
-        throw reason.Kind switch
-        {
-            AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(projectInfo.ProjectId),
-
-            AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted
-                or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive
-                    => new ClaimTargetIsNotAcceptingClaims(),
-
-            AddClaimForbideReason.AlreadySent => new ClaimAlreadyPresentException(),
-            AddClaimForbideReason.OnlyOneCharacter => new OnlyOneApprovedClaimException(),
-
-            AddClaimForbideReason.ApprovedClaimMovedToSlot or AddClaimForbideReason.CheckedInClaimCantBeMoved => new ClaimWrongStatusException(claim!.GetId(), claim.ClaimStatus),
-            AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
-            AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing => new InsufficientContactsException(),
-            _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
-        };
     }
 }

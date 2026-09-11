@@ -232,8 +232,7 @@ public class MockedProject
                 new UserDisplayName(new PrefferedName(claim.Player.PrefferedName), new Email(claim.Player.Email))),
             claim.ClaimStatus,
             claim.ClaimDenialStatus,
-            // В моке ответственный мастер обычно не проставлен, а UserIdentification нулю не рад.
-            new UserIdentification(claim.ResponsibleMasterUserId == 0 ? Master.UserId : claim.ResponsibleMasterUserId),
+            new UserIdentification(claim.ResponsibleMasterUserId),
             claim.CreateDate,
             claim.LastUpdateDateTime,
             claim.CheckInDate,
@@ -256,6 +255,8 @@ public class MockedProject
             CharacterId = mockCharacter.CharacterId,
             Player = mockUser,
             PlayerUserId = mockUser.UserId,
+            ResponsibleMasterUser = Master,
+            ResponsibleMasterUserId = Master.UserId,
         };
         mockCharacter.Claims.Add(claim);
         Project.Claims.Add(claim);

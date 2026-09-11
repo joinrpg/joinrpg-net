@@ -21,9 +21,7 @@ internal sealed class LegacyClaimTarget(Character character) : IClaimTarget
     // EF-сущности, и он же добавляет к ошибке CharacterId, если флаги в БД противоречивы.
     public CharacterTypeInfo CharacterTypeInfo => character.ToCharacterTypeInfo();
 
-    public ClaimIdentification? ApprovedClaimId => character.ApprovedClaimId is int claimId
-        ? new ClaimIdentification(character.ProjectId, claimId)
-        : null;
+    public ClaimIdentification? ApprovedClaimId => character.GetApprovedClaimIdOrDefault();
 
     public bool HasActiveClaimOf(UserIdentification userId)
         => character.Claims.OfUserActive(userId.Value).Any();

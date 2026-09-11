@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
@@ -14,7 +15,8 @@ public class ExceptionTranslationTest
     public void AllForbideReasonTranslatedToThrow(AddClaimForbideReason reason)
     {
         var claim = new Claim();
+        var claimInfo = new UserClaimInfo(claim.GetId(), claim.ClaimStatus);
         var projectInfo = new MockedProject().ProjectInfo;
-        _ = Should.Throw<JoinRpgBaseException>(() => ClaimAcceptOrMoveValidationExtensions.ThrowForReason(ClaimForbiddenReason.For(reason), claim, projectInfo));
+        _ = Should.Throw<JoinRpgBaseException>(() => ClaimValidator.ThrowForReason(ClaimForbiddenReason.For(reason), claimInfo, projectInfo));
     }
 }
