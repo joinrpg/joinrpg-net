@@ -30,7 +30,7 @@ public class AccommodationTypeController(
 
         if (!project.AccomodationEnabled)
         {
-            return RedirectToAction("Edit", "Game");
+            return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
 
         return View(new AccommodationListViewModel(project,
@@ -162,7 +162,7 @@ public class AccommodationTypeController(
 
         if (!project.AccomodationEnabled)
         {
-            return RedirectToAction("Edit", "Game");
+            return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
 
         //TODO: Implement mass occupation
@@ -182,7 +182,7 @@ public class AccommodationTypeController(
 
         if (!project.AccomodationEnabled)
         {
-            return RedirectToAction("Edit", "Game");
+            return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
 
         await accommodationService.UnOccupyAll(projectId);
