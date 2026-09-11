@@ -23,6 +23,8 @@ public static class UserProfileProblemsCalculator
         bool sensitiveDataAccessAllowed = true)
         => GetProblems(userInfo.GetMissingItems(), requirementSettings, sensitiveDataAccessAllowed);
 
+    /// <param name="missingItems">Незаполненные элементы профиля (<see cref="UserProfileItemsCalculator.GetMissingItems"/>).</param>
+    /// <param name="requirementSettings">Требования конкретного проекта к профилю.</param>
     /// <param name="sensitiveDataAccessAllowed">
     /// Разрешён ли доступ к паспорту/адресу регистрации — это факт о заявке
     /// (<c>claim.PlayerAllowedSenstiveData</c>), а не о профиле, поэтому не входит в
