@@ -13,6 +13,8 @@ public interface ICharacterApiViewService
 
     Task<CharacterInfo> GetCharacterInfo(CharacterIdentification characterId);
 
+    // TODO пробросить в x-game-api (сейчас вызывается только будущим MCP-слоем). См. #4798.
+
     /// <summary>Персонажи по конкретным id одного проекта — не выгрузка всех подряд.</summary>
     Task<IReadOnlyCollection<CharacterInfo>> GetCharactersByIds(ProjectIdentification projectId, IReadOnlyCollection<int> characterIds);
 
