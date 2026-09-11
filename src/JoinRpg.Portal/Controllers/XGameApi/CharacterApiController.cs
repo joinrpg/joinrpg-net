@@ -35,6 +35,36 @@ public class CharacterApiController(ICharacterApiViewService characterApiViewSer
     }
 
     /// <summary>
+    /// Character details for several characters at once. Use when you need a specific
+    /// set of characters, not the full project list.
+    /// </summary>
+    [HttpGet]
+    [Route("by-ids")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<IEnumerable<CharacterInfo>>> GetByIds(int projectId, [FromQuery] int[] ids)
+    {
+        if (ids is not { Length: > 0 })
+        {
+            return BadRequest("ids is required");
+        }
+
+        return Ok(await characterApiViewService.GetCharactersByIds(new ProjectIdentification(projectId), ids));
+    }
+
+    /// <summary>
+    /// Characters belonging to a group, including nested subgroups
+    /// (and field-variant special groups).
+    /// </summary>
+    [HttpGet]
+    [Route("~/x-game-api/{projectId}/groups/{groupId}/characters")]
+    public async Task<IEnumerable<CharacterInfo>> GetByGroup(int projectId, int groupId)
+    {
+        return await characterApiViewService.ListCharactersByGroup(
+            new CharacterGroupIdentification(new ProjectIdentification(projectId), groupId));
+    }
+
+    /// <summary>
     /// Create new character
     /// </summary>
     [HttpPost]
