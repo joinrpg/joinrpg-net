@@ -5,12 +5,14 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBase, ISearchProvider
+internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBase, IProjectScopedSearchProvider
 {
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%персонаж", "персонаж",];
 
-    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public LinkType LinkType => LinkType.ResultCharacter;
+
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString, ProjectIdentification? projectId)
     {
         (var characterIdToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
@@ -22,6 +24,7 @@ internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBa
                 (c.CharacterId == characterIdToFind
                 || c.CharacterName.Contains(searchString))
                 && c.IsActive
+                && (projectId == null || c.ProjectId == projectId.Value)
               )
               .OrderByDescending(cg => cg.CharacterName.Contains(searchString))
               .ToListAsync();

@@ -8,6 +8,8 @@ namespace JoinRpg.Services.Impl.Search.Providers;
 
 internal class UserSearchBySocialProvider(IUnitOfWork unitOfWork) : ISearchProvider
 {
+    public LinkType LinkType => LinkType.ResultUser;
+
     public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
         searchString = searchString.Trim();

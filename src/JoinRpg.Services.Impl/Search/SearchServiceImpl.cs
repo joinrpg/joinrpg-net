@@ -5,7 +5,11 @@ namespace JoinRpg.Services.Impl.Search;
 
 internal class SearchServiceImpl(IEnumerable<ISearchProvider> searchProviders) : ISearchService
 {
-    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString)
+    public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(
+        int? currentUserId,
+        string searchString,
+        IReadOnlyCollection<LinkType>? linkTypes = null,
+        ProjectIdentification? projectId = null)
     {
         searchString = searchString.Trim();
         if (searchString.Length == 0)
@@ -13,7 +17,12 @@ internal class SearchServiceImpl(IEnumerable<ISearchProvider> searchProviders) :
             return [];
         }
 
-        var searchTasks = searchProviders.Select(p => p.SearchAsync(currentUserId, searchString));
+        var applicableProviders = searchProviders
+            .Where(p => linkTypes is null || linkTypes.Contains(p.LinkType));
+
+        var searchTasks = projectId is null
+            ? applicableProviders.Select(p => p.SearchAsync(currentUserId, searchString))
+            : applicableProviders.OfType<IProjectScopedSearchProvider>().Select(p => p.SearchAsync(currentUserId, searchString, projectId));
 
         var results = new List<SearchResult>();
         foreach (var task in searchTasks)
