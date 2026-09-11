@@ -204,10 +204,10 @@ XML-doc типа.
 | `UserSubscription[]` | своя ручка `IUserSubscribeRepository` |
 | Контакты, аватар и соцсети игрока (`UserExtra`, `ExternalLogins`) | только `UserInfoHeader` — id и отображаемое имя (см. уточнение ниже). Остальной профиль меняется независимо от персонажа, а его включение раздуло бы агрегат — см. ADR011, где контакты составляют заметную долю payload сетки. Отображение — bulk через `IUserRepository.GetUserInfoHeaders(ids)` |
 | `AccessArguments` | тип user-independent (см. «Решение») |
-| Заявки игрока в других персонажах | `AddClaimForbideReason.OnlyOneCharacter` требует данных по всему проекту — приходят параметром в `UserInfo` |
+| Заявки игрока в других персонажах | `AddClaimForbideReason.OnlyOneCharacter` спрашивает про заявки игрока, а не про персонажа — приходят параметром в `UserInfo.ActiveClaims` |
 
-Вне `DomainTypes` остаются: `GetBusyStatus` (возвращает UI-enum), `ValidateIfCanAddClaim` (нужен
-`UserInfo`), `CalculateClaimBalance`, фильтры проблем.
+Вне `DomainTypes` остаются: `GetBusyStatus` (возвращает UI-enum), `CalculateClaimBalance`,
+фильтры проблем.
 
 #### Уточнение: отображаемое имя игрока входит в агрегат
 
@@ -285,7 +285,7 @@ public interface ICharacterInfoRepository
 | `BrokenCharactersFilter` | `ParentGroupsToTop` (те же `CharacterGroupInfo`) | нет |
 | `FieldNotSetFilter` / `InActiveVariantsFilter` | `CharacterTypeInfo.CharacterType` + `ParentGroupIdsToTop`: `CharacterInfo` **сам является** готовым `CharacterItem`, обёртка и `CharacterBulkLoader` станут не нужны | нет |
 | `ProblemValidator.GetFields` | `GetFieldLayers(access).GetAllFieldsForEdit()` + `Where(BoundTo == Character \|\| ApprovedClaimId is not null)` | нет |
-| `ValidateIfCanAddClaim` | `ProjectInfo.ProjectStatus`, `ApprovedClaimId`, `IsActive`, `CharacterTypeInfo`, `Claims.Any(c => c.PlayerId == u && c.IsActive)` | `OnlyOneCharacter` и контакты приходят в `UserInfo` (сознательно) |
+| `ValidateIfCanAddClaim` | `ProjectInfo.ProjectStatus`, `ApprovedClaimId`, `IsActive`, `CharacterTypeInfo`, `Claims.Any(c => c.PlayerId == u && c.IsActive)` | Сделано: правила живут в `ClaimValidator`, см. «Статус». `OnlyOneCharacter` и контакты приходят в `UserInfo` (сознательно) |
 | `CharacterHeader` / XGameApi | `Id`, `UpdatedAt`, `IsActive` | нет |
 
 Единственный систематический пробел — отображаемые данные пользователей (имя, контакты, аватар).
@@ -366,6 +366,41 @@ public interface ICharacterInfoRepository
 Ручная проверка плана запроса из раздела «Проверка» по-прежнему не сделана: интеграционные тесты
 доказали, что EF6-запрос работает, но не то, что он один и без N+1.
 
+### Правила заявки переехали в `DomainTypes`
+
+Второй мигрированный потребитель — правила «можно ли подать/перенести заявку». Раньше ADR относил
+их к тому, что остаётся снаружи, потому что им нужен был `UserInfo`. Причина оказалась неверной:
+`UserInfo` и сам живёт в `DomainTypes`, а настоящими блокерами были EF-сущность `Character` и
+чтение заявок всего проекта по ленивой навигации. Оба сняты:
+
+- `UserInfo.ActiveClaims` теперь несёт статусы заявок, и `OnlyOneCharacter` считается по ним, а не
+  по `character.Project.Claims`. В `UserInfoRepository` это стоило одного лишнего столбца в уже
+  существовавшей проекции.
+- Правила переехали в `ClaimValidator` (`DomainTypes/Characters/Claims/`) и принимают
+  `IClaimTarget` — интерфейс ровно из того, что им нужно знать о персонаже: `IsActive`,
+  `CharacterTypeInfo`, `ApprovedClaimId`, `HasActiveClaimOf`. `CharacterInfo` реализует его
+  нативно.
+
+Туда же уехала трансляция причин в исключения (`ClaimValidator.ThrowForReason`): последнее из
+claim-исключений, `ClaimWrongStatusException`, перестало принимать EF-сущность и теперь строится из
+`ClaimIdentification` + `ClaimStatus`.
+
+В `JoinRpg.Domain` остались `EnsureCanAddClaim`/`EnsureCanMoveClaim` — extension-методы на EF
+`Character` — и `LegacyClaimTarget`, `[Obsolete]`-адаптер над той же сущностью. Он нужен, пока на
+EF сидят `AddClaimViewModel`, `CharacterLinkViewModel` и `CharacterNavigationViewModel`: они тянут
+`CustomFieldsViewModel` и `CharacterTreeBuilder`, у которых перегрузок под `CharacterInfo` нет.
+Это одно место на удаление, когда мигрирует сетка ролей.
+
+Что вскрыла эта проверка:
+
+- **Мок врал про заявки игрока.** `MockedProject.PlayerInfo` был полем с пустым `ActiveClaims`,
+  собираемым в конструкторе, — заявки, созданные тестом позже, туда не попадали. Пока правило
+  читало EF-граф, расхождение не проявлялось; с переходом на `UserInfo` тест честно упал. Сделано
+  свойством, согласованным с заявками мока.
+- **`-1` в `ApprovedClaimId` — это сентинел «заявки нет»** (`ClaimIdentification.FromOptional` его
+  отбрасывает), а один из тестов подсовывал именно его, проверяя обратное. Всплыло при переходе на
+  канонический `GetApprovedClaimIdOrDefault()`.
+
 Остальные потребители не мигрированы — это следующие PR.
 
 ---
@@ -377,3 +412,6 @@ public interface ICharacterInfoRepository
 *Обновлено: 19.08.2026 — мигрирован первый потребитель (x-game-api GetOne), запрос выполнен на
 настоящей БД под интеграционными тестами. Исправлена ошибка в таблице достаточности: расписание
 взносов пришлось добавить в `ProjectInfo`.*
+*Обновлено: 11.09.2026 — правила заявки переехали в `DomainTypes` (`ClaimValidator` поверх
+`IClaimTarget`). Исправлено утверждение, что `ValidateIfCanAddClaim` остаётся снаружи из-за
+`UserInfo`: причина была указана неверно.*
