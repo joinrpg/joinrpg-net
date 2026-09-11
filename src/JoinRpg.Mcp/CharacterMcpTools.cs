@@ -16,19 +16,18 @@ public sealed class CharacterMcpTools(
         "Персонажи, лежащие непосредственно в указанной группе или в её подгруппах (в т.ч. в спецгруппах " +
         "вариантов полей — id спецгрупп берутся из get_project_overview). Используй это, а не выгрузку " +
         "всех персонажей проекта с фильтрацией в контексте.")]
-    public async Task<IReadOnlyCollection<CharacterHeader>> ListCharacters(
+    public async Task<IReadOnlyCollection<CharacterListItem>> ListCharacters(
         [Description("Id проекта")] int projectId,
         [Description("Id группы персонажей (или спецгруппы поля/варианта)")] int groupId)
     {
         authContext.EnsureProjectGranted(projectId);
         var characters = await characterApiViewService.ListCharactersByGroup(
             new CharacterGroupIdentification(new ProjectIdentification(projectId), groupId));
-        return [.. characters.Select(c => new CharacterHeader
+        return [.. characters.Select(c => new CharacterListItem
         {
             CharacterId = c.CharacterId,
-            UpdatedAt = c.UpdatedAt,
+            CharacterName = c.CharacterName,
             IsActive = c.IsActive,
-            CharacterLink = $"/x-game-api/{projectId}/characters/{c.CharacterId}/",
         })];
     }
 

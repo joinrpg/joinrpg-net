@@ -1,4 +1,6 @@
+using JoinRpg.Common.WebInfrastructure;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.AspNetCore.Authentication;
 using OpenIddict.Validation.AspNetCore;
@@ -12,16 +14,23 @@ public static class McpRegistration
 
     /// <summary>
     /// Portal как resource server (ADR012 §5): интроспекция токенов через IdPortal, никакой
-    /// локальной валидации по JWKS. <paramref name="idPortalIssuer"/> и <paramref name="resourceUri"/> —
-    /// полные URL с завершающим https://.
+    /// локальной валидации по JWKS. Resource-клиент для интроспекции заводится вручную через
+    /// admin UI IdPortal и есть не в каждом окружении (например, в тестах его нет) — без него
+    /// /mcp просто не регистрируется, а не падает при старте.
     /// </summary>
-    public static IServiceCollection AddJoinMcp(
-        this IServiceCollection services,
-        Uri idPortalIssuer,
-        Uri resourceUri,
-        string resourceClientId,
-        string resourceClientSecret)
+    public static IServiceCollection AddJoinMcp(this IServiceCollection services, IConfiguration configuration)
     {
+        var mcpOptions = GetConfiguredOptions(configuration);
+        if (mcpOptions is null)
+        {
+            return services;
+        }
+
+        var hostNames = configuration.GetSection("JoinRpgHostNames").Get<JoinRpgHostNamesOptions>()
+            ?? throw new InvalidOperationException("JoinRpgHostNames section is required");
+        var idPortalIssuer = new Uri($"https://{hostNames.IdHost}/");
+        var resourceUri = new Uri($"https://{hostNames.MainHost}/mcp");
+
         services.AddHttpContextAccessor();
         services.AddScoped<McpAuthContext>();
 
@@ -31,8 +40,8 @@ public static class McpRegistration
                 options.SetIssuer(idPortalIssuer);
                 options.AddAudiences(resourceUri.ToString());
                 options.UseIntrospection()
-                    .SetClientId(resourceClientId)
-                    .SetClientSecret(resourceClientSecret);
+                    .SetClientId(mcpOptions.ClientId)
+                    .SetClientSecret(mcpOptions.ClientSecret);
                 options.UseSystemNetHttp();
                 options.UseAspNetCore();
             });
@@ -65,7 +74,19 @@ public static class McpRegistration
 
     public static WebApplication MapJoinMcp(this WebApplication app)
     {
-        app.MapMcp("/mcp").RequireAuthorization(AuthorizationPolicy);
+        if (GetConfiguredOptions(app.Configuration) is not null)
+        {
+            app.MapMcp("/mcp").RequireAuthorization(AuthorizationPolicy);
+        }
+
         return app;
+    }
+
+    private static McpResourceOptions? GetConfiguredOptions(IConfiguration configuration)
+    {
+        var options = configuration.GetSection("Mcp").Get<McpResourceOptions>();
+        return string.IsNullOrEmpty(options?.ClientId) || string.IsNullOrEmpty(options.ClientSecret)
+            ? null
+            : options;
     }
 }

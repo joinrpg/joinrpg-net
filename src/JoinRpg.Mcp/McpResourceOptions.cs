@@ -1,4 +1,4 @@
-namespace JoinRpg.Portal.Infrastructure.Authentication;
+namespace JoinRpg.Mcp;
 
 /// <summary>
 /// Portal как OAuth resource server для /mcp (ADR012 §5): confidential-клиент IdPortal

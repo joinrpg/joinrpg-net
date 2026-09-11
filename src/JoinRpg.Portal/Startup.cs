@@ -42,8 +42,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 {
     public IConfiguration Configuration { get; } = configuration;
 
-    private bool mcpEnabled;
-
     public void ConfigureServices(IJoinServiceCollection services)
     {
         _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
@@ -119,21 +117,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             Configuration.GetSection("Authentication"))
             .AddJoinXApiSwagger();
 
-        // Resource-клиент для интроспекции (ADR012 §5) заводится вручную через admin UI IdPortal
-        // и есть не в каждом окружении (например, в тестах его нет) — без него /mcp просто не
-        // регистрируется, а не падает при старте.
-        var mcpOptions = Configuration.GetSection("Mcp").Get<McpResourceOptions>() ?? new McpResourceOptions();
-        mcpEnabled = !string.IsNullOrEmpty(mcpOptions.ClientId) && !string.IsNullOrEmpty(mcpOptions.ClientSecret);
-        if (mcpEnabled)
-        {
-            var hostNames = Configuration.GetSection("JoinRpgHostNames").Get<JoinRpgHostNamesOptions>()
-                ?? throw new InvalidOperationException("JoinRpgHostNames section is required");
-            services.AddJoinMcp(
-                idPortalIssuer: new Uri($"https://{hostNames.IdHost}/"),
-                resourceUri: new Uri($"https://{hostNames.MainHost}/mcp"),
-                resourceClientId: mcpOptions.ClientId,
-                resourceClientSecret: mcpOptions.ClientSecret);
-        }
+        services.AddJoinMcp(Configuration);
 
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
@@ -216,10 +200,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = app.MapRazorComponents<JoinRpg.Blazor.Client.Components.App>().AddInteractiveWebAssemblyRenderMode();
 
         _ = app.MapControllers().WithStaticAssets();
-        if (mcpEnabled)
-        {
-            app.MapJoinMcp();
-        }
+        app.MapJoinMcp();
         _ = app.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
         _ = app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
         _ = app.MapRazorPages().WithStaticAssets();
