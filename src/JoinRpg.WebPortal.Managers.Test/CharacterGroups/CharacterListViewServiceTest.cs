@@ -1,8 +1,12 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.CharacterGroupList;
@@ -10,8 +14,8 @@ using JoinRpg.WebPortal.Managers.CharacterGroupList;
 namespace JoinRpg.WebPortal.Managers.Test.CharacterGroups;
 
 /// <summary>
-/// Списки <c>*ForMaster</c> считаются в два шага: грубый SQL-префильтр, поверх которого
-/// накладываются доменные правила заявки. Здесь проверяется именно композиция.
+/// Списки <c>*ForMaster</c> фильтруются доменными правилами заявки — отдельного SQL-предиката
+/// «доступен» больше нет, репозиторий отдаёт всех персонажей проекта лёгкой проекцией.
 /// </summary>
 public class CharacterListViewServiceTest
 {
@@ -20,7 +24,7 @@ public class CharacterListViewServiceTest
     private async Task<List<CharacterDto>> GetList(CharacterListType listType, ProjectInfo? projectInfo = null)
     {
         var service = new CharacterListViewService(
-            new FakeCharacterRepository(Mock),
+            new FakeCharacterInfoRepository(Mock),
             new FakeProjectMetadataRepository(projectInfo ?? Mock.ProjectInfo),
             new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(Mock.Master.UserId) });
 
@@ -35,8 +39,9 @@ public class CharacterListViewServiceTest
         => (await GetNames(CharacterListType.AvailableForMaster)).ShouldContain(Mock.Character.CharacterName);
 
     /// <summary>
-    /// Главный регресс: SQL-префильтр про лимит слота не знает, и раньше исчерпанный слот
-    /// доезжал до выпадашки — мастер выбирал его и получал SlotsExhausted только при отправке.
+    /// Главный регресс: когда доступность считал SQL-предикат, он про лимит слота не знал, и
+    /// исчерпанный слот доезжал до выпадашки — мастер выбирал его и получал SlotsExhausted
+    /// только при отправке.
     /// </summary>
     [Fact]
     public async Task ExhaustedSlotIsNotAvailable()
@@ -72,9 +77,8 @@ public class CharacterListViewServiceTest
     }
 
     /// <summary>
-    /// NPC отсекается доменными правилами, даже если легаси-колонка
-    /// <c>Character.IsAcceptingClaims</c>, на которую смотрит SQL-префильтр, разъехалась с
-    /// <c>CharacterType</c> у старых записей.
+    /// NPC отсекается доменными правилами по <c>CharacterType</c>, независимо от легаси-колонки
+    /// <c>Character.IsAcceptingClaims</c>, которая у старых записей могла с ним разъехаться.
     /// </summary>
     [Fact]
     public async Task NpcIsNotAvailableEvenWithStaleLegacyFlag()
@@ -170,43 +174,27 @@ public class CharacterListViewServiceTest
     }
 
     /// <summary>
-    /// Повторяет в памяти SQL-предикат <c>CharacterPredicates.IsAvailable</c> — тот самый грубый
-    /// префильтр, поверх которого сервис накладывает доменные правила.
+    /// Отдаёт лёгкую проекцию по персонажам мока — ровно то, что делает настоящий репозиторий.
+    /// Фильтрации по доступности тут нет: её считает сам сервис доменными правилами.
     /// </summary>
-    private sealed class FakeCharacterRepository(MockedProject mock) : ICharacterRepository
+    private sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacterInfoRepository
     {
-        private IEnumerable<Character> Available => mock.Project.Characters
-            .Where(character => character.IsAcceptingClaims
-                && character.IsActive
-                && !mock.Project.Claims.Any(claim => claim.IsApproved && claim.CharacterId == character.CharacterId));
+        public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId)
+            => Task.FromResult<IReadOnlyCollection<CharacterListEntry>>(
+                [.. mock.Project.Characters.Select(character => new CharacterListEntry(
+                    character.GetId(),
+                    character.CharacterName,
+                    character.Description?.Contents ?? "",
+                    character.IsPublic,
+                    character.IsActive,
+                    character.ToCharacterTypeInfo(),
+                    character.GetApprovedClaimIdOrDefault(),
+                    [.. character.Claims.Where(claim => claim.ClaimStatus.IsActive()).Select(claim => claim.GetPlayerId())]))]);
 
-        public Task<IEnumerable<Character>> GetAvailableCharacters(ProjectIdentification projectId)
-            => Task.FromResult(Available);
-
-        public Task<IEnumerable<Character>> GetAvailableNonSlotCharacters(ProjectIdentification projectId)
-            => Task.FromResult(Available.Where(c => c.CharacterType != CharacterType.Slot));
-
-        public Task<IEnumerable<Character>> GetAvailableTemplateCharacters(ProjectIdentification projectId)
-            => Task.FromResult(Available.Where(c => c.CharacterType == CharacterType.Slot));
-
-        public Task<IEnumerable<Character>> GetAllCharacters(int projectId)
-            => Task.FromResult<IEnumerable<Character>>(mock.Project.Characters);
-
-        public Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId)
-            => Task.FromResult(mock.Project.Characters.Where(c => c.IsActive && c.CharacterType == CharacterType.Slot));
-
-        public void Dispose() { }
-
-        public Task<IReadOnlyCollection<CharacterHeader>> GetCharacterHeaders(int projectId, DateTime? modifiedSince) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<Character>> GetCharacters(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
-        [Obsolete]
-        public Task<Character> GetCharacterAsync(int projectId, int characterId) => throw new NotImplementedException();
-        public Task<Character> GetCharacterAsync(CharacterIdentification characterId) => throw new NotImplementedException();
-        public Task<Character> GetCharacterWithGroups(int projectId, int characterId) => throw new NotImplementedException();
-        public Task<Character> GetCharacterWithDetails(int projectId, int characterId) => throw new NotImplementedException();
-        public Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId) => throw new NotImplementedException();
+        public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId) => throw new NotImplementedException();
+        public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
+        public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds) => throw new NotImplementedException();
+        public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId) => throw new NotImplementedException();
     }
 
     private sealed class FakeProjectMetadataRepository(ProjectInfo projectInfo) : IProjectMetadataRepository
