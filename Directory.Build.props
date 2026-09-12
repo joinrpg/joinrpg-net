@@ -11,12 +11,17 @@
 
         <UseArtifactsOutput>true</UseArtifactsOutput>
 
-        <NoWarn>${NoWarn};CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
 
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <Nullable>enable</Nullable>
 
-        <WarningsAsErrors>true</WarningsAsErrors>
+        <!--
+        WarningsAsErrors — это список идентификаторов, а не булево (булево называется
+        TreatWarningsAsErrors). Начинаем с NU* — предупреждений об уязвимостях и проблемах
+        восстановления пакетов; остальные предупреждения пока остаются предупреждениями.
+        -->
+        <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
 
         <ImplicitUsings>enable</ImplicitUsings>
 
@@ -44,6 +49,6 @@
     </ItemGroup>
     <ItemGroup>
         <GlobalPackageReference Include="ReferenceTrimmer" Version="3.5.7" />
-        <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
+        <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     </ItemGroup>
 </Project>
