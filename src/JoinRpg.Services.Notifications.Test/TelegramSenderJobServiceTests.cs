@@ -10,7 +10,7 @@ using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Notifications.Senders;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Services.Notifications.Tests;
+namespace JoinRpg.Services.Notifications.Test;
 
 public class TelegramSenderJobServiceTests
 {

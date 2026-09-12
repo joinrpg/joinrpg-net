@@ -7,7 +7,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Dal.Impl.Tests;
+namespace JoinRpg.Dal.Impl.Test;
 
 /// <summary>
 /// Тест на согласованность из issue #4766: <see cref="CharacterPredicates.IsAvailable"/> —

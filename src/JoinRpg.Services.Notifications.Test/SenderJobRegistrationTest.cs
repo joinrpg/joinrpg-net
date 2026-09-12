@@ -2,7 +2,7 @@ using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Services.Notifications.Senders;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace JoinRpg.Services.Notifications.Tests;
+namespace JoinRpg.Services.Notifications.Test;
 
 public class SenderJobRegistrationTest
 {

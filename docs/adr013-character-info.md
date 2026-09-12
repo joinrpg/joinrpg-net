@@ -306,7 +306,7 @@ public interface ICharacterInfoRepository
    `FieldLayerContainerTest` в общую фикстуру и дополнить её словарём `Groups`).
 5. `ICharacterInfoRepository`.
 6. Row-типы, `CharacterInfoMapper`, `CharacterInfoRepository`.
-7. Тесты маппера в `JoinRpg.Dal.Impl.Tests` — включая два теста-стража: маппинг visibility совпадает
+7. Тесты маппера в `JoinRpg.Dal.Impl.Test` — включая два теста-стража: маппинг visibility совпадает
    с `ToCharacterTypeInfo`, а `CharacterClaimInfo.IsActive` совпадает с
    `ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active)`.
 8. Регистрация в `Registraton.cs`.

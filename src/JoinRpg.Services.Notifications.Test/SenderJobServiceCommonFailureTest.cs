@@ -5,7 +5,7 @@ using JoinRpg.Services.Notifications.Senders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace JoinRpg.Services.Notifications.Tests;
+namespace JoinRpg.Services.Notifications.Test;
 
 public class SenderJobServiceCommonFailureTest
 {
