@@ -168,6 +168,40 @@ public static class ClaimValidator
         };
 
     /// <summary>
+    /// Бросает исключение, если заявку создать нельзя.
+    /// </summary>
+    /// <param name="userInfo">
+    /// Игрок, на которого оформляется заявка. При <see cref="ClaimOperation.AddByMaster"/> это не
+    /// тот, кто выполняет операцию.
+    /// </param>
+    public static void EnsureCanAddClaim(
+        IClaimTarget target, UserInfo userInfo, ProjectInfo projectInfo, ClaimOperation operation)
+        => ThrowIfForbidden(
+            Validate(target, userInfo, movedClaim: null, projectInfo, operation),
+            movedClaim: null,
+            projectInfo);
+
+    /// <summary>
+    /// Бросает исключение, если заявку нельзя перенести на этого персонажа.
+    /// </summary>
+    /// <param name="userInfo">Игрок, которому принадлежит переносимая заявка.</param>
+    public static void EnsureCanMoveClaim(
+        IClaimTarget target, UserClaimInfo movedClaim, UserInfo userInfo, ProjectInfo projectInfo)
+        => ThrowIfForbidden(
+            Validate(target, userInfo, movedClaim, projectInfo, ClaimOperation.MoveByMaster),
+            movedClaim,
+            projectInfo);
+
+    private static void ThrowIfForbidden(
+        IReadOnlyCollection<ClaimForbiddenReason> reasons, UserClaimInfo? movedClaim, ProjectInfo projectInfo)
+    {
+        if (reasons.Count > 0)
+        {
+            ThrowForReason(reasons.First(), movedClaim, projectInfo);
+        }
+    }
+
+    /// <summary>
     /// Бросает исключение, соответствующее причине запрета.
     /// </summary>
     /// <param name="claim">

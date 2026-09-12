@@ -64,7 +64,7 @@ public class MoveClaimValidationRulesTest
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanMoveClaim(claim, playerWithoutPhone, projectInfo)
+            .ValidateIfCanMoveClaim(Mock, claim, playerWithoutPhone, projectInfo)
             .ShouldBeEmpty();
     }
 
@@ -75,7 +75,7 @@ public class MoveClaimValidationRulesTest
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, claimsClosed)
+            .ValidateIfCanMoveClaim(Mock, claim, Mock.PlayerInfo, claimsClosed)
             .ShouldBeEmpty();
     }
 
@@ -87,7 +87,7 @@ public class MoveClaimValidationRulesTest
         var claim = Mock.CreateCheckedInClaim(Mock.Character, Mock.Player);
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, claimsClosed).Kinds()
+            .ValidateIfCanMoveClaim(Mock, claim, Mock.PlayerInfo, claimsClosed).Kinds()
             .ShouldBe([AddClaimForbideReason.CheckedInClaimCantBeMoved]);
     }
 
@@ -104,8 +104,8 @@ public class MoveClaimValidationRulesTest
             .ShouldNotContain(AddClaimForbideReason.ApprovedClaimMovedToSlot);
     }
 
-    private void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBeEmpty();
+    private void ShouldAllowMove(Claim claim, Character character) => character.ValidateIfCanMoveClaim(Mock, claim, Mock.PlayerInfo, Mock.ProjectInfo).ShouldBeEmpty();
 
     private void ShouldDisAllowMove(Claim claim, Character character, AddClaimForbideReason reason)
-        => character.ValidateIfCanMoveClaim(claim, Mock.PlayerInfo, Mock.ProjectInfo).Kinds().ShouldBe([reason]);
+        => character.ValidateIfCanMoveClaim(Mock, claim, Mock.PlayerInfo, Mock.ProjectInfo).Kinds().ShouldBe([reason]);
 }

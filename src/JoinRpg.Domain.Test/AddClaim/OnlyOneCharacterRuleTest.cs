@@ -77,7 +77,7 @@ public class OnlyOneCharacterRuleTest
         var userInfo = WithClaims(new UserClaimInfo(claim.GetId(), ClaimStatus.Approved));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanMoveClaim(claim, userInfo, Mock.ProjectInfo).Kinds()
+            .ValidateIfCanMoveClaim(Mock, claim, userInfo, Mock.ProjectInfo).Kinds()
             .ShouldNotContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
@@ -90,7 +90,7 @@ public class OnlyOneCharacterRuleTest
             new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 999), ClaimStatus.Approved));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanMoveClaim(claim, userInfo, Mock.ProjectInfo).Kinds()
+            .ValidateIfCanMoveClaim(Mock, claim, userInfo, Mock.ProjectInfo).Kinds()
             .ShouldContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
