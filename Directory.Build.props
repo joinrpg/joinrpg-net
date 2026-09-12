@@ -11,7 +11,7 @@
 
         <UseArtifactsOutput>true</UseArtifactsOutput>
 
-        <NoWarn>${NoWarn};CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
 
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <Nullable>enable</Nullable>
