@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Web.ProjectMasterTools.Tests.ProjectRolesList;
+namespace JoinRpg.Web.ProjectMasterTools.Test.ProjectRolesList;
 
 public class ProjectRolesListComponentTest : BunitContext
 {

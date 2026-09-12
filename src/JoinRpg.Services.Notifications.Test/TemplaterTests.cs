@@ -1,6 +1,6 @@
 using JoinRpg.DomainTypes.Notifications;
 
-namespace JoinRpg.Services.Notifications.Tests;
+namespace JoinRpg.Services.Notifications.Test;
 
 public class TemplaterTests
 {

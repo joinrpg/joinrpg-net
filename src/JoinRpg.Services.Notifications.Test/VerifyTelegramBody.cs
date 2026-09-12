@@ -1,7 +1,7 @@
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Notifications.Senders;
 
-namespace JoinRpg.Services.Notifications.Tests;
+namespace JoinRpg.Services.Notifications.Test;
 
 public class VerifyTelegramBody
 {

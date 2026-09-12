@@ -10,7 +10,7 @@ using JoinRpg.DomainTypes.ProjectMetadata;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Dal.Impl.Tests;
+namespace JoinRpg.Dal.Impl.Test;
 
 /// <summary>
 /// Юнит-тесты чистого маппинга <see cref="CharacterInfoMapper.Map"/> (ADR013, п.7).

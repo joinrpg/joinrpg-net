@@ -1,6 +1,6 @@
 using JoinRpg.Services.Notifications.Senders.PostboxEmail;
 
-namespace JoinRpg.Services.Notifications.Tests;
+namespace JoinRpg.Services.Notifications.Test;
 
 public class FormatAddressTest
 {

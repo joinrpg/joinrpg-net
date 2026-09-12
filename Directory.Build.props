@@ -39,11 +39,10 @@
 
     </PropertyGroup>
     <!--
-    this instruction automatically allows XXX.Tests to access internals of XXX.
+    this instruction automatically allows XXX.Test to access internals of XXX.
   -->
     <ItemGroup>
         <InternalsVisibleTo Include="$(AssemblyName).Test" />
-        <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>
     <ItemGroup>
         <GlobalPackageReference Include="ReferenceTrimmer" Version="3.5.7" />

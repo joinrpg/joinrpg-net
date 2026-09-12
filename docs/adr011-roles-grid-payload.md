@@ -67,7 +67,7 @@ service 80 → pod 8080), поэтому вариант «пусть жмёт ng
 * `nginx.ingress.kubernetes.io/configuration-snippet` как обходной путь в свежих версиях
   ingress-nginx отключён по умолчанию (`allow-snippet-annotations: false`);
 * brotli-модуль из ingress-nginx выпилен — со стороны nginx доступен только gzip;
-* локальная разработка и `JoinRpg.IntegrationTests` поднимают приложение без nginx: сжатие,
+* локальная разработка и `JoinRpg.IntegrationTest` поднимают приложение без nginx: сжатие,
   настроенное в кластере, там не воспроизводится и не тестируется.
 
 Против приложения играет только CPU: лимит пода 500m (`manifests/base/deployment.yaml:62-68`),
@@ -227,7 +227,7 @@ STJ вообще не перечисляет свойства.
 
 Сеть безопасности уже существует: `IdentificationCommonTest.ShouldRoundTripThroughJson`
 (строка 104) — theory по **всем** типизированным Id, и
-`src/JoinRpg.IntegrationTests/Scenarios/ProjectRoleGridScenario.cs:128,135` — сквозной
+`src/JoinRpg.IntegrationTest/Scenarios/ProjectRoleGridScenario.cs:128,135` — сквозной
 `GetFromJsonAsync<ProjectRoleGridViewResult>` против настоящего сервера.
 
 ---
@@ -273,7 +273,7 @@ Blazor-компонента.
 2. `dotnet test src/JoinRpg.DomainTypes.Test` — round-trip всех Id + новые тесты на
    отрицательные и нулевые компоненты (решение 3).
 3. `dotnet test src/JoinRpg.WebPortal.Managers.Test` — билдер сетки ролей (решение 2).
-4. `dotnet test src/JoinRpg.IntegrationTests` — `ProjectRoleGridScenario` как сквозная проверка
+4. `dotnet test src/JoinRpg.IntegrationTest` — `ProjectRoleGridScenario` как сквозная проверка
    MVC ↔ HttpClient после смены формата Id.
 5. Локально: `docker compose up -d`, `dotnet run --project src/JoinRpg.Portal`, открыть
    `/{projectId}/roles/{characterGroupId}` — сетка рисуется как раньше: дерево, «см. выше»,

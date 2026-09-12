@@ -1,8 +1,7 @@
-using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace JoinRpg.Web.Plots.Tests;
+namespace JoinRpg.Web.Plots.Test;
 
 public class PlotElementEditPanelTest
 {

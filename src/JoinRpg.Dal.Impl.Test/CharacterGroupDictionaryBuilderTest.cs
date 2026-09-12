@@ -4,7 +4,7 @@ using JoinRpg.DomainTypes;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Dal.Impl.Tests;
+namespace JoinRpg.Dal.Impl.Test;
 
 public class CharacterGroupDictionaryBuilderTest
 {
