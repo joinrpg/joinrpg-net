@@ -1,5 +1,4 @@
 using JoinRpg.DataModel.Extensions;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using LinqKit;
@@ -111,28 +110,8 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
         return view;
     }
 
-    public async Task<IEnumerable<Character>> GetAvailableCharacters(ProjectIdentification projectId)
-    {
-        return await Ctx.Set<Character>()
-          .Where(CharacterPredicates.IsAvailable(projectId))
-          .OrderBy(c => c.CharacterName).ToListAsync();
-    }
 
-    public async Task<IEnumerable<Character>> GetAvailableNonSlotCharacters(ProjectIdentification projectId)
-    {
-        return await Ctx.Set<Character>()
-          .Where(CharacterPredicates.IsAvailable(projectId))
-          .Where(c => c.CharacterType != CharacterType.Slot)
-          .OrderBy(c => c.CharacterName).ToListAsync();
-    }
 
-    public async Task<IEnumerable<Character>> GetAvailableTemplateCharacters(ProjectIdentification projectId)
-    {
-        return await Ctx.Set<Character>()
-          .Where(CharacterPredicates.IsAvailable(projectId))
-          .Where(c => c.CharacterType == CharacterType.Slot)
-          .OrderBy(c => c.CharacterName).ToListAsync();
-    }
 
     public async Task<IEnumerable<Character>> GetAllCharacters(int projectId)
     {
@@ -142,15 +121,6 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
           .ToListAsync();
     }
 
-    public async Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId)
-    {
-        return await Ctx.Set<Character>()
-          .Where(c => c.ProjectId == projectId)
-          .Where(c => c.IsActive)
-          .Where(c => c.CharacterType == CharacterType.Slot)
-          .OrderBy(c => c.CharacterName)
-          .ToListAsync();
-    }
 
     public async Task<Character> GetCharacterAsync(int projectId, int characterId)
     {
