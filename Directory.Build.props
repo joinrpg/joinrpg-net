@@ -11,7 +11,7 @@
 
         <UseArtifactsOutput>true</UseArtifactsOutput>
 
-        <NoWarn>${NoWarn};CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
 
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <Nullable>enable</Nullable>
@@ -31,8 +31,6 @@
 
         <TargetFramework>net10.0</TargetFramework>
         <NoWarn>$(NoWarn);NU1507</NoWarn>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
 
     </PropertyGroup>
     <!--
