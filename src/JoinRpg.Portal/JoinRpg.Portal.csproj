@@ -2,7 +2,6 @@
   <PropertyGroup>
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
-    <NoWarn>${NoWarn};CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
