@@ -23,11 +23,7 @@ public interface ICharacterRepository : IDisposable
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
     Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId);
-    Task<IEnumerable<Character>> GetAvailableCharacters(ProjectIdentification projectId);
-    Task<IEnumerable<Character>> GetAvailableNonSlotCharacters(ProjectIdentification projectId);
-    Task<IEnumerable<Character>> GetAvailableTemplateCharacters(ProjectIdentification projectId);
     Task<IEnumerable<Character>> GetAllCharacters(int projectId);
-    Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId);
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds);
 
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId);

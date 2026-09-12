@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using LinqKit;
 
@@ -17,6 +18,50 @@ namespace JoinRpg.Dal.Impl.Repositories;
 internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataRepository projectMetadataRepository)
     : ICharacterInfoRepository
 {
+    public async Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId)
+    {
+        var activeClaims = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+
+        var query =
+            from character in ctx.Set<Character>().AsNoTracking().AsExpandable()
+            where character.ProjectId == projectId.Value
+            select new
+            {
+                character.CharacterId,
+                character.CharacterName,
+                Description = character.Description.Contents,
+                character.IsPublic,
+                character.IsActive,
+                character.CharacterType,
+                character.IsHot,
+                character.CharacterSlotLimit,
+                character.HidePlayerForCharacter,
+                character.ApprovedClaimId,
+                ActiveClaimPlayerIds = character.Claims
+                    .Where(claim => activeClaims.Invoke(claim))
+                    .Select(claim => claim.PlayerUserId),
+            };
+
+        var rows = await query.ToListAsync();
+
+        return [.. rows.Select(row => new CharacterListEntry(
+            new CharacterIdentification(projectId, row.CharacterId),
+            row.CharacterName,
+            row.Description ?? "",
+            row.IsPublic,
+            row.IsActive,
+            // Маппинг флагов живёт в одном месте — иначе он разойдётся с ToCharacterTypeInfo.
+            CharacterTypeInfo.Create(
+                row.CharacterType,
+                row.IsHot,
+                row.CharacterSlotLimit,
+                row.CharacterName,
+                row.IsPublic,
+                row.HidePlayerForCharacter),
+            ClaimIdentification.FromOptional(projectId, row.ApprovedClaimId),
+            [.. row.ActiveClaimPlayerIds.Select(id => new UserIdentification(id))]))];
+    }
+
     public async Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId)
     {
         var characterIntId = characterId.CharacterId;

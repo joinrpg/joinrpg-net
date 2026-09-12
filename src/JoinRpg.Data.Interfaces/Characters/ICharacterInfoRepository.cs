@@ -32,4 +32,15 @@ public interface ICharacterInfoRepository
     async Task<CharacterInfo> GetCharacterInfo(CharacterIdentification characterId)
         => await GetCharacterInfoOrDefault(characterId)
             ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, "character");
+
+    /// <summary>
+    /// Все персонажи проекта в виде лёгкой проекции для списков выбора, включая удалённых.
+    /// </summary>
+    /// <remarks>
+    /// Отдельно от <see cref="GetAllCharacterInfos"/>: спискам не нужны ни поля, ни финансы, ни
+    /// комментарии, а агрегат тянет их на каждого персонажа. Фильтрация — на стороне вызывающего,
+    /// доменными правилами: отдельного SQL-предиката «доступен для заявки» тут сознательно нет,
+    /// иначе он разъедется с правилами (так уже было, см. issue #4766).
+    /// </remarks>
+    Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId);
 }
