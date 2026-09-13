@@ -1,18 +1,20 @@
 using System.Net;
+using System.Text;
 using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging.Abstractions;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 
 namespace JoinRpg.Common.Telegram.Test;
 
 public class TelegramNotificationServiceImplTimeoutTest
 {
     [Fact]
-    public async Task SendTelegramNotification_WithBotBlockedException_ReturnsUserRelatedFailure()
+    public async Task SendTelegramNotification_WithBotBlockedResponse_ReturnsUserRelatedFailure()
     {
-        var handler = new ThrowingHttpMessageHandler(new ApiRequestException("Forbidden: bot was blocked by the user", 403));
+        // Телеграм на заблокированного бота отвечает не транспортной ошибкой, а обычным HTTP-ответом с ok=false
+        var handler = new RespondingHttpMessageHandler(
+            HttpStatusCode.Forbidden,
+            """{"ok":false,"error_code":403,"description":"Forbidden: bot was blocked by the user"}""");
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.telegram.org") };
         var botClient = new TelegramBotClient("123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11", httpClient);
         var service = new TelegramNotificationServiceImpl(botClient, NullLogger<TelegramNotificationServiceImpl>.Instance);
@@ -54,5 +56,14 @@ public class TelegramNotificationServiceImplTimeoutTest
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => Task.FromException<HttpResponseMessage>(exception);
+    }
+
+    private sealed class RespondingHttpMessageHandler(HttpStatusCode statusCode, string json) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json"),
+            });
     }
 }

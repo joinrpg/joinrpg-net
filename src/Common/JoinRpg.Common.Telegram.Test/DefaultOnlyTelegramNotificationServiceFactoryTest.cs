@@ -26,7 +26,7 @@ public class DefaultOnlyTelegramNotificationServiceFactoryTest
 
     private sealed class FakeTelegramNotificationService : ITelegramNotificationService
     {
-        public Task<SendingResult> SendTelegramNotification(TelegramId telegramId, TelegramHtmlString contents) => throw new NotSupportedException();
+        public Task<SendingResult> SendTelegramNotification(TelegramChatId chatId, TelegramHtmlString contents) => throw new NotSupportedException();
         public Task<string?> GetMyUserName(CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 }
