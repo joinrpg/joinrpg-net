@@ -7,24 +7,25 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Testcontainers.MsSql;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
 public class JoinApplicationFactory : WebApplicationFactory<Startup>, IAsyncLifetime
 {
-    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
+    /// <summary>
+    /// Своя база на общем SQL Server — см. <see cref="SharedSqlServerContainer"/>.
+    /// </summary>
+    private string connectionString = null!;
 
     async Task IAsyncLifetime.InitializeAsync()
     {
-        Log("Starting SQL Server container...");
-        await _msSqlContainer.StartAsync();
-        Log("SQL Server container started.");
+        Log("Creating test database...");
+        connectionString = await SharedSqlServerContainer.CreateDatabaseAsync();
+        Log("Test database created.");
 
         Log("Running EF6 migrations...");
         var migConfig = new Configuration();
-        migConfig.TargetDatabase = new DbConnectionInfo(
-            _msSqlContainer.GetConnectionString(), "System.Data.SqlClient");
+        migConfig.TargetDatabase = new DbConnectionInfo(connectionString, "System.Data.SqlClient");
         new DbMigrator(migConfig).Update();
         Log("EF6 migrations done.");
 
@@ -33,16 +34,17 @@ public class JoinApplicationFactory : WebApplicationFactory<Startup>, IAsyncLife
         Log("Web host built.");
     }
 
-    async Task IAsyncLifetime.DisposeAsync()
+    Task IAsyncLifetime.DisposeAsync()
     {
-        await _msSqlContainer.DisposeAsync();
+        // Базу не удаляем: общий контейнер вместе со всеми базами снесёт resource reaper Testcontainers.
+        return Task.CompletedTask;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
 
-        builder.UseSetting("ConnectionStrings:DefaultConnection", _msSqlContainer.GetConnectionString());
+        builder.UseSetting("ConnectionStrings:DefaultConnection", connectionString);
         builder.UseSetting("ConnectionStrings:DataProtection", "");
         builder.UseSetting("ConnectionStrings:DailyJob", "");
         builder.UseSetting("ConnectionStrings:Notifications", "");
