@@ -20,7 +20,7 @@ public class ProjectPredicatesTest
 
     // Баг: админский отчёт о горячих ролях (AdminHotRolesList) показывал роли из проектов,
     // у которых нет ни одной непрошедшей игры КогдаИгра — то есть больше, чем реально
-    // рекламируется через SingleHotRoleAdvertisementJob (там есть проверка NearestFutureKogdaIgraCard).
+    // рекламируется через AdvertisementJob (там есть проверка NearestFutureKogdaIgraCard).
 
     [Fact]
     public void NoGames_ShouldNotHaveFutureGame()
