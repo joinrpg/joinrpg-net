@@ -1,15 +1,18 @@
 namespace JoinRpg.Web.ProjectCommon;
 
+/// <param name="IsAvailable">
+/// Можно ли игроку подать заявку на этого персонажа. Считается доменными правилами
+/// (<c>ClaimValidator.IsAvailableForPlayer</c>), а не выводится из <paramref name="BusyStatus"/>:
+/// тот описывает состояние самого персонажа и про статус проекта ничего не знает, поэтому в
+/// проекте с закрытым приёмом заявок кнопка «Заявиться» показывалась и вела на форму, где подать
+/// заявку нельзя (см. issue #4766).
+/// </param>
 public record CharacterApplyViewModel(
     CharacterIdentification CharacterId,
     CharacterBusyStatusView BusyStatus,
     int? SlotCount,
-    bool IsHot)
+    bool IsHot,
+    bool IsAvailable)
 {
     public bool IsSlot => BusyStatus is CharacterBusyStatusView.Slot or CharacterBusyStatusView.HotSlot;
-
-    // null SlotCount у слота — не «мест нет», а безлимитный шаблон (см. IsAcceptingClaims в JoinRpg.Domain).
-    // Discussed — есть поданные заявки, но мастер ещё не одобрил ни одну: заявиться ещё можно.
-    public bool IsAvailable => BusyStatus is CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy or CharacterBusyStatusView.Discussed
-        || (IsSlot && SlotCount is null or > 0);
 }
