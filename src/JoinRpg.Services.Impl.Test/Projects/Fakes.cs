@@ -1,17 +1,10 @@
-using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.Data.Interfaces.Finances;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.Interfaces;
-using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Subscribe;
 
@@ -86,68 +79,6 @@ internal sealed class FakeProjectMetadataRepository(MockedProject mock) : IProje
 
     public Task<JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
         => throw new NotSupportedException();
-}
-
-internal sealed class FakeCurrentUserAccessor(int userId, bool isAdmin = false) : ICurrentUserAccessor
-{
-    public int? UserIdOrDefault => userId;
-    public UserDisplayName DisplayName => new("Test", null);
-    public bool IsAdmin => isAdmin;
-    public AvatarIdentification? Avatar => null;
-}
-
-internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
-{
-    public int SaveChangesCallCount { get; private set; }
-
-    public Task SaveChangesAsync()
-    {
-        SaveChangesCallCount++;
-        return Task.CompletedTask;
-    }
-
-    public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository()
-        => new FakeProjectMetadataWriteRepository(mock);
-
-    public DbSet<T> GetDbSet<T>() where T : class => throw new NotSupportedException();
-    public IUserRepository GetUsersRepository() => throw new NotSupportedException();
-    public IProjectRepository GetProjectRepository() => throw new NotSupportedException();
-    public IClaimsRepository GetClaimsRepository() => throw new NotSupportedException();
-    public IPlotRepository GetPlotRepository() => throw new NotSupportedException();
-    public IForumRepository GetForumRepository() => throw new NotSupportedException();
-    public ICharacterRepository GetCharactersRepository() => throw new NotSupportedException();
-    public IAccommodationRepository GetAccomodationRepository() => throw new NotSupportedException();
-    public IKogdaIgraRepository GetKogdaIgraRepository() => throw new NotSupportedException();
-    public IFinanceOperationsRepository GetFinanceOperationsRepositoryRepository() => throw new NotSupportedException();
-
-    public void Dispose() { }
-
-    public Task<int> ExecuteSqlCommandAsync(string sql) => throw new NotImplementedException();
-}
-
-/// <summary>Записывает поставленные в очередь уведомления для проверки в тестах.</summary>
-internal sealed class FakeNotificationService : INotificationService
-{
-    public List<NotificationEvent> Queued { get; } = [];
-
-    public Task QueueNotification(NotificationEvent notificationMessage)
-    {
-        Queued.Add(notificationMessage);
-        return Task.CompletedTask;
-    }
-
-    public Task QueueDirectNotification(NotificationEvent notificationMessage, NotificationChannel directChannel)
-    {
-        Queued.Add(notificationMessage);
-        return Task.CompletedTask;
-    }
-}
-
-internal sealed class FakeVirtualUsersService : IVirtualUsersService
-{
-    public User PaymentsUser { get; } = new User { UserId = 1000, PrefferedName = "Payments", Email = "payments@example.com", Claims = [] };
-    public User RobotUser => throw new NotSupportedException();
-    public UserIdentification RobotUserId => new(int.MaxValue);
 }
 
 /// <summary>Отдаёт заранее заготовленные заявки по (ProjectId, UserId) отв. мастера.</summary>
