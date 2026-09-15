@@ -14,8 +14,7 @@ internal class ClaimNotificationService(
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
     IVirtualUsersService virtualUsersService
-    )
-
+    ) : IClaimNotificationService
 {
     public async Task SendNotification(ClaimSimpleChangedNotification model)
     {

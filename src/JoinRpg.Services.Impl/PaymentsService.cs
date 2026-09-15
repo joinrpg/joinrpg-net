@@ -50,7 +50,7 @@ internal class PaymentsService(
     IUriService uriService,
     IBankSecretsProvider bankSecrets,
     ICurrentUserAccessor currentUserAccessor,
-    Lazy<ClaimNotificationService> claimNotificationService,
+    Lazy<IClaimNotificationService> claimNotificationService,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     CommentHelper commentHelper,

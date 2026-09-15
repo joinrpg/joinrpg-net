@@ -7,6 +7,7 @@ namespace JoinRpg.Services.Impl;
 
 internal static class EmailHelpers
 {
+    [Obsolete("Письмо не отправляется — отправка закомментирована у всех вызывающих. Восстановить или удалить, см. ADR014")]
     public static FieldsChangedEmail CreateFieldsEmail(
         Claim claim,
         Func<UserSubscription, bool> subscribePredicate,
@@ -25,7 +26,7 @@ internal static class EmailHelpers
             updatedFields);
     }
 
-    [Obsolete("Все эти экстраданные должны быть полями персонажа/заявки")]
+    [Obsolete("Все эти экстраданные должны быть полями персонажа/заявки. Кроме того, письмо не отправляется — отправка закомментирована у всех вызывающих; восстановить или удалить, см. ADR014")]
     public static FieldsChangedEmail CreateFieldsEmailWithExtraData(
         Claim claim,
         Func<UserSubscription, bool> subscribePredicate,
@@ -53,6 +54,7 @@ internal static class EmailHelpers
             });
     }
 
+    [Obsolete("Письмо не отправляется — отправка закомментирована у всех вызывающих. Восстановить или удалить, см. ADR014")]
     public static FieldsChangedEmail CreateFieldsEmail(
         Character character,
         Func<UserSubscription, bool> subscribePredicate,
