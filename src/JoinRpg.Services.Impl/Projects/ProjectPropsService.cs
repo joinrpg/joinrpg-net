@@ -34,6 +34,15 @@ internal class ProjectPropsService(
         => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
             action, operationName);
 
+    public Task ChangeProjectPropertiesAsSideEffect<TArgs>(
+        ProjectIdentification projectId,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Action<ProjectMutationContext<TArgs>> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeProjectPropertiesCore(projectId, requiredPermission: null, activeRequirement, arguments,
+            AsFunc(action), operationName);
+
     private static Func<ProjectMutationContext<TArgs>, bool> AsFunc<TArgs>(Action<ProjectMutationContext<TArgs>> action)
         => ctx =>
         {
@@ -41,9 +50,13 @@ internal class ProjectPropsService(
             return true;
         };
 
+    /// <param name="requiredPermission">
+    /// Право, которым должен обладать текущий пользователь; <c>null</c> — проверки нет, права
+    /// проверил вызывающий сценарий (см. <see cref="ChangeProjectPropertiesAsSideEffect"/>).
+    /// </param>
     private async Task<TResult> ChangeProjectPropertiesCore<TArgs, TResult>(
         ProjectIdentification projectId,
-        Permission requiredPermission,
+        Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ProjectMutationContext<TArgs>, TResult> action,
@@ -58,9 +71,9 @@ internal class ProjectPropsService(
             var handle = await unitOfWork.GetProjectMetadataWriteRepository().LoadProjectForUpdate(projectId);
 
             // Админ (в т.ч. робот, под которым выполняются фоновые джобы) проходит проверку прав.
-            if (!currentUserAccessor.IsAdmin)
+            if (requiredPermission is Permission permission && !currentUserAccessor.IsAdmin)
             {
-                _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, requiredPermission);
+                _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, permission);
             }
 
             if (activeRequirement == ProjectActiveRequirement.MustBeActive)

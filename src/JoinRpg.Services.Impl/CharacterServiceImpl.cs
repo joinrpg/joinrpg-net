@@ -2,9 +2,9 @@ using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.CharacterFields;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Impl;
 
 internal class CharacterServiceImpl(
     IUnitOfWork unitOfWork,
-    FieldSaveHelper fieldSaveHelper,
+    CharacterFieldsSaveService fieldSaveService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor), ICharacterService
 {
@@ -42,7 +42,7 @@ internal class CharacterServiceImpl(
         Create(character);
 
         //TODO we do not send message for creating character
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        _ = await fieldSaveService.SaveCharacterFields(CurrentUserId,
             character,
             addCharacterRequest.FieldValues,
             projectInfo);
@@ -87,7 +87,7 @@ internal class CharacterServiceImpl(
 
         character.ParentCharacterGroupIds = ValidateGroupListForCharacter(projectInfo, editCharacterRequest.ParentCharacterGroupIds);
 
-        var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        var changedFields = await fieldSaveService.SaveCharacterFields(CurrentUserId,
             character,
             editCharacterRequest.FieldValues,
             projectInfo);
@@ -146,7 +146,7 @@ internal class CharacterServiceImpl(
         var character = await LoadCharacter(characterId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
 
-        var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
+        var changedFields = await fieldSaveService.SaveCharacterFields(CurrentUserId,
             character,
             fieldsToSet,
             projectInfo);
