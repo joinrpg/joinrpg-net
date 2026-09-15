@@ -257,11 +257,51 @@ public class MockedProject
             PlayerUserId = mockUser.UserId,
             ResponsibleMasterUser = Master,
             ResponsibleMasterUserId = Master.UserId,
+            // Дискуссия создаётся вместе с заявкой — так же, как в ClaimServiceImpl.AddClaimFromUser.
+            // CommentDiscussionId = -1 — это состояние "ещё не сохранено в БД", ровно как в бою до SaveChanges.
+            CommentDiscussion = new CommentDiscussion()
+            {
+                CommentDiscussionId = -1,
+                ProjectId = Project.ProjectId,
+                Comments = [],
+            },
         };
+        claim.CommentDiscussion.Project = Project;
         mockCharacter.Claims.Add(claim);
         Project.Claims.Add(claim);
         mockUser.Claims.Add(claim);
         return claim;
+    }
+
+    /// <summary>
+    /// Добавляет комментарий в дискуссию заявки — минимальный аналог того, что делает
+    /// <c>CommentHelper.CreateCommentForDiscussion</c>, но без проверок прав.
+    /// </summary>
+    /// <remarks>
+    /// Автор — всегда <see cref="Master"/>: комментарий, скрытый от игрока, мастерский по
+    /// определению, а видимый мастерский — самый частый случай в тестах (ответ, сокрытие).
+    /// </remarks>
+    public Comment CreateComment(Claim claim, string text, bool isVisibleToPlayer = true, CommentExtraAction? extraAction = null)
+    {
+        var author = Master;
+        var comment = new Comment
+        {
+            CommentId = claim.CommentDiscussion.Comments.GetNextId(),
+            ProjectId = claim.CommentDiscussion.ProjectId,
+            Project = Project,
+            CommentDiscussionId = claim.CommentDiscussion.CommentDiscussionId,
+            Discussion = claim.CommentDiscussion,
+            Author = author,
+            AuthorUserId = author.UserId,
+            CommentText = new CommentText { Text = new MarkdownDbValue(text) },
+            IsCommentByPlayer = author.UserId == claim.PlayerUserId,
+            IsVisibleToPlayer = isVisibleToPlayer,
+            ExtraAction = extraAction,
+            CreatedAt = DateTime.UtcNow,
+            LastEditTime = DateTime.UtcNow,
+        };
+        claim.CommentDiscussion.Comments.Add(comment);
+        return comment;
     }
 
     public Claim CreateApprovedClaim(Character character, User player)

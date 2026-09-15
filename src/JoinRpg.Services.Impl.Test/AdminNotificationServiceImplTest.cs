@@ -7,7 +7,6 @@ using JoinRpg.DataModel.Projects;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Users;
-using JoinRpg.Services.Impl.Test.Projects;
 using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.Extensions.Options;
 
