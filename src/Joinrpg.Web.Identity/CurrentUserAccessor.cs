@@ -46,6 +46,10 @@ public class CurrentUserAccessor : ICurrentUserAccessor, IImpersonateAccessor
             {
                 return id;
             }
+            if (int.TryParse(user.FindFirstValue("sub"), out var sub))  // OAuth/OIDC tokens (MCP, ADR012)
+            {
+                return sub;
+            }
             return null;
         }
     }
