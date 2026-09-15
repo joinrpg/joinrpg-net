@@ -8,7 +8,7 @@ internal class AdvertisementLogRepository(MyDbContext ctx) : IAdvertisementLogRe
         AdvertisementScheduleIdentification scheduleId, ProjectIdentification projectId)
     {
         // Статус/публичность проекта здесь не проверяем: projectId уже провалидирован
-        // вызывающим кодом (SingleHotRoleAdvertisementJob.TryAdvertiseProject).
+        // вызывающим кодом (AdvertisementJob.TryAdvertiseProject).
         var query = ctx.ProjectsSet
             .Where(p => p.ProjectId == projectId.Value)
             .SelectMany(p => p.Characters)

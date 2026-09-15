@@ -11,7 +11,7 @@ public static class AdvertisementRegistration
             .AddScoped<IAdvertisementChannelRepository, HardcodedAdvertisementChannelRepository>()
             .AddScoped<IAdvertisementScheduleRepository, HardcodedAdvertisementScheduleRepository>()
             .AddScoped<IAdvSenderFactory, AdvSenderFactory>();
-        services.AddDailyJob<SingleHotRoleAdvertisementJob>();
+        services.AddDailyJob<AdvertisementJob>();
         return services;
     }
 }

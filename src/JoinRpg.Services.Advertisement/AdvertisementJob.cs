@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace JoinRpg.Services.Advertisement;
 
 [JobDelay(9)] // 09:00 UTC = 12:00 МСК
-internal class SingleHotRoleAdvertisementJob(
+internal class AdvertisementJob(
     IAdvertisementScheduleRepository scheduleRepository,
     IAdvertisementLogRepository logRepository,
     IProjectRepository projectRepository,
@@ -13,7 +13,7 @@ internal class SingleHotRoleAdvertisementJob(
     ICharacterRepository characterRepository,
     IAdvSenderFactory advSenderFactory,
     ICharacterUriLocator characterUriLocator,
-    ILogger<SingleHotRoleAdvertisementJob> logger) : IDailyJob
+    ILogger<AdvertisementJob> logger) : IDailyJob
 {
     private const int MinOtherAdvertisementsBetweenRepeats = 3;
 
