@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -154,13 +153,6 @@ public static class FinanceExtensions
         var fieldsFee = character.GetAllFields(claim.ClaimId).Sum(field => field.GetCurrentFee());
 
         return new ClaimBalance(claim.FeePaid, baseFee + fieldsFee + claim.AccommodationFee);
-    }
-
-    public static ClaimBalance CalculateClaimBalance(this UgClaim claim, ProjectInfo projectInfo, DateTime? date = null)
-    {
-        var paid = claim.FeePaid;
-        var total = claim.Claim.ClaimTotalFee(date ?? DateTime.UtcNow, null, projectInfo);
-        return new ClaimBalance(paid, total);
     }
 
     /// <summary>
