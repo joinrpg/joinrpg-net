@@ -14,7 +14,7 @@ internal class FinanceOperationsImpl(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
     ICurrentUserAccessor currentUserAccessor,
-    ClaimNotificationService claimNotificationService,
+    IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     IProjectMetadataRepository projectMetadataRepository) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
 {

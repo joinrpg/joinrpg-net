@@ -20,7 +20,7 @@ internal class ClaimServiceImpl(
     ICharacterInfoRepository characterInfoRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
-    ClaimNotificationService claimNotificationService,
+    IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     IImpersonateAccessor impersonateAccessor
     )
