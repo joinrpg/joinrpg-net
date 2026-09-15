@@ -204,7 +204,7 @@ public class CharacterListViewServiceTest
             => Task.FromResult(projectInfo);
 
         public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(new MarkdownString(""), [], false));
+            => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), [], false));
 
         public void PrimeCache(ProjectInfo projectInfo) { }
     }
