@@ -218,7 +218,8 @@ internal static class ProjectRoleGridViewModelBuilder
             character.GetId(),
             character.GetBusyStatus(),
             character.CharacterSlotLimit,
-            character.IsHot);
+            character.IsHot,
+            character.IsAvailableForPlayer(projectInfo));
 
         var player = character.ApprovedClaim?.Player;
         if (player is null)

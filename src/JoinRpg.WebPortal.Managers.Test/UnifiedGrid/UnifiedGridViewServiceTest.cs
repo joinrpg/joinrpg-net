@@ -140,6 +140,32 @@ public class UnifiedGridViewServiceTest
         claim.Responsible!.UserId.ShouldBe(new UserIdentification(Mock.Master.UserId));
     }
 
+    /// <summary>
+    /// Доступность в кабинете капитана считают те же правила, что и в сетке ролей: у свободной
+    /// роли кнопка «Заявиться» есть, а в проекте с закрытым приёмом заявок — нет (issue #4766).
+    /// </summary>
+    [Fact]
+    public async Task FreeCharacterIsAvailableToApply()
+    {
+        var item = (await GetItems(UgStatusFilterView.Active))
+            .Single(x => x.Character.Name.Name == Mock.Character.CharacterName);
+
+        item.Character.ApplyStatus.IsAvailable.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ClaimsClosedMakesCharacterUnavailableToApply()
+    {
+        Mock.Project.IsAcceptingClaims = false;
+        Mock.ReInitProjectInfo();
+        Mock.ProjectInfo.ProjectStatus.ShouldBe(ProjectLifecycleStatus.ActiveClaimsClosed);
+
+        var item = (await GetItems(UgStatusFilterView.Active))
+            .Single(x => x.Character.Name.Name == Mock.Character.CharacterName);
+
+        item.Character.ApplyStatus.IsAvailable.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task NoCaptainRulesMeansEmptyGrid()
     {
