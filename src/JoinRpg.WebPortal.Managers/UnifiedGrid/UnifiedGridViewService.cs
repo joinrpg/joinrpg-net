@@ -1,4 +1,7 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims.UnifiedGrid;
 
@@ -8,7 +11,7 @@ internal class UnifiedGridViewService(
     ICurrentUserAccessor currentUserAccessor,
     ICaptainRulesRepository captainRulesRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    IUnifiedGridRepository unifiedGridRepository) : IUnifiedGridClient
+    ICharacterInfoRepository characterInfoRepository) : IUnifiedGridClient
 {
     async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> IUnifiedGridClient.GetForCaptain(ProjectIdentification projectId, UgStatusFilterView filter)
     {
@@ -20,8 +23,45 @@ internal class UnifiedGridViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var allGroups = projectInfo.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
 
-        var items = await unifiedGridRepository.GetByGroups(projectId, (UgStatusSpec)filter, [.. allGroups]);
+        var characters = await characterInfoRepository.GetCharacterInfosByGroups(projectId, [.. allGroups]);
 
-        return [.. items.Select(claim => ItemBuilder.BuildItemForCaptain(claim, currentUserAccessor, projectInfo)).WhereNotNull()];
+        return
+        [
+            .. characters
+                .Where(character => MatchesFilter(character, filter))
+                .Select(character => ItemBuilder.BuildItemForCaptain(character, SelectClaims(character, filter), currentUserAccessor, projectInfo))
+                .WhereNotNull()
+        ];
     }
+
+    /// <summary>
+    /// Отбор персонажей под выбранный фильтр.
+    /// </summary>
+    /// <remarks>
+    /// Раньше это был SQL-предикат (<c>CharacterPredicates.ByUgStatus</c>), но агрегат
+    /// <see cref="CharacterInfo"/> по построению несёт все заявки персонажа, поэтому отбор считается
+    /// в памяти — правила ровно те же.
+    /// </remarks>
+    private static bool MatchesFilter(CharacterInfo character, UgStatusFilterView filter)
+        => filter switch
+        {
+            UgStatusFilterView.Active => character.IsActive,
+            UgStatusFilterView.Vacant => character.IsActive
+                && character.ApprovedClaimId is null
+                && character.CharacterType != CharacterType.NonPlayer,
+            UgStatusFilterView.Discussion => character.IsActive
+                && character.ApprovedClaimId is null
+                && character.HasActiveClaims,
+            UgStatusFilterView.Archive => !character.IsActive && character.Claims.Any(claim => !claim.IsActive),
+            _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
+        };
+
+    /// <summary>
+    /// Какие заявки персонажа показывать: в архиве — неактивные, во всех остальных видах — активные.
+    /// Зеркало бывшего <c>ClaimPredicates.ByUgStatus</c>.
+    /// </summary>
+    private static IReadOnlyCollection<CharacterClaimInfo> SelectClaims(CharacterInfo character, UgStatusFilterView filter)
+        => [.. filter == UgStatusFilterView.Archive
+            ? character.Claims.Where(claim => !claim.IsActive)
+            : character.Claims.Where(claim => claim.IsActive)];
 }
