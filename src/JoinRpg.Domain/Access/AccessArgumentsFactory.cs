@@ -118,20 +118,6 @@ public static class AccessArgumentsFactory
 
     private static bool SamePlayerId(ICurrentUserAccessor left, UserIdentification? right) => SamePlayerId(left.UserIdentificationOrDefault, right);
 
-    public static AccessArguments Create(UgDto ugItem, ICurrentUserAccessor user, ProjectInfo projectInfo)
-    {
-        ArgumentNullException.ThrowIfNull(ugItem);
-
-        return new AccessArguments(
-            MasterAccess: projectInfo.HasMasterAccess(user.UserIdentificationOrDefault),
-            PlayerAccessToCharacter: SamePlayerId(user, ugItem.ApprovedClaimUserId),
-            PlayerAccesToClaim: SamePlayerId(user, ugItem.ApprovedClaimUserId), // Тут не совсем корректно, но непонятно как еще ведь внутри несколько заявок
-            EditAllowed: projectInfo.IsActive,
-            Published: projectInfo.PublishPlot,
-            CharacterPublic: ugItem.CharacterTypeInfo.IsPublic,
-            IsCapitan: false);
-    }
-
     public static AccessArguments Create(Character character, ICurrentUserAccessor user, ProjectInfo projectInfo, CharacterAccessMode mode = CharacterAccessMode.Usual)
     {
         ArgumentNullException.ThrowIfNull(character);

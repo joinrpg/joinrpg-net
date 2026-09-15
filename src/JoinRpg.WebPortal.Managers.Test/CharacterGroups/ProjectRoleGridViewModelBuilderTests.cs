@@ -298,6 +298,42 @@ public class ProjectRoleGridViewModelBuilderTests
         row.Player.ApplyStatus.IsAvailable.ShouldBeTrue();
     }
 
+    /// <summary>
+    /// Доступность считают доменные правила, а не <c>BusyStatus</c>: он про состояние персонажа и
+    /// статуса проекта не знает, из-за чего в закрытом проекте кнопка «Заявиться» показывалась и
+    /// вела на форму, где заявку подать нельзя (issue #4766).
+    /// </summary>
+    [Fact]
+    public void Build_ClaimsClosed_CharacterIsNotAvailable()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        _mock.Project.IsAcceptingClaims = false;
+        _mock.ReInitProjectInfo();
+        _mock.ProjectInfo.ProjectStatus.ShouldBe(ProjectLifecycleStatus.ActiveClaimsClosed);
+
+        var result = BuildGrid(Config(), [character]);
+
+        var row = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>();
+        row.Player!.ApplyStatus.IsAvailable.ShouldBeFalse();
+        // BusyStatus сознательно остался прежним — он описывает персонажа, а не проект.
+        row.Player.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Vacancy);
+    }
+
+    [Fact]
+    public void Build_ArchivedProject_CharacterIsNotAvailable()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        _mock.Project.Active = false;
+        _mock.Project.IsAcceptingClaims = false;
+        _mock.ReInitProjectInfo();
+        _mock.ProjectInfo.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Archived);
+
+        var result = BuildGrid(Config(), [character]);
+
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player!.ApplyStatus.IsAvailable.ShouldBeFalse();
+    }
+
     [Fact]
     public void Build_SlotCharacter_SlotCountInApplyStatus()
     {

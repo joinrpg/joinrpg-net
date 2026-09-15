@@ -44,6 +44,17 @@ public static class ClaimValidator
         return fatal.Count > 0 ? fatal : reasons;
     }
 
+    /// <summary>
+    /// Можно ли игроку подать заявку на этого персонажа — то есть показывать ли кнопку «Заявиться».
+    /// </summary>
+    /// <remarks>
+    /// Операция — <see cref="ClaimOperation.DisplayForPlayer"/>: мастерские послабления дали бы
+    /// «заявиться можно» в проекте с закрытым приёмом заявок. Игрок неизвестен, поэтому правила
+    /// про его контакты и уже поданные заявки здесь не считаются — они видны на самой форме.
+    /// </remarks>
+    public static bool IsAvailableForPlayer(IClaimTarget target, ProjectInfo projectInfo)
+        => Validate(target, userInfo: null, movedClaim: null, projectInfo, ClaimOperation.DisplayForPlayer).Count == 0;
+
     private static IEnumerable<AddClaimForbideReason> ValidateImpl(
         IClaimTarget target,
         UserInfo? userInfo,

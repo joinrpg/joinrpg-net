@@ -12,9 +12,6 @@ public static class BusyStatusExtensions
     public static CharacterBusyStatusView GetBusyStatus(this Character character)
         => GetBusyStatus(character.ToCharacterTypeInfo(), character.ApprovedClaimId is not null, character.Claims.Any(c => c.ClaimStatus.IsActive()));
 
-    public static CharacterBusyStatusView GetBusyStatus(this UgDto character)
-        => GetBusyStatus(character.CharacterTypeInfo, character.ApprovedClaimUserId is not null, character.HasActiveClaims);
-
     public static CharacterBusyStatusView GetBusyStatus(this CharacterInfo character)
         => GetBusyStatus(character.CharacterTypeInfo, character.ApprovedClaimId is not null, character.HasActiveClaims);
 
