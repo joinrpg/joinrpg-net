@@ -108,6 +108,7 @@ public class CharacterApiViewServiceTests
     private sealed class FakeCharacterInfoRepository : ICharacterInfoRepository
     {
         public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId) => throw new NotImplementedException();
+        public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId, ProjectInfo projectInfo) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId) => throw new NotImplementedException();
