@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
@@ -37,7 +38,7 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
 
         var claim = await LoadClaimEntity(claimId);
 
-        var characterId = new CharacterIdentification(claimId.ProjectId, claim.CharacterId);
+        var characterId = claim.GetCharacterId();
         var character = await LoadCharacterEntity(characterId);
         var characterInfo = await LoadCharacterInfo(characterId, projectInfo);
 

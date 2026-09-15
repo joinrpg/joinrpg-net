@@ -76,8 +76,11 @@ public interface ICharacterAggregateUpdateHandle
     CharacterInfo CharacterInfo { get; }
 
     /// <summary>
-    /// Текущий пользователь как EF-сущность. Нужен легаси-письмам, которым сущность обязательна.
+    /// Текущий пользователь как EF-сущность. Существует только ради легаси-канала писем:
+    /// <c>EmailModelBase.Initiator</c> требует именно сущность <see cref="User"/>.
     /// </summary>
+    [Obsolete("Нужен только легаси-письмам (EmailModelBase.Initiator). Новый код должен обходиться "
+        + "UserIdentification/UserInfoHeader; свойство уйдёт вместе с легаси-каналом писем, см. ADR014")]
     User Initiator { get; }
 
     /// <summary>
