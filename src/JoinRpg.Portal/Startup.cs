@@ -117,7 +117,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             Configuration.GetSection("Authentication"))
             .AddJoinXApiSwagger();
 
-        services.AddJoinMcp(Configuration);
+        services.AddJoinMcp(
+            Configuration.GetSection("Mcp").Get<McpResourceOptions>(),
+            Configuration.GetSection("JoinRpgHostNames").Get<JoinRpgHostNamesOptions>()
+                ?? throw new InvalidOperationException("JoinRpgHostNames section is required"));
 
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(

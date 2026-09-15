@@ -1,6 +1,5 @@
 using JoinRpg.Common.WebInfrastructure;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.AspNetCore.Authentication;
 using OpenIddict.Validation.AspNetCore;
@@ -18,21 +17,25 @@ public static class McpRegistration
     /// admin UI IdPortal и есть не в каждом окружении (например, в тестах его нет) — без него
     /// /mcp просто не регистрируется, а не падает при старте.
     /// </summary>
-    public static IServiceCollection AddJoinMcp(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddJoinMcp(
+        this IServiceCollection services,
+        McpResourceOptions? mcpOptions,
+        JoinRpgHostNamesOptions hostNames)
     {
-        var mcpOptions = GetConfiguredOptions(configuration);
-        if (mcpOptions is null)
+        if (string.IsNullOrEmpty(mcpOptions?.ClientId) || string.IsNullOrEmpty(mcpOptions.ClientSecret))
         {
             return services;
         }
 
-        var hostNames = configuration.GetSection("JoinRpgHostNames").Get<JoinRpgHostNamesOptions>()
-            ?? throw new InvalidOperationException("JoinRpgHostNames section is required");
         var idPortalIssuer = new Uri($"https://{hostNames.IdHost}/");
         var resourceUri = new Uri($"https://{hostNames.MainHost}/mcp");
 
         services.AddHttpContextAccessor();
         services.AddScoped<McpAuthContext>();
+
+        // Маркер «MCP зарегистрирован» — MapJoinMcp смотрит на него, а не выводит то же
+        // решение из конфига второй раз.
+        services.AddSingleton<McpEnabledMarker>();
 
         services.AddOpenIddict()
             .AddValidation(options =>
@@ -74,7 +77,7 @@ public static class McpRegistration
 
     public static WebApplication MapJoinMcp(this WebApplication app)
     {
-        if (GetConfiguredOptions(app.Configuration) is not null)
+        if (app.Services.GetService<McpEnabledMarker>() is not null)
         {
             app.MapMcp("/mcp").RequireAuthorization(AuthorizationPolicy);
         }
@@ -82,11 +85,5 @@ public static class McpRegistration
         return app;
     }
 
-    private static McpResourceOptions? GetConfiguredOptions(IConfiguration configuration)
-    {
-        var options = configuration.GetSection("Mcp").Get<McpResourceOptions>();
-        return string.IsNullOrEmpty(options?.ClientId) || string.IsNullOrEmpty(options.ClientSecret)
-            ? null
-            : options;
-    }
+    private sealed class McpEnabledMarker;
 }
