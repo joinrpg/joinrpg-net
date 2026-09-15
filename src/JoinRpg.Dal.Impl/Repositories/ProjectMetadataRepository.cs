@@ -220,6 +220,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new InvalidOperationException($"Project with {projectId} not found");
 
         return new DomainTypes.ProjectMetadata.ProjectDetails(
+            CreateInfoFromProject(project, projectId),
             project.Details.ProjectAnnounce,
             [.. project.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
             project.Details.DisableKogdaIgraMapping);

@@ -3,6 +3,7 @@ namespace JoinRpg.DomainTypes.ProjectMetadata;
 /// Сюда добавляем те свойства проекта, которые большие и нет смысла грузить на каждой странице, например анонс, связи с КогдаИгрой etc
 /// </summary>
 public record ProjectDetails(
+    ProjectInfo ProjectInfo,
     MarkdownString ProjectDescription,
     IReadOnlyCollection<KogdaIgraGameData> KogdaIgraCards,
     bool DisableKogdaIgraMapping)
