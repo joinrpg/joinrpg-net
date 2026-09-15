@@ -23,7 +23,6 @@ public static class Registraton
             .AddTransient<IUserSubscribeRepository, UserInfoRepository>()
             .AddTransient<ICaptainRulesRepository, CaptainRulesRepository>()
             .AddTransient<IHotCharactersRepository, HotCharactersRepository>()
-            .AddTransient<IUnifiedGridRepository, UnifiedGridRepository>()
             .AddTransient<IKogdaIgraRepository, KogdaIgraRepository>()
             .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>()
             .AddTransient<ICharacterGroupRepository, CharacterGroupRepository>()

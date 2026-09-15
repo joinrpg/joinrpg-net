@@ -257,6 +257,11 @@ public class MockedProject
             PlayerUserId = mockUser.UserId,
             ResponsibleMasterUser = Master,
             ResponsibleMasterUserId = Master.UserId,
+            // Даты заявки проставляются так же, как в ClaimServiceImpl.AddClaimFromUser. Без этого
+            // здесь оставался бы DateTime.MinValue, а он не переводится в DateTimeOffset локальной
+            // зоны — гриды на такой заявке падают там, где в бою всё в порядке.
+            CreateDate = DateTime.UtcNow,
+            LastUpdateDateTime = DateTime.UtcNow,
             // Дискуссия создаётся вместе с заявкой — так же, как в ClaimServiceImpl.AddClaimFromUser.
             // CommentDiscussionId = -1 — это состояние "ещё не сохранено в БД", ровно как в бою до SaveChanges.
             CommentDiscussion = new CommentDiscussion()

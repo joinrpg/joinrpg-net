@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Users;
@@ -8,7 +7,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.Finance;
-using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectMasterTools.Settings;
@@ -65,9 +63,6 @@ public class EnumTests
     [Fact]
     public void MandatoryStatus2() => EnumerationTestComparer.EnsureSame<MandatoryStatus, MandatoryContactsView>();
 
-
-    [Fact]
-    public void UgStatus() => EnumerationTestComparer.EnsureSame<UgStatusSpec, UgStatusFilterView>();
 
     [Theory]
     [ClassData(typeof(EnumTheoryDataGenerator<ProjectFieldViewType>))]
