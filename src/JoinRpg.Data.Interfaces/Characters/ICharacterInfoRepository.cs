@@ -16,6 +16,12 @@ public interface ICharacterInfoRepository
 {
     Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId);
 
+    /// <summary>
+    /// Версия для пути записи: ProjectInfo приходит снаружи, а не из кеша. Иначе нарушится
+    /// инвариант CharacterInfo о единственном экземпляре ProjectInfo (ADR013).
+    /// </summary>
+    Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId, ProjectInfo projectInfo);
+
     Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds);
 
     /// <summary>
