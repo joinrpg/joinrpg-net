@@ -2,7 +2,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
 using JoinRpg.Dal.Impl.Repositories;
+using JoinRpg.Dal.Impl.Repositories.Characters;
 using JoinRpg.Data.Interfaces.AdminTools;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Finances;
@@ -46,6 +48,8 @@ public class MyDbContext : DbContext, IUnitOfWork
     public IUserRepository GetUsersRepository() => new UserInfoRepository(this);
     public IProjectRepository GetProjectRepository() => new ProjectRepository(this);
     public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository() => new ProjectMetadataWriteRepository(this);
+
+    public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository() => new CharacterAggregateWriteRepository(this);
 
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
