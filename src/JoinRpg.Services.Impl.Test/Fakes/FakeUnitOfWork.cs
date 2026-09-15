@@ -1,6 +1,7 @@
 using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.AdminTools;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Write.Interfaces;
@@ -21,6 +22,8 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
 
     public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository()
         => new FakeProjectMetadataWriteRepository(mock);
+
+    public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository() => throw new NotSupportedException();
 
     /// <summary>
     /// НЕ ЗАГЛУШКА, НЕ «ЧИНИТЬ». Намеренный детектор: если сервис лезет в <see cref="DbSet{TEntity}"/>

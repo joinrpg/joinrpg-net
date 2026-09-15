@@ -1,6 +1,7 @@
 using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.AdminTools;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 
 namespace JoinRpg.Data.Write.Interfaces;
@@ -18,6 +19,13 @@ public interface IUnitOfWork : IDisposable
     IUserRepository GetUsersRepository();
     IProjectRepository GetProjectRepository();
     IProjectMetadataWriteRepository GetProjectMetadataWriteRepository();
+
+    /// <summary>
+    /// Репозиторий записи агрегата персонажа (ADR014). Доступен только отсюда, а не из DI:
+    /// иначе он получил бы другой <c>DbContext</c>, чем тот, на котором вызывается
+    /// <see cref="SaveChangesAsync"/>.
+    /// </summary>
+    ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository();
     IClaimsRepository GetClaimsRepository();
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();

@@ -17,8 +17,9 @@ public static class IdExtensions
     public static ClaimIdentification GetId(this Claim group) => new(group.ProjectId, group.ClaimId);
 
     public static ForumThreadIdentification GetId(this ForumThread entity) => new(entity.ProjectId, entity.ForumThreadId);
-    public static CharacterIdentification GetCharacterId(this Claim group) => new(group.ProjectId, group.CharacterId);
-    public static UserIdentification GetPlayerId(this Claim group) => new(group.PlayerUserId);
+
+    // GetCharacterId / GetPlayerId переехали в JoinRpg.DataModel.Extensions.ClaimExtensions:
+    // они нужны и слою доступа к данным, а JoinRpg.Dal.Impl на JoinRpg.Domain не ссылается (ADR014).
 
     public static ProjectFieldIdentification GetId(this ProjectField pf) => new ProjectFieldIdentification(pf.ProjectId, pf.ProjectFieldId);
     public static ProjectFieldVariantIdentification GetId(this ProjectFieldDropdownValue variant) => new(variant.ProjectId, variant.ProjectFieldId, variant.ProjectFieldDropdownValueId);

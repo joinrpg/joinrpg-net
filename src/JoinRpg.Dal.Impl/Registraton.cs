@@ -30,6 +30,10 @@ public static class Registraton
             .AddTransient<IProjectRepository, ProjectRepository>()
             .AddTransient<ICharacterRepository, CharacterRepositoryImpl>()
             .AddTransient<ICharacterInfoRepository, CharacterInfoRepository>()
+            // ICharacterAggregateWriteRepository здесь НЕ регистрируется намеренно (ADR014):
+            // MyDbContext транзиентен, поэтому DI-экземпляр репозитория получил бы другой
+            // DbContext — мутация трекалась бы в одном, а SaveChanges шёл бы в другом.
+            // Единственный способ его получить — IUnitOfWork.GetCharacterAggregateWriteRepository().
             .AddTransient<IPlotRepository, PlotRepositoryImpl>()
             .AddTransient<IForumRepository, ForumRepositoryImpl>()
             .AddTransient<IFinanceReportRepository, FinanceReportRepositoryImpl>()
