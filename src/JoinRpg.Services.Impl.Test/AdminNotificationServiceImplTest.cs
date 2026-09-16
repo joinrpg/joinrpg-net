@@ -16,7 +16,7 @@ public class AdminNotificationServiceImplTest
 {
     private static readonly UserInfoHeader admin = new(new UserIdentification(1), new UserDisplayName("Admin", null));
     private readonly FakeNotificationService fakeNotificationService = new();
-    private readonly FakeUserRepository fakeUserRepository = new([admin]);
+    private readonly FakeAdminUserRepository fakeUserRepository = new([admin]);
     private readonly FakeKogdaIgraRepository fakeKogdaIgraRepository = new();
 
     private AdminNotificationServiceImpl CreateService()
@@ -68,7 +68,7 @@ public class AdminNotificationServiceImplTest
     }
 }
 
-internal sealed class FakeUserRepository(IReadOnlyCollection<UserInfoHeader> admins) : IUserRepository
+internal sealed class FakeAdminUserRepository(IReadOnlyCollection<UserInfoHeader> admins) : IUserRepository
 {
     public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => Task.FromResult(admins);
 

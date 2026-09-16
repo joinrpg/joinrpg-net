@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Data.Interfaces.Characters;
 
@@ -114,6 +115,28 @@ public interface ICharacterAggregateUpdateHandle
     /// </summary>
     /// <exception cref="JoinRpgEntityNotFoundException">Персонаж не найден.</exception>
     Task<(Character Entity, CharacterInfo Info)> LoadOtherCharacter(CharacterIdentification characterId);
+
+    /// <summary>
+    /// Сюжеты, привязанные напрямую к персонажу, — трекаемые тем же <c>DbContext</c>. Нужны
+    /// созданию персонажа из слота: новый персонаж наследует привязки слота, а мутировать
+    /// <c>PlotElement.TargetCharacters</c> можно только в том контексте, через который идёт
+    /// <c>SaveChanges</c> (ADR014).
+    /// </summary>
+    Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId);
+
+    /// <summary>
+    /// Тип поселения проекта — трекаемая сущность того же <c>DbContext</c>. Именованный загрузчик, а
+    /// не <see cref="ProjectInfo"/>: типы поселения в снимок метаданных не входят.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Тип поселения не найден в этом проекте.</exception>
+    Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId);
+
+    /// <summary>
+    /// Приглашения к совместному проживанию, в которых участвует заявка, — и отправленные ею, и
+    /// полученные. Трекаются тем же <c>DbContext</c>, поэтому их отклонение попадёт в то же
+    /// единственное сохранение, что и остальная мутация (ADR014).
+    /// </summary>
+    Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId);
 }
 
 /// <summary>
