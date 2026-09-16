@@ -40,11 +40,14 @@ public abstract class ClaimServiceTestBase
             unitOfWork,
             CreateCurrentUser(currentUserId),
             metadataRepository,
-            new FieldSaveHelper(new MockedFieldDefaultValueGenerator(), NullLogger<FieldSaveHelper>.Instance),
+            CreateFieldSaveHelper(),
             new CommentHelper(CreateCurrentUser(currentUserId)),
             claimNotifications,
             emailService,
             NullLogger<CharacterPropsService>.Instance);
+
+    private protected static FieldSaveHelper CreateFieldSaveHelper()
+        => new(new MockedFieldDefaultValueGenerator(), NullLogger<FieldSaveHelper>.Instance);
 
     protected ProjectIdentification ProjectId => mock.ProjectInfo.ProjectId;
 
