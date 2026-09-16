@@ -52,7 +52,61 @@ public interface ICharacterAggregateWriteRepository
 /// Это и не даёт вызывающему уйти в другой <c>DbContext</c>, и позволяет подделать хэндл
 /// в юнит-тестах, не поднимая EF.
 /// </remarks>
-public interface ICharacterAggregateUpdateHandle
+/// <summary>
+/// Что операции разрешено делать с БД внутри мутации: добавить и удалить сущность, догрузить
+/// соседей агрегата. Всё — через тот же <c>DbContext</c>, что и последующий <c>SaveChanges</c>.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Интерфейс намеренно уже хэндла. В нём нет <c>RefreshProjectInfo</c>: пересборка выполняется
+/// через <c>AsNoTracking</c>, после неё <c>Project</c> перестаёт быть трекаемым, и вызов её из
+/// середины мутации тихо обесценил бы последующие правки. Это дело сервиса, и только после
+/// сохранения.
+/// </para>
+/// <para>
+/// Единый интерфейс вместо делегата на каждую догрузку: делегаты пришлось бы протаскивать
+/// параметрами через оба контекста — и абстрактный, и типизированный, — а их число растёт с каждой
+/// мигрированной операцией. Доступ при этом не расширяется: произвольного репозитория здесь нет,
+/// только именованные догрузки, и подделать интерфейс в тестах не сложнее делегатов.
+/// </para>
+/// </remarks>
+public interface IAggregateMutationScope
+{
+    /// <summary>
+    /// Добавляет новую сущность в тот же <c>DbContext</c>, через который потом идёт
+    /// <c>SaveChanges</c>.
+    /// </summary>
+    void Add(object entity);
+
+    /// <summary>
+    /// Окончательно удаляет сущность из того же <c>DbContext</c>, через который потом идёт
+    /// <c>SaveChanges</c>.
+    /// </summary>
+    void Remove(object entity);
+
+    /// <summary>
+    /// Явный выход за границу агрегата: трекаемая заявка другого персонажа того же проекта.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявка не найдена.</exception>
+    Task<Claim> LoadOtherClaim(ClaimIdentification claimId);
+
+    /// <summary>
+    /// Явный выход за границу агрегата: другой персонаж того же проекта — трекаемая сущность
+    /// и его доменный снимок, разделяющий <c>ProjectInfo</c> хэндла.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Персонаж не найден.</exception>
+    Task<(Character Entity, CharacterInfo Info)> LoadOtherCharacter(CharacterIdentification characterId);
+
+    /// <summary>
+    /// Сюжеты, привязанные напрямую к персонажу, — трекаемые тем же <c>DbContext</c>. Нужны
+    /// созданию персонажа из слота: новый персонаж наследует привязки слота, а мутировать
+    /// <c>PlotElement.TargetCharacters</c> можно только в том контексте, через который идёт
+    /// <c>SaveChanges</c> (ADR014).
+    /// </summary>
+    Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId);
+}
+
+public interface ICharacterAggregateUpdateHandle : IAggregateMutationScope
 {
     /// <summary>Трекаемая EF-сущность проекта. Согласована с <see cref="ProjectInfo"/>.</summary>
     Project Project { get; }
@@ -84,36 +138,12 @@ public interface ICharacterAggregateUpdateHandle
     User Initiator { get; }
 
     /// <summary>
-    /// Добавляет новую сущность в тот же <c>DbContext</c>, через который потом идёт
-    /// <c>SaveChanges</c>.
-    /// </summary>
-    void Add(object entity);
-
-    /// <summary>
-    /// Окончательно удаляет сущность из того же <c>DbContext</c>, через который потом идёт
-    /// <c>SaveChanges</c>.
-    /// </summary>
-    void Remove(object entity);
-
-    /// <summary>
     /// Перечитывает проект из БД (тем же <c>DbContext</c>, значит — в той же транзакции)
     /// и пересобирает из него <see cref="ProjectInfo"/>. Нужен операциям, которые меняют
     /// метаданные проекта, — сегодня это только <c>ProjectField.WasEverUsed</c>.
     /// </summary>
     Task<ProjectInfo> RefreshProjectInfo();
 
-    /// <summary>
-    /// Явный выход за границу агрегата: трекаемая заявка другого персонажа того же проекта.
-    /// </summary>
-    /// <exception cref="JoinRpgEntityNotFoundException">Заявка не найдена.</exception>
-    Task<Claim> LoadOtherClaim(ClaimIdentification claimId);
-
-    /// <summary>
-    /// Явный выход за границу агрегата: другой персонаж того же проекта — трекаемая сущность
-    /// и его доменный снимок, разделяющий <see cref="ProjectInfo"/> этого хэндла.
-    /// </summary>
-    /// <exception cref="JoinRpgEntityNotFoundException">Персонаж не найден.</exception>
-    Task<(Character Entity, CharacterInfo Info)> LoadOtherCharacter(CharacterIdentification characterId);
 }
 
 /// <summary>

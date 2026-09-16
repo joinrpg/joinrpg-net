@@ -66,7 +66,7 @@ internal class CharacterPropsService(
 
             var ctx = new CharacterMutationContext<TArgs>(
                 handle.Character, handle.CharacterInfo, handle.ProjectInfo, now, currentUserAccessor,
-                handle.Add, handle.Remove, fieldSaveHelper, arguments);
+                handle, fieldSaveHelper, arguments);
 
             var result = action(ctx);
 
@@ -160,8 +160,8 @@ internal class CharacterPropsService(
 
             var ctx = new ClaimMutationContext<TArgs>(
                 handle.Claim, handle.ClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
-                now, currentUserAccessor, handle.Initiator, handle.Add, handle.Remove,
-                handle.LoadOtherCharacter, fieldSaveHelper, commentHelper, arguments);
+                now, currentUserAccessor, handle.Initiator, handle, fieldSaveHelper,
+                commentHelper, arguments);
 
             var result = await action(ctx);
 

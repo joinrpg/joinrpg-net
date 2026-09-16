@@ -179,6 +179,10 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             var entity = FindCharacter(mock, characterId);
             return Task.FromResult((entity, mock.GetCharacterInfo(entity)));
         }
+
+        public Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId)
+            => Task.FromResult<IReadOnlyCollection<PlotElement>>(
+                [.. mock.PlotElements.Where(e => e.TargetCharacters.Any(c => c.CharacterId == characterId.CharacterId))]);
     }
 
     private sealed class ClaimHandle : Handle, IClaimUpdateHandle

@@ -164,6 +164,22 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
 
             return (entity, info);
         }
+
+        /// <summary>
+        /// Повторяет запрос <c>PlotRepositoryImpl.GetDirectPlotsForCharacter</c> один в один, но
+        /// на <c>DbContext</c> этого хэндла — иначе добавление персонажа в
+        /// <c>PlotElement.TargetCharacters</c> трекалось бы в чужом контексте и не сохранилось.
+        /// </summary>
+        public async Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId)
+        {
+            var characterIntId = characterId.CharacterId;
+            return await ctx.Set<PlotElement>()
+                .Include(e => e.Texts)
+                .Include(e => e.TargetCharacters)
+                .Include(e => e.TargetGroups)
+                .Where(e => e.TargetCharacters.Any(ch => ch.CharacterId == characterIntId))
+                .ToListAsync();
+        }
     }
 
     private sealed class ClaimUpdateHandle(
