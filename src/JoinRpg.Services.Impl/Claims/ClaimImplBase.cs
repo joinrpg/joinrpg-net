@@ -2,7 +2,6 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
@@ -19,106 +18,27 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
 
     protected IEmailService EmailService { get; } = emailService;
 
-    protected (Comment comment, ClaimSimpleChangedNotification email) AcceptFeeImpl(string contents,
-                                                           DateTime operationDate,
-                                                           int money,
-                                                           PaymentTypeInfo paymentType,
-                                                           Claim claim,
-                                                           ProjectInfo projectInfo)
+    protected void CheckOperationDate(DateTime operationDate) => CheckOperationDate(operationDate, Now);
+
+    /// <summary>
+    /// Версия с явным временем операции: мигрированные методы берут его из контекста, а не из поля
+    /// сервиса, зафиксированного в конструкторе (ADR014).
+    /// </summary>
+    internal static void CheckOperationDate(DateTime operationDate, DateTime now)
     {
-
-        CheckOperationDate(operationDate);
-
-        paymentType.EnsureActive();
-
-        bool playerChange;
-
-        if (money < 0)
-        {
-            projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
-            playerChange = false;
-        }
-        else if (claim.PlayerUserId == CurrentUserId && paymentType.User.UserId != CurrentUserId)
-        {
-            playerChange = true;
-        }
-        else
-        {
-
-            if (paymentType.User.UserId != CurrentUserId)
-            {
-                projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
-            }
-            else
-            {
-                projectInfo.RequestMasterAccess(currentUserAccessor);
-            }
-            playerChange = false;
-        }
-
-        var commentAction = money < 0 ? CommentExtraAction.RefundFee : CommentExtraAction.PaidFee;
-
-        projectInfo.EnsureProjectActive();
-
-        ClaimOperationType claimOperationType = playerChange ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
-        var state = playerChange ? FinanceOperationState.Proposed : FinanceOperationState.Approved;
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, Now);
-
-        email = email with
-        {
-            Money = money,
-            PaymentOwner = paymentType.User,
-        };
-
-        var financeOperation = new FinanceOperation()
-        {
-            Created = Now,
-            MoneyAmount = money,
-            Changed = Now,
-            Claim = claim,
-            Comment = comment,
-            PaymentTypeId = paymentType.PaymentTypeId.PaymentTypeId,
-            State = state,
-            ProjectId = claim.ProjectId,
-            OperationDate = operationDate,
-        };
-        // TODO: Remove when complete Refunds be available
-        if (money > 0)
-        {
-            financeOperation.OperationType = FinanceOperationType.Submit;
-        }
-        else if (money < 0)
-        {
-            financeOperation.OperationType = FinanceOperationType.Refund;
-        }
-        else
-        {
-            throw new PaymentException(claim.Project, "Submit or Refund sum could not be 0");
-        }
-
-        comment.Finance = financeOperation;
-
-        claim.FinanceOperations.Add(financeOperation);
-
-        claim.UpdateClaimFeeIfRequired(operationDate, projectInfo);
-
-        return (comment, email);
-    }
-
-    protected void CheckOperationDate(DateTime operationDate)
-    {
-        if (operationDate > Now.AddDays(1)
+        if (operationDate > now.AddDays(1)
         ) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
         {
             throw new CannotPerformOperationInFuture();
         }
     }
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
         => LoadClaimAsMaster(new ClaimIdentification(request.ProjectIdentification, request.ClaimId), permission, reason);
 
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ClaimIdentification claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
     {
         var claim = await ClaimsRepository.GetClaim(claimId);
@@ -127,6 +47,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
     }
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsPlayer(ClaimIdentification claimId)
     {
         var claim = await ClaimsRepository.GetClaim(claimId);

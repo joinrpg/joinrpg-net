@@ -5,7 +5,9 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
@@ -16,88 +18,99 @@ internal class FinanceOperationsImpl(
     ICurrentUserAccessor currentUserAccessor,
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
-    IProjectMetadataRepository projectMetadataRepository) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
+    IProjectMetadataRepository projectMetadataRepository,
+    ICharacterPropsService characterPropsService) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
 {
-    public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
-
-
-        var (comment, email) = AcceptFeeImpl(request.Contents,
-            request.OperationDate,
-            request.Money,
-            projectInfo.ProjectFinanceSettings.GetRequiredPayment(request.PaymentTypeId),
-            claim,
-            projectInfo
-            );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+    public Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
+        => characterPropsService.ChangeClaim(
+            new ClaimIdentification(request.PaymentTypeId.ProjectId, request.ClaimId),
+            ClaimAccessRequirement.MasterOrPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx => ctx.AcceptFee(
+                ctx.Request.Contents,
+                ctx.Request.OperationDate,
+                ctx.Request.Money,
+                ctx.ProjectInfo.ProjectFinanceSettings.GetRequiredPayment(ctx.Request.PaymentTypeId)));
 
     #region Fee
 
-    public async Task ChangeFee(ClaimIdentification claimId, int feeValue)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.CanManageMoney);
+    public Task ChangeFee(ClaimIdentification claimId, int feeValue)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.ManageMoney,
+            ProjectActiveRequirement.MustBeActive,
+            feeValue,
+            ctx =>
+            {
+                _ = ctx.AddComment(
+                    ctx.Request.ToString(),
+                    CommentExtraAction.FeeChanged,
+                    ClaimOperationType.MasterVisibleChange);
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(feeValue.ToString(), claim, projectInfo, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange, Now);
-
-        claim.CurrentFee = feeValue;
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                ctx.Claim.CurrentFee = ctx.Request;
+            });
 
     #endregion
 
 
     #region Finance Operations
 
-    public async Task MarkPreferential(MarkPreferentialRequest request)
-    {
-        var (claim, _) = await LoadClaimAsMaster(request, Permission.CanManageMoney);
+    public Task MarkPreferential(MarkPreferentialRequest request)
+        => characterPropsService.ChangeClaim(
+            new ClaimIdentification(request.ProjectId, request.ClaimId),
+            ClaimAccessRequirement.ManageMoney,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx => ctx.Claim.PreferentialFeeUser = ctx.Request.Preferential);
 
-        claim.PreferentialFeeUser = request.Preferential;
-        await UnitOfWork.SaveChangesAsync();
-    }
+    public Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request)
+        => characterPropsService.ChangeClaim(
+            new ClaimIdentification(request.ProjectId, request.ClaimId),
+            ClaimAccessRequirement.MasterOrPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx =>
+            {
+                ctx.CheckOperationDate(ctx.Request.OperationDate);
 
-    public async Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
+                var pending = ctx.AddComment(
+                    ctx.Request.Contents,
+                    CommentExtraAction.RequestPreferential,
+                    ClaimOperationType.PlayerChange);
 
-        CheckOperationDate(request.OperationDate);
+                var financeOperation = new FinanceOperation()
+                {
+                    Created = ctx.Now,
+                    MoneyAmount = 0,
+                    Changed = ctx.Now,
+                    Claim = ctx.Claim,
+                    Comment = pending.Comment,
+                    PaymentType = null,
+                    State = FinanceOperationState.Proposed,
+                    ProjectId = ctx.Claim.ProjectId,
+                    OperationDate = ctx.Request.OperationDate,
+                    OperationType = FinanceOperationType.PreferentialFeeRequest,
+                };
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(request.Contents, claim, projectInfo, CommentExtraAction.RequestPreferential, ClaimOperationType.PlayerChange, Now);
+                pending.Comment.Finance = financeOperation;
 
-        var financeOperation = new FinanceOperation()
-        {
-            Created = Now,
-            MoneyAmount = 0,
-            Changed = Now,
-            Claim = claim,
-            Comment = comment,
-            PaymentType = null,
-            State = FinanceOperationState.Proposed,
-            ProjectId = claim.ProjectId,
-            OperationDate = request.OperationDate,
-            OperationType = FinanceOperationType.PreferentialFeeRequest,
-        };
+                ctx.Claim.FinanceOperations.Add(financeOperation);
 
-        comment.Finance = financeOperation;
-
-        claim.FinanceOperations.Add(financeOperation);
-
-        claim.UpdateClaimFeeIfRequired(request.OperationDate, projectInfo);
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                ctx.Claim.UpdateClaimFeeIfRequired(ctx.Request.OperationDate, ctx.ProjectInfo);
+            });
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Намеренно не мигрирован на <c>ICharacterPropsService</c></b> (ADR014, список рисков):
+    /// метод делает <b>два</b> <c>SaveChangesAsync</c>, и это не небрежность. Финоперация заявки-получателя
+    /// создаётся с проставленным <c>ClaimId</c>, но не добавляется в <c>claimTo.FinanceOperations</c> —
+    /// навигацию связывает relationship fixup при сохранении. Поэтому
+    /// <see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/> обязан считаться <b>после</b> первого
+    /// сохранения, иначе новый платёж в баланс не попадёт и взнос зафиксируется неверно.
+    /// <c>ChangeClaim</c> же даёт ровно одно сохранение, а мутируются здесь две заявки сразу.
+    /// Перевод требует отдельного решения — см. отчёт по PR.
+    /// </remarks>
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
         // Loading source claim
@@ -172,6 +185,11 @@ internal class FinanceOperationsImpl(
     #endregion
 
     #region Master money management
+
+    // Обе операции этого региона работают с MoneyTransfer — переводом денег между мастерами. Ни
+    // заявки, ни персонажа у них нет вовсе, поэтому ICharacterPropsService (ADR014) им не подходит
+    // по определению: их агрегат — проект. Кандидат на IProjectPropsService (ADR009), но это
+    // отдельное решение, а не часть миграции claim-контура.
 
     public async Task CreateTransfer(CreateTransferRequest request)
     {

@@ -6,7 +6,9 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.DataModel.Mocks;
@@ -33,6 +35,81 @@ public class MockedProject
             .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
     };
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
+
+    private UserInfo MasterInfoTemplate { get; } = new UserInfo(new UserIdentification(2), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("master@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Master"), null, null, null), false, null, HasPassword: false);
+
+    /// <summary>
+    /// <see cref="UserInfo"/> мастера, согласованный с заявками мока.
+    /// </summary>
+    /// <inheritdoc cref="PlayerInfo" path="/remarks"/>
+    public UserInfo MasterInfo => MasterInfoTemplate with
+    {
+        ActiveClaims = [.. Master.Claims
+            .Where(claim => claim.ClaimStatus.IsActive())
+            .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
+    };
+
+    /// <summary>Дополнительные мастера, заведённые тестом через <see cref="CreateMaster"/>.</summary>
+    private readonly Dictionary<int, User> extraMasters = [];
+
+    /// <summary>
+    /// Ещё один мастер проекта с полным набором прав. Нужен там, где операция различает двух
+    /// мастеров, — например при смене ответственного за заявку.
+    /// </summary>
+    public User CreateMaster(string name = "Master2")
+    {
+        var userId = 100 + extraMasters.Count;
+        var user = new User
+        {
+            UserId = userId,
+            PrefferedName = name,
+            Email = $"master{userId}@example.com",
+            Claims = new HashSet<Claim>(),
+        };
+
+        var acl = ProjectAcl.CreateRootAcl(userId);
+        acl.User = user;
+        acl.Project = Project;
+        acl.ProjectId = Project.ProjectId;
+        Project.ProjectAcls.Add(acl);
+
+        extraMasters.Add(userId, user);
+        return user;
+    }
+
+    /// <summary>
+    /// <see cref="UserInfo"/> известного моку пользователя; <c>null</c> для всех остальных.
+    /// </summary>
+    public UserInfo? TryGetUserInfo(UserIdentification userId)
+        => userId.Value switch
+        {
+            1 => PlayerInfo,
+            2 => MasterInfo,
+            _ => extraMasters.TryGetValue(userId.Value, out var user) ? CreateUserInfo(user) : null,
+        };
+
+    /// <summary>EF-сущность известного моку пользователя; <c>null</c> для всех остальных.</summary>
+    public User? TryGetUser(int userId)
+        => userId switch
+        {
+            1 => Player,
+            2 => Master,
+            _ => extraMasters.GetValueOrDefault(userId),
+        };
+
+    private static UserInfo CreateUserInfo(User user)
+        => new(
+            new UserIdentification(user.UserId),
+            Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public),
+            [], [], [],
+            IsAdmin: false,
+            SelectedAvatarId: null,
+            new Email(user.Email),
+            EmailConfirmed: true,
+            new UserFullName(new PrefferedName(user.PrefferedName), null, null, null),
+            false,
+            null,
+            HasPassword: false);
 
     public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }
     public ProjectFieldInfo HideForUnApprovedClaimInfo { get; set; }
@@ -146,6 +223,8 @@ public class MockedProject
             CharacterGroupId = id,
             CharacterGroupName = "test_" + id,
             IsActive = true,
+            // В бою коллекция всегда материализована (EF); без неё обход подписок падает NRE.
+            Subscriptions = [],
         };
         Project.CharacterGroups.Add(characterGroup);
 
@@ -163,11 +242,48 @@ public class MockedProject
             Claims = [],
             Project = Project,
             CharacterName = name,
+            // В бою коллекция всегда материализована (EF); без неё обход подписок падает NRE.
+            Subscriptions = [],
         };
 
         Project.Characters.Add(character);
 
         return character;
+    }
+
+    /// <summary>
+    /// Слот — шаблон роли, из которого при утверждении заявки создаётся настоящий персонаж.
+    /// </summary>
+    /// <param name="slotLimit">Сколько персонажей ещё можно создать; <c>null</c> — без ограничения.</param>
+    public Character CreateSlot(string name, int? slotLimit = null)
+    {
+        var slot = CreateCharacter(name);
+        slot.CharacterType = CharacterType.Slot;
+        slot.CharacterSlotLimit = slotLimit;
+        return slot;
+    }
+
+    /// <summary>
+    /// Сюжеты проекта. Отдельная коллекция, а не навигация <see cref="DataModel.Project"/>: её у
+    /// проекта нет, а write-хэндл грузит сюжеты отдельным запросом.
+    /// </summary>
+    public List<PlotElement> PlotElements { get; } = [];
+
+    /// <summary>
+    /// Сюжет, привязанный напрямую к перечисленным персонажам.
+    /// </summary>
+    public PlotElement CreatePlotElement(params Character[] targetCharacters)
+    {
+        var plotElement = new PlotElement
+        {
+            PlotElementId = PlotElements.GetNextId(),
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            TargetCharacters = [.. targetCharacters],
+            TargetGroups = [],
+        };
+        PlotElements.Add(plotElement);
+        return plotElement;
     }
 
     public ProjectFieldInfo CreateConditionalField(CharacterGroup conditionGroup)
@@ -265,6 +381,7 @@ public class MockedProject
                 ProjectId = Project.ProjectId,
                 Comments = [],
             },
+            FinanceOperations = [],
         };
         claim.CommentDiscussion.Project = Project;
         mockCharacter.Claims.Add(claim);
@@ -302,6 +419,124 @@ public class MockedProject
         };
         claim.CommentDiscussion.Comments.Add(comment);
         return comment;
+    }
+
+    /// <summary>
+    /// Наличный тип оплаты, привязанный к мастеру. Нужен операциям, которые принимают деньги на
+    /// месте, — прежде всего регистрации на игре.
+    /// </summary>
+    public PaymentType CreateCashPaymentType(User? user = null)
+    {
+        var owner = user ?? Master;
+        var paymentType = new PaymentType(PaymentTypeKind.Cash, Project.ProjectId, owner.UserId)
+        {
+            // Не GetNextId(): у PaymentType реализация IOrderableEntity.Id возвращает ProjectId.
+            PaymentTypeId = Project.PaymentTypes.Count + 1,
+            Project = Project,
+            User = owner,
+            Operations = [],
+        };
+        Project.PaymentTypes.Add(paymentType);
+        ReInitProjectInfo();
+        return paymentType;
+    }
+
+    /// <summary>
+    /// Типы поселения проекта. Отдельная коллекция, а не навигация <see cref="DataModel.Project"/>:
+    /// её у проекта нет, а write-хэндл грузит тип поселения отдельным запросом.
+    /// </summary>
+    public List<ProjectAccommodationType> AccommodationTypes { get; } = [];
+
+    /// <summary>Тип поселения проекта (палатка, домик, номер…).</summary>
+    public ProjectAccommodationType CreateAccommodationType(string name = "Палатка", int capacity = 4)
+    {
+        var accommodationType = new ProjectAccommodationType
+        {
+            Id = AccommodationTypes.Count + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            Name = name,
+            Capacity = capacity,
+            Cost = 0,
+            ProjectAccommodations = [],
+            Desirous = [],
+        };
+        AccommodationTypes.Add(accommodationType);
+        return accommodationType;
+    }
+
+    /// <summary>Заявки на поселение проекта — как их видел бы <c>DbSet</c>.</summary>
+    public List<AccommodationRequest> AccommodationRequests { get; } = [];
+
+    /// <summary>
+    /// Заявка на поселение выбранного типа, в которой живут перечисленные заявки игроков.
+    /// </summary>
+    public AccommodationRequest CreateAccommodationRequest(
+        ProjectAccommodationType accommodationType,
+        params Claim[] subjects)
+    {
+        var request = new AccommodationRequest
+        {
+            Id = AccommodationRequests.Count + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            AccommodationType = accommodationType,
+            AccommodationTypeId = accommodationType.Id,
+            IsAccepted = InviteState.Accepted,
+            Subjects = [.. subjects],
+        };
+        accommodationType.Desirous.Add(request);
+
+        foreach (var claim in subjects)
+        {
+            claim.AccommodationRequest = request;
+            claim.AccommodationRequest_Id = request.Id;
+        }
+
+        AccommodationRequests.Add(request);
+        return request;
+    }
+
+    /// <summary>Комната, в которую расселена заявка на поселение.</summary>
+    public ProjectAccommodation CreateRoom(AccommodationRequest request, string name = "Комната")
+    {
+        var room = new ProjectAccommodation
+        {
+            Id = request.Id,
+            Name = name,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            ProjectAccommodationType = request.AccommodationType,
+            AccommodationTypeId = request.AccommodationTypeId,
+            Inhabitants = [request],
+        };
+        request.Accommodation = room;
+        request.AccommodationId = room.Id;
+        return room;
+    }
+
+    /// <summary>
+    /// Приглашения к совместному проживанию. Отдельная коллекция по той же причине, что и
+    /// <see cref="AccommodationTypes"/>: write-хэндл грузит их отдельным запросом.
+    /// </summary>
+    public List<AccommodationInvite> AccommodationInvites { get; } = [];
+
+    /// <summary>Неотвеченное приглашение одной заявки другой.</summary>
+    public AccommodationInvite CreateAccommodationInvite(Claim from, Claim to)
+    {
+        var invite = new AccommodationInvite
+        {
+            Id = AccommodationInvites.Count + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            From = from,
+            FromClaimId = from.ClaimId,
+            To = to,
+            ToClaimId = to.ClaimId,
+            IsAccepted = InviteState.Unanswered,
+        };
+        AccommodationInvites.Add(invite);
+        return invite;
     }
 
     public Claim CreateApprovedClaim(Character character, User player)
