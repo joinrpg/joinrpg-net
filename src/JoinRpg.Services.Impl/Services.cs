@@ -33,7 +33,6 @@ public static class Services
         yield return typeof(FieldSetupServiceImpl);
         yield return typeof(FieldDefaultValueGenerator);
         yield return typeof(AccommodationInviteServiceImpl);
-        yield return typeof(AccommodationServiceImpl);
         yield return typeof(CharacterServiceImpl);
         yield return typeof(GameSubscribeService);
 
@@ -59,6 +58,7 @@ public static class Services
             .AddTransient<IProjectAccessService, ProjectAccessService>()
             .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
+            .AddTransient<IAccommodationService, AccommodationServiceImpl>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()

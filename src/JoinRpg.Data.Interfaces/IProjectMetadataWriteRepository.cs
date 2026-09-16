@@ -44,4 +44,18 @@ public interface IProjectMetadataUpdateHandle
     /// вызывается <c>SaveChanges</c>. Используется для permanent-delete (см. SmartDelete).
     /// </summary>
     void Remove(object entity);
+
+    /// <summary>
+    /// Добавляет новую под-сущность проекта в тот же <c>DbContext</c>, через который потом
+    /// вызывается <c>SaveChanges</c>. Нужно там, где сущность не достаётся навигацией
+    /// <see cref="Project"/> (например, комната поселения).
+    /// </summary>
+    void Add(object entity);
+
+    /// <summary>
+    /// Поселение проекта: типы, комнаты и заявки на поселение. Отдельный набор именованных
+    /// загрузчиков, а не <see cref="ProjectInfo"/> и не навигации <see cref="Project"/> —
+    /// ни того, ни другого для поселения не существует.
+    /// </summary>
+    IProjectAccommodationWriteAccess Accommodation { get; }
 }

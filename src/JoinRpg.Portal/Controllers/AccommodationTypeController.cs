@@ -118,7 +118,7 @@ public class AccommodationTypeController(
     [HttpGet]
     public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
     {
-        await accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
+        await accommodationService.RemoveRoomType(projectId, roomTypeId).ConfigureAwait(false);
         return RedirectToAction("Index", new { ProjectId = projectId });
     }
 
@@ -246,7 +246,7 @@ public class AccommodationTypeController(
     {
         try
         {
-            await accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
+            await accommodationService.DeleteRoom(projectId, roomTypeId, roomId).ConfigureAwait(false);
             return Ok();
         }
         catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
@@ -291,7 +291,7 @@ public class AccommodationTypeController(
         {
             if (int.TryParse(room, out var roomId))
             {
-                await accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
+                await accommodationService.EditRoom(projectId, roomTypeId, roomId, name);
                 return Ok();
             }
         }
