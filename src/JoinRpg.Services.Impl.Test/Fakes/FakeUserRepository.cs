@@ -29,7 +29,9 @@ internal sealed class FakeUserRepository(MockedProject mock) : IUserRepository
             [.. userIds.Select(mock.TryGetUserInfo).OfType<UserInfo>()
                 .Select(user => new UserInfoHeader(user.UserId, user.DisplayName))]);
 
-    public Task<User> GetById(int id) => throw new NotSupportedException();
+    public Task<User> GetById(int id) => Task.FromResult(
+        mock.TryGetUser(id) ?? throw new NotSupportedException($"Моку неизвестен пользователь {id}"));
+
     public Task<User> WithProfile(int userId) => throw new NotSupportedException();
     public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
     public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();

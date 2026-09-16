@@ -58,8 +58,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             NullLogger<CharacterServiceImpl>.Instance,
             claimNotifications,
             new CommentHelper(currentUser),
-            impersonateAccessor: null!,
-            CreatePropsService(currentUserId));
+            CreatePropsService(currentUserId),
+            // Собственный экземпляр props-сервиса — как и в бою, где оба транзиентны.
+            new ClaimApprovalService(CreatePropsService(currentUserId)),
+            CreateAutoApproveService());
     }
 
     private Claim CreateClaim(ClaimStatus status, string characterName = "Вася")
@@ -666,6 +668,259 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         mock.Project.Claims.ShouldHaveSingleItem().ShouldBe(existing);
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region Автоприём
+
+    /// <summary>
+    /// Автоприём — отдельная операция ПОСЛЕ создания заявки, а не вложенная в него (ADR014, §7).
+    /// Проверяем именно момент вызова: к этому времени оба сохранения создания уже прошли и
+    /// уведомление о новой заявке уже ушло.
+    /// </summary>
+    [Fact]
+    public async Task AddClaimFromUser_WithAutoAccept_ApprovesAfterCreationCompleted()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var (character, fields) = CreateTarget();
+
+        var savesAtApprove = -1;
+        var notificationsAtApprove = -1;
+        autoApprovals.OnApprove = () =>
+        {
+            savesAtApprove = SaveChangesCallCount;
+            notificationsAtApprove = SentNotifications.Count;
+        };
+
+        var claimId = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+
+        autoApprovals.Calls.ShouldHaveSingleItem().ClaimId.ShouldBe(claimId);
+
+        // Создание заявки — два сохранения (ADR014); автоприём начинается строго после них.
+        savesAtApprove.ShouldBe(2);
+        notificationsAtApprove.ShouldBe(1);
+
+        // Утверждает ответственный мастер, а не подавший заявку игрок.
+        impersonateAccessor.Impersonated.ShouldBe([mock.Master.GetId()]);
+        impersonateAccessor.StopCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Если проект требует доступ к чувствительным данным, а игрок его не дал, автоприём молчит.
+    /// </summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public async Task AddClaimFromUser_WhenSensitiveDataRequired_AutoApprovesOnlyIfAllowed(
+        bool sensitiveDataAllowed, bool expectedAutoApprove)
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        var (character, fields) = CreateTarget();
+
+        _ = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed);
+
+        autoApprovals.Calls.Count.ShouldBe(expectedAutoApprove ? 1 : 0);
+        impersonateAccessor.Impersonated.Count.ShouldBe(expectedAutoApprove ? 1 : 0);
+    }
+
+    [Fact]
+    public async Task AddClaimFromUser_WithoutAutoAccept_DoesNotApprove()
+    {
+        var (character, fields) = CreateTarget();
+
+        _ = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+
+        autoApprovals.Calls.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region AcceptInvitation
+
+    [Fact]
+    public async Task AcceptInvitation_MovesToDiscussed_SavesOnce_AndNotifiesOnce()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        await CreateService(mock.Player.UserId)
+            .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false);
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        claim.CommentDiscussion.Comments.ShouldHaveSingleItem()
+            .ExtraAction.ShouldBe(CommentExtraAction.InvitationAcceptedByPlayer);
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Принять можно только приглашение мастера. Проверка именно такая — своя, а не через таблицу
+    /// переходов статусов.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvitation_OfClaimAddedByPlayer_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<ClaimWrongStatusException>(
+            () => CreateService(mock.Player.UserId)
+                .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AcceptInvitation_ByMaster_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        _ = await Should.ThrowAsync<PlayerOnlyException>(
+            () => CreateService().AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false));
+
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>Разрешение запоминается, только если проект его вообще спрашивает.</summary>
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    public async Task AcceptInvitation_StoresSensitiveDataPermission(
+        bool sensitiveDataAllowed, bool projectRequiresSensitiveData, bool expected)
+    {
+        mock.Project.Details.RequirePassport = projectRequiresSensitiveData
+            ? MandatoryStatus.Required
+            : MandatoryStatus.Optional;
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        await CreateService(mock.Player.UserId)
+            .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed);
+
+        claim.PlayerAllowedSenstiveData.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task AcceptInvitation_WithAutoAccept_ApprovesAfterNotification()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        var savesAtApprove = -1;
+        var notificationsAtApprove = -1;
+        autoApprovals.OnApprove = () =>
+        {
+            savesAtApprove = SaveChangesCallCount;
+            notificationsAtApprove = SentNotifications.Count;
+        };
+
+        await CreateService(mock.Player.UserId)
+            .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false);
+
+        autoApprovals.Calls.ShouldHaveSingleItem().ClaimId.ShouldBe(claim.GetId());
+        savesAtApprove.ShouldBe(1);
+        notificationsAtApprove.ShouldBe(1);
+    }
+
+    #endregion
+
+    #region AllowSensitiveData
+
+    [Fact]
+    public async Task AllowSensitiveData_SetsFlag_SavesOnce_AndSendsNothing()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AllowSensitiveData_ByMaster_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        _ = await Should.ThrowAsync<PlayerOnlyException>(
+            () => CreateService().AllowSensitiveData(claim.GetId()));
+
+        claim.PlayerAllowedSenstiveData.ShouldBeFalse();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    #endregion
+
+    #region SetResponsible
+
+    [Fact]
+    public async Task SetResponsible_ToAnotherMaster_ChangesAndNotifies()
+    {
+        var newMaster = mock.CreateMaster();
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService().SetResponsible(claim.GetId(), newMaster.GetId());
+
+        claim.ResponsibleMasterUserId.ShouldBe(newMaster.UserId);
+        claim.CommentDiscussion.Comments.ShouldHaveSingleItem()
+            .ExtraAction.ShouldBe(CommentExtraAction.ChangeResponsible);
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.ShouldHaveSingleItem()
+            .ShouldBeOfType<ClaimSimpleChangedNotification>()
+            .OldResponsibleMaster.ShouldBe(mock.Master.GetId());
+    }
+
+    /// <summary>
+    /// Назначение ответственным того же мастера — не операция: ни сохранения, ни уведомления.
+    /// До миграции это был ранний <c>return</c> до мутации, и поведение сохранено.
+    /// </summary>
+    [Fact]
+    public async Task SetResponsible_ToSameMaster_DoesNothing()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService().SetResponsible(claim.GetId(), mock.Master.GetId());
+
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    /// <summary>Ответственным можно назначить только мастера проекта.</summary>
+    [Fact]
+    public async Task SetResponsible_ToNonMaster_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService().SetResponsible(claim.GetId(), mock.Player.GetId()));
+
+        claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SetResponsible_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var newMaster = mock.CreateMaster();
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).SetResponsible(claim.GetId(), newMaster.GetId()));
+
+        claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     #endregion

@@ -62,6 +62,25 @@ public abstract class ClaimServiceTestBase
             emailService,
             NullLogger<CharacterPropsService>.Instance);
 
+    /// <summary>Записывает вызовы утверждения заявки, которые делает автоприём.</summary>
+    private protected readonly FakeClaimApprovalService autoApprovals = new();
+
+    /// <summary>Записывает подмену пользователя, под которой идёт автоприём.</summary>
+    private protected readonly FakeImpersonateAccessor impersonateAccessor = new();
+
+    /// <summary>
+    /// Боевой автоприём поверх фейков: условия он перечитывает сам, а само утверждение уходит в
+    /// <see cref="autoApprovals"/> — так видно, <b>когда</b> его позвали.
+    /// </summary>
+    private protected ClaimAutoApproveService CreateAutoApproveService()
+        => new(
+            new FakeClaimsRepository(mock),
+            metadataRepository,
+            new FakeUserRepository(mock),
+            impersonateAccessor,
+            autoApprovals,
+            NullLogger<ClaimAutoApproveService>.Instance);
+
     private protected static FieldSaveHelper CreateFieldSaveHelper()
         => new(new NoDefaultsGenerator(), NullLogger<FieldSaveHelper>.Instance);
 

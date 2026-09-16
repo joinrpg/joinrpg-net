@@ -61,6 +61,8 @@ public static class Services
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
+            .AddTransient<IClaimApprovalService, ClaimApprovalService>()
+            .AddTransient<ClaimAutoApproveService>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IClaimNotificationService, ClaimNotificationService>()
             .AddTransient<ForumNotificationService>()

@@ -21,6 +21,45 @@ internal class CharacterPropsService(
     ILogger<CharacterPropsService> logger)
     : ICharacterPropsService
 {
+    /// <summary>
+    /// Сторож реентерабельности (ADR014, §7): вход в мутацию, пока другая мутация этого же
+    /// экземпляра не завершилась.
+    /// </summary>
+    /// <remarks>
+    /// Работает это потому, что сервис транзиентный, и операции, которые честно идут одна ЗА другой
+    /// (автоприём после подачи заявки), резолвят новый экземпляр. Попытка переиспользовать один
+    /// экземпляр вложенно падает сразу, а не на проде: <c>Now</c> у контекста уже зафиксирован,
+    /// а <c>CurrentUserId</c> вложенной операции может оказаться другим.
+    /// </remarks>
+    private bool inMutation;
+
+    /// <summary>
+    /// Поднимает сторож на время мутации. <c>Dispose</c> в <c>finally</c> опускает его в любом
+    /// случае, включая исключение.
+    /// </summary>
+    private MutationGuard EnterMutation(string operationName) => new(this, operationName);
+
+    private sealed class MutationGuard : IDisposable
+    {
+        private readonly CharacterPropsService service;
+
+        public MutationGuard(CharacterPropsService service, string operationName)
+        {
+            if (service.inMutation)
+            {
+                throw new InvalidOperationException(
+                    $"Вложенная мутация «{operationName}» на том же экземпляре CharacterPropsService запрещена "
+                    + "(ADR014, §7: реентерабельность запрещена). Операция, которой нужна другая операция, "
+                    + "обязана вызвать её ПОСЛЕ своего завершения и через собственный экземпляр сервиса.");
+            }
+
+            this.service = service;
+            service.inMutation = true;
+        }
+
+        public void Dispose() => service.inMutation = false;
+    }
+
     public Task ChangeCharacter<TArgs>(
         CharacterIdentification characterId,
         Permission requiredPermission,
@@ -56,6 +95,7 @@ internal class CharacterPropsService(
         Func<CharacterMutationContext<TArgs>, TResult> action,
         string operationName)
     {
+        using var guard = EnterMutation(operationName);
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
         // Время фиксируем на операцию, а не на сервис: DbServiceImplBase брал его в конструкторе,
         // из-за чего вложенные операции штамповали время создания сервиса (см. ADR014).
@@ -78,9 +118,12 @@ internal class CharacterPropsService(
 
             var result = action(ctx);
 
-            await unitOfWork.SaveChangesAsync();
+            if (!ctx.IsNoOp)
+            {
+                await unitOfWork.SaveChangesAsync();
 
-            await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+                await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+            }
 
             logger.LogInformation(
                 "Изменён персонаж {characterId}: операция {operation}, аргументы {@arguments}",
@@ -164,6 +207,7 @@ internal class CharacterPropsService(
         Func<ClaimMutationContext<TArgs>, Task<TResult>> action,
         string operationName)
     {
+        using var guard = EnterMutation(operationName);
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
         var now = DateTime.UtcNow;
         try
@@ -183,24 +227,27 @@ internal class CharacterPropsService(
 
             var result = await action(ctx);
 
-            await unitOfWork.SaveChangesAsync();
-
-            await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
-
-            // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
-            foreach (var pending in ctx.PendingComments)
+            if (!ctx.IsNoOp)
             {
-                if (!pending.IsSilent)
+                await unitOfWork.SaveChangesAsync();
+
+                await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+
+                // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
+                foreach (var pending in ctx.PendingComments)
                 {
-                    await claimNotificationService.SendNotification(
-                        pending.Notification.WithCommentId(pending.Comment.CommentId));
+                    if (!pending.IsSilent)
+                    {
+                        await claimNotificationService.SendNotification(
+                            pending.Notification.WithCommentId(pending.Comment.CommentId));
+                    }
                 }
-            }
 
-            // Легаси-канал — после уведомлений, как это было до миграции.
-            foreach (var send in ctx.LegacyEmails)
-            {
-                await send(emailService);
+                // Легаси-канал — после уведомлений, как это было до миграции.
+                foreach (var send in ctx.LegacyEmails)
+                {
+                    await send(emailService);
+                }
             }
 
             logger.LogInformation(
@@ -231,6 +278,7 @@ internal class CharacterPropsService(
         Func<CharacterCreationContext<TArgs>, Character> factory,
         [CallerMemberName] string operationName = "")
     {
+        using var guard = EnterMutation(operationName);
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
         var now = DateTime.UtcNow;
         try
@@ -282,6 +330,7 @@ internal class CharacterPropsService(
         Func<ClaimCreationContext<TArgs>, Claim> factory,
         [CallerMemberName] string operationName = "")
     {
+        using var guard = EnterMutation(operationName);
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
         var now = DateTime.UtcNow;
         try
