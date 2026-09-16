@@ -7,6 +7,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.DataModel.Mocks;
@@ -388,6 +389,7 @@ public class MockedProject
                 ProjectId = Project.ProjectId,
                 Comments = [],
             },
+            FinanceOperations = [],
         };
         claim.CommentDiscussion.Project = Project;
         mockCharacter.Claims.Add(claim);
@@ -425,6 +427,26 @@ public class MockedProject
         };
         claim.CommentDiscussion.Comments.Add(comment);
         return comment;
+    }
+
+    /// <summary>
+    /// Наличный тип оплаты, привязанный к мастеру. Нужен операциям, которые принимают деньги на
+    /// месте, — прежде всего регистрации на игре.
+    /// </summary>
+    public PaymentType CreateCashPaymentType(User? user = null)
+    {
+        var owner = user ?? Master;
+        var paymentType = new PaymentType(PaymentTypeKind.Cash, Project.ProjectId, owner.UserId)
+        {
+            // Не GetNextId(): у PaymentType реализация IOrderableEntity.Id возвращает ProjectId.
+            PaymentTypeId = Project.PaymentTypes.Count + 1,
+            Project = Project,
+            User = owner,
+            Operations = [],
+        };
+        Project.PaymentTypes.Add(paymentType);
+        ReInitProjectInfo();
+        return paymentType;
     }
 
     public Claim CreateApprovedClaim(Character character, User player)
