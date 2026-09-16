@@ -1,7 +1,14 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain.CharacterFields;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.Services.Impl.Characters;
+using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Test.Projects;
 using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Claims;
 
@@ -20,7 +27,35 @@ public abstract class ClaimServiceTestBase
     private protected readonly FakeClaimNotificationService claimNotifications = new();
     private protected readonly FakeEmailService emailService = new();
 
-    protected ClaimServiceTestBase() => unitOfWork = new FakeUnitOfWork(mock);
+    private protected readonly FakeProjectMetadataRepository metadataRepository;
+
+    protected ClaimServiceTestBase()
+    {
+        unitOfWork = new FakeUnitOfWork(mock);
+        metadataRepository = new FakeProjectMetadataRepository(mock);
+    }
+
+    /// <summary>Генератор значений по умолчанию, который ничего не генерирует.</summary>
+    private sealed class NoDefaultsGenerator : IFieldDefaultValueGenerator
+    {
+        public string? CreateDefaultValue(Claim? claim, FieldWithValue field) => null;
+        public string? CreateDefaultValue(Character? character, FieldWithValue field) => null;
+    }
+
+    /// <summary>
+    /// Собирает боевой <see cref="CharacterPropsService"/> поверх фейков — подделываются только
+    /// доступ к данным и каналы уведомлений, сама проверяемая логика настоящая.
+    /// </summary>
+    private protected CharacterPropsService CreatePropsService(int? currentUserId = null)
+        => new(
+            unitOfWork,
+            CreateCurrentUser(currentUserId),
+            metadataRepository,
+            new FieldSaveHelper(new NoDefaultsGenerator(), NullLogger<FieldSaveHelper>.Instance),
+            new CommentHelper(CreateCurrentUser(currentUserId)),
+            claimNotifications,
+            emailService,
+            NullLogger<CharacterPropsService>.Instance);
 
     protected ProjectIdentification ProjectId => mock.ProjectInfo.ProjectId;
 

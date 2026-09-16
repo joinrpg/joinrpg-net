@@ -1,13 +1,9 @@
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Characters;
-using JoinRpg.Services.Impl.Test.Projects;
 using JoinRpg.Services.Interfaces.Characters;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Characters;
 
@@ -16,32 +12,9 @@ namespace JoinRpg.Services.Impl.Test.Characters;
 /// <see cref="ICharacterPropsService"/> (ADR014) их не было вовсе, страховкой служили только
 /// интеграционные сценарии на настоящей БД.
 /// </summary>
-public class CharacterServiceImplTest
+public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
 {
-    private readonly MockedProject mock = new();
-    private readonly FakeUnitOfWork unitOfWork;
-    private readonly FakeProjectMetadataRepository metadataRepository;
-
-    public CharacterServiceImplTest()
-    {
-        unitOfWork = new FakeUnitOfWork(mock);
-        metadataRepository = new FakeProjectMetadataRepository(mock);
-    }
-
-    private sealed class NoDefaultsGenerator : IFieldDefaultValueGenerator
-    {
-        public string? CreateDefaultValue(Claim? claim, FieldWithValue field) => null;
-        public string? CreateDefaultValue(Character? character, FieldWithValue field) => null;
-    }
-
-    private CharacterServiceImpl CreateService(int? userId = null)
-        => new CharacterServiceImpl(
-            new CharacterPropsService(
-                unitOfWork,
-                new FakeCurrentUserAccessor(userId ?? mock.Master.UserId),
-                metadataRepository,
-                new FieldSaveHelper(new NoDefaultsGenerator(), NullLogger<FieldSaveHelper>.Instance),
-                NullLogger<CharacterPropsService>.Instance));
+    private CharacterServiceImpl CreateService(int? userId = null) => new(CreatePropsService(userId));
 
     private void ArchiveProject()
     {
@@ -72,7 +45,7 @@ public class CharacterServiceImplTest
         var id = await CreateService().AddCharacter(AddRequest());
 
         mock.Project.Characters.Count.ShouldBe(before + 1);
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        SaveChangesCallCount.ShouldBe(1);
         id.ProjectId.ShouldBe(mock.ProjectInfo.ProjectId);
     }
 
@@ -82,7 +55,7 @@ public class CharacterServiceImplTest
         await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService(mock.Player.UserId).AddCharacter(AddRequest()));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -93,7 +66,7 @@ public class CharacterServiceImplTest
         await Should.ThrowAsync<ProjectDeactivatedException>(
             () => CreateService().AddCharacter(AddRequest()));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -104,7 +77,7 @@ public class CharacterServiceImplTest
 
         await CreateService().EditCharacter(EditRequest(character));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        SaveChangesCallCount.ShouldBe(1);
         character.UpdatedById.ShouldBe(mock.Master.UserId);
     }
 
@@ -117,7 +90,7 @@ public class CharacterServiceImplTest
         await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService(mock.Player.UserId).EditCharacter(EditRequest(character)));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -129,7 +102,7 @@ public class CharacterServiceImplTest
         await Should.ThrowAsync<ProjectDeactivatedException>(
             () => CreateService().EditCharacter(EditRequest(character)));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     /// <summary>
@@ -149,7 +122,7 @@ public class CharacterServiceImplTest
         await Should.ThrowAsync<Exception>(
             () => CreateService().EditCharacter(EditRequest(character, npc)));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -161,7 +134,7 @@ public class CharacterServiceImplTest
         await CreateService().DeleteCharacter(new DeleteCharacterRequest(character.GetId()));
 
         character.IsActive.ShouldBeFalse();
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        SaveChangesCallCount.ShouldBe(1);
     }
 
     [Fact]
@@ -175,7 +148,7 @@ public class CharacterServiceImplTest
             () => CreateService().DeleteCharacter(new DeleteCharacterRequest(character.GetId())));
 
         character.IsActive.ShouldBeTrue();
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -186,7 +159,7 @@ public class CharacterServiceImplTest
 
         await CreateService().SetFields(character.GetId(), FieldLayerContainer.Empty(mock.ProjectInfo));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        SaveChangesCallCount.ShouldBe(1);
         character.UpdatedById.ShouldBe(mock.Master.UserId);
     }
 
