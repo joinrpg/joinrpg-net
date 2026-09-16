@@ -106,19 +106,27 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         return (comment, email);
     }
 
-    protected void CheckOperationDate(DateTime operationDate)
+    protected void CheckOperationDate(DateTime operationDate) => CheckOperationDate(operationDate, Now);
+
+    /// <summary>
+    /// Версия с явным временем операции: мигрированные методы берут его из контекста, а не из поля
+    /// сервиса, зафиксированного в конструкторе (ADR014).
+    /// </summary>
+    protected static void CheckOperationDate(DateTime operationDate, DateTime now)
     {
-        if (operationDate > Now.AddDays(1)
+        if (operationDate > now.AddDays(1)
         ) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
         {
             throw new CannotPerformOperationInFuture();
         }
     }
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
         => LoadClaimAsMaster(new ClaimIdentification(request.ProjectIdentification, request.ClaimId), permission, reason);
 
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ClaimIdentification claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
     {
         var claim = await ClaimsRepository.GetClaim(claimId);
@@ -127,6 +135,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
     }
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsPlayer(ClaimIdentification claimId)
     {
         var claim = await ClaimsRepository.GetClaim(claimId);
