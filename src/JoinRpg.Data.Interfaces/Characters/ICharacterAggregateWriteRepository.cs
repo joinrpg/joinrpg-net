@@ -114,6 +114,14 @@ public interface ICharacterAggregateUpdateHandle
     /// </summary>
     /// <exception cref="JoinRpgEntityNotFoundException">Персонаж не найден.</exception>
     Task<(Character Entity, CharacterInfo Info)> LoadOtherCharacter(CharacterIdentification characterId);
+
+    /// <summary>
+    /// Сюжеты, привязанные напрямую к персонажу, — трекаемые тем же <c>DbContext</c>. Нужны
+    /// созданию персонажа из слота: новый персонаж наследует привязки слота, а мутировать
+    /// <c>PlotElement.TargetCharacters</c> можно только в том контексте, через который идёт
+    /// <c>SaveChanges</c> (ADR014).
+    /// </summary>
+    Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId);
 }
 
 /// <summary>
