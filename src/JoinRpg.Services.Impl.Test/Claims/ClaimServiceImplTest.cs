@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -467,6 +468,202 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
         claim.Character.ShouldBe(slot);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region Создание заявки
+
+    /// <summary>
+    /// Персонаж, на которого можно подать заявку, вместе с пустым слоем полей, построенным по
+    /// актуальному снимку метаданных.
+    /// </summary>
+    private (Character Character, FieldLayerContainer Fields) CreateTarget(string name = "Вася")
+    {
+        var character = mock.CreateCharacter(name);
+        mock.ReInitProjectInfo();
+        return (character, FieldLayerContainer.Empty(mock.ProjectInfo));
+    }
+
+    [Fact]
+    public async Task AddClaimFromUser_CreatesClaim_SavesTwice_AndNotifiesOnce()
+    {
+        var (character, fields) = CreateTarget();
+
+        var claimId = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+
+        var claim = mock.Project.Claims.ShouldHaveSingleItem();
+        claim.GetId().ShouldBe(claimId);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        claim.PlayerUserId.ShouldBe(mock.Player.UserId);
+        claim.Character.ShouldBe(character);
+        claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
+
+        // Связка нужна FieldSaveHelper.MarkUsed: он читает project.ProjectFields и без неё падает.
+        claim.Project.ShouldBe(mock.Project);
+
+        var comment = claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
+        comment.ExtraAction.ShouldBe(CommentExtraAction.NewClaim);
+        comment.IsCommentByPlayer.ShouldBeTrue();
+
+        SaveChangesCallCount.ShouldBe(2);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Сохранений ровно два, и это не формальность: комментарий обязан создаваться <b>между</b>
+    /// ними. До первого сохранения у дискуссии <c>CommentDiscussionId == -1</c>, и комментарий,
+    /// созданный раньше, уехал бы в несуществующую дискуссию. Тест ловит попытку «схлопнуть» два
+    /// сохранения в одно.
+    /// </summary>
+    [Fact]
+    public async Task AddClaimFromUser_CreatesCommentBetweenTwoSaves()
+    {
+        var (character, fields) = CreateTarget();
+
+        var commentsAtSave = new List<int>();
+        OnSaveChanges = _ => commentsAtSave.Add(
+            mock.Project.Claims.Sum(claim => claim.CommentDiscussion.Comments.Count));
+
+        _ = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+
+        commentsAtSave.ShouldBe([0, 1]);
+    }
+
+    /// <summary>
+    /// Разрешение на чувствительные данные запоминается, только если проект его вообще спрашивает.
+    /// </summary>
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    public async Task AddClaimFromUser_StoresSensitiveDataPermission(
+        bool sensitiveDataAllowed, bool projectRequiresSensitiveData, bool expected)
+    {
+        mock.Project.Details.RequirePassport = projectRequiresSensitiveData
+            ? MandatoryStatus.Required
+            : MandatoryStatus.Optional;
+        var (character, fields) = CreateTarget();
+
+        _ = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed);
+
+        mock.Project.Claims.ShouldHaveSingleItem().PlayerAllowedSenstiveData.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task AddClaimFromMaster_CreatesClaimForGivenPlayer_SavesTwice_AndNotifiesOnce()
+    {
+        var (character, fields) = CreateTarget();
+
+        var claimId = await CreateService()
+            .AddClaimFromMaster(character.GetId(), mock.Player.GetId(), "приглашаю", fields);
+
+        var claim = mock.Project.Claims.ShouldHaveSingleItem();
+        claim.GetId().ShouldBe(claimId);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
+
+        // Заявка оформляется на игрока, а не на мастера, который её создал.
+        claim.PlayerUserId.ShouldBe(mock.Player.UserId);
+        claim.PlayerUserId.ShouldNotBe(mock.Master.UserId);
+
+        // Мастер не может дать разрешение на чувствительные данные от имени игрока.
+        claim.PlayerAllowedSenstiveData.ShouldBeFalse();
+
+        var comment = claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
+        comment.ExtraAction.ShouldBe(CommentExtraAction.NewClaim);
+        comment.IsCommentByPlayer.ShouldBeFalse();
+
+        SaveChangesCallCount.ShouldBe(2);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AddClaimFromMaster_WithoutManageClaims_Throws_AndDoesNotSave()
+    {
+        var (character, fields) = CreateTarget();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId)
+                .AddClaimFromMaster(character.GetId(), mock.Player.GetId(), "приглашаю", fields));
+
+        mock.Project.Claims.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Закрытый приём заявок — причина с <c>MasterCanOverride</c>: игрока она останавливает,
+    /// мастера нет.
+    /// </summary>
+    [Fact]
+    public async Task AddClaimFromUser_WhenProjectClaimsClosed_Throws_AndDoesNotSave()
+    {
+        mock.Project.IsAcceptingClaims = false;
+        var (character, fields) = CreateTarget();
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService(mock.Player.UserId)
+                .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false));
+
+        mock.Project.Claims.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AddClaimFromMaster_WhenProjectClaimsClosed_StillCreatesClaim()
+    {
+        mock.Project.IsAcceptingClaims = false;
+        var (character, fields) = CreateTarget();
+
+        _ = await CreateService()
+            .AddClaimFromMaster(character.GetId(), mock.Player.GetId(), "приглашаю", fields);
+
+        mock.Project.Claims.ShouldHaveSingleItem().ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
+        SaveChangesCallCount.ShouldBe(2);
+    }
+
+    /// <summary>
+    /// Занятость роли мастер обойти не может — у этой причины <c>MasterCanOverride == false</c>.
+    /// </summary>
+    [Fact]
+    public async Task AddClaimFromMaster_ToBusyCharacter_Throws_AndDoesNotSave()
+    {
+        var character = mock.CreateCharacter("Вася");
+        _ = mock.CreateApprovedClaim(character, mock.Master);
+        mock.ReInitProjectInfo();
+        var fields = FieldLayerContainer.Empty(mock.ProjectInfo);
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService()
+                .AddClaimFromMaster(character.GetId(), mock.Player.GetId(), "приглашаю", fields));
+
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Вторая заявка того же игрока на того же персонажа не создаётся.
+    /// </summary>
+    [Fact]
+    public async Task AddClaimFromUser_WhenAlreadySent_Throws_AndDoesNotSave()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var existing = mock.CreateClaim(character, mock.Player);
+        existing.ClaimStatus = ClaimStatus.AddedByUser;
+        mock.ReInitProjectInfo();
+        var fields = FieldLayerContainer.Empty(mock.ProjectInfo);
+
+        _ = await Should.ThrowAsync<ClaimAlreadyPresentException>(
+            () => CreateService(mock.Player.UserId)
+                .AddClaimFromUser(character.GetId(), "ещё раз", fields, sensitiveDataAllowed: false));
+
+        mock.Project.Claims.ShouldHaveSingleItem().ShouldBe(existing);
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
     }

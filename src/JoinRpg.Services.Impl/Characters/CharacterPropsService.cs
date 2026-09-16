@@ -3,6 +3,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
@@ -266,6 +267,100 @@ internal class CharacterPropsService(
                 e,
                 "Не удалось создать персонажа в проекте {projectId}: операция {operation}, аргументы {@arguments}",
                 projectId,
+                operationName,
+                arguments);
+            throw;
+        }
+    }
+
+    public async Task<Claim> CreateClaim<TArgs>(
+        CharacterIdentification characterId,
+        UserIdentification playerId,
+        ClaimOperation operation,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimCreationContext<TArgs>, Claim> factory,
+        [CallerMemberName] string operationName = "")
+    {
+        using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        var now = DateTime.UtcNow;
+        try
+        {
+            var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
+                .LoadCharacterForUpdate(characterId, currentUserAccessor.UserIdentification);
+
+            // Подача игроком отдельной проверки прав не имеет — её заменяют правила ClaimValidator.
+            if (operation == ClaimOperation.AddByMaster)
+            {
+                _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+            }
+
+            EnsureActiveIfRequired(handle.ProjectInfo, activeRequirement);
+
+            // Правила считаются для игрока, на которого оформляется заявка, а не для того, кто
+            // выполняет операцию.
+            var player = await unitOfWork.GetUsersRepository().GetRequiredUserInfo(playerId);
+
+            // CharacterInfo уже в хэндле — отдельного запроса за агрегатом больше нет.
+            ClaimValidator.EnsureCanAddClaim(handle.CharacterInfo, player, handle.ProjectInfo, operation);
+
+            var ctx = new ClaimCreationContext<TArgs>(
+                handle.Character, handle.CharacterInfo, handle.ProjectInfo, now, currentUserAccessor,
+#pragma warning disable CS0618 // Initiator нужен только легаси-каналу писем
+                handle.Initiator,
+#pragma warning restore CS0618
+                player, handle.Add, fieldSaveHelper, arguments);
+
+            var claim = factory(ctx);
+            handle.Add(claim);
+
+            // Фаза 1: заявка и её дискуссия получают настоящие идентификаторы.
+            await unitOfWork.SaveChangesAsync();
+
+            // Только теперь у дискуссии есть CommentDiscussionId — до сохранения он был -1.
+            var pendingComments = ctx.DeferredComments
+                .Select(deferred =>
+                {
+                    var (comment, notification) = commentHelper.CreateClaimCommentWithNotification(
+                        deferred.CommentText,
+                        claim,
+                        handle.ProjectInfo,
+                        deferred.ExtraAction,
+                        deferred.OperationType,
+                        now);
+                    return new PendingComment(comment, notification);
+                })
+                .ToList();
+
+            // Фаза 2: сохраняются комментарии и отметки времени, которые они проставили заявке.
+            await unitOfWork.SaveChangesAsync();
+
+            await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+
+            foreach (var pending in pendingComments)
+            {
+                if (!pending.IsSilent)
+                {
+                    await claimNotificationService.SendNotification(
+                        pending.Notification.WithCommentId(pending.Comment.CommentId));
+                }
+            }
+
+            logger.LogInformation(
+                "Создана заявка {claimId} на персонажа {characterId}: операция {operation}, аргументы {@arguments}",
+                claim.ClaimId,
+                characterId,
+                operationName,
+                arguments);
+
+            return claim;
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning(
+                e,
+                "Не удалось создать заявку на персонажа {characterId}: операция {operation}, аргументы {@arguments}",
+                characterId,
                 operationName,
                 arguments);
             throw;

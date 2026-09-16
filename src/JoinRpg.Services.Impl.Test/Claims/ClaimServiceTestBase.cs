@@ -70,6 +70,15 @@ public abstract class ClaimServiceTestBase
     /// <summary>Сколько раз сервис сохранял изменения. Уведомления обязаны уходить после сохранения.</summary>
     protected int SaveChangesCallCount => unitOfWork.SaveChangesCallCount;
 
+    /// <summary>
+    /// Подписка на каждое сохранение — даёт заглянуть в граф между фазами двухфазных операций.
+    /// </summary>
+    protected Action<int>? OnSaveChanges
+    {
+        get => unitOfWork.OnSaveChanges;
+        set => unitOfWork.OnSaveChanges = value;
+    }
+
     /// <summary>Уведомления нового канала в порядке отправки.</summary>
     private protected IReadOnlyList<object> SentNotifications => claimNotifications.Sent;
 
