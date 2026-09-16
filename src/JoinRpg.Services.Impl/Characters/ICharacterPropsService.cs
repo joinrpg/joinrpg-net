@@ -193,4 +193,28 @@ internal interface ICharacterPropsService
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Claim> factory,
         [CallerMemberName] string operationName = "");
+
+    /// <summary>
+    /// То же, но фабрика асинхронная.
+    /// </summary>
+    /// <remarks>
+    /// Нужно выходу на вторую роль: он не только создаёт заявку, но и мутирует исходную, а та
+    /// приезжает через <c>ctx.LoadOtherClaim</c> — это ввод-вывод.
+    /// </remarks>
+    /// <param name="characterId">Персонаж, на которого подаётся заявка.</param>
+    /// <param name="playerId">Игрок, на которого оформляется заявка.</param>
+    /// <param name="operation">Операция: от неё зависят и проверка прав, и набор правил.</param>
+    /// <param name="activeRequirement">Допустима ли операция над неактивным (архивным) проектом.</param>
+    /// <param name="arguments">Аргументы операции; передаются в <paramref name="factory"/> и логируются.</param>
+    /// <param name="factory">Строит заявку. Добавляет её в <c>DbContext</c> сам сервис.</param>
+    /// <param name="operationName">Имя операции для лога; по умолчанию — имя вызывающего метода.</param>
+    /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
+    Task<Claim> CreateClaimAsync<TArgs>(
+        CharacterIdentification characterId,
+        UserIdentification playerId,
+        ClaimOperation operation,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
+        [CallerMemberName] string operationName = "");
 }
