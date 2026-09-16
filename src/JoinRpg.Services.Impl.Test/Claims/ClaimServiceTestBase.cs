@@ -52,6 +52,12 @@ public abstract class ClaimServiceTestBase
             emailService,
             NullLogger<CharacterPropsService>.Instance);
 
+    /// <summary>
+    /// Подмена пользователя, под которой идёт автоприём. Настоящая: текущий пользователь
+    /// действительно меняется, поэтому автоприём проходит проверку прав как ответственный мастер.
+    /// </summary>
+    private protected readonly FakeImpersonateAccessor impersonateAccessor = new();
+
     private protected static FieldSaveHelper CreateFieldSaveHelper()
         => new(new MockedFieldDefaultValueGenerator(), NullLogger<FieldSaveHelper>.Instance);
 
@@ -82,7 +88,7 @@ public abstract class ClaimServiceTestBase
     protected IReadOnlyList<object> SentInOrder => notificationJournal;
 
     private protected FakeCurrentUserAccessor CreateCurrentUser(int? currentUserId = null, bool isAdmin = false)
-        => new(currentUserId ?? mock.Master.UserId, isAdmin);
+        => impersonateAccessor.Track(new FakeCurrentUserAccessor(currentUserId ?? mock.Master.UserId, isAdmin));
 
     /// <summary>
     /// Write-репозиторий берётся строго из <see cref="IUnitOfWork"/> — как и в бою, где иначе

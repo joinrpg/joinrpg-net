@@ -78,14 +78,17 @@ internal class CharacterPropsService(
 
             var result = action(ctx);
 
-            // Отметку аудита ставит сам сервис: любая операция здесь по определению меняет
-            // персонажа, и забыть её было бы слишком легко. Для прочих задетых сущностей —
-            // второй персонаж при переносе, группы — остаётся явный ctx.MarkChanged.
-            EntityAudit.MarkChanged(handle.Character, now, currentUserAccessor.UserId);
+            if (!ctx.IsNoOp)
+            {
+                // Отметку аудита ставит сам сервис: любая операция здесь по определению меняет
+                // персонажа, и забыть её было бы слишком легко. Для прочих задетых сущностей —
+                // второй персонаж при переносе, группы — остаётся явный ctx.MarkChanged.
+                EntityAudit.MarkChanged(handle.Character, now, currentUserAccessor.UserId);
 
-            await unitOfWork.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync();
 
-            await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+                await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+            }
 
             logger.LogInformation(
                 "Изменён персонаж {characterId}: операция {operation}, аргументы {@arguments}",
@@ -174,24 +177,27 @@ internal class CharacterPropsService(
 
             var result = await action(ctx);
 
-            await unitOfWork.SaveChangesAsync();
-
-            await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
-
-            // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
-            foreach (var pending in ctx.PendingComments)
+            if (!ctx.IsNoOp)
             {
-                if (!pending.IsSilent)
+                await unitOfWork.SaveChangesAsync();
+
+                await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+
+                // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
+                foreach (var pending in ctx.PendingComments)
                 {
-                    await claimNotificationService.SendNotification(
-                        pending.Notification.WithCommentId(pending.Comment.CommentId));
+                    if (!pending.IsSilent)
+                    {
+                        await claimNotificationService.SendNotification(
+                            pending.Notification.WithCommentId(pending.Comment.CommentId));
+                    }
                 }
-            }
 
-            // Легаси-канал — после уведомлений, как это было до миграции.
-            foreach (var send in ctx.LegacyEmails)
-            {
-                await send(emailService);
+                // Легаси-канал — после уведомлений, как это было до миграции.
+                foreach (var send in ctx.LegacyEmails)
+                {
+                    await send(emailService);
+                }
             }
 
             logger.LogInformation(
@@ -279,6 +285,7 @@ internal class CharacterPropsService(
         [CallerMemberName] string operationName = "")
     {
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        using var mutation = guard.Enter(operationName);
         var now = DateTime.UtcNow;
         try
         {

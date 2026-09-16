@@ -40,8 +40,22 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, "character");
 
     private static Claim FindClaim(MockedProject mock, ClaimIdentification claimId)
-        => mock.Project.Claims.SingleOrDefault(c => c.ClaimId == claimId.ClaimId)
+    {
+        var claim = mock.Project.Claims.SingleOrDefault(c => c.ClaimId == claimId.ClaimId)
             ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, "claim");
+
+        // Достраиваем навигацию Player, которую боевой репозиторий грузит явным
+        // Include(c => c.Player.Claims). У заявки, только что созданной сервисом, проставлен лишь
+        // PlayerUserId: в бою она перечитывается из базы, здесь — остаётся тем же объектом.
+        if (claim.Player is null)
+        {
+            claim.Player = mock.TryGetUser(claim.PlayerUserId)
+                ?? throw new NotSupportedException($"Моку неизвестен пользователь {claim.PlayerUserId}");
+            claim.Player.Claims.Add(claim);
+        }
+
+        return claim;
+    }
 
     /// <summary>
     /// Инициатор ищется среди пользователей, известных моку: игроки заявок и мастера из ACL.

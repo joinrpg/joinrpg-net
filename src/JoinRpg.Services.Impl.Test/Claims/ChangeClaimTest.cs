@@ -1,6 +1,7 @@
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
 
@@ -155,6 +156,83 @@ public class ChangeClaimTest : ClaimServiceTestBase
             ctx => { });
 
         SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Сторож реентерабельности (ADR014, §7): вход в мутацию из середины другой мутации того же
+    /// экземпляра падает сразу. Именно так до миграции работал автоприём — и именно поэтому
+    /// <c>Now</c> и <c>CurrentUserId</c> расходились с операцией.
+    /// </summary>
+    [Fact]
+    public async Task NestedMutationOnSameInstance_Throws_AndNothingIsSaved()
+    {
+        var claimId = CreateClaim();
+        var propsService = CreatePropsService();
+
+        var exception = await Should.ThrowAsync<InvalidOperationException>(
+            () => propsService.ChangeClaimAsync(
+                claimId,
+                ClaimAccessRequirement.AnyMaster,
+                ProjectActiveRequirement.MustBeActive,
+                0,
+                async ctx => await propsService.ChangeClaim(
+                    claimId,
+                    ClaimAccessRequirement.AnyMaster,
+                    ProjectActiveRequirement.MustBeActive,
+                    0,
+                    nested => { })));
+
+        // Сообщение общего сторожа (ADR009/ADR014) про ADR не говорит — он один на оба
+        // props-сервиса, поэтому проверяем, что названы операция и экземпляр.
+        exception.Message.ShouldContain(nameof(CharacterPropsService));
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Сторож опускается в <c>finally</c>: упавшая операция не блокирует экземпляр навсегда.
+    /// </summary>
+    [Fact]
+    public async Task AfterFailedMutation_SameInstanceStillUsable()
+    {
+        var claimId = CreateClaim();
+        var propsService = CreatePropsService();
+
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => propsService.ChangeClaim(
+                claimId,
+                ClaimAccessRequirement.AnyMaster,
+                ProjectActiveRequirement.MustBeActive,
+                0,
+                ctx => throw new InvalidOperationException("упало")));
+
+        await propsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.AnyMaster,
+            ProjectActiveRequirement.MustBeActive,
+            0,
+            ctx => { });
+
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Операция, объявившая себя холостой, не сохраняет и не рассылает — иначе «поменять на то же
+    /// самое» начало бы шуметь комментариями.
+    /// </summary>
+    [Fact]
+    public async Task NothingChanged_SkipsSave()
+    {
+        var claimId = CreateClaim();
+
+        await CreatePropsService().ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.AnyMaster,
+            ProjectActiveRequirement.MustBeActive,
+            0,
+            ctx => ctx.NothingChanged());
+
+        SaveChangesCallCount.ShouldBe(0);
+        claimNotifications.Sent.ShouldBeEmpty();
     }
 
     [Fact]
