@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Characters;
 
 namespace JoinRpg.Services.Impl.Claims;
 
@@ -13,6 +14,9 @@ namespace JoinRpg.Services.Impl.Claims;
 /// <para>
 /// Заявка передаётся <b>всегда явно</b>: в <c>ApproveByMaster</c> рядом меняются статусы двух разных
 /// заявок, и умолчание «текущая» там читается неоднозначно. Перегрузки «без заявки» быть не должно.
+/// По той же причине методы перехода принимают базовый
+/// <see cref="CharacterOperationContext"/>, а не только контекст изменения заявки: выход на вторую
+/// роль меняет статус старой заявки из контекста <b>создания</b> новой.
 /// </para>
 /// <para>
 /// Различие «писать ли отметку даты» выражено <b>именем</b> метода, а не <c>bool</c>-параметром.
@@ -27,7 +31,7 @@ internal static class ClaimStatusTransition
     /// </summary>
     /// <exception cref="ClaimWrongStatusException">Переход из текущего статуса запрещён.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный целевой статус.</exception>
-    public static void ChangeStatus(this ClaimMutationContext ctx, Claim claim, ClaimStatus target)
+    public static void ChangeStatus(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
     {
         ctx.EnsureCanChangeStatus(claim, target);
 
@@ -42,7 +46,7 @@ internal static class ClaimStatusTransition
     /// роль не должен затирать <see cref="Claim.MasterAcceptedDate"/> — он виден в отчётах.
     /// </summary>
     /// <inheritdoc cref="ChangeStatus" path="/exception"/>
-    public static void ChangeStatusKeepingTimestamps(this ClaimMutationContext ctx, Claim claim, ClaimStatus target)
+    public static void ChangeStatusKeepingTimestamps(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
     {
         ctx.EnsureCanChangeStatus(claim, target);
 
@@ -54,7 +58,7 @@ internal static class ClaimStatusTransition
     /// а пишут позже (регистрация — после приёма денег).
     /// </summary>
     /// <inheritdoc cref="ChangeStatus" path="/exception"/>
-    public static void EnsureCanChangeStatus(this ClaimMutationContext ctx, Claim claim, ClaimStatus target)
+    public static void EnsureCanChangeStatus(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 

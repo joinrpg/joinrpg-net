@@ -25,12 +25,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         return new ClaimServiceImpl(
             unitOfWork,
             emailService,
-            CreateFieldSaveHelper(),
             currentUser,
             metadataRepository,
             new FakeProblemValidator<Claim>(),
             NullLogger<CharacterServiceImpl>.Instance,
-            claimNotifications,
             new CommentHelper(currentUser),
             CreatePropsService(currentUserId),
             // Собственный экземпляр props-сервиса — как и в бою, где оба транзиентны.
@@ -1534,6 +1532,156 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
                 claim.GetId(), FieldLayerContainer.Empty(mock.ProjectInfo)));
 
         SaveChangesCallCount.ShouldBe(0);
+    }
+
+    #endregion
+
+    #region MoveToSecondRole
+
+    /// <summary>
+    /// Зарегистрированная заявка и свободный персонаж, на которого игрок выходит второй ролью.
+    /// </summary>
+    private (Claim OldClaim, Character Target) CreateSecondRoleSetup()
+    {
+        var oldCharacter = mock.CreateCharacter("Вася");
+        var oldClaim = mock.CreateCheckedInClaim(oldCharacter, mock.Player);
+        oldCharacter.InGame = true;
+        var target = mock.CreateCharacter("Петя");
+        mock.ReInitProjectInfo();
+        return (oldClaim, target);
+    }
+
+    /// <summary>Заявка, созданная операцией: это единственная заявка, которой не было до неё.</summary>
+    private Claim NewClaimBesides(Claim oldClaim)
+        => mock.Project.Claims.Single(claim => claim != oldClaim);
+
+    [Fact]
+    public async Task MoveToSecondRole_TakesPlayerOutOfGame_AndCreatesApprovedClaimOnTarget()
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+
+        _ = await CreateService().MoveToSecondRole(oldClaim.GetId(), target.GetId(), "вторая роль");
+
+        oldClaim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        oldClaim.Character.InGame.ShouldBeFalse();
+
+        var newClaim = NewClaimBesides(oldClaim);
+        newClaim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        newClaim.Character.ShouldBe(target);
+        newClaim.PlayerUserId.ShouldBe(mock.Player.UserId);
+        newClaim.CurrentFee.ShouldBe(0);
+        newClaim.MasterAcceptedDate.ShouldNotBeNull();
+        target.ApprovedClaim.ShouldBe(newClaim);
+
+        newClaim.CommentDiscussion.Comments.ShouldHaveSingleItem()
+            .ExtraAction.ShouldBe(CommentExtraAction.SecondRole);
+        oldClaim.CommentDiscussion.Comments.ShouldHaveSingleItem()
+            .ExtraAction.ShouldBe(CommentExtraAction.OutOfGame);
+
+        // Путь создания заявки двухфазный: комментарий появляется между сохранениями (ADR014).
+        SaveChangesCallCount.ShouldBe(2);
+    }
+
+    /// <summary>
+    /// Возврат <c>CheckedIn</c> → <c>Approved</c> не должен затирать <c>MasterAcceptedDate</c>: он
+    /// виден в отчётах. Поэтому переход идёт через <c>ChangeStatusKeepingTimestamps</c>.
+    /// </summary>
+    [Fact]
+    public async Task MoveToSecondRole_KeepsMasterAcceptedDateOfOldClaim()
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+        var acceptedAt = new DateTime(2020, 5, 1, 12, 0, 0, DateTimeKind.Utc);
+        oldClaim.MasterAcceptedDate = acceptedAt;
+
+        _ = await CreateService().MoveToSecondRole(oldClaim.GetId(), target.GetId(), "вторая роль");
+
+        oldClaim.MasterAcceptedDate.ShouldBe(acceptedAt);
+    }
+
+    /// <summary>
+    /// Уведомление ровно одно — по старой заявке. Комментарий к новой заявке создаётся, но молчит:
+    /// так было и до миграции. Слать ли его — открытый вопрос ADR014, и этот тест фиксирует текущий
+    /// ответ «не слать».
+    /// </summary>
+    [Fact]
+    public async Task MoveToSecondRole_NotifiesOnlyAboutOldClaim()
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+
+        _ = await CreateService().MoveToSecondRole(oldClaim.GetId(), target.GetId(), "вторая роль");
+
+        var notification = SentNotifications.ShouldHaveSingleItem()
+            .ShouldBeOfType<ClaimSimpleChangedNotification>();
+        notification.ClaimId.ShouldBe(oldClaim.GetId());
+        notification.CommentExtraAction.ShouldBe(CommentExtraAction.OutOfGame);
+        notification.AnotherCharacterId.ShouldBe(target.GetId());
+        SentEmails.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Отметки времени у новой заявки проставляются — до миграции она создавалась мимо
+    /// <c>CommentHelper</c> и выглядела «без активности», что искажало индикаторы непрочитанного.
+    /// </summary>
+    [Fact]
+    public async Task MoveToSecondRole_SetsClaimTimesOnNewClaim()
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+
+        _ = await CreateService().MoveToSecondRole(oldClaim.GetId(), target.GetId(), "вторая роль");
+
+        var newClaim = NewClaimBesides(oldClaim);
+        newClaim.LastMasterCommentAt.ShouldNotBeNull();
+        newClaim.LastVisibleMasterCommentAt.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task MoveToSecondRole_OfClaimNotCheckedIn_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.Approved);
+        var target = mock.CreateCharacter("Петя");
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimWrongStatusException>(
+            () => CreateService().MoveToSecondRole(claim.GetId(), target.GetId(), "вторая роль"));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        mock.Project.Claims.ShouldHaveSingleItem().ShouldBe(claim);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task MoveToSecondRole_ToCharacterOfAnotherProject_Throws_AndDoesNotSave()
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+        var alienClaimId = new ClaimIdentification(
+            new ProjectIdentification(ProjectId.Value + 1), oldClaim.ClaimId);
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(
+            () => CreateService().MoveToSecondRole(alienClaimId, target.GetId(), "вторая роль"));
+
+        oldClaim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Права перенесены как есть: нужен любой мастерский доступ (<c>//TODO Specific right</c>).
+    /// Игроку операция недоступна.
+    /// </summary>
+    [Fact]
+    public async Task MoveToSecondRole_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId)
+                .MoveToSecondRole(oldClaim.GetId(), target.GetId(), "вторая роль"));
+
+        oldClaim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        oldClaim.Character.InGame.ShouldBeTrue();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
     }
 
     #endregion
