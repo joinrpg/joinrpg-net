@@ -21,23 +21,17 @@ internal class FinanceOperationsImpl(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterPropsService characterPropsService) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
 {
-    public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
-
-
-        var (comment, email) = AcceptFeeImpl(request.Contents,
-            request.OperationDate,
-            request.Money,
-            projectInfo.ProjectFinanceSettings.GetRequiredPayment(request.PaymentTypeId),
-            claim,
-            projectInfo
-            );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+    public Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
+        => characterPropsService.ChangeClaim(
+            new ClaimIdentification(request.PaymentTypeId.ProjectId, request.ClaimId),
+            ClaimAccessRequirement.MasterOrPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx => ctx.AcceptFee(
+                ctx.Request.Contents,
+                ctx.Request.OperationDate,
+                ctx.Request.Money,
+                ctx.ProjectInfo.ProjectFinanceSettings.GetRequiredPayment(ctx.Request.PaymentTypeId)));
 
     #region Fee
 
@@ -78,7 +72,7 @@ internal class FinanceOperationsImpl(
             request,
             ctx =>
             {
-                CheckOperationDate(ctx.Request.OperationDate, ctx.Now);
+                ctx.CheckOperationDate(ctx.Request.OperationDate);
 
                 var pending = ctx.AddComment(
                     ctx.Request.Contents,
@@ -107,6 +101,16 @@ internal class FinanceOperationsImpl(
             });
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Намеренно не мигрирован на <c>ICharacterPropsService</c></b> (ADR014, список рисков):
+    /// метод делает <b>два</b> <c>SaveChangesAsync</c>, и это не небрежность. Финоперация заявки-получателя
+    /// создаётся с проставленным <c>ClaimId</c>, но не добавляется в <c>claimTo.FinanceOperations</c> —
+    /// навигацию связывает relationship fixup при сохранении. Поэтому
+    /// <see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/> обязан считаться <b>после</b> первого
+    /// сохранения, иначе новый платёж в баланс не попадёт и взнос зафиксируется неверно.
+    /// <c>ChangeClaim</c> же даёт ровно одно сохранение, а мутируются здесь две заявки сразу.
+    /// Перевод требует отдельного решения — см. отчёт по PR.
+    /// </remarks>
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
         // Loading source claim
@@ -181,6 +185,11 @@ internal class FinanceOperationsImpl(
     #endregion
 
     #region Master money management
+
+    // Обе операции этого региона работают с MoneyTransfer — переводом денег между мастерами. Ни
+    // заявки, ни персонажа у них нет вовсе, поэтому ICharacterPropsService (ADR014) им не подходит
+    // по определению: их агрегат — проект. Кандидат на IProjectPropsService (ADR009), но это
+    // отдельное решение, а не часть миграции claim-контура.
 
     public async Task CreateTransfer(CreateTransferRequest request)
     {
