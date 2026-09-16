@@ -9,7 +9,11 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 /// Общего интерфейса у писем нет, поэтому копим по общему базовому классу
 /// <see cref="EmailModelBase"/>: тест различает письма по конкретному типу.
 /// </remarks>
-internal sealed class FakeEmailService : IEmailService
+/// <param name="journal">
+/// Общий журнал обоих каналов рассылки, если тесту важен их взаимный порядок: ADR014 требует, чтобы
+/// письма легаси-канала уходили строго после уведомлений.
+/// </param>
+internal sealed class FakeEmailService(List<object>? journal = null) : IEmailService
 {
     public List<EmailModelBase> Sent { get; } = [];
 
@@ -23,6 +27,7 @@ internal sealed class FakeEmailService : IEmailService
     private Task Record(EmailModelBase email)
     {
         Sent.Add(email);
+        journal?.Add(email);
         return Task.CompletedTask;
     }
 }

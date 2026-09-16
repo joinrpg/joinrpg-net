@@ -413,51 +413,126 @@ internal class ClaimServiceImpl(
         return newCharacter;
     }
 
-    public async Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        var statusWasApproved = claim.ClaimStatus == ClaimStatus.Approved;
-
-        claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
-
-        claim.MasterDeclinedDate = Now;
-        claim.ClaimStatus = ClaimStatus.DeclinedByMaster;
-        claim.ClaimDenialStatus = claimDenialStatus;
-        claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
-
-        var roomEmail = await CommonClaimDecline(claim);
-
-        if (deleteCharacter)
-        {
-            if (!statusWasApproved)
+    public Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            (DenialStatus: claimDenialStatus, CommentText: commentText, DeleteCharacter: deleteCharacter),
+            async ctx =>
             {
-                throw new InvalidOperationException("Attempt to delete character, but it not exists");
-            }
-            DeleteCharacter(claim.Character, projectInfo);
-        }
+                // Запоминаем ДО смены статуса: удалять персонажа можно только у утверждённой заявки.
+                var statusWasApproved = ctx.Claim.ClaimStatus == ClaimStatus.Approved;
 
-        await accommodationInviteService.DeclineAllClaimInvites(claimId);
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.DeclinedByMaster);
+                ctx.Claim.ClaimDenialStatus = ctx.Request.DenialStatus;
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByMaster, ClaimOperationType.MasterVisibleChange, Now);
+                // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
+                ctx.Claim.PlayerAllowedSenstiveData = false;
 
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-        if (roomEmail != null)
-        {
-            await EmailService.Email(roomEmail);
-        }
+                var roomEmail = CommonClaimDecline(ctx);
+
+                if (ctx.Request.DeleteCharacter)
+                {
+                    if (!statusWasApproved)
+                    {
+                        throw new InvalidOperationException("Attempt to delete character, but it not exists");
+                    }
+                    DeleteCharacter(ctx);
+                }
+
+                await accommodationInviteService.DeclineAllClaimInvites(claimId);
+
+                _ = ctx.AddComment(
+                    ctx.Request.CommentText,
+                    CommentExtraAction.DeclineByMaster,
+                    ClaimOperationType.MasterVisibleChange);
+
+                if (roomEmail is not null)
+                {
+                    // Порядок «сначала уведомления, потом письма легаси-канала» обеспечивает сервис.
+                    ctx.AddLegacyEmail(emailService => emailService.Email(roomEmail));
+                }
+            });
+
+    /// <summary>
+    /// Деактивация персонажа вместе с отклонением заявки.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Вторая проверка прав внутри лямбды — намеренный escape-hatch (ADR014, §5): право зависит от
+    /// аргумента операции (<c>deleteCharacter</c>), а требование доступа самой операции
+    /// (<see cref="ClaimAccessRequirement.ApprovalDecline"/>) его не покрывает.
+    /// </para>
+    /// <para>
+    /// Связи с сюжетами здесь <b>не рвутся</b>. Раньше рвались — и только здесь: при обычном
+    /// удалении персонажа очистка стояла под <c>Character.CanBePermanentlyDeleted</c>, а это
+    /// public-поле со значением <c>false</c>, которое ничему другому не присваивается и в БД не
+    /// отображается, так что та ветка была мертва. Расхождение «никогда против всегда» убрано в
+    /// пользу сохранения данных: удаление персонажа здесь мягкое (<c>IsActive = false</c>), заявку
+    /// умеет вернуть <c>RestoreByMaster</c>, а оборванные связи с сюжетами не вернулись бы.
+    /// </para>
+    /// </remarks>
+    private static void DeleteCharacter(ClaimMutationContext ctx)
+    {
+        _ = ctx.ProjectInfo.RequestMasterAccess(ctx.CurrentUser, Permission.CanEditRoles);
+
+        ctx.Character.IsActive = false;
+        ctx.MarkChanged(ctx.Character);
     }
 
-    private void DeleteCharacter(Character character, ProjectInfo projectInfo)
+    /// <summary>
+    /// Общая часть отклонения заявки на контексте мутации (ADR014). Возвращает письмо легаси-канала
+    /// о выезде из комнаты, если заявка была поселена.
+    /// </summary>
+    private static LeaveRoomEmail? CommonClaimDecline(ClaimMutationContext ctx)
     {
+        ctx.MarkCharacterChangedIfApproved();
 
-        _ = projectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification, Permission.CanEditRoles);
+        if (ctx.Claim.Character?.ApprovedClaim == ctx.Claim)
+        {
+            ctx.Claim.Character.ApprovedClaimId = null;
+        }
 
-        character.DirectlyRelatedPlotElements.CleanLinksList();
+        return ConsiderLeavingRoom(ctx);
+    }
 
-        character.IsActive = false;
-        MarkChanged(character);
+    /// <summary>
+    /// То же, что <see cref="ConsiderLeavingRoom(Claim)"/>, но на контексте мутации: инициатор берётся
+    /// из уже загруженного хэндла (лишнего запроса за текущим пользователем нет), а опустевшая заявка
+    /// на поселение удаляется через тот же <c>DbContext</c>, а не через сырой <c>DbSet</c>.
+    /// </summary>
+    private static LeaveRoomEmail? ConsiderLeavingRoom(ClaimMutationContext ctx)
+    {
+        var claim = ctx.Claim;
+
+        if (claim.AccommodationRequest is null)
+        {
+            return null;
+        }
+
+        LeaveRoomEmail? email = null;
+
+        if (claim.AccommodationRequest.Accommodation is not null)
+        {
+            email = new LeaveRoomEmail()
+            {
+                Changed = [claim],
+                Initiator = ctx.Initiator,
+                ProjectName = claim.Project.ProjectName,
+                Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
+                Room = claim.AccommodationRequest.Accommodation,
+                Text = new MarkdownDbValue(),
+            };
+        }
+
+        _ = claim.AccommodationRequest.Subjects.Remove(claim);
+        if (claim.AccommodationRequest.Subjects.Count == 0)
+        {
+            ctx.RemoveEntity(claim.AccommodationRequest);
+        }
+
+        return email;
     }
 
     private async Task<LeaveRoomEmail?> CommonClaimDecline(Claim claim)

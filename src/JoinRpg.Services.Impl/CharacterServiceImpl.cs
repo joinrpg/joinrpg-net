@@ -69,11 +69,10 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
                     throw new DbEntityValidationException();
                 }
 
-                if (ctx.Character.CanBePermanentlyDeleted)
-                {
-                    ctx.Character.DirectlyRelatedPlotElements.CleanLinksList();
-                }
-
+                // Связи с сюжетами не рвём: удаление мягкое (IsActive = false), персонажа можно
+                // вернуть. Раньше здесь стояла очистка под Character.CanBePermanentlyDeleted —
+                // ветка была мертва, потому что это public-поле со значением false, которое ничему
+                // другому не присваивается и в БД не отображается.
                 ctx.Character.IsActive = false;
             });
 
