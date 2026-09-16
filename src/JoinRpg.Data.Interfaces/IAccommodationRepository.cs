@@ -11,6 +11,11 @@ public interface IAccommodationRepository
     Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project);
 
     Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId);
+
+    /// <summary>
+    /// Тип поселения вместе с комнатами и желающими в нём поселиться. <c>null</c>, если не найден.
+    /// </summary>
+    Task<ProjectAccommodationType?> GetRoomTypeWithDesirous(int roomTypeId);
 }
 
 public class RoomTypeInfoRow

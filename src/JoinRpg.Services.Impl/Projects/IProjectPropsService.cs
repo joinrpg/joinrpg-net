@@ -62,6 +62,38 @@ internal interface IProjectPropsService
         [CallerMemberName] string operationName = "");
 
     /// <summary>
+    /// То же, что <see cref="ChangeProjectProperties{TArgs}(ProjectIdentification, Permission, ProjectActiveRequirement, TArgs, Action{ProjectMutationContext{TArgs}}, string)"/>,
+    /// но мутация асинхронная.
+    /// </summary>
+    /// <remarks>
+    /// Нужно операциям, которым по ходу мутации приходится догружать под-сущности проекта, не
+    /// попадающие ни в <see cref="ProjectInfo"/>, ни в навигации <see cref="Project"/> — сегодня это
+    /// поселение (<see cref="Data.Interfaces.IProjectAccommodationWriteAccess"/>). Догружать их
+    /// заранее нельзя: они обязаны приехать из того же <c>DbContext</c>, что и хэндл, а он создаётся
+    /// уже внутри операции. Произвольного ввода-вывода это не приглашает — в контексте доступны
+    /// только именованные загрузчики того же хэндла (ср. ADR014 §6).
+    /// </remarks>
+    Task ChangeProjectPropertiesAsync<TArgs>(
+        ProjectIdentification projectId,
+        Permission requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ProjectMutationContext<TArgs>, Task> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
+    /// То же, что <see cref="ChangeProjectProperties{TArgs, TResult}(ProjectIdentification, Permission, ProjectActiveRequirement, TArgs, Func{ProjectMutationContext{TArgs}, TResult}, string)"/>,
+    /// но мутация асинхронная.
+    /// </summary>
+    Task<TResult> ChangeProjectPropertiesAsync<TArgs, TResult>(
+        ProjectIdentification projectId,
+        Permission requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ProjectMutationContext<TArgs>, Task<TResult>> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
     /// Создаёт новый проект: <paramref name="factory"/> строит EF-сущность <see cref="Project"/>
     /// (используя <see cref="ProjectCreationContext{TArgs}"/> для аудита), сервис добавляет её в БД
     /// и сохраняет. Единственная точка создания <see cref="Project"/>.
