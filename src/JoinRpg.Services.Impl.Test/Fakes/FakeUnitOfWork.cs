@@ -23,7 +23,8 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
     public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository()
         => new FakeProjectMetadataWriteRepository(mock);
 
-    public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository() => throw new NotSupportedException();
+    public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository()
+        => new FakeCharacterAggregateWriteRepository(mock);
 
     /// <summary>
     /// НЕ ЗАГЛУШКА, НЕ «ЧИНИТЬ». Намеренный детектор: если сервис лезет в <see cref="DbSet{TEntity}"/>
