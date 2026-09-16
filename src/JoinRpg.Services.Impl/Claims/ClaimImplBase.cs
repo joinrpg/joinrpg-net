@@ -25,9 +25,27 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
                                                            PaymentTypeInfo paymentType,
                                                            Claim claim,
                                                            ProjectInfo projectInfo)
+        => AcceptFeeImpl(contents, operationDate, money, paymentType, claim, projectInfo, Now);
+
+    /// <summary>
+    /// Версия с явным временем операции: мигрированные на <c>ICharacterPropsService</c> методы берут
+    /// его из контекста, а не из поля сервиса, зафиксированного в конструкторе (ADR014).
+    /// </summary>
+    /// <remarks>
+    /// Сам помощник ещё не мигрирован — им пользуется <c>FeeAcceptedOperation</c>, — поэтому он
+    /// создаёт комментарий сам, а вызывающий обязан завести его в очередь контекста
+    /// (<c>ctx.EnqueueComment</c>) в нужном порядке.
+    /// </remarks>
+    protected (Comment comment, ClaimSimpleChangedNotification email) AcceptFeeImpl(string contents,
+                                                           DateTime operationDate,
+                                                           int money,
+                                                           PaymentTypeInfo paymentType,
+                                                           Claim claim,
+                                                           ProjectInfo projectInfo,
+                                                           DateTime now)
     {
 
-        CheckOperationDate(operationDate);
+        CheckOperationDate(operationDate, now);
 
         paymentType.EnsureActive();
 
@@ -63,7 +81,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         ClaimOperationType claimOperationType = playerChange ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
         var state = playerChange ? FinanceOperationState.Proposed : FinanceOperationState.Approved;
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, Now);
+        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(contents, claim, projectInfo, commentAction, claimOperationType, now);
 
         email = email with
         {
@@ -73,9 +91,9 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
 
         var financeOperation = new FinanceOperation()
         {
-            Created = Now,
+            Created = now,
             MoneyAmount = money,
-            Changed = Now,
+            Changed = now,
             Claim = claim,
             Comment = comment,
             PaymentTypeId = paymentType.PaymentTypeId.PaymentTypeId,

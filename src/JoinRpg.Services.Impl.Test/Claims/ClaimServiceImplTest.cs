@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces;
@@ -53,8 +54,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             accommodationInvites,
             currentUser,
             metadataRepository,
-            characterInfoRepository: null!,
-            claimValidator: null!,
+            new FakeProblemValidator<Claim>(),
             NullLogger<CharacterServiceImpl>.Instance,
             claimNotifications,
             new CommentHelper(currentUser),
@@ -920,6 +920,424 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             () => CreateService(mock.Player.UserId).SetResponsible(claim.GetId(), newMaster.GetId()));
 
         claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    #endregion
+
+    #region AddComment
+
+    /// <summary>
+    /// Заявка чужого игрока: <c>mock.Player</c> для неё — посторонний, но моку известен, поэтому
+    /// годится в качестве «пользователя без прав».
+    /// </summary>
+    private Claim CreateClaimOfAnotherPlayer()
+    {
+        var otherPlayer = new User
+        {
+            UserId = 777,
+            PrefferedName = "Чужой игрок",
+            Email = "stranger@example.com",
+            Claims = [],
+        };
+        var character = mock.CreateCharacter("Чужой");
+        var claim = mock.CreateClaim(character, otherPlayer);
+        claim.ClaimStatus = ClaimStatus.AddedByUser;
+        mock.ReInitProjectInfo();
+        return claim;
+    }
+
+    [Fact]
+    public async Task AddComment_ByMaster_AddsComment_SavesOnce_AndNotifiesOnce()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService().AddComment(
+            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "как дела?", FinanceOperationAction.None);
+
+        var comment = claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
+        comment.IsVisibleToPlayer.ShouldBeTrue();
+        comment.Parent.ShouldBeNull();
+
+        // Мастер ответил на поданную заявку видимым комментарием — заявка уходит в обсуждение.
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AddComment_ByPlayer_IsPlayerChange()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+
+        await CreateService(mock.Player.UserId).AddComment(
+            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "согласен", FinanceOperationAction.None);
+
+        claim.CommentDiscussion.Comments.ShouldHaveSingleItem().IsCommentByPlayer.ShouldBeTrue();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        SentNotifications.ShouldHaveSingleItem()
+            .ShouldBeOfType<ClaimSimpleChangedNotification>()
+            .ClaimOperationType.ShouldBe(ClaimOperationType.PlayerChange);
+    }
+
+    /// <summary>
+    /// Единственная claim-операция, разрешённая в архивном проекте (ADR014): обсуждение игры
+    /// продолжается после её конца, и форма комментария в UI намеренно не спрятана. Тест держит
+    /// это решение — иначе <c>MustBeActive</c> уедет сюда вместе со следующей правкой.
+    /// </summary>
+    [Fact]
+    public async Task AddComment_InArchivedProject_StillWorks()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        await CreateService().AddComment(
+            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "игра кончилась, обсудим", FinanceOperationAction.None);
+
+        claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AddComment_ByStranger_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaimOfAnotherPlayer();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).AddComment(
+                claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "а вот и я", FinanceOperationAction.None));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AddComment_WithFinanceActionWithoutParentComment_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(
+            () => CreateService().AddComment(
+                claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "принято", FinanceOperationAction.Approve));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Ответить на скрытый от игрока комментарий так, чтобы игрок ответ увидел, нельзя.
+    /// </summary>
+    [Fact]
+    public async Task AddComment_VisibleReplyToHiddenComment_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var hidden = mock.CreateComment(claim, "только для мастеров", isVisibleToPlayer: false);
+
+        _ = await Should.ThrowAsync<EntityWrongStatusException>(
+            () => CreateService().AddComment(
+                claim.GetId(), hidden.CommentId, isVisibleToPlayer: true, "отвечаю", FinanceOperationAction.None));
+
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AddComment_SecretReplyToHiddenComment_Works()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var hidden = mock.CreateComment(claim, "только для мастеров", isVisibleToPlayer: false);
+
+        await CreateService().AddComment(
+            claim.GetId(), hidden.CommentId, isVisibleToPlayer: false, "отвечаю", FinanceOperationAction.None);
+
+        claim.CommentDiscussion.Comments.Last().Parent.ShouldBe(hidden);
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Комментарий с неодобренной финансовой операцией — то, что модерирует мастер.
+    /// </summary>
+    private Comment CreateCommentWithProposedPayment(Claim claim, int money = 100)
+    {
+        var comment = mock.CreateComment(claim, "внёс взнос");
+        var finance = new FinanceOperation
+        {
+            Claim = claim,
+            Comment = comment,
+            ProjectId = mock.Project.ProjectId,
+            MoneyAmount = money,
+            State = FinanceOperationState.Proposed,
+            OperationType = FinanceOperationType.Submit,
+            OperationDate = DateTime.UtcNow,
+        };
+        comment.Finance = finance;
+        claim.FinanceOperations.Add(finance);
+        return comment;
+    }
+
+    [Fact]
+    public async Task AddComment_ApprovingFinance_ApprovesOperation_AndMarksComment()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var parent = CreateCommentWithProposedPayment(claim);
+
+        await CreateService().AddComment(
+            claim.GetId(), parent.CommentId, isVisibleToPlayer: true, "ок", FinanceOperationAction.Approve);
+
+        parent.Finance.State.ShouldBe(FinanceOperationState.Approved);
+        claim.CommentDiscussion.Comments.Last().ExtraAction.ShouldBe(CommentExtraAction.ApproveFinance);
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AddComment_DecliningFinance_DeclinesOperation()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var parent = CreateCommentWithProposedPayment(claim);
+
+        await CreateService().AddComment(
+            claim.GetId(), parent.CommentId, isVisibleToPlayer: true, "нет", FinanceOperationAction.Decline);
+
+        parent.Finance.State.ShouldBe(FinanceOperationState.Declined);
+        claim.CommentDiscussion.Comments.Last().ExtraAction.ShouldBe(CommentExtraAction.RejectFinance);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AddComment_ModeratingAlreadyModeratedFinance_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var parent = CreateCommentWithProposedPayment(claim);
+        parent.Finance.State = FinanceOperationState.Approved;
+
+        _ = await Should.ThrowAsync<ValueAlreadySetException>(
+            () => CreateService().AddComment(
+                claim.GetId(), parent.CommentId, isVisibleToPlayer: true, "ещё раз", FinanceOperationAction.Approve));
+
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region MoveByMaster
+
+    [Fact]
+    public async Task MoveByMaster_MovesApprovedClaim_AndMovesApprovedClaimMark()
+    {
+        var oldCharacter = mock.CreateCharacter("Вася");
+        var claim = mock.CreateApprovedClaim(oldCharacter, mock.Player);
+        var target = mock.CreateCharacter("Петя");
+        mock.ReInitProjectInfo();
+
+        await CreateService().MoveByMaster(claim.GetId(), "переносим", target.GetId());
+
+        claim.Character.ShouldBe(target);
+        oldCharacter.ApprovedClaim.ShouldBeNull();
+        target.ApprovedClaim.ShouldBe(claim);
+
+        SaveChangesCallCount.ShouldBe(1);
+        var notification = SentNotifications.ShouldHaveSingleItem().ShouldBeOfType<ClaimSimpleChangedNotification>();
+        notification.CommentExtraAction.ShouldBe(CommentExtraAction.MoveByMaster);
+        notification.AnotherCharacterId.ShouldBe(oldCharacter.GetId());
+    }
+
+    [Fact]
+    public async Task MoveByMaster_MovesPendingClaim_WithoutTouchingApprovedClaim()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var oldCharacter = claim.Character;
+        var target = mock.CreateCharacter("Петя");
+        mock.ReInitProjectInfo();
+
+        await CreateService().MoveByMaster(claim.GetId(), "переносим", target.GetId());
+
+        claim.Character.ShouldBe(target);
+        target.ApprovedClaim.ShouldBeNull();
+        oldCharacter.ApprovedClaim.ShouldBeNull();
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Персонаж уже занят другой утверждённой заявкой — переносить туда нельзя, и мастер это
+    /// обойти не может.
+    /// </summary>
+    [Fact]
+    public async Task MoveByMaster_ToBusyCharacter_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var target = mock.CreateCharacter("Петя");
+        _ = mock.CreateApprovedClaim(target, mock.Master);
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService().MoveByMaster(claim.GetId(), "переносим", target.GetId()));
+
+        claim.Character.ShouldNotBe(target);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task MoveByMaster_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var target = mock.CreateCharacter("Петя");
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).MoveByMaster(claim.GetId(), "переносим", target.GetId()));
+
+        claim.Character.ShouldNotBe(target);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region CheckInClaim
+
+    private Claim CreateApprovedClaimForCheckIn()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var claim = mock.CreateApprovedClaim(character, mock.Player);
+        mock.ReInitProjectInfo();
+        return claim;
+    }
+
+    [Fact]
+    public async Task CheckInClaim_WithoutMoney_ChecksIn_SavesOnce_AndNotifiesOnce()
+    {
+        var claim = CreateApprovedClaimForCheckIn();
+
+        await CreateService().CheckInClaim(claim.GetId(), money: 0);
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        claim.CheckInDate.ShouldNotBeNull();
+        claim.Character.InGame.ShouldBeTrue();
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.ShouldHaveSingleItem()
+            .ShouldBeOfType<ClaimSimpleChangedNotification>()
+            .CommentExtraAction.ShouldBe(CommentExtraAction.CheckedIn);
+    }
+
+    /// <summary>
+    /// С деньгами уведомлений два, и порядок значим: сначала статусное, потом финансовое. Так было
+    /// до миграции, и очередь комментариев контекста обязана этот порядок сохранить.
+    /// </summary>
+    [Fact]
+    public async Task CheckInClaim_WithMoney_SendsStatusNotificationBeforeFinanceOne()
+    {
+        _ = mock.CreateCashPaymentType();
+        var claim = CreateApprovedClaimForCheckIn();
+
+        await CreateService().CheckInClaim(claim.GetId(), money: 100);
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        claim.FinanceOperations.ShouldHaveSingleItem().MoneyAmount.ShouldBe(100);
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(2);
+        SentNotifications[0].ShouldBeOfType<ClaimSimpleChangedNotification>()
+            .CommentExtraAction.ShouldBe(CommentExtraAction.CheckedIn);
+        SentNotifications[1].ShouldBeOfType<ClaimSimpleChangedNotification>()
+            .CommentExtraAction.ShouldBe(CommentExtraAction.PaidFee);
+    }
+
+    /// <summary>
+    /// Наличных денег принять некому — у мастера нет наличного типа оплаты.
+    /// </summary>
+    [Fact]
+    public async Task CheckInClaim_WithMoneyWithoutCashPaymentType_Throws_AndDoesNotSave()
+    {
+        var claim = CreateApprovedClaimForCheckIn();
+
+        _ = await Should.ThrowAsync<JoinRpgInvalidUserException>(
+            () => CreateService().CheckInClaim(claim.GetId(), money: 100));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CheckInClaim_WithNegativeMoney_Throws_AndDoesNotSave()
+    {
+        var claim = CreateApprovedClaimForCheckIn();
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(
+            () => CreateService().CheckInClaim(claim.GetId(), money: -100));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.Character.InGame.ShouldBeFalse();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CheckInClaim_OfNotApprovedClaim_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<ClaimWrongStatusException>(
+            () => CreateService().CheckInClaim(claim.GetId(), money: 0));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CheckInClaim_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var claim = CreateApprovedClaimForCheckIn();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).CheckInClaim(claim.GetId(), money: 0));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region SaveFieldsFromClaim
+
+    [Fact]
+    public async Task SaveFieldsFromClaim_SavesOnce_AndSendsNothing()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService().SaveFieldsFromClaim(
+            claim.GetId(), FieldLayerContainer.Empty(mock.ProjectInfo));
+
+        SaveChangesCallCount.ShouldBe(1);
+
+        // Отправка письма об изменении полей была закомментирована и до миграции — см. ADR014.
+        SentNotifications.ShouldBeEmpty();
+        SentEmails.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SaveFieldsFromClaim_ByStranger_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaimOfAnotherPlayer();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).SaveFieldsFromClaim(
+                claim.GetId(), FieldLayerContainer.Empty(mock.ProjectInfo)));
+
         SaveChangesCallCount.ShouldBe(0);
     }
 

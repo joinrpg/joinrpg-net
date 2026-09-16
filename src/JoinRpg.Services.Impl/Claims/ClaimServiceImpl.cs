@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
@@ -20,7 +19,6 @@ internal class ClaimServiceImpl(
     IAccommodationInviteService accommodationInviteService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
-    ICharacterInfoRepository characterInfoRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
     IClaimNotificationService claimNotificationService,
@@ -31,51 +29,60 @@ internal class ClaimServiceImpl(
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
-    public async Task CheckInClaim(ClaimIdentification claimId, int money)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(claimId); //TODO Specific right
-        claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
+    public Task CheckInClaim(ClaimIdentification claimId, int money)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            //TODO Specific right. Право перенесено как есть: до миграции это был
+            // LoadClaimAsMaster(claimId) без дополнительных требований.
+            ClaimAccessRequirement.AnyMaster,
+            ProjectActiveRequirement.MustBeActive,
+            money,
+            ctx =>
+            {
+                // Проверяем заранее, а пишем статус после приёма денег — как и до миграции.
+                ctx.EnsureCanChangeStatus(ctx.Claim, ClaimStatus.CheckedIn);
 
-        var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
-        if (!validator.CanCheckInInPrinciple)
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
-        }
+                var validator = new ClaimCheckInValidator(ctx.Claim, claimValidator, ctx.ProjectInfo);
+                if (!validator.CanCheckInInPrinciple)
+                {
+                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                }
 
-        ClaimSimpleChangedNotification? financeEmail = null;
-        Comment? financeComment = null;
-        if (money > 0)
-        {
-            var paymentType = projectInfo.ProjectFinanceSettings.GetCashPaymentType(currentUserAccessor.UserIdentification) ?? throw new JoinRpgInvalidUserException();
+                (Comment Comment, ClaimSimpleChangedNotification Notification)? financeComment = null;
+                if (ctx.Request > 0)
+                {
+                    var paymentType = ctx.ProjectInfo.ProjectFinanceSettings
+                        .GetCashPaymentType(ctx.CurrentUser.UserIdentification)
+                        ?? throw new JoinRpgInvalidUserException();
 
-            (financeComment, financeEmail) = AcceptFeeImpl(".", Now, money, paymentType, claim, projectInfo);
-        }
-        else if (money < 0)
-        {
-            throw new InvalidOperationException();
-        }
+                    // Деньги принимаются ДО смены статуса: приём гасит взнос, и только после него
+                    // validator.CanCheckInNow может стать истинным.
+                    financeComment = AcceptFeeImpl(".", ctx.Now, ctx.Request, paymentType, ctx.Claim, ctx.ProjectInfo, ctx.Now);
+                }
+                else if (ctx.Request < 0)
+                {
+                    throw new InvalidOperationException();
+                }
 
-        if (!validator.CanCheckInNow)
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
-        }
+                if (!validator.CanCheckInNow)
+                {
+                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                }
 
-        claim.ClaimStatus = ClaimStatus.CheckedIn;
-        claim.CheckInDate = Now;
-        MarkChanged(claim.Character);
-        claim.Character.InGame = true;
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.CheckedIn);
+                ctx.MarkChanged(ctx.Character);
+                ctx.Character.InGame = true;
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification("", claim, projectInfo, CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange, Now);
+                _ = ctx.AddComment("", CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange);
 
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-
-        if (financeEmail != null)
-        {
-            await claimNotificationService.SendNotification(financeEmail.WithCommentId(financeComment!.CommentId));
-        }
-    }
+                // Порядок уведомлений — часть контракта: статусное первым, финансовое вторым. Поэтому
+                // финансовый комментарий создаётся раньше (он мутирует взнос), а в очередь попадает
+                // позже.
+                if (financeComment is { } finance)
+                {
+                    _ = ctx.EnqueueComment(finance.Comment, finance.Notification);
+                }
+            });
 
     public async Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText)
     {
@@ -192,53 +199,66 @@ internal class ClaimServiceImpl(
         return claimId;
     }
 
-    public async Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.None, ExtraAccessReason.Player);
-
-        ClaimOperationType claimOperationType;
-
-        if (claim.PlayerUserId == CurrentUserId)
-        {
-            claimOperationType = ClaimOperationType.PlayerChange;
-        }
-        else
-        {
-            claimOperationType = isVisibleToPlayer ? ClaimOperationType.MasterVisibleChange : ClaimOperationType.MasterSecretChange;
-        }
-
-        SetDiscussed(claim, isVisibleToPlayer);
-
-        var parentComment = claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
-
-        CommentExtraAction? extraAction = null;
-
-        if (financeAction != FinanceOperationAction.None)
-        {
-            if (parentComment is null)
+    /// <summary>
+    /// Комментарий к заявке — в том числе модерация финансовой операции из родительского
+    /// комментария.
+    /// </summary>
+    /// <remarks>
+    /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowInactive"/>: по ADR014
+    /// комментирование в архивном проекте остаётся разрешённым — обсуждение игры продолжается после
+    /// её конца, и форма комментария в UI намеренно не спрятана.
+    /// </remarks>
+    public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.MasterOrPlayer,
+            ProjectActiveRequirement.AllowInactive,
+            (ParentCommentId: parentCommentId,
+                IsVisibleToPlayer: isVisibleToPlayer,
+                CommentText: commentText,
+                FinanceAction: financeAction),
+            ctx =>
             {
-                throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
-            }
-            extraAction = PerformFinanceOperation(financeAction, parentComment, claim, projectInfo);
-        }
+                var claimOperationType = ctx.Claim.PlayerUserId == ctx.CurrentUser.UserId
+                    ? ClaimOperationType.PlayerChange
+                    : ctx.Request.IsVisibleToPlayer
+                        ? ClaimOperationType.MasterVisibleChange
+                        : ClaimOperationType.MasterSecretChange;
 
+                ctx.MarkDiscussed(ctx.Request.IsVisibleToPlayer);
 
-        var result = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, extraAction, claimOperationType, Now);
+                // Комментарии дискуссии грузит write-хэндл (Include(c => c.CommentDiscussion.Comments)),
+                // иначе родителя было бы не найти и финансовая модерация тихо ломалась бы.
+                var parentComment = ctx.Claim.CommentDiscussion.Comments
+                    .SingleOrDefault(c => c.CommentId == ctx.Request.ParentCommentId);
 
-        if (parentComment is not null)
-        {
-            SetParentCommentAndCheck(result, parentComment, claimOperationType);
-        }
+                CommentExtraAction? extraAction = null;
 
-        await UnitOfWork.SaveChangesAsync();
+                if (ctx.Request.FinanceAction != FinanceOperationAction.None)
+                {
+                    if (parentComment is null)
+                    {
+                        throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
+                    }
+                    extraAction = PerformFinanceOperation(ctx, ctx.Request.FinanceAction, parentComment);
+                }
 
-        await claimNotificationService.SendNotification(result.Item2.WithCommentId(result.Item1.CommentId));
-    }
+                var pending = ctx.AddComment(ctx.Request.CommentText, extraAction, claimOperationType);
 
-    private CommentExtraAction? PerformFinanceOperation(FinanceOperationAction financeAction,
-      Comment parentComment, Claim claim, ProjectInfo projectInfo)
+                if (parentComment is not null)
+                {
+                    // Внутри — проверка «нельзя ответить на скрытый комментарий так, чтобы игрок
+                    // ответ увидел».
+                    _ = pending.SetParent(parentComment, claimOperationType);
+                }
+            });
+
+    private static CommentExtraAction PerformFinanceOperation(
+        ClaimMutationContext ctx,
+        FinanceOperationAction financeAction,
+        Comment parentComment)
     {
-        var finance = parentComment?.Finance;
+        var finance = parentComment.Finance;
         if (finance == null)
         {
             throw new InvalidOperationException();
@@ -249,17 +269,17 @@ internal class ClaimServiceImpl(
             throw new ValueAlreadySetException("Finance entry is already moderated.");
         }
 
-        finance.RequestModerationAccess(CurrentUserId);
-        finance.Changed = Now;
+        finance.RequestModerationAccess(ctx.CurrentUser.UserId);
+        finance.Changed = ctx.Now;
         switch (financeAction)
         {
             case FinanceOperationAction.Approve:
                 finance.State = FinanceOperationState.Approved;
                 if (finance.OperationType == FinanceOperationType.PreferentialFeeRequest)
                 {
-                    claim.PreferentialFeeUser = true;
+                    ctx.Claim.PreferentialFeeUser = true;
                 }
-                claim.UpdateClaimFeeIfRequired(finance.OperationDate, projectInfo);
+                ctx.Claim.UpdateClaimFeeIfRequired(finance.OperationDate, ctx.ProjectInfo);
                 return CommentExtraAction.ApproveFinance;
             case FinanceOperationAction.Decline:
                 finance.State = FinanceOperationState.Declined;
@@ -620,45 +640,51 @@ internal class ClaimServiceImpl(
                     .Decorate(notification => notification with { AnotherCharacterId = oldCharacterId });
             });
 
-    public async Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-        var source = await CharactersRepository.GetCharacterAsync(characterId)
-            ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, nameof(Character));
-        var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
+    public Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            (CommentText: commentText, CharacterId: characterId),
+            async ctx =>
+            {
+                var oldCharacterId = ctx.Claim.GetCharacterId(); // Сохраняем, так как он изменится
 
-        var oldCharacterId = claim.GetCharacterId(); // Сохраняем, так как он изменится
+                // Целевой персонаж приезжает вместе со своим доменным снимком, поэтому отдельного
+                // похода в ICharacterInfoRepository за правилами переноса больше нет.
+                var (target, targetInfo) = await ctx.LoadOtherCharacter(ctx.Request.CharacterId);
 
-        ClaimValidator.EnsureCanMoveClaim(
-            await characterInfoRepository.GetCharacterInfo(characterId),
-            new UserClaimInfo(claim.GetId(), claim.ClaimStatus),
-            userInfo,
-            projectInfo);
+                var userInfo = await UserRepository.GetRequiredUserInfo(
+                    new UserIdentification(ctx.Claim.PlayerUserId));
 
-        MarkCharacterChangedIfApproved(claim); // before move
+                ClaimValidator.EnsureCanMoveClaim(
+                    targetInfo,
+                    new UserClaimInfo(ctx.Claim.GetId(), ctx.Claim.ClaimStatus),
+                    userInfo,
+                    ctx.ProjectInfo);
 
-        if (claim.Character != null && claim.IsApproved)
-        {
-            claim.Character.ApprovedClaim = null;
-        }
-        claim.CharacterId = characterId.CharacterId;
-        claim.Character = source; //That fields is required later
+                ctx.MarkCharacterChangedIfApproved(); // before move
 
-        if (claim.IsApproved)
-        {
-            claim.Character.ApprovedClaim = claim;
-        }
+                if (ctx.Claim.Character != null && ctx.Claim.IsApproved)
+                {
+                    ctx.Claim.Character.ApprovedClaim = null;
+                }
+                ctx.Claim.CharacterId = ctx.Request.CharacterId.CharacterId;
+                ctx.Claim.Character = target; //That fields is required later
 
-        MarkCharacterChangedIfApproved(claim); // after move
+                if (ctx.Claim.IsApproved)
+                {
+                    ctx.Claim.Character.ApprovedClaim = ctx.Claim;
+                }
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.MoveByMaster, ClaimOperationType.MasterVisibleChange, Now);
+                ctx.MarkCharacterChangedIfApproved(); // after move
 
-        email = email with { AnotherCharacterId = oldCharacterId };
-
-
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                _ = ctx.AddComment(
+                        ctx.Request.CommentText,
+                        CommentExtraAction.MoveByMaster,
+                        ClaimOperationType.MasterVisibleChange)
+                    .Decorate(notification => notification with { AnotherCharacterId = oldCharacterId });
+            });
 
     public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
@@ -728,25 +754,25 @@ internal class ClaimServiceImpl(
                     .Decorate(notification => notification with { OldResponsibleMaster = oldResponsibleMaster });
             });
 
-    public async Task SaveFieldsFromClaim(
+    public Task SaveFieldsFromClaim(
         ClaimIdentification claimId,
         FieldLayerContainer fieldsToSet)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(claimId, Permission.None, ExtraAccessReason.Player);
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.MasterOrPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            fieldsToSet,
+            ctx =>
+            {
+                var updatedFields = ctx.SaveFields(ctx.Request);
 
-        var updatedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fieldsToSet, projectInfo);
-        if (updatedFields.Any(f => f.Field.BoundTo == FieldBoundTo.Character) && claim.Character != null)
-        {
-            MarkChanged(claim.Character);
-        }
-        var user = await GetCurrentUser();
-        var email = EmailHelpers.CreateFieldsEmail(claim, s => s.FieldChange, user, updatedFields);
+                if (updatedFields.Any(f => f.Field.BoundTo == FieldBoundTo.Character) && ctx.Claim.Character != null)
+                {
+                    ctx.MarkChanged(ctx.Claim.Character);
+                }
 
-        await UnitOfWork.SaveChangesAsync();
-
-        // Исправить потом отправку изменений
-        // await EmailService.Email(email);
-    }
+                // TODO: восстановить отправку изменений полей, см. ADR014
+            });
 
     public Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
         => characterPropsService.ChangeClaim(
@@ -770,20 +796,6 @@ internal class ClaimServiceImpl(
         if (claim.ClaimStatus == ClaimStatus.Approved && claim.Character != null)
         {
             MarkChanged(claim.Character);
-        }
-    }
-
-    private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
-    {
-        claim.LastUpdateDateTime = Now;
-        if (claim.ClaimStatus == ClaimStatus.AddedByMaster && CurrentUserId == claim.PlayerUserId)
-        {
-            claim.ClaimStatus = ClaimStatus.Discussed;
-        }
-
-        if (claim.ClaimStatus == ClaimStatus.AddedByUser && CurrentUserId != claim.PlayerUserId && isVisibleToPlayer)
-        {
-            claim.ClaimStatus = ClaimStatus.Discussed;
         }
     }
 
@@ -877,26 +889,6 @@ internal class ClaimServiceImpl(
             throw new JoinRpgProjectMisconfiguredException(donateProjectId, "У проекта должен быть шаблон по умолчанию");
         }
         return await AddClaimFromUser(projectInfo.ClaimSettings.DefaultTemplate, claimText: "", fields: FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
-    }
-
-    public static void SetParentCommentAndCheck((Comment, ClaimSimpleChangedNotification) result, Comment parentComment, ClaimOperationType claimOperationType)
-    {
-        if (claimOperationType != ClaimOperationType.MasterSecretChange && parentComment.IsVisibleToPlayer == false)
-        {
-            throw new EntityWrongStatusException(parentComment); // Нельзя ответить на скрытый комментарий так, чтобы игрок видел
-        }
-
-        result.Item1.Parent = parentComment;
-        result.Item2 = result.Item2 with
-        {
-            ParentCommentAuthor = parentComment.Author.ToUserInfoHeader(),
-            PaymentOwner = parentComment?.Finance?.PaymentType?.User?.ToUserInfoHeader(),
-        };
-    }
-
-    private async Task<(Claim, ProjectInfo)> LoadClaimForApprovalDecline(ClaimIdentification claimId)
-    {
-        return await LoadClaimAsMaster(claimId, Permission.CanManageClaims, ExtraAccessReason.ResponsibleMaster);
     }
 
     public async Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer fields)
