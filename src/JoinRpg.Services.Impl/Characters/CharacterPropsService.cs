@@ -119,12 +119,39 @@ internal class CharacterPropsService(
         Func<ClaimMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "")
         => ChangeClaimCore(claimId, accessRequirement, activeRequirement, arguments,
+            ctx => Task.FromResult(action(ctx)), operationName);
+
+    public Task ChangeClaimAsync<TArgs>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimMutationContext<TArgs>, Task> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeClaimCore(claimId, accessRequirement, activeRequirement, arguments,
+            AsFunc(action), operationName);
+
+    public Task<TResult> ChangeClaimAsync<TArgs, TResult>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimMutationContext<TArgs>, Task<TResult>> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeClaimCore(claimId, accessRequirement, activeRequirement, arguments,
             action, operationName);
 
-    private static Func<ClaimMutationContext<TArgs>, bool> AsFunc<TArgs>(Action<ClaimMutationContext<TArgs>> action)
+    private static Func<ClaimMutationContext<TArgs>, Task<bool>> AsFunc<TArgs>(Action<ClaimMutationContext<TArgs>> action)
         => ctx =>
         {
             action(ctx);
+            return Task.FromResult(true);
+        };
+
+    private static Func<ClaimMutationContext<TArgs>, Task<bool>> AsFunc<TArgs>(Func<ClaimMutationContext<TArgs>, Task> action)
+        => async ctx =>
+        {
+            await action(ctx);
             return true;
         };
 
@@ -133,7 +160,7 @@ internal class CharacterPropsService(
         ClaimAccessRequirement accessRequirement,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<ClaimMutationContext<TArgs>, TResult> action,
+        Func<ClaimMutationContext<TArgs>, Task<TResult>> action,
         string operationName)
     {
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
@@ -150,9 +177,9 @@ internal class CharacterPropsService(
             var ctx = new ClaimMutationContext<TArgs>(
                 handle.Claim, handle.ClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
                 now, currentUserAccessor, handle.Initiator, handle.Add, handle.Remove,
-                fieldSaveHelper, commentHelper, arguments);
+                handle.LoadOtherCharacter, fieldSaveHelper, commentHelper, arguments);
 
-            var result = action(ctx);
+            var result = await action(ctx);
 
             await unitOfWork.SaveChangesAsync();
 
