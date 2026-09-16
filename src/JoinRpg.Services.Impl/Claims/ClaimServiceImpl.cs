@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
@@ -11,19 +12,31 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
 
+/// <summary>
+/// Сервис заявок. После миграции на <see cref="ICharacterPropsService"/> (ADR014) базового класса у
+/// него нет: почти всё делается внутри <c>ChangeClaim</c>, а трём немигрированным методам хватает
+/// репозиториев, взятых напрямую из <see cref="IUnitOfWork"/>.
+/// </summary>
 internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
-    IEmailService emailService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
-    CommentHelper commentHelper,
     ICharacterPropsService characterPropsService,
     IImpersonateAccessor impersonateAccessor
-    )
-    : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
+    ) : IClaimService
 {
+    // Репозитории берутся из UnitOfWork, а не из DI: MyDbContext транзиентен, и DI-экземпляр
+    // работал бы с другим контекстом, чем SaveChangesAsync этого сервиса.
+    private readonly Lazy<IUserRepository> userRepository = new(unitOfWork.GetUsersRepository);
+    private readonly Lazy<IForumRepository> forumRepository = new(unitOfWork.GetForumRepository);
+    private readonly Lazy<IClaimsRepository> claimsRepository = new(unitOfWork.GetClaimsRepository);
+
+    private IUserRepository UserRepository => userRepository.Value;
+    private IForumRepository ForumRepository => forumRepository.Value;
+    private IClaimsRepository ClaimsRepository => claimsRepository.Value;
+
     public Task CheckInClaim(ClaimIdentification claimId, int money)
         => characterPropsService.ChangeClaim(
             claimId,
@@ -387,7 +400,7 @@ internal class ClaimServiceImpl(
     /// </remarks>
     private async Task AutoApproveIfRequired(ClaimIdentification claimId)
     {
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
 
         if (!projectInfo.ClaimSettings.AutoAcceptClaims)
         {
