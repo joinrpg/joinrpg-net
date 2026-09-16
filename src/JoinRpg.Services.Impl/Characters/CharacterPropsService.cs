@@ -275,7 +275,7 @@ internal class CharacterPropsService(
         }
     }
 
-    public async Task<Claim> CreateClaim<TArgs>(
+    public Task<Claim> CreateClaim<TArgs>(
         CharacterIdentification characterId,
         UserIdentification playerId,
         ClaimOperation operation,
@@ -283,6 +283,28 @@ internal class CharacterPropsService(
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Claim> factory,
         [CallerMemberName] string operationName = "")
+        => CreateClaimCore(characterId, playerId, operation, activeRequirement, arguments,
+            ctx => Task.FromResult(factory(ctx)), operationName);
+
+    public Task<Claim> CreateClaimAsync<TArgs>(
+        CharacterIdentification characterId,
+        UserIdentification? playerId,
+        ClaimOperation operation,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
+        [CallerMemberName] string operationName = "")
+        => CreateClaimCore(characterId, playerId, operation, activeRequirement, arguments,
+            factory, operationName);
+
+    private async Task<Claim> CreateClaimCore<TArgs>(
+        CharacterIdentification characterId,
+        UserIdentification? playerId,
+        ClaimOperation operation,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
+        string operationName)
     {
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
         using var mutation = guard.Enter(operationName);
@@ -293,28 +315,47 @@ internal class CharacterPropsService(
                 .LoadCharacterForUpdate(characterId, currentUserAccessor.UserIdentification);
 
             // Подача игроком отдельной проверки прав не имеет — её заменяют правила ClaimValidator.
-            if (operation == ClaimOperation.AddByMaster)
+            switch (operation)
             {
-                _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+                case ClaimOperation.AddByMaster:
+                    _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+                    break;
+                case ClaimOperation.MoveToSecondRole:
+                    //TODO Specific right. Право перенесено как есть: до миграции это был
+                    // LoadClaimAsMaster(claimId) без дополнительных требований.
+                    _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor);
+                    break;
+                default:
+                    break;
             }
 
             EnsureActiveIfRequired(handle.ProjectInfo, activeRequirement);
 
             // Правила считаются для игрока, на которого оформляется заявка, а не для того, кто
             // выполняет операцию.
-            var player = await unitOfWork.GetUsersRepository().GetRequiredUserInfo(playerId);
+            var player = playerId is null
+                ? null
+                : await unitOfWork.GetUsersRepository().GetRequiredUserInfo(playerId);
 
-            // CharacterInfo уже в хэндле — отдельного запроса за агрегатом больше нет.
-            ClaimValidator.EnsureCanAddClaim(handle.CharacterInfo, player, operation);
+            if (operation.ValidatesClaimTarget())
+            {
+                // CharacterInfo уже в хэндле — отдельного запроса за агрегатом больше нет.
+                ClaimValidator.EnsureCanAddClaim(
+                    handle.CharacterInfo,
+                    player ?? throw new ArgumentNullException(
+                        nameof(playerId),
+                        $"Операция {operation} считает правила подачи, значит игрок обязан быть известен заранее"),
+                    operation);
+            }
 
             var ctx = new ClaimCreationContext<TArgs>(
                 handle.Character, handle.CharacterInfo, handle.ProjectInfo, now, currentUserAccessor,
 #pragma warning disable CS0618 // Initiator нужен только легаси-каналу писем
                 handle.Initiator,
 #pragma warning restore CS0618
-                player, handle.Add, fieldSaveHelper, arguments);
+                player, handle.Add, handle.LoadOtherClaim, fieldSaveHelper, arguments);
 
-            var claim = factory(ctx);
+            var claim = await factory(ctx);
             handle.Add(claim);
 
             // Фаза 1: заявка и её дискуссия получают настоящие идентификаторы.
@@ -326,12 +367,23 @@ internal class CharacterPropsService(
                 {
                     var (comment, notification) = commentHelper.CreateClaimCommentWithNotification(
                         deferred.CommentText,
-                        claim,
+                        // Комментарий может относиться и к соседней заявке, которую мутировала та же
+                        // операция, — так вторая роль комментирует ещё и старую заявку.
+                        deferred.TargetClaim ?? claim,
                         handle.ProjectInfo,
                         deferred.ExtraAction,
                         deferred.OperationType,
                         now);
-                    return new PendingComment(comment, notification);
+                    var pending = new PendingComment(comment, notification);
+                    foreach (var decorator in deferred.Decorators)
+                    {
+                        _ = pending.Decorate(decorator);
+                    }
+                    if (deferred.IsSilent)
+                    {
+                        _ = pending.Silent();
+                    }
+                    return pending;
                 })
                 .ToList();
 

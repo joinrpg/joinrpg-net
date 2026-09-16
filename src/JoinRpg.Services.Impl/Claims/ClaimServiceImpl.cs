@@ -2,7 +2,6 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -15,12 +14,10 @@ namespace JoinRpg.Services.Impl.Claims;
 internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
-    FieldSaveHelper fieldSaveHelper,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
-    IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     ICharacterPropsService characterPropsService,
     IImpersonateAccessor impersonateAccessor
@@ -78,73 +75,92 @@ internal class ClaimServiceImpl(
                 _ = ctx.AddComment("", CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange);
             });
 
+    /// <summary>
+    /// Выход на вторую роль: зарегистрированная заявка выходит из игры, а на другого персонажа
+    /// создаётся новая — сразу утверждённая и без взноса.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Идёт через общий путь создания заявки (ADR014), поэтому сохранений два, а не одно: комментарий
+    /// к новой заявке создаётся между ними. Обе мутации — и новая заявка, и старая — уезжают в первое
+    /// сохранение, то есть операция не стала менее целостной, чем была.
+    /// </para>
+    /// <para>
+    /// Валидация переноса (<c>EnsureCanMoveClaim</c>) не включается: до миграции она была
+    /// закомментирована, и <see cref="ClaimOperation.MoveToSecondRole"/> заведён ровно затем, чтобы
+    /// общий путь не включил её молча.
+    /// </para>
+    /// <para>
+    /// Уведомлений уходит два: по старой заявке (как и до миграции) и по новой. Второе — изменение
+    /// поведения: до миграции комментарий второй роли создавался молча. Решено по ревью #4840 —
+    /// заглушать его не за что.
+    /// </para>
+    /// </remarks>
     public async Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText)
     {
         if (claimId.ProjectId != characterId.ProjectId)
         {
             throw new InvalidOperationException("Нельзя смешивать разные проекты в запросе");
         }
-        var (oldClaim, projectInfo) = await LoadClaimAsMaster(claimId); //TODO Specific right
-        oldClaim.EnsureStatus(ClaimStatus.CheckedIn);
 
-        oldClaim.Character.InGame = false;
-        MarkChanged(oldClaim.Character);
+        var claim = await characterPropsService.CreateClaimAsync(
+            characterId,
+            // Игрок известен только из старой заявки, а она приезжает уже внутри фабрики.
+            playerId: null,
+            ClaimOperation.MoveToSecondRole,
+            ProjectActiveRequirement.MustBeActive,
+            (ClaimId: claimId, CommentText: secondRoleCommentText),
+            async ctx =>
+            {
+                var oldClaim = await ctx.LoadOtherClaim(ctx.Request.ClaimId);
+                oldClaim.EnsureStatus(ClaimStatus.CheckedIn);
 
-        var source = await CharactersRepository.GetCharacterAsync(characterId);
+                // Игрок уходит со старой роли.
+                oldClaim.Character.InGame = false;
+                ctx.MarkChanged(oldClaim.Character);
 
-        MarkChanged(source);
+                // Проверка перехода добавлена миграцией и заведомо проходит: выше стоит
+                // EnsureStatus(CheckedIn), а CheckedIn → Approved таблицей разрешён. Отметку даты
+                // писать нельзя — перезаписался бы MasterAcceptedDate, видимый в отчётах.
+                ctx.ChangeStatusKeepingTimestamps(oldClaim, ClaimStatus.Approved);
 
-        // TODO improve valitdation here
-        //source.EnsureCanMoveClaim(oldClaim);
+                ctx.MarkChanged(ctx.Character);
 
-        var responsibleMaster = source.GetResponsibleMaster();
-        // TODO последняя ручная сборка Claim: остальные создают заявку через ctx.NewClaim.
-        // Уйдёт, когда MoveToSecondRole переедет на ICharacterPropsService.CreateClaim (ADR014).
-        var claim = new Claim()
-        {
-            CharacterId = characterId.CharacterId,
-            ProjectId = characterId.ProjectId,
-            PlayerUserId = oldClaim.PlayerUserId,
-            PlayerAcceptedDate = Now,
-            CreateDate = Now,
-            ClaimStatus = ClaimStatus.Approved,
-            CurrentFee = 0,
-            ResponsibleMasterUserId = responsibleMaster.UserId,
-            ResponsibleMasterUser = responsibleMaster,
-            LastUpdateDateTime = Now,
-            MasterAcceptedDate = Now,
-            CommentDiscussion =
-            new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
-        };
+                // Разрешение на чувствительные данные даёт игрок, а не мастер, — остаётся false.
+                var newClaim = ctx.NewClaim(
+                    ClaimStatus.Approved,
+                    ctx.ResponsibleMasterByProjectRules(),
+                    oldClaim.Player);
 
-        claim.CommentDiscussion.Comments.Add(new Comment
-        {
-            CommentDiscussionId = -1,
-            AuthorUserId = CurrentUserId,
-            CommentText = new CommentText { Text = new MarkdownDbValue(secondRoleCommentText) },
-            CreatedAt = Now,
-            IsCommentByPlayer = false,
-            IsVisibleToPlayer = true,
-            ProjectId = characterId.ProjectId,
-            LastEditTime = Now,
-            ExtraAction = CommentExtraAction.SecondRole,
-        });
+                // Вторую роль выдаёт мастер, значит заявка утверждена прямо сейчас и взноса не несёт.
+                newClaim.MasterAcceptedDate = ctx.Now;
+                newClaim.CurrentFee = 0;
 
-        oldClaim.ClaimStatus = ClaimStatus.Approved;
-        source.ApprovedClaim = claim;
+                ctx.Character.ApprovedClaim = newClaim;
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(secondRoleCommentText, oldClaim, projectInfo, CommentExtraAction.OutOfGame, ClaimOperationType.MasterVisibleChange, Now);
+                // Комментарии — в порядке операций: сначала игрок вышел со старой роли, потом
+                // получил новую.
+                _ = ctx.AddComment(
+                        oldClaim,
+                        ctx.Request.CommentText,
+                        CommentExtraAction.OutOfGame,
+                        ClaimOperationType.MasterVisibleChange)
+                    .Decorate(notification => notification with { AnotherCharacterId = characterId });
 
-        email = email with { AnotherCharacterId = characterId };
+                // По этому комментарию уведомление до миграции не уходило. Молчание снято
+                // сознательно (ревью #4840): заглушать его не за что, комментарии второй роли
+                // ведут себя как все прочие.
+                _ = ctx.AddComment(
+                        ctx.Request.CommentText,
+                        CommentExtraAction.SecondRole,
+                        ClaimOperationType.MasterVisibleChange);
 
+                // Пересохранение пустым слоем — ради побочных эффектов: значений по умолчанию и
+                // пересчёта спецгрупп.
+                _ = ctx.SaveFields(newClaim, FieldLayerContainer.Empty(ctx.ProjectInfo));
 
-        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
-
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
+                return newClaim;
+            });
 
         return claim.ClaimId;
     }
@@ -175,7 +191,7 @@ internal class ClaimServiceImpl(
                 _ = ctx.SaveFields(claim, ctx.Request.fields);
 
                 //TODO добавить сюда измененные поля
-                ctx.AddComment(
+                _ = ctx.AddComment(
                     ctx.Request.claimText,
                     CommentExtraAction.NewClaim,
                     ClaimOperationType.PlayerChange);
@@ -886,18 +902,41 @@ internal class ClaimServiceImpl(
                     .Decorate(notification => notification with { AnotherCharacterId = oldCharacterId });
             });
 
+    /// <summary>
+    /// Отметка «прочитано до такого-то комментария».
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Намеренно не мигрирована на <c>ICharacterPropsService</c></b> (ADR014). Метод работает не с
+    /// заявкой, а с дискуссией: та же отметка ставится и на форумных тредах, у которых заявки нет
+    /// вовсе. Натягивать на неё агрегат персонажа означало бы требовать <c>ClaimIdentification</c>
+    /// там, где его может не существовать, — и либо завести второй путь для форума, либо потерять
+    /// отметку на форуме.
+    /// </para>
+    /// <para>
+    /// По требованиям ADR014 это <c>AllowInactive</c> (отметка «прочитано» — по смыслу чтение), и
+    /// именно так метод себя и ведёт: проверки активности здесь нет. Отсутствие проверки доступа —
+    /// известная дыра из списка «что сознательно не чиним».
+    /// </para>
+    /// <para>
+    /// Из базовых классов метод не берёт ничего: <c>DbContext</c> и текущий пользователь приходят
+    /// из собственных зависимостей сервиса, поэтому будущее удаление <c>ClaimImplBase</c> ему не
+    /// мешает.
+    /// </para>
+    /// </remarks>
     public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
+        var currentUserId = currentUserAccessor.UserId;
         var watermarks =
-          UnitOfWork.GetDbSet<ReadCommentWatermark>()
-            .Where(w => w.CommentDiscussionId == commentDiscussionId && w.UserId == CurrentUserId)
+          unitOfWork.GetDbSet<ReadCommentWatermark>()
+            .Where(w => w.CommentDiscussionId == commentDiscussionId && w.UserId == currentUserId)
             .OrderByDescending(wm => wm.ReadCommentWatermarkId)
             .ToList();
 
         //Sometimes watermarks can duplicate. If so, let's remove them.
         foreach (var wm in watermarks.Skip(1))
         {
-            _ = UnitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
+            _ = unitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
         }
 
         var watermark = watermarks.FirstOrDefault();
@@ -908,9 +947,9 @@ internal class ClaimServiceImpl(
             {
                 CommentDiscussionId = commentDiscussionId,
                 ProjectId = projectId,
-                UserId = CurrentUserId,
+                UserId = currentUserId,
             };
-            _ = UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
+            _ = unitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
         }
 
         if (watermark.CommentId > maxCommentId)
@@ -918,7 +957,7 @@ internal class ClaimServiceImpl(
             return;
         }
         watermark.CommentId = maxCommentId;
-        await UnitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     public Task SetResponsible(ClaimIdentification claimId, UserIdentification responsibleMasterId)
@@ -991,14 +1030,26 @@ internal class ClaimServiceImpl(
                     ClaimOperationType.MasterVisibleChange);
             });
 
-    private void MarkCharacterChangedIfApproved(Claim claim)
-    {
-        if (claim.ClaimStatus == ClaimStatus.Approved && claim.Character != null)
-        {
-            MarkChanged(claim.Character);
-        }
-    }
-
+    /// <summary>
+    /// Сокрытие комментария от игрока.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Намеренно не мигрировано на <c>ICharacterPropsService</c></b> (ADR014) — по той же причине,
+    /// что и <see cref="UpdateReadCommentWatermark"/>: операция работает с комментарием в дискуссии,
+    /// а дискуссия может быть форумной. Модерация форума — не мутация агрегата персонажа, и
+    /// требовать здесь <c>ClaimIdentification</c> было бы неправдой о предметной области.
+    /// </para>
+    /// <para>
+    /// По ADR014 это <c>AllowInactive</c>: модерация должна работать всюду, где работает
+    /// комментирование, а комментирование в архивном проекте разрешено. Проверки активности здесь
+    /// нет — то есть требование уже выполнено.
+    /// </para>
+    /// <para>
+    /// Права проверяются по самому комментарию (<c>HasMasterAccess</c>), а не через
+    /// <c>LoadClaimAs*</c>, поэтому будущее удаление <c>ClaimImplBase</c> методу не мешает.
+    /// </para>
+    /// </remarks>
     public async Task ConcealComment(int projectId,
         int commentId,
         int commentDiscussionId)
@@ -1016,7 +1067,7 @@ internal class ClaimServiceImpl(
             comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
         {
             comment.IsVisibleToPlayer = false;
-            await UnitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
         }
         else
         {
@@ -1080,6 +1131,15 @@ internal class ClaimServiceImpl(
         await AutoApproveIfRequired(claimId);
     }
 
+    /// <summary>
+    /// Заявка игрока в проекте донатов: находит существующую либо подаёт новую.
+    /// </summary>
+    /// <remarks>
+    /// Собственных мутаций у метода нет — он только ищет заявку и делегирует в уже мигрированный
+    /// <see cref="AddClaimFromUser"/>, который и приносит и права, и проверку активности проекта, и
+    /// единый путь создания (ADR014). Поэтому метод остаётся как есть; замещаемых
+    /// <c>[Obsolete]</c>-членов он не трогает.
+    /// </remarks>
     public async Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId)
     {
         var claims = await ClaimsRepository.GetClaimsForPlayer(donateProjectId, currentUserAccessor.UserIdentification, ClaimStatusSpec.Any);
@@ -1089,7 +1149,7 @@ internal class ClaimServiceImpl(
             //TODO восстановить заявку, если она была отозвана или отклонена
             return claim.GetId();
         }
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(donateProjectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(donateProjectId);
         if (projectInfo.ClaimSettings.DefaultTemplate is null)
         {
             logger.LogError("Некорректно настроен проект донатов {donateProjectId}", donateProjectId);
@@ -1122,7 +1182,7 @@ internal class ClaimServiceImpl(
                 _ = ctx.SaveFields(claim, ctx.Request.fields);
 
                 // Комментарий о приглашении
-                ctx.AddComment(
+                _ = ctx.AddComment(
                     ctx.Request.commentText,
                     CommentExtraAction.NewClaim,
                     ClaimOperationType.MasterVisibleChange);
