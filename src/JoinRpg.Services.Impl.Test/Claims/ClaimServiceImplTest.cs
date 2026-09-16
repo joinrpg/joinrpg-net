@@ -24,12 +24,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var currentUser = CreateCurrentUser(currentUserId);
         return new ClaimServiceImpl(
             unitOfWork,
-            emailService,
             currentUser,
             metadataRepository,
             new FakeProblemValidator<Claim>(),
             NullLogger<CharacterServiceImpl>.Instance,
-            new CommentHelper(currentUser),
             CreatePropsService(currentUserId),
             impersonateAccessor);
     }

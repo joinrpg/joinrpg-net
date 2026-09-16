@@ -21,7 +21,6 @@ public class FinanceOperationsImplTest : ClaimServiceTestBase
         var currentUser = CreateCurrentUser(currentUserId);
         return new FinanceOperationsImpl(
             unitOfWork,
-            emailService,
             currentUser,
             claimNotifications,
             new CommentHelper(currentUser),
