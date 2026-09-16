@@ -58,6 +58,15 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
             .ConfigureAwait(false);
     }
 
+    public async Task<ProjectAccommodationType?> GetRoomTypeWithDesirous(int roomTypeId)
+    {
+        return await ctx.Set<ProjectAccommodationType>()
+            .Include(x => x.ProjectAccommodations)
+            .Include(x => x.Desirous)
+            .FirstOrDefaultAsync(x => x.Id == roomTypeId)
+            .ConfigureAwait(false);
+    }
+
     public async Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId)
     {
         return await ctx.Set<ProjectAccommodationType>().Where(a => a.Id == roomTypeId)

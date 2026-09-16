@@ -1,5 +1,6 @@
 using System.Reflection;
 using JoinRpg.Services.Email;
+using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Projects.Create;
@@ -32,7 +33,6 @@ public static class Services
         yield return typeof(FieldSetupServiceImpl);
         yield return typeof(FieldDefaultValueGenerator);
         yield return typeof(AccommodationInviteServiceImpl);
-        yield return typeof(AccommodationServiceImpl);
         yield return typeof(CharacterServiceImpl);
         yield return typeof(GameSubscribeService);
 
@@ -52,13 +52,17 @@ public static class Services
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
             .AddTransient<ICharacterGroupService, CharacterGroupService>()
             .AddTransient<IProjectPropsService, ProjectPropsService>()
+            .AddTransient<ICharacterPropsService, CharacterPropsService>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
             .AddTransient<IProjectAccessService, ProjectAccessService>()
             .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
+            .AddTransient<IAccommodationService, AccommodationServiceImpl>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
+            .AddTransient<IClaimApprovalService, ClaimApprovalService>()
+            .AddTransient<ClaimAutoApproveService>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IClaimNotificationService, ClaimNotificationService>()
             .AddTransient<ForumNotificationService>()
