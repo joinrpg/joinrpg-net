@@ -105,30 +105,47 @@ internal abstract record ClaimMutationContext(
         string commentText,
         CommentExtraAction? extraAction,
         ClaimOperationType operationType)
+        => EnqueueComment(CreateComment(claim, commentText, extraAction, operationType));
+
+    /// <summary>
+    /// Создаёт комментарий, <b>не</b> ставя уведомление по нему в очередь: это делает вызывающий
+    /// через <see cref="EnqueueComment(PendingComment)"/>.
+    /// </summary>
+    /// <remarks>
+    /// Нужен там, где порядок отправки уведомлений не совпадает с порядком создания комментариев, —
+    /// см. <c>ClaimFinanceOperations.AcceptFeeDeferringNotification</c>.
+    /// </remarks>
+    public PendingComment CreateComment(
+        Claim claim,
+        string commentText,
+        CommentExtraAction? extraAction,
+        ClaimOperationType operationType)
     {
         var (comment, notification) = CommentHelper.CreateClaimCommentWithNotification(
             commentText, claim, ProjectInfo, extraAction, operationType, Now);
 
-        var pending = new PendingComment(comment, notification);
+        return new PendingComment(comment, notification);
+    }
+
+    /// <summary>
+    /// Ставит уведомление по уже созданному комментарию в очередь отправки.
+    /// </summary>
+    /// <remarks>
+    /// Отдельный метод, а не доступ к списку: порядок отправки — часть контракта, и менять его надо
+    /// явно.
+    /// </remarks>
+    public PendingComment EnqueueComment(PendingComment pending)
+    {
         PendingComments.Add(pending);
         return pending;
     }
 
     /// <summary>
-    /// Ставит в очередь комментарий, созданный <b>вне</b> контекста, — вместе с его уведомлением.
+    /// Запрещает операции, датированные будущим. Единственная реализация живёт в
+    /// <see cref="ClaimImplBase"/>, пока он не удалён вместе с последним немигрированным методом.
     /// </summary>
-    /// <remarks>
-    /// Нужен ровно там, где комментарий делает ещё не мигрированный помощник
-    /// (<c>ClaimImplBase.AcceptFeeImpl</c>, общий с <c>FeeAcceptedOperation</c>), а очередь
-    /// уведомлений обязана сохранить порядок, который был до миграции. Отдельный метод, а не
-    /// доступ к списку: порядок отправки — часть контракта, и менять его надо явно.
-    /// </remarks>
-    public PendingComment EnqueueComment(Comment comment, ClaimSimpleChangedNotification notification)
-    {
-        var pending = new PendingComment(comment, notification);
-        PendingComments.Add(pending);
-        return pending;
-    }
+    public void CheckOperationDate(DateTime operationDate)
+        => ClaimImplBase.CheckOperationDate(operationDate, Now);
 
     /// <summary>
     /// Ставит письмо легаси-канала в очередь. Отправится после сохранения и после уведомлений.

@@ -44,7 +44,7 @@ internal class ClaimServiceImpl(
                     throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
                 }
 
-                (Comment Comment, ClaimSimpleChangedNotification Notification)? financeComment = null;
+                PendingComment? financeComment = null;
                 if (ctx.Request > 0)
                 {
                     var paymentType = ctx.ProjectInfo.ProjectFinanceSettings
@@ -53,7 +53,7 @@ internal class ClaimServiceImpl(
 
                     // Деньги принимаются ДО смены статуса: приём гасит взнос, и только после него
                     // validator.CanCheckInNow может стать истинным.
-                    financeComment = AcceptFeeImpl(".", ctx.Now, ctx.Request, paymentType, ctx.Claim, ctx.ProjectInfo, ctx.Now);
+                    financeComment = ctx.AcceptFeeDeferringNotification(".", ctx.Now, ctx.Request, paymentType);
                 }
                 else if (ctx.Request < 0)
                 {
@@ -76,7 +76,7 @@ internal class ClaimServiceImpl(
                 // позже.
                 if (financeComment is { } finance)
                 {
-                    _ = ctx.EnqueueComment(finance.Comment, finance.Notification);
+                    _ = ctx.EnqueueComment(finance);
                 }
             });
 
