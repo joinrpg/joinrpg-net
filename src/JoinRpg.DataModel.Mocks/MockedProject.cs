@@ -34,6 +34,30 @@ public class MockedProject
     };
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
 
+    private UserInfo MasterInfoTemplate { get; } = new UserInfo(new UserIdentification(2), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("master@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Master"), null, null, null), false, null, HasPassword: false);
+
+    /// <summary>
+    /// <see cref="UserInfo"/> мастера, согласованный с заявками мока.
+    /// </summary>
+    /// <inheritdoc cref="PlayerInfo" path="/remarks"/>
+    public UserInfo MasterInfo => MasterInfoTemplate with
+    {
+        ActiveClaims = [.. Master.Claims
+            .Where(claim => claim.ClaimStatus.IsActive())
+            .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
+    };
+
+    /// <summary>
+    /// <see cref="UserInfo"/> известного моку пользователя; <c>null</c> для всех остальных.
+    /// </summary>
+    public UserInfo? TryGetUserInfo(UserIdentification userId)
+        => userId.Value switch
+        {
+            1 => PlayerInfo,
+            2 => MasterInfo,
+            _ => null,
+        };
+
     public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }
     public ProjectFieldInfo HideForUnApprovedClaimInfo { get; set; }
 
@@ -168,6 +192,41 @@ public class MockedProject
         Project.Characters.Add(character);
 
         return character;
+    }
+
+    /// <summary>
+    /// Слот — шаблон роли, из которого при утверждении заявки создаётся настоящий персонаж.
+    /// </summary>
+    /// <param name="slotLimit">Сколько персонажей ещё можно создать; <c>null</c> — без ограничения.</param>
+    public Character CreateSlot(string name, int? slotLimit = null)
+    {
+        var slot = CreateCharacter(name);
+        slot.CharacterType = CharacterType.Slot;
+        slot.CharacterSlotLimit = slotLimit;
+        return slot;
+    }
+
+    /// <summary>
+    /// Сюжеты проекта. Отдельная коллекция, а не навигация <see cref="DataModel.Project"/>: её у
+    /// проекта нет, а write-хэндл грузит сюжеты отдельным запросом.
+    /// </summary>
+    public List<PlotElement> PlotElements { get; } = [];
+
+    /// <summary>
+    /// Сюжет, привязанный напрямую к перечисленным персонажам.
+    /// </summary>
+    public PlotElement CreatePlotElement(params Character[] targetCharacters)
+    {
+        var plotElement = new PlotElement
+        {
+            PlotElementId = PlotElements.GetNextId(),
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            TargetCharacters = [.. targetCharacters],
+            TargetGroups = [],
+        };
+        PlotElements.Add(plotElement);
+        return plotElement;
     }
 
     public ProjectFieldInfo CreateConditionalField(CharacterGroup conditionGroup)

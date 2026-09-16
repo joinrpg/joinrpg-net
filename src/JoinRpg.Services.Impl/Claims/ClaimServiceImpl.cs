@@ -7,6 +7,8 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Characters;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
@@ -23,7 +25,8 @@ internal class ClaimServiceImpl(
     ILogger<CharacterServiceImpl> logger,
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
-    IImpersonateAccessor impersonateAccessor
+    IImpersonateAccessor impersonateAccessor,
+    ICharacterPropsService characterPropsService
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
@@ -93,6 +96,8 @@ internal class ClaimServiceImpl(
         //source.EnsureCanMoveClaim(oldClaim);
 
         var responsibleMaster = source.GetResponsibleMaster();
+        // TODO последняя ручная сборка Claim: остальные создают заявку через ctx.NewClaim.
+        // Уйдёт, когда MoveToSecondRole переедет на ICharacterPropsService.CreateClaim (ADR014).
         var claim = new Claim()
         {
             CharacterId = characterId.CharacterId,
@@ -151,53 +156,38 @@ internal class ClaimServiceImpl(
 
         logger.LogDebug("About to add claim to character {characterId}", characterId);
 
-        var source = await CharactersRepository.GetCharacterAsync(characterId);
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
-        var user = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
+        var claim = await characterPropsService.CreateClaim(
+            characterId,
+            currentUserAccessor.UserIdentification,
+            ClaimOperation.AddByPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            (claimText, fields, sensitiveDataAllowed),
+            ctx =>
+            {
+                var claim = ctx.NewClaim(
+                    ClaimStatus.AddedByUser,
+                    // Разрешение даёт игрок, и только если проект его вообще спрашивает.
+                    playerAllowedSensitiveData: ctx.Request.sensitiveDataAllowed
+                        && ctx.ProjectInfo.ProfileRequirementSettings.SensitiveDataRequired);
 
-        ClaimValidator.EnsureCanAddClaim(
-            await characterInfoRepository.GetCharacterInfo(characterId), user, projectInfo, ClaimOperation.AddByPlayer);
+                _ = ctx.SaveFields(claim, ctx.Request.fields);
 
-        User responsibleMaster = source.GetResponsibleMaster();
+                //TODO добавить сюда измененные поля
+                ctx.AddComment(
+                    ctx.Request.claimText,
+                    CommentExtraAction.NewClaim,
+                    ClaimOperationType.PlayerChange);
 
-        var claim = new Claim()
-        {
-            CharacterId = characterId.CharacterId,
-            Character = source,
-            ProjectId = characterId.ProjectId,
-            Project = source.Project, // это нужно при операциях с полями, к сожалению
-            PlayerUserId = CurrentUserId,
-            PlayerAcceptedDate = Now,
-            CreateDate = Now,
-            ClaimStatus = ClaimStatus.AddedByUser,
-            ResponsibleMasterUserId = responsibleMaster.UserId,
-            ResponsibleMasterUser = responsibleMaster,
-            LastUpdateDateTime = Now,
-            PlayerAllowedSenstiveData = sensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired,
-            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
-        };
-
-        // Т.к. CreateClaimCommentWithNotification ожидает, что комментарий уже существует
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
-        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
-        await UnitOfWork.SaveChangesAsync();
-
-        //TODO добавить сюда измененные поля
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(claimText,
-               claim,
-               projectInfo,
-               CommentExtraAction.NewClaim,
-               ClaimOperationType.PlayerChange,
-               Now
-               );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
+                return claim;
+            });
 
         var claimId = claim.GetId();
 
-        await AutoApproveClaimIfNeeded(claim, projectInfo);
+        // Автоприём — отдельная операция, идущая строго ПОСЛЕ создания: реентерабельность
+        // запрещена (ADR014, §7). Переезд самого автоприёма — отдельным шагом миграции.
+        await AutoApproveClaimIfNeeded(
+            claim,
+            await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId));
 
         logger.LogInformation("Claim ({claimId}) was successfully send to character {characterId}", claimId, characterId);
         return claimId;
@@ -281,71 +271,77 @@ internal class ClaimServiceImpl(
         }
     }
 
-    public async Task ApproveByMaster(ClaimIdentification claimId, string commentText)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        if (claim.ClaimStatus == ClaimStatus.CheckedIn)
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
-        }
-
-        commentText ??= "";
-
-        if (claim.Character.CharacterType == CharacterType.Slot)
-        {
-            var character = await CreateCharacterFromSlot(claim.Character, claim.Player, projectInfo);
-            claim.Character = character;
-            claim.CharacterId = character.CharacterId;
-        }
-
-        claim.MasterAcceptedDate = Now;
-        claim.ChangeStatusWithCheck(ClaimStatus.Approved);
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.ApproveByMaster, ClaimOperationType.MasterVisibleChange, Now);
-
-        List<(Comment comment, ClaimSimpleChangedNotification email)> notificationsList = [(comment, email)];
-
-        if (projectInfo.ClaimSettings.StrictlyOneCharacter)
-        {
-            foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
+    public Task ApproveByMaster(ClaimIdentification claimId, string commentText)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            commentText ?? "",
+            async ctx =>
             {
-                otherClaim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
-                otherClaim.MasterDeclinedDate = Now;
-                otherClaim.ClaimStatus = ClaimStatus.DeclinedByMaster;
+                if (ctx.Claim.ClaimStatus == ClaimStatus.CheckedIn)
+                {
+                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                }
 
-                var (otherComment, otherEmail) = CommentHelper.CreateClaimCommentWithNotification(
-                    "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                    otherClaim,
-                    projectInfo,
-                    CommentExtraAction.DeclineByMaster,
-                    ClaimOperationType.MasterVisibleChange, Now);
+                if (ctx.Claim.Character.CharacterType == CharacterType.Slot)
+                {
+                    // Единственная асинхронная загрузка метода, и она условная: сюжеты нужны только
+                    // слоту. Поднимать её наверх нельзя — грузились бы на каждое утверждение.
+                    var character = await CreateCharacterFromSlot(ctx, ctx.Claim.Character, ctx.Claim.Player);
+                    ctx.Claim.Character = character;
+                    ctx.Claim.CharacterId = character.CharacterId;
+                }
 
-                notificationsList.Add((otherComment, otherEmail));
-            }
-        }
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.Approved);
 
-        MarkCharacterChangedIfApproved(claim);
-        claim.Character.ApprovedClaimId = claim.ClaimId;
-        claim.Character.ApprovedClaim = claim; // Used in SaveCharacterFields
-        claim.Character.IsHot = false;
+                _ = ctx.AddComment(
+                    ctx.Request,
+                    CommentExtraAction.ApproveByMaster,
+                    ClaimOperationType.MasterVisibleChange);
 
-        //We need to re-save fields here. Reasons:
-        // 1. If we created character during approving, we need to set name for character
-        // 2. M.b. we need to move some field values from Claim to Characters
-        // 3. (2) Could activate changing of special groups
-        // we don't need send to show updated fields in email here, so ignore return result. 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
+                if (ctx.ProjectInfo.ClaimSettings.StrictlyOneCharacter)
+                {
+                    // Читает claim.Player.Claims — навигацию, которую write-хэндл грузит явно
+                    // (Include(c => c.Player.Claims)). Без неё список молча оказался бы пуст.
+                    foreach (var otherClaim in ctx.Claim.OtherPendingClaimsForThisPlayer())
+                    {
+                        ctx.ChangeStatus(otherClaim, ClaimStatus.DeclinedByMaster);
 
-        await UnitOfWork.SaveChangesAsync();
+                        _ = ctx.AddComment(
+                            otherClaim,
+                            //TODO[Localize]
+                            "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                            CommentExtraAction.DeclineByMaster,
+                            ClaimOperationType.MasterVisibleChange);
+                    }
+                }
 
-        foreach (var (notificationComment, notification) in notificationsList)
-        {
-            await claimNotificationService.SendNotification(notification.WithCommentId(notificationComment.CommentId));
-        }
-    }
+                ctx.MarkCharacterChangedIfApproved();
+                ctx.Claim.Character.ApprovedClaimId = ctx.Claim.ClaimId;
+                // Порядок критичен: ApprovedClaim обязан быть проставлен ДО SaveFields — от него
+                // зависит выбор стратегии в FieldSaveHelper (IsApproved => SaveToCharacterAndClaim).
+                ctx.Claim.Character.ApprovedClaim = ctx.Claim;
+                ctx.Claim.Character.IsHot = false;
 
-    private async Task<Character> CreateCharacterFromSlot(Character slot, User player, ProjectInfo projectInfo)
+                // Пересохранение пустым слоем — не мёртвый код, оно нужно ради побочных эффектов:
+                // 1. если персонаж создан из слота при утверждении, ему надо проставить имя;
+                // 2. часть значений полей переезжает из заявки в персонажа;
+                // 3. (2) может пересчитать спецгруппы.
+                // Показывать изменённые поля в письме не надо, поэтому результат игнорируем.
+                _ = ctx.SaveFields(FieldLayerContainer.Empty(ctx.ProjectInfo));
+            });
+
+    /// <summary>
+    /// Создаёт персонажа из слота при утверждении заявки: уменьшает остаток слота, копирует
+    /// свойства и наследует прямые привязки к сюжетам.
+    /// </summary>
+    /// <remarks>
+    /// <c>CreatedAt</c>/<c>UpdatedAt</c> проставляются локальным <see cref="DateTime.Now"/>, а не
+    /// временем операции (UTC). Это выглядит ошибкой, но сохранено как есть: миграция обязана
+    /// сохранять поведение, а починка — отдельное изменение.
+    /// </remarks>
+    private static async Task<Character> CreateCharacterFromSlot(ClaimMutationContext ctx, Character slot, User player)
     {
 
         switch (slot.CharacterSlotLimit)
@@ -397,7 +393,11 @@ internal class ClaimServiceImpl(
             UpdatedById = player.UserId,
         };
 
-        var plots = await PlotRepository.GetDirectPlotsForCharacter(slot.GetId());
+        // Через контекст, а не через UnitOfWork.GetDbSet: сохраняет тот DbContext, который загрузил
+        // агрегат, а DI-экземпляр UnitOfWork у сервиса — другой (ADR014).
+        ctx.AddEntity(newCharacter);
+
+        var plots = await ctx.LoadDirectPlotsForCharacter(slot.GetId());
 
         foreach (var plot in plots)
         {
@@ -410,51 +410,118 @@ internal class ClaimServiceImpl(
         return newCharacter;
     }
 
-    public async Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        var statusWasApproved = claim.ClaimStatus == ClaimStatus.Approved;
-
-        claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
-
-        claim.MasterDeclinedDate = Now;
-        claim.ClaimStatus = ClaimStatus.DeclinedByMaster;
-        claim.ClaimDenialStatus = claimDenialStatus;
-        claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
-
-        var roomEmail = await CommonClaimDecline(claim);
-
-        if (deleteCharacter)
-        {
-            if (!statusWasApproved)
+    public Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            (DenialStatus: claimDenialStatus, CommentText: commentText, DeleteCharacter: deleteCharacter),
+            async ctx =>
             {
-                throw new InvalidOperationException("Attempt to delete character, but it not exists");
-            }
-            DeleteCharacter(claim.Character, projectInfo);
-        }
+                // Запоминаем ДО смены статуса: удалять персонажа можно только у утверждённой заявки.
+                var statusWasApproved = ctx.Claim.ClaimStatus == ClaimStatus.Approved;
 
-        await accommodationInviteService.DeclineAllClaimInvites(claimId);
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.DeclinedByMaster);
+                ctx.Claim.ClaimDenialStatus = ctx.Request.DenialStatus;
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByMaster, ClaimOperationType.MasterVisibleChange, Now);
+                // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
+                ctx.Claim.PlayerAllowedSenstiveData = false;
 
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-        if (roomEmail != null)
-        {
-            await EmailService.Email(roomEmail);
-        }
+                var roomEmail = CommonClaimDecline(ctx);
+
+                if (ctx.Request.DeleteCharacter)
+                {
+                    if (!statusWasApproved)
+                    {
+                        throw new InvalidOperationException("Attempt to delete character, but it not exists");
+                    }
+                    DeleteCharacter(ctx);
+                }
+
+                await accommodationInviteService.DeclineAllClaimInvites(claimId);
+
+                _ = ctx.AddComment(
+                    ctx.Request.CommentText,
+                    CommentExtraAction.DeclineByMaster,
+                    ClaimOperationType.MasterVisibleChange);
+
+                if (roomEmail is not null)
+                {
+                    // Порядок «сначала уведомления, потом письма легаси-канала» обеспечивает сервис.
+                    ctx.AddLegacyEmail(emailService => emailService.Email(roomEmail));
+                }
+            });
+
+    /// <summary>
+    /// Деактивация персонажа вместе с отклонением заявки.
+    /// </summary>
+    /// <remarks>
+    /// Вторая проверка прав внутри лямбды — намеренный escape-hatch (ADR014, §5): право зависит от
+    /// аргумента операции (<c>deleteCharacter</c>), а требование доступа самой операции
+    /// (<see cref="ClaimAccessRequirement.ApprovalDecline"/>) его не покрывает.
+    /// </remarks>
+    private static void DeleteCharacter(ClaimMutationContext ctx)
+    {
+        _ = ctx.ProjectInfo.RequestMasterAccess(ctx.CurrentUser, Permission.CanEditRoles);
+
+        ctx.Character.DirectlyRelatedPlotElements.CleanLinksList();
+
+        ctx.Character.IsActive = false;
+        ctx.MarkChanged(ctx.Character);
     }
 
-    private void DeleteCharacter(Character character, ProjectInfo projectInfo)
+    /// <summary>
+    /// Общая часть отклонения заявки на контексте мутации (ADR014). Возвращает письмо легаси-канала
+    /// о выезде из комнаты, если заявка была поселена.
+    /// </summary>
+    private static LeaveRoomEmail? CommonClaimDecline(ClaimMutationContext ctx)
     {
+        ctx.MarkCharacterChangedIfApproved();
 
-        _ = projectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification, Permission.CanEditRoles);
+        if (ctx.Claim.Character?.ApprovedClaim == ctx.Claim)
+        {
+            ctx.Claim.Character.ApprovedClaimId = null;
+        }
 
-        character.DirectlyRelatedPlotElements.CleanLinksList();
+        return ConsiderLeavingRoom(ctx);
+    }
 
-        character.IsActive = false;
-        MarkChanged(character);
+    /// <summary>
+    /// То же, что <see cref="ConsiderLeavingRoom(Claim)"/>, но на контексте мутации: инициатор берётся
+    /// из уже загруженного хэндла (лишнего запроса за текущим пользователем нет), а опустевшая заявка
+    /// на поселение удаляется через тот же <c>DbContext</c>, а не через сырой <c>DbSet</c>.
+    /// </summary>
+    private static LeaveRoomEmail? ConsiderLeavingRoom(ClaimMutationContext ctx)
+    {
+        var claim = ctx.Claim;
+
+        if (claim.AccommodationRequest is null)
+        {
+            return null;
+        }
+
+        LeaveRoomEmail? email = null;
+
+        if (claim.AccommodationRequest.Accommodation is not null)
+        {
+            email = new LeaveRoomEmail()
+            {
+                Changed = [claim],
+                Initiator = ctx.Initiator,
+                ProjectName = claim.Project.ProjectName,
+                Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
+                Room = claim.AccommodationRequest.Accommodation,
+                Text = new MarkdownDbValue(),
+            };
+        }
+
+        _ = claim.AccommodationRequest.Subjects.Remove(claim);
+        if (claim.AccommodationRequest.Subjects.Count == 0)
+        {
+            ctx.RemoveEntity(claim.AccommodationRequest);
+        }
+
+        return email;
     }
 
     private async Task<LeaveRoomEmail?> CommonClaimDecline(Claim claim)
@@ -620,68 +687,71 @@ internal class ClaimServiceImpl(
     }
 
 
-    public async Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
-    {
-        var (claim, projectInfo) = await LoadClaimAsPlayer(claimId);
+    public Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.PlayerOnly,
+            ProjectActiveRequirement.MustBeActive,
+            commentText,
+            async ctx =>
+            {
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.DeclinedByUser);
 
-        claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByUser);
+                // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
+                ctx.Claim.PlayerAllowedSenstiveData = false;
 
-        claim.PlayerDeclinedDate = Now;
-        claim.ClaimStatus = ClaimStatus.DeclinedByUser;
-        claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
+                await accommodationInviteService.DeclineAllClaimInvites(claimId);
 
+                var roomEmail = await CommonClaimDecline(ctx.Claim);
 
-        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+                _ = ctx.AddComment(
+                    ctx.Request,
+                    CommentExtraAction.DeclineByPlayer,
+                    ClaimOperationType.PlayerChange);
 
-        var roomEmail = await CommonClaimDecline(claim);
+                if (roomEmail is not null)
+                {
+                    // Порядок «сначала уведомления, потом письма легаси-канала» обеспечивает сервис.
+                    ctx.AddLegacyEmail(emailService => emailService.Email(roomEmail));
+                }
+            });
 
+    public Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            (CommentText: commentText, CharacterId: characterId),
+            async ctx =>
+            {
+                var oldCharacterId = ctx.Claim.GetCharacterId(); // Сохраняем на случай если он изменится
+                var (character, _) = await ctx.LoadOtherCharacter(ctx.Request.CharacterId);
 
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.AddedByMaster);
+                ctx.Claim.ClaimDenialStatus = null;
+                // Мастер не может дать разрешение на чувствительные данные от имени игрока
+                ctx.Claim.PlayerAllowedSenstiveData = false;
+                ctx.MarkDiscussed(isVisibleToPlayer: true);
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByPlayer, ClaimOperationType.PlayerChange, Now);
+                if (character.ApprovedClaim is not null)
+                {
+                    // Персонаж, куда мы пытаемся восстановить заявку, уже занят.
+                    throw new ClaimTargetIsNotAcceptingClaims();
+                }
 
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-        if (roomEmail != null)
-        {
-            await EmailService.Email(roomEmail);
-        }
-    }
+                ctx.Claim.Character = character;
+                ctx.Claim.CharacterId = ctx.Request.CharacterId.Id;
 
+                //Ensure that character is active
+                character.IsActive = true;
+                ctx.MarkChanged(character);
 
-    public async Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        var oldCharacterId = claim.GetCharacterId(); // Сохраняем на случай если он изменится
-        var character = await CharactersRepository.GetCharacterAsync(characterId)
-            ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, nameof(Character));
-
-        claim.EnsureCanChangeStatus(ClaimStatus.AddedByMaster);
-        claim.ClaimStatus = ClaimStatus.AddedByMaster;
-        claim.ClaimDenialStatus = null;
-        claim.PlayerAllowedSenstiveData = false; // Мастер не может дать разрешение на чувствительные данные от имени игрока
-        SetDiscussed(claim, true);
-
-        if (character.ApprovedClaim is not null)
-        {
-            // Персонаж, куда мы пытаемся восстановить заявку, уже занят.
-            throw new ClaimTargetIsNotAcceptingClaims();
-        }
-
-        claim.Character = character;
-        claim.CharacterId = characterId.Id;
-
-        //Ensure that character is active
-        claim.Character.IsActive = true;
-        MarkChanged(claim.Character);
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.RestoreByMaster, ClaimOperationType.MasterVisibleChange, Now);
-
-        email = email with { AnotherCharacterId = oldCharacterId };
-
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                _ = ctx.AddComment(
+                        ctx.Request.CommentText,
+                        CommentExtraAction.RestoreByMaster,
+                        ClaimOperationType.MasterVisibleChange)
+                    .Decorate(notification => notification with { AnotherCharacterId = oldCharacterId });
+            });
 
     public async Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
     {
@@ -809,21 +879,22 @@ internal class ClaimServiceImpl(
         // await EmailService.Email(email);
     }
 
-    public async Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
-    {
+    public Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            commentText,
+            ctx =>
+            {
+                ctx.MarkCharacterChangedIfApproved();
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.OnHold);
 
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        MarkCharacterChangedIfApproved(claim);
-        claim.ChangeStatusWithCheck(ClaimStatus.OnHold);
-
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.OnHoldByMaster, ClaimOperationType.MasterVisibleChange, Now);
-
-
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                _ = ctx.AddComment(
+                    ctx.Request,
+                    CommentExtraAction.OnHoldByMaster,
+                    ClaimOperationType.MasterVisibleChange);
+            });
 
     private void MarkCharacterChangedIfApproved(Claim claim)
     {
@@ -992,55 +1063,32 @@ internal class ClaimServiceImpl(
 
         logger.LogDebug("About to add claim from master to character {characterId} for user {userId}", characterId, userId);
 
-        var source = await CharactersRepository.GetCharacterAsync(characterId);
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
-        var playerUser = await UserRepository.GetRequiredUserInfo(userId);
+        // Права мастера и правила подачи проверяет сам props-сервис: ClaimOperation.AddByMaster
+        // требует CanManageClaims и пропускает причины с MasterCanOverride — закрытый приём заявок
+        // и незаполненные контакты игрока мастера не останавливают.
+        var claim = await characterPropsService.CreateClaim(
+            characterId,
+            userId,
+            ClaimOperation.AddByMaster,
+            ProjectActiveRequirement.MustBeActive,
+            (commentText, fields),
+            ctx =>
+            {
+                var claim = ctx.NewClaim(
+                    ClaimStatus.AddedByMaster,
+                    // Мастер не может дать разрешение на чувствительные данные от имени игрока
+                    playerAllowedSensitiveData: false);
 
-        // Проверяем, что текущий пользователь (мастер) имеет право управлять заявками
-        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+                _ = ctx.SaveFields(claim, ctx.Request.fields);
 
-        // Проверяем, что персонаж может принимать заявки. Приглашение от мастера проходит мимо
-        // причин с MasterCanOverride: закрытый приём заявок и незаполненные контакты игрока
-        // мастера не останавливают — контакты игрок дозаполнит позже.
-        ClaimValidator.EnsureCanAddClaim(
-            await characterInfoRepository.GetCharacterInfo(characterId), playerUser, projectInfo, ClaimOperation.AddByMaster);
+                // Комментарий о приглашении
+                ctx.AddComment(
+                    ctx.Request.commentText,
+                    CommentExtraAction.NewClaim,
+                    ClaimOperationType.MasterVisibleChange);
 
-        User responsibleMaster = source.GetResponsibleMaster();
-
-        var claim = new Claim()
-        {
-            CharacterId = characterId.CharacterId,
-            Character = source,
-            ProjectId = characterId.ProjectId,
-            Project = source.Project, // это нужно при операциях с полями, к сожалению
-            PlayerUserId = userId.Value,
-            PlayerAcceptedDate = Now,
-            CreateDate = Now,
-            ClaimStatus = ClaimStatus.AddedByMaster,
-            ResponsibleMasterUserId = responsibleMaster.UserId,
-            ResponsibleMasterUser = responsibleMaster,
-            LastUpdateDateTime = Now,
-            PlayerAllowedSenstiveData = false, // Мастер не может дать разрешение на чувствительные данные от имени игрока
-            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
-        };
-
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
-        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
-        await UnitOfWork.SaveChangesAsync();
-
-        // Создаём комментарий о приглашении
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(
-            commentText,
-            claim,
-            projectInfo,
-            CommentExtraAction.NewClaim,
-            ClaimOperationType.MasterVisibleChange,
-            Now
-        );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
+                return claim;
+            });
 
         var claimId = claim.GetId();
         logger.LogInformation("Claim ({claimId}) was successfully created by master for character {characterId} for user {userId}", claimId, characterId, userId);
