@@ -53,10 +53,7 @@ internal class ClaimServiceImpl(
 
                     // Деньги принимаются ДО смены статуса: приём гасит взнос, и только после него
                     // validator.CanCheckInNow может стать истинным.
-                    var (financeComment, financeNotification) = AcceptFeeImpl(
-                        ".", ctx.Now, ctx.Request, paymentType, ctx.Claim, ctx.ProjectInfo, ctx.Now);
-
-                    _ = ctx.EnqueueComment(financeComment, financeNotification);
+                    _ = ctx.AcceptFee(".", ctx.Now, ctx.Request, paymentType);
                 }
                 else if (ctx.Request < 0)
                 {
