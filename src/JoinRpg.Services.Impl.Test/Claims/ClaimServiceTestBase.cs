@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;
@@ -41,13 +42,20 @@ public abstract class ClaimServiceTestBase
     /// Собирает боевой <see cref="CharacterPropsService"/> поверх фейков — подделываются только
     /// доступ к данным и каналы уведомлений, сама проверяемая логика настоящая.
     /// </summary>
-    private protected CharacterPropsService CreatePropsService(int? currentUserId = null)
+    private protected CharacterPropsService CreatePropsService(int? currentUserId = null, bool isAdmin = false)
+        => CreatePropsService(CreateCurrentUser(currentUserId, isAdmin));
+
+    /// <summary>
+    /// То же, но с произвольным текущим пользователем — нужно там, где проверяется поведение при
+    /// <b>отсутствии</b> пользователя (платёжные колбэки приходят от банка без нашей сессии).
+    /// </summary>
+    private protected CharacterPropsService CreatePropsService(ICurrentUserAccessor currentUser)
         => new(
             unitOfWork,
-            CreateCurrentUser(currentUserId),
+            currentUser,
             metadataRepository,
             CreateFieldSaveHelper(),
-            new CommentHelper(CreateCurrentUser(currentUserId)),
+            new CommentHelper(currentUser),
             claimNotifications,
             emailService,
             NullLogger<CharacterPropsService>.Instance);
