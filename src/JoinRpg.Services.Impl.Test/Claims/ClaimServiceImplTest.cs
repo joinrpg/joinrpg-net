@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -18,32 +19,6 @@ namespace JoinRpg.Services.Impl.Test.Claims;
 /// </summary>
 public class ClaimServiceImplTest : ClaimServiceTestBase
 {
-    /// <summary>Записывает отзыв приглашений на совместное проживание вместо реального.</summary>
-    private sealed class FakeAccommodationInviteService : IAccommodationInviteService
-    {
-        public List<ClaimIdentification> DeclinedInvitesFor { get; } = [];
-
-        public Task DeclineAllClaimInvites(ClaimIdentification claimId)
-        {
-            DeclinedInvitesFor.Add(claimId);
-            return Task.CompletedTask;
-        }
-
-        public Task CreateAccommodationInvite(
-            ClaimIdentification senderClaimId,
-            AccommodationRequestIdentification senderRequestId,
-            AccommodationTargetIdentification target) => throw new NotSupportedException();
-
-        public Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(
-            AccommodationInviteIdentification inviteId,
-            InviteState newState) => throw new NotSupportedException();
-
-        public Task<AccommodationInvite?> AcceptAccommodationInvite(AccommodationInviteIdentification inviteId)
-            => throw new NotSupportedException();
-    }
-
-    private readonly FakeAccommodationInviteService accommodationInvites = new();
-
     private ClaimServiceImpl CreateService(int? currentUserId = null)
     {
         var currentUser = CreateCurrentUser(currentUserId);
@@ -51,7 +26,6 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             unitOfWork,
             emailService,
             CreateFieldSaveHelper(),
-            accommodationInvites,
             currentUser,
             metadataRepository,
             new FakeProblemValidator<Claim>(),
@@ -112,7 +86,6 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         claim.ClaimStatus.ShouldBe(ClaimStatus.DeclinedByUser);
         claim.PlayerDeclinedDate.ShouldNotBeNull();
         claim.PlayerAllowedSenstiveData.ShouldBeFalse();
-        accommodationInvites.DeclinedInvitesFor.ShouldBe([claim.GetId()]);
         SaveChangesCallCount.ShouldBe(1);
         SentNotifications.Count.ShouldBe(1);
     }
@@ -139,35 +112,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     /// </summary>
     private AccommodationRequest CreateAccommodation(Claim claim)
     {
-        var room = new ProjectAccommodation
-        {
-            Id = 1,
-            Name = "Комната",
-            Project = mock.Project,
-            ProjectId = mock.Project.ProjectId,
-            Inhabitants = [],
-        };
-
-        var request = new AccommodationRequest
-        {
-            Id = 1,
-            Project = mock.Project,
-            ProjectId = mock.Project.ProjectId,
-            Subjects = [claim],
-            Accommodation = room,
-            AccommodationId = room.Id,
-        };
-        room.Inhabitants.Add(request);
-
-        // Подписки собираются обходом заявка → персонаж → группы; в моке коллекции не заведены.
-        claim.Subscriptions = [];
-        claim.Character.Subscriptions = [];
-        foreach (var group in mock.Project.CharacterGroups)
-        {
-            group.Subscriptions ??= [];
-        }
-
-        claim.AccommodationRequest = request;
+        var request = mock.CreateAccommodationRequest(mock.CreateAccommodationType(), claim);
+        _ = mock.CreateRoom(request);
         return request;
     }
 
@@ -184,7 +130,6 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         claim.MasterDeclinedDate.ShouldNotBeNull();
         claim.ClaimDenialStatus.ShouldBe(ClaimDenialReason.NotSuitable);
         claim.PlayerAllowedSenstiveData.ShouldBeFalse();
-        accommodationInvites.DeclinedInvitesFor.ShouldBe([claim.GetId()]);
         SaveChangesCallCount.ShouldBe(1);
         SentNotifications.Count.ShouldBe(1);
     }
@@ -1392,6 +1337,256 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region Отзыв приглашений на совместное проживание
+
+    /// <summary>
+    /// Приглашения отклоняются в том же единственном сохранении, что и сама заявка. До миграции их
+    /// отзыв шёл на собственном <c>DbContext</c> со своим <c>SaveChanges</c> — то есть коммитился
+    /// независимо от внешней операции (ADR014).
+    /// </summary>
+    [Fact]
+    public async Task DeclineByMaster_WithInvites_DeclinesThemInSameSave_AndMailsAfterNotification()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var neighbourClaim = CreateClaim(ClaimStatus.AddedByUser, "Сосед");
+        var invite = mock.CreateAccommodationInvite(claim, neighbourClaim);
+
+        var invitesDeclinedAtSave = false;
+        OnSaveChanges = _ => invitesDeclinedAtSave = invite.IsAccepted == InviteState.Declined;
+
+        await CreateService().DeclineByMaster(
+            claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
+
+        invite.IsAccepted.ShouldBe(InviteState.Declined);
+        invite.ResolveDescription.ShouldBe(ResolveDescription.ClaimCanceled);
+
+        // Главное: отзыв приглашений попал в то же сохранение, а не в своё собственное.
+        invitesDeclinedAtSave.ShouldBeTrue();
+        SaveChangesCallCount.ShouldBe(1);
+
+        // Письмо о снятии приглашения уходит легаси-каналом, то есть после уведомления.
+        var email = SentEmails.ShouldHaveSingleItem().ShouldBeOfType<DeclineInviteEmail>();
+        email.RecipientClaims.ShouldBe([neighbourClaim]);
+        email.Initiator.ShouldBe(mock.Master);
+
+        SentInOrder.Count.ShouldBe(2);
+        _ = SentInOrder[0].ShouldBeOfType<ClaimSimpleChangedNotification>();
+        _ = SentInOrder[1].ShouldBeOfType<DeclineInviteEmail>();
+    }
+
+    [Fact]
+    public async Task DeclineByPlayer_WithInvites_DeclinesThem()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var neighbourClaim = CreateClaim(ClaimStatus.AddedByUser, "Сосед");
+
+        // Приглашение, полученное отклоняемой заявкой, снимается так же, как и отправленное ею.
+        var invite = mock.CreateAccommodationInvite(neighbourClaim, claim);
+
+        await CreateService(mock.Player.UserId).DeclineByPlayer(claim.GetId(), "передумал");
+
+        invite.IsAccepted.ShouldBe(InviteState.Declined);
+        SaveChangesCallCount.ShouldBe(1);
+        SentEmails.ShouldHaveSingleItem().ShouldBeOfType<DeclineInviteEmail>()
+            .RecipientClaims.ShouldBe([neighbourClaim]);
+    }
+
+    /// <summary>Приглашений нет — писем тоже нет, и лишних запросов не понадобилось.</summary>
+    [Fact]
+    public async Task DeclineByMaster_WithoutInvites_SendsNoInviteEmail()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService().DeclineByMaster(
+            claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
+
+        SentEmails.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region SetAccommodationType
+
+    [Fact]
+    public async Task SetAccommodationType_ToNewType_CreatesRequest_SavesOnce()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var newType = mock.CreateAccommodationType("Домик");
+
+        var request = await CreateService().SetAccommodationType(
+            ProjectId.Value, claim.ClaimId, newType.Id);
+
+        request.AccommodationTypeId.ShouldBe(newType.Id);
+        request.IsAccepted.ShouldBe(InviteState.Accepted);
+        request.Subjects.ShouldBe([claim]);
+        claim.AccommodationRequest.ShouldBe(request);
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentEmails.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Смена типа у уже поселённой заявки: старая комната покидается, письмо о выезде уходит
+    /// легаси-каналом — то есть после сохранения.
+    /// </summary>
+    [Fact]
+    public async Task SetAccommodationType_WhenAlreadyInRoom_LeavesOldRoom_AndMailsAfterSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var oldRequest = CreateAccommodation(claim);
+        var newType = mock.CreateAccommodationType("Домик");
+
+        var savesWhenEmailSent = -1;
+        emailService.OnEmail = () => savesWhenEmailSent = SaveChangesCallCount;
+
+        var request = await CreateService().SetAccommodationType(
+            ProjectId.Value, claim.ClaimId, newType.Id);
+
+        request.ShouldNotBe(oldRequest);
+        oldRequest.Subjects.ShouldBeEmpty();
+
+        SaveChangesCallCount.ShouldBe(1);
+        _ = SentEmails.ShouldHaveSingleItem().ShouldBeOfType<LeaveRoomEmail>();
+        savesWhenEmailSent.ShouldBe(1);
+    }
+
+    /// <summary>Тип уже такой — ранний выход обязан остаться холостым.</summary>
+    [Fact]
+    public async Task SetAccommodationType_ToSameType_DoesNothing()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var request = CreateAccommodation(claim);
+
+        var result = await CreateService().SetAccommodationType(
+            ProjectId.Value, claim.ClaimId, request.AccommodationTypeId);
+
+        result.ShouldBe(request);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+        SentEmails.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SetAccommodationType_ToUnknownType_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService().SetAccommodationType(ProjectId.Value, claim.ClaimId, 12345));
+
+        SaveChangesCallCount.ShouldBe(0);
+        SentEmails.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// <see cref="ClaimAccessRequirement.AccommodationChange"/> в действии: у неутверждённой заявки
+    /// менять поселение может только обладатель <c>CanSetPlayersAccommodations</c>, у утверждённой —
+    /// ещё и сам игрок.
+    /// </summary>
+    [Fact]
+    public async Task SetAccommodationType_OfNotApprovedClaim_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var newType = mock.CreateAccommodationType("Домик");
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).SetAccommodationType(
+                ProjectId.Value, claim.ClaimId, newType.Id));
+
+        claim.AccommodationRequest.ShouldBeNull();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task SetAccommodationType_OfApprovedClaim_ByPlayer_Works()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var claim = mock.CreateApprovedClaim(character, mock.Player);
+        mock.ReInitProjectInfo();
+        var newType = mock.CreateAccommodationType("Домик");
+
+        var request = await CreateService(mock.Player.UserId).SetAccommodationType(
+            ProjectId.Value, claim.ClaimId, newType.Id);
+
+        request.AccommodationTypeId.ShouldBe(newType.Id);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    #endregion
+
+    #region LeaveAccommodationGroupAsync
+
+    [Fact]
+    public async Task LeaveAccommodationGroup_WithoutAccommodation_DoesNothing()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        var result = await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+
+        result.ShouldBeNull();
+        SaveChangesCallCount.ShouldBe(0);
+        SentEmails.ShouldBeEmpty();
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Заявка живёт в номере одна — выходить не из чего, и это тоже холостой ранний выход.
+    /// </summary>
+    [Fact]
+    public async Task LeaveAccommodationGroup_WhenSoleDweller_DoesNothing()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var request = CreateAccommodation(claim);
+
+        var result = await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+
+        result.ShouldBe(request);
+        request.Subjects.ShouldBe([claim]);
+        SaveChangesCallCount.ShouldBe(0);
+        SentEmails.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LeaveAccommodationGroup_FromSharedRoom_MovesToOwnRequest()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var neighbourClaim = CreateClaim(ClaimStatus.AddedByUser, "Сосед");
+        var accommodationType = mock.CreateAccommodationType();
+        var request = mock.CreateAccommodationRequest(accommodationType, claim, neighbourClaim);
+        _ = mock.CreateRoom(request);
+
+        var result = await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+
+        // Возвращается СТАРАЯ заявка на поселение — так было и до миграции.
+        result.ShouldBe(request);
+        request.Subjects.ShouldBe([neighbourClaim]);
+
+        // Ушедший получил собственную одноместную заявку того же типа.
+        var ownRequest = claim.AccommodationRequest.ShouldNotBeNull();
+        ownRequest.ShouldNotBe(request);
+        ownRequest.AccommodationTypeId.ShouldBe(accommodationType.Id);
+        ownRequest.IsAccepted.ShouldBe(InviteState.Accepted);
+        ownRequest.Subjects.ShouldBe([claim]);
+
+        SaveChangesCallCount.ShouldBe(1);
+        _ = SentEmails.ShouldHaveSingleItem().ShouldBeOfType<LeaveRoomEmail>();
+    }
+
+    [Fact]
+    public async Task LeaveAccommodationGroup_OfNotApprovedClaim_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        _ = CreateAccommodation(claim);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId)
+                .LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId));
+
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     #endregion

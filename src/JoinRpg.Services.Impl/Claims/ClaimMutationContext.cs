@@ -40,6 +40,21 @@ internal abstract record ClaimMutationContext(
         => Scope.LoadDirectPlotsForCharacter(characterId);
 
     /// <summary>
+    /// Тип поселения проекта. Именованный загрузчик, а не <c>ProjectInfo</c>: типы поселения в снимок
+    /// метаданных не входят.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Тип поселения не найден в этом проекте.</exception>
+    public Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId)
+        => Scope.LoadAccommodationType(accommodationTypeId);
+
+    /// <summary>
+    /// Приглашения к совместному проживанию, в которых участвует эта заявка, — трекаемые тем же
+    /// <c>DbContext</c>, поэтому их изменение уедет в то же единственное сохранение.
+    /// </summary>
+    public Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim()
+        => Scope.LoadInvitesForClaim(ClaimInfo.ClaimId);
+
+    /// <summary>
     /// Сохраняет поля <b>через заявку</b>, а не через персонажа хэндла. Разница не косметическая:
     /// стратегия сохранения выбирается по <c>Claim.IsApproved</c>, а сам персонаж берётся из
     /// заявки — при утверждении заявки на слот она к этому моменту уже переехала на только что
