@@ -284,71 +284,77 @@ internal class ClaimServiceImpl(
         }
     }
 
-    public async Task ApproveByMaster(ClaimIdentification claimId, string commentText)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        if (claim.ClaimStatus == ClaimStatus.CheckedIn)
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
-        }
-
-        commentText ??= "";
-
-        if (claim.Character.CharacterType == CharacterType.Slot)
-        {
-            var character = await CreateCharacterFromSlot(claim.Character, claim.Player, projectInfo);
-            claim.Character = character;
-            claim.CharacterId = character.CharacterId;
-        }
-
-        claim.MasterAcceptedDate = Now;
-        claim.ChangeStatusWithCheck(ClaimStatus.Approved);
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.ApproveByMaster, ClaimOperationType.MasterVisibleChange, Now);
-
-        List<(Comment comment, ClaimSimpleChangedNotification email)> notificationsList = [(comment, email)];
-
-        if (projectInfo.ClaimSettings.StrictlyOneCharacter)
-        {
-            foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
+    public Task ApproveByMaster(ClaimIdentification claimId, string commentText)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            commentText ?? "",
+            async ctx =>
             {
-                otherClaim.EnsureCanChangeStatus(ClaimStatus.DeclinedByMaster);
-                otherClaim.MasterDeclinedDate = Now;
-                otherClaim.ClaimStatus = ClaimStatus.DeclinedByMaster;
+                if (ctx.Claim.ClaimStatus == ClaimStatus.CheckedIn)
+                {
+                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                }
 
-                var (otherComment, otherEmail) = CommentHelper.CreateClaimCommentWithNotification(
-                    "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                    otherClaim,
-                    projectInfo,
-                    CommentExtraAction.DeclineByMaster,
-                    ClaimOperationType.MasterVisibleChange, Now);
+                if (ctx.Claim.Character.CharacterType == CharacterType.Slot)
+                {
+                    // Единственная асинхронная загрузка метода, и она условная: сюжеты нужны только
+                    // слоту. Поднимать её наверх нельзя — грузились бы на каждое утверждение.
+                    var character = await CreateCharacterFromSlot(ctx, ctx.Claim.Character, ctx.Claim.Player);
+                    ctx.Claim.Character = character;
+                    ctx.Claim.CharacterId = character.CharacterId;
+                }
 
-                notificationsList.Add((otherComment, otherEmail));
-            }
-        }
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.Approved);
 
-        MarkCharacterChangedIfApproved(claim);
-        claim.Character.ApprovedClaimId = claim.ClaimId;
-        claim.Character.ApprovedClaim = claim; // Used in SaveCharacterFields
-        claim.Character.IsHot = false;
+                _ = ctx.AddComment(
+                    ctx.Request,
+                    CommentExtraAction.ApproveByMaster,
+                    ClaimOperationType.MasterVisibleChange);
 
-        //We need to re-save fields here. Reasons:
-        // 1. If we created character during approving, we need to set name for character
-        // 2. M.b. we need to move some field values from Claim to Characters
-        // 3. (2) Could activate changing of special groups
-        // we don't need send to show updated fields in email here, so ignore return result. 
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, FieldLayerContainer.Empty(projectInfo), projectInfo);
+                if (ctx.ProjectInfo.ClaimSettings.StrictlyOneCharacter)
+                {
+                    // Читает claim.Player.Claims — навигацию, которую write-хэндл грузит явно
+                    // (Include(c => c.Player.Claims)). Без неё список молча оказался бы пуст.
+                    foreach (var otherClaim in ctx.Claim.OtherPendingClaimsForThisPlayer())
+                    {
+                        ctx.ChangeStatus(otherClaim, ClaimStatus.DeclinedByMaster);
 
-        await UnitOfWork.SaveChangesAsync();
+                        _ = ctx.AddComment(
+                            otherClaim,
+                            //TODO[Localize]
+                            "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                            CommentExtraAction.DeclineByMaster,
+                            ClaimOperationType.MasterVisibleChange);
+                    }
+                }
 
-        foreach (var (notificationComment, notification) in notificationsList)
-        {
-            await claimNotificationService.SendNotification(notification.WithCommentId(notificationComment.CommentId));
-        }
-    }
+                ctx.MarkCharacterChangedIfApproved();
+                ctx.Claim.Character.ApprovedClaimId = ctx.Claim.ClaimId;
+                // Порядок критичен: ApprovedClaim обязан быть проставлен ДО SaveFields — от него
+                // зависит выбор стратегии в FieldSaveHelper (IsApproved => SaveToCharacterAndClaim).
+                ctx.Claim.Character.ApprovedClaim = ctx.Claim;
+                ctx.Claim.Character.IsHot = false;
 
-    private async Task<Character> CreateCharacterFromSlot(Character slot, User player, ProjectInfo projectInfo)
+                // Пересохранение пустым слоем — не мёртвый код, оно нужно ради побочных эффектов:
+                // 1. если персонаж создан из слота при утверждении, ему надо проставить имя;
+                // 2. часть значений полей переезжает из заявки в персонажа;
+                // 3. (2) может пересчитать спецгруппы.
+                // Показывать изменённые поля в письме не надо, поэтому результат игнорируем.
+                _ = ctx.SaveFields(FieldLayerContainer.Empty(ctx.ProjectInfo));
+            });
+
+    /// <summary>
+    /// Создаёт персонажа из слота при утверждении заявки: уменьшает остаток слота, копирует
+    /// свойства и наследует прямые привязки к сюжетам.
+    /// </summary>
+    /// <remarks>
+    /// <c>CreatedAt</c>/<c>UpdatedAt</c> проставляются локальным <see cref="DateTime.Now"/>, а не
+    /// временем операции (UTC). Это выглядит ошибкой, но сохранено как есть: миграция обязана
+    /// сохранять поведение, а починка — отдельное изменение.
+    /// </remarks>
+    private static async Task<Character> CreateCharacterFromSlot(ClaimMutationContext ctx, Character slot, User player)
     {
 
         switch (slot.CharacterSlotLimit)
@@ -400,7 +406,11 @@ internal class ClaimServiceImpl(
             UpdatedById = player.UserId,
         };
 
-        var plots = await PlotRepository.GetDirectPlotsForCharacter(slot.GetId());
+        // Через контекст, а не через UnitOfWork.GetDbSet: сохраняет тот DbContext, который загрузил
+        // агрегат, а DI-экземпляр UnitOfWork у сервиса — другой (ADR014).
+        ctx.AddEntity(newCharacter);
+
+        var plots = await ctx.LoadDirectPlotsForCharacter(slot.GetId());
 
         foreach (var plot in plots)
         {

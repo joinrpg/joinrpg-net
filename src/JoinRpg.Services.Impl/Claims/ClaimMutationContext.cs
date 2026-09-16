@@ -29,10 +29,27 @@ internal abstract record ClaimMutationContext(
     Action<object> AddEntity,
     Action<object> RemoveEntity,
     Func<CharacterIdentification, Task<(Character Entity, CharacterInfo Info)>> LoadOtherCharacterCore,
+    Func<CharacterIdentification, Task<IReadOnlyCollection<PlotElement>>> LoadDirectPlotsCore,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper)
     : CharacterMutationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, AddEntity, RemoveEntity, FieldSaveHelper)
 {
+    /// <summary>
+    /// Сюжеты, привязанные напрямую к персонажу, трекаемые тем же <c>DbContext</c>. Нужны созданию
+    /// персонажа из слота.
+    /// </summary>
+    public Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId)
+        => LoadDirectPlotsCore(characterId);
+
+    /// <summary>
+    /// Сохраняет поля <b>через заявку</b>, а не через персонажа хэндла. Разница не косметическая:
+    /// стратегия сохранения выбирается по <c>Claim.IsApproved</c>, а сам персонаж берётся из
+    /// заявки — при утверждении заявки на слот она к этому моменту уже переехала на только что
+    /// созданного персонажа, которого в хэндле нет.
+    /// </summary>
+    public new IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(FieldLayerContainer fieldsToSet)
+        => SaveFieldsCore(Claim, fieldsToSet);
+
     /// <summary>
     /// Явный выход за границу агрегата: другой персонаж того же проекта — трекаемая сущность вместе
     /// со своим доменным снимком. Операции над двумя персонажами (перенос, восстановление, вторая
@@ -95,7 +112,9 @@ internal abstract record ClaimMutationContext(
     {
         if (Claim.ClaimStatus == ClaimStatus.Approved)
         {
-            this.MarkChanged(Character);
+            // Персонаж берётся из заявки, а не из хэндла: при утверждении заявки на слот заявка
+            // к этому моменту уже переехала на только что созданного персонажа.
+            this.MarkChanged(Claim.Character ?? Character);
         }
     }
 }
@@ -115,8 +134,9 @@ internal sealed record ClaimMutationContext<TArgs>(
     Action<object> AddEntity,
     Action<object> RemoveEntity,
     Func<CharacterIdentification, Task<(Character Entity, CharacterInfo Info)>> LoadOtherCharacterCore,
+    Func<CharacterIdentification, Task<IReadOnlyCollection<PlotElement>>> LoadDirectPlotsCore,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper,
     TArgs Request)
     : ClaimMutationContext(Claim, ClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
-        Initiator, AddEntity, RemoveEntity, LoadOtherCharacterCore, FieldSaveHelper, CommentHelper);
+        Initiator, AddEntity, RemoveEntity, LoadOtherCharacterCore, LoadDirectPlotsCore, FieldSaveHelper, CommentHelper);

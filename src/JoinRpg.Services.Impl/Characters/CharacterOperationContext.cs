@@ -51,6 +51,31 @@ internal abstract record CharacterOperationContext(
 
         return changed;
     }
+
+    /// <summary>
+    /// То же, но через заявку: персонаж берётся из неё, а выбор стратегии в
+    /// <see cref="CharacterFields.FieldSaveHelper"/> зависит от того, утверждена ли заявка.
+    /// </summary>
+    /// <param name="claim">Заявка, через которую сохраняются поля.</param>
+    /// <param name="fieldsToSet">
+    /// Дельта, а не полный слой. Пустой слой не означает «ничего не делать»: пересохранение пустым
+    /// слоем нужно ради побочных эффектов — генерации значений по умолчанию, переноса значений
+    /// заявка→персонаж и пересчёта спецгрупп.
+    /// </param>
+    /// <returns>Изменившиеся поля.</returns>
+    protected IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFieldsCore(
+        Claim claim,
+        FieldLayerContainer fieldsToSet)
+    {
+        var changed = FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, claim, fieldsToSet, ProjectInfo);
+
+        if (CharacterFieldMarking.MarksNewUsage(changed))
+        {
+            ProjectMetadataChanged = true;
+        }
+
+        return changed;
+    }
 }
 
 /// <summary>

@@ -177,7 +177,8 @@ internal class CharacterPropsService(
             var ctx = new ClaimMutationContext<TArgs>(
                 handle.Claim, handle.ClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
                 now, currentUserAccessor, handle.Initiator, handle.Add, handle.Remove,
-                handle.LoadOtherCharacter, fieldSaveHelper, commentHelper, arguments);
+                handle.LoadOtherCharacter, handle.LoadDirectPlotsForCharacter, fieldSaveHelper,
+                commentHelper, arguments);
 
             var result = await action(ctx);
 
