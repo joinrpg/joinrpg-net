@@ -141,11 +141,10 @@ internal abstract record ClaimMutationContext(
     }
 
     /// <summary>
-    /// Запрещает операции, датированные будущим. Единственная реализация живёт в
-    /// <see cref="ClaimImplBase"/>, пока он не удалён вместе с последним немигрированным методом.
+    /// Запрещает операции, датированные будущим.
     /// </summary>
     public void CheckOperationDate(DateTime operationDate)
-        => ClaimImplBase.CheckOperationDate(operationDate, Now);
+        => OperationDateValidation.CheckOperationDate(operationDate, Now);
 
     /// <summary>
     /// Ставит письмо легаси-канала в очередь. Отправится после сохранения и после уведомлений.

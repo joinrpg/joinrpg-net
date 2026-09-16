@@ -8,18 +8,16 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
 internal class FinanceOperationsImpl(
     IUnitOfWork unitOfWork,
-    IEmailService emailService,
     ICurrentUserAccessor currentUserAccessor,
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     IProjectMetadataRepository projectMetadataRepository,
-    ICharacterPropsService characterPropsService) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
+    ICharacterPropsService characterPropsService) : DbServiceImplBase(unitOfWork, currentUserAccessor), IFinanceService
 {
     public Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
         => characterPropsService.ChangeClaim(
@@ -114,7 +112,9 @@ internal class FinanceOperationsImpl(
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
         // Loading source claim
-        var (claimFrom, projectInfo) = await LoadClaimAsMaster(request, Permission.CanManageMoney);
+        var (claimFrom, projectInfo) = await LoadClaimAsMaster(
+            new ClaimIdentification(request.ProjectId, request.ClaimId),
+            Permission.CanManageMoney);
 
         // Loading destination claim
         var (claimTo, _) = await LoadClaimAsMaster(new ClaimIdentification(request.ProjectId, request.ToClaimId));
@@ -127,7 +127,7 @@ internal class FinanceOperationsImpl(
         }
 
         // Comment to source claim
-        var (commentFrom, emailFrom) = CommentHelper.CreateClaimCommentWithNotification(
+        var (commentFrom, emailFrom) = commentHelper.CreateClaimCommentWithNotification(
             request.CommentText ?? "",
             claimFrom,
             projectInfo,
@@ -150,7 +150,7 @@ internal class FinanceOperationsImpl(
         };
 
         // Comment to destination claim
-        var (commentTo, emailTo) = CommentHelper.CreateClaimCommentWithNotification(
+        var (commentTo, emailTo) = commentHelper.CreateClaimCommentWithNotification(
             request.CommentText ?? "",
             claimTo,
             projectInfo,
@@ -182,6 +182,24 @@ internal class FinanceOperationsImpl(
         await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId));
     }
 
+    /// <summary>
+    /// Последний остаток легаси-загрузки заявки: он же — последний потребитель
+    /// <see cref="ClaimAcccessExtensions.RequestAccess"/> в этом сервисе. Приехал сюда из удалённого
+    /// <c>ClaimImplBase</c> и жив ровно до тех пор, пока не мигрирован
+    /// <see cref="TransferPaymentAsync"/>. Помечен <c>[Obsolete]</c> намеренно: предупреждение —
+    /// burndown-метрика миграции (ADR014), гасить его надо переводом метода, а не pragma.
+    /// </summary>
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
+    private async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(
+        ClaimIdentification claimId,
+        Permission permission = Permission.None)
+    {
+        var claim = await ClaimsRepository.GetClaim(claimId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+
+        return (claim.RequestAccess(CurrentUserId, permission), projectInfo);
+    }
+
     #endregion
 
     #region Master money management
@@ -209,7 +227,7 @@ internal class FinanceOperationsImpl(
             _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
         }
 
-        CheckOperationDate(request.OperationDate);
+        OperationDateValidation.CheckOperationDate(request.OperationDate, Now);
 
         if (request.Amount <= 0)
         {
