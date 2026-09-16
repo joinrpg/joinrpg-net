@@ -3,7 +3,9 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Characters;
 
@@ -12,6 +14,9 @@ internal class CharacterPropsService(
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository metadataRepository,
     FieldSaveHelper fieldSaveHelper,
+    CommentHelper commentHelper,
+    IClaimNotificationService claimNotificationService,
+    IEmailService emailService,
     ILogger<CharacterPropsService> logger)
     : ICharacterPropsService
 {
@@ -95,6 +100,99 @@ internal class CharacterPropsService(
                 e,
                 "Не удалось изменить персонажа {characterId}: операция {operation}, аргументы {@arguments}",
                 characterId,
+                operationName,
+                arguments);
+            throw;
+        }
+    }
+
+    public Task ChangeClaim<TArgs>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Action<ClaimMutationContext<TArgs>> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeClaimCore(claimId, accessRequirement, activeRequirement, arguments,
+            AsFunc(action), operationName);
+
+    public Task<TResult> ChangeClaim<TArgs, TResult>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimMutationContext<TArgs>, TResult> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeClaimCore(claimId, accessRequirement, activeRequirement, arguments,
+            action, operationName);
+
+    private static Func<ClaimMutationContext<TArgs>, bool> AsFunc<TArgs>(Action<ClaimMutationContext<TArgs>> action)
+        => ctx =>
+        {
+            action(ctx);
+            return true;
+        };
+
+    private async Task<TResult> ChangeClaimCore<TArgs, TResult>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimMutationContext<TArgs>, TResult> action,
+        string operationName)
+    {
+        using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        var now = DateTime.UtcNow;
+        try
+        {
+            var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
+                .LoadClaimForUpdate(claimId, currentUserAccessor.UserIdentification);
+
+            ClaimAccess.Request(handle.ProjectInfo, handle.ClaimInfo, currentUserAccessor, accessRequirement);
+
+            EnsureActiveIfRequired(handle.ProjectInfo, activeRequirement);
+
+            var ctx = new ClaimMutationContext<TArgs>(
+                handle.Claim, handle.ClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
+                now, currentUserAccessor, handle.Initiator, handle.Add, handle.Remove,
+                fieldSaveHelper, commentHelper, arguments);
+
+            var result = action(ctx);
+
+            await unitOfWork.SaveChangesAsync();
+
+            await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
+
+            // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
+            foreach (var pending in ctx.PendingComments)
+            {
+                if (!pending.IsSilent)
+                {
+                    await claimNotificationService.SendNotification(
+                        pending.Notification.WithCommentId(pending.Comment.CommentId));
+                }
+            }
+
+            // Легаси-канал — после уведомлений, как это было до миграции.
+            foreach (var send in ctx.LegacyEmails)
+            {
+                await send(emailService);
+            }
+
+            logger.LogInformation(
+                "Изменена заявка {claimId}: операция {operation}, аргументы {@arguments}",
+                claimId,
+                operationName,
+                arguments);
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning(
+                e,
+                "Не удалось изменить заявку {claimId}: операция {operation}, аргументы {@arguments}",
+                claimId,
                 operationName,
                 arguments);
             throw;
